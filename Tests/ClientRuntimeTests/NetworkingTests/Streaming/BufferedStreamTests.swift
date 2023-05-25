@@ -11,6 +11,7 @@ import ClientRuntime
 final class BufferedStreamTests: XCTestCase {
 
     let testData = Data([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A])
+    let additionalData = Data([0x0B, 0x0C, 0x0D, 0x0E])
 
     // MARK: - isSeekable
 
@@ -144,35 +145,41 @@ final class BufferedStreamTests: XCTestCase {
     // MARK: - write(contentsOf:)
 
     func test_write_appendsWrittenDataToBuffer() throws {
-        let newData = Data([0x0B, 0x0C, 0x0D, 0x0E])
         let subject = BufferedStream(data: testData)
-        try subject.write(contentsOf: newData)
+        try subject.write(contentsOf: additionalData)
         let readData1 = try subject.read(upToCount: Int.max)
-        XCTAssertEqual(testData + newData, readData1)
+        XCTAssertEqual(testData + additionalData, readData1)
     }
 
     // MARK: - length
 
-    func test_length_returnsCumulativeDataLength() throws {
+    func test_length_returnsNilLengthBeforeStreamCloses() throws {
         let sut = BufferedStream(data: testData)
 
-        // length is 11
-        XCTAssertEqual(sut.length, 11)
+        XCTAssertNil(sut.length)
+    }
 
-        // read 4 bytes, length is still 11
-        _ = try sut.read(upToCount: 4)
-        XCTAssertEqual(sut.length, 11)
+    func test_length_returnsNilLengthAfterWriteAndBeforeStreamCloses() async throws {
+        let sut = BufferedStream(data: testData)
+        try sut.write(contentsOf: additionalData)
 
-        // write 4 bytes, length is 15
-        try sut.write(contentsOf: .init([0x0B, 0x0C, 0x0D, 0x0E]))
-        XCTAssertEqual(sut.length, 15)
+        XCTAssertNil(sut.length)
+    }
 
-        // read 2 bytes, length is still 15
-        _ = try sut.read(upToCount: 4)
-        XCTAssertEqual(sut.length, 15)
+    func test_length_returnsInitialLengthAfterStreamCloses() throws {
+        let sut = BufferedStream(data: testData)
 
-        // read 2 bytes, length is still 15
-        _ = try sut.read(upToCount: 2)
-        XCTAssertEqual(sut.length, 15)
+        try sut.close()
+
+        XCTAssertEqual(sut.length, testData.count)
+    }
+
+    func test_length_returnsTotalLengthAfterWriteAndAfterStreamCloses() async throws {
+        let sut = BufferedStream(data: testData)
+        try sut.write(contentsOf: additionalData)
+
+        try sut.close()
+
+        XCTAssertEqual(sut.length, testData.count + additionalData.count)
     }
 }

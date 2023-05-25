@@ -15,7 +15,8 @@ import class Foundation.NSRecursiveLock
 ///       or reach the maximum size of a `Data` object.
 public class BufferedStream: Stream {
 
-    /// Returns the cumulative length of all data so far written to the stream, if known
+    /// Returns the cumulative length of all data so far written to the stream, if known.
+    /// For a buffered stream, the length will only be known if the stream has closed.
     public var length: Int? {
         lock.withLockingClosure {
             _length
@@ -60,6 +61,11 @@ public class BufferedStream: Stream {
     /// Access this value only while `lock` is locked, to prevent simultaneous access.
     private var _buffer: Data
 
+    /// The number of bytes that have been written to this stream, including the initial data at creation.
+    ///
+    /// Access this value only while `lock` is locked, to prevent simultaneous access.
+    private var _dataCount: Int
+
     /// When locked, this `NSRecursiveLock` grants safe, exclusive access to the properties on this type.
     /// Note: `NSRecursiveLock` is `@Sendable` so it is safe to use with Swift concurrency.
     private let lock = NSRecursiveLock()
@@ -93,7 +99,7 @@ public class BufferedStream: Stream {
     public init(data: Data? = nil, isClosed: Bool = false) {
         self._buffer = data ?? Data()
         self._position = _buffer.startIndex
-        self._length = _buffer.count
+        self._dataCount = _buffer.count
         self._isClosed = isClosed
     }
 
@@ -188,7 +194,7 @@ public class BufferedStream: Stream {
             // append the data to the buffer
             // this will increase the in-memory size of the buffer
             _buffer.append(data)
-            _length = (_length ?? 0) + data.count
+            _dataCount += data.count
             // If any clients are waiting to read data, service them.
             _serviceReadersIfPossible()
         }
@@ -198,6 +204,7 @@ public class BufferedStream: Stream {
     public func close() throws {
         lock.withLockingClosure {
             _isClosed = true
+            _length = _dataCount
             _serviceReadersIfPossible()
         }
     }
