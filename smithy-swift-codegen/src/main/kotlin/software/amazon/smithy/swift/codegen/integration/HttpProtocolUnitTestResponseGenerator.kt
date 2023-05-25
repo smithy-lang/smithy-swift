@@ -10,6 +10,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.HttpQueryTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
@@ -17,7 +18,9 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasStreamingMember
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
 /**
  * Generates HTTP protocol unit tests for `httpResponseTest` cases
@@ -66,7 +69,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 // depending on the shape of the output, we may need to wrap the body in a stream
                 if (outputShape.hasStreamingMember(model)) {
                     // wrapping to CachingStream required for test asserts which reads body multiple times
-                    writer.write("content: .stream(CachingStream(base: BufferedStream(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!, isClosed: true)))", test.body.get().replace("\\\"", "\\\\\""))
+                    writer.write("content: .stream(BufferedStream(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!, isClosed: true))", test.body.get().replace("\\\"", "\\\\\""))
                 } else {
                     writer.write("content: .data( \"\"\"\n\$L\n\"\"\".data(using: .utf8)!)", test.body.get().replace("\\\"", "\\\\\""))
                 }
@@ -147,18 +150,27 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 fun renderMemberAssertions(writer: SwiftWriter, test: HttpMessageTestCase, members: Collection<MemberShape>, model: Model, symbolProvider: SymbolProvider, expected: String, actual: String) {
     for (member in members) {
         val shape = model.expectShape(member.target.toShapeId())
-        val expectedMemberName = "$expected.${symbolProvider.toMemberName(member)}"
-        val actualMemberName = "$actual.${symbolProvider.toMemberName(member)}"
+        val baseVarName = symbolProvider.toMemberName(member)
+        val expectedMemberName = "$expected.$baseVarName"
+        val actualMemberName = "$actual.$baseVarName"
+        val suffix = if (symbolProvider.toSymbol(member).isBoxed()) "?" else ""
         if (member.isStructureShape) {
             writer.write("XCTAssert(\$L === \$L)", expectedMemberName, actualMemberName)
         } else if ((shape.isDoubleShape || shape.isFloatShape)) {
             val stringNodes = test.params.stringMap.values.map { it.asStringNode().getOrNull() }
             if (stringNodes.isNotEmpty() && stringNodes.mapNotNull { it?.value }.contains("NaN")) {
-                val suffix = if (symbolProvider.toSymbol(member).isBoxed()) "?" else ""
                 writer.write("XCTAssertEqual(\$L$suffix.isNaN, \$L$suffix.isNaN)", expectedMemberName, actualMemberName)
             } else {
                 writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
             }
+        } else if (shape.isBlobShape && shape.hasTrait<StreamingTrait>()) {
+            val expectedVarName = "${expected}${baseVarName.toUpperCamelCase()}Data"
+            val actualVarName = "${actual}${baseVarName.toUpperCamelCase()}Data"
+            writer.write("")
+            writer.write("// Compare blobs by reading them both to data")
+            writer.write("let $expectedVarName = try await $expectedMemberName$suffix.readData()")
+            writer.write("let $actualVarName = try await $actualMemberName$suffix.readData()")
+            writer.write("XCTAssertEqual(\$L, \$L)", expectedVarName, actualVarName)
         } else {
             writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
         }
