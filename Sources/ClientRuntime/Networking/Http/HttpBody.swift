@@ -43,9 +43,8 @@ public extension HttpBody {
     /// Returns the data for this `HttpBody`.
     ///
     /// If the `HttpBody` encloses a `Stream`, the enclosed stream is read to
-    /// the end and the data is stored in this `ByteStream` for future use.  If it is seekable,
-    /// it seeks to the start of the stream and replays all available data.
-    func readAllData() async throws -> Data? {
+    /// the end.  If it is seekable, it seeks to the start of the stream and replays all available data.
+    func readData() async throws -> Data? {
         switch self {
         case .data(let data):
             return data

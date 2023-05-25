@@ -45,10 +45,7 @@ extension ByteStream {
     /// Returns the data for this `ByteStream`.
     ///
     /// If the `ByteStream` encloses a `Stream`, the enclosed stream is read to
-    /// the end and the data is stored in this `ByteStream` for future use.
-    ///
-    /// Result is discardable since this function may be called for the purpose of reading
-    /// the stream into memory for later use.
+    /// the end.  If it is seekable, it seeks to the start of the stream and replays all available data.
     public func readData() async throws -> Data? {
         switch self {
         case .data(let data):

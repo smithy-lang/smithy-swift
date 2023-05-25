@@ -126,7 +126,7 @@ public class BufferedStream: Stream {
 
         // if we're closed and there's no data left, return nil
         // this will signal the end of the stream
-        if isClosed && chunk.isEmpty == true {
+        if _isClosed && chunk.isEmpty == true {
             return nil
         }
 
@@ -161,7 +161,7 @@ public class BufferedStream: Stream {
         return lock.withLockingClosure {
             // if we're closed and there's no data left, return nil
             // this will signal the end of the stream
-            if isClosed && data.isEmpty {
+            if _isClosed && data.isEmpty {
                 return nil
             }
 
@@ -218,7 +218,7 @@ public class BufferedStream: Stream {
                     _ = _readers.removeFirst()
                 } else {
                     data = try _read(upToCount: suspendedReader.byteCount)
-                    if data == Data() { return }
+                    if data == Data() { return }  // this means stream is still open but has no data
                     _ = _readers.removeFirst()
                 }
                 suspendedReader.continuation.resume(returning: data)
