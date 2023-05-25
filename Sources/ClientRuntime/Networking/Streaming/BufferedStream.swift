@@ -101,6 +101,7 @@ public class BufferedStream: Stream {
         self._position = _buffer.startIndex
         self._dataCount = _buffer.count
         self._isClosed = isClosed
+        if isClosed { _length = _buffer.count }
     }
 
     /// If this task is released while it still has suspended readers, continue all readers with nil data

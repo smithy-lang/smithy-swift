@@ -182,4 +182,10 @@ final class BufferedStreamTests: XCTestCase {
 
         XCTAssertEqual(sut.length, testData.count + additionalData.count)
     }
+
+    func test_length_returnsDataLengthWhenCreatedAsAClosedStream() throws {
+        let sut = BufferedStream(data: testData, isClosed: true)
+
+        XCTAssertEqual(sut.length, testData.count)
+    }
 }
