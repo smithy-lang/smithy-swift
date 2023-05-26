@@ -100,7 +100,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<SmokeTestOutputResponse, SmokeTestOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+            try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                 try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
@@ -186,7 +186,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<ExplicitStringOutputResponse, ExplicitStringOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+            try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                 try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
@@ -252,7 +252,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<EmptyInputAndEmptyOutputOutputResponse, EmptyInputAndEmptyOutputOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            try self.assertEqual(expected, actual)
+            try await self.assertEqual(expected, actual)
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try await EmptyInputAndEmptyOutputOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<EmptyInputAndEmptyOutputOutputResponse>(httpResponse: response, output: mockOutput)
@@ -322,7 +322,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<SimpleScalarPropertiesOutputResponse, SimpleScalarPropertiesOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+            try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                 try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
@@ -414,7 +414,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<StreamingTraitsOutputResponse, StreamingTraitsOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+            try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                 try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
@@ -487,7 +487,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<HttpPrefixHeadersOutputResponse, HttpPrefixHeadersOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            try self.assertEqual(expected, actual)
+            try await self.assertEqual(expected, actual)
             let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
             let mockOutput = try await HttpPrefixHeadersOutputResponse(httpResponse: response, decoder: nil)
             let output = OperationOutput<HttpPrefixHeadersOutputResponse>(httpResponse: response, output: mockOutput)
@@ -561,7 +561,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<JsonUnionsOutputResponse, JsonUnionsOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+            try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                 try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
@@ -670,7 +670,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<RecursiveShapesOutputResponse, RecursiveShapesOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
-            try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+            try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                 try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
@@ -763,7 +763,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             operationStack.deserializeStep.intercept(position: .after,
                          middleware: MockDeserializeMiddleware<InlineDocumentOutputResponse, InlineDocumentOutputError>(
                                  id: "TestDeserializeMiddleware"){ context, actual in
-                try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                     XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                     XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                     try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
@@ -853,7 +853,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             operationStack.deserializeStep.intercept(position: .after,
                          middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutputResponse, InlineDocumentAsPayloadOutputError>(
                                  id: "TestDeserializeMiddleware"){ context, actual in
-                try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                     XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                     XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
                     try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in

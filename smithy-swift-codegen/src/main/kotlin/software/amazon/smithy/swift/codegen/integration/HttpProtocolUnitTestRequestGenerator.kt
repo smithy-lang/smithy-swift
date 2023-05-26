@@ -148,7 +148,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     private fun renderBodyAssert(test: HttpRequestTestCase, inputSymbol: Symbol, inputShape: Shape) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
             writer.openBlock(
-                "try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
+                "try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
                 "})"
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
@@ -175,7 +175,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             }
         } else {
             writer.write(
-                "try self.assertEqual(expected, actual)"
+                "try await self.assertEqual(expected, actual)"
             )
         }
     }

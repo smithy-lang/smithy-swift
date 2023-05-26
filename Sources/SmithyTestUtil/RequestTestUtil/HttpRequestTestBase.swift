@@ -195,10 +195,10 @@ open class HttpRequestTestBase: XCTestCase {
     public func assertEqual(
         _ expected: ExpectedSdkHttpRequest,
         _ actual: SdkHttpRequest,
-        _ assertEqualHttpBody: ((HttpBody?, HttpBody?) throws -> Void)? = nil,
+        _ assertEqualHttpBody: ((HttpBody?, HttpBody?) async throws -> Void)? = nil,
         file: StaticString = #filePath,
         line: UInt = #line
-    ) throws {
+    ) async throws {
         // assert headers match
         assertHttpHeaders(expected.headers, actual.headers, file: file, line: line)
 
@@ -217,9 +217,7 @@ open class HttpRequestTestBase: XCTestCase {
 
         // assert the contents of HttpBody match, if no body was on the test, no assertions are to be made about the body
         // https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#httprequesttests
-        if let assertEqualHttpBody = assertEqualHttpBody {
-            try assertEqualHttpBody(expected.body, actual.body)
-        }
+        try await assertEqualHttpBody?(expected.body, actual.body)
     }
 
     public func genericAssertEqualHttpBodyData(
