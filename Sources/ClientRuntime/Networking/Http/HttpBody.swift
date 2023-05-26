@@ -58,19 +58,20 @@ public extension HttpBody {
         }
     }
 
-//    func toData() throws -> Data? {
-//        switch self {
-//        case .data(let data):
-//            return data
-//        case .stream(let stream):
-//            if stream.isSeekable {
-//                try stream.seek(toOffset: 0)
-//            }
-//            return try stream.readToEnd()
-//        case .none:
-//            return nil
-//        }
-//    }
+    @available(*, deprecated, message: "This method is deprecated and will soon be removed. Call `readData()` instead.")
+    func toData() throws -> Data? {
+        switch self {
+        case .data(let data):
+            return data
+        case .stream(let stream):
+            if stream.isSeekable {
+                try stream.seek(toOffset: 0)
+            }
+            return try stream.readToEnd()
+        case .none:
+            return nil
+        }
+    }
 
     /// Returns true if the http body is `.none` or if the underlying data is nil or is empty.
     var isEmpty: Bool {
@@ -86,7 +87,7 @@ public extension HttpBody {
 }
 
 extension HttpBody: CustomDebugStringConvertible {
-    
+
     public var debugDescription: String {
         var bodyAsString: String?
         switch self {
