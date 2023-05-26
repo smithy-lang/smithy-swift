@@ -40,8 +40,8 @@ class OutputResponseDeserializerTests {
         val expectedContents =
             """
             extension SimpleStructureOutputResponse: ClientRuntime.HttpResponseBinding {
-                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
-                    if let data = try httpResponse.body.toData(),
+                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
+                    if let data = try await httpResponse.body.readData(),
                         let responseDecoder = decoder {
                         let output: SimpleStructureOutputResponseBody = try responseDecoder.decode(responseBody: data)
                         self.name = output.name
@@ -67,7 +67,7 @@ class OutputResponseDeserializerTests {
         val expectedContents =
             """
             extension DataStreamingOutputResponse: ClientRuntime.HttpResponseBinding {
-                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
+                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
                     switch httpResponse.body {
                     case .data(let data):
                         self.streamingData = .data(data)
@@ -93,7 +93,7 @@ class OutputResponseDeserializerTests {
         val expectedContents =
             """
             extension EventStreamingOutputResponse: ClientRuntime.HttpResponseBinding {
-                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
+                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
                     if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {
                         let messageDecoder: ClientRuntime.MessageDecoder? = nil
                         let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)

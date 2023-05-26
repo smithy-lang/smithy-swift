@@ -18,7 +18,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
             let response = try await next.handle(context: context, input: input) // call handler to get http response
             var copiedResponse = response
             if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
-                let output = try Output(httpResponse: copiedResponse.httpResponse,
+                let output = try await Output(httpResponse: copiedResponse.httpResponse,
                                         decoder: decoder)
                 copiedResponse.output = output
                 return copiedResponse
@@ -29,7 +29,7 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
                 // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
                 let bodyData = try await copiedResponse.httpResponse.body.readData()
                 copiedResponse.httpResponse.body = .data(bodyData)
-                let error = try OutputError.makeError(httpResponse: copiedResponse.httpResponse,
+                let error = try await OutputError.makeError(httpResponse: copiedResponse.httpResponse,
                                             decoder: decoder)
                 throw error
           }

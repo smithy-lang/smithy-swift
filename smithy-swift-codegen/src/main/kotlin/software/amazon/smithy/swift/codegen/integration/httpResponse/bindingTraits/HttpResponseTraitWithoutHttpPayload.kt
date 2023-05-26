@@ -101,7 +101,7 @@ class HttpResponseTraitWithoutHttpPayload(
 
     fun writeNonStreamingMembers(members: Set<HttpBindingDescriptor>) {
         val memberNames = members.map { ctx.symbolProvider.toMemberName(it.member) }
-        writer.write("if let data = try httpResponse.body.toData(),")
+        writer.write("if let data = try await httpResponse.body.readData(),")
         writer.indent()
         writer.write("let responseDecoder = decoder {")
         writer.write("let output: ${outputShapeName}Body = try responseDecoder.decode(responseBody: data)")

@@ -114,7 +114,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.openBlock("_ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
                 writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
                 writer.write("let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)")
-                writer.write("let serviceError = try $outputErrorName.makeError(httpResponse: httpResponse, decoder: decoder)")
+                writer.write("let serviceError = try await $outputErrorName.makeError(httpResponse: httpResponse, decoder: decoder)")
                 writer.write("throw serviceError")
             }
         }
@@ -139,7 +139,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
             renderBodyAssert(test, inputSymbol, inputShape)
             writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
-            writer.write("let mockOutput = try! $outputSymbol(httpResponse: response, decoder: nil)")
+            writer.write("let mockOutput = try await $outputSymbol(httpResponse: response, decoder: nil)")
             writer.write("let output = OperationOutput<$outputSymbol>(httpResponse: response, output: mockOutput)")
             writer.write("return output")
         }
@@ -155,7 +155,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
                 val expectedData = "expectedData"
                 val actualData = "actualData"
-                writer.openBlock("try self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { $expectedData, $actualData in ", "}") {
+                writer.openBlock("try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { $expectedData, $actualData in ", "}") {
                     val httpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
 
                     httpPayloadShape?.let {

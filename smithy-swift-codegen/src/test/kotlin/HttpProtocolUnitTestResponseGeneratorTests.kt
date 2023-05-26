@@ -56,7 +56,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual = try SmokeTestOutputResponse(httpResponse: httpResponse, decoder: decoder)
+        let actual = try await SmokeTestOutputResponse(httpResponse: httpResponse, decoder: decoder)
 
         let expected = SmokeTestOutputResponse(
             boolHeader: false,
@@ -102,7 +102,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual = try HttpPrefixHeadersOutputResponse(httpResponse: httpResponse)
+        let actual = try await HttpPrefixHeadersOutputResponse(httpResponse: httpResponse)
 
         let expected = HttpPrefixHeadersOutputResponse(
             foo: "Foo",
@@ -138,7 +138,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual = try HttpPrefixHeadersOutputResponse(httpResponse: httpResponse)
+        let actual = try await HttpPrefixHeadersOutputResponse(httpResponse: httpResponse)
 
         let expected = HttpPrefixHeadersOutputResponse(
             foo: "Foo"
@@ -179,7 +179,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual = try JsonUnionsOutputResponse(httpResponse: httpResponse, decoder: decoder)
+        let actual = try await JsonUnionsOutputResponse(httpResponse: httpResponse, decoder: decoder)
 
         let expected = JsonUnionsOutputResponse(
             contents: MyUnion.stringvalue("foo")
@@ -230,7 +230,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual = try RecursiveShapesOutputResponse(httpResponse: httpResponse, decoder: decoder)
+        let actual = try await RecursiveShapesOutputResponse(httpResponse: httpResponse, decoder: decoder)
 
         let expected = RecursiveShapesOutputResponse(
             nested: RecursiveShapesInputOutputNested1(
@@ -288,7 +288,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                     let decoder = ClientRuntime.JSONDecoder()
                     decoder.dateDecodingStrategy = .secondsSince1970
                     decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-                    let actual = try InlineDocumentOutputResponse(httpResponse: httpResponse, decoder: decoder)
+                    let actual = try await InlineDocumentOutputResponse(httpResponse: httpResponse, decoder: decoder)
             
                     let expected = InlineDocumentOutputResponse(
                         documentValue: try decoder.decode(Document.self, from:
@@ -337,7 +337,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                     let decoder = ClientRuntime.JSONDecoder()
                     decoder.dateDecodingStrategy = .secondsSince1970
                     decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-                    let actual = try InlineDocumentAsPayloadOutputResponse(httpResponse: httpResponse, decoder: decoder)
+                    let actual = try await InlineDocumentAsPayloadOutputResponse(httpResponse: httpResponse, decoder: decoder)
             
                     let expected = InlineDocumentAsPayloadOutputResponse(
                         documentValue: try decoder.decode(Document.self, from:

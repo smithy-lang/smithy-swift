@@ -41,7 +41,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         val decoderParameter = if (needsResponseDecoder) ", decoder: decoder" else ""
 
         writer.write(
-            "let \$L = try \$L.makeError(httpResponse: httpResponse\$L)",
+            "let \$L = try await \$L.makeError(httpResponse: httpResponse\$L)",
             operationErrorVariableName,
             operationErrorType,
             decoderParameter

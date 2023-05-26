@@ -38,7 +38,7 @@ public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBindin
               var copiedResponse = response
 
               let decoder = context.getDecoder()
-              let output = try OperationStackOutput(httpResponse: copiedResponse.httpResponse, decoder: decoder)
+              let output = try await OperationStackOutput(httpResponse: copiedResponse.httpResponse, decoder: decoder)
               copiedResponse.output = output
 
               return copiedResponse

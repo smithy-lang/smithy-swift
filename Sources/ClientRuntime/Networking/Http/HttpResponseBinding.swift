@@ -4,9 +4,9 @@
  */
 
 public protocol HttpResponseBinding {
-    init(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws
+    init(httpResponse: HttpResponse, decoder: ResponseDecoder?) async throws
 }
 
 public protocol HttpResponseErrorBinding {
-    static func makeError(httpResponse: HttpResponse, decoder: ResponseDecoder?) throws -> ServiceError
+    static func makeError(httpResponse: HttpResponse, decoder: ResponseDecoder?) async throws -> ServiceError
 }

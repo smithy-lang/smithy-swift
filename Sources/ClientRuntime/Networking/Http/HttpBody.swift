@@ -58,19 +58,19 @@ public extension HttpBody {
         }
     }
 
-    func toData() throws -> Data? {
-        switch self {
-        case .data(let data):
-            return data
-        case .stream(let stream):
-            if stream.isSeekable {
-                try stream.seek(toOffset: 0)
-            }
-            return try stream.readToEnd()
-        case .none:
-            return nil
-        }
-    }
+//    func toData() throws -> Data? {
+//        switch self {
+//        case .data(let data):
+//            return data
+//        case .stream(let stream):
+//            if stream.isSeekable {
+//                try stream.seek(toOffset: 0)
+//            }
+//            return try stream.readToEnd()
+//        case .none:
+//            return nil
+//        }
+//    }
 
     /// Returns true if the http body is `.none` or if the underlying data is nil or is empty.
     var isEmpty: Bool {

@@ -229,9 +229,9 @@ open class HttpRequestTestBase: XCTestCase {
         _ callback: (Data, Data) -> Void,
         file: StaticString = #filePath,
         line: UInt = #line
-    ) throws {
-        let expectedData = try expected.toData()
-        let actualData = try actual.toData()
+    ) async throws {
+        let expectedData = try await expected.readData()
+        let actualData = try await actual.readData()
         if shouldCompareData(expectedData, actualData) {
             if encoder is XMLEncoder {
                 XCTAssertXMLDataEqual(actualData!, expectedData!, file: file, line: line)

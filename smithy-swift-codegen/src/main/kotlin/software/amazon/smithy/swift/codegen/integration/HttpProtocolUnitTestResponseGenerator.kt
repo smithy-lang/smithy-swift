@@ -117,7 +117,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             renderResponseDecoder()
         }
         val decoderParameter = if (needsResponseDecoder) ", decoder: decoder" else ""
-        writer.write("let actual = try \$L(httpResponse: httpResponse\$L)", outputStruct.name, decoderParameter)
+        writer.write("let actual = try await \$L(httpResponse: httpResponse\$L)", outputStruct.name, decoderParameter)
     }
 
     protected fun renderResponseDecoder() {

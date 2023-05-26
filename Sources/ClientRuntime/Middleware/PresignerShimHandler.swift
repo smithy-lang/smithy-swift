@@ -32,7 +32,7 @@ struct PresignerShim<OperationStackOutput: HttpResponseBinding,
               handler(input)
               let httpResponse = HttpResponse(body: .none, statusCode: .ok)
               do {
-                  let output: OperationStackOutput? = try OperationStackOutput(
+                  let output: OperationStackOutput? = try await OperationStackOutput(
                     httpResponse: httpResponse,
                     decoder: nil)
                   return .init(httpResponse: httpResponse, output: output)
