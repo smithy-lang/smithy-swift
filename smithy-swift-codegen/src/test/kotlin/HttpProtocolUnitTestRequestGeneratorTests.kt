@@ -375,9 +375,9 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 "Content-Type": "application/octet-stream",
                 "X-Foo": "Foo"
             ],
-            body: .stream(CachingStream(base: BufferedStream(data: ""${'"'}
+            body: .stream(BufferedStream(data: ""${'"'}
             blobby blob blob
-            ""${'"'}.data(using: .utf8)!, isClosed: true))),
+            ""${'"'}.data(using: .utf8)!, isClosed: true)),
             host: "",
             resolvedHost: ""
         )

@@ -80,7 +80,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let response = try await httpClient.execute(request: request)
         XCTAssertNotNil(response)
         if case let HttpBody.stream(unwrappedStream) = response.body {
-            XCTAssert(try unwrappedStream.readToEnd()?.count == 1024)
+            let bodyCount = try await unwrappedStream.readToEndAsync()?.count
+            XCTAssertEqual(bodyCount, 1024)
         } else {
             XCTFail("Bytes not received")
         }
@@ -99,7 +100,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let response = try await httpClient.execute(request: request)
         XCTAssertNotNil(response)
         if case let HttpBody.stream(unwrappedStream) = response.body {
-            XCTAssert(try unwrappedStream.readToEnd()?.count == 1)
+            let bodyCount = try await unwrappedStream.readToEndAsync()?.count
+            XCTAssertEqual(bodyCount, 1)
         } else {
             XCTFail("Bytes not received")
         }
@@ -118,7 +120,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let response = try await httpClient.execute(request: request)
         XCTAssertNotNil(response)
         if case let HttpBody.stream(unwrappedStream) = response.body {
-            XCTAssert(try unwrappedStream.readToEnd()?.count == 3000)
+            let bodyCount = try await unwrappedStream.readToEndAsync()?.count
+            XCTAssertEqual(bodyCount, 3000)
         } else {
             XCTFail("Bytes not received")
         }

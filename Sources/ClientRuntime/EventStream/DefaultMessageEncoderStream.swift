@@ -113,6 +113,10 @@ extension EventStream {
             fatalError("readToEnd() is not supported by AsyncStream backed streams")
         }
 
+        public func readToEndAsync() async throws -> ClientRuntime.Data? {
+            fatalError("readToEndAsync() is not supported by AsyncStream backed streams")
+        }
+
         /// Reads up to `count` bytes from the stream asynchronously
         /// - Parameter count: maximum number of bytes to read
         /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available
