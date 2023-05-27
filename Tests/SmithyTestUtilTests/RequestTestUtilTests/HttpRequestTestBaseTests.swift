@@ -209,10 +209,10 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                               "Required Header:\(requiredHeader) does not exist in headers")
             }
 
-            try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) throws -> Void in
+            try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) throws -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                try self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, JSONEncoder()) { (expectedData, actualData) in
+                try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, JSONEncoder()) { (expectedData, actualData) in
                     do {
                          let decoder = JSONDecoder()
                          let expectedObj = try decoder.decode(SayHelloInputBody.self, from: expectedData)
