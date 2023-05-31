@@ -21,7 +21,7 @@ class WaiterRetryerTests: XCTestCase {
         func operation(input: String) async throws -> String {
             attempt += 1
             if throwsOnOperation {
-                throw UnknownClientError("\(attempt)")
+                throw ClientError.unknownError("\(attempt)")
             } else {
                 return "\(attempt)"
             }
@@ -105,7 +105,7 @@ class WaiterRetryerTests: XCTestCase {
             guard let waiterFailureError = error as? WaiterFailureError<String> else {
                 XCTFail("Error is not of expected type"); return
             }
-            let expectedError = WaiterFailureError<String>(attempts: 1, failedOnMatch: false, result: .failure(UnknownClientError("1")))
+            let expectedError = WaiterFailureError<String>(attempts: 1, failedOnMatch: false, result: .failure(ClientError.unknownError("1")))
             XCTAssertEqual(waiterFailureError, expectedError)
         }
     }

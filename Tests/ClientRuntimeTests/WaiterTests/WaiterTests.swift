@@ -122,7 +122,7 @@ class WaiterTests: XCTestCase {
 
     func test_waitUntil_failsWhenRetryerReturnsAnError() async throws {
         let mock = WaiterRetryerMock(returnVals: [nil])
-        mock.errorToThrow = UnknownClientError(UUID().uuidString)
+        mock.errorToThrow = ClientError.unknownError(UUID().uuidString)
         let retryer = WaiterRetryer(mock.waitThenRequest(scheduler:input:config:operation:))
         let subject = Waiter<String, String>(config: config(), operation: { _ in return "output" }, retryer: retryer)
         await XCTAssertThrowsErrorAsync(_ = try await subject.waitUntil(options: options, input: "input")) {
