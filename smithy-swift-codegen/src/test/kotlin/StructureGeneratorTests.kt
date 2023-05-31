@@ -259,25 +259,30 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                 import ClientRuntime
 
                 /// This is documentation about the shape.
-                public struct MyError: ClientRuntime.ServiceError, Swift.Error {
-                    public var _errorType: String? { "MyError" }
-                    public var _headers: ClientRuntime.Headers?
-                    public var _statusCode: ClientRuntime.HttpStatusCode?
-                    public var _message: Swift.String?
-                    public var _requestID: Swift.String?
-                    public var _retryable: Swift.Bool = true
-                    public var _isThrottling: Swift.Bool = false
-                    /// This is documentation about the member.
-                    public var baz: Swift.Int?
+                public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError {
+
+                    public struct Properties {
+                        /// This is documentation about the member.
+                        public var baz: Swift.Int? = nil
+                        public var message: Swift.String? = nil
+                    }
+                
+                    public var properties = Properties()
+                    public static var typeName: Swift.String { "MyError" }
+                    public static var fault: ErrorFault { .client }
+                    public static var isRetryable: Swift.Bool { true }
+                    public static var isThrottling: Swift.Bool { false }
+                    public var httpResponse = HttpResponse()
                     public var message: Swift.String?
+                    public var requestID: Swift.String?
                 
                     public init(
                         baz: Swift.Int? = nil,
                         message: Swift.String? = nil
                     )
                     {
-                        self.baz = baz
-                        self.message = message
+                        self.properties.baz = baz
+                        self.properties.message = message
                     }
                 }
             """.trimIndent()
