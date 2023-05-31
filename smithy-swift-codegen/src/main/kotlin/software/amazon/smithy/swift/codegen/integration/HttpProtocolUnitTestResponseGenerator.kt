@@ -10,6 +10,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
@@ -138,7 +139,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     protected open fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
         val members = outputShape.members().filterNot { it.hasTrait(HttpQueryTrait::class.java) }
-        renderMemberAssertions(writer, test, members, model, symbolProvider, "expected", "actual")
+        val path = ".properties".takeIf { outputShape.hasTrait<ErrorTrait>() } ?: ""
+        renderMemberAssertions(writer, test, members, model, symbolProvider, "expected$path", "actual$path")
     }
 
     open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpResponseTestCase>() {

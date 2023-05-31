@@ -12,7 +12,7 @@ public enum MockMiddlewareError: Error {
 }
 
 extension MockMiddlewareError: HttpResponseErrorBinding {
-    public static func makeError(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) throws -> ServiceError {
-        return UnknownServiceError(message: httpResponse.debugDescription)
+    public static func makeError(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws -> Error {
+        return UnknownServiceError(typeName: "MockMiddlewareError", message: httpResponse.debugDescription)
     }
 }

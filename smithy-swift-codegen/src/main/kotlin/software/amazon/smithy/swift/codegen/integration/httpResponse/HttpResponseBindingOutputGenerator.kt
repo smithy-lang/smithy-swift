@@ -29,6 +29,7 @@ class HttpResponseBindingOutputGenerator(
         if (op.output.isEmpty) {
             return
         }
+        val outputShape = ctx.model.expectShape(op.outputShape)
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op).name
         var responseBindings = httpBindingResolver.responseBindings(op)
         val headerBindings = responseBindings
@@ -49,9 +50,9 @@ class HttpResponseBindingOutputGenerator(
                     ClientRuntimeTypes.Http.HttpResponse,
                     ClientRuntimeTypes.Serde.ResponseDecoder
                 ) {
-                    HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
+                    HttpResponseHeaders(ctx, false, headerBindings, defaultTimestampFormat, writer).render()
                     HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                    HttpResponseTraitPayload(ctx, responseBindings, outputShapeName, writer).render()
+                    HttpResponseTraitPayload(ctx, responseBindings, outputShape, writer).render()
                     HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
                     HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
                 }

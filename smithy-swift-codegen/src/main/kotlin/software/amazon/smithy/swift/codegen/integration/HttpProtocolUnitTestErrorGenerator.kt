@@ -68,7 +68,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
     }
 
     override fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
-        writer.write("XCTAssertEqual(actual._statusCode, HttpStatusCode(rawValue: \$L))", test.code)
+        writer.write("XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: \$L))", test.code)
         super.renderAssertions(test, outputShape)
     }
 

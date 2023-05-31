@@ -13,8 +13,10 @@ import software.amazon.smithy.model.shapes.DoubleShape
 import software.amazon.smithy.model.shapes.FloatShape
 import software.amazon.smithy.model.shapes.IntegerShape
 import software.amazon.smithy.model.shapes.LongShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.ShortShape
+import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
@@ -23,6 +25,7 @@ import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
@@ -30,7 +33,7 @@ interface HttpResponseTraitWithoutHttpPayloadFactory {
     fun construct(
         ctx: ProtocolGenerator.GenerationContext,
         responseBindings: List<HttpBindingDescriptor>,
-        outputShapeName: String,
+        outputShape: Shape,
         writer: SwiftWriter
     ): HttpResponseBindingRenderable
 }
@@ -38,7 +41,7 @@ interface HttpResponseTraitWithoutHttpPayloadFactory {
 class HttpResponseTraitWithoutHttpPayload(
     val ctx: ProtocolGenerator.GenerationContext,
     val responseBindings: List<HttpBindingDescriptor>,
-    val outputShapeName: String,
+    val outputShape: Shape,
     val writer: SwiftWriter
 ) : HttpResponseBindingRenderable {
     override fun render() {
@@ -100,13 +103,15 @@ class HttpResponseTraitWithoutHttpPayload(
     }
 
     fun writeNonStreamingMembers(members: Set<HttpBindingDescriptor>) {
+        print(outputShape)
+        val outputShapeName = ctx.symbolProvider.toSymbol(outputShape).name
         val memberNames = members.map { ctx.symbolProvider.toMemberName(it.member) }
         writer.write("if let data = try await httpResponse.body.readData(),")
         writer.indent()
         writer.write("let responseDecoder = decoder {")
         writer.write("let output: ${outputShapeName}Body = try responseDecoder.decode(responseBody: data)")
         memberNames.sorted().forEach {
-            writer.write("self.$it = output.$it")
+            writer.write("self.$path$it = output.$it")
         }
         writer.dedent()
         writer.write("} else {")
@@ -122,9 +127,11 @@ class HttpResponseTraitWithoutHttpPayload(
                     else -> "nil"
                 }
             }
-            writer.write("self.$memberName = $value")
+            writer.write("self.$path$memberName = $value")
         }
         writer.dedent()
         writer.write("}")
     }
+
+    private val path: String = "properties.".takeIf { outputShape.hasTrait<ErrorTrait>() } ?: ""
 }

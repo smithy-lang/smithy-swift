@@ -148,7 +148,7 @@ class StructureGenerator(
                 val path = "properties.".takeIf { error } ?: ""
                 membersSortedByName.forEach {
                     val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
-                    writer.write("self.\$L\$L = \$L", path, memberName, memberName)
+                    writer.write("self.$path\$L = \$L", memberName, memberName)
                 }
             }
         } else {
@@ -230,7 +230,7 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.writeMemberDocs(model, it)
                     writer.writeAvailableAttribute(model, it)
-                    writer.write("public var \$L: \$T", memberName, memberSymbol)
+                    writer.write("public var \$L: \$D", memberName, memberSymbol)
                 }
             }
             writer.write("")

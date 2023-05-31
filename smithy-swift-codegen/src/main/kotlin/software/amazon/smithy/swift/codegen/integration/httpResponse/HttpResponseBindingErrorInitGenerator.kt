@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration.httpResponse
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
@@ -69,9 +70,9 @@ class HttpResponseBindingErrorInitGenerator(
                     )
                 }
                 writer.indent()
-                HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
+                HttpResponseHeaders(ctx, true, headerBindings, defaultTimestampFormat, writer).render()
                 HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                httpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)
+                httpResponseTraitPayload(ctx, responseBindings, shape, writer)
                 HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
                 HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
                 writer.write("self.httpResponse = httpResponse")
@@ -85,11 +86,11 @@ class HttpResponseBindingErrorInitGenerator(
         }
     }
 
-    fun httpResponseTraitPayload(ctx: ProtocolGenerator.GenerationContext, responseBindings: List<HttpBindingDescriptor>, errorShapeName: String, writer: SwiftWriter) {
+    fun httpResponseTraitPayload(ctx: ProtocolGenerator.GenerationContext, responseBindings: List<HttpBindingDescriptor>, errorShape: Shape, writer: SwiftWriter) {
         val responseTraitPayload = httpResponseTraitPayloadFactory?.let {
-            it.construct(ctx, responseBindings, errorShapeName, writer)
+            it.construct(ctx, responseBindings, errorShape, writer)
         } ?: run {
-            HttpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)
+            HttpResponseTraitPayload(ctx, responseBindings, errorShape, writer)
         }
         responseTraitPayload.render()
     }

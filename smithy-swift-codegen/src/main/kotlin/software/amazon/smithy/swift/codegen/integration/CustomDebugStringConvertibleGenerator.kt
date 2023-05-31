@@ -10,6 +10,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -75,7 +76,8 @@ class CustomDebugStringConvertibleGenerator(
         isRedacted: Boolean
     ) {
         val memberNames = symbolProvider.toMemberNames(member)
-        val description = if (isRedacted) "\\\"$REDACT_STRING\\\"" else "\\(${SwiftTypes.String}(describing: ${memberNames.first}))"
+        val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
+        val description = if (isRedacted) "\\\"$REDACT_STRING\\\"" else "\\(${SwiftTypes.String}(describing: $path${memberNames.first}))"
         writer.writeInline("${memberNames.second}: $description")
     }
 
