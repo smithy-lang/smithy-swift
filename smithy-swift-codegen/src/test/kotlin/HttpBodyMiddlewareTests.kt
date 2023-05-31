@@ -162,7 +162,7 @@ class HttpBodyMiddlewareTests {
                             }
                         }
                     } catch let err {
-                        throw ClientRuntime.UnknownClientError(err.localizedDescription)
+                        throw ClientRuntime.ClientError.unknownError(err.localizedDescription)
                     }
                     return try await next.handle(context: context, input: input)
                 }

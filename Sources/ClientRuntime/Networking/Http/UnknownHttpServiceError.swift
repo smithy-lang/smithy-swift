@@ -4,31 +4,39 @@
  */
 
 /// General Service Error structure used when exact error could not be deduced from the `HttpResponse`
-public struct UnknownHttpServiceError: HttpServiceError {
-    public var _errorType: String?
+public struct UnknownHTTPServiceError: ServiceError, HTTPError {
+    public var typeName: String?
 
-    public var _isThrottling: Bool = false
+    public var message: String?
 
-    public var _statusCode: HttpStatusCode?
-
-    public var _headers: Headers?
-
-    public var _message: String?
-
-    public var _retryable: Bool = false
+    public var httpResponse: HttpResponse
 }
 
-extension UnknownHttpServiceError {
+extension UnknownHTTPServiceError {
 
-    /// Creates an `UnknownHttpServiceError` from a HTTP response.
+    /// Creates an `UnknownHTTPServiceError` from a HTTP response.
     /// - Parameters:
     ///   - httpResponse: The `HttpResponse` for this error.
     ///   - message: The message associated with this error. Defaults to `nil`.
     ///   - errorType: The error type associated with this error.  Defaults to `nil`.
-    public init(httpResponse: HttpResponse, message: String? = nil, errorType: String? = nil) {
-        self._statusCode = httpResponse.statusCode
-        self._headers = httpResponse.headers
-        self._message = message
-        self._errorType = errorType
+    public init(httpResponse: HttpResponse, message: String? = nil, typeName: String? = nil) {
+        self.typeName = typeName
+        self.httpResponse = httpResponse
+        self.message = message
+    }
+}
+
+extension UnknownHTTPServiceError {
+
+    public static func makeError(
+        httpResponse: HttpResponse,
+        message: String? = nil,
+        typeName: String? = nil
+    ) async throws -> Error {
+        UnknownHTTPServiceError(
+            httpResponse: httpResponse,
+            message: message,
+            typeName: typeName
+        )
     }
 }

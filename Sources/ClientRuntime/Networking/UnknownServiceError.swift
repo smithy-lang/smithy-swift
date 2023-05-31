@@ -6,12 +6,10 @@
 /// General networking protocol independent service error structure used when exact error
 /// could not be deduced during deserialization
 public struct UnknownServiceError: ServiceError {
-    public var _errorType: String?
-    public var _retryable: Bool = false
-    public var _isThrottling: Bool = false
-    public var _message: String?
+    public var typeName: String?
+    public var message: String?
 
-    public init(message: String? = nil) {
-        self._message = message
+    public init(typeName: String?, message: String?) {
+        self.message = message
     }
 }

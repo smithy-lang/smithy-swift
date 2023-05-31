@@ -25,7 +25,7 @@ public struct URLPathMiddleware<OperationStackInput: URLPathProvider,
           Self.Context == H.Context {
               guard var urlPath = input.urlPath else {
                 let message = "Creating the url path failed, a required property in the path was nil"
-                throw UnknownClientError(message)
+                throw ClientError.pathCreationFailed(message)
               }
               if let urlPrefix = urlPrefix, !urlPrefix.isEmpty {
                   urlPath = "\(urlPrefix)\(urlPath)"

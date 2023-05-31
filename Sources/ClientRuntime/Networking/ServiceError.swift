@@ -5,18 +5,7 @@
 
 import Foundation
 
-public protocol ServiceError: RetryableError {
-    var _errorType: String? { get }
-//    var _type: ErrorType { get set }
-//    var _message: String? { get set }
-}
-
-//public enum ErrorType: Equatable {
-//    case server
-//    case client
-//    case unknown
-//}
-public protocol RetryableError: Error {
-    var _retryable: Bool { get }
-    var _isThrottling: Bool { get }
+public protocol ServiceError: Error {
+    var typeName: String? { get }
+    var message: String? { get }
 }

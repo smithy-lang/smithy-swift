@@ -10,7 +10,7 @@ public class HttpResponse: HttpUrlResponse {
     public var body: HttpBody
     public var statusCode: HttpStatusCode
 
-    init(headers: Headers = Headers(),
+    public init(headers: Headers = Headers(),
          statusCode: HttpStatusCode = HttpStatusCode.processing,
          body: HttpBody = HttpBody.none) {
         self.headers = headers

@@ -112,7 +112,7 @@ class StructureGenerator(
         writer.openBlock("public struct \$struct.name:L: \$N {", SwiftTypes.Protocols.Equatable)
             .call { generateStructMembers() }
             .write("")
-            .call { generateInitializerForStructure() }
+            .call { generateInitializerForStructure(false) }
             .closeBlock("}")
             .write("")
     }
@@ -131,7 +131,7 @@ class StructureGenerator(
         }
     }
 
-    private fun generateInitializerForStructure() {
+    private fun generateInitializerForStructure(error: Boolean) {
         val hasMembers = membersSortedByName.isNotEmpty()
 
         if (hasMembers) {
@@ -145,9 +145,10 @@ class StructureGenerator(
                 }
             }
             writer.openBlock("{", "}") {
+                val path = "properties.".takeIf { error } ?: ""
                 membersSortedByName.forEach {
                     val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
-                    writer.write("self.\$1L = \$1L", memberName)
+                    writer.write("self.\$L\$L = \$L", path, memberName, memberName)
                 }
             }
         } else {
@@ -206,12 +207,13 @@ class StructureGenerator(
 
         writer.writeAvailableAttribute(model, shape)
         writer.openBlock(
-            "public struct \$struct.name:L: \$error.protocol:L, \$N {",
-            SwiftTypes.Error
+            "public struct \$struct.name:L: \$L, \$error.protocol:L, \$N {",
+            ClientRuntimeTypes.Core.ModeledError,
+            ClientRuntimeTypes.Http.HttpError
         )
             .call { generateErrorStructMembers() }
             .write("")
-            .call { generateInitializerForStructure() }
+            .call { generateInitializerForStructure(true) }
             .closeBlock("}")
             .write("")
 
@@ -221,32 +223,40 @@ class StructureGenerator(
     object AdditionalErrorMembers : SectionId
 
     private fun generateErrorStructMembers() {
+        if (membersSortedByName.isNotEmpty()) {
+            writer.write("")
+            writer.openBlock("public struct Properties {", "}") {
+                membersSortedByName.forEach {
+                    val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
+                    writer.writeMemberDocs(model, it)
+                    writer.writeAvailableAttribute(model, it)
+                    writer.write("public var \$L: \$T", memberName, memberSymbol)
+                }
+            }
+            writer.write("")
+            writer.write("public var properties = Properties()")
+        }
         val errorTypeString = shape.errorShapeName(symbolProvider)
-        writer.write("public var _errorType: String? { \$S }", errorTypeString)
+        writer.write("public static var typeName: \$N { \$S }", SwiftTypes.String, errorTypeString)
         val errorTrait = shape.getTrait<ErrorTrait>()
         val httpErrorTrait = shape.getTrait<HttpErrorTrait>()
-        val hasErrorTrait = httpErrorTrait != null || errorTrait != null
-        if (hasErrorTrait) {
-            writer.write("public var _headers: \$T", ClientRuntimeTypes.Http.Headers)
-            writer.write("public var _statusCode: \$T", ClientRuntimeTypes.Http.HttpStatusCode)
+        if (errorTrait != null && errorTrait.isClientError) {
+            writer.write("public static var fault: ErrorFault { .client }")
+        } else if (errorTrait != null && errorTrait.isServerError) {
+            writer.write("public static var fault: ErrorFault { .server }")
         }
-        writer.write("public var _message: \$T", SwiftTypes.String)
-        writer.write("public var _requestID: \$T", SwiftTypes.String)
         val retryableTrait = shape.getTrait<RetryableTrait>()
         val isRetryable = retryableTrait != null
         val isThrottling = if (retryableTrait?.throttling != null) retryableTrait.throttling else false
-
-        writer.write("public var _retryable: \$N = \$L", SwiftTypes.Bool, isRetryable)
-        writer.write("public var _isThrottling: \$N = \$L", SwiftTypes.Bool, isThrottling)
-//        writer.write("public var _type: \$N = .\$L", ClientRuntimeTypes.Core.ErrorType, errorTrait?.value)
-
-        writer.declareSection(AdditionalErrorMembers)
-
-        membersSortedByName.forEach {
-            val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
-            writer.writeMemberDocs(model, it)
-            writer.writeAvailableAttribute(model, it)
-            writer.write("public var \$L: \$T", memberName, memberSymbol)
+        writer.write("public static var isRetryable: \$N { \$L }", SwiftTypes.Bool, isRetryable)
+        writer.write("public static var isThrottling: \$N { \$L }", SwiftTypes.Bool, isThrottling)
+        val hasErrorTrait = httpErrorTrait != null || errorTrait != null
+        if (hasErrorTrait) {
+            writer.write("public var httpResponse = HttpResponse()")
+//            writer.write("public var httpResponse: \$L", ClientRuntimeTypes.Http.HttpResponse)
         }
+        writer.write("public var message: \$T", SwiftTypes.String)
+        writer.write("public var requestID: \$T", SwiftTypes.String)
+        writer.declareSection(AdditionalErrorMembers)
     }
 }

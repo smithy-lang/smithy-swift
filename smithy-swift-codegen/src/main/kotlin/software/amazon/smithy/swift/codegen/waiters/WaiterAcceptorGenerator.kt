@@ -58,7 +58,7 @@ class WaiterAcceptorGenerator(
                 }
                 is Matcher.ErrorTypeMember -> {
                     writer.write("guard case .failure(let error) = result else { return false }")
-                    writer.write("return (error as? ServiceError)?._errorType == \$S", matcher.value)
+                    writer.write("return (error as? ServiceError)?.typeName == \$S", matcher.value)
                 }
             }
         }

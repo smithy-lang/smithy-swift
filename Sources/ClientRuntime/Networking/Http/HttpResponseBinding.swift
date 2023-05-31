@@ -8,5 +8,5 @@ public protocol HttpResponseBinding {
 }
 
 public protocol HttpResponseErrorBinding {
-    static func makeError(httpResponse: HttpResponse, decoder: ResponseDecoder?) async throws -> ServiceError
+    static func makeError(httpResponse: HttpResponse, decoder: ResponseDecoder?) async throws -> Error
 }

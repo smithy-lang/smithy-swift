@@ -68,17 +68,15 @@ class HttpResponseBindingErrorInitGenerator(
                         SwiftTypes.String
                     )
                 }
-
                 writer.indent()
                 HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
                 HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
                 httpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)
                 HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
                 HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
-                writer.write("self._headers = httpResponse.headers")
-                writer.write("self._statusCode = httpResponse.statusCode")
-                writer.write("self._requestID = requestID")
-                writer.write("self._message = message")
+                writer.write("self.httpResponse = httpResponse")
+                writer.write("self.requestID = requestID")
+                writer.write("self.message = message")
                 writer.declareSection(HttpResponseBindingErrorInitMemberAssignment)
                 writer.dedent()
                 writer.write("}")

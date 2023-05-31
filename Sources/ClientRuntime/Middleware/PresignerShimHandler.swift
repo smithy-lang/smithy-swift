@@ -37,7 +37,7 @@ struct PresignerShim<OperationStackOutput: HttpResponseBinding,
                     decoder: nil)
                   return .init(httpResponse: httpResponse, output: output)
               } catch {
-                  throw UnknownClientError("PresignerShimHandler: This code should not execute")
+                  throw ClientError.unknownError("PresignerShimHandler: This code should not execute")
               }
           }
 }

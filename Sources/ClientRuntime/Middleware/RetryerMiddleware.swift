@@ -36,7 +36,7 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
             // fall back to the hostname for partition ID, which is a "commonsense" default
             partitionID = input.host
         } else {
-            throw UnknownClientError("Partition ID could not be determined")
+            throw ClientError.unknownError("Partition ID could not be determined")
         }
 
         do {

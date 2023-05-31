@@ -47,7 +47,7 @@ extension StringProtocol {
     public func base64EncodedString() throws -> String {
         let utf8Encoded = self.data(using: .utf8)
         guard let base64String = utf8Encoded?.base64EncodedString() else {
-            throw UnknownClientError("Failed to base64 encode a string")
+            throw ClientError.serializationFailed("Failed to base64 encode a string")
         }
         return base64String
     }
@@ -73,7 +73,7 @@ extension StringProtocol {
     public func base64DecodedString() throws -> String {
         guard let base64EncodedData = Data(base64Encoded: String(self)),
             let decodedString = String(data: base64EncodedData, encoding: .utf8) else {
-            throw UnknownClientError("Failed to decode a base64 encoded string")
+            throw ClientError.serializationFailed("Failed to decode a base64 encoded string")
         }
         return decodedString
     }
