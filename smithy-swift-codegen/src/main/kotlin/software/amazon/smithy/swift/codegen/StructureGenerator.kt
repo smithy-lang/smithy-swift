@@ -12,7 +12,6 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
-import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
@@ -207,9 +206,10 @@ class StructureGenerator(
 
         writer.writeAvailableAttribute(model, shape)
         writer.openBlock(
-            "public struct \$struct.name:L: \$L, \$error.protocol:L, \$N {",
+            "public struct \$struct.name:L: \$L, \$error.protocol:L, \$L, \$L {",
             ClientRuntimeTypes.Core.ModeledError,
-            ClientRuntimeTypes.Http.HttpError
+            ClientRuntimeTypes.Http.HttpError,
+            SwiftTypes.Error
         )
             .call { generateErrorStructMembers() }
             .write("")
@@ -239,7 +239,6 @@ class StructureGenerator(
         val errorTypeString = shape.errorShapeName(symbolProvider)
         writer.write("public static var typeName: \$N { \$S }", SwiftTypes.String, errorTypeString)
         val errorTrait = shape.getTrait<ErrorTrait>()
-        val httpErrorTrait = shape.getTrait<HttpErrorTrait>()
         if (errorTrait != null && errorTrait.isClientError) {
             writer.write("public static var fault: ErrorFault { .client }")
         } else if (errorTrait != null && errorTrait.isServerError) {
@@ -247,14 +246,10 @@ class StructureGenerator(
         }
         val retryableTrait = shape.getTrait<RetryableTrait>()
         val isRetryable = retryableTrait != null
-        val isThrottling = if (retryableTrait?.throttling != null) retryableTrait.throttling else false
+        val isThrottling = retryableTrait?.throttling ?: false
         writer.write("public static var isRetryable: \$N { \$L }", SwiftTypes.Bool, isRetryable)
         writer.write("public static var isThrottling: \$N { \$L }", SwiftTypes.Bool, isThrottling)
-        val hasErrorTrait = httpErrorTrait != null || errorTrait != null
-        if (hasErrorTrait) {
-            writer.write("public var httpResponse = HttpResponse()")
-//            writer.write("public var httpResponse: \$L", ClientRuntimeTypes.Http.HttpResponse)
-        }
+        writer.write("public var httpResponse = HttpResponse()")
         writer.write("public var message: \$T", SwiftTypes.String)
         writer.write("public var requestID: \$T", SwiftTypes.String)
         writer.declareSection(AdditionalErrorMembers)

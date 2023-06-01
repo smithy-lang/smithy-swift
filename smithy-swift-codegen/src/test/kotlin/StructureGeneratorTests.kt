@@ -259,7 +259,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                 import ClientRuntime
 
                 /// This is documentation about the shape.
-                public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError {
+                public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError, Swift.Error {
 
                     public struct Properties {
                         /// This is documentation about the member.

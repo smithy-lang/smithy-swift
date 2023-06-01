@@ -12,7 +12,7 @@ public enum ErrorFault {
     case server
 }
 
-public protocol ModeledError: Error {
+public protocol ModeledError {
     static var typeName: String { get }
     static var fault: ErrorFault { get }
     static var isRetryable: Bool { get }

@@ -4,7 +4,7 @@
  */
 
 /// General Service Error structure used when exact error could not be deduced from the `HttpResponse`
-public struct UnknownHTTPServiceError: ServiceError, HTTPError {
+public struct UnknownHTTPServiceError: ServiceError, HTTPError, Error {
     public var typeName: String?
 
     public var message: String?

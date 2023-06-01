@@ -3,6 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-public protocol HTTPError: Error {
+public protocol HTTPError {
     var httpResponse: HttpResponse { get }
 }

@@ -5,7 +5,7 @@
 
 import Foundation
 
-public protocol ServiceError: Error {
+public protocol ServiceError {
     var typeName: String? { get }
     var message: String? { get }
 }
