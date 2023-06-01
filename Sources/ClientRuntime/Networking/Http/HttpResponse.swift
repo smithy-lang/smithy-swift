@@ -10,15 +10,13 @@ public class HttpResponse: HttpUrlResponse {
     public var body: HttpBody
     public var statusCode: HttpStatusCode
 
-    public init(headers: Headers = Headers(),
-         statusCode: HttpStatusCode = HttpStatusCode.processing,
-         body: HttpBody = HttpBody.none) {
+    public init(headers: Headers = .init(), statusCode: HttpStatusCode = .processing, body: HttpBody = .none) {
         self.headers = headers
         self.statusCode = statusCode
         self.body = body
     }
 
-    public init(headers: Headers = Headers(), body: HttpBody, statusCode: HttpStatusCode) {
+    public init(headers: Headers = .init(), body: HttpBody, statusCode: HttpStatusCode) {
         self.body = body
         self.statusCode = statusCode
         self.headers = headers
