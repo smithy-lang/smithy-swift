@@ -263,18 +263,18 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
 
                     public struct Properties {
                         /// This is documentation about the member.
-                        public var baz: Swift.Int? = nil
-                        public var message: Swift.String? = nil
+                        public internal(set) var baz: Swift.Int? = nil
+                        public internal(set) var message: Swift.String? = nil
                     }
                 
-                    public var properties = Properties()
+                    public internal(set) var properties = Properties()
                     public static var typeName: Swift.String { "MyError" }
                     public static var fault: ErrorFault { .client }
                     public static var isRetryable: Swift.Bool { true }
                     public static var isThrottling: Swift.Bool { false }
-                    public var httpResponse = HttpResponse()
-                    public var message: Swift.String?
-                    public var requestID: Swift.String?
+                    public internal(set) var httpResponse = HttpResponse()
+                    public internal(set) var message: Swift.String?
+                    public internal(set) var requestID: Swift.String?
                 
                     public init(
                         baz: Swift.Int? = nil,
