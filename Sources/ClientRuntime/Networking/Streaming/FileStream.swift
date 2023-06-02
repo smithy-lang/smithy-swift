@@ -118,13 +118,17 @@ class FileStream: Stream {
     }
 
     /// Closes the stream.
-    func close() throws {
-       try lock.withLockingClosure {
+    func close() {
+       lock.withLockingClosure {
            if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
-               try fileHandle.close()
+               try? fileHandle.close()
            } else {
                fileHandle.closeFile()
            }
         }
+    }
+
+    func closeWithError(_ error: Error) {
+        close()
     }
 }

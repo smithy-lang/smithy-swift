@@ -114,7 +114,12 @@ extension EventStream {
         }
 
         public func readToEndAsync() async throws -> ClientRuntime.Data? {
-            fatalError("readToEndAsync() is not supported by AsyncStream backed streams")
+            var data = Data()
+            while let moreData = try await readAsync(upToCount: Int.max) {
+                data.append(moreData)
+            }
+            return data
+//            fatalError("readToEndAsync() is not supported by AsyncStream backed streams")
         }
 
         /// Reads up to `count` bytes from the stream asynchronously
@@ -167,7 +172,11 @@ extension EventStream {
         }
 
         /// Closing the stream is a no-op because the underlying async stream is not owned by this stream
-        public func close() throws {
+        public func close() {
+            // no-op
+        }
+
+        public func closeWithError(_ error: Error) {
             // no-op
         }
     }
