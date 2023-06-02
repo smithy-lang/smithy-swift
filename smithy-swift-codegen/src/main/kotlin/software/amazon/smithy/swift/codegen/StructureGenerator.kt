@@ -230,11 +230,11 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.writeMemberDocs(model, it)
                     writer.writeAvailableAttribute(model, it)
-                    writer.write("public var \$L: \$D", memberName, memberSymbol)
+                    writer.write("public internal(set) var \$L: \$D", memberName, memberSymbol)
                 }
             }
             writer.write("")
-            writer.write("public var properties = Properties()")
+            writer.write("public internal(set) var properties = Properties()")
         }
         val errorTypeString = shape.errorShapeName(symbolProvider)
         writer.write("public static var typeName: \$N { \$S }", SwiftTypes.String, errorTypeString)
@@ -249,9 +249,9 @@ class StructureGenerator(
         val isThrottling = retryableTrait?.throttling ?: false
         writer.write("public static var isRetryable: \$N { \$L }", SwiftTypes.Bool, isRetryable)
         writer.write("public static var isThrottling: \$N { \$L }", SwiftTypes.Bool, isThrottling)
-        writer.write("public var httpResponse = HttpResponse()")
-        writer.write("public var message: \$T", SwiftTypes.String)
-        writer.write("public var requestID: \$T", SwiftTypes.String)
+        writer.write("public internal(set) var httpResponse = HttpResponse()")
+        writer.write("public internal(set) var message: \$T", SwiftTypes.String)
+        writer.write("public internal(set) var requestID: \$T", SwiftTypes.String)
         writer.declareSection(AdditionalErrorMembers)
     }
 }
