@@ -6,7 +6,7 @@ import AwsCommonRuntimeKit
 
 public enum HttpBody {
     case data(Data?)
-    case stream(Stream)
+    case stream(ReadableStream)
     case none
 }
 

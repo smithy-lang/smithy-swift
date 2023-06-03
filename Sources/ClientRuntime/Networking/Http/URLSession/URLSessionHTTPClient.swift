@@ -15,7 +15,7 @@ public final class URLSessionHTTPClient: HttpClientEngine {
         var stream: WriteableStream?
     }
 
-    class Storage {
+    final class Storage: @unchecked Sendable {
         private let lock = NSRecursiveLock()
         private var connections = [URLSessionTask: Connection]()
 
@@ -80,13 +80,12 @@ public final class URLSessionHTTPClient: HttpClientEngine {
             do {
                 try connection.stream?.write(contentsOf: data)
             } catch {
-                print("Failed to write to stream")
+                connection.stream?.closeWithError(error)
                 dataTask.cancel()
             }
         }
 
         func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-            print("Task COMPLETE")
             storage.modify(task) { connection in
                 if let error = error  {
                     if let continuation = connection.continuation {

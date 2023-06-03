@@ -14,7 +14,7 @@ public enum ByteStream {
 
     /// A stream of bytes represented as a `Stream` object.
     /// - Note: This representation is recommended for large streams of bytes.
-    case stream(Stream)
+    case stream(ReadableStream)
 }
 
 extension ByteStream {
@@ -29,7 +29,7 @@ extension ByteStream {
     /// - Parameter fileHandle: FileHandle object to be converted to ByteStream.
     /// - Returns: ByteStream representation of the FileHandle object.
     public static func from(fileHandle: FileHandle) -> ByteStream {
-        return .stream(FileStream(fileHandle: fileHandle))
+        return .stream(ReadFileStream(fileHandle: fileHandle))
     }
 
     /// Returns ByteStream from a String object.
