@@ -25,10 +25,9 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
             } else {
                 input.headers.update(name: "Transfer-Encoded", value: "Chunked")
             }
-        default:
+        case .none:
             input.headers.update(name: "Content-Length", value: "0")
         }
-
         return try await next.handle(context: context, input: input)
     }
 
