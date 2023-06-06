@@ -28,7 +28,7 @@ class UnionDecodeXMLGenerator(
 ) : MemberShapeDecodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "containerValues"
-        writer.openBlock("public init (from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
+        writer.openBlock("public init(from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
             writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
             writer.write("let key = \$L.allKeys.first", containerName)
             writer.openBlock("switch key {", "}") {

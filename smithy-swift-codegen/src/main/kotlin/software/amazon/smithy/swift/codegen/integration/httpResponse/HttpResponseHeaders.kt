@@ -29,6 +29,7 @@ import software.amazon.smithy.swift.codegen.model.isBoxed
 
 class HttpResponseHeaders(
     val ctx: ProtocolGenerator.GenerationContext,
+    val error: Boolean,
     val bindings: List<HttpBindingDescriptor>,
     val defaultTimestampFormat: TimestampFormatTrait.Format,
     val writer: SwiftWriter
@@ -36,6 +37,7 @@ class HttpResponseHeaders(
     fun render() {
         bindings.forEach { hdrBinding ->
             val memberTarget = ctx.model.expectShape(hdrBinding.member.target)
+            val path = "properties.".takeIf { error } ?: ""
             val memberName = ctx.symbolProvider.toMemberName(hdrBinding.member)
             val headerName = hdrBinding.locationName
             val headerDeclaration = "${memberName}HeaderValue"
@@ -47,21 +49,21 @@ class HttpResponseHeaders(
                     if (memberTarget.isIntEnumShape) {
                         val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
                         writer.write(
-                            "self.\$L = \$L(rawValue: \$L(\$L) ?? 0)",
+                            "self.$path\$L = \$L(rawValue: \$L(\$L) ?? 0)",
                             memberName, enumSymbol, SwiftTypes.Int, headerDeclaration
                         )
                     } else {
                         val memberValue = stringToNumber(memberTarget, headerDeclaration, true)
-                        writer.write("self.\$L = \$L", memberName, memberValue)
+                        writer.write("self.$path\$L = \$L", memberName, memberValue)
                     }
                 }
                 is BlobShape -> {
                     val memberValue = "$headerDeclaration.data(using: .utf8)"
-                    writer.write("self.\$L = $memberValue", memberName)
+                    writer.write("self.$path\$L = $memberValue", memberName)
                 }
                 is BooleanShape -> {
                     val memberValue = "${SwiftTypes.Bool}($headerDeclaration) ?? false"
-                    writer.write("self.\$L = $memberValue", memberName)
+                    writer.write("self.$path\$L = $memberValue", memberName)
                 }
                 is StringShape -> {
                     val memberValue = when {
@@ -76,7 +78,7 @@ class HttpResponseHeaders(
                             headerDeclaration
                         }
                     }
-                    writer.write("self.\$L = $memberValue", memberName)
+                    writer.write("self.$path\$L = $memberValue", memberName)
                 }
                 is TimestampShape -> {
                     val bindingIndex = HttpBindingIndex.of(ctx.model)
@@ -86,7 +88,7 @@ class HttpResponseHeaders(
                         defaultTimestampFormat
                     )
                     var memberValue = stringToDate(headerDeclaration, tsFormat)
-                    writer.write("self.\$L = \$L", memberName, memberValue)
+                    writer.write("self.$path\$L = \$L", memberName, memberValue)
                 }
                 is ListShape -> {
                     // member > boolean, number, string, or timestamp
@@ -152,17 +154,17 @@ class HttpResponseHeaders(
                         writer.openBlock("self.\$L = try \$LHeaderValues.map {", "}", memberName, memberName) {
                             val transformedHeaderDeclaration = "${memberName}Transformed"
                             writer.openBlock("guard let \$L = \$L else {", "}", transformedHeaderDeclaration, conversion) {
-                                writer.write("throw \$N.deserializationFailed(HeaderDeserializationError.\$L(value: \$LHeaderValue))", ClientRuntimeTypes.Core.ClientError, invalidHeaderListErrorName, memberName)
+                                writer.write("throw HeaderDeserializationError.\$L(value: \$LHeaderValue)", invalidHeaderListErrorName, memberName)
                             }
                             writer.write("return \$L", transformedHeaderDeclaration)
                         }
                     } else {
-                        writer.write("self.\$L = \$L", memberName, memberValue)
+                        writer.write("self.\$L\$L = \$L", path, memberName, memberValue)
                     }
                     writer.dedent()
                     writer.write("} else {")
                     writer.indent()
-                    writer.write("self.\$L = nil", memberName)
+                    writer.write("self.$path\$L = nil", memberName)
                     writer.dedent()
                     writer.write("}")
                 }
@@ -180,7 +182,7 @@ class HttpResponseHeaders(
                     assignmentValue = if (isBoxed) "nil" else "false"
                 }
             }
-            writer.write("self.$memberName = $assignmentValue")
+            writer.write("self.$path$memberName = $assignmentValue")
             writer.dedent()
             writer.write("}")
         }

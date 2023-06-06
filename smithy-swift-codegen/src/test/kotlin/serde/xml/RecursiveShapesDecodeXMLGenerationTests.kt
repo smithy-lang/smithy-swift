@@ -24,7 +24,7 @@ class RecursiveShapesDecodeXMLGenerationTests {
                     case nested
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let nestedDecoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.self, forKey: .nested)
                     nested = nestedDecoded
@@ -45,7 +45,7 @@ class RecursiveShapesDecodeXMLGenerationTests {
                     case nestedRecursiveList
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.nestedRecursiveList) {
                         struct KeyVal0{struct member{}}

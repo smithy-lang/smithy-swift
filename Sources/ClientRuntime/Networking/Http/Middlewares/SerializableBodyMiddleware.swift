@@ -32,8 +32,8 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable,
                   }
                   let body = HttpBody.data(data)
                   input.builder.withBody(body)
-              } catch let err {
-                  throw ClientError.serializationFailed(err.localizedDescription)
+              } catch {
+                  throw ClientError.serializationFailed(error.localizedDescription)
               }
               return try await next.handle(context: context, input: input)
           }

@@ -93,7 +93,7 @@ class StructEncodeXMLGenerationTests {
                     }
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let aDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .a)
                     a = aDecoded

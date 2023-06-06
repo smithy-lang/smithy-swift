@@ -47,7 +47,7 @@ class WaiterAcceptorGeneratorTests {
         val expected = """
             .init(state: .retry, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutputResponse, Error>) -> Bool in
                 guard case .failure(let error) = result else { return false }
-                return (error as? WaiterTypedError)?.waiterErrorType == "NotFound"
+                return (error as? ServiceError)?.typeName == "NotFound"
             }),
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)

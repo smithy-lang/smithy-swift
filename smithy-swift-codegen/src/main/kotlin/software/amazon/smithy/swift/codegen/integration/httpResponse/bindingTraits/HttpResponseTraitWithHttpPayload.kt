@@ -35,7 +35,7 @@ class HttpResponseTraitWithHttpPayload(
             ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
         when (target.type) {
             ShapeType.DOCUMENT -> {
-                writer.openBlock("if let data = try httpResponse.body.toData(), let responseDecoder = decoder {", "} else {") {
+                writer.openBlock("if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {", "} else {") {
                     writer.write(
                         "let output: \$N = try responseDecoder.decode(responseBody: data)",
                         symbol
@@ -46,7 +46,7 @@ class HttpResponseTraitWithHttpPayload(
                 writer.write("self.\$L = nil", memberName).closeBlock("}")
             }
             ShapeType.STRING -> {
-                writer.openBlock("if let data = try httpResponse.body.toData(), let output = \$N(data: data, encoding: .utf8) {", "} else {", SwiftTypes.String) {
+                writer.openBlock("if let data = try await httpResponse.body.readData(), let output = \$N(data: data, encoding: .utf8) {", "} else {", SwiftTypes.String) {
                     if (target.isEnum) {
                         writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
                     } else {
@@ -57,7 +57,7 @@ class HttpResponseTraitWithHttpPayload(
                 writer.write("self.\$L = nil", memberName).closeBlock("}")
             }
             ShapeType.ENUM -> {
-                writer.openBlock("if let data = try httpResponse.body.toData(), let output = \$N(data: data, encoding: .utf8) {", "} else {", SwiftTypes.String) {
+                writer.openBlock("if let data = try await httpResponse.body.readData(), let output = \$N(data: data, encoding: .utf8) {", "} else {", SwiftTypes.String) {
                     writer.write("self.\$L = \$L(rawValue: output)", memberName, symbol)
                 }
                 writer.indent()
@@ -99,7 +99,7 @@ class HttpResponseTraitWithHttpPayload(
                         writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
                     }
                 } else {
-                    writer.openBlock("if let data = try httpResponse.body.toData(), let responseDecoder = decoder {", "} else {") {
+                    writer.openBlock("if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {", "} else {") {
                         writer.write("let output: \$N = try responseDecoder.decode(responseBody: data)", symbol)
                         writer.write("self.\$L = output", memberName)
                     }

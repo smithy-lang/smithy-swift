@@ -52,7 +52,7 @@ class StructEncodeGenerationIsolatedTests {
                     case nestedNestedStringList
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[Swift.String?]?]?].self, forKey: .nestedNestedStringList)
                     var nestedNestedStringListDecoded0:[[[Swift.String]]]? = nil

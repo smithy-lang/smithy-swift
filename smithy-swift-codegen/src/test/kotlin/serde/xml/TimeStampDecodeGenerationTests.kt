@@ -26,7 +26,7 @@ class TimeStampDecodeGenerationTests {
                 case normal
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 let normalDecoded = try containerValues.decodeTimestampIfPresent(.dateTime, forKey: .normal)
                 normal = normalDecoded
@@ -53,7 +53,7 @@ class TimeStampDecodeGenerationTests {
                 case nestedTimestampList
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct member{}}
@@ -98,7 +98,7 @@ class TimeStampDecodeGenerationTests {
                 case nestedTimestampList
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct member{}}
@@ -142,7 +142,7 @@ class TimeStampDecodeGenerationTests {
                 case nestedTimestampList
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedTimestampList) {
                     struct KeyVal0{struct nestedTag1{}}

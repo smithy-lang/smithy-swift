@@ -121,7 +121,7 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
             return
         }
 
-        let actual = try InputAndOutputWithHeadersOutputResponse(httpResponse: httpResponse)
+        let actual = try await InputAndOutputWithHeadersOutputResponse(httpResponse: httpResponse)
 
         let expected = InputAndOutputWithHeadersOutputResponse(
             headerDouble: Swift.Double.nan,

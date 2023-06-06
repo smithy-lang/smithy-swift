@@ -193,7 +193,7 @@ class HttpBodyMiddleware(
 
     private fun renderErrorCase() {
         writer.indent()
-        writer.write("throw SdkError<\$N>.client(\$N.serializationFailed(err.localizedDescription))", outputErrorSymbol, ClientRuntimeTypes.Core.ClientError)
+        writer.write("throw \$N(err.localizedDescription)", ClientRuntimeTypes.Core.UnknownClientError)
         writer.dedent()
         writer.write("}")
     }

@@ -184,7 +184,3 @@ extension HeaderDeserializationError: LocalizedError {
         }
     }
 }
-
-extension HeaderDeserializationError: Equatable {
-
-}

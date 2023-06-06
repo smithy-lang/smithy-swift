@@ -67,7 +67,7 @@ extension RestXmlProtocolClientTypes.XmlUnionShape: Swift.Codable {
         }
     }
 
-    public init (from decoder: Swift.Decoder) throws {
+    public init(from decoder: Swift.Decoder) throws {
         let containerValues = try decoder.container(keyedBy: CodingKeys.self)
         let key = containerValues.allKeys.first
         switch key {

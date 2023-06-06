@@ -24,7 +24,7 @@ class SetDecodeXMLGenerationTests {
                     case fooEnumSet
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.fooEnumSet) {
                         struct KeyVal0{struct member{}}
@@ -63,7 +63,7 @@ class SetDecodeXMLGenerationTests {
                     case fooEnumSet
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.fooEnumSet) {
                         struct KeyVal0{struct member{}}

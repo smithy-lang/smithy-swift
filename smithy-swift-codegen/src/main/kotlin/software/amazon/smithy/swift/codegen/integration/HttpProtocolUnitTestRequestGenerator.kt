@@ -114,8 +114,8 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             writer.openBlock("_ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
                 writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
                 writer.write("let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)")
-                writer.write("let serviceError = try! $outputErrorName(httpResponse: httpResponse)")
-                writer.write("throw SdkError<$outputErrorName>.service(serviceError, httpResponse)")
+                writer.write("let serviceError = try await $outputErrorName.makeError(httpResponse: httpResponse, decoder: decoder)")
+                writer.write("throw serviceError")
             }
         }
     }
@@ -139,7 +139,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
             renderBodyAssert(test, inputSymbol, inputShape)
             writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
-            writer.write("let mockOutput = try! $outputSymbol(httpResponse: response, decoder: nil)")
+            writer.write("let mockOutput = try await $outputSymbol(httpResponse: response, decoder: nil)")
             writer.write("let output = OperationOutput<$outputSymbol>(httpResponse: response, output: mockOutput)")
             writer.write("return output")
         }
@@ -148,14 +148,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     private fun renderBodyAssert(test: HttpRequestTestCase, inputSymbol: Symbol, inputShape: Shape) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
             writer.openBlock(
-                "try self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
+                "try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
                 "})"
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
                 val expectedData = "expectedData"
                 val actualData = "actualData"
-                writer.openBlock("try self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { $expectedData, $actualData in ", "}") {
+                writer.openBlock("try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { $expectedData, $actualData in ", "}") {
                     val httpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
 
                     httpPayloadShape?.let {
@@ -175,7 +175,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             }
         } else {
             writer.write(
-                "try self.assertEqual(expected, actual)"
+                "try await self.assertEqual(expected, actual)"
             )
         }
     }

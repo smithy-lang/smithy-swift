@@ -42,9 +42,9 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
             let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-            let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError(httpResponse: httpResponse, decoder: decoder)
+            let greetingWithErrorsOutputError = try await GreetingWithErrorsOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
 
-            if case .complexError(let actual) = greetingWithErrorsOutputError {
+            if let actual = greetingWithErrorsOutputError as? ComplexError {
 
                 let expected = ComplexError(
                     header: "Header",
@@ -53,10 +53,10 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                     ),
                     topLevel: "Top level"
                 )
-                XCTAssertEqual(actual._statusCode, HttpStatusCode(rawValue: 403))
-                XCTAssertEqual(expected.header, actual.header)
-                XCTAssertEqual(expected.topLevel, actual.topLevel)
-                XCTAssertEqual(expected.nested, actual.nested)
+                XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: 403))
+                XCTAssertEqual(expected.properties.header, actual.properties.header)
+                XCTAssertEqual(expected.properties.topLevel, actual.properties.topLevel)
+                XCTAssertEqual(expected.properties.nested, actual.properties.nested)
             } else {
                 XCTFail("The deserialized error type does not match expected type")
             }
@@ -104,9 +104,9 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
             let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-            let greetingWithErrorsOutputError = try GreetingWithErrorsOutputError(httpResponse: httpResponse, decoder: decoder)
+            let greetingWithErrorsOutputError = try await GreetingWithErrorsOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
 
-            if case .complexError(let actual) = greetingWithErrorsOutputError {
+            if let actual = greetingWithErrorsOutputError as? ComplexError {
 
                 let expected = ComplexError(
                     header: "Header",
@@ -115,10 +115,10 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                     ),
                     topLevel: "Top level"
                 )
-                XCTAssertEqual(actual._statusCode, HttpStatusCode(rawValue: 403))
-                XCTAssertEqual(expected.header, actual.header)
-                XCTAssertEqual(expected.topLevel, actual.topLevel)
-                XCTAssertEqual(expected.nested, actual.nested)
+                XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: 403))
+                XCTAssertEqual(expected.properties.header, actual.properties.header)
+                XCTAssertEqual(expected.properties.topLevel, actual.properties.topLevel)
+                XCTAssertEqual(expected.properties.nested, actual.properties.nested)
             } else {
                 XCTFail("The deserialized error type does not match expected type")
             }

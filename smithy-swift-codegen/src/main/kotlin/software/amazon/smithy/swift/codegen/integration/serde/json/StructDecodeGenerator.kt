@@ -20,7 +20,7 @@ import software.amazon.smithy.swift.codegen.model.toMemberNames
  *
  * e.g.
  * ```
- public init (from decoder: Decoder) throws {
+ public init(from decoder: Decoder) throws {
  let values = try decoder.container(keyedBy: CodingKeys.self)
  member1 = try values.decodeIfPresent(Int.self, forKey: .member1)
  let intListContainer = try values.decodeIfPresent([Int].self, forKey: .intList)
@@ -50,7 +50,7 @@ class StructDecodeGenerator(
 ) : MemberShapeDecodeGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "containerValues"
-        writer.openBlock("public init (from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
+        writer.openBlock("public init(from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
             if (members.isNotEmpty()) {
                 writer.write("let \$L = try decoder.container(keyedBy: CodingKeys.self)", containerName)
                 members.forEach { member ->
