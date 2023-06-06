@@ -22,7 +22,7 @@ public class SDKRetryer: Retryer {
         return RetryToken(crtToken: token)
     }
 
-    public func scheduleRetry(token: RetryToken, error: RetryError) async throws -> RetryToken {
+    public func scheduleRetry(token: RetryToken, error: RetryErrorType) async throws -> RetryToken {
         let token = try await crtRetryStrategy.scheduleRetry(token: token.crtToken, errorType: error.toCRTType())
         return RetryToken(crtToken: token)
     }
@@ -50,7 +50,7 @@ public class SDKRetryer: Retryer {
         return false
     }
 
-    public func getErrorType(error: Error) -> RetryError {
+    public func getErrorType(error: Error) -> RetryErrorType {
         switch error {
         case is CRTError:
             return .transient
