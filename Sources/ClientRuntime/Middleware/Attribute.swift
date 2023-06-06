@@ -1,8 +1,12 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0.
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
 /// Type safe property bag key
-public struct AttributeKey<ValueType>: Hashable {
+public struct AttributeKey<ValueType> {
     let name: String
 
     public init(name: String) {
@@ -13,25 +17,26 @@ public struct AttributeKey<ValueType>: Hashable {
         return "AttributeKey: \(name)"
     }
 }
+
 /// Type safe property bag
 public struct Attributes {
-    var attributes: [Int: Any] = [Int: Any]()
+    private var attributes = [String: Any]()
 
     public init() {}
 
-    public func get<T: Any>(key: AttributeKey<T>) -> T? {
-        return attributes[key.hashValue] as? T
+    public func get<T>(key: AttributeKey<T>) -> T? {
+        attributes[key.name] as? T
     }
 
     public func contains<T>(key: AttributeKey<T>) -> Bool {
-        return attributes[key.hashValue] != nil && (attributes[key.hashValue] as? T) != nil
+        get(key: key) != nil
     }
 
-    public mutating func set<T: Any>(key: AttributeKey<T>, value: T?) {
-        attributes[key.hashValue] = value
+    public mutating func set<T>(key: AttributeKey<T>, value: T?) {
+        attributes[key.name] = value
     }
 
     public mutating func remove<T>(key: AttributeKey<T>) {
-        attributes.removeValue(forKey: key.hashValue)
+        attributes.removeValue(forKey: key.name)
     }
 }
