@@ -8,7 +8,7 @@
 import ClientRuntime
 
 public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBinding,
-                                        OperationStackError: HttpResponseBinding>: Middleware {
+                                        OperationStackError: HttpResponseErrorBinding>: Middleware {
     // swiftlint:disable line_length
     public typealias MockDeserializeMiddlewareCallback = (Context,
                                                           SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput>?
@@ -38,7 +38,7 @@ public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBindin
               var copiedResponse = response
 
               let decoder = context.getDecoder()
-              let output = try OperationStackOutput(httpResponse: copiedResponse.httpResponse, decoder: decoder)
+              let output = try await OperationStackOutput(httpResponse: copiedResponse.httpResponse, decoder: decoder)
               copiedResponse.output = output
 
               return copiedResponse

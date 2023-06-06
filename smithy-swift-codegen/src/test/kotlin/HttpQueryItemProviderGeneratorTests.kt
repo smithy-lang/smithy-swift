@@ -211,13 +211,13 @@ class HttpQueryItemProviderGeneratorTests {
                         var items = [ClientRuntime.URLQueryItem]()
                         guard let query1 = query1 else {
                             let message = "Creating a URL Query Item failed. query1 is required and must not be nil."
-                            throw ClientRuntime.ClientError.queryItemCreationFailed(message)
+                            throw ClientRuntime.ClientError.unknownError(message)
                         }
                         let query1QueryItem = ClientRuntime.URLQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
                         items.append(query1QueryItem)
                         guard let query2 = query2 else {
                             let message = "Creating a URL Query Item failed. query2 is required and must not be nil."
-                            throw ClientRuntime.ClientError.queryItemCreationFailed(message)
+                            throw ClientRuntime.ClientError.unknownError(message)
                         }
                         query2.forEach { queryItemValue in
                             let queryItem = ClientRuntime.URLQueryItem(name: "Query2".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
@@ -225,7 +225,7 @@ class HttpQueryItemProviderGeneratorTests {
                         }
                         guard let query3 = query3 else {
                             let message = "Creating a URL Query Item failed. query3 is required and must not be nil."
-                            throw ClientRuntime.ClientError.queryItemCreationFailed(message)
+                            throw ClientRuntime.ClientError.unknownError(message)
                         }
                         let query3QueryItem = ClientRuntime.URLQueryItem(name: "Query3".urlPercentEncoding(), value: Swift.String(query3).urlPercentEncoding())
                         items.append(query3QueryItem)

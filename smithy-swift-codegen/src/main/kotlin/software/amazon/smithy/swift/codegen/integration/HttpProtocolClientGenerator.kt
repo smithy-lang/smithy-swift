@@ -12,7 +12,6 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.ServiceGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareExecutionGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
@@ -56,7 +55,7 @@ open class HttpProtocolClientGenerator(
                     val operationStackName = "operation"
                     val generator = MiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, httpProtocolCustomizable, operationMiddleware, operationStackName)
                     generator.render(it) { writer, labelMemberName ->
-                        writer.write("throw SdkError<\$N>.client(\$N.serializationFailed(\"uri component $labelMemberName unexpectedly nil\"))", MiddlewareShapeUtils.outputErrorSymbolName(it), ClientRuntimeTypes.Core.ClientError)
+                        writer.write("throw \$N(\"uri component $labelMemberName unexpectedly nil\")", ClientRuntimeTypes.Core.UnknownClientError)
                     }
                     writer.write("let result = try await $operationStackName.handleMiddleware(context: context, input: input, next: client.getHandler())")
                     writer.write("return result")

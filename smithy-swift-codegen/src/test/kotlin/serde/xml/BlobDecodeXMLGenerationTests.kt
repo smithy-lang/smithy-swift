@@ -24,7 +24,7 @@ class BlobDecodeXMLGenerationTests {
                 case data
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.data) {
                     do {
@@ -53,7 +53,7 @@ class BlobDecodeXMLGenerationTests {
                 case nestedBlobList
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedBlobList) {
                     struct KeyVal0{struct member{}}

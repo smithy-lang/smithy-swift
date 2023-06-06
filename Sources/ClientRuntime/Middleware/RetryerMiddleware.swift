@@ -6,7 +6,7 @@
 //
 
 public struct RetryerMiddleware<Output: HttpResponseBinding,
-                                OutputError: HttpResponseBinding>: Middleware {
+                                OutputError: HttpResponseErrorBinding>: Middleware {
 
     public var id: String = "Retryer"
 
@@ -36,7 +36,7 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
             // fall back to the hostname for partition ID, which is a "commonsense" default
             partitionID = input.host
         } else {
-            throw SdkError<OutputError>.client(ClientError.unknownError("Partition ID could not be determined"))
+            throw ClientError.unknownError("Partition ID could not be determined")
         }
 
         do {
@@ -48,8 +48,6 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
                 input: input,
                 next: next
             )
-        } catch {
-            throw SdkError<OutputError>.client(ClientError.retryError(error))
         }
     }
 
@@ -70,7 +68,7 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
             let serviceResponse = try await next.handle(context: context, input: input)
             retryer.recordSuccess(token: token)
             return serviceResponse
-        } catch let error as SdkError<OutputError> where retryer.isErrorRetryable(error: error) {
+        } catch let error where retryer.isErrorRetryable(error: error) {
             let errorType = retryer.getErrorType(error: error)
             let newToken = try await retryer.scheduleRetry(token: token, error: errorType)
             // TODO: rewind the stream once streaming is properly implemented

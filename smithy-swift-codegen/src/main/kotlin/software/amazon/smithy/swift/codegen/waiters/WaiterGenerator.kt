@@ -12,7 +12,6 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.expectShape
-import software.amazon.smithy.waiters.Matcher.ErrorTypeMember
 import software.amazon.smithy.waiters.WaitableTrait
 
 /**
@@ -54,23 +53,8 @@ class WaiterGenerator(
                             WaiterMethodGenerator(writer, ctx, service, waitedOperation, waiterName).render()
                         }
                     }
-
-                    // If any of this operation's waiters uses an error type matcher, render WaiterTypedError
-                    // conformance for this operation's error
-                    if (operationUsesErrorTypeMatchers(waitedOperation)) {
-                        WaiterTypedErrorGenerator(protoCtx, waitedOperation).render()
-                    }
                 }
             }
         }
     }
-
-    private fun operationUsesErrorTypeMatchers(waitedOperation: OperationShape): Boolean =
-        // Get all the acceptors for this operation, then see if any is of ErrorType
-        waitedOperation
-            .allTraits.values
-            .mapNotNull { it as? WaitableTrait }
-            .flatMap { it.waiters.values }
-            .flatMap { it.acceptors }
-            .any { it.matcher is ErrorTypeMember }
 }

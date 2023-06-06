@@ -4,11 +4,13 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
@@ -42,7 +44,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             val symbol = symbolProvider.toSymbol(it)
             renderBuildHttpResponse(test)
             writer.write("")
-            renderActualOutput(test, symbol.name)
+            renderActualOutput(test, symbol)
             writer.write("")
             renderExpectedOutput(test, it)
             writer.write("")
@@ -110,13 +112,13 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         return needsDecoder
     }
 
-    private fun renderActualOutput(test: HttpResponseTestCase, outputStructName: String) {
+    private fun renderActualOutput(test: HttpResponseTestCase, outputStruct: Symbol) {
         val needsResponseDecoder = needsResponseDecoder(test)
         if (needsResponseDecoder) {
             renderResponseDecoder()
         }
         val decoderParameter = if (needsResponseDecoder) ", decoder: decoder" else ""
-        writer.write("let actual = try \$L(httpResponse: httpResponse\$L)", outputStructName, decoderParameter)
+        writer.write("let actual = try await \$L(httpResponse: httpResponse\$L)", outputStruct.name, decoderParameter)
     }
 
     protected fun renderResponseDecoder() {
@@ -137,7 +139,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     protected open fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
         val members = outputShape.members().filterNot { it.hasTrait(HttpQueryTrait::class.java) }
-        renderMemberAssertions(writer, test, members, model, symbolProvider, "expected", "actual")
+        val path = ".properties".takeIf { outputShape.hasTrait<ErrorTrait>() } ?: ""
+        renderMemberAssertions(writer, test, members, model, symbolProvider, "expected$path", "actual$path")
     }
 
     open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpResponseTestCase>() {

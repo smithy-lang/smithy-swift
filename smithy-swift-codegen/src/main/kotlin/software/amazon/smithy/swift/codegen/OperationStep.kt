@@ -17,7 +17,6 @@ abstract class OperationStep(outputType: Symbol, outputErrorType: Symbol) {
 
     val errorType: Symbol = Symbol
         .builder()
-        .name("${ClientRuntimeTypes.Core.SdkError}<$outputErrorType>")
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
+        .name(outputErrorType.name)
         .build()
 }

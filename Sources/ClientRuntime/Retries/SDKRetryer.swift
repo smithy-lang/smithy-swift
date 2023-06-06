@@ -35,61 +35,37 @@ public class SDKRetryer: Retryer {
     public func releaseToken(token: RetryToken) {
     }
 
-    public func isErrorRetryable<E>(error: SdkError<E>) -> Bool {
+    public func isErrorRetryable(error: Error) -> Bool {
         switch error {
-        case .client(let clientError, _):
-            switch clientError {
-            case .networkError, .crtError:
-                return true
-            default:
-                return false
-            }
-        case .service(let serviceError, let httpResponse):
-            if httpResponse.headers.exists(name: "x-amz-retry-after") {
-                return true
-            }
-
-            if let serviceError = serviceError as? ServiceError {
-                return serviceError._retryable
-            }
-
-            if httpResponse.statusCode.isRetryable {
-                return true
-            }
-            return false
-        case .unknown:
-            return false
+        case is ClientError, is CRTError:
+            return true
+        case let error as ModeledError:
+            return type(of: error).isRetryable
+        case let error as HTTPError:
+            if error.httpResponse.statusCode.isRetryable { return true }
+            if error.httpResponse.headers.exists(name: "x-amz-retry-after") { return true }
+        default:
+            break
         }
+        return false
     }
 
-    public func getErrorType<E>(error: SdkError<E>) -> RetryError {
+    public func getErrorType(error: Error) -> RetryError {
         switch error {
-        case .client(let clientError, _):
-            if case ClientError.crtError = clientError {
-                return .transient
-            }
+        case is CRTError:
+            return .transient
+        case is ClientError:
             return .clientError
-
-        case .service(let serviceError, let httpResponse):
-            if httpResponse.headers.exists(name: "x-amz-retry-after") {
-                return .serverError
-            }
-
-            if let serviceError = serviceError as? ServiceError {
-                if serviceError._isThrottling {
-                    return .throttling
-                }
-                return .serverError
-            }
-
-            if httpResponse.statusCode.isRetryable {
-                return .transient
-            }
-
-            return .serverError
-        case .unknown:
-            return .clientError
+        case let error as ModeledError:
+            if type(of: error).isThrottling { return .throttling }
+            if type(of: error).isRetryable { return .transient }
+            return type(of: error).fault == .client ? .clientError : .serverError
+        case let error as HTTPError:
+            if error.httpResponse.headers.exists(name: "x-amz-retry-after") { return .serverError }
+        default:
+            break
         }
+        return .clientError
     }
 }
 

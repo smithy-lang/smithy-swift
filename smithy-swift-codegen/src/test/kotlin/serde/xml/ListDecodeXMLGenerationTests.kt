@@ -24,7 +24,7 @@ class ListDecodeXMLGenerationTests {
                     case renamedListMembers = "renamed"
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.renamedListMembers) {
                         struct KeyVal0{struct item{}}
@@ -61,7 +61,7 @@ class ListDecodeXMLGenerationTests {
                 case renamedListMembers = "renamed"
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.renamedListMembers) {
                     struct KeyVal0{struct item{}}
@@ -106,7 +106,7 @@ class ListDecodeXMLGenerationTests {
                 case myGroceryList
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.myGroceryList) {
                     let myGroceryListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .myGroceryList)
@@ -146,7 +146,7 @@ class ListDecodeXMLGenerationTests {
                 case stringSet
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.stringList) {
                     let stringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .stringList)
@@ -239,7 +239,7 @@ class ListDecodeXMLGenerationTests {
                     case nestedNestedStringList
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.nestedNestedStringList) {
                         let nestedNestedStringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .nestedNestedStringList)
@@ -290,7 +290,7 @@ class ListDecodeXMLGenerationTests {
                     case myList
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myList) {
                         struct KeyVal0{struct member{}}
@@ -339,7 +339,7 @@ class ListDecodeXMLGenerationTests {
                     case myList
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myList) {
                         let myListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: .myList)

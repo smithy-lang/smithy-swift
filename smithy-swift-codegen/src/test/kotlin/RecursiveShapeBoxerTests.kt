@@ -53,7 +53,7 @@ internal class RecursiveShapeBoxerTests {
             public struct RecursiveShapesInput: Swift.Equatable {
                 public var nested: ExampleClientTypes.RecursiveShapesInputOutputNested1?
             
-                public init (
+                public init(
                     nested: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
                 )
                 {
@@ -71,7 +71,7 @@ internal class RecursiveShapeBoxerTests {
             public struct RecursiveShapesOutputResponse: Swift.Equatable {
                 public var nested: ExampleClientTypes.RecursiveShapesInputOutputNested1?
             
-                public init (
+                public init(
                     nested: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
                 )
                 {
@@ -91,7 +91,7 @@ internal class RecursiveShapeBoxerTests {
                     public var foo: Swift.String?
                     public var nested: Box<ExampleClientTypes.RecursiveShapesInputOutputNested2>?
             
-                    public init (
+                    public init(
                         foo: Swift.String? = nil,
                         nested: Box<ExampleClientTypes.RecursiveShapesInputOutputNested2>? = nil
                     )
@@ -115,7 +115,7 @@ internal class RecursiveShapeBoxerTests {
                 public var bar: Swift.String?
                 public var recursiveMember: ExampleClientTypes.RecursiveShapesInputOutputNested1?
         
-                public init (
+                public init(
                     bar: Swift.String? = nil,
                     recursiveMember: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
                 )

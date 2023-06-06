@@ -125,7 +125,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override val unknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
 
-    override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpServiceError
+    override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpError
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to HttpRequestBinding for all input shapes

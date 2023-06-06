@@ -6,7 +6,7 @@
 //
 
 public struct LoggerMiddleware<Output: HttpResponseBinding,
-                               OutputError: HttpResponseBinding>: Middleware {
+                               OutputError: HttpResponseErrorBinding>: Middleware {
 
     public let id: String = "Logger"
 
@@ -48,5 +48,5 @@ public struct LoggerMiddleware<Output: HttpResponseBinding,
     public typealias MInput = SdkHttpRequest
     public typealias MOutput = OperationOutput<Output>
     public typealias Context = HttpContext
-    public typealias MError = SdkError<OutputError>
+    public typealias MError = OutputError
 }

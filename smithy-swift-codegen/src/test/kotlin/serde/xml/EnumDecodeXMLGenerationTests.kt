@@ -34,7 +34,7 @@ class EnumDecodeXMLGenerationTests {
                 case fooEnumList
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 let fooEnum1Decoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.FooEnum.self, forKey: .fooEnum1)
                 fooEnum1 = fooEnum1Decoded
@@ -82,7 +82,7 @@ class EnumDecodeXMLGenerationTests {
                     case nestedEnumsList
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.nestedEnumsList) {
                         struct KeyVal0{struct member{}}
