@@ -5,10 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct RetryerMiddleware<Output: HttpResponseBinding,
-                                OutputError: HttpResponseErrorBinding>: Middleware {
+public struct RetryMiddleware<Output: HttpResponseBinding, OutputError: HttpResponseErrorBinding>: Middleware {
 
-    public var id: String = "Retryer"
+    public var id: String = "Retry"
 
     let retryer: SDKRetryer
 
@@ -51,9 +50,9 @@ public struct RetryerMiddleware<Output: HttpResponseBinding,
         }
     }
 
-    func tryRequest<H>(
+    private func tryRequest<H>(
         token: RetryToken,
-        errorType: RetryError? = nil,
+        errorType: RetryErrorType? = nil,
         partitionID: String,
         context: Context,
         input: SdkHttpRequestBuilder,
