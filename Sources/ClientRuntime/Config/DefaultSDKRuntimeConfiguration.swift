@@ -5,7 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy, DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider>: SDKRuntimeConfiguration {
+public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy,
+    DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider>: SDKRuntimeConfiguration {
     public typealias SDKRetryStrategy = DefaultSDKRuntimeRetryStrategy
     public typealias SDKRetryErrorInfoProvider = DefaultSDKRuntimeRetryErrorInfoProvider
 
