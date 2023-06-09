@@ -7,7 +7,12 @@
 
 import Foundation
 
+/// A protocol that allows for actual asynchronous sleep when running,
+/// and for immediate return with verification of sleep duration in testing.
 protocol Sleepable {
+
+    /// Sleeps asynchronously for the duration specified, the resumes asynchronously when the specified delay has passed.
+    /// - Parameter nanoseconds: The time to sleep, in nanoseconds.
     func sleep(nanoseconds: UInt64) async throws
 }
 
@@ -19,6 +24,7 @@ public struct DefaultRetryStrategy: RetryStrategy {
     let quotaRepository = RetryQuotaRepository()
 
     /// Used to inject a mock during unit tests that simulates sleeping.
+    /// The default `Sleeper` instance actually sleeps asynchronously.
     var sleeper: Sleepable = Sleeper()
 
     public init(options: RetryStrategyOptions) {

@@ -8,64 +8,33 @@
 public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryErrorInfoProvider,
     Output: HttpResponseBinding, OutputError: HttpResponseErrorBinding>: Middleware {
 
-    public var id = "Retry"
+    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MOutput = OperationOutput<Output>
+    public typealias Context = HttpContext
 
+    public var id: String { "Retry" }
     public let strategy: Strategy
 
     public init(options: RetryStrategyOptions) {
         self.strategy = Strategy(options: options)
     }
 
-    public func handle<H>(
-        context: Context,
-        input: SdkHttpRequestBuilder,
-        next: H
-    ) async throws -> OperationOutput<Output> where
-        H: Handler,
-        Self.MInput == H.Input,
-        Self.MOutput == H.Output,
-        Self.Context == H.Context {
+    public func handle<H>(context: Context, input: SdkHttpRequestBuilder, next: H) async throws ->
+        OperationOutput<Output> where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
 
-        // Select a partition ID to be used for throttling retry requests.  Requests with the
-        // same partition ID will be "pooled" together for throttling purposes.
-        let partitionID: String
-        if let customPartitionID = context.getPartitionID(), !customPartitionID.isEmpty {
-            // use custom partition ID provided by context
-            partitionID = customPartitionID
-        } else if !input.host.isEmpty {
-            // fall back to the hostname for partition ID, which is a "commonsense" default
-            partitionID = input.host
-        } else {
-            throw ClientError.unknownError("Partition ID could not be determined")
-        }
-
-        do {
-            let token = try await strategy.acquireInitialRetryToken(tokenScope: partitionID)
-            return try await tryRequest(
-                token: token,
-                partitionID: partitionID,
-                context: context,
-                input: input,
-                next: next
-            )
-        }
+        let partitionID = try getPartitionID(context: context, input: input)
+        let token = try await strategy.acquireInitialRetryToken(tokenScope: partitionID)
+        return try await tryRequest(token: token, context: context, input: input, next: next)
     }
 
-    private func tryRequest<H>(
-        token: Strategy.Token,
-        errorType: RetryErrorType? = nil,
-        partitionID: String,
-        context: Context,
-        input: SdkHttpRequestBuilder,
-        next: H
-    ) async throws -> OperationOutput<Output> where
-        H: Handler,
-        Self.MInput == H.Input,
-        Self.MOutput == H.Output,
-        Self.Context == H.Context {
+    private func tryRequest<H>(token: Strategy.Token, context: Context, input: MInput, next: H) async throws ->
+        OperationOutput<Output> where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
 
         do {
             let serviceResponse = try await next.handle(context: context, input: input)
+            if Double.random(in: 0.0...1.0) < 0.75 {
+                throw TestError()
+            }
             await strategy.recordSuccess(token: token)
             return serviceResponse
         } catch let operationError {
@@ -76,17 +45,33 @@ public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryE
                 // TODO: log token error here
                 throw operationError
             }
-            return try await tryRequest(
-                token: token,
-                partitionID: partitionID,
-                context: context,
-                input: input,
-                next: next
-            )
+            return try await tryRequest(token: token, context: context, input: input, next: next)
         }
     }
 
-    public typealias MInput = SdkHttpRequestBuilder
-    public typealias MOutput = OperationOutput<Output>
-    public typealias Context = HttpContext
+    private func getPartitionID(context: Context, input: MInput) throws -> String {
+        // Select a partition ID to be used for throttling retry requests.  Requests with the
+        // same partition ID will be "pooled" together for throttling purposes.
+        if let customPartitionID = context.getPartitionID(), !customPartitionID.isEmpty {
+            // use custom partition ID provided by context
+            return customPartitionID
+        } else if !input.host.isEmpty {
+            // fall back to the hostname for partition ID, which is a "commonsense" default
+            return input.host
+        } else {
+            throw ClientError.unknownError("Partition ID could not be determined")
+        }
+    }
+}
+
+struct TestError: ModeledError, Error {
+    static var typeName: String { "TestError" }
+
+    static var fault: ErrorFault = .server
+
+    static var isRetryable: Bool = true
+
+    static var isThrottling: Bool = false
+
+
 }

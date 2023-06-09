@@ -99,9 +99,9 @@ final class DefaultRetryStrategyTests: XCTestCase {
     func test_refresh_throwsMaxAttemptsReachedWhenMaxAttemptsReached() async throws {
         let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
 
-        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
-        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
-        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
+        for _ in (0..<options.maxRetriesBase) {
+            try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
+        }
         do {
             try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
             XCTFail("Should have failed")
