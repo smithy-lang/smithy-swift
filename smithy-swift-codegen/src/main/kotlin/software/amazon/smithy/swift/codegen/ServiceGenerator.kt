@@ -17,6 +17,7 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.integration.DefaultServiceConfig
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SectionId
+import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 
 /*
@@ -35,10 +36,6 @@ class ServiceGenerator(
     private val serviceSymbol: Symbol by lazy {
         symbolProvider.toSymbol(service)
     }
-    private val serviceConfig: DefaultServiceConfig by lazy {
-        DefaultServiceConfig(writer, serviceSymbol.name)
-    }
-    private val rootNamespace = settings.moduleName
 
     companion object {
         /**
@@ -62,9 +59,6 @@ class ServiceGenerator(
             val outputShape = opIndex.getOutput(op).get()
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
 
-            if (op.id.name == "createBucket") {
-                print("we are here")
-            }
             writer.writeShapeDocs(op)
             writer.writeAvailableAttribute(model, op)
 
@@ -132,24 +126,7 @@ class ServiceGenerator(
             }
             .closeBlock("}")
             .write("")
-
-        val sectionContext = mapOf(
-            "serviceSymbol" to serviceSymbol,
-            "protocolGenerator" to protocolGenerator,
-            "protocolGenerationContext" to protocolGenerationContext
-        )
-        writer.declareSection(ConfigurationProtocolSectionId, sectionContext) {
-            writer.openBlock(
-                "public protocol \$L : \$L {",
-                "}",
-                serviceConfig.typeProtocol,
-                serviceConfig.getTypeInheritance()
-            ) {
-            }
-        }.write("")
     }
-
-    object ConfigurationProtocolSectionId : SectionId
 }
 
 /**

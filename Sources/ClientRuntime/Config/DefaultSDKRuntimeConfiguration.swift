@@ -5,36 +5,52 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct DefaultSDKRuntimeConfiguration: SDKRuntimeConfiguration {
+public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy, DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider>: SDKRuntimeConfiguration {
+    public typealias SDKRetryStrategy = DefaultSDKRuntimeRetryStrategy
+    public typealias SDKRetryErrorInfoProvider = DefaultSDKRuntimeRetryErrorInfoProvider
+
+    public var serviceName: String
+    public var clientName: String
     public var encoder: RequestEncoder?
     public var decoder: ResponseDecoder?
     public var httpClientEngine: HttpClientEngine
     public var httpClientConfiguration: HttpClientConfiguration
     public var idempotencyTokenGenerator: IdempotencyTokenGenerator
     public var logger: LogAgent
-    public let retryer: SDKRetryer
+    public var retryStrategyOptions: RetryStrategyOptions
     public var clientLogMode: ClientLogMode
     public var endpoint: String?
 
-    /// The partition ID to be used for this configuration.
-    ///
-    /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
-    /// If no partition ID is provided, requests will be partitioned based on the hostname.
-    public var partitionID: String?
-
     public init(
-        _ clientName: String,
-        clientLogMode: ClientLogMode = .request,
-        partitionID: String? = nil
+        serviceName: String,
+        clientName: String
     ) throws {
+        self.serviceName = clientName
+        self.clientName = clientName
         self.encoder = nil
         self.decoder = nil
-        self.httpClientEngine = CRTClientEngine()
-        self.httpClientConfiguration = HttpClientConfiguration()
-        self.idempotencyTokenGenerator = DefaultIdempotencyTokenGenerator()
-        self.retryer = try SDKRetryer()
-        self.logger = SwiftLogger(label: clientName)
-        self.clientLogMode = clientLogMode
-        self.partitionID = partitionID
+        self.httpClientEngine = Self.defaultHttpClientEngine
+        self.httpClientConfiguration = Self.defaultHttpClientConfiguration
+        self.idempotencyTokenGenerator = Self.defaultIdempotencyTokenGenerator
+        self.retryStrategyOptions = Self.defaultRetryStrategyOptions
+        self.logger = Self.defaultLogger(clientName: clientName)
+        self.clientLogMode = Self.defaultClientLogMode
     }
+}
+
+public extension DefaultSDKRuntimeConfiguration {
+
+    static var defaultHttpClientEngine: HttpClientEngine { CRTClientEngine() }
+
+    static var defaultHttpClientConfiguration: HttpClientConfiguration { HttpClientConfiguration() }
+
+    static var defaultIdempotencyTokenGenerator: IdempotencyTokenGenerator { DefaultIdempotencyTokenGenerator() }
+
+    static var defaultRetryStrategyOptions: RetryStrategyOptions { .default }
+
+    static func defaultLogger(clientName: String) -> SwiftLogger {
+        SwiftLogger(label: clientName)
+    }
+
+    static var defaultClientLogMode: ClientLogMode { .request }
 }

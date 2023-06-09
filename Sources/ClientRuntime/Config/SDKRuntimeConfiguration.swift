@@ -9,19 +9,24 @@
 /// This generated concrete class provides a mechanism to adopt defaults or override by injection any of the parameters.
 /// If this concrete class is not sufficient for your use case, you have the ability to write a concrete class that conforms to SDKRuntimeConfiguration.
 public protocol SDKRuntimeConfiguration {
-    var encoder: RequestEncoder? {get}
-    var decoder: ResponseDecoder? {get}
-    var httpClientEngine: HttpClientEngine {get}
-    var httpClientConfiguration: HttpClientConfiguration {get}
-    var idempotencyTokenGenerator: IdempotencyTokenGenerator {get}
-    var logger: LogAgent {get}
-    var clientLogMode: ClientLogMode {get}
-    var retryer: SDKRetryer {get}
-    var endpoint: String? {get set}
+    associatedtype SDKRetryStrategy: RetryStrategy
+    associatedtype SDKRetryErrorInfoProvider: RetryErrorInfoProvider
 
-    /// The partition ID to be used for this configuration.
-    ///
-    /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
-    /// If no partition ID is provided, requests will be partitioned based on the hostname.
-    var partitionID: String? { get }
+    init(serviceName: String, clientName: String) throws
+
+    var encoder: RequestEncoder? { get }
+    var decoder: ResponseDecoder? { get }
+    var httpClientEngine: HttpClientEngine { get }
+    static var defaultHttpClientEngine: HttpClientEngine { get }
+    var httpClientConfiguration: HttpClientConfiguration { get }
+    static var defaultHttpClientConfiguration: HttpClientConfiguration { get }
+    var idempotencyTokenGenerator: IdempotencyTokenGenerator { get }
+    static var defaultIdempotencyTokenGenerator: IdempotencyTokenGenerator { get }
+    var logger: LogAgent { get }
+    static func defaultLogger(clientName: String) -> SwiftLogger
+    var clientLogMode: ClientLogMode { get }
+    static var defaultClientLogMode: ClientLogMode { get }
+    var retryStrategyOptions: RetryStrategyOptions { get }
+    static var defaultRetryStrategyOptions: RetryStrategyOptions { get }
+    var endpoint: String? { get set }
 }

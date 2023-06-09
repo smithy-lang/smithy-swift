@@ -5,14 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct RetryMiddleware<Output: HttpResponseBinding, OutputError: HttpResponseErrorBinding>: Middleware {
+public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryErrorInfoProvider,
+    Output: HttpResponseBinding, OutputError: HttpResponseErrorBinding>: Middleware {
 
-    public var id: String = "Retry"
+    public var id = "Retry"
 
-    let retryer: SDKRetryer
+    public let strategy: Strategy
 
-    public init(retryer: SDKRetryer) {
-        self.retryer = retryer
+    public init(options: RetryStrategyOptions) {
+        self.strategy = Strategy(options: options)
     }
 
     public func handle<H>(
@@ -39,7 +40,7 @@ public struct RetryMiddleware<Output: HttpResponseBinding, OutputError: HttpResp
         }
 
         do {
-            let token = try await retryer.acquireToken(partitionId: partitionID)
+            let token = try await strategy.acquireInitialRetryToken(tokenScope: partitionID)
             return try await tryRequest(
                 token: token,
                 partitionID: partitionID,
@@ -51,7 +52,7 @@ public struct RetryMiddleware<Output: HttpResponseBinding, OutputError: HttpResp
     }
 
     private func tryRequest<H>(
-        token: RetryToken,
+        token: Strategy.Token,
         errorType: RetryErrorType? = nil,
         partitionID: String,
         context: Context,
@@ -65,14 +66,18 @@ public struct RetryMiddleware<Output: HttpResponseBinding, OutputError: HttpResp
 
         do {
             let serviceResponse = try await next.handle(context: context, input: input)
-            retryer.recordSuccess(token: token)
+            await strategy.recordSuccess(token: token)
             return serviceResponse
-        } catch let error where retryer.isErrorRetryable(error: error) {
-            let errorType = retryer.getErrorType(error: error)
-            let newToken = try await retryer.scheduleRetry(token: token, error: errorType)
-            // TODO: rewind the stream once streaming is properly implemented
+        } catch let operationError {
+            guard let errorInfo = ErrorInfoProvider.errorInfo(for: operationError) else { throw operationError }
+            do {
+                try await strategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
+            } catch {
+                // TODO: log token error here
+                throw operationError
+            }
             return try await tryRequest(
-                token: newToken,
+                token: token,
                 partitionID: partitionID,
                 context: context,
                 input: input,
