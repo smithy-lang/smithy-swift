@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import func Foundation.pow
 import struct Foundation.TimeInterval
-import func Darwin.pow
 
 struct ExponentialBackoffStrategy: RetryBackoffStrategy {
     static let `default` = ExponentialBackoffStrategy(options: ExponentialBackoffStrategyOptions.default)
