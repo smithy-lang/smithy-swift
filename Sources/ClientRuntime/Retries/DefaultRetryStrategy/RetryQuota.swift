@@ -17,6 +17,8 @@ final actor RetryQuota {
     var maxCapacity: Int
     var availableCapacity: Int
 
+    func setAvailableCapacity(_ availableCapacity: Int) { self.availableCapacity = availableCapacity }
+
     init(availableCapacity: Int = RetryQuota.initialRetryTokens) {
         self.maxCapacity = Self.initialRetryTokens
         self.availableCapacity = availableCapacity
@@ -32,6 +34,6 @@ final actor RetryQuota {
     func retryQuotaRelease(isSuccess: Bool, capacityAmount: Int?) {
         guard isSuccess else { return }
         availableCapacity += capacityAmount ?? Self.noRetryIncrement
-        availableCapacity = min(availableCapacity, Self.initialRetryTokens)
+        availableCapacity = min(availableCapacity, maxCapacity)
     }
 }

@@ -7,12 +7,19 @@
 
 import Foundation
 
+protocol Sleepable {
+    func sleep(nanoseconds: UInt64) async throws
+}
+
 public struct DefaultRetryStrategy: RetryStrategy {
     public typealias Token = DefaultRetryToken
 
     let options: RetryStrategyOptions
 
-    private let quotaRepository = RetryQuotaRepository()
+    let quotaRepository = RetryQuotaRepository()
+
+    /// Used to inject a mock during unit tests that simulates sleeping.
+    var sleeper: Sleepable = Sleeper()
 
     public init(options: RetryStrategyOptions) {
         self.options = options
@@ -24,6 +31,7 @@ public struct DefaultRetryStrategy: RetryStrategy {
     }
 
     public func refreshRetryTokenForRetry(tokenToRenew: DefaultRetryToken, errorInfo: RetryErrorInfo) async throws {
+        let delay = errorInfo.retryAfterHint ?? options.backoffStrategy.computeNextBackoffDelay(attempt: tokenToRenew.retryCount)
         tokenToRenew.retryCount += 1
         if tokenToRenew.retryCount > options.maxRetriesBase {
             throw RetryError.maxAttemptsReached
@@ -31,8 +39,10 @@ public struct DefaultRetryStrategy: RetryStrategy {
         if let capacityAmount = await tokenToRenew.quota.hasRetryQuota(isTimeout: errorInfo.isTimeout) {
             tokenToRenew.capacityAmount = capacityAmount
         } else {
-            throw RetryError.insufficientQuotaRemaining
+            throw RetryError.insufficientQuota
         }
+        let nsDelay = UInt64(delay * 1_000_000_000.0)
+        try await sleeper.sleep(nanoseconds: nsDelay)
     }
 
     public func recordSuccess(token: DefaultRetryToken) async {
@@ -42,5 +52,12 @@ public struct DefaultRetryStrategy: RetryStrategy {
 
 enum RetryError: Error {
     case maxAttemptsReached
-    case insufficientQuotaRemaining
+    case insufficientQuota
+}
+
+private struct Sleeper: Sleepable {
+
+    func sleep(nanoseconds: UInt64) async throws {
+        try await Task.sleep(nanoseconds: nanoseconds)
+    }
 }

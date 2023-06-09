@@ -6,7 +6,7 @@
 //
 import AwsCommonRuntimeKit
 
-public enum RetryErrorType {
+public enum RetryErrorType: Equatable {
 
     /// This is a connection level error such as a socket timeout, socket connect error, tls negotiation timeout etc...
     /// Typically these should never be applied for non-idempotent, request types since in this scenario, it’s impossible

@@ -7,7 +7,7 @@
 
 import struct Foundation.TimeInterval
 
-public struct RetryErrorInfo {
+public struct RetryErrorInfo: Equatable {
 
     public var errorType: RetryErrorType
 
