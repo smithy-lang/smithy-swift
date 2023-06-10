@@ -17,13 +17,12 @@ struct ExponentialBackoffStrategy: RetryBackoffStrategy {
 
     // values set by Retry Behavior 2.0 SEP
     let r = 2.0
-    let maxBackoff: TimeInterval = 20.0
 
     init(options: ExponentialBackoffStrategyOptions) {
         self.options = options
     }
 
     func computeNextBackoffDelay(attempt: Int) -> TimeInterval {
-        min(random() * pow(r, Double(attempt)), maxBackoff)
+        min(random() * pow(r, Double(attempt)), options.maxBackoff)
     }
 }
