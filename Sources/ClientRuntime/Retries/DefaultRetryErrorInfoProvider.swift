@@ -22,9 +22,13 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider {
                 let errorType = type(of: modeledError).fault.retryErrorType
                 return .init(errorType: errorType, retryAfterHint: hint, isTimeout: false)
             }
-        } else {
-            return .init(errorType: .serverError, retryAfterHint: hint, isTimeout: false)
+        } else if let httpError = error as? HTTPError {
+            let retryableStatusCodes: [HttpStatusCode] = [.internalServerError, .badGateway, .serviceUnavailable,.gatewayTimeout]
+            if retryableStatusCodes.contains(httpError.httpResponse.statusCode) {
+                return .init(errorType: .serverError, retryAfterHint: hint, isTimeout: false)
+            }
         }
+        return .init(errorType: .serverError, retryAfterHint: hint, isTimeout: false)
     }
 }
 

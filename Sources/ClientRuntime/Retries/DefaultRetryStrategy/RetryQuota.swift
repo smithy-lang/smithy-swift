@@ -33,9 +33,10 @@ final actor RetryQuota {
     func setAvailableCapacity(_ availableCapacity: Int) { self.availableCapacity = availableCapacity }
 
     /// Creates a new quota, optionally with reduced available capacity (used for testing.)
-    init(availableCapacity: Int = RetryQuota.initialRetryTokens) {
-        self.maxCapacity = Self.initialRetryTokens
+    /// `maxCapacity` cannot be set less than available.
+    init(availableCapacity: Int, maxCapacity: Int) {
         self.availableCapacity = availableCapacity
+        self.maxCapacity = max(maxCapacity, availableCapacity)
     }
 
     /// Deducts the proper number of tokens from available & returns them.

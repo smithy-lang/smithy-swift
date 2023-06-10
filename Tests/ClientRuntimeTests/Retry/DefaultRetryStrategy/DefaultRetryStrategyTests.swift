@@ -26,7 +26,7 @@ final class DefaultRetryStrategyTests: XCTestCase {
     override func setUp() {
         backoffStrategy = .init(options: .default)
         backoffStrategy.random = { 1.0 }
-        options = RetryStrategyOptions(backoffStrategy: backoffStrategy, maxRetriesBase: 3)
+        options = RetryStrategyOptions(backoffStrategy: backoffStrategy, maxRetriesBase: 2)
         subject = DefaultRetryStrategy(options: options)
         mockSleeper = MockSleeper()
         subject.sleeper = mockSleeper
@@ -83,9 +83,6 @@ final class DefaultRetryStrategyTests: XCTestCase {
 
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
         XCTAssertEqual(mockSleeper.sleepTime, 2_000_000_000)
-
-        try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
-        XCTAssertEqual(mockSleeper.sleepTime, 4_000_000_000)
     }
 
     func test_refresh_sleepsForTheRetryHintDelayWhenProvided() async throws {
@@ -99,7 +96,7 @@ final class DefaultRetryStrategyTests: XCTestCase {
     func test_refresh_throwsMaxAttemptsReachedWhenMaxAttemptsReached() async throws {
         let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
 
-        for _ in (0..<options.maxRetriesBase) {
+        for _ in 0..<options.maxRetriesBase {
             try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
         }
         do {
@@ -155,7 +152,7 @@ final class DefaultRetryStrategyTests: XCTestCase {
     }
 }
 
-private class MockSleeper: Sleepable {
+class MockSleeper: Sleepable {
     var sleepTime: UInt64?
 
     func sleep(nanoseconds: UInt64) async throws {

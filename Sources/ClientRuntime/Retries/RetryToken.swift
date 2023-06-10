@@ -9,9 +9,8 @@ import struct Foundation.TimeInterval
 
 /// RetryToken is an abstract representation. They encode information for use with subsequent calls to the retry strategy.
 /// As such, they’ll likely encode more information using the language type system’s interface extension system such as:
-///
 /// TokenBucket, current retry cost, success repayment information, general book-keeping etc...
 public protocol RetryToken: AnyObject {
     var retryCount: Int { get }
-    var delay: TimeInterval { get }
+    var delay: TimeInterval? { get }
 }

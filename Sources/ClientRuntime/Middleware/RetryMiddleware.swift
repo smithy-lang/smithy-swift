@@ -13,7 +13,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryE
     public typealias Context = HttpContext
 
     public var id: String { "Retry" }
-    public let strategy: Strategy
+    public var strategy: Strategy
 
     public init(options: RetryStrategyOptions) {
         self.strategy = Strategy(options: options)
@@ -31,10 +31,8 @@ public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryE
         OperationOutput<Output> where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
 
         do {
+            print("try await next.handle")
             let serviceResponse = try await next.handle(context: context, input: input)
-            if Double.random(in: 0.0...1.0) < 0.75 {
-                throw TestError()
-            }
             await strategy.recordSuccess(token: token)
             return serviceResponse
         } catch let operationError {
