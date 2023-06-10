@@ -9,8 +9,6 @@ import func Foundation.pow
 import struct Foundation.TimeInterval
 
 struct ExponentialBackoffStrategy: RetryBackoffStrategy {
-    static let `default` = ExponentialBackoffStrategy(options: ExponentialBackoffStrategyOptions.default)
-
     let options: ExponentialBackoffStrategyOptions
 
     var random: () -> Double = { Double.random(in: 0.0...1.0) }
@@ -18,7 +16,7 @@ struct ExponentialBackoffStrategy: RetryBackoffStrategy {
     // values set by Retry Behavior 2.0 SEP
     let r = 2.0
 
-    init(options: ExponentialBackoffStrategyOptions) {
+    init(options: ExponentialBackoffStrategyOptions = ExponentialBackoffStrategyOptions()) {
         self.options = options
     }
 

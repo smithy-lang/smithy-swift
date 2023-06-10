@@ -47,7 +47,7 @@ public extension DefaultSDKRuntimeConfiguration {
 
     static var defaultIdempotencyTokenGenerator: IdempotencyTokenGenerator { DefaultIdempotencyTokenGenerator() }
 
-    static var defaultRetryStrategyOptions: RetryStrategyOptions { .default }
+    static var defaultRetryStrategyOptions: RetryStrategyOptions { RetryStrategyOptions() }
 
     static func defaultLogger(clientName: String) -> SwiftLogger {
         SwiftLogger(label: clientName)
