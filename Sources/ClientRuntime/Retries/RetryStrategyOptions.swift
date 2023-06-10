@@ -6,7 +6,10 @@
 //
 
 public struct RetryStrategyOptions {
-    public static var `default` = RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy.default, maxRetriesBase: 2)
+    public static var `default` = RetryStrategyOptions(
+        backoffStrategy: ExponentialBackoffStrategy.default,
+        maxRetriesBase: 2
+    )
 
     /// The backoff strategy determines the number of seconds to wait before retrying a failed operation.
     public let backoffStrategy: RetryBackoffStrategy
@@ -24,7 +27,18 @@ public struct RetryStrategyOptions {
     /// Used only during testing, production uses the default values.
     let maxCapacity: Int
 
-    init(backoffStrategy: RetryBackoffStrategy, maxRetriesBase: Int, availableCapacity: Int = 500, maxCapacity: Int = 500) {
+    /// Creates a new set of retry strategy options
+    /// - Parameters:
+    ///   - backoffStrategy: Determines the delay time before retrying.  Defaults to exponential backoff with a max limit.
+    ///   - maxRetriesBase: The number of times to retry the initial request.  Defaults to 2.
+    ///   - availableCapacity: The number of available tokens in a retry quota.  Defaults to 500.
+    ///   - maxCapacity: The max number of tokens in a retry quota.  Defaults to 500.
+    init(
+        backoffStrategy: RetryBackoffStrategy = ExponentialBackoffStrategy(options: .default),
+        maxRetriesBase: Int = 2,
+        availableCapacity: Int = 500,
+        maxCapacity: Int = 500
+    ) {
         self.backoffStrategy = backoffStrategy
         self.maxRetriesBase = maxRetriesBase
         self.availableCapacity = availableCapacity

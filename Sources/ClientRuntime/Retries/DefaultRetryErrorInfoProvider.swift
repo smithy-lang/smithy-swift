@@ -5,9 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+import struct Foundation.TimeInterval
 
 public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider {
+
+    static let retryableStatusCodes: [HttpStatusCode] = [
+        .internalServerError,  // 500
+        .badGateway,           // 502
+        .serviceUnavailable,   // 503
+        .gatewayTimeout,       // 504
+    ]
 
     public static func errorInfo(for error: Error) -> RetryErrorInfo? {
         var hint: TimeInterval?
@@ -23,12 +30,11 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider {
                 return .init(errorType: errorType, retryAfterHint: hint, isTimeout: false)
             }
         } else if let httpError = error as? HTTPError {
-            let retryableStatusCodes: [HttpStatusCode] = [.internalServerError, .badGateway, .serviceUnavailable,.gatewayTimeout]
             if retryableStatusCodes.contains(httpError.httpResponse.statusCode) {
                 return .init(errorType: .serverError, retryAfterHint: hint, isTimeout: false)
             }
         }
-        return .init(errorType: .serverError, retryAfterHint: hint, isTimeout: false)
+        return nil
     }
 }
 

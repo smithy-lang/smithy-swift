@@ -149,6 +149,7 @@ public class CRTClientEngine: HttpClientEngine {
                                                                   http2ManualDataWrites: true)
                 let stream: HTTP2Stream
                 do {
+                    // swiftlint:disable:next force_cast
                     stream = try connection.makeRequest(requestOptions: requestOptions) as! HTTP2Stream
                     try stream.activate()
                 } catch {

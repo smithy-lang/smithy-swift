@@ -21,6 +21,7 @@ disabled_rules:
   - nesting
   - large_tuple
   - type_body_length
+  - trailing_comma
 
 opt_in_rules:
   - empty_count
@@ -36,6 +37,8 @@ empty_enum_arguments: error
 function_body_length:
   warning: 100
   error: 150
+generic_type_name:
+  max_length: 48
 identifier_name:
   excluded:
     - id

@@ -18,7 +18,7 @@ public class DefaultRetryToken: RetryToken {
     public internal(set) var retryCount: Int = 0
 
     /// The delay, in seconds, to the next retry.
-    public internal(set) var delay: TimeInterval? = nil
+    public internal(set) var delay: TimeInterval?
 
     /// The amount of quota capacity amount held by this token, if any.
     ///
