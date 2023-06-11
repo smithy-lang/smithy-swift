@@ -20,15 +20,16 @@ final class DefaultRetryStrategyTests: XCTestCase {
 
     private var options: RetryStrategyOptions!
     private var subject: DefaultRetryStrategy!
-    private var mockSleeper: MockSleeper!
+    private var mockSleeper: ((TimeInterval) async throws -> Void)!
     private var backoffStrategy: ExponentialBackoffStrategy!
+    private var actualDelay: TimeInterval = 0.0
 
     override func setUp() {
         backoffStrategy = .init()
         backoffStrategy.random = { 1.0 }
         options = RetryStrategyOptions(backoffStrategy: backoffStrategy, maxRetriesBase: 2)
         subject = DefaultRetryStrategy(options: options)
-        mockSleeper = MockSleeper()
+        mockSleeper = { self.actualDelay = $0 }
         subject.sleeper = mockSleeper
     }
 
@@ -79,18 +80,17 @@ final class DefaultRetryStrategyTests: XCTestCase {
         let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
 
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
-        XCTAssertEqual(mockSleeper.sleepTime, 1_000_000_000)
+        XCTAssertEqual(actualDelay, 1.0)
 
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
-        XCTAssertEqual(mockSleeper.sleepTime, 2_000_000_000)
+        XCTAssertEqual(actualDelay, 2.0)
     }
 
     func test_refresh_sleepsForTheRetryHintDelayWhenProvided() async throws {
         let token1 = try await subject.acquireInitialRetryToken(tokenScope: scope1)
 
         try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfoWithHint)
-        let expectedSleepTime = UInt64(retryableInfoWithHint.retryAfterHint! * 1_000_000_000.0)
-        XCTAssertEqual(mockSleeper.sleepTime, expectedSleepTime)
+        XCTAssertEqual(actualDelay, retryableInfoWithHint.retryAfterHint!)
     }
 
     func test_refresh_throwsMaxAttemptsReachedWhenMaxAttemptsReached() async throws {
@@ -149,13 +149,5 @@ final class DefaultRetryStrategyTests: XCTestCase {
         let finalCapacity = await quota1.availableCapacity
 
         XCTAssertEqual(initialCapacity, finalCapacity)
-    }
-}
-
-class MockSleeper: Sleepable {
-    var sleepTime: UInt64?
-
-    func sleep(nanoseconds: UInt64) async throws {
-        self.sleepTime = nanoseconds
     }
 }

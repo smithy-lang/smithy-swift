@@ -16,7 +16,6 @@ final class RetryIntegrationTests: XCTestCase {
 
     private var context: HttpContext!
     private var next: TestOutputHandler!
-    private var mockSleeper: MockSleeper!
     private var subject: RetryMiddleware<DefaultRetryStrategy, DefaultRetryErrorInfoProvider, TestOutputResponse, TestOutputError>!
     private var quota: RetryQuota { get async { await subject.strategy.quotaRepository.quota(partitionID: partitionID) } }
 
@@ -39,12 +38,10 @@ final class RetryIntegrationTests: XCTestCase {
 
         // Replace the retry strategy's sleeper with a mock, to allow tests to run without delay and for us to
         // check the delay time
-        mockSleeper = MockSleeper()
-        subject.strategy.sleeper = mockSleeper
+        subject.strategy.sleeper = { self.next.actualDelay = $0 }
 
-        // Set the quota & sleeper on the test output handler so it can verify state during tests
+        // Set the quota on the test output handler so it can verify state during tests
         next.quota = await quota
-        next.sleeper = mockSleeper
     }
 
     // MARK: - Standard mode
@@ -163,11 +160,11 @@ class TestOutputHandler: Handler {
     var testSteps = [TestStep]()
     var latestTestStep: TestStep?
     var quota: RetryQuota!
-    var sleeper: MockSleeper!
+    var actualDelay: TimeInterval?
     var finalError: Error?
 
     func handle(context: ClientRuntime.HttpContext, input: SdkHttpRequestBuilder) async throws -> OperationOutput<TestOutputResponse> {
-        if index == testSteps.count { throw MaxAttemptsExceeded() }
+        if index == testSteps.count { throw RetryIntegrationTestError.maxAttemptsExceeded }
 
         // Verify the results of the previous test step, if there was one.
         try await verifyResult(atEnd: false)
@@ -194,10 +191,11 @@ class TestOutputHandler: Handler {
         XCTAssertEqual(testStep.retryQuota, availableCapacity)
 
         // Test delay
-        let actualDelay = sleeper.sleepTime.map(TimeInterval.init)?.map { $0 / 1_000_000_000.0 }
         XCTAssertEqual(testStep.delay, actualDelay)
-        sleeper.sleepTime = nil
+        actualDelay = nil
 
+        // When called after all test steps have been performed, this
+        // logic will verify that the last test step had the expected result.
         guard atEnd else { return }
         switch testStep.expectedOutcome {
         case .success:
@@ -210,6 +208,7 @@ class TestOutputHandler: Handler {
     }
 }
 
+// Thrown during a test to simulate a server response with a given HTTP status code.
 struct TestHTTPError: HTTPError, Error {
     var httpResponse: ClientRuntime.HttpResponse
 
@@ -219,17 +218,11 @@ struct TestHTTPError: HTTPError, Error {
     }
 }
 
+// These errors are thrown when a test fails.
 enum RetryIntegrationTestError: Error {
     case dontCallThisMethod
     case noRemainingTestSteps
     case maxAttemptsExceeded
     case unexpectedSuccess
     case unexpectedFailure
-}
-
-struct MaxAttemptsExceeded: ModeledError, Error {
-    static var typeName: String { "MaxAttemptsExceeded" }
-    static var fault: ClientRuntime.ErrorFault { .client }
-    static var isRetryable: Bool { false }
-    static var isThrottling: Bool { false }
 }

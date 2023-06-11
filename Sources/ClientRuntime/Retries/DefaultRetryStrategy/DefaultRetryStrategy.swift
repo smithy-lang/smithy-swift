@@ -7,15 +7,6 @@
 
 import Foundation
 
-/// A protocol that allows for actual asynchronous sleep when running,
-/// and for immediate return with verification of sleep duration in testing.
-protocol Sleepable {
-
-    /// Sleeps asynchronously for the duration specified, the resumes asynchronously when the specified delay has passed.
-    /// - Parameter nanoseconds: The time to sleep, in nanoseconds.
-    func sleep(nanoseconds: UInt64) async throws
-}
-
 public struct DefaultRetryStrategy: RetryStrategy {
     public typealias Token = DefaultRetryToken
 
@@ -24,12 +15,17 @@ public struct DefaultRetryStrategy: RetryStrategy {
     let quotaRepository: RetryQuotaRepository
 
     /// Used to inject a mock during unit tests that simulates sleeping.
-    /// The default `Sleeper` instance actually sleeps asynchronously.
-    var sleeper: Sleepable = Sleeper()
+    /// The default `sleeper` function actually sleeps asynchronously.
+    var sleeper: (TimeInterval) async throws -> Void = { delay in
+        try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000.0))
+    }
 
     public init(options: RetryStrategyOptions) {
         self.options = options
-        self.quotaRepository = RetryQuotaRepository(availableCapacity: options.availableCapacity, maxCapacity: options.maxCapacity)
+        self.quotaRepository = RetryQuotaRepository(
+            availableCapacity: options.availableCapacity,
+            maxCapacity: options.maxCapacity
+        )
     }
 
     public func acquireInitialRetryToken(tokenScope: String) async throws -> DefaultRetryToken {
@@ -38,7 +34,8 @@ public struct DefaultRetryStrategy: RetryStrategy {
     }
 
     public func refreshRetryTokenForRetry(tokenToRenew: DefaultRetryToken, errorInfo: RetryErrorInfo) async throws {
-        let delay = errorInfo.retryAfterHint ?? options.backoffStrategy.computeNextBackoffDelay(attempt: tokenToRenew.retryCount)
+        let delay = errorInfo.retryAfterHint ??
+            options.backoffStrategy.computeNextBackoffDelay(attempt: tokenToRenew.retryCount)
         tokenToRenew.retryCount += 1
         tokenToRenew.delay = delay
         if tokenToRenew.retryCount > options.maxRetriesBase {
@@ -49,8 +46,7 @@ public struct DefaultRetryStrategy: RetryStrategy {
         } else {
             throw RetryError.insufficientQuota
         }
-        let nsDelay = UInt64((tokenToRenew.delay ?? 0.0) * 1_000_000_000.0)
-        try await sleeper.sleep(nanoseconds: nsDelay)
+        try await sleeper(tokenToRenew.delay ?? 0.0)
     }
 
     public func recordSuccess(token: DefaultRetryToken) async {
@@ -61,11 +57,4 @@ public struct DefaultRetryStrategy: RetryStrategy {
 enum RetryError: Error {
     case maxAttemptsReached
     case insufficientQuota
-}
-
-private struct Sleeper: Sleepable {
-
-    func sleep(nanoseconds: UInt64) async throws {
-        try await Task.sleep(nanoseconds: nanoseconds)
-    }
 }

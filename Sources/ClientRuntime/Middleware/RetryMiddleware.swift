@@ -49,6 +49,9 @@ public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryE
     private func getPartitionID(context: Context, input: MInput) throws -> String {
         // Select a partition ID to be used for throttling retry requests.  Requests with the
         // same partition ID will be "pooled" together for throttling purposes.
+        //
+        // This will be revisited when standard architecture for DNS is implemented, since
+        // partitions may be set based on IPs in certain circumstances.
         if let customPartitionID = context.getPartitionID(), !customPartitionID.isEmpty {
             // use custom partition ID provided by context
             return customPartitionID
@@ -59,16 +62,4 @@ public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryE
             throw ClientError.unknownError("Partition ID could not be determined")
         }
     }
-}
-
-struct TestError: ModeledError, Error {
-    static var typeName: String { "TestError" }
-
-    static var fault: ErrorFault = .server
-
-    static var isRetryable: Bool = true
-
-    static var isThrottling: Bool = false
-
-
 }
