@@ -57,7 +57,7 @@ class DefaultRetryErrorInfoProviderTests: XCTestCase {
     func test_errorInfo_returnsRetryAfterDelayWhenRetryAfterHeaderIsSet() {
 
         struct RetryAfterError: Error, HTTPError {
-            var httpResponse: HttpResponse = HttpResponse(headers: Headers(["x-retry-after": String(0.027)]))
+            var httpResponse: HttpResponse = HttpResponse(headers: Headers(["x-retry-after": String(0.027)]), statusCode: .internalServerError)
         }
 
         let errorInfo = DefaultRetryErrorInfoProvider.errorInfo(for: RetryAfterError())

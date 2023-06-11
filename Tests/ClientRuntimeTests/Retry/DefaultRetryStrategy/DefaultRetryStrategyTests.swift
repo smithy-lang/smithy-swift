@@ -24,7 +24,7 @@ final class DefaultRetryStrategyTests: XCTestCase {
     private var backoffStrategy: ExponentialBackoffStrategy!
 
     override func setUp() {
-        backoffStrategy = .init(options: .default)
+        backoffStrategy = .init()
         backoffStrategy.random = { 1.0 }
         options = RetryStrategyOptions(backoffStrategy: backoffStrategy, maxRetriesBase: 2)
         subject = DefaultRetryStrategy(options: options)

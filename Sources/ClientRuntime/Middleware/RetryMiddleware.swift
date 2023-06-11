@@ -31,7 +31,6 @@ public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryE
         OperationOutput<Output> where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
 
         do {
-            print("try await next.handle")
             let serviceResponse = try await next.handle(context: context, input: input)
             await strategy.recordSuccess(token: token)
             return serviceResponse

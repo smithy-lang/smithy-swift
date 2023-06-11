@@ -14,7 +14,7 @@ class ExponentialBackoffStrategyTests: XCTestCase {
     var subject: ExponentialBackoffStrategy!
 
     override func setUp() {
-        subject = ExponentialBackoffStrategy(options: .default)
+        subject = ExponentialBackoffStrategy()
         subject.random = { 1.0 }
     }
 
