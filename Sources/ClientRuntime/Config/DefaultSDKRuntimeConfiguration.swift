@@ -6,7 +6,8 @@
 //
 
 public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy,
-    DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider>: SDKRuntimeConfiguration {
+    DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider> {
+
     public typealias SDKRetryStrategy = DefaultSDKRuntimeRetryStrategy
     public typealias SDKRetryErrorInfoProvider = DefaultSDKRuntimeRetryErrorInfoProvider
 
@@ -39,6 +40,8 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
     }
 }
 
+// Provides defaults for various client config values.
+// Exposing these as static properties/methods allows them to be used by custom config objects.
 public extension DefaultSDKRuntimeConfiguration {
 
     static var defaultHttpClientEngine: HttpClientEngine { CRTClientEngine() }
@@ -49,9 +52,7 @@ public extension DefaultSDKRuntimeConfiguration {
 
     static var defaultRetryStrategyOptions: RetryStrategyOptions { RetryStrategyOptions() }
 
-    static func defaultLogger(clientName: String) -> SwiftLogger {
-        SwiftLogger(label: clientName)
-    }
+    static func defaultLogger(clientName: String) -> SwiftLogger { SwiftLogger(label: clientName) }
 
     static var defaultClientLogMode: ClientLogMode { .request }
 }
