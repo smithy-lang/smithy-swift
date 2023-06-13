@@ -38,7 +38,8 @@ final class RetryIntegrationTests: XCTestCase {
 
         // Replace the retry strategy's sleeper with a mock, to allow tests to run without delay and for us to
         // check the delay time
-        subject.strategy.sleeper = { self.next.actualDelay = $0 }
+        // Treat nil and 0.0 time the same (change 0.0 to nil)
+        subject.strategy.sleeper = { self.next.actualDelay = ($0 != 0.0) ? $0 : nil }
 
         // Set the quota on the test output handler so it can verify state during tests
         next.quota = await quota
