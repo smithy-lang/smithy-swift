@@ -55,7 +55,7 @@ final actor RetryQuota {
 
     /// Creates a new quota with settings from the passed options.
     /// - Parameter options: The retry strategy options from which to configure this retry quota
-    init(options: RetryStrategyOptions) {
+    convenience init(options: RetryStrategyOptions) {
         self.init(
             availableCapacity: options.availableCapacity,
             maxCapacity: options.maxCapacity,
