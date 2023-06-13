@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.TimeInterval
+
 /// Keeps the retry quota count for one partition ID.
 ///
 /// Is shared across all requests with the same partition ID; typically this also correlates to one network connection.
@@ -29,14 +31,24 @@ final actor RetryQuota {
     /// The number of tokens this quota currently holds.
     var availableCapacity: Int
 
+    /// The rate limiter to be used, if any.
+    private var rateLimiter: ClientSideRateLimiter?
+
     /// Sets the current capacity in this quota.  To be used for testing only.
     func setAvailableCapacity(_ availableCapacity: Int) { self.availableCapacity = availableCapacity }
 
     /// Creates a new quota, optionally with reduced available capacity (used for testing.)
     /// `maxCapacity` cannot be set less than available.
-    init(availableCapacity: Int, maxCapacity: Int) {
+    init(availableCapacity: Int, maxCapacity: Int, rateLimitingMode: RetryStrategyOptions.RateLimitingMode = .standard) {
         self.availableCapacity = availableCapacity
         self.maxCapacity = max(maxCapacity, availableCapacity)
+        self.rateLimiter = rateLimitingMode == .adaptive ? ClientSideRateLimiter() : nil
+    }
+
+    init(options: RetryStrategyOptions) {
+        self.availableCapacity = options.availableCapacity
+        self.maxCapacity = options.maxCapacity
+        self.rateLimiter = options.rateLimitingMode == .adaptive ? ClientSideRateLimiter() : nil
     }
 
     /// Deducts the proper number of tokens from available & returns them.
@@ -58,5 +70,13 @@ final actor RetryQuota {
         guard isSuccess else { return }
         availableCapacity += capacityAmount ?? Self.noRetryIncrement
         availableCapacity = min(availableCapacity, maxCapacity)
+    }
+
+    func getRateLimitDelay() async -> TimeInterval? {
+        await rateLimiter?.tokenBucketAcquire(amount: 1.0)
+    }
+
+    func updateClientSendingRate(isThrottling: Bool) async {
+        await rateLimiter?.updateClientSendingRate(isThrottling: isThrottling)
     }
 }

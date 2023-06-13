@@ -117,7 +117,7 @@ final class RetryIntegrationTests: XCTestCase {
     }
 }
 
-struct TestStep {
+private struct TestStep {
 
     enum Response: Equatable {
         case success
@@ -157,8 +157,8 @@ class TestOutputHandler: Handler {
     typealias Context = HttpContext
 
     var index = 0
-    var testSteps = [TestStep]()
-    var latestTestStep: TestStep?
+    fileprivate var testSteps = [TestStep]()
+    private var latestTestStep: TestStep?
     var quota: RetryQuota!
     var actualDelay: TimeInterval?
     var finalError: Error?

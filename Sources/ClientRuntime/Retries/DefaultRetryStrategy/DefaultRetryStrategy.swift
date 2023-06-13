@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+import struct Foundation.TimeInterval
 
 public struct DefaultRetryStrategy: RetryStrategy {
     public typealias Token = DefaultRetryToken
@@ -22,22 +22,21 @@ public struct DefaultRetryStrategy: RetryStrategy {
 
     public init(options: RetryStrategyOptions) {
         self.options = options
-        self.quotaRepository = RetryQuotaRepository(
-            availableCapacity: options.availableCapacity,
-            maxCapacity: options.maxCapacity
-        )
+        self.quotaRepository = RetryQuotaRepository(options: options)
     }
 
     public func acquireInitialRetryToken(tokenScope: String) async throws -> DefaultRetryToken {
         let quota = await quotaRepository.quota(partitionID: tokenScope)
+        if let delay = await quota.getRateLimitDelay() {
+            try await sleeper(delay)
+        }
         return DefaultRetryToken(quota: quota)
     }
 
     public func refreshRetryTokenForRetry(tokenToRenew: DefaultRetryToken, errorInfo: RetryErrorInfo) async throws {
-        let delay = errorInfo.retryAfterHint ??
+        let backoffDelay = errorInfo.retryAfterHint ??
             options.backoffStrategy.computeNextBackoffDelay(attempt: tokenToRenew.retryCount)
         tokenToRenew.retryCount += 1
-        tokenToRenew.delay = delay
         if tokenToRenew.retryCount > options.maxRetriesBase {
             throw RetryError.maxAttemptsReached
         }
@@ -46,6 +45,10 @@ public struct DefaultRetryStrategy: RetryStrategy {
         } else {
             throw RetryError.insufficientQuota
         }
+        let isThrottling = errorInfo.errorType == .throttling
+        await tokenToRenew.quota.updateClientSendingRate(isThrottling: isThrottling)
+        let rateLimitDelay = await tokenToRenew.quota.getRateLimitDelay() ?? 0.0
+        tokenToRenew.delay = backoffDelay + rateLimitDelay
         try await sleeper(tokenToRenew.delay ?? 0.0)
     }
 
