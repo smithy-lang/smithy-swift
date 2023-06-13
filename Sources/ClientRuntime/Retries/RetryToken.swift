@@ -14,7 +14,4 @@ public protocol RetryToken: AnyObject {
 
     /// The number of retries (i.e. NOT including the initial attempt) that this token has made.
     var retryCount: Int { get }
-
-    /// The delay for this request (TODO: not used, maybe get rid of this?)
-    var delay: TimeInterval? { get }
 }

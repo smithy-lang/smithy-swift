@@ -39,16 +39,28 @@ final actor RetryQuota {
 
     /// Creates a new quota, optionally with reduced available capacity (used for testing.)
     /// `maxCapacity` cannot be set less than available.
-    init(availableCapacity: Int, maxCapacity: Int, rateLimitingMode: RetryStrategyOptions.RateLimitingMode = .standard) {
+    /// - Parameters:
+    ///   - availableCapacity: The number of tokens in this quota at creation.
+    ///   - maxCapacity: <#maxCapacity description#>
+    ///   - rateLimitingMode: <#rateLimitingMode description#>
+    init(
+        availableCapacity: Int,
+        maxCapacity: Int,
+        rateLimitingMode: RetryStrategyOptions.RateLimitingMode = .standard
+    ) {
         self.availableCapacity = availableCapacity
         self.maxCapacity = max(maxCapacity, availableCapacity)
         self.rateLimiter = rateLimitingMode == .adaptive ? ClientSideRateLimiter() : nil
     }
 
+    /// Creates a new quota with settings from the passed options.
+    /// - Parameter options: The retry strategy options from which to configure this retry quota
     init(options: RetryStrategyOptions) {
-        self.availableCapacity = options.availableCapacity
-        self.maxCapacity = options.maxCapacity
-        self.rateLimiter = options.rateLimitingMode == .adaptive ? ClientSideRateLimiter() : nil
+        self.init(
+            availableCapacity: options.availableCapacity,
+            maxCapacity: options.maxCapacity,
+            rateLimitingMode: options.rateLimitingMode
+        )
     }
 
     /// Deducts the proper number of tokens from available & returns them.

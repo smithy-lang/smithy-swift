@@ -149,20 +149,20 @@ private struct TestStep {
     }
 }
 
-struct TestInput {}
+private struct TestInput {}
 
-struct TestOutputResponse: HttpResponseBinding {
+private struct TestOutputResponse: HttpResponseBinding {
     init() {}
     init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws {}
 }
 
-enum TestOutputError: HttpResponseErrorBinding {
+private enum TestOutputError: HttpResponseErrorBinding {
     static func makeError(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws -> Error {
         RetryIntegrationTestError.dontCallThisMethod  // is never called
     }
 }
 
-class TestOutputHandler: Handler {
+private class TestOutputHandler: Handler {
 
     typealias Input = SdkHttpRequestBuilder
     typealias Output = OperationOutput<TestOutputResponse>
@@ -221,7 +221,7 @@ class TestOutputHandler: Handler {
 }
 
 // Thrown during a test to simulate a server response with a given HTTP status code.
-struct TestHTTPError: HTTPError, Error {
+private struct TestHTTPError: HTTPError, Error {
     var httpResponse: ClientRuntime.HttpResponse
 
     init(statusCode: Int) {
@@ -231,7 +231,7 @@ struct TestHTTPError: HTTPError, Error {
 }
 
 // These errors are thrown when a test fails.
-enum RetryIntegrationTestError: Error {
+private enum RetryIntegrationTestError: Error {
     case dontCallThisMethod
     case noRemainingTestSteps
     case maxAttemptsExceeded

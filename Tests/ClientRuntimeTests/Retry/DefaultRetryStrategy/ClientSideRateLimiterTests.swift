@@ -9,8 +9,8 @@ import Foundation
 import XCTest
 @testable import ClientRuntime
 
-class ClientSideRateLimiterTests: XCTestCase {
-    var subject: ClientSideRateLimiter!
+final class ClientSideRateLimiterTests: XCTestCase {
+    private var subject: ClientSideRateLimiter!
 
     // MARK: - CUBIC test cases
 
@@ -127,4 +127,3 @@ private struct TestStep {
         self.line = line
     }
 }
-

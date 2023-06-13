@@ -28,8 +28,8 @@ public struct DefaultRetryStrategy: RetryStrategy {
 
     public func acquireInitialRetryToken(tokenScope: String) async throws -> DefaultRetryToken {
         let quota = await quotaRepository.quota(partitionID: tokenScope)
-        let delay = await quota.getRateLimitDelay()
-        try await sleeper(delay)
+        let rateLimitDelay = await quota.getRateLimitDelay()
+        try await sleeper(rateLimitDelay)
         return DefaultRetryToken(quota: quota)
     }
 
@@ -48,9 +48,7 @@ public struct DefaultRetryStrategy: RetryStrategy {
         let isThrottling = errorInfo.errorType == .throttling
         await tokenToRenew.quota.updateClientSendingRate(isThrottling: isThrottling)
         let rateLimitDelay = await tokenToRenew.quota.getRateLimitDelay()
-        let totalDelay = backoffDelay + rateLimitDelay
-        tokenToRenew.delay = totalDelay
-        try await sleeper(totalDelay)
+        try await sleeper(backoffDelay + rateLimitDelay)
     }
 
     public func recordSuccess(token: DefaultRetryToken) async {

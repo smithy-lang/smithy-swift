@@ -13,23 +13,23 @@ public struct RetryStrategyOptions {
     /// This is more of a hint since a custom retry strategy could be aware of certain operational contexts ("partition fail over")
     public let maxRetriesBase: Int
 
-    /// Sets the mode used for rate limiting initial requests.
+    /// Sets the mode used for rate limiting requests in response to throttling.
     public enum RateLimitingMode {
 
-        /// Initial requests may be sent immediately.
+        /// Requests may be sent immediately, and are not delayed for rate limiting when throttling is detected.
         ///
         /// This is default retry behavior.
         case standard
 
-        /// Initial requests may be delayed when throttling is detected.
+        /// Initial and retry requests may be delayed by an additional amount when throttling is detected.
         ///
         /// This is sometimes called "adaptive" or "client-side rate limiting" mode, and is available opt-in.
         case adaptive
     }
 
-    /// The mode to be used for rate-limiting initial requests.
+    /// The mode to be used for rate-limiting requests.
     ///
-    /// In `standard` mode, initial requests are never delayed.  In `adaptive` mode, initial requests are
+    /// In `standard` mode, requests are only delayed according to the backoff strategy in use.  In `adaptive` mode, requests are
     /// delayed when the server indicates that requests are being throttled.
     public let rateLimitingMode: RateLimitingMode
 

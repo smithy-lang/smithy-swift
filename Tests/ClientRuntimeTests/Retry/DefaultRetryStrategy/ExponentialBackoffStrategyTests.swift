@@ -9,17 +9,13 @@ import Foundation
 import XCTest
 @testable import ClientRuntime
 
-// Note that randomization is disabled for these tests to allow easy, repeatable verification of basic behavior.
-class ExponentialBackoffStrategyTests: XCTestCase {
-    var subject: ExponentialBackoffStrategy!
+final class ExponentialBackoffStrategyTests: XCTestCase {
+    private var subject: ExponentialBackoffStrategy!
 
     override func setUp() {
         subject = ExponentialBackoffStrategy()
+        // Randomization is disabled to allow easy, repeatable verification of basic behavior.
         subject.random = { 1.0 }
-    }
-
-    override func tearDown() {
-        subject = nil
     }
 
     func test_backoffStrategy_multipliesByBackoffFactor() {
