@@ -135,6 +135,17 @@ private struct TestStep {
     let expectedOutcome: Outcome
     let retryQuota: Int
     let delay: TimeInterval?
+    let file: StaticString
+    let line: UInt
+
+    init(response: Response, expectedOutcome: Outcome, retryQuota: Int, delay: TimeInterval?, file: StaticString = #file, line: UInt = #line) {
+        self.response = response
+        self.expectedOutcome = expectedOutcome
+        self.retryQuota = retryQuota
+        self.delay = delay
+        self.file = file
+        self.line = line
+    }
 }
 
 struct TestInput {}
@@ -191,7 +202,7 @@ class TestOutputHandler: Handler {
         XCTAssertEqual(testStep.retryQuota, availableCapacity)
 
         // Test delay
-        XCTAssertEqual(testStep.delay, actualDelay)
+        XCTAssertEqual(testStep.delay, actualDelay, file: testStep.file, line: testStep.line)
         actualDelay = nil
 
         // When called after all test steps have been performed, this
@@ -199,11 +210,11 @@ class TestOutputHandler: Handler {
         guard atEnd else { return }
         switch testStep.expectedOutcome {
         case .success:
-            if let error = finalError { XCTFail("Unexpected error: \(error)") }
+            if let error = finalError { XCTFail("Unexpected error: \(error)", file: testStep.file, line: testStep.line) }
         case .retryQuotaExceeded, .maxAttemptsExceeded:
-            if !(finalError is TestHTTPError) { XCTFail("Test did not end on service error") }
+            if !(finalError is TestHTTPError) { XCTFail("Test did not end on service error", file: testStep.file, line: testStep.line) }
         case .retryRequest:
-            XCTFail("Test should not end on retry")
+            XCTFail("Test should not end on retry", file: testStep.file, line: testStep.line)
         }
     }
 }

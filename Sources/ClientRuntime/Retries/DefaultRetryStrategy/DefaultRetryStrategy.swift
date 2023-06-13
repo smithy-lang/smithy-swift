@@ -17,6 +17,7 @@ public struct DefaultRetryStrategy: RetryStrategy {
     /// Used to inject a mock during unit tests that simulates sleeping.
     /// The default `sleeper` function actually sleeps asynchronously.
     var sleeper: (TimeInterval) async throws -> Void = { delay in
+        guard delay > 0.0 else { return }
         try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000.0))
     }
 
@@ -27,9 +28,8 @@ public struct DefaultRetryStrategy: RetryStrategy {
 
     public func acquireInitialRetryToken(tokenScope: String) async throws -> DefaultRetryToken {
         let quota = await quotaRepository.quota(partitionID: tokenScope)
-        if let delay = await quota.getRateLimitDelay() {
-            try await sleeper(delay)
-        }
+        let delay = await quota.getRateLimitDelay()
+        try await sleeper(delay)
         return DefaultRetryToken(quota: quota)
     }
 
@@ -47,9 +47,10 @@ public struct DefaultRetryStrategy: RetryStrategy {
         }
         let isThrottling = errorInfo.errorType == .throttling
         await tokenToRenew.quota.updateClientSendingRate(isThrottling: isThrottling)
-        let rateLimitDelay = await tokenToRenew.quota.getRateLimitDelay() ?? 0.0
-        tokenToRenew.delay = backoffDelay + rateLimitDelay
-        try await sleeper(tokenToRenew.delay ?? 0.0)
+        let rateLimitDelay = await tokenToRenew.quota.getRateLimitDelay()
+        let totalDelay = backoffDelay + rateLimitDelay
+        tokenToRenew.delay = totalDelay
+        try await sleeper(totalDelay)
     }
 
     public func recordSuccess(token: DefaultRetryToken) async {
