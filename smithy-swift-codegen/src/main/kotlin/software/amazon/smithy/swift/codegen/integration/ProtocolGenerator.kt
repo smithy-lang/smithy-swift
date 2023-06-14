@@ -52,6 +52,8 @@ interface ProtocolGenerator {
         val DefaultServiceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Core.ServiceError
 
         val DefaultUnknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
+
+        val DefaultRetryErrorInfoProviderSymbol: Symbol = ClientRuntimeTypes.Core.DefaultRetryErrorInfoProvider
     }
 
     /**
@@ -85,6 +87,9 @@ interface ProtocolGenerator {
      */
     val unknownServiceErrorSymbol: Symbol
         get() = DefaultUnknownServiceErrorSymbol
+
+    val retryErrorInfoProviderSymbol: Symbol
+        get() = DefaultRetryErrorInfoProviderSymbol
 
     /**
      * Generate serializers required by the protocol
