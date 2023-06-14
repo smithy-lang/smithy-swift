@@ -21,7 +21,7 @@ open class HttpProtocolServiceClient(
         writer.openBlock("public class ${serviceSymbol.name} {", "}") {
             writer.write("public static let clientName = \"${serviceSymbol.name}\"")
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
-            writer.write("let config: \$L", serviceConfig.typeProtocol)
+            writer.write("let config: \$L", serviceConfig.typeName)
             writer.write("let serviceName = \"${serviceName}\"")
             writer.write("let encoder: \$N", ClientRuntimeTypes.Serde.RequestEncoder)
             writer.write("let decoder: \$N", ClientRuntimeTypes.Serde.ResponseDecoder)
@@ -29,7 +29,7 @@ open class HttpProtocolServiceClient(
                 prop.addImportsAndDependencies(writer)
             }
             writer.write("")
-            writer.openBlock("public init(config: \$L) {", "}", serviceConfig.typeProtocol) {
+            writer.openBlock("public init(config: \$L) {", "}", serviceConfig.typeName) {
                 writer.write("client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)", ClientRuntimeTypes.Http.SdkHttpClient)
                 properties.forEach { prop ->
                     prop.renderInstantiation(writer)
@@ -43,9 +43,9 @@ open class HttpProtocolServiceClient(
             }
             writer.write("")
             renderConvenienceInit(serviceSymbol)
-            writer.write("")
-            renderConfig(serviceSymbol)
         }
+        writer.write("")
+        serviceConfig.renderInitializers(serviceSymbol)
         writer.write("")
         renderLogHandlerFactory(serviceSymbol)
         writer.write("")
@@ -72,29 +72,6 @@ open class HttpProtocolServiceClient(
             writer.openBlock("public init(logLevel: \$N) {", "}", ClientRuntimeTypes.Core.SDKLogLevel) {
                 writer.write("self.logLevel = logLevel")
             }
-        }
-    }
-
-    private fun renderConfig(serviceSymbol: Symbol) {
-        val sdkConfigs = serviceConfig.sdkRuntimeConfigProperties()
-        val otherConfigs = serviceConfig.otherRuntimeConfigProperties()
-        val serviceConfigs = serviceConfig.serviceConfigProperties()
-        writer.openBlock("public class \$L: \$L {", "}", serviceConfig.typeName, serviceConfig.typeProtocol) {
-            sdkConfigs.forEach {
-                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.type)
-            }
-            writer.write("")
-            otherConfigs.forEach {
-                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.type)
-            }
-
-            writer.write("")
-            serviceConfigs.forEach {
-                writer.write("public var ${it.memberName}: ${it.propFormatter}", it.type)
-            }
-
-            writer.write("")
-            serviceConfig.renderInitializers(serviceSymbol)
         }
     }
 }

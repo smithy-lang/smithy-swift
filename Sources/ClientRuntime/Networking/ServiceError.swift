@@ -1,9 +1,9 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
-
-import Foundation
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
 /// Provides properties for an error that was the result of a response from the service.
 public protocol ServiceError {
@@ -14,7 +14,6 @@ public protocol ServiceError {
     /// The message for this error, if one was received.
     var message: String? { get }
 }
-
 
 extension ServiceError {
 

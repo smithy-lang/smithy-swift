@@ -18,13 +18,9 @@ data class ConfigField(val memberName: String?, val type: Symbol, val propFormat
 /**
  * ServiceConfig abstract class that allows configuration customizations to be configured for the protocol client generator
  */
-abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
+abstract class ServiceConfig(val writer: SwiftWriter, val clientName: String, val serviceName: String) {
 
-    open val typeName: String = "${serviceName.toUpperCamelCase()}Configuration"
-    open val typeProtocol: Symbol = Symbol.builder().name("${typeName}Protocol").build()
-    open val typeError: Symbol = Symbol.builder().name("${typeName}Error").build()
-
-    open val typesToConformConfigTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Core.SDKRuntimeConfiguration)
+    open val typeName: String = "${clientName.toUpperCamelCase()}.${clientName.toUpperCamelCase()}Configuration"
 
     fun sdkRuntimeConfigProperties(): List<ConfigField> {
         val configFields = mutableListOf(
@@ -33,7 +29,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
             ConfigField("httpClientEngine", ClientRuntimeTypes.Http.HttpClientEngine),
             ConfigField("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration),
             ConfigField("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator),
-            ConfigField("retryer", ClientRuntimeTypes.Core.SDKRetryer),
+            ConfigField("retryStrategyOptions", ClientRuntimeTypes.Core.RetryStrategyOptions),
             ConfigField("clientLogMode", ClientRuntimeTypes.Core.ClientLogMode),
             ConfigField("logger", ClientRuntimeTypes.Core.Logger)
         ).sortedBy { it.memberName }
@@ -42,12 +38,8 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
 
     open fun otherRuntimeConfigProperties(): List<ConfigField> = listOf()
 
-    fun getTypeInheritance(): String {
-        return typesToConformConfigTo.joinToString(", ") { it.toString() }
-    }
-
     open fun renderInitializers(serviceSymbol: Symbol) {
-        writer.openBlock("public init(runtimeConfig: \$N) throws {", "}", ClientRuntimeTypes.Core.SDKRuntimeConfiguration) {
+        writer.openBlock("public init(runtimeConfig: \$N) throws {", "}", ClientRuntimeTypes.Core.DefaultSDKRuntimeConfiguration) {
             val configFields = sdkRuntimeConfigProperties()
             configFields.forEach {
                 writer.write("self.${it.memberName} = runtimeConfig.${it.memberName}")
@@ -55,7 +47,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val serviceName: String) {
         }
         writer.write("")
         writer.openBlock("public convenience init() throws {", "}") {
-            writer.write("let defaultRuntimeConfig = try \$N(\"${serviceName}\")", ClientRuntimeTypes.Core.DefaultSDKRuntimeConfiguration)
+            writer.write("let defaultRuntimeConfig = try \$N(\"${clientName}\")", ClientRuntimeTypes.Core.DefaultSDKRuntimeConfiguration)
             writer.write("try self.init(runtimeConfig: defaultRuntimeConfig)")
         }
     }

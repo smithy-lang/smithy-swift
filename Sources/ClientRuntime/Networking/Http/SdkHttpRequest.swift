@@ -111,7 +111,7 @@ public class SdkHttpRequestBuilder {
     var host: String = ""
     var path: String = "/"
     var body: HttpBody = .none
-    var queryItems: [URLQueryItem]? = nil
+    var queryItems: [URLQueryItem]?
     var port: Int16 = 443
     var protocolType: ProtocolType = .https
 

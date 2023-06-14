@@ -18,12 +18,12 @@ class HttpProtocolClientGeneratorTests {
             public class RestJsonProtocolClient {
                 public static let clientName = "RestJsonProtocolClient"
                 let client: ClientRuntime.SdkHttpClient
-                let config: RestJsonProtocolClientConfigurationProtocol
+                let config: RestJsonProtocol.RestJsonProtocolConfiguration
                 let serviceName = "Rest Json Protocol"
                 let encoder: ClientRuntime.RequestEncoder
                 let decoder: ClientRuntime.ResponseDecoder
             
-                public init(config: RestJsonProtocolClientConfigurationProtocol) {
+                public init(config: RestJsonProtocol.RestJsonProtocolConfiguration) {
                     client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
                     let encoder = ClientRuntime.JSONEncoder()
                     encoder.dateEncodingStrategy = .secondsSince1970
@@ -37,36 +37,25 @@ class HttpProtocolClientGeneratorTests {
                 }
             
                 public convenience init() throws {
-                    let config = try RestJsonProtocolClientConfiguration()
+                    let config = try RestJsonProtocol.RestJsonProtocolConfiguration()
                     self.init(config: config)
                 }
+            }
             
-                public class RestJsonProtocolClientConfiguration: RestJsonProtocolClientConfigurationProtocol {
-                    public var clientLogMode: ClientRuntime.ClientLogMode
-                    public var decoder: ClientRuntime.ResponseDecoder?
-                    public var encoder: ClientRuntime.RequestEncoder?
-                    public var httpClientConfiguration: ClientRuntime.HttpClientConfiguration
-                    public var httpClientEngine: ClientRuntime.HttpClientEngine
-                    public var idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
-                    public var logger: ClientRuntime.LogAgent
-                    public var retryer: ClientRuntime.SDKRetryer
+            public init(runtimeConfig: ClientRuntime.DefaultSDKRuntimeConfiguration) throws {
+                self.clientLogMode = runtimeConfig.clientLogMode
+                self.decoder = runtimeConfig.decoder
+                self.encoder = runtimeConfig.encoder
+                self.httpClientConfiguration = runtimeConfig.httpClientConfiguration
+                self.httpClientEngine = runtimeConfig.httpClientEngine
+                self.idempotencyTokenGenerator = runtimeConfig.idempotencyTokenGenerator
+                self.logger = runtimeConfig.logger
+                self.retryStrategyOptions = runtimeConfig.retryStrategyOptions
+            }
             
-                    public init(runtimeConfig: ClientRuntime.SDKRuntimeConfiguration) throws {
-                        self.clientLogMode = runtimeConfig.clientLogMode
-                        self.decoder = runtimeConfig.decoder
-                        self.encoder = runtimeConfig.encoder
-                        self.httpClientConfiguration = runtimeConfig.httpClientConfiguration
-                        self.httpClientEngine = runtimeConfig.httpClientEngine
-                        self.idempotencyTokenGenerator = runtimeConfig.idempotencyTokenGenerator
-                        self.logger = runtimeConfig.logger
-                        self.retryer = runtimeConfig.retryer
-                    }
-            
-                    public convenience init() throws {
-                        let defaultRuntimeConfig = try ClientRuntime.DefaultSDKRuntimeConfiguration("RestJsonProtocolClient")
-                        try self.init(runtimeConfig: defaultRuntimeConfig)
-                    }
-                }
+            public convenience init() throws {
+                let defaultRuntimeConfig = try ClientRuntime.DefaultSDKRuntimeConfiguration("Rest Json Protocol")
+                try self.init(runtimeConfig: defaultRuntimeConfig)
             }
             
             public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandlerFactory {
@@ -144,7 +133,7 @@ class HttpProtocolClientGeneratorTests {
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse>(contentType: "application/json"))
                 operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<AllocateWidgetInput, AllocateWidgetOutputResponse>(xmlName: "AllocateWidgetInput"))
                 operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
-                operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>(retryer: config.retryer))
+                operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, AllocateWidgetOutputResponse, AllocateWidgetOutputError>(options: config.retryStrategyOptions))
                 operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>())
                 operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<AllocateWidgetOutputResponse, AllocateWidgetOutputError>(clientLogMode: config.clientLogMode))
                 let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
