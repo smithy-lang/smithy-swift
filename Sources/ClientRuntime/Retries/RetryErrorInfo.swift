@@ -17,5 +17,11 @@ public struct RetryErrorInfo: Equatable {
     public let retryAfterHint: TimeInterval?
 
     /// Whether this error is a network timeout error.
-    var isTimeout: Bool
+    public var isTimeout: Bool
+
+    public init(errorType: RetryErrorType, retryAfterHint: TimeInterval?, isTimeout: Bool) {
+        self.errorType = errorType
+        self.retryAfterHint = retryAfterHint
+        self.isTimeout = isTimeout
+    }
 }
