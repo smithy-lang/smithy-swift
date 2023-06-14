@@ -24,10 +24,10 @@ public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryE
 
         let partitionID = try getPartitionID(context: context, input: input)
         let token = try await strategy.acquireInitialRetryToken(tokenScope: partitionID)
-        return try await tryRequest(token: token, context: context, input: input, next: next)
+        return try await sendRequest(token: token, context: context, input: input, next: next)
     }
 
-    private func tryRequest<H>(token: Strategy.Token, context: Context, input: MInput, next: H) async throws ->
+    private func sendRequest<H>(token: Strategy.Token, context: Context, input: MInput, next: H) async throws ->
         OperationOutput<Output> where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
 
         do {
@@ -42,7 +42,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryE
                 // TODO: log token error here
                 throw operationError
             }
-            return try await tryRequest(token: token, context: context, input: input, next: next)
+            return try await sendRequest(token: token, context: context, input: input, next: next)
         }
     }
 
