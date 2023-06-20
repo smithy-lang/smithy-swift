@@ -34,7 +34,7 @@ class WaiterGenerator(
             val serviceSymbol = ctx.symbolProvider.toSymbol(service)
 
             // Render an extension on the service protocol, which will contain the waitUntil... methods
-            writer.openBlock("extension \$LProtocol {", "}", serviceSymbol.name) {
+            writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
 
                 // Get the operation shapes for this service
                 val operationShapes = service.allOperations

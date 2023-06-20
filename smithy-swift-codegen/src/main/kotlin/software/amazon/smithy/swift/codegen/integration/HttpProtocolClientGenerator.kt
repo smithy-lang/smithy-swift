@@ -48,7 +48,7 @@ open class HttpProtocolClientGenerator(
         val operations = topDownIndex.getContainedOperations(serviceShape).sortedBy { it.toUpperCamelCase() }
         val operationsIndex = OperationIndex.of(model)
 
-        writer.openBlock("extension ${serviceSymbol.name}: ${serviceSymbol.name}Protocol {", "}") {
+        writer.openBlock("extension ${serviceSymbol.name} {", "}") {
             operations.forEach {
                 ServiceGenerator.renderOperationDefinition(model, symbolProvider, writer, operationsIndex, it)
                 writer.openBlock("{", "}") {

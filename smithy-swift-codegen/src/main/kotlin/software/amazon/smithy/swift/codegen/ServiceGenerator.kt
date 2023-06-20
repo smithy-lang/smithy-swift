@@ -72,10 +72,10 @@ class ServiceGenerator(
 
     fun render() {
         // add imports
-        writer.addImport(serviceSymbol)
+//        writer.addImport(serviceSymbol)
 
         // generate protocol
-        renderSwiftProtocol()
+//        renderSwiftProtocol()
     }
 
     /**
