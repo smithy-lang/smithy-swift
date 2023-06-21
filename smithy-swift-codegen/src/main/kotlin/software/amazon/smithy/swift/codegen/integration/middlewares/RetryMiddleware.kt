@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.swift.codegen.integration.middlewares
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
@@ -17,7 +18,8 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
 class RetryMiddleware(
     val model: Model,
-    val symbolProvider: SymbolProvider
+    val symbolProvider: SymbolProvider,
+    val retryErrorInfoProviderSymbol: Symbol,
 ) : MiddlewareRenderable {
 
     override val name = "RetryMiddleware"
@@ -33,7 +35,7 @@ class RetryMiddleware(
             "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N, \$N, \$N>(options: config.retryStrategyOptions))",
             ClientRuntimeTypes.Middleware.RetryMiddleware,
             ClientRuntimeTypes.Core.DefaultRetryStrategy,
-            ClientRuntimeTypes.Core.DefaultRetryErrorInfoProvider,
+            retryErrorInfoProviderSymbol,
             output,
             outputError
         )

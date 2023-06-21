@@ -9,9 +9,6 @@
 public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy,
     DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider> {
 
-    public typealias DefaultSDKRuntimeRetryStrategy = DefaultRetryStrategy
-    public typealias DefaultSDKRuntimeRetryErrorInfoProvider = DefaultRetryErrorInfoProvider
-
     /// The name of this Smithy service.
     public var serviceName: String
 
