@@ -9,7 +9,7 @@ import Foundation
 import XCTest
 @testable import ClientRuntime
 
-class RetryQuotaTests: XCTestCase {
+final class RetryQuotaTests: XCTestCase {
 
     // MARK: - on creation
 

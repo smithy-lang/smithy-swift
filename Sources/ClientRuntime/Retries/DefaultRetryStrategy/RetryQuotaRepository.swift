@@ -7,13 +7,11 @@
 
 /// Holds multiple quotas, keyed by partition IDs.
 actor RetryQuotaRepository {
-    let maxCapacity: Int
-    let availableCapacity: Int
+    let options: RetryStrategyOptions
     private var quotas = [String: RetryQuota]()
 
-    init(availableCapacity: Int, maxCapacity: Int) {
-        self.availableCapacity = availableCapacity
-        self.maxCapacity = maxCapacity
+    init(options: RetryStrategyOptions) {
+        self.options = options
     }
 
     /// Returns the quota for the given partition ID.
@@ -26,7 +24,7 @@ actor RetryQuotaRepository {
         if let quota = quotas[partitionID] {
             return quota
         } else {
-            let newQuota = RetryQuota(availableCapacity: availableCapacity, maxCapacity: maxCapacity)
+            let newQuota = RetryQuota(options: options)
             quotas[partitionID] = newQuota
             return newQuota
         }
