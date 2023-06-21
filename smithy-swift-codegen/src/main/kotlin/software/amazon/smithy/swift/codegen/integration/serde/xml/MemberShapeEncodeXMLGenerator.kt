@@ -23,6 +23,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfS
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNameTraitGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNamespaceTraitGenerator
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 abstract class MemberShapeEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -40,7 +41,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val originalMemberName = member.memberName
         val memberName = ctx.symbolProvider.toMemberName(member)
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
-        val nestedContainer = "${memberName}Container"
+        val nestedContainer = "${memberName.removeSurroundingBackticks()}Container"
         if (member.hasTrait(XmlFlattenedTrait::class.java)) {
             writer.openBlock("if $memberName.isEmpty {", "} else {") {
                 writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key)
@@ -74,7 +75,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                     renderNestedListEntryMember(nestedMemberTargetName, nestedMemberTarget, nestedMember, nestedMemberResolvedName, containerName, level)
                 }
                 is MapShape -> {
-                    val nestedContainerName = "${memberName}Container$level"
+                    val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container$level"
                     writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
                     writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
                         renderWrappedMapMemberItem(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level)
@@ -91,7 +92,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 }
                 else -> {
                     val nestedMemberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(nestedMember)
-                    val nestedContainerName = "${memberName}Container$level"
+                    val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container$level"
                     renderItem(writer, nestedMemberNamespaceTraitGenerator, nestedContainerName, containerName, nestedMemberTargetName, nestedMemberTarget, nestedMemberResolvedName)
                 }
             }
@@ -99,7 +100,7 @@ abstract class MemberShapeEncodeXMLGenerator(
     }
 
     private fun renderNestedListEntryMember(nestedMemberTargetName: String, nestedMemberTarget: CollectionShape, nestedMember: MemberShape, nestedMemberResolvedName: String, containerName: String, level: Int) {
-        var nestedContainerName = "${nestedMemberTargetName}Container$level"
+        var nestedContainerName = "${nestedMemberTargetName.removeSurroundingBackticks()}Container$level"
         writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
         XMLNamespaceTraitGenerator.construct(nestedMember)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
         renderListMemberItems(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level + 1)
@@ -117,7 +118,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
         val defaultMemberName = if (level == 0) memberName else "member"
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, defaultMemberName)
-        val nestedContainerName = "${memberName}Container$level"
+        val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container$level"
 
         writer.openBlock("for $nestedMemberTargetName in $memberName {", "}") {
             when (nestedMemberTarget) {
@@ -157,7 +158,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         }
     }
     private fun renderFlattenedListContainer(nestedMemberTargetName: String, nestedMemberTarget: CollectionShape, nestedMember: MemberShape, memberName: String, member: MemberShape, containerName: String, level: Int) {
-        var nestedContainerName = "${nestedMemberTargetName}Container$level"
+        var nestedContainerName = "${nestedMemberTargetName.removeSurroundingBackticks()}Container$level"
         val defaultMemberName = if (level == 0) memberName else "member"
         val memberResolvedName = XMLNameTraitGenerator.construct(member, defaultMemberName)
         writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${memberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
@@ -348,7 +349,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         if (isBoxed) {
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 val namespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
-                val nestedContainerName = "${memberName}Container"
+                val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container"
                 renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, memberTarget, resolvedMemberName)
             }
         } else {
@@ -367,7 +368,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val originalMemberName = member.memberName
         val namespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName).toString()
-        val nestedContainerName = "${memberName}Container"
+        val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container"
         renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, memberTarget, resolvedMemberName)
     }
 

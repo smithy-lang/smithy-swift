@@ -24,6 +24,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.TimestampEncodeGen
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 abstract class MemberShapeEncodeFormURLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -39,7 +40,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
     ) {
         val memberName = ctx.symbolProvider.toMemberName(member)
         val resolvedMemberName = customizations.customNameTraitGenerator(member, member.memberName)
-        val nestedContainer = "${memberName}Container"
+        val nestedContainer = "${memberName.removeSurroundingBackticks()}Container"
         writer.openBlock("if let $memberName = $memberName {", "}") {
             writer.openBlock("if !$memberName.isEmpty {", "}") {
                 if (member.hasTrait(XmlFlattenedTrait::class.java) || customizations.alwaysUsesFlattenedCollections()) {
@@ -82,7 +83,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
                     }
                 }
                 is MapShape -> {
-                    val nestedContainerName = "${memberName}Container$level"
+                    val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container$level"
                     writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
                     writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
                         renderWrappedMapMemberItem(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level)
@@ -108,7 +109,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
     }
 
     private fun renderNestedListEntryMember(nestedMemberTargetName: String, nestedMemberTarget: CollectionShape, nestedMember: MemberShape, nestedMemberResolvedName: String, containerName: String, level: Int) {
-        var nestedContainerName = "${nestedMemberTargetName}Container$level"
+        var nestedContainerName = "${nestedMemberTargetName.removeSurroundingBackticks()}Container$level"
         writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
         renderListMemberItems(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level + 1)
     }
@@ -125,7 +126,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
         val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
         val defaultMemberName = if (level == 0) member.memberName else "member"
         val resolvedMemberName = customizations.customNameTraitGenerator(member, defaultMemberName).indexAdvancedBy1("index$level")
-        val nestedContainerName = "${memberName}Container$level"
+        val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container$level"
 
         writer.openBlock("for (index$level, $nestedMemberTargetName) in $memberName.enumerated() {", "}") {
             when (nestedMemberTarget) {
@@ -166,7 +167,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
         }
     }
     private fun renderFlattenedListContainer(nestedMemberTargetName: String, nestedMemberTarget: CollectionShape, nestedMember: MemberShape, memberName: String, member: MemberShape, containerName: String, level: Int) {
-        var nestedContainerName = "${nestedMemberTargetName}Container$level"
+        var nestedContainerName = "${nestedMemberTargetName.removeSurroundingBackticks()}Container$level"
         val defaultMemberName = if (level == 0) memberName else "member"
         val memberResolvedName = customizations.customNameTraitGenerator(member, defaultMemberName)
         writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${memberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
@@ -183,7 +184,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
                     renderFlattenedMapMemberItem(memberName, member, memberTarget, containerName)
                 }
             } else {
-                val nestedContainer = "${memberName}Container"
+                val nestedContainer = "${memberName.removeSurroundingBackticks()}Container"
                 writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
                 renderWrappedMapMemberItem(memberName, memberTarget, nestedContainer)
             }
