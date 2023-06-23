@@ -11,7 +11,6 @@ public struct Endpoint: Hashable {
     public let protocolType: ProtocolType?
     public let host: String
     public let port: Int16
-
     public let headers: Headers?
     public let properties: [String: AnyHashable]
 
@@ -67,18 +66,13 @@ extension Endpoint {
         components.host = host
         components.percentEncodedPath = path
         components.percentEncodedQuery = queryItemString
-
         return components.url
     }
 
     var queryItemString: String? {
         guard let queryItems = queryItems else { return nil }
         return queryItems.map { queryItem in
-            if let value = queryItem.value {
-                return "\(queryItem.name)=\(value)"
-            } else {
-                return queryItem.name
-            }
+            return [queryItem.name, queryItem.value].compactMap { $0 }.joined(separator: "=")
         }.joined(separator: "&")
     }
 }
