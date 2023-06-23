@@ -21,7 +21,7 @@ class AttributesTests: XCTestCase {
     }
 
     func test_contains_doesNotContainUnsetKey() {
-        var subject = Attributes()
+        let subject = Attributes()
 
         XCTAssertFalse(subject.contains(key: intKey))
     }
