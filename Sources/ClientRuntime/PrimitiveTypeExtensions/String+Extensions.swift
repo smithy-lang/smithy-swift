@@ -100,8 +100,8 @@ extension String {
 }
 
 extension String {
-    public func urlPercentEncoding() -> String {
-        self.urlPercentEncodedForQuery
+    public func urlPercentEncoding(encodeForwardSlash: Bool = true) -> String {
+        encodeForwardSlash ? urlPercentEncodedForQuery : urlPercentEncodedForPath
     }
 }
 

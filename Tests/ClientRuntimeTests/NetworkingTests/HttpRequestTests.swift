@@ -15,7 +15,7 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testSdkHttpRequestToHttpRequest() throws {
-        var headers = Headers(["header-item-name": "header-item-value"])
+        let headers = Headers(["header-item-name": "header-item-value"])
         let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
 
         let httpBody = HttpBody.data(expectedMockRequestData)
@@ -90,16 +90,7 @@ class HttpRequestTests: NetworkingTestUtils {
         XCTAssert(updatedRequest.queryItems?.contains(ClientRuntime.URLQueryItem(name: "signedthing", value: "signed")) ?? false)
     }
 
-    func testPathInInHttpRequestIsEscapedPerRFC3986() throws {
-        let builder = SdkHttpRequestBuilder()
-            .withHeader(name: "Host", value: "xctest.amazon.com")
-            .withPath("/space /colon:/dollar$/tilde~/dash-/underscore_/period.")
-        let httpRequest = try builder.build().toHttpRequest(escaping: true)
-        let escapedPath = "/space%20/colon%3A/dollar%24/tilde~/dash-/underscore_/period."
-        XCTAssertEqual(httpRequest.path, escapedPath)
-    }
-
-    func testPathInInHttpRequestIsNotEscapedPerRFC3986WhenNotDesired() throws {
+    func testPathInInHttpRequestIsNotAltered() throws {
         let path = "/space /colon:/dollar$/tilde~/dash-/underscore_/period."
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "xctest.amazon.com")
