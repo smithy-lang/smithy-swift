@@ -24,7 +24,7 @@ class StructDecodeXMLGenerationTests {
                 case myGroceryList
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.myGroceryList) {
                     struct KeyVal0{struct member{}}
@@ -85,7 +85,7 @@ class StructDecodeXMLGenerationTests {
                 case trueBooleanValue
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 let stringValueDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .stringValue)
                 stringValue = stringValueDecoded
@@ -124,7 +124,7 @@ class StructDecodeXMLGenerationTests {
                 case nestedNestedStringList
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.nestedNestedStringList) {
                     struct KeyVal0{struct member{}}
@@ -179,7 +179,7 @@ class StructDecodeXMLGenerationTests {
                     case stringSet
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.stringList) {
                         struct KeyVal0{struct member{}}

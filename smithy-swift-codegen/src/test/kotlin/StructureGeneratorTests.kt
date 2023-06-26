@@ -41,7 +41,7 @@ class StructureGeneratorTests {
                 public var baz: Swift.Int?
                 public var foo: Swift.String?
             
-                public init (
+                public init(
                     bar: Swift.Int = 0,
                     baz: Swift.Int? = nil,
                     foo: Swift.String? = nil
@@ -85,7 +85,7 @@ class StructureGeneratorTests {
             public var shortVal: Swift.Int16?
             public var str: Swift.String?
         
-            public init (
+            public init(
                 booleanVal: Swift.Bool? = nil,
                 byteVal: Swift.Int8? = nil,
                 doubleVal: Swift.Double? = nil,
@@ -143,7 +143,7 @@ public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
     public var foo: Swift.String?
     public var nested: Box<RecursiveShapesInputOutputNested2>?
 
-    public init (
+    public init(
         foo: Swift.String? = nil,
         nested: Box<RecursiveShapesInputOutputNested2>? = nil
     )
@@ -157,7 +157,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
     public var bar: Swift.String?
     public var recursiveMember: RecursiveShapesInputOutputNested1?
 
-    public init (
+    public init(
         bar: Swift.String? = nil,
         recursiveMember: RecursiveShapesInputOutputNested1? = nil
     )
@@ -171,7 +171,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
 public struct RecursiveShapesInputOutput: Swift.Equatable {
     public var nested: RecursiveShapesInputOutputNested1?
 
-    public init (
+    public init(
         nested: RecursiveShapesInputOutputNested1? = nil
     )
     {
@@ -201,7 +201,7 @@ public struct RecursiveShapesInputOutputNestedList1: Swift.Equatable {
     public var foo: Swift.String?
     public var recursiveList: [RecursiveShapesInputOutputNested2]?
 
-    public init (
+    public init(
         foo: Swift.String? = nil,
         recursiveList: [RecursiveShapesInputOutputNested2]? = nil
     )
@@ -215,7 +215,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
     public var bar: Swift.String?
     public var recursiveMember: RecursiveShapesInputOutputNested1?
 
-    public init (
+    public init(
         bar: Swift.String? = nil,
         recursiveMember: RecursiveShapesInputOutputNested1? = nil
     )
@@ -229,7 +229,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
 public struct RecursiveShapesInputOutputLists: Swift.Equatable {
     public var nested: RecursiveShapesInputOutputNested1?
 
-    public init (
+    public init(
         nested: RecursiveShapesInputOutputNested1? = nil
     )
     {
@@ -259,25 +259,30 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                 import ClientRuntime
 
                 /// This is documentation about the shape.
-                public struct MyError: ClientRuntime.ServiceError, Swift.Equatable, Swift.Error {
-                    public var _headers: ClientRuntime.Headers?
-                    public var _statusCode: ClientRuntime.HttpStatusCode?
-                    public var _message: Swift.String?
-                    public var _requestID: Swift.String?
-                    public var _retryable: Swift.Bool = true
-                    public var _isThrottling: Swift.Bool = false
-                    public var _type: ClientRuntime.ErrorType = .client
-                    /// This is documentation about the member.
-                    public var baz: Swift.Int?
-                    public var message: Swift.String?
+                public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError, Swift.Error {
+
+                    public struct Properties {
+                        /// This is documentation about the member.
+                        public internal(set) var baz: Swift.Int? = nil
+                        public internal(set) var message: Swift.String? = nil
+                    }
                 
-                    public init (
+                    public internal(set) var properties = Properties()
+                    public static var typeName: Swift.String { "MyError" }
+                    public static var fault: ErrorFault { .client }
+                    public static var isRetryable: Swift.Bool { true }
+                    public static var isThrottling: Swift.Bool { false }
+                    public internal(set) var httpResponse = HttpResponse()
+                    public internal(set) var message: Swift.String?
+                    public internal(set) var requestID: Swift.String?
+                
+                    public init(
                         baz: Swift.Int? = nil,
                         message: Swift.String? = nil
                     )
                     {
-                        self.baz = baz
-                        self.message = message
+                        self.properties.baz = baz
+                        self.properties.message = message
                     }
                 }
             """.trimIndent()
@@ -319,7 +324,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                 public var stringSet: Swift.Set<Swift.String>?
                 public var timestampList: [ClientRuntime.Date]?
             
-                public init (
+                public init(
                     booleanList: [Swift.Bool]? = nil,
                     integerList: [Swift.Int]? = nil,
                     nestedStringList: [[Swift.String]]? = nil,
@@ -368,7 +373,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                 public var sparseStringMap: [Swift.String:Swift.String?]?
                 public var sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]?
             
-                public init (
+                public init(
                     denseBooleanMap: [Swift.String:Swift.Bool]? = nil,
                     denseNumberMap: [Swift.String:Swift.Int]? = nil,
                     denseStringMap: [Swift.String:Swift.String]? = nil,
@@ -407,7 +412,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
                 public var sparseStringMap: [Swift.String:Swift.String?]?
                 public var sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]?
             
-                public init (
+                public init(
                     denseBooleanMap: [Swift.String:Swift.Bool]? = nil,
                     denseNumberMap: [Swift.String:Swift.Int]? = nil,
                     denseStringMap: [Swift.String:Swift.String]? = nil,

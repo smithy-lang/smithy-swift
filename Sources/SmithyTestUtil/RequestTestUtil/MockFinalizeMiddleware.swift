@@ -11,7 +11,7 @@ public struct MockFinalizeMiddleware: Middleware {
     public typealias Context = HttpContext
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<MockOutput>
-    public typealias MError = SdkError<MockMiddlewareError>
+    public typealias MError = MockMiddlewareError
     public typealias MockFinalizeMiddlewareCallback = (HttpContext, MInput) -> Void
     public let id: String
     let callback: MockFinalizeMiddlewareCallback?

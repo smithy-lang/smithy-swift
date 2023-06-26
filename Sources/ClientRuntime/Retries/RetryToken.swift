@@ -4,12 +4,14 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-import AwsCommonRuntimeKit
 
-public struct RetryToken {
-    public let crtToken: AwsCommonRuntimeKit.RetryToken
+import struct Foundation.TimeInterval
 
-    public init(crtToken: AwsCommonRuntimeKit.RetryToken) {
-        self.crtToken = crtToken
-    }
+/// RetryToken is an abstract representation. They encode information for use with subsequent calls to the retry strategy.
+/// As such, they’ll likely encode more information using the language type system’s interface extension system such as:
+/// TokenBucket, current retry cost, success repayment information, general book-keeping etc...
+public protocol RetryToken: AnyObject {
+
+    /// The number of retries (i.e. NOT including the initial attempt) that this token has made.
+    var retryCount: Int { get }
 }

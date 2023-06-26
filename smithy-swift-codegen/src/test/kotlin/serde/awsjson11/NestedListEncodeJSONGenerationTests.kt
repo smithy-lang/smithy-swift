@@ -20,7 +20,7 @@ class NestedListEncodeJSONGenerationTests {
             public struct ListOfMapsOperationInput: Swift.Equatable {
                 public var targetMaps: [[Swift.String:[Swift.String]]]?
             
-                public init (
+                public init(
                     targetMaps: [[Swift.String:[Swift.String]]]? = nil
                 )
                 {

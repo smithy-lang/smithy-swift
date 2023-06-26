@@ -31,6 +31,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.Map
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
+import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 abstract class MemberShapeDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -68,7 +69,7 @@ abstract class MemberShapeDecodeXMLGenerator(
 
         writer.openBlock(ifNilOrIfLetStatement, "} else {") {
             val memberBuffer = "${memberName}Buffer"
-            val memberContainerName = "${memberName}Container"
+            val memberContainerName = "${memberName.removeSurroundingBackticks()}Container"
             val (memberTargetSymbol, memberTargetSymbolName) = nestedMemberTargetSymbolMapper(memberTarget)
             writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent($memberTargetSymbolName.self, forKey: $currContainerKey)")
             writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
@@ -89,8 +90,8 @@ abstract class MemberShapeDecodeXMLGenerator(
         val nestedMemberTargetSymbol = ctx.symbolProvider.toSymbol(nestedMemberTarget)
 
         val nestedMemberTargetType = "${nestedMemberTarget.type.name.toLowerCase()}"
-        val nestedContainerName = "${nestedMemberTargetType}Container$level"
-        val nestedMemberBuffer = "${nestedMemberTargetType}Buffer$level"
+        val nestedContainerName = "${nestedMemberTargetType.removeSurroundingBackticks()}Container$level"
+        val nestedMemberBuffer = "${nestedMemberTargetType.removeSurroundingBackticks()}Buffer$level"
         val insertMethod = when (memberTarget) {
             is SetShape -> "insert"
             is ListShape -> "append"
@@ -199,7 +200,7 @@ abstract class MemberShapeDecodeXMLGenerator(
 
     private fun renderMapMemberItems(memberShape: MemberShape, memberContainerName: String, memberBuffer: String, parentKeyedContainerName: String, currentContainerKey: String, level: Int = 0) {
         val memberTarget = ctx.model.expectShape(memberShape.target)
-        val itemInContainerName = "${memberTarget.type.name.toLowerCase()}Container$level"
+        val itemInContainerName = "${memberTarget.type.name.toLowerCase().removeSurroundingBackticks()}Container$level"
 
         val nestedBuffer = "nestedBuffer$level"
         val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)

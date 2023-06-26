@@ -6,14 +6,15 @@
 //
 import AwsCommonRuntimeKit
 
-public enum ExponentialBackOffJitterMode {
+public enum ExponentialBackOffJitterType {
     case `default`
     case none
     case full
     case decorrelated
 }
 
-extension ExponentialBackOffJitterMode {
+extension ExponentialBackOffJitterType {
+
     func toCRTType() -> AwsCommonRuntimeKit.ExponentialBackoffJitterMode {
         switch self {
         case .default: return .default

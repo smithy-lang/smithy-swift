@@ -24,7 +24,7 @@ class MapDecodeXMLGenerationTests {
                 case myMap
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.myMap) {
                     struct KeyVal0{struct key{}; struct value{}}
@@ -61,7 +61,7 @@ class MapDecodeXMLGenerationTests {
                 case `protocol` = "protocol"
             }
         
-            public init (from decoder: Swift.Decoder) throws {
+            public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                 if containerValues.contains(.`protocol`) {
                     struct KeyVal0{struct key{}; struct value{}}
@@ -99,7 +99,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
@@ -145,7 +145,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
@@ -199,7 +199,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
@@ -237,7 +237,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
@@ -283,7 +283,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct Attribute{}; struct Setting{}}
@@ -321,7 +321,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct SomeCustomKey{}; struct SomeCustomValue{}}
@@ -359,7 +359,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct CustomKey1{}; struct CustomValue1{}}
@@ -404,7 +404,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct yek{}; struct eulav{}}
@@ -450,7 +450,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct Quality{}; struct Degree{}}
@@ -488,7 +488,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct Uid{}; struct Val{}}
@@ -526,7 +526,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct yek{}; struct eulav{}}
@@ -572,7 +572,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct yek{}; struct eulav{}}
@@ -617,7 +617,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
@@ -660,7 +660,7 @@ class MapDecodeXMLGenerationTests {
                     case myMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}
@@ -704,7 +704,7 @@ class MapDecodeXMLGenerationTests {
                     case timestampMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.timestampMap) {
                         struct KeyVal0{struct key{}; struct value{}}
@@ -742,7 +742,7 @@ class MapDecodeXMLGenerationTests {
                     case timestampMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.timestampMap) {
                         struct KeyVal0{struct key{}; struct value{}}
@@ -780,7 +780,7 @@ class MapDecodeXMLGenerationTests {
                     case mySecondMap
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     if containerValues.contains(.myMap) {
                         struct KeyVal0{struct key{}; struct value{}}

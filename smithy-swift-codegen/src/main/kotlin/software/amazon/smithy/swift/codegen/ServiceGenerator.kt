@@ -14,10 +14,7 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.swift.codegen.integration.DefaultServiceConfig
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.SectionId
-import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 
 /*
@@ -36,10 +33,6 @@ class ServiceGenerator(
     private val serviceSymbol: Symbol by lazy {
         symbolProvider.toSymbol(service)
     }
-    private val serviceConfig: DefaultServiceConfig by lazy {
-        DefaultServiceConfig(writer, serviceSymbol.name)
-    }
-    private val rootNamespace = settings.moduleName
 
     companion object {
         /**
@@ -63,9 +56,6 @@ class ServiceGenerator(
             val outputShape = opIndex.getOutput(op).get()
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
 
-            if (op.id.name == "createBucket") {
-                print("we are here")
-            }
             writer.writeShapeDocs(op)
             writer.writeAvailableAttribute(model, op)
 
@@ -87,6 +77,7 @@ class ServiceGenerator(
         // generate protocol
         renderSwiftProtocol()
     }
+
     /**
      * Generates an appropriate Swift Protocol for a Smithy Service shape.
      *
@@ -128,50 +119,10 @@ class ServiceGenerator(
             .call {
                 operations.forEach { op ->
                     renderOperationDefinition(model, symbolProvider, writer, operationsIndex, op, true)
-                    renderOperationErrorEnum(op)
                 }
             }
             .closeBlock("}")
             .write("")
-
-        val sectionContext = mapOf(
-            "serviceSymbol" to serviceSymbol,
-            "protocolGenerator" to protocolGenerator,
-            "protocolGenerationContext" to protocolGenerationContext
-        )
-        writer.declareSection(ConfigurationProtocolSectionId, sectionContext) {
-            writer.openBlock("public protocol \$L : \$L {", "}", serviceConfig.typeProtocol, serviceConfig.getTypeInheritance()) {
-            }
-        }.write("")
-    }
-
-    object ConfigurationProtocolSectionId : SectionId
-
-    /*
-        Renders the Operation Error enum
-    */
-    private fun renderOperationErrorEnum(
-        op: OperationShape
-    ) {
-        val errorShapes = op.errors.map { model.expectShape(it) as StructureShape }.toSet().sorted()
-        val operationErrorName = MiddlewareShapeUtils.outputErrorSymbolName(op)
-        val operationErrorSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName.swift")
-            .name(operationErrorName)
-            .build()
-        val unknownServiceErrorSymbol = protocolGenerator?.unknownServiceErrorSymbol ?: ProtocolGenerator.DefaultUnknownServiceErrorSymbol
-
-        delegator.useShapeWriter(operationErrorSymbol) { writer ->
-            writer.addImport(unknownServiceErrorSymbol)
-            writer.openBlock("public enum $operationErrorName: \$N, \$N {", "}", SwiftTypes.Error, SwiftTypes.Protocols.Equatable) {
-                for (errorShape in errorShapes) {
-                    val errorShapeName = symbolProvider.toSymbol(errorShape).name
-                    writer.write("case \$L(\$L)", errorShapeName.decapitalize(), errorShapeName)
-                }
-                val unknownServiceErrorType = unknownServiceErrorSymbol.name
-                writer.write("case unknown($unknownServiceErrorType)")
-            }
-        }
     }
 }
 

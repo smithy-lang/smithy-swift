@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration.httpResponse
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
@@ -61,24 +62,22 @@ class HttpResponseBindingErrorInitGenerator(
             writer.openBlock("extension \$L {", "}", errorShapeName) {
                 writer.declareSection(HttpResponseBindingErrorInit) {
                     writer.write(
-                        "public init (httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) throws {",
+                        "public init(httpResponse: \$N, decoder: \$D, message: \$D, requestID: \$D) async throws {",
                         ClientRuntimeTypes.Http.HttpResponse,
                         ClientRuntimeTypes.Serde.ResponseDecoder,
                         SwiftTypes.String,
                         SwiftTypes.String
                     )
                 }
-
                 writer.indent()
-                HttpResponseHeaders(ctx, headerBindings, defaultTimestampFormat, writer).render()
+                HttpResponseHeaders(ctx, true, headerBindings, defaultTimestampFormat, writer).render()
                 HttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                httpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)
+                httpResponseTraitPayload(ctx, responseBindings, shape, writer)
                 HttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
                 HttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
-                writer.write("self._headers = httpResponse.headers")
-                writer.write("self._statusCode = httpResponse.statusCode")
-                writer.write("self._requestID = requestID")
-                writer.write("self._message = message")
+                writer.write("self.httpResponse = httpResponse")
+                writer.write("self.requestID = requestID")
+                writer.write("self.message = message")
                 writer.declareSection(HttpResponseBindingErrorInitMemberAssignment)
                 writer.dedent()
                 writer.write("}")
@@ -87,11 +86,11 @@ class HttpResponseBindingErrorInitGenerator(
         }
     }
 
-    fun httpResponseTraitPayload(ctx: ProtocolGenerator.GenerationContext, responseBindings: List<HttpBindingDescriptor>, errorShapeName: String, writer: SwiftWriter) {
+    fun httpResponseTraitPayload(ctx: ProtocolGenerator.GenerationContext, responseBindings: List<HttpBindingDescriptor>, errorShape: Shape, writer: SwiftWriter) {
         val responseTraitPayload = httpResponseTraitPayloadFactory?.let {
-            it.construct(ctx, responseBindings, errorShapeName, writer)
+            it.construct(ctx, responseBindings, errorShape, writer)
         } ?: run {
-            HttpResponseTraitPayload(ctx, responseBindings, errorShapeName, writer)
+            HttpResponseTraitPayload(ctx, responseBindings, errorShape, writer)
         }
         responseTraitPayload.render()
     }

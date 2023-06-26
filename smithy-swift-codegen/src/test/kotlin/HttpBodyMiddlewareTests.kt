@@ -162,7 +162,7 @@ class HttpBodyMiddlewareTests {
                             }
                         }
                     } catch let err {
-                        throw SdkError<ExplicitStructOutputError>.client(ClientRuntime.ClientError.serializationFailed(err.localizedDescription))
+                        throw ClientRuntime.ClientError.unknownError(err.localizedDescription)
                     }
                     return try await next.handle(context: context, input: input)
                 }

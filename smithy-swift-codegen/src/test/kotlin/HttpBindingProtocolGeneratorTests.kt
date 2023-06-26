@@ -31,7 +31,7 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
         operationMiddleware: OperationMiddleware,
     ): HttpProtocolClientGenerator {
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
-        val config = getConfigClass(writer, serviceSymbol.name)
+        val config = getConfigClass(writer, ctx.settings.sdkId, serviceSymbol.name)
         return HttpProtocolClientGenerator(ctx, writer, config, httpBindingResolver, defaultContentType, httpProtocolCustomizable, operationMiddleware)
     }
 
@@ -42,8 +42,8 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
         )
     }
 
-    private fun getConfigClass(writer: SwiftWriter, serviceName: String): ServiceConfig {
-        return DefaultServiceConfig(writer, serviceName)
+    private fun getConfigClass(writer: SwiftWriter, clientName: String, serviceName: String): ServiceConfig {
+        return DefaultServiceConfig(writer, clientName, serviceName)
     }
 }
 
@@ -71,8 +71,8 @@ class HttpBindingProtocolGeneratorTests {
         val expectedContents =
             """
 extension ExplicitStructOutputResponse: ClientRuntime.HttpResponseBinding {
-    public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
-        if let data = try httpResponse.body.toData(), let responseDecoder = decoder {
+    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
+        if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {
             let output: Nested2 = try responseDecoder.decode(responseBody: data)
             self.payload1 = output
         } else {
@@ -98,7 +98,7 @@ extension ExplicitStructOutputResponse: ClientRuntime.HttpResponseBinding {
         val expectedContents =
             """
 extension HttpResponseCodeOutputResponse: ClientRuntime.HttpResponseBinding {
-    public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
+    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
         self.status = httpResponse.statusCode.rawValue
     }
 }
@@ -113,8 +113,8 @@ extension HttpResponseCodeOutputResponse: ClientRuntime.HttpResponseBinding {
         val expectedContents =
             """
 extension InlineDocumentAsPayloadOutputResponse: ClientRuntime.HttpResponseBinding {
-    public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
-        if let data = try httpResponse.body.toData(), let responseDecoder = decoder {
+    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
+        if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {
             let output: ClientRuntime.Document = try responseDecoder.decode(responseBody: data)
             self.documentValue = output
         } else {
@@ -131,7 +131,7 @@ extension InlineDocumentAsPayloadOutputResponse: ClientRuntime.HttpResponseBindi
         val expectedContents =
             """
             extension HttpPrefixHeadersOutputResponse: ClientRuntime.HttpResponseBinding {
-                public init (httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) throws {
+                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
                     if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
                         self.foo = fooHeaderValue
                     } else {

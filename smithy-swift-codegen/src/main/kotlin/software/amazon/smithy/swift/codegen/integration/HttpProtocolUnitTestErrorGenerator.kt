@@ -41,7 +41,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         val decoderParameter = if (needsResponseDecoder) ", decoder: decoder" else ""
 
         writer.write(
-            "let \$L = try \$L(httpResponse: httpResponse\$L)",
+            "let \$L = try await \$L.makeError(httpResponse: httpResponse\$L)",
             operationErrorVariableName,
             operationErrorType,
             decoderParameter
@@ -57,7 +57,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         val errorType = symbolProvider.toSymbol(errorShape).name
         val errorVariableName = errorType.decapitalize()
 
-        writer.openBlock("if case .\$L(let actual) = \$L {", "} else {", errorVariableName, operationErrorVariableName) {
+        writer.openBlock("if let actual = \$L as? \$L {", "} else {", operationErrorVariableName, errorType) {
             renderExpectedOutput(test, errorShape)
             renderAssertions(test, errorShape)
         }
@@ -68,7 +68,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
     }
 
     override fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
-        writer.write("XCTAssertEqual(actual._statusCode, HttpStatusCode(rawValue: \$L))", test.code)
+        writer.write("XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: \$L))", test.code)
         super.renderAssertions(test, outputShape)
     }
 

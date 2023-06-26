@@ -92,7 +92,7 @@ abstract class MemberShapeEncodeGenerator(
             }
             // this only gets called in a recursive loop where there is a map nested deeply inside a list
             is MapShape -> {
-                val topLevelContainerName = "${memberName}Container"
+                val topLevelContainerName = "${memberName.removeSurroundingBackticks()}Container"
                 writer.write("var \$L = $containerName.nestedContainer(keyedBy: \$N.self)", topLevelContainerName, ClientRuntimeTypes.Serde.Key)
                 renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
             }
@@ -174,12 +174,12 @@ abstract class MemberShapeEncodeGenerator(
         val keyName = if (level == 0) ".$memberName" else "${ClientRuntimeTypes.Serde.Key}(stringValue: $dictKey${level - 1})"
         when (targetShape) {
             is CollectionShape -> {
-                val topLevelContainerName = "${memberName}Container"
+                val topLevelContainerName = "${memberName.removeSurroundingBackticks()}Container"
                 writer.write("var \$L = $containerName.nestedUnkeyedContainer(forKey: \$L)", topLevelContainerName, keyName)
                 renderEncodeList(ctx, memberName, topLevelContainerName, targetShape, level)
             }
             is MapShape -> {
-                val topLevelContainerName = "${memberName}Container"
+                val topLevelContainerName = "${memberName.removeSurroundingBackticks()}Container"
                 writer.write(
                     "var \$L = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$L)",
                     topLevelContainerName,

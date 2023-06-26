@@ -58,6 +58,7 @@ public extension HttpBody {
         }
     }
 
+    @available(*, deprecated, message: "This method is deprecated and will soon be removed. Call `readData()` instead.")
     func toData() throws -> Data? {
         switch self {
         case .data(let data):
@@ -86,7 +87,7 @@ public extension HttpBody {
 }
 
 extension HttpBody: CustomDebugStringConvertible {
-    
+
     public var debugDescription: String {
         var bodyAsString: String?
         switch self {

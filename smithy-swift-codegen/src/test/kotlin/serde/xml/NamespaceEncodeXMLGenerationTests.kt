@@ -94,7 +94,7 @@ class NamespaceEncodeXMLGenerationTests {
                     }
                 }
             
-                public init (from decoder: Swift.Decoder) throws {
+                public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let fooDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .foo)
                     foo = fooDecoded

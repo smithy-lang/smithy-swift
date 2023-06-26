@@ -125,7 +125,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override val unknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
 
-    override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpServiceError
+    override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpError
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         // render conformance to HttpRequestBinding for all input shapes
@@ -415,7 +415,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             operationMiddleware.appendMiddleware(operation, DeserializeMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware(ctx.model, ctx.symbolProvider))
-            operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
 
             addProtocolSpecificMiddleware(ctx, operation)
 
@@ -479,4 +479,4 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     abstract override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext)
 }
 
-class DefaultServiceConfig(writer: SwiftWriter, serviceName: String) : ServiceConfig(writer, serviceName)
+class DefaultServiceConfig(writer: SwiftWriter, clientName: String, serviceName: String) : ServiceConfig(writer, clientName, serviceName)

@@ -1,19 +1,30 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
-import Foundation
-
+/// Provides properties for an error that was the result of a response from the service.
 public protocol ServiceError {
-    var _retryable: Bool { get set }
-    var _isThrottling: Bool { get set}
-    var _type: ErrorType { get set }
-    var _message: String? { get set }
+
+    /// The type name, if known, for the error that was received.
+    var typeName: String? { get }
+
+    /// The message for this error, if one was received.
+    var message: String? { get }
 }
 
-public enum ErrorType: Equatable {
-    case server
-    case client
-    case unknown
+extension ServiceError {
+
+    /// Returns a localized description for this error, suitable for conformance with Swift `Error`.
+    var localizedDescription: String {
+        if let message = message {
+            return message
+        } else if let typeName = typeName {
+            return "An error of type \"\(typeName)\" occurred."
+        } else {
+            return "An unknown error occurred."
+        }
+    }
 }

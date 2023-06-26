@@ -123,7 +123,7 @@ abstract class MemberShapeDecodeGenerator(
                 is ListShape -> "append"
                 else -> "append"
             }
-            val listContainerName = "${memberName}Container"
+            val listContainerName = "${memberName.removeSurroundingBackticks()}Container"
             val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
             writer.write(
                 "let \$L = try $containerName.$decodeVerb(\$L.self, forKey: .\$L)",
@@ -226,7 +226,7 @@ abstract class MemberShapeDecodeGenerator(
         val decodedMemberName = "${memberName.removeSurroundingBackticks()}Decoded$level"
         val nestedTarget = ctx.model.expectShape(shape.value.target)
         if (level == 0) {
-            val topLevelContainerName = "${memberName}Container"
+            val topLevelContainerName = "${memberName.removeSurroundingBackticks()}Container"
             val decodeVerb = if (originalSymbol.isBoxed()) "decodeIfPresent" else "decode"
             writer.write(
                 "let \$L = try $containerName.$decodeVerb(\$L.self, forKey: .\$L)",
