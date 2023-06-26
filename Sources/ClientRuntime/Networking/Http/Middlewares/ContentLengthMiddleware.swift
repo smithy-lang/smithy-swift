@@ -23,7 +23,7 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
             if let length = stream.length {
                 input.headers.update(name: "Content-Length", value: String(length))
             } else {
-                input.headers.update(name: "Transfer-Encoded", value: "Chunked")
+                input.headers.update(name: "Transfer-Encoding", value: "chunked")
             }
         case .none:
             input.headers.update(name: "Content-Length", value: "0")
