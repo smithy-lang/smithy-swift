@@ -29,11 +29,10 @@ public class SdkHttpRequest {
 
 extension SdkHttpRequest {
 
-    public func toHttpRequest(escaping: Bool = false) throws -> HTTPRequest {
+    public func toHttpRequest() throws -> HTTPRequest {
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        let encodedPath = escaping ? endpoint.path.urlPercentEncodedForPath : endpoint.path
-        httpRequest.path = [encodedPath, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
+        httpRequest.path = [endpoint.path, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
         httpRequest.body = StreamableHttpBody(body: body)
         return httpRequest
@@ -42,11 +41,10 @@ extension SdkHttpRequest {
     /// Convert the SDK request to a CRT HTTPRequestBase
     /// CRT converts the HTTPRequestBase to HTTP2Request internally if the protocol is HTTP/2
     /// - Returns: the CRT request
-    public func toHttp2Request(escaping: Bool = false) throws -> HTTPRequestBase {
+    public func toHttp2Request() throws -> HTTPRequestBase {
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        let encodedPath = escaping ? endpoint.path.urlPercentEncodedForPath : endpoint.path
-        httpRequest.path = [encodedPath, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
+        httpRequest.path = [endpoint.path, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
 
         // HTTP2Request used with manual writes hence we need to set the body to nil
