@@ -18,10 +18,6 @@ public class SdkHttpClient {
         let clientHandler = ClientHandler<Output>(engine: engine)
         return clientHandler.eraseToAnyHandler()
     }
-
-    func execute(request: SdkHttpRequest) async throws -> HttpResponse {
-        return try await engine.execute(request: request)
-    }
 }
 
 struct ClientHandler<Output: HttpResponseBinding>: Handler {
@@ -29,11 +25,7 @@ struct ClientHandler<Output: HttpResponseBinding>: Handler {
     func handle(context: HttpContext, input: SdkHttpRequest) async throws -> OperationOutput<Output> {
         let httpResponse: HttpResponse
 
-        if context.shouldForceH2(), let crtEngine = engine as? CRTClientEngine {
-            httpResponse = try await crtEngine.executeHTTP2Request(request: input)
-        } else {
-            httpResponse = try await engine.execute(request: input)
-        }
+        httpResponse = try await engine.execute(request: input, bidirectional: context.shouldForceH2())
 
         return OperationOutput<Output>(httpResponse: httpResponse)
     }

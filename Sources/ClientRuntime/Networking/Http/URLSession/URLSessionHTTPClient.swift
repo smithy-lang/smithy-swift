@@ -14,14 +14,19 @@ public final class URLSessionHTTPClient: HttpClientEngine {
         let bufferSize = 4096
         var continuation: CheckedContinuation<HttpResponse, Error>?
         var urlSessionDataTask: URLSessionDataTask?
+        var urlSessionStreamTask: URLSessionStreamTask?
+        var requestStreamTask: Task<Void, Error>?
+        var responseStreamTask: Task<Void, Error>?
         var requestStream: ReadableStream?
         var streamBridge: OutputStreamBridge?
         var responseStream: WriteableStream?
+        let bidirectional: Bool
 
-        init(continuation: CheckedContinuation<HttpResponse, Error>, requestStream: ReadableStream, streamBridge: OutputStreamBridge) {
+        init(continuation: CheckedContinuation<HttpResponse, Error>, requestStream: ReadableStream, streamBridge: OutputStreamBridge, bidirectional: Bool) {
             self.continuation = continuation
             self.requestStream = requestStream
             self.streamBridge = streamBridge
+            self.bidirectional = bidirectional
         }
     }
 
@@ -63,8 +68,9 @@ public final class URLSessionHTTPClient: HttpClientEngine {
 
         func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
             print("DID RECEIVE RESPONSE")
-            defer { completionHandler(.allow) }
             storage.modify(dataTask) { connection in
+//                defer { completionHandler(connection.bidirectional ? .becomeStream : .allow) }
+                defer { completionHandler(.allow) }
                 guard let httpResponse = response as? HTTPURLResponse else {
                     let error = URLSessionHTTPClientError.responseNotHTTP
                     connection.continuation?.resume(throwing: error)
@@ -84,6 +90,16 @@ public final class URLSessionHTTPClient: HttpClientEngine {
                 connection.continuation?.resume(returning: response)
                 connection.continuation = nil
             }
+        }
+
+        func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didBecome streamTask: URLSessionStreamTask) {
+            print("PROMOTED TO STREAM")
+            let connection = storage[dataTask]
+            connection?.urlSessionStreamTask = streamTask
+            connection?.urlSessionDataTask = nil
+            storage[streamTask] = connection
+            storage.remove(dataTask)
+            connection?.streamBridge?.close()
         }
 
         func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
@@ -119,27 +135,28 @@ public final class URLSessionHTTPClient: HttpClientEngine {
         self.session = URLSession(configuration: .default, delegate: self.delegate, delegateQueue: nil)
     }
 
-    public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
+    public func execute(request: SdkHttpRequest, bidirectional: Bool) async throws -> HttpResponse {
         var outputStream: OutputStream?
         var inputStream: InputStream?
         Foundation.Stream.getBoundStreams(withBufferSize: 4096, inputStream: &inputStream, outputStream: &outputStream)
+        let bodyStream: InputStream? = bidirectional ? nil : inputStream
         return try await withCheckedThrowingContinuation { continuation in
             let requestStream: ReadableStream
             let urlRequest: URLRequest
             switch request.body {
             case .data(let data):
                 requestStream = BufferedStream(data: data, isClosed: true)
-                urlRequest = makeURLRequest(from: request, inputStream: inputStream!)
+                urlRequest = makeURLRequest(from: request, inputStream: bodyStream)
             case .stream(let stream):
                 requestStream = stream
-                urlRequest = makeURLRequest(from: request, inputStream: inputStream!)
+                urlRequest = makeURLRequest(from: request, inputStream: bodyStream)
             case .none:
                 requestStream = BufferedStream(data: nil, isClosed: true)
                 urlRequest = makeURLRequest(from: request, inputStream: nil)
             }
             let streamBridge = OutputStreamBridge(readableStream: requestStream, outputStream: outputStream!)
             let dataTask = session.dataTask(with: urlRequest)
-            delegate.storage[dataTask] = Connection(continuation: continuation, requestStream: requestStream, streamBridge: streamBridge)
+            delegate.storage[dataTask] = Connection(continuation: continuation, requestStream: requestStream, streamBridge: streamBridge, bidirectional: bidirectional)
             streamBridge.open()
             dataTask.resume()
         }
@@ -153,7 +170,7 @@ public final class URLSessionHTTPClient: HttpClientEngine {
         components.percentEncodedQueryItems = request.queryItems?.map { Foundation.URLQueryItem(name: $0.name, value: $0.value) }
         var urlRequest = URLRequest(url: components.url!)
         urlRequest.httpMethod = request.method.rawValue
-        urlRequest.httpShouldUsePipelining = false
+        urlRequest.httpShouldUsePipelining = true
         urlRequest.httpBodyStream = inputStream
         for header in request.headers.headers {
             for value in header.value {

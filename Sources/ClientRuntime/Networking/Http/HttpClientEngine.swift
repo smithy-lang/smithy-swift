@@ -5,5 +5,5 @@
 import AwsCommonRuntimeKit
 
 public protocol HttpClientEngine {
-    func execute(request: SdkHttpRequest) async throws -> HttpResponse
+    func execute(request: SdkHttpRequest, bidirectional: Bool) async throws -> HttpResponse
 }

@@ -30,6 +30,13 @@ class OutputStreamBridge: NSObject, StreamDelegate {
         thread?.start()
     }
 
+    func close() {
+        print("CLOSE OUTPUT STREAM")
+        outputStream.close()
+        thread?.cancel()
+        thread = nil
+    }
+
     func writeToOutput() async throws {
         print("WRITE TO OUTPUT")
         let data = try await readableStream.readAsync(upToCount: 4096 - buffer.count)
