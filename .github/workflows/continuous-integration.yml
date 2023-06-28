@@ -20,30 +20,93 @@ env:
 
 jobs:
   downstream:
-    runs-on: macos-13
+    runs-on: ${{ matrix.runner }}
     env:
-      DEVELOPER_DIR: /Applications/Xcode_14.3.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/${{ matrix.xcode }}.app/Contents/Developer
+    strategy:
+      fail-fast: false
+      matrix:
+        # This matrix runs tests on iOS sim & Mac, on oldest & newest supported Xcodes
+        runner:
+          - macos-11
+          - macos-13
+        xcode:
+          # Xcode 13.2.1 is used as oldest because 13.2 is the first version which backports concurrency
+          - Xcode_13.2.1
+          - Xcode_14.3.1
+        destination:
+          - 'platform=iOS Simulator,OS=15.2,name=iPhone 13'
+          - 'platform=iOS Simulator,OS=16.4,name=iPhone 14'
+          - 'platform=OS X'
+        exclude:
+          # Don't run old macOS with new Xcode
+          - runner: macos-11
+            xcode: Xcode_14.3.1
+          # Don't run new macOS with old Xcode
+          - runner: macos-13
+            xcode: Xcode_13.2.1
+          # Don't run old iOS simulator with new Xcode
+          - destination: 'platform=iOS Simulator,OS=15.2,name=iPhone 13'
+            xcode: Xcode_14.3.1
+          # Don't run new iOS simulator with old Xcode
+          - destination: 'platform=iOS Simulator,OS=16.4,name=iPhone 14'
+            xcode: Xcode_13.2.1
     steps:
-      - name: Checkout sources
+      - name: Checkout smithy-swift
         uses: actions/checkout@v3
-      - uses: actions/cache@v3
+      - name: Select aws-sdk-swift branch
+        run: |
+          ORIGINAL_REPO_HEAD_REF="$GITHUB_HEAD_REF" \
+          DEPENDENCY_REPO_URL="https://github.com/awslabs/aws-sdk-swift.git" \
+          ./scripts/ci_steps/select_dependency_branch.sh
+      - name: Checkout aws-sdk-swift
+        uses: actions/checkout@v3
+        with:
+          repository: awslabs/aws-sdk-swift
+          ref: ${{ env.DEPENDENCY_REPO_SHA }}
+          path: aws-sdk-swift
+      - name: Move aws-sdk-swift into place
+        run: mv aws-sdk-swift ..
+      - name: Cache Gradle
+        uses: actions/cache@v3
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          key: 1-${{ runner.os }}-gradle-${{ hashFiles('settings.gradle.kts', 'gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
-            ${{ runner.os }}-gradle-
-      - uses: actions/setup-java@v3
+            1-${{ runner.os }}-gradle-${{ hashFiles('settings.gradle.kts', 'gradle/wrapper/gradle-wrapper.properties') }}
+            1-${{ runner.os }}-gradle-
+      - name: Cache Swift
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            ~/.cache/org.swift.swiftpm
+          key: 1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift', '../aws-sdk-swift/Package.swift', '../aws-sdk-swift/AWSSDKSwiftCLI/Package.swift') }}
+          restore-keys: |
+            1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift', '../aws-sdk-swift/Package.swift', '../aws-sdk-swift/AWSSDKSwiftCLI/Package.swift') }}
+            1-${{ runner.os }}-${{ matrix.xcode }}-spm-
+      - name: Setup Java
+        uses: actions/setup-java@v3
         with:
           distribution: corretto
           java-version: 17
-      - name: Build and Test ${{ env.PACKAGE_NAME }} Downstream Consumers
+      - name: Tools Versions
         run: |
-          python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
-          chmod a+x builder
-          AWS_CRT_SWIFT_CI_DIR="${{ env.AWS_CRT_SWIFT_CI_DIR }}" AWS_SDK_SWIFT_CI_DIR="${{ env.AWS_SDK_SWIFT_CI_DIR }}" SMITHY_SWIFT_CI_DIR="${{ env.SMITHY_SWIFT_CI_DIR }}" AWS_SWIFT_SDK_USE_LOCAL_DEPS=1 ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream
+          cd ../aws-sdk-swift
+          ./scripts/ci_steps/log_tool_versions.sh
+      - name: Build & Run smithy-swift Unit Tests
+        run: swift test
+      - name: Prepare aws-sdk-swift Protocol & Unit Tests
+        run: |
+          cd ../aws-sdk-swift
+          ./scripts/ci_steps/prepare_protocol_and_unit_tests.sh
+      - name: Build and Run aws-sdk-swift Protocol & Unit Tests
+        run: |
+          cd ../aws-sdk-swift
+          swift test
+
   linux:
     runs-on: ubuntu-latest
     strategy:
