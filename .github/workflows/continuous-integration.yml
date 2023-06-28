@@ -83,9 +83,9 @@ jobs:
           path: |
             ~/Library/Caches/org.swift.swiftpm
             ~/.cache/org.swift.swiftpm
-          key: 1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift', '../aws-sdk-swift/Package.swift', '../aws-sdk-swift/AWSSDKSwiftCLI/Package.swift') }}
+          key: 1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
           restore-keys: |
-            1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift', '../aws-sdk-swift/Package.swift', '../aws-sdk-swift/AWSSDKSwiftCLI/Package.swift') }}
+            1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
             1-${{ runner.os }}-${{ matrix.xcode }}-spm-
       - name: Setup Java
         uses: actions/setup-java@v3
