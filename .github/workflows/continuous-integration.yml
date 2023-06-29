@@ -7,16 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  BUILDER_VERSION: v0.9.11
-  BUILDER_SOURCE: releases
-  # host owned by CRT team to host aws-crt-builder releases. Contact their on-call with any issues
-  BUILDER_HOST: https://d19elf31gohf1l.cloudfront.net
-  PACKAGE_NAME: smithy-swift
-  LINUX_BASE_IMAGE: ubuntu-16-x64
-  RUN: ${{ github.run_id }}-${{ github.run_number }}
-  AWS_SDK_SWIFT_CI_DIR: /Users/runner/work/smithy-swift/smithy-swift/target/build/deps/aws-sdk-swift
-  AWS_CRT_SWIFT_CI_DIR: /Users/runner/work/smithy-swift/smithy-swift/target/build/deps/aws-crt-swift
-  SMITHY_SWIFT_CI_DIR: /Users/runner/work/smithy-swift/smithy-swift
+  AWS_SWIFT_SDK_USE_LOCAL_DEPS: 1
 
 jobs:
   downstream:
