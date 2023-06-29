@@ -87,7 +87,9 @@ jobs:
         run: |
           cd ../aws-sdk-swift
           ./scripts/ci_steps/log_tool_versions.sh
-      - name: Build & Run smithy-swift Unit Tests
+      - name: Build & Run Kotlin Unit Tests
+        run: ./gradlew build
+      - name: Build & Run Swift Unit Tests
         run: swift test
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
         run: |
