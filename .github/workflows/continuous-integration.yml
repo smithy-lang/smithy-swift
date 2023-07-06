@@ -118,9 +118,11 @@ jobs:
           if [ -x "$(command -v apt)" ]; then
             apt-get update && apt-get install -y libssl-dev
           else
-            yum install -y openssl-devel
+            yum install -y openssl-devel which
           fi
       - name: Checkout Sources
         uses: actions/checkout@v3
-      - name: Build and Test
+      - name: Build & Run Kotlin Unit Tests
+        run: ./gradlew build
+      - name: Build & Run Swift Unit Tests
         run: swift test
