@@ -90,11 +90,6 @@ struct TimestampEncodable: Encodable {
     let date: Date
     let format: TimestampFormat
 
-    init(date: Date, format: TimestampFormat) {
-        self.date = date
-        self.format = format
-    }
-
     /// Encodes the date according to the format.
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
