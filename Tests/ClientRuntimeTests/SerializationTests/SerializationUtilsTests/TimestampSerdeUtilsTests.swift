@@ -31,13 +31,28 @@ class TimestampSerdeUtilsTests: XCTestCase {
 
     // MARK: - Encoding Tests
 
-    // TODO: Fix this test on Linux.
-    // Tracked by https://github.com/awslabs/aws-sdk-swift/issues/1006
-    #if !os(Linux)
+    // Precision different in linux documented in https://github.com/awslabs/aws-sdk-swift/issues/1006
+    func test_timestampEncodable_encodeEpochSecondsDateWithFractionalSeconds() throws {
+        let encoder: JSONEncoder = JSONEncoder()
+        let timestampEncodable = TimestampEncodable(date: testDateWithFractionalSeconds, format: .epochSeconds)
+        let data = try encoder.encode(timestampEncodable)
+        let dataAsString = String(data: data, encoding: .utf8)!
+        let dataAsDouble = Double(dataAsString)!
+        XCTAssertEqual(dataAsDouble, 673351930.12300003, accuracy: 0.001)
+
+    }
+
+    func test_timestampEncodable_encodeEpochSecondsDateWithoutFractionalSeconds() throws {
+        let encoder: JSONEncoder = JSONEncoder()
+        let timestampEncodable = TimestampEncodable(date: testDateWithoutFractionalSeconds, format: .epochSeconds)
+        let data = try encoder.encode(timestampEncodable)
+        let dataAsString = String(data: data, encoding: .utf8)!
+        let dataAsInt = Int(dataAsString)!
+        XCTAssertEqual(dataAsInt, 673351930)
+    }
+
     func test_timestampEncodable_encodesDateAsExpectedForEachFormat() throws {
         let subjects: [(TimestampFormat, Date, String)] = [
-            (.epochSeconds, testDateWithFractionalSeconds, "673351930.12300003"),
-            (.epochSeconds, testDateWithoutFractionalSeconds, "673351930"),
             (.dateTime, testDateWithFractionalSeconds, "\"1991-05-04T10:12:10.123Z\""),
             (.dateTime, testDateWithoutFractionalSeconds, "\"1991-05-04T10:12:10Z\""),
             (.httpDate, testDateWithFractionalSeconds, "\"Sat, 04 May 1991 10:12:10.123 GMT\""),
@@ -53,7 +68,6 @@ class TimestampSerdeUtilsTests: XCTestCase {
             XCTAssertEqual(dataAsString, expectedValue)
         }
     }
-    #endif
 
     func test_encodeTimeStamp_forKeyedContainer_returnsExpectedValue() throws {
         let encoder = JSONEncoder()
