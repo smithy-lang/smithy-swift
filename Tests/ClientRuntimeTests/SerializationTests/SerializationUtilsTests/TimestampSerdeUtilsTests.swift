@@ -31,7 +31,7 @@ class TimestampSerdeUtilsTests: XCTestCase {
 
     // MARK: - Encoding Tests
 
-    // Precision different in linux documented in https://github.com/awslabs/aws-sdk-swift/issues/1006
+    // Precision difference in linux documented in https://github.com/awslabs/aws-sdk-swift/issues/1006
     func test_timestampEncodable_encodeEpochSecondsDateWithFractionalSeconds() throws {
         let encoder: JSONEncoder = JSONEncoder()
         let timestampEncodable = TimestampEncodable(date: testDateWithFractionalSeconds, format: .epochSeconds)
