@@ -51,22 +51,36 @@ class TimestampSerdeUtilsTests: XCTestCase {
         XCTAssertEqual(dataAsInt, 673351930)
     }
 
-    func test_timestampEncodable_encodesDateAsExpectedForEachFormat() throws {
-        let subjects: [(TimestampFormat, Date, String)] = [
-            (.dateTime, testDateWithFractionalSeconds, "\"1991-05-04T10:12:10.123Z\""),
-            (.dateTime, testDateWithoutFractionalSeconds, "\"1991-05-04T10:12:10Z\""),
-            (.httpDate, testDateWithFractionalSeconds, "\"Sat, 04 May 1991 10:12:10.123 GMT\""),
-            (.httpDate, testDateWithoutFractionalSeconds, "\"Sat, 04 May 1991 10:12:10 GMT\"")
-        ]
+    func test_timestampEncodable_encodeDateTimeWithFractionalSeconds() throws {
+        let encoder: JSONEncoder = JSONEncoder()
+        let timestampEncodable = TimestampEncodable(date: testDateWithFractionalSeconds, format: .dateTime)
+        let data = try encoder.encode(timestampEncodable)
+        let dataAsString = String(data: data, encoding: .utf8)!
+        XCTAssertEqual(dataAsString, "\"1991-05-04T10:12:10.123Z\"")
+    }
 
-        let encoder = JSONEncoder()
+    func test_timestampEncodable_encodeDateTimeWithoutFractionalSeconds() throws {
+        let encoder: JSONEncoder = JSONEncoder()
+        let timestampEncodable = TimestampEncodable(date: testDateWithoutFractionalSeconds, format: .dateTime)
+        let data = try encoder.encode(timestampEncodable)
+        let dataAsString = String(data: data, encoding: .utf8)!
+        XCTAssertEqual(dataAsString, "\"1991-05-04T10:12:10Z\"")
+    }
 
-        for (format, date, expectedValue) in subjects {
-            let timestampEncodable = TimestampEncodable(date: date, format: format)
-            let data = try encoder.encode(timestampEncodable)
-            let dataAsString = String(data: data, encoding: .utf8)!
-            XCTAssertEqual(dataAsString, expectedValue)
-        }
+    func test_timestampEncodable_encodeHttpDateWithFractionalSeconds() throws {
+        let encoder: JSONEncoder = JSONEncoder()
+        let timestampEncodable = TimestampEncodable(date: testDateWithFractionalSeconds, format: .httpDate)
+        let data = try encoder.encode(timestampEncodable)
+        let dataAsString = String(data: data, encoding: .utf8)!
+        XCTAssertEqual(dataAsString, "\"Sat, 04 May 1991 10:12:10.123 GMT\"")
+    }
+
+    func test_timestampEncodable_encodeHttpDateWithoutFractionalSeconds() throws {
+        let encoder: JSONEncoder = JSONEncoder()
+        let timestampEncodable = TimestampEncodable(date: testDateWithoutFractionalSeconds, format: .httpDate)
+        let data = try encoder.encode(timestampEncodable)
+        let dataAsString = String(data: data, encoding: .utf8)!
+        XCTAssertEqual(dataAsString, "\"Sat, 04 May 1991 10:12:10 GMT\"")
     }
 
     func test_encodeTimeStamp_forKeyedContainer_returnsExpectedValue() throws {
