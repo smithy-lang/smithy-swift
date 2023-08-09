@@ -6,6 +6,7 @@
 package software.amazon.smithy.swift.codegen.integration.serde.xml
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.node.NodeVisitor.Default
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.ListShape
@@ -299,11 +300,23 @@ abstract class MemberShapeDecodeXMLGenerator(
         }
         val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion || (member.hasTrait<DefaultTrait>())) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberNameUnquoted}Decoded"
-        val defaultVal = if (member.hasTrait<DefaultTrait>()) "?? ${member.getTrait(DefaultTrait::class.java).get().toNode()}" else ""
+
+        var defaultValNilCoalescing = ""
+        if (member.hasTrait<DefaultTrait>()) {
+            val defaultTraitVal = member.getTrait(DefaultTrait::class.java).get().toNode()
+            if (defaultTraitVal.isStringNode) {
+                defaultValNilCoalescing = "?? \"${defaultTraitVal}\""
+            } else if (defaultTraitVal.toString().equals("null")) {
+                defaultValNilCoalescing = "?? nil"
+            } else {
+                defaultValNilCoalescing = "?? ${defaultTraitVal}"
+            }
+        }
+
         if (unkeyed) {
             writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self)", memberTargetSymbol)
         } else {
-            writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberNameUnquoted) $defaultVal", memberTargetSymbol)
+            writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberNameUnquoted) $defaultValNilCoalescing", memberTargetSymbol)
         }
         renderAssigningDecodedMember(memberName, decodedMemberName, member.hasTrait(SwiftBoxTrait::class.java))
     }

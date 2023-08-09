@@ -36,7 +36,7 @@ class MemberShapeDecodeXMLGeneratorTests {
         
             public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                let stringValueDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .stringValue) ?? test
+                let stringValueDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .stringValue) ?? "test"
                 stringValue = stringValueDecoded
                 let trueBooleanValueDecoded = try containerValues.decodeIfPresent(Swift.Bool.self, forKey: .trueBooleanValue) ?? false
                 trueBooleanValue = trueBooleanValueDecoded
