@@ -300,7 +300,7 @@ abstract class MemberShapeDecodeXMLGenerator(
         }
         val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion || (member.hasTrait<DefaultTrait>())) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberNameUnquoted}Decoded"
-        val defaultVal = if (member.hasTrait<DefaultTrait>()) "?? ${memberTargetSymbol.defaultValue()}" else ""
+        val defaultVal = if (member.hasTrait<DefaultTrait>()) "?? ${member.getTrait(DefaultTrait::class.java).get().toNode()}" else ""
         if (unkeyed) {
             writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self)", memberTargetSymbol)
         } else {

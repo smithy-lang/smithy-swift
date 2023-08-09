@@ -36,7 +36,7 @@ class MemberShapeDecodeXMLGeneratorTests {
         
             public init(from decoder: Swift.Decoder) throws {
                 let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                let stringValueDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .stringValue) ?? nil
+                let stringValueDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .stringValue) ?? test
                 stringValue = stringValueDecoded
                 let trueBooleanValueDecoded = try containerValues.decodeIfPresent(Swift.Bool.self, forKey: .trueBooleanValue) ?? false
                 trueBooleanValue = trueBooleanValueDecoded
@@ -46,11 +46,11 @@ class MemberShapeDecodeXMLGeneratorTests {
                 byteValue = byteValueDecoded
                 let shortValueDecoded = try containerValues.decodeIfPresent(Swift.Int16.self, forKey: .shortValue)
                 shortValue = shortValueDecoded
-                let integerValueDecoded = try containerValues.decodeIfPresent(Swift.Int.self, forKey: .integerValue) ?? nil
+                let integerValueDecoded = try containerValues.decodeIfPresent(Swift.Int.self, forKey: .integerValue) ?? 5
                 integerValue = integerValueDecoded
                 let longValueDecoded = try containerValues.decodeIfPresent(Swift.Int.self, forKey: .longValue)
                 longValue = longValueDecoded
-                let floatValueDecoded = try containerValues.decodeIfPresent(Swift.Float.self, forKey: .floatValue) ?? nil
+                let floatValueDecoded = try containerValues.decodeIfPresent(Swift.Float.self, forKey: .floatValue) ?? 2.4
                 floatValue = floatValueDecoded
                 let protocolDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .protocol)
                 `protocol` = protocolDecoded
