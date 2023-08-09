@@ -6,7 +6,6 @@
 package software.amazon.smithy.swift.codegen.integration.serde.xml
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.model.node.NodeVisitor.Default
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.ListShape
@@ -309,7 +308,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             } else if (defaultTraitVal.toString().equals("null")) {
                 defaultValNilCoalescing = "?? nil"
             } else {
-                defaultValNilCoalescing = "?? ${defaultTraitVal}"
+                defaultValNilCoalescing = "?? $defaultTraitVal"
             }
         }
 
