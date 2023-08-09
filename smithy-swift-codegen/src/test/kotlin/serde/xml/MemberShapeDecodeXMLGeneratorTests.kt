@@ -19,7 +19,7 @@ class MemberShapeDecodeXMLGeneratorTests {
         val context = setupTests("Isolated/Restxml/xml-scalarmember-default-value.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesOutputResponseBody+Decodable.swift")
         val expectedContents =
-        """
+            """
         extension SimpleScalarPropertiesOutputResponseBody: Swift.Decodable {
             enum CodingKeys: Swift.String, Swift.CodingKey {
                 case byteValue
@@ -58,7 +58,7 @@ class MemberShapeDecodeXMLGeneratorTests {
                 doubleValue = doubleValueDecoded
             }
         }
-        """.trimIndent()
+            """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
