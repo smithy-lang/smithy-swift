@@ -306,7 +306,7 @@ abstract class MemberShapeDecodeXMLGenerator(
             val defaultVal = trait.toNode()
             when {
                 defaultVal.isStringNode() -> "?? \"$defaultVal\""
-                defaultVal.toString().equals("null") -> "?? nil"
+                defaultVal.isNullNode() -> "?? nil"
                 else -> "?? $defaultVal"
             }
         } ?: ""
