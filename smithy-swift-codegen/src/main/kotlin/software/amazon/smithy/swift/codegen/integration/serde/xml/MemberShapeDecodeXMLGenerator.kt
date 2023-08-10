@@ -19,8 +19,11 @@ import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
-import software.amazon.smithy.swift.codegen.*
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftTypes
+import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
+import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGenerator
@@ -31,6 +34,7 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
+import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 abstract class MemberShapeDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -305,7 +309,7 @@ abstract class MemberShapeDecodeXMLGenerator(
                 defaultVal.toString().equals("null") -> "?? nil"
                 else -> "?? $defaultVal"
             }
-        }?: ""
+        } ?: ""
 
         if (unkeyed) {
             writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self)", memberTargetSymbol)
