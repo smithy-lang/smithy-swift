@@ -13,6 +13,7 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
@@ -58,6 +59,14 @@ class ServiceGenerator(
 
             writer.writeShapeDocs(op)
             writer.writeAvailableAttribute(model, op)
+
+            if (op.errors.size > 0) writer.writeSingleLineDocs { write("") }
+            for (error in op.errors) {
+                val errorIsDocumented = model.getShape(error.toShapeId()).get().hasTrait(DocumentationTrait::class.java)
+                val errorCause = if (errorIsDocumented) model.getShape(error.toShapeId()).get().getTrait(DocumentationTrait::class.java).get().value else "[no documentation found]"
+                val errorDoc = " - Throws: `${error.name}` if / when $errorCause"
+                writer.writeDocs("\t$errorDoc")
+            }
 
             val accessSpecifier = if (insideProtocol) "" else "public "
 
