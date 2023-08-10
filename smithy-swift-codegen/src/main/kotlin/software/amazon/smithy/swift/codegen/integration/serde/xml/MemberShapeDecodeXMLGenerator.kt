@@ -19,9 +19,7 @@ import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.SwiftTypes
-import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.*
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
@@ -33,7 +31,6 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
-import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 abstract class MemberShapeDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -301,13 +298,14 @@ abstract class MemberShapeDecodeXMLGenerator(
         val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion || (member.hasTrait<DefaultTrait>())) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberNameUnquoted}Decoded"
 
-        val defaultTrait = if (member.hasTrait(DefaultTrait::class.java)) member.getTrait(DefaultTrait::class.java).get().toNode() else null
-        val defaultValNilCoalescing = when {
-            defaultTrait == null -> ""
-            defaultTrait.isStringNode() -> "?? \"${defaultTrait}\""
-            defaultTrait.toString().equals("null") -> "?? nil"
-            else -> "?? $defaultTrait"
-        }
+        val defaultValNilCoalescing = member.getTrait(DefaultTrait::class.java).getOrNull()?.let { trait ->
+            val defaultVal = trait.toNode()
+            when {
+                defaultVal.isStringNode() -> "?? \"$defaultVal\""
+                defaultVal.toString().equals("null") -> "?? nil"
+                else -> "?? $defaultVal"
+            }
+        }?: ""
 
         if (unkeyed) {
             writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self)", memberTargetSymbol)
