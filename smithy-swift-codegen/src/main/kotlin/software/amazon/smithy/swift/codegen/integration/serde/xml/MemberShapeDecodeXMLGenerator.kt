@@ -29,6 +29,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGen
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.CollectionMemberCodingKey
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.MapKeyValue
+import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
@@ -300,16 +301,12 @@ abstract class MemberShapeDecodeXMLGenerator(
         val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion || (member.hasTrait<DefaultTrait>())) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberNameUnquoted}Decoded"
 
-        var defaultValNilCoalescing = ""
-        if (member.hasTrait<DefaultTrait>()) {
-            val defaultTraitVal = member.getTrait(DefaultTrait::class.java).get().toNode()
-            if (defaultTraitVal.isStringNode) {
-                defaultValNilCoalescing = "?? \"${defaultTraitVal}\""
-            } else if (defaultTraitVal.toString().equals("null")) {
-                defaultValNilCoalescing = "?? nil"
-            } else {
-                defaultValNilCoalescing = "?? $defaultTraitVal"
-            }
+        val defaultTrait = if (member.hasTrait(DefaultTrait::class.java)) member.getTrait(DefaultTrait::class.java).get().toNode() else null
+        val defaultValNilCoalescing = when {
+            defaultTrait == null -> ""
+            defaultTrait.isStringNode() -> "?? \"${defaultTrait}\""
+            defaultTrait.toString().equals("null") -> "?? nil"
+            else -> "?? $defaultTrait"
         }
 
         if (unkeyed) {
