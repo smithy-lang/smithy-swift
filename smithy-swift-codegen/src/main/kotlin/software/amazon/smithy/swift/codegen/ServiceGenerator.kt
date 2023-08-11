@@ -12,10 +12,13 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 
 /*
@@ -57,16 +60,7 @@ class ServiceGenerator(
             val outputShape = opIndex.getOutput(op).get()
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
 
-            writer.writeShapeDocs(op)
-            writer.writeAvailableAttribute(model, op)
-
-            if (op.errors.size > 0) writer.writeSingleLineDocs { write("") }
-            for (error in op.errors) {
-                val errorIsDocumented = model.getShape(error.toShapeId()).get().hasTrait(DocumentationTrait::class.java)
-                val errorCause = if (errorIsDocumented) model.getShape(error.toShapeId()).get().getTrait(DocumentationTrait::class.java).get().value else "[no documentation found]"
-                val errorDoc = " - Throws: `${error.name}` if / when $errorCause"
-                writer.writeDocs("\t$errorDoc")
-            }
+            renderOperationDoc(model, op, writer)
 
             val accessSpecifier = if (insideProtocol) "" else "public "
 
@@ -76,6 +70,40 @@ class ServiceGenerator(
                 inputParam,
                 outputShapeName
             )
+        }
+
+        /**
+         * Helper method for generating in-line documentation for operation
+         */
+        private fun renderOperationDoc(model: Model, op: OperationShape, writer: SwiftWriter) {
+            writer.writeShapeDocs(op)
+            writer.writeAvailableAttribute(model, op)
+
+            writer.writeSingleLineDocs { write("") }
+            writer.writeSingleLineDocs { write("- Parameter ${op.inputShape.name} : ${retrieveMemberShapeDoc(op.inputShape, model)}") }
+
+            writer.writeSingleLineDocs { write("") }
+            writer.writeSingleLineDocs { write("- Returns: `${op.outputShape.name}` : ${retrieveMemberShapeDoc(op.outputShape, model)}") }
+
+            if (op.errors.size > 0) {
+                writer.writeSingleLineDocs { write("") }
+                writer.writeSingleLineDocs { write("- Throws:") }
+                for (error in op.errors) {
+                    writer.writeSingleLineDocs { write("") }
+                    writer.writeSingleLineDocs { write ("- `${error.name}` : ${retrieveMemberShapeDoc(error.toShapeId(), model)}") }
+                }
+            }
+        }
+
+        /**
+         * Helper method to grab documentation for operation's member shapes (input, output, error(s)
+         */
+        private fun retrieveMemberShapeDoc(shapeId : ShapeId, model : Model) : String {
+            val docTrait = model.getShape(shapeId).get().getTrait(DocumentationTrait::class.java).getOrNull()
+            return when {
+                docTrait == null -> "[no documentation found]"
+                else -> docTrait.value
+            }
         }
     }
 
