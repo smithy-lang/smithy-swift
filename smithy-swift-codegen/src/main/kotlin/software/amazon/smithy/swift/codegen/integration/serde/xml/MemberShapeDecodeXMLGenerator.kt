@@ -14,6 +14,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
+import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -22,12 +23,14 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
+import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.CollectionMemberCodingKey
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.MapKeyValue
+import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.recursiveSymbol
@@ -296,12 +299,22 @@ abstract class MemberShapeDecodeXMLGenerator(
         if (member.hasTrait(SwiftBoxTrait::class.java)) {
             memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
         }
-        val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion) "decodeIfPresent" else "decode"
+        val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion || (member.hasTrait<DefaultTrait>())) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberNameUnquoted}Decoded"
+
+        val defaultValNilCoalescing = member.getTrait(DefaultTrait::class.java).getOrNull()?.let { trait ->
+            val defaultVal = trait.toNode()
+            when {
+                defaultVal.isStringNode() -> "?? \"$defaultVal\""
+                defaultVal.isNullNode() -> "?? nil"
+                else -> "?? $defaultVal"
+            }
+        } ?: ""
+
         if (unkeyed) {
             writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self)", memberTargetSymbol)
         } else {
-            writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
+            writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberNameUnquoted) $defaultValNilCoalescing", memberTargetSymbol)
         }
         renderAssigningDecodedMember(memberName, decodedMemberName, member.hasTrait(SwiftBoxTrait::class.java))
     }
