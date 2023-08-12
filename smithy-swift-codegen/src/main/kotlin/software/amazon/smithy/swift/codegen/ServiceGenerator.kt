@@ -12,7 +12,6 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.DocumentationTrait
@@ -20,6 +19,7 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
+import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 
 /*
 * Generates a Swift protocol for the service
@@ -75,7 +75,7 @@ class ServiceGenerator(
         /**
          * Helper method for generating in-line documentation for operation
          */
-        private fun renderOperationDoc(model: Model, op: OperationShape, writer: SwiftWriter) {
+        fun renderOperationDoc(model: Model, op: OperationShape, writer: SwiftWriter) {
             writer.writeShapeDocs(op)
             writer.writeAvailableAttribute(model, op)
 
@@ -85,20 +85,20 @@ class ServiceGenerator(
             writer.writeSingleLineDocs { write("") }
             writer.writeSingleLineDocs { write("- Returns: `${op.outputShape.name}` : ${retrieveMemberShapeDoc(op.outputShape, model)}") }
 
-            if (op.errors.size > 0) {
-                writer.writeSingleLineDocs { write("") }
-                writer.writeSingleLineDocs { write("- Throws:") }
-                for (error in op.errors) {
-                    writer.writeSingleLineDocs { write("") }
-                    writer.writeSingleLineDocs { write ("- `${error.name}` : ${retrieveMemberShapeDoc(error.toShapeId(), model)}") }
-                }
+            writer.writeSingleLineDocs { write("") }
+            writer.writeSingleLineDocs { write("- Throws: `${op.toUpperCamelCase() + "Error"}` : Wrapper object for possible exceptions listed below.") }
+            writer.writeSingleLineDocs { write("") }
+            writer.writeSingleLineDocs { write("__Possible Exceptions:__") }
+            for (error in op.errors) {
+                writer.writeSingleLineDocs { write("- `${error.name}` : ${retrieveMemberShapeDoc(error.toShapeId(), model)}") }
             }
+            if (op.errors.size == 0) writer.writeSingleLineDocs { write("This operation throws no exceptions.") }
         }
 
         /**
          * Helper method to grab documentation for operation's member shapes (input, output, error(s)
          */
-        private fun retrieveMemberShapeDoc(shapeId : ShapeId, model : Model) : String {
+        private fun retrieveMemberShapeDoc(shapeId: ShapeId, model: Model): String {
             val docTrait = model.getShape(shapeId).get().getTrait(DocumentationTrait::class.java).getOrNull()
             return when {
                 docTrait == null -> "[no documentation found]"
