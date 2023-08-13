@@ -50,7 +50,7 @@ open class HttpProtocolClientGenerator(
 
         writer.openBlock("extension ${serviceSymbol.name}: ${serviceSymbol.name}Protocol {", "}") {
             operations.forEach {
-                ServiceGenerator.renderOperationDefinition(model, symbolProvider, writer, operationsIndex, it)
+                ServiceGenerator.renderOperationDefinition(model, serviceShape, symbolProvider, writer, operationsIndex, it)
                 writer.openBlock("{", "}") {
                     val operationStackName = "operation"
                     val generator = MiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, httpProtocolCustomizable, operationMiddleware, operationStackName)

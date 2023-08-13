@@ -12,6 +12,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.DocumentationTrait
@@ -44,6 +45,7 @@ class ServiceGenerator(
          */
         fun renderOperationDefinition(
             model: Model,
+            service: ServiceShape,
             symbolProvider: SymbolProvider,
             writer: SwiftWriter,
             opIndex: OperationIndex,
@@ -60,7 +62,7 @@ class ServiceGenerator(
             val outputShape = opIndex.getOutput(op).get()
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
 
-            renderOperationDoc(model, op, writer)
+            renderOperationDoc(model, service, op, writer)
 
             val accessSpecifier = if (insideProtocol) "" else "public "
 
@@ -75,24 +77,26 @@ class ServiceGenerator(
         /**
          * Helper method for generating in-line documentation for operation
          */
-        fun renderOperationDoc(model: Model, op: OperationShape, writer: SwiftWriter) {
+        private fun renderOperationDoc(model: Model, service: ServiceShape, op: OperationShape, writer: SwiftWriter) {
             writer.writeShapeDocs(op)
             writer.writeAvailableAttribute(model, op)
 
             writer.writeSingleLineDocs { write("") }
-            writer.writeSingleLineDocs { write("- Parameter ${op.inputShape.name} : ${retrieveMemberShapeDoc(op.inputShape, model)}") }
+            writer.writeDocs("\\- Parameter ${op.inputShape.name} : ${retrieveMemberShapeDoc(op.inputShape, model)}")
 
             writer.writeSingleLineDocs { write("") }
-            writer.writeSingleLineDocs { write("- Returns: `${op.outputShape.name}` : ${retrieveMemberShapeDoc(op.outputShape, model)}") }
+            writer.writeDocs("\\- Returns: \\`${op.outputShape.name}\\` : ${retrieveMemberShapeDoc(op.outputShape, model)}")
 
             writer.writeSingleLineDocs { write("") }
-            writer.writeSingleLineDocs { write("- Throws: `${op.toUpperCamelCase() + "Error"}` : Wrapper object for possible exceptions listed below.") }
+            writer.writeSingleLineDocs { write("- Throws: `${op.toUpperCamelCase() + "Error"}` : Place-holder wrapper object for possible exceptions listed below.") }
             writer.writeSingleLineDocs { write("") }
             writer.writeSingleLineDocs { write("__Possible Exceptions:__") }
-            for (error in op.errors) {
-                writer.writeSingleLineDocs { write("- `${error.name}` : ${retrieveMemberShapeDoc(error.toShapeId(), model)}") }
+
+            if (op.getErrors(service).size == 0) writer.writeSingleLineDocs { write("This operation throws no exceptions.") }
+
+            for (error in op.getErrors(service)) {
+                writer.writeDocs("\\- \\`${error.name}\\` : ${retrieveMemberShapeDoc(error.toShapeId(), model)}")
             }
-            if (op.errors.size == 0) writer.writeSingleLineDocs { write("This operation throws no exceptions.") }
         }
 
         /**
@@ -155,7 +159,7 @@ class ServiceGenerator(
         writer.openBlock("public protocol ${serviceSymbol.name}Protocol {")
             .call {
                 operations.forEach { op ->
-                    renderOperationDefinition(model, symbolProvider, writer, operationsIndex, op, true)
+                    renderOperationDefinition(model, service, symbolProvider, writer, operationsIndex, op, true)
                 }
             }
             .closeBlock("}")

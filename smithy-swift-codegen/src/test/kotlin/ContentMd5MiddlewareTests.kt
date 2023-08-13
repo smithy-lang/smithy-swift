@@ -15,7 +15,7 @@ class ContentMd5MiddlewareTests {
                 ///
                 /// - Returns: `IdempotencyTokenWithStructureOutputResponse` : [no documentation found]
                 ///
-                /// - Throws: `IdempotencyTokenWithStructureError` : Wrapper object for possible exceptions listed below.
+                /// - Throws: `IdempotencyTokenWithStructureError` : Place-holder wrapper object for possible exceptions listed below.
                 ///
                 /// __Possible Exceptions:__
                 /// This operation throws no exceptions.

@@ -113,7 +113,7 @@ class HttpProtocolClientGeneratorTests {
             ///
             /// - Returns: `AllocateWidgetOutputResponse` : [no documentation found]
             ///
-            /// - Throws: `AllocateWidgetError` : Wrapper object for possible exceptions listed below.
+            /// - Throws: `AllocateWidgetError` : Place-holder wrapper object for possible exceptions listed below.
             ///
             /// __Possible Exceptions:__
             /// This operation throws no exceptions.
