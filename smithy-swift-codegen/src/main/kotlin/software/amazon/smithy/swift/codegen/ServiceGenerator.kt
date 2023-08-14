@@ -18,9 +18,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
-import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 
 /*
 * Generates a Swift protocol for the service
