@@ -93,7 +93,7 @@ class ServiceGenerator(
 
             if (op.getErrors(service).isNotEmpty()) {
                 writeEmptyLine()
-                writer.writeSingleLineDocs { write("- Throws: `${op.toUpperCamelCase() + "Error"}` : Place-holder wrapper object for possible exceptions listed below.") }
+                writer.writeSingleLineDocs { write("- Throws: One of the exceptions listed below __Possible Exceptions__.") }
                 writeEmptyLine()
                 writer.writeSingleLineDocs { write("__Possible Exceptions:__") }
                 op.getErrors(service).forEach { error ->
