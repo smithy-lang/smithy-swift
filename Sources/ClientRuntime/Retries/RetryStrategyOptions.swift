@@ -49,7 +49,7 @@ public struct RetryStrategyOptions {
     ///   - maxRetriesBase: The number of times to retry the initial request.  Defaults to 2.
     ///   - availableCapacity: The number of available tokens in a retry quota.  Defaults to 500.
     ///   - maxCapacity: The max number of tokens in a retry quota.  Defaults to 500.
-    init(
+    public init(
         backoffStrategy: RetryBackoffStrategy = ExponentialBackoffStrategy(),
         maxRetriesBase: Int = 2,
         availableCapacity: Int = 500,
