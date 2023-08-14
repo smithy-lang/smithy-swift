@@ -14,11 +14,6 @@ class IdempotencyTokenTraitTests {
                 /// - Parameter IdempotencyTokenWithStructureInput : [no documentation found]
                 ///
                 /// - Returns: `IdempotencyTokenWithStructureOutputResponse` : [no documentation found]
-                ///
-                /// - Throws: `IdempotencyTokenWithStructureError` : Place-holder wrapper object for possible exceptions listed below.
-                ///
-                /// __Possible Exceptions:__
-                /// This operation throws no exceptions.
                 public func idempotencyTokenWithStructure(input: IdempotencyTokenWithStructureInput) async throws -> IdempotencyTokenWithStructureOutputResponse
                 {
                     let context = ClientRuntime.HttpContextBuilder()

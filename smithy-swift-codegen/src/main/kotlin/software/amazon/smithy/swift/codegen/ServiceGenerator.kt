@@ -87,12 +87,12 @@ class ServiceGenerator(
             writer.writeSingleLineDocs { write("") }
             writer.writeDocs("\\- Returns: \\`${op.outputShape.name}\\` : ${retrieveMemberShapeDoc(op.outputShape, model)}")
 
-            writer.writeSingleLineDocs { write("") }
-            writer.writeSingleLineDocs { write("- Throws: `${op.toUpperCamelCase() + "Error"}` : Place-holder wrapper object for possible exceptions listed below.") }
-            writer.writeSingleLineDocs { write("") }
-            writer.writeSingleLineDocs { write("__Possible Exceptions:__") }
-
-            if (op.getErrors(service).size == 0) writer.writeSingleLineDocs { write("This operation throws no exceptions.") }
+            if (op.getErrors(service).size > 0) {
+                writer.writeSingleLineDocs { write("") }
+                writer.writeSingleLineDocs { write("- Throws: `${op.toUpperCamelCase() + "Error"}` : Place-holder wrapper object for possible exceptions listed below.") }
+                writer.writeSingleLineDocs { write("") }
+                writer.writeSingleLineDocs { write("__Possible Exceptions:__") }
+            }
 
             for (error in op.getErrors(service)) {
                 writer.writeDocs("\\- \\`${error.name}\\` : ${retrieveMemberShapeDoc(error.toShapeId(), model)}")

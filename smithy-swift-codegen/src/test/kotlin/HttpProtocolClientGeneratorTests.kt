@@ -112,11 +112,6 @@ class HttpProtocolClientGeneratorTests {
             /// - Parameter AllocateWidgetInput : [no documentation found]
             ///
             /// - Returns: `AllocateWidgetOutputResponse` : [no documentation found]
-            ///
-            /// - Throws: `AllocateWidgetError` : Place-holder wrapper object for possible exceptions listed below.
-            ///
-            /// __Possible Exceptions:__
-            /// This operation throws no exceptions.
             public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutputResponse
             {
                 let context = ClientRuntime.HttpContextBuilder()
