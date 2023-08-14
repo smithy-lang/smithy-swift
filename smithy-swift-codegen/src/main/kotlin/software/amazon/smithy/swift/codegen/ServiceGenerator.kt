@@ -96,10 +96,9 @@ class ServiceGenerator(
                 writer.writeSingleLineDocs { write("- Throws: `${op.toUpperCamelCase() + "Error"}` : Place-holder wrapper object for possible exceptions listed below.") }
                 writeEmptyLine()
                 writer.writeSingleLineDocs { write("__Possible Exceptions:__") }
-            }
-
-            for (error in op.getErrors(service)) {
-                writer.writeDocs("\\- \\`${error.name}\\` : ${retrieveMemberShapeDoc(error.toShapeId(), model)}")
+                op.getErrors(service).forEach { error ->
+                    writer.writeDocs("\\- \\`${error.name}\\` : ${retrieveMemberShapeDoc(error.toShapeId(), model)}")
+                }
             }
         }
 
