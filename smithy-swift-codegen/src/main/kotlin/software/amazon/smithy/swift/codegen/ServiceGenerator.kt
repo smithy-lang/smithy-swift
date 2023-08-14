@@ -81,16 +81,20 @@ class ServiceGenerator(
             writer.writeShapeDocs(op)
             writer.writeAvailableAttribute(model, op)
 
-            writer.writeSingleLineDocs { write("") }
+            fun writeEmptyLine() {
+                writer.writeSingleLineDocs { write("") }
+            }
+
+            writeEmptyLine()
             writer.writeDocs("\\- Parameter ${op.inputShape.name} : ${retrieveMemberShapeDoc(op.inputShape, model)}")
 
-            writer.writeSingleLineDocs { write("") }
+            writeEmptyLine()
             writer.writeDocs("\\- Returns: \\`${op.outputShape.name}\\` : ${retrieveMemberShapeDoc(op.outputShape, model)}")
 
-            if (op.getErrors(service).size > 0) {
-                writer.writeSingleLineDocs { write("") }
+            if (op.getErrors(service).isNotEmpty()) {
+                writeEmptyLine()
                 writer.writeSingleLineDocs { write("- Throws: `${op.toUpperCamelCase() + "Error"}` : Place-holder wrapper object for possible exceptions listed below.") }
-                writer.writeSingleLineDocs { write("") }
+                writeEmptyLine()
                 writer.writeSingleLineDocs { write("__Possible Exceptions:__") }
             }
 
