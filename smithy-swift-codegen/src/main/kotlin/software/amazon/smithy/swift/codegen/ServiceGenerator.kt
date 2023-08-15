@@ -105,10 +105,7 @@ class ServiceGenerator(
          */
         private fun retrieveMemberShapeDoc(shapeId: ShapeId, model: Model): String {
             val docTrait = model.getShape(shapeId).get().getTrait(DocumentationTrait::class.java).getOrNull()
-            return when {
-                docTrait == null -> "[no documentation found]"
-                else -> docTrait.value
-            }
+            return docTrait?.value ?: "[no documentation found]"
         }
     }
 
