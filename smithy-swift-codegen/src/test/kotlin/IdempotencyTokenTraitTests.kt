@@ -9,6 +9,11 @@ class IdempotencyTokenTraitTests {
         val expectedContents =
             """
             extension RestXmlProtocolClient: RestXmlProtocolClientProtocol {
+                /// This is a very cool operation.
+                ///
+                /// - Parameter IdempotencyTokenWithStructureInput : [no documentation found]
+                ///
+                /// - Returns: `IdempotencyTokenWithStructureOutputResponse` : [no documentation found]
                 public func idempotencyTokenWithStructure(input: IdempotencyTokenWithStructureInput) async throws -> IdempotencyTokenWithStructureOutputResponse
                 {
                     let context = ClientRuntime.HttpContextBuilder()

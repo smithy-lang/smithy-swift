@@ -16,6 +16,7 @@ service RestXml {
 }
 
 @http(uri: "/IdempotencyTokenWithStructure", method: "PUT")
+@documentation("This is a very cool operation.")
 operation IdempotencyTokenWithStructure {
     input: IdempotencyToken,
 }

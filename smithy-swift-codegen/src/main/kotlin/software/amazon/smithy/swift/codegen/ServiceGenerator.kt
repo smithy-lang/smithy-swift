@@ -12,7 +12,10 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
@@ -40,6 +43,7 @@ class ServiceGenerator(
          */
         fun renderOperationDefinition(
             model: Model,
+            service: ServiceShape,
             symbolProvider: SymbolProvider,
             writer: SwiftWriter,
             opIndex: OperationIndex,
@@ -56,8 +60,7 @@ class ServiceGenerator(
             val outputShape = opIndex.getOutput(op).get()
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
 
-            writer.writeShapeDocs(op)
-            writer.writeAvailableAttribute(model, op)
+            renderOperationDoc(model, service, op, writer)
 
             val accessSpecifier = if (insideProtocol) "" else "public "
 
@@ -67,6 +70,42 @@ class ServiceGenerator(
                 inputParam,
                 outputShapeName
             )
+        }
+
+        /**
+         * Helper method for generating in-line documentation for operation
+         */
+        private fun renderOperationDoc(model: Model, service: ServiceShape, op: OperationShape, writer: SwiftWriter) {
+            writer.writeShapeDocs(op)
+            writer.writeAvailableAttribute(model, op)
+
+            fun writeEmptyLine() {
+                writer.writeSingleLineDocs { write("") }
+            }
+
+            writeEmptyLine()
+            writer.writeDocs("\\- Parameter ${op.inputShape.name} : ${retrieveMemberShapeDoc(op.inputShape, model)}")
+
+            writeEmptyLine()
+            writer.writeDocs("\\- Returns: \\`${op.outputShape.name}\\` : ${retrieveMemberShapeDoc(op.outputShape, model)}")
+
+            if (op.getErrors(service).isNotEmpty()) {
+                writeEmptyLine()
+                writer.writeSingleLineDocs { write("- Throws: One of the exceptions listed below __Possible Exceptions__.") }
+                writeEmptyLine()
+                writer.writeSingleLineDocs { write("__Possible Exceptions:__") }
+                op.getErrors(service).forEach { error ->
+                    writer.writeDocs("\\- \\`${error.name}\\` : ${retrieveMemberShapeDoc(error.toShapeId(), model)}")
+                }
+            }
+        }
+
+        /**
+         * Helper method to grab documentation for operation's member shapes (input, output, error(s)
+         */
+        private fun retrieveMemberShapeDoc(shapeId: ShapeId, model: Model): String {
+            val docTrait = model.getShape(shapeId).get().getTrait(DocumentationTrait::class.java).getOrNull()
+            return docTrait?.value ?: "[no documentation found]"
         }
     }
 
@@ -118,7 +157,7 @@ class ServiceGenerator(
         writer.openBlock("public protocol ${serviceSymbol.name}Protocol {")
             .call {
                 operations.forEach { op ->
-                    renderOperationDefinition(model, symbolProvider, writer, operationsIndex, op, true)
+                    renderOperationDefinition(model, service, symbolProvider, writer, operationsIndex, op, true)
                 }
             }
             .closeBlock("}")

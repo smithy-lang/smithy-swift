@@ -80,6 +80,7 @@ operation GetFooStreamingInputNoOutput {
 }
 
 // https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#idempotencytoken-trait
+@documentation("This is a very cool operation.")
 @http(method: "POST", uri: "/input/AllocateWidget")
 operation AllocateWidget {
     input: AllocateWidgetInput
