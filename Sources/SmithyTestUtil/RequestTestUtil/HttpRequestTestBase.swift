@@ -102,7 +102,7 @@ open class HttpRequestTestBase: XCTestCase {
     }
 
     // Per spec, host can contain a path prefix, so this function is used to get only the host
-    // https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#smithy-test-httprequesttests-trait
+    // https://smithy.io/2.0/additional-specs/http-protocol-compliance-tests.html#smithy-test-httprequesttests-trait
     public func hostOnlyFromHost(host: String) -> String? {
         guard !host.isEmpty, let hostOnly = URL(string: "http://\(host)")?.host else {
             return nil
@@ -216,7 +216,7 @@ open class HttpRequestTestBase: XCTestCase {
         assertRequiredQueryItems(expected.requiredQueryItems, actual.queryItems, file: file, line: line)
 
         // assert the contents of HttpBody match, if no body was on the test, no assertions are to be made about the body
-        // https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#httprequesttests
+        // https://smithy.io/2.0/additional-specs/http-protocol-compliance-tests.html#smithy-test-httprequesttests-trait
         try await assertEqualHttpBody?(expected.body, actual.body)
     }
 
