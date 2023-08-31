@@ -107,6 +107,11 @@ class HttpProtocolClientGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expected = """
         extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {
+            /// This is a very cool operation.
+            ///
+            /// - Parameter AllocateWidgetInput : [no documentation found]
+            ///
+            /// - Returns: `AllocateWidgetOutputResponse` : [no documentation found]
             public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutputResponse
             {
                 let context = ClientRuntime.HttpContextBuilder()

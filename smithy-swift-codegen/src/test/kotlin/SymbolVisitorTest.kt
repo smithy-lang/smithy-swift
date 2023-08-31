@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 class SymbolVisitorTest {
 
-    // See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
+    // See https://smithy.io/2.0/aws/aws-core.html#using-sdk-service-id-for-client-naming
     @Test
     fun `it produces the correct string transformation for client names`() {
         assertEquals("APIGateway", "API Gateway".clientName())

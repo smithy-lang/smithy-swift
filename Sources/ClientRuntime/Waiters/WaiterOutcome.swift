@@ -19,4 +19,12 @@ public struct WaiterOutcome<Output> {
 
     /// The result (output object or error) that caused an `Acceptor` to match.
     public let result: Result<Output, Error>
+
+    /// Creates an instance of WaiterOutcome
+    /// - Parameter attempts: The number of operation attempts that were required for the wait to succeed.
+    /// - Parameter result: The result (output object or error) that caused an `Acceptor` to match.
+    public init(attempts: Int, result: Result<Output, Error>) {
+        self.attempts = attempts
+        self.result = result
+    }
 }

@@ -75,18 +75,12 @@ class DataObjectSerializationTests: XCTestCase {
         }
     }
 
-    // TODO: Fix this test on Linux.
-    // Tracked by https://github.com/awslabs/aws-sdk-swift/issues/1006
-    #if !os(Linux)
     func testDecodingInvalidBase64EncodedDataObject() {
         let invalidBase64EncodedStrings = [
             // - is not a valid base64 char
             "Zm9v-y==",
             // encoded length is not a multiple of 4
             "Zm9vY=",
-            // invalid padding
-            // TODO: this does not pass on Linux, it is unclear of this is in fact an invalid amount of padding.
-            "Zm9vY==="
         ]
 
         for invalidBase64EncodedString in invalidBase64EncodedStrings {
@@ -98,5 +92,4 @@ class DataObjectSerializationTests: XCTestCase {
             XCTAssertNil(try? JSONDecoder().decode(StructWithDataObject.self, from: encodedStructWithDataObjectJSON))
         }
     }
-    #endif
 }
