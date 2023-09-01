@@ -11,7 +11,7 @@ public struct Endpoint: Hashable {
     public let protocolType: ProtocolType?
     public let host: String
     public let port: Int16
-    public let headers: Headers?
+    public internal(set) var headers: Headers?
     public let properties: [String: AnyHashable]
 
     public init(urlString: String,

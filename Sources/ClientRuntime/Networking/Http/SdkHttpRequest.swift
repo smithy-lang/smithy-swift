@@ -11,9 +11,12 @@ import AwsCommonRuntimeKit
 // in the CRT engine so that is why it's a class
 public class SdkHttpRequest {
     public let body: HttpBody
-    public let endpoint: Endpoint
+    public internal(set) var endpoint: Endpoint
     public let method: HttpMethodType
-    public var headers: Headers { endpoint.headers ?? Headers() }
+    public var headers: Headers {
+        get { endpoint.headers ?? Headers() }
+        set { endpoint.headers = newValue }
+    }
     public var path: String { endpoint.path }
     public var host: String { endpoint.host }
     public var queryItems: [URLQueryItem]? { endpoint.queryItems }
