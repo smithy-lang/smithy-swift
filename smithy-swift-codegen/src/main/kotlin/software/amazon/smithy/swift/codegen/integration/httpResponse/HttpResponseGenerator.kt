@@ -6,12 +6,14 @@
 package software.amazon.smithy.swift.codegen.integration.httpResponse
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import java.sql.Struct
 
 class HttpResponseGenerator(
     val unknownServiceErrorSymbol: Symbol,
@@ -33,11 +35,17 @@ class HttpResponseGenerator(
             }
         }
 
+        httpResponseBindingErrorGenerator.renderServiceError(ctx)
         httpOperations.forEach {
-            httpResponseBindingErrorGenerator.render(ctx, it, unknownServiceErrorSymbol)
+            httpResponseBindingErrorGenerator.renderOperationError(ctx, it, unknownServiceErrorSymbol)
         }
 
-        val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
+        val modeledOperationErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
+        var modeledServiceErrors = emptySet<StructureShape>()
+        for (serviceError in ctx.service.errors) {
+            modeledServiceErrors.plus(ctx.model.expectShape(serviceError) as StructureShape)
+        }
+        val modeledErrors = modeledOperationErrors + modeledServiceErrors
         modeledErrors.forEach {
             httpResponseBindingErrorInitGenerator(ctx, it, httpBindingResolver, defaultTimestampFormat)
         }

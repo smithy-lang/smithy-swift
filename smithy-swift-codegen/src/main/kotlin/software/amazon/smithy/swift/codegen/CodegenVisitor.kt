@@ -25,7 +25,6 @@ import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvert
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
-import software.amazon.smithy.swift.codegen.model.FlattenServiceErrorsOntoOperations
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -89,7 +88,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
         resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
         resolvedModel = NestedShapeTransformer.transform(resolvedModel, settings.getService(resolvedModel))
-        resolvedModel = FlattenServiceErrorsOntoOperations.transform(resolvedModel, settings.getService(resolvedModel))
         return resolvedModel
     }
 

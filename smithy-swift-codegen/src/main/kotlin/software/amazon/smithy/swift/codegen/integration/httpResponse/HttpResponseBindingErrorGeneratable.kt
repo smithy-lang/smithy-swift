@@ -7,8 +7,10 @@ package software.amazon.smithy.swift.codegen.integration.httpResponse
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 interface HttpResponseBindingErrorGeneratable {
-    fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, unknownServiceErrorSymbol: Symbol)
+    fun renderServiceError(ctx: ProtocolGenerator.GenerationContext)
+    fun renderOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, unknownServiceErrorSymbol: Symbol)
 }
