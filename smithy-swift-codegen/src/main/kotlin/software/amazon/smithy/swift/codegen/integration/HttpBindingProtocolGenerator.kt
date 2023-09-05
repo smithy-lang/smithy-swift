@@ -320,7 +320,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .flatMap { it.errors }
             .map { ctx.model.expectShape(it) }
             .toSet()
-        return operationErrorShapes.filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
+        var serviceErrorShapes: MutableSet<Shape> = mutableSetOf()
+        for (serviceError in ctx.service.errors) {
+            serviceErrorShapes.add(ctx.model.expectShape(serviceError) as StructureShape)
+        }
+        return operationErrorShapes.filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet() + serviceErrorShapes
     }
 
     private fun resolveShapesNeedingCodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
