@@ -13,7 +13,7 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpRespons
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 
 class MockHttpResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratable {
-    override fun render(
+    override fun renderOperationError(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
         unknownServiceErrorSymbol: Symbol
@@ -33,5 +33,9 @@ class MockHttpResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratabl
                 }
             }
         }
+    }
+
+    override fun renderServiceError(ctx: ProtocolGenerator.GenerationContext) {
+        // Intentionally empty
     }
 }
