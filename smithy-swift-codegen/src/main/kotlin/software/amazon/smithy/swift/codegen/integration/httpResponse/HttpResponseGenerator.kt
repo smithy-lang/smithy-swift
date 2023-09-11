@@ -12,6 +12,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import java.sql.Struct
 
 class HttpResponseGenerator(
     val unknownServiceErrorSymbol: Symbol,
@@ -38,11 +39,15 @@ class HttpResponseGenerator(
             httpResponseBindingErrorGenerator.renderOperationError(ctx, it, unknownServiceErrorSymbol)
         }
 
-        val modeledOperationErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
-        var modeledServiceErrors: MutableSet<StructureShape> = mutableSetOf()
-        for (serviceError in ctx.service.errors) {
-            modeledServiceErrors.add(ctx.model.expectShape(serviceError) as StructureShape)
-        }
+        val modeledOperationErrors = httpOperations
+            .flatMap { it.errors }
+            .map { ctx.model.expectShape(it) as StructureShape }
+            .toSet()
+
+        val modeledServiceErrors = ctx.service.errors
+            .map { ctx.model.expectShape(it) as StructureShape }
+            .toSet()
+
         val modeledErrors = modeledOperationErrors + modeledServiceErrors
         modeledErrors.forEach {
             httpResponseBindingErrorInitGenerator(ctx, it, httpBindingResolver, defaultTimestampFormat)
