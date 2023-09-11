@@ -12,7 +12,6 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import java.sql.Struct
 
 class HttpResponseGenerator(
     val unknownServiceErrorSymbol: Symbol,
