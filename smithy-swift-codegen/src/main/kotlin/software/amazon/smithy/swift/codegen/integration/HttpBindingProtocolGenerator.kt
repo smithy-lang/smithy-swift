@@ -264,7 +264,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-            writer.openBlock("struct ${decodeSymbol.name}: \$N, \$N {", "}", SwiftTypes.Protocols.Equatable) {
+            writer.openBlock("struct ${decodeSymbol.name}: \$N {", "}", SwiftTypes.Protocols.Equatable) {
                 httpBodyMembers.forEach {
                     val memberSymbol = ctx.symbolProvider.toSymbol(it)
                     writer.write("let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)
