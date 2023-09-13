@@ -49,16 +49,19 @@ class HttpResponseTraitWithoutHttpPayload(
         val bodyMembersWithoutQueryTrait = bodyMembers
             .filter { !it.member.hasTrait(HttpQueryTrait::class.java) }
             .toMutableSet()
+        val initialResponseMembers = bodyMembers.filter {
+            val targetShape = it.member.targetOrSelf(ctx.model)
+            targetShape?.hasTrait(StreamingTrait::class.java) == false
+        }.toMutableSet()
         val streamingMember = bodyMembers.firstOrNull { it.member.targetOrSelf(ctx.model).hasTrait(StreamingTrait::class.java) }
-
         if (streamingMember != null) {
-            writeStreamingMember(streamingMember)
+            writeStreamingMember(streamingMember, initialResponseMembers)
         } else if (bodyMembersWithoutQueryTrait.isNotEmpty()) {
             writeNonStreamingMembers(bodyMembersWithoutQueryTrait)
         }
     }
 
-    fun writeStreamingMember(streamingMember: HttpBindingDescriptor) {
+    fun writeStreamingMember(streamingMember: HttpBindingDescriptor, initialResponseMembers: Set<HttpBindingDescriptor>) {
         val shape = ctx.model.expectShape(streamingMember.member.target)
         val symbol = ctx.symbolProvider.toSymbol(shape)
         val memberName = ctx.symbolProvider.toMemberName(streamingMember.member)
@@ -74,6 +77,7 @@ class HttpResponseTraitWithoutHttpPayload(
                         symbol
                     )
                     writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
+                    writeInitialResponseMembers(initialResponseMembers)
                 }
                 writer.indent()
                 writer.write("self.\$L = nil", memberName).closeBlock("}")
@@ -131,6 +135,36 @@ class HttpResponseTraitWithoutHttpPayload(
         writer.dedent()
         writer.write("}")
     }
+
+    fun writeInitialResponseMembers(initialResponseMembers: Set<HttpBindingDescriptor>) {
+        initialResponseMembers.forEach { responseMember ->
+            val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
+            writer.apply {
+                write("if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {")
+                indent()
+                write("let decoder = JSONDecoder()")
+                write("do {")
+                indent()
+                write("let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)")
+                write("self.$responseMemberName = response[\"$responseMemberName\"].map { value in KinesisClientTypes.Tag(value: value) }")
+                dedent()
+                write("} catch {")
+                indent()
+                write("print(\"Error decoding JSON: \\(error)\")")
+                write("self.$responseMemberName = nil")
+                dedent()
+                write("}")
+                dedent()
+                write("} else {")
+                indent()
+                write("self.$responseMemberName = nil")
+                dedent()
+                write("}")
+            }
+        }
+    }
+
+
 
     private val path: String = "properties.".takeIf { outputShape.hasTrait<ErrorTrait>() } ?: ""
 }
