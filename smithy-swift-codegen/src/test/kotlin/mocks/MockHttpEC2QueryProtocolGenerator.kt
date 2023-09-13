@@ -88,6 +88,7 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
+        path: String
     ) {
         val customizations = MockEc2QueryFormURLEncodeCustomizations()
         val encodeGenerator = StructEncodeFormURLGenerator(ctx, customizations, shapeContainingMembers, shapeMetadata, members, writer, defaultTimestampFormat)
@@ -99,6 +100,7 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
+        path: String
     ) {
         val decodeGenerator = StructDecodeXMLGenerator(ctx, members, mapOf(), writer, defaultTimestampFormat)
         decodeGenerator.render()

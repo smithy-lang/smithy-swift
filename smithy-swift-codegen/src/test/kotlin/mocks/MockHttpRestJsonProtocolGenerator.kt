@@ -77,6 +77,7 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
+        path: String
     ) {
         val encodeGenerator = StructEncodeGenerator(ctx, members, writer, defaultTimestampFormat)
         encodeGenerator.render()
@@ -87,8 +88,9 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
+        path: String
     ) {
-        val decodeGenerator = StructDecodeGenerator(ctx, members, writer, defaultTimestampFormat)
+        val decodeGenerator = StructDecodeGenerator(ctx, members, writer, defaultTimestampFormat, path)
         decodeGenerator.render()
     }
 

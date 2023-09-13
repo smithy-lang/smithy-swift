@@ -34,7 +34,8 @@ Includes functions to help render conformance to Decodable protocol for shapes
 abstract class MemberShapeDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
+    private val defaultTimestampFormat: TimestampFormatTrait.Format,
+    private val path: String
 ) : MemberShapeDecodeGeneratable {
     fun renderDecodeForTimestamp(ctx: ProtocolGenerator.GenerationContext, target: Shape, member: MemberShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
@@ -154,7 +155,7 @@ abstract class MemberShapeDecodeGenerator(
      */
     open fun renderAssigningDecodedMember(topLevelMember: MemberShape, decodedMemberName: String) {
         val topLevelMemberName = ctx.symbolProvider.toMemberName(topLevelMember)
-        writer.write("\$L = \$L", topLevelMemberName, decodedMemberName)
+        writer.write("\$L\$L = \$L", path, topLevelMemberName, decodedMemberName)
     }
 
     private fun renderDecodeListTarget(shape: Shape, decodedMemberName: String, collectionName: String, insertMethod: String, topLevelMember: MemberShape, parentMember: Shape, level: Int = 0) {
