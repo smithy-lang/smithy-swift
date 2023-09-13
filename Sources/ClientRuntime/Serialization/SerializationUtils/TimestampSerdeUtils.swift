@@ -8,7 +8,7 @@
 import func Foundation.floor
 
 /// Custom timestamp serialization formats
-/// https://awslabs.github.io/smithy/1.0/spec/core/protocol-traits.html#timestampformat-trait
+/// https://smithy.io/2.0/spec/protocol-traits.html#smithy-api-timestampformat-trait
 public enum TimestampFormat: CaseIterable {
     /// Also known as Unix time, the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970, with optional fractional precision (for example, 1515531081.1234).
     case epochSeconds

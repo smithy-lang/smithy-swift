@@ -14,7 +14,7 @@ class EndpointTraitConstructor(private val endpointTrait: EndpointTrait, private
         return endpointTrait.hostPrefix.segments.joinToString(separator = "") { segment ->
             if (segment.isLabel) {
                 // hostLabel can only target string shapes
-                // see: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#hostlabel-trait
+                // see: https://smithy.io/2.0/spec/endpoint-traits.html#hostlabel-trait
                 val member = inputShape.members().first { it.memberName == segment.content }
                 "\\(input.${member.memberName.toLowerCamelCase()}!)"
             } else {
