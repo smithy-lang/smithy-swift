@@ -33,7 +33,9 @@ class HttpResponseGenerator(
             }
         }
 
-        httpResponseBindingErrorGenerator.renderServiceError(ctx)
+        if (ctx.service.errors.isNotEmpty()) {
+            httpResponseBindingErrorGenerator.renderServiceError(ctx)
+        }
         httpOperations.forEach {
             httpResponseBindingErrorGenerator.renderOperationError(ctx, it, unknownServiceErrorSymbol)
         }
