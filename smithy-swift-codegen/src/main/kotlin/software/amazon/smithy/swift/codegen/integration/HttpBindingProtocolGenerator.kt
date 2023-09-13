@@ -322,7 +322,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .flatMap { it.errors }
             .map { ctx.model.expectShape(it) }
             .toSet()
-        return operationErrorShapes.filter { shapes -> shapes.members().any { it.isInHttpBody() } }.toMutableSet()
+
+        val serviceErrorShapes = ctx.service.errors.map {
+            ctx.model.expectShape(it)
+        }.toSet()
+
+        return operationErrorShapes.filter { shape ->
+            shape.members().any { it.isInHttpBody() }
+        }.toMutableSet() + serviceErrorShapes.filter { shape ->
+            shape.members().any { it.isInHttpBody() }
+        }.toMutableSet()
     }
 
     private fun resolveShapesNeedingCodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
@@ -342,6 +351,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
             .toSet()
 
+        val topLevelServiceErrorMembers = ctx.service.errors
+            .flatMap { ctx.model.expectShape(it).members() }
+            .map { ctx.model.expectShape(it.target) }
+            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+            .toSet()
+
         val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
             val inputShape = ctx.model.expectShape(it.input.get())
             inputShape.members()
@@ -350,7 +365,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
             .toSet()
 
-        val allTopLevelMembers = topLevelOutputMembers.union(topLevelErrorMembers).union(topLevelInputMembers)
+        val allTopLevelMembers =
+            topLevelOutputMembers
+                .union(topLevelErrorMembers)
+                .union(topLevelServiceErrorMembers)
+                .union(topLevelInputMembers)
 
         val nestedTypes = walkNestedShapesRequiringSerde(ctx, allTopLevelMembers)
         return nestedTypes
