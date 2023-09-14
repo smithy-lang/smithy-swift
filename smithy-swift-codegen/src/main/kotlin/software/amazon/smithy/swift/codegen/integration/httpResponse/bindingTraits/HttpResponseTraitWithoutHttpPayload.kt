@@ -164,7 +164,5 @@ class HttpResponseTraitWithoutHttpPayload(
         }
     }
 
-
-
     private val path: String = "properties.".takeIf { outputShape.hasTrait<ErrorTrait>() } ?: ""
 }
