@@ -8,12 +8,12 @@ fun writeInitialResponseMembers(ctx: ProtocolGenerator.GenerationContext, writer
     initialResponseMembers.forEach { responseMember ->
         val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
         writer.apply {
-            write("if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {")
+            write("if let initialData = await messageDecoder.awaitInitialResponse() {")
             indent()
             write("let decoder = JSONDecoder()")
             write("do {")
             indent()
-            write("let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)")
+            write("let response = try decoder.decode([String: String].self, from: initialData)")
             write("self.$responseMemberName = response[\"$responseMemberName\"].map { value in KinesisClientTypes.Tag(value: value) }")
             dedent()
             write("} catch {")
