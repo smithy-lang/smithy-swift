@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTra
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftTypes
@@ -18,9 +19,11 @@ import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isEnum
+import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
 class HttpResponseTraitWithHttpPayload(
     val ctx: ProtocolGenerator.GenerationContext,
+    val responseBindings: List<HttpBindingDescriptor>,
     val binding: HttpBindingDescriptor,
     val writer: SwiftWriter
 ) : HttpResponseBindingRenderable {
@@ -28,6 +31,11 @@ class HttpResponseTraitWithHttpPayload(
     object MessageDecoderSectionId : SectionId
 
     override fun render() {
+        val bodyMembers = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }
+        val initialResponseMembers = bodyMembers.filter {
+            val targetShape = it.member.targetOrSelf(ctx.model)
+            targetShape?.hasTrait(StreamingTrait::class.java) == false
+        }.toMutableSet()
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
@@ -97,6 +105,7 @@ class HttpResponseTraitWithHttpPayload(
                         }
                         writer.write("let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)", ClientRuntimeTypes.EventStream.MessageDecoderStream, symbol)
                         writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
+                        writeInitialResponseMembers(ctx, writer, initialResponseMembers)
                     }
                 } else {
                     writer.openBlock("if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {", "} else {") {

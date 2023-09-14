@@ -31,7 +31,7 @@ class HttpResponseTraitPayload(
     override fun render() {
         val httpPayload = responseBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
-            HttpResponseTraitWithHttpPayload(ctx, httpPayload, writer).render()
+            HttpResponseTraitWithHttpPayload(ctx, responseBindings, httpPayload, writer).render()
         } else {
             val httpResponseTraitWithoutPayload = httpResponseTraitWithoutPayloadFactory?.let {
                 it.construct(ctx, responseBindings, outputShape, writer)

@@ -51,6 +51,10 @@ operation EventStreaming {
 }
 
 structure EventStreamingOutput {
+    @httpLabel
+    @required
+    metadata: String
+
     @required
     eventStream: EventStream
 }

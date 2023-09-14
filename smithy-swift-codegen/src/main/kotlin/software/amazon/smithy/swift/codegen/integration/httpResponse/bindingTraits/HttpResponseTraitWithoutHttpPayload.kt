@@ -77,7 +77,7 @@ class HttpResponseTraitWithoutHttpPayload(
                         symbol
                     )
                     writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
-                    writeInitialResponseMembers(initialResponseMembers)
+                    writeInitialResponseMembers(ctx, writer, initialResponseMembers)
                 }
                 writer.indent()
                 writer.write("self.\$L = nil", memberName).closeBlock("}")
@@ -134,34 +134,6 @@ class HttpResponseTraitWithoutHttpPayload(
         }
         writer.dedent()
         writer.write("}")
-    }
-
-    fun writeInitialResponseMembers(initialResponseMembers: Set<HttpBindingDescriptor>) {
-        initialResponseMembers.forEach { responseMember ->
-            val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
-            writer.apply {
-                write("if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {")
-                indent()
-                write("let decoder = JSONDecoder()")
-                write("do {")
-                indent()
-                write("let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)")
-                write("self.$responseMemberName = response[\"$responseMemberName\"].map { value in KinesisClientTypes.Tag(value: value) }")
-                dedent()
-                write("} catch {")
-                indent()
-                write("print(\"Error decoding JSON: \\(error)\")")
-                write("self.$responseMemberName = nil")
-                dedent()
-                write("}")
-                dedent()
-                write("} else {")
-                indent()
-                write("self.$responseMemberName = nil")
-                dedent()
-                write("}")
-            }
-        }
     }
 
     private val path: String = "properties.".takeIf { outputShape.hasTrait<ErrorTrait>() } ?: ""
