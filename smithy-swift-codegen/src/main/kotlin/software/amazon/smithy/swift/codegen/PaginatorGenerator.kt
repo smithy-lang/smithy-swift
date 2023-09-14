@@ -24,7 +24,7 @@ import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 /**
  * Generate paginators for supporting operations.  See
- * https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#paginated-trait for details.
+ * https://smithy.io/2.0/spec/behavior-traits.html#smithy-api-paginated-trait for details.
  */
 class PaginatorGenerator : SwiftIntegration {
     override fun enabledForService(model: Model, settings: SwiftSettings): Boolean =

@@ -2,7 +2,7 @@
 
 ## Core Spec
 
-Reference the Smithy [Core Spec](https://awslabs.github.io/smithy/spec/core.html)
+Reference the Smithy [Core Spec](https://smithy.io/spec/core.html)
 
 ### Identifiers and Naming
 Swift keywords can be found [here](https://docs.swift.org/swift-book/ReferenceManual/LexicalStructure.html) under Keywords & Punctuation. You can use a reserved word as an identifier if you put backticks (`func`) before and after it.  Keywords other than `inout`, `var`, and `let` can be used as parameter names in a function declaration or function call without being escaped with backticks.
@@ -301,7 +301,7 @@ func processDoc(source: String) -> JSONValue {
 
 #### Structure
 
-A [structure](https://awslabs.github.io/smithy/spec/core.html#structure) type represents a fixed set of named heterogeneous members. In Swift this can be represented
+A [structure](https://smithy.io/spec/core.html#structure) type represents a fixed set of named heterogeneous members. In Swift this can be represented
 as either a struct or a class. 
 
 Non boxed member values will be defaulted according to the spec: `The default value of a byte, short, integer, long, float, and double shape that is not boxed is zero`
@@ -363,7 +363,7 @@ Classes can do a few other things:
 
 #### Union
 
-A [union](https://awslabs.github.io/smithy/spec/core.html#union) is a fixed set of types where only one type is used at any one time. In Swift this maps well to a [enum](https://docs.swift.org/swift-book/LanguageGuide/Enumerations.html). Enums in swift are like enums on steroids, they can have associated types, raw values, and recursive enums.
+A [union](https://smithy.io/spec/core.html#union) is a fixed set of types where only one type is used at any one time. In Swift this maps well to a [enum](https://docs.swift.org/swift-book/LanguageGuide/Enumerations.html). Enums in swift are like enums on steroids, they can have associated types, raw values, and recursive enums.
 
 Example
 

@@ -6,7 +6,7 @@
 
 ## Introduction
 
-Waiters are a Smithy feature, and are defined in the Smithy specification at https://awslabs.github.io/smithy/2.0/additional-specs/waiters.html.  From this spec:
+Waiters are a Smithy feature, and are defined in the Smithy specification at https://smithy.io/2.0/additional-specs/waiters.html.  From this spec:
 
 >Waiters are a client-side abstraction used to poll a resource until a desired state is reached, or until it is determined that the resource will never enter into the desired state.
 
@@ -81,7 +81,7 @@ public struct WaiterOptions {
 
 #### Retry Strategy
 
-Smithy specifies an algorithm which is to be used for scheduling retries during waiting.  The Smithy preferred algorithm is always used and not replaceable or customizable, other than through the `WaiterOptions` parameters.  Smithy’s retry strategy is best summarized as “exponential backoff with jitter” and is defined in detail in the [Smithy docs](https://awslabs.github.io/smithy/2.0/additional-specs/waiters.html#waiter-retries).
+Smithy specifies an algorithm which is to be used for scheduling retries during waiting.  The Smithy preferred algorithm is always used and not replaceable or customizable, other than through the `WaiterOptions` parameters.  Smithy’s retry strategy is best summarized as “exponential backoff with jitter” and is defined in detail in the [Smithy docs](https://smithy.io/2.0/additional-specs/waiters.html#waiter-retries).
 
 #### Return Type
 
@@ -207,7 +207,7 @@ The `WaiterConfig` value will be code-generated to a static variable for use in 
 
 The ordered list of acceptors in the Smithy specification for each waiter should be code-generated into an array of `Acceptor`s and stored in the waiter config.  The `Acceptor` array will provide logic used at runtime to decide whether the waiter will succeed, retry, or fail in response to an operation.
 
-Acceptors may include a matching predicate defined per the [JMESPath specification](https://jmespath.org/).  The [main Smithy project](https://github.com/awslabs/smithy) includes a [parser](https://github.com/awslabs/smithy/tree/main/smithy-jmespath/src/main/java/software/amazon/smithy/jmespath) that breaks JMESPath expressions into a Smithy-native AST for use in code generation.  This AST, in turn, will be used to generate Swift-native code (i.e. Boolean expressions) that evaluate to the intended result of the JMESPath expression.
+Acceptors may include a matching predicate defined per the [JMESPath specification](https://jmespath.org/).  The [main Smithy project](https://github.com/smithy-lang/smithy) includes a [parser](https://github.com/smithy-lang/smithy/tree/main/smithy-jmespath/src/main/java/software/amazon/smithy/jmespath) that breaks JMESPath expressions into a Smithy-native AST for use in code generation.  This AST, in turn, will be used to generate Swift-native code (i.e. Boolean expressions) that evaluate to the intended result of the JMESPath expression.
 
 ### 3.  Code-generate a `waitUntil...` method on the service client for each waiter (medium, ~3 days)
 

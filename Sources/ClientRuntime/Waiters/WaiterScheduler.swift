@@ -11,7 +11,7 @@ import Foundation
 /// Upon creation, the scheduler will allow an immediate request.
 /// After the first request, further requests are scheduled per the retry strategy formula
 /// published in the Smithy specification:
-/// https://awslabs.github.io/smithy/2.0/additional-specs/waiters.html#waiter-retries
+/// https://smithy.io/2.0/additional-specs/waiters.html#waiter-retries
 final class WaiterScheduler {
     /// The minimum delay between retries while waiting.
     let minDelay: TimeInterval
@@ -66,7 +66,7 @@ final class WaiterScheduler {
         }
 
         // Calculate & set the delay using the formula in the Smithy retry strategy:
-        // https://awslabs.github.io/smithy/2.0/additional-specs/waiters.html#waiter-retries
+        // https://smithy.io/2.0/additional-specs/waiters.html#waiter-retries
         var delay: TimeInterval
         let attemptCeiling = Int(((log(maxDelay / minDelay) / log(2.0)) + 1.0).rounded(.towardZero))
         if attempts > attemptCeiling {
