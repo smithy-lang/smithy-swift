@@ -27,15 +27,18 @@ public class SdkHttpRequest {
     }
     
     public func toBuilder() -> SdkHttpRequestBuilder {
-        return SdkHttpRequestBuilder()
+        let builder = SdkHttpRequestBuilder()
             .withBody(self.body)
             .withMethod(self.method)
             .withHeaders(self.headers)
             .withPath(self.path)
             .withHost(self.host)
-            .withQueryItems(self.queryItems ?? [])
             .withPort(self.endpoint.port)
             .withProtocol(self.endpoint.protocolType ?? .https)
+        if let qItems = self.queryItems {
+            builder.withQueryItems(qItems)
+        }
+        return builder
     }
 }
 
