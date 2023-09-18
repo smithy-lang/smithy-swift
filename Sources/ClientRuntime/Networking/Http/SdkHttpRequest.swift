@@ -25,6 +25,18 @@ public class SdkHttpRequest {
         self.endpoint = endpoint
         self.body = body
     }
+    
+    public func toBuilder() -> SdkHttpRequestBuilder {
+        return SdkHttpRequestBuilder()
+            .withBody(self.body)
+            .withMethod(self.method)
+            .withHeaders(self.headers)
+            .withPath(self.path)
+            .withHost(self.host)
+            .withQueryItems(self.queryItems ?? [])
+            .withPort(self.endpoint.port)
+            .withProtocol(self.endpoint.protocolType ?? .https)
+    }
 }
 
 extension SdkHttpRequest {
