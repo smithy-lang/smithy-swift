@@ -25,7 +25,7 @@ public class SdkHttpRequest {
         self.endpoint = endpoint
         self.body = body
     }
-    
+
     public func toBuilder() -> SdkHttpRequestBuilder {
         let builder = SdkHttpRequestBuilder()
             .withBody(self.body)
