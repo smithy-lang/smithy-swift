@@ -8,7 +8,7 @@
 /// Returns the swift version of the compiler that is compiling this application.
 public var swiftVersion: String {
     /**
-     Unfortunately there isn't a way to grab the compiled swift programmatically and so we must resot to the compiler directives to produce a version string.
+     Unfortunately there isn't a way to grab the compiled swift programmatically and so we must resort to the compiler directives to produce a version string.
      We are checking for quite a few versions in the future, that may never exist, in order to future proof our current SDKs. Ideally, all current SDKs should compile
      on future Swift versions unless that Swift version introduces a breaking change.
      
@@ -23,6 +23,26 @@ public var swiftVersion: String {
 private func swift5Version() -> String? {
     #if swift(>=6.0)
     return nil
+    #elseif swift(>=5.19)
+    return "5.19"
+    #elseif swift(>=5.18)
+    return "5.18"
+    #elseif swift(>=5.17)
+    return "5.17"
+    #elseif swift(>=5.16)
+    return "5.16"
+    #elseif swift(>=5.15)
+    return "5.15"
+    #elseif swift(>=5.14)
+    return "5.14"
+    #elseif swift(>=5.13)
+    return "5.13"
+    #elseif swift(>=5.12)
+    return "5.12"
+    #elseif swift(>=5.11)
+    return "5.11"
+    #elseif swift(>=5.10)
+    return "5.10"
     #elseif swift(>=5.9)
     return "5.9"
     #elseif swift(>=5.8)
