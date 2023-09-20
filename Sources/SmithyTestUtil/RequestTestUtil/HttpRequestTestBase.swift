@@ -369,7 +369,7 @@ open class HttpRequestTestBase: XCTestCase {
             )
             XCTAssertTrue(values.contains(expectedQueryItem.value),
                           """
-                          expected query item value not found for \"\(expectedQueryItem.name)\".
+                          expected query item not found.
                           Expected Value: \(expectedQueryItem.value ?? "nil")
                           Actual Values: \(values)
                           """,

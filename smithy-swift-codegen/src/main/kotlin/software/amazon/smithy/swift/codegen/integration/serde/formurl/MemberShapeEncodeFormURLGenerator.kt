@@ -353,7 +353,7 @@ abstract class MemberShapeEncodeFormURLGenerator(
     fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
         val symbol = ctx.symbolProvider.toSymbol(memberTarget)
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = customizations.customNameTraitGenerator(member, member.memberName)
+        val resolvedMemberName = customizations.customNameTraitGenerator(member, memberName)
         val isBoxed = symbol.isBoxed()
         val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"$resolvedMemberName\")"
         if (isBoxed) {
