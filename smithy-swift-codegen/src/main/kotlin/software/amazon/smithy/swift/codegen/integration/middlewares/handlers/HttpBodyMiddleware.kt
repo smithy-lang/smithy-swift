@@ -207,7 +207,8 @@ class HttpBodyMiddleware(
         writer.dedent()
         writer.write(")")
         // add initial-request message to front of the stream
-        writer.write("let encoderStream = \$L(stream: initialMessage + $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
+        writer.write(
+            "let encoderStream = \$L(stream: initialMessage + $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
             ClientRuntimeTypes.EventStream.MessageEncoderStream
         )
     }
