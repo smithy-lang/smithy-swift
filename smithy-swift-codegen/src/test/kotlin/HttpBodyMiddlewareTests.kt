@@ -203,8 +203,11 @@ class HttpBodyMiddlewareTests {
                             guard let messageSigner = context.getMessageSigner() else {
                                 fatalError("Message signer is required for streaming payload")
                             }
+                            let initialRequestMembers: [String: Any] = ["room": input.operationInput.room]
                             let jsonData = try JSONEncoder().encode(initialRequestMembers)
-                            let jsonString = String(data: jsonData, encoding: .utf8)!
+                            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                                fatalError("Failed to decode JSON data to string.")
+                            }
                             let initialMessage = EventStream.Message(
                                 headers: [
                                     .init(name: ":event-type", value: .string("initial-request")),

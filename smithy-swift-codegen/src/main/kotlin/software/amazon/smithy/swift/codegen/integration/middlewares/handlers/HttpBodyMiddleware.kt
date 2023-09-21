@@ -133,7 +133,7 @@ class HttpBodyMiddleware(
                                     writer.write("fatalError(\"Message signer is required for streaming payload\")")
                                 }
                                 if (initialRequestMembers.isNotEmpty()) {
-                                    renderWithInitialRequest(memberName)
+                                    renderWithInitialRequest(memberName, initialRequestMembers)
                                 } else {
                                     writer.write(
                                         "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
@@ -154,7 +154,7 @@ class HttpBodyMiddleware(
                                     writer.write("fatalError(\"Message signer is required for streaming payload\")")
                                 }
                                 if (initialRequestMembers.isNotEmpty()) {
-                                    renderWithInitialRequest(memberName)
+                                    renderWithInitialRequest(memberName, initialRequestMembers)
                                 } else {
                                     writer.write(
                                         "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
@@ -193,10 +193,18 @@ class HttpBodyMiddleware(
         }
     }
 
-    private fun renderWithInitialRequest(memberName: String) {
+    private fun renderWithInitialRequest(memberName: String, initialRequestMembers: Set<HttpBindingDescriptor>) {
         // Encode initialRequestMembers to a message
+        val entries = initialRequestMembers.map {
+            "\"${it.memberName}\": input.operationInput.${it.memberName}"
+        }.joinToString(", ")
+        writer.write("let initialRequestMembers: [String: Any] = [$entries]")
         writer.write("let jsonData = try JSONEncoder().encode(initialRequestMembers)")
-        writer.write("let jsonString = String(data: jsonData, encoding: .utf8)!")
+        writer.write("guard let jsonString = String(data: jsonData, encoding: .utf8) else {")
+        writer.indent()
+        writer.write("fatalError(\"Failed to decode JSON data to string.\")")
+        writer.dedent()
+        writer.write("}")
         writer.write("let initialMessage = EventStream.Message(")
         writer.indent()
         writer.openBlock("headers: [", "],") {
