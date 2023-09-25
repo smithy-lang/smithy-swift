@@ -46,11 +46,11 @@ public class SdkHttpRequest {
         return builder
     }
 
-    public func withHeader(name: String, value: String) -> Void {
+    public func withHeader(name: String, value: String) {
         self.additionalHeaders.add(name: name, value: value)
     }
 
-    public func withoutHeader(name: String) -> Void {
+    public func withoutHeader(name: String) {
         self.additionalHeaders.remove(name: name)
     }
 }
