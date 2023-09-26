@@ -20,19 +20,30 @@ class HttpRequestTests: NetworkingTestUtils {
 
         let httpBody = HttpBody.data(expectedMockRequestData)
         let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
+        mockHttpRequest.withHeader(name: "foo", value: "bar")
         let httpRequest = try mockHttpRequest.toHttpRequest()
 
         XCTAssertNotNil(httpRequest)
         let headersFromRequest = httpRequest.getHeaders()
         XCTAssertNotNil(headers)
-        for index in 0...(httpRequest.headerCount - 1) {
 
+        // Check headers
+        var additionalHeaderFound = false
+        for index in 0...(httpRequest.headerCount - 1) {
             let header1 = headersFromRequest[index]
             let header2 = mockHttpRequest.headers.headers[index]
+
+            // Check for additional header
+            if header1.name == "foo" {
+                XCTAssertEqual(header1.value, "bar")
+                additionalHeaderFound = true
+            }
+
             XCTAssertEqual(header1.name, header2.name)
             XCTAssertEqual(header1.value, header2.value.joined(separator: ","))
         }
 
+        XCTAssertTrue(additionalHeaderFound, "Additional header 'foo' not found in httpRequest")
         XCTAssertEqual(httpRequest.method, "GET")
 
         if let bodyLength = try httpRequest.body?.length() {
