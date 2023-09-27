@@ -50,10 +50,10 @@ jobs:
       fail-fast: false
       matrix:
         swift:
-          - 5.5-amazonlinux2
-          - 5.6-focal
           - 5.7-amazonlinux2
-          - 5.8-jammy
+          - 5.7-focal
+          - 5.9-amazonlinux2
+          - 5.9-jammy
     container:
       image: swift:${{ matrix.swift }}
     steps:
