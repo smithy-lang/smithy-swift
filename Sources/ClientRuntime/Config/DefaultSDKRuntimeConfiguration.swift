@@ -90,6 +90,13 @@ public extension DefaultSDKRuntimeConfiguration {
     /// Is the CRT HTTP client.
     static var defaultHttpClientEngine: HttpClientEngine { CRTClientEngine() }
 
+    /// The default HTTP client with a specified timeout
+    ///
+    /// Is the CRT HTTP client.
+    static func httpClientEngineWithTimeout(timeoutMs: UInt32) -> HttpClientEngine {
+        return CRTClientEngine(config: CRTClientEngineConfig(connectTimeoutMs: timeoutMs))
+    }
+
     /// The HTTP client configuration to use when none is provided.
     ///
     /// Is the CRT HTTP client's configuration.

@@ -19,11 +19,13 @@ public class CRTClientEngine: HttpClientEngine {
         private var connectionPools: [Endpoint: HTTPClientConnectionManager] = [:]
         private var http2ConnectionPools: [Endpoint: HTTP2StreamManager] = [:]
         private let sharedDefaultIO = SDKDefaultIO.shared
+        private let connectTimeoutMs: UInt32?
 
         init(config: CRTClientEngineConfig) {
             self.windowSize = config.windowSize
             self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
             self.logger = SwiftLogger(label: "SerialExecutor")
+            self.connectTimeoutMs = config.connectTimeoutMs
         }
 
         func getOrCreateConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
@@ -54,7 +56,11 @@ public class CRTClientEngine: HttpClientEngine {
 
             var socketOptions = SocketOptions(socketType: .stream)
 #if os(iOS) || os(watchOS)
-            socketOptions.connectTimeoutMs = 30_000
+            socketOptions.connectTimeoutMs = self.connectTimeoutMs ?? 30_000
+#else
+            if let timeout = self.connectTimeoutMs {
+                socketOptions.connectTimeoutMs = timeout
+            }
 #endif
             let options = HTTPClientConnectionOptions(
                 clientBootstrap: sharedDefaultIO.clientBootstrap,
@@ -78,7 +84,11 @@ public class CRTClientEngine: HttpClientEngine {
         private func createHTTP2ConnectionPool(endpoint: Endpoint) throws -> HTTP2StreamManager {
             var socketOptions = SocketOptions(socketType: .stream)
 #if os(iOS) || os(watchOS)
-            socketOptions.connectTimeoutMs = 30_000
+            socketOptions.connectTimeoutMs = self.connectTimeoutMs ?? 30_000
+#else
+            if let timeout = self.connectTimeoutMs {
+                socketOptions.connectTimeoutMs = timeout
+            }
 #endif
             let tlsConnectionOptions = TLSConnectionOptions(
                 context: sharedDefaultIO.tlsContext,
