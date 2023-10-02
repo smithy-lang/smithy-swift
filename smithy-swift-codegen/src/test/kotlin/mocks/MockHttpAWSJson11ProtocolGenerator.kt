@@ -96,7 +96,7 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
-        path: String
+        path: String?
     ) {
         val encodeGenerator = StructEncodeGenerator(ctx, members, writer, defaultTimestampFormat, path)
         encodeGenerator.render()

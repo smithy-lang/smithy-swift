@@ -97,7 +97,7 @@ abstract class MemberShapeEncodeGenerator(
                 renderEncodeMap(ctx, memberName, topLevelContainerName, targetShape, level)
             }
             else -> {
-                renderSimpleShape(targetShape, memberName, containerName, null, false, "")
+                renderSimpleShape(targetShape, memberName, containerName, null, false)
             }
         }
     }
@@ -108,7 +108,7 @@ abstract class MemberShapeEncodeGenerator(
         containerName: String,
         codingKey: String?,
         isBoxed: Boolean,
-        path: String
+        path: String? = null
     ) {
         val targetShape = when (memberShape) {
             is MemberShape -> ctx.model.expectShape(memberShape.target)
@@ -160,10 +160,10 @@ abstract class MemberShapeEncodeGenerator(
                     val isBoxed = ctx.symbolProvider.toSymbol(targetShape).isBoxed() && targetShape.hasTrait<SparseTrait>()
                     if (isBoxed) {
                         writer.openBlock("if let \$L = \$L {", "}", iteratorName, iteratorName) {
-                            renderSimpleShape(targetShape, iteratorName, topLevelContainerName, null, isBoxed, "")
+                            renderSimpleShape(targetShape, iteratorName, topLevelContainerName, null, isBoxed)
                         }
                     } else {
-                        renderSimpleShape(targetShape, iteratorName, topLevelContainerName, null, isBoxed, "")
+                        renderSimpleShape(targetShape, iteratorName, topLevelContainerName, null, isBoxed)
                     }
                 }
             }
@@ -227,7 +227,7 @@ abstract class MemberShapeEncodeGenerator(
                 }
                 else -> {
                     val keyEnumName = "${ClientRuntimeTypes.Serde.Key}(stringValue: $dictKey$level)"
-                    renderSimpleShape(target, valueIterator, topLevelContainerName, keyEnumName, target.hasTrait(BoxTrait::class.java), "")
+                    renderSimpleShape(target, valueIterator, topLevelContainerName, keyEnumName, target.hasTrait(BoxTrait::class.java))
                 }
             }
         }
@@ -238,14 +238,14 @@ abstract class MemberShapeEncodeGenerator(
         target: Shape,
         member: MemberShape,
         containerName: String,
-        path: String
+        path: String? = null
     ) {
         val symbol = ctx.symbolProvider.toSymbol(member)
         val memberName = ctx.symbolProvider.toMemberName(member)
         val isBoxed = symbol.isBoxed()
         val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
         if (isBoxed) {
-            writer.openBlock("if let $memberName = self.$path$memberName {", "}") {
+            writer.openBlock("if let $memberName = self.${path ?: ""}$memberName {", "}") {
                 renderSimpleShape(member, memberName, containerName, ".$memberName", isBoxed, path)
             }
         } else {
@@ -271,6 +271,6 @@ abstract class MemberShapeEncodeGenerator(
         val symbol = ctx.symbolProvider.toSymbol(member)
         val memberName = ctx.symbolProvider.toMemberName(member)
         val isBoxed = symbol.isBoxed()
-        renderSimpleShape(member, memberName, containerName, ".$memberName", isBoxed, "")
+        renderSimpleShape(member, memberName, containerName, ".$memberName", isBoxed)
     }
 }
