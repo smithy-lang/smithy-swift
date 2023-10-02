@@ -45,7 +45,8 @@ class StructEncodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val members: List<MemberShape>,
     private val writer: SwiftWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
+    private val defaultTimestampFormat: TimestampFormatTrait.Format,
+    private val path: String? = null
 ) : MemberShapeEncodeGenerator(ctx, writer, defaultTimestampFormat) {
     override fun render() {
         val containerName = "encodeContainer"
@@ -58,18 +59,18 @@ class StructEncodeGenerator(
                     val memberName = ctx.symbolProvider.toMemberName(member)
                     when (target) {
                         is CollectionShape -> {
-                            writer.openBlock("if let $memberName = $memberName {", "}") {
+                            writer.openBlock("if let $memberName = ${path ?: ""}$memberName {", "}") {
                                 renderEncodeListMember(target, memberName, containerName)
                             }
                         }
                         is MapShape -> {
-                            writer.openBlock("if let $memberName = $memberName {", "}") {
+                            writer.openBlock("if let $memberName = ${path ?: ""}$memberName {", "}") {
                                 renderEncodeMapMember(target, memberName, containerName)
                             }
                         }
                         else -> {
                             renderSimpleEncodeMember(
-                                target, member, containerName
+                                target, member, containerName, path
                             )
                         }
                     }
