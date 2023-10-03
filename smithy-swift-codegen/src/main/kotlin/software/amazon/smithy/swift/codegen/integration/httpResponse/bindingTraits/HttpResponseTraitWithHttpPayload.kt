@@ -23,7 +23,6 @@ import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
 class HttpResponseTraitWithHttpPayload(
     val ctx: ProtocolGenerator.GenerationContext,
-    val responseBindings: List<HttpBindingDescriptor>,
     val binding: HttpBindingDescriptor,
     val writer: SwiftWriter
 ) : HttpResponseBindingRenderable {
@@ -31,7 +30,6 @@ class HttpResponseTraitWithHttpPayload(
     object MessageDecoderSectionId : SectionId
 
     override fun render() {
-        val bodyMembers = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)

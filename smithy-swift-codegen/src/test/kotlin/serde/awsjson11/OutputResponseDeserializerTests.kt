@@ -98,18 +98,6 @@ class OutputResponseDeserializerTests {
                         let messageDecoder: ClientRuntime.MessageDecoder? = nil
                         let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)
                         self.eventStream = decoderStream.toAsyncStream()
-                        if let initialData = await messageDecoder.awaitInitialResponse() {
-                            let decoder = JSONDecoder()
-                            do {
-                                let response = try decoder.decode([String: String].self, from: initialData)
-                                self.metadata = response["metadata"].map { value in KinesisClientTypes.Tag(value: value) }
-                            } catch {
-                                print("Error decoding JSON: \(error)")
-                                self.metadata = nil
-                            }
-                        } else {
-                            self.metadata = nil
-                        }
                     } else {
                         self.eventStream = nil
                     }

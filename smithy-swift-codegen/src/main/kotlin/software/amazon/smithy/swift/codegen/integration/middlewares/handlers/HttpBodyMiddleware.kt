@@ -72,9 +72,6 @@ class HttpBodyMiddleware(
 
     private fun renderEncodedBody() {
         val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
-        val bodyMembers = requestBindings.filter {
-            it.location == HttpBinding.Location.DOCUMENT || it.location == HttpBinding.Location.LABEL
-        }
         if (httpPayload != null) {
             renderExplicitPayload(httpPayload)
         }
@@ -129,7 +126,7 @@ class HttpBodyMiddleware(
                                     writer.write("fatalError(\"Message signer is required for streaming payload\")")
                                 }
                                 writer.write(
-                                    "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
+                                    "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: xmlEncoder, messageSinger: messageSigner)",
                                     ClientRuntimeTypes.EventStream.MessageEncoderStream
                                 )
                                 writer.write("input.builder.withBody(.stream(encoderStream))")

@@ -77,7 +77,7 @@ class HttpResponseTraitWithoutHttpPayload(
                         symbol
                     )
                     writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
-                    writeInitialResponseMembers(ctx, writer, initialResponseMembers)
+                    writeInitialResponseMembers(initialResponseMembers)
                 }
                 writer.indent()
                 writer.write("self.\$L = nil", memberName).closeBlock("}")
@@ -137,4 +137,44 @@ class HttpResponseTraitWithoutHttpPayload(
     }
 
     private val path: String = "properties.".takeIf { outputShape.hasTrait<ErrorTrait>() } ?: ""
+
+    private fun writeInitialResponseMembers(initialResponseMembers: Set<HttpBindingDescriptor>) {
+        writer.apply {
+            write("if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {")
+            indent()
+            write("let decoder = JSONDecoder()")
+            write("do {")
+            indent()
+            write("let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)")
+
+            initialResponseMembers.forEach { responseMember ->
+                val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
+                write("self.$responseMemberName = response[\"$responseMemberName\"].map { value in KinesisClientTypes.Tag(value: value) }")
+            }
+
+            dedent()
+            write("} catch {")
+            indent()
+            write("print(\"Error decoding JSON: \\(error)\")")
+
+            initialResponseMembers.forEach { responseMember ->
+                val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
+                write("self.$responseMemberName = nil")
+            }
+
+            dedent()
+            write("}")
+            dedent()
+            write("} else {")
+            indent()
+
+            initialResponseMembers.forEach { responseMember ->
+                val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
+                write("self.$responseMemberName = nil")
+            }
+
+            dedent()
+            write("}")
+        }
+    }
 }
