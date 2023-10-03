@@ -9,7 +9,7 @@ import Foundation
 
 // Base protocol for all identity provider types
 public protocol IdentityResolver {
-    associatedtype IdObj: Identity
+    associatedtype IdentityT: Identity
 
-    func getIdentity(identityProperties: Attributes?) async throws -> IdObj
+    func getIdentity(identityProperties: Attributes?) async throws -> IdentityT
 }
