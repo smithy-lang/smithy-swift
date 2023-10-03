@@ -173,7 +173,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                             writer.write("")
                         }
-                        renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat, "")
+                        val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: null
+                        renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat, path)
                     }
                 }
             }
@@ -462,7 +463,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
-        path: String
+        path: String? = null
     )
     protected abstract fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,

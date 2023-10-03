@@ -107,7 +107,8 @@ abstract class MemberShapeEncodeGenerator(
         memberName: String,
         containerName: String,
         codingKey: String?,
-        isBoxed: Boolean
+        isBoxed: Boolean,
+        path: String? = null
     ) {
         val targetShape = when (memberShape) {
             is MemberShape -> ctx.model.expectShape(memberShape.target)
@@ -236,15 +237,16 @@ abstract class MemberShapeEncodeGenerator(
     fun renderSimpleEncodeMember(
         target: Shape,
         member: MemberShape,
-        containerName: String
+        containerName: String,
+        path: String? = null
     ) {
         val symbol = ctx.symbolProvider.toSymbol(member)
         val memberName = ctx.symbolProvider.toMemberName(member)
         val isBoxed = symbol.isBoxed()
         val memberWithExtension = getShapeExtension(member, memberName, isBoxed, true)
         if (isBoxed) {
-            writer.openBlock("if let $memberName = self.$memberName {", "}") {
-                renderSimpleShape(member, memberName, containerName, ".$memberName", isBoxed)
+            writer.openBlock("if let $memberName = self.${path ?: ""}$memberName {", "}") {
+                renderSimpleShape(member, memberName, containerName, ".$memberName", isBoxed, path)
             }
         } else {
             val primitiveSymbols: MutableSet<ShapeType> = hashSetOf(
@@ -254,10 +256,10 @@ abstract class MemberShapeEncodeGenerator(
             if (primitiveSymbols.contains(target.type)) {
                 val defaultValue = getDefaultValueOfShapeType(target.type)
                 writer.openBlock("if $memberName != $defaultValue {", "}") {
-                    renderSimpleShape(member, memberName, containerName, ".$memberName", isBoxed)
+                    renderSimpleShape(member, memberName, containerName, ".$memberName", isBoxed, path)
                 }
             } else
-                renderSimpleShape(member, memberName, containerName, ".$memberName", isBoxed)
+                renderSimpleShape(member, memberName, containerName, ".$memberName", isBoxed, path)
         }
     }
 
