@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 
 class EventStreamsInitialResponseTests {
-
     @Test
     fun `should attempt to decode response if initial-response members are present in RPC (awsJson) smithy model`() {
         val context = setupInitialMessageTests(
@@ -53,7 +52,6 @@ class EventStreamsInitialResponseTests {
             """.trimIndent()
         )
     }
-
 
     private fun setupInitialMessageTests(
         smithyFile: String,
