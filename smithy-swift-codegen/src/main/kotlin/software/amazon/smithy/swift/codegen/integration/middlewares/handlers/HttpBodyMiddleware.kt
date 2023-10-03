@@ -75,16 +75,12 @@ class HttpBodyMiddleware(
         val bodyMembers = requestBindings.filter {
             it.location == HttpBinding.Location.DOCUMENT || it.location == HttpBinding.Location.LABEL
         }
-        val initialRequestMembers = bodyMembers.filter {
-            val targetShape = it.member.targetOrSelf(ctx.model)
-            targetShape?.hasTrait(StreamingTrait::class.java) == false
-        }.toMutableSet()
         if (httpPayload != null) {
-            renderExplicitPayload(httpPayload, initialRequestMembers)
+            renderExplicitPayload(httpPayload)
         }
     }
 
-    private fun renderExplicitPayload(binding: HttpBindingDescriptor, initialRequestMembers: Set<HttpBindingDescriptor>) {
+    private fun renderExplicitPayload(binding: HttpBindingDescriptor) {
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val dataDeclaration = "${memberName}Data"
@@ -132,14 +128,10 @@ class HttpBodyMiddleware(
                                 writer.openBlock("guard let messageSigner = context.getMessageSigner() else {", "}") {
                                     writer.write("fatalError(\"Message signer is required for streaming payload\")")
                                 }
-                                if (initialRequestMembers.isNotEmpty()) {
-                                    renderWithInitialRequest(memberName, initialRequestMembers)
-                                } else {
-                                    writer.write(
-                                        "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
-                                        ClientRuntimeTypes.EventStream.MessageEncoderStream
-                                    )
-                                }
+                                writer.write(
+                                    "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
+                                    ClientRuntimeTypes.EventStream.MessageEncoderStream
+                                )
                                 writer.write("input.builder.withBody(.stream(encoderStream))")
                             } else {
                                 writer.write("let $dataDeclaration = try xmlEncoder.encode(\$L, withRootKey: \"\$L\")", memberName, xmlName)
@@ -153,14 +145,10 @@ class HttpBodyMiddleware(
                                 writer.openBlock("guard let messageSigner = context.getMessageSigner() else {", "}") {
                                     writer.write("fatalError(\"Message signer is required for streaming payload\")")
                                 }
-                                if (initialRequestMembers.isNotEmpty()) {
-                                    renderWithInitialRequest(memberName, initialRequestMembers)
-                                } else {
-                                    writer.write(
-                                        "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
-                                        ClientRuntimeTypes.EventStream.MessageEncoderStream
-                                    )
-                                }
+                                writer.write(
+                                    "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
+                                    ClientRuntimeTypes.EventStream.MessageEncoderStream
+                                )
                                 writer.write("input.builder.withBody(.stream(encoderStream))")
                             } else {
                                 writer.write("let $dataDeclaration = try encoder.encode(\$L)", memberName)
@@ -191,34 +179,6 @@ class HttpBodyMiddleware(
             }
             else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
         }
-    }
-
-    private fun renderWithInitialRequest(memberName: String, initialRequestMembers: Set<HttpBindingDescriptor>) {
-        // Encode initialRequestMembers to a message
-        val entries = initialRequestMembers.map {
-            "\"${it.memberName}\": input.operationInput.${it.memberName}"
-        }.joinToString(", ")
-        writer.write("let initialRequestMembers: [String: Any] = [$entries]")
-        writer.write("let jsonData = try JSONEncoder().encode(initialRequestMembers)")
-        writer.write("guard let jsonString = String(data: jsonData, encoding: .utf8) else {")
-        writer.indent()
-        writer.write("fatalError(\"Failed to decode JSON data to string.\")")
-        writer.dedent()
-        writer.write("}")
-        writer.write("let initialMessage = EventStream.Message(")
-        writer.indent()
-        writer.openBlock("headers: [", "],") {
-            writer.write(".init(name: \":event-type\", value: .string(\"initial-request\")),")
-            writer.write(".init(name: \":message-type\", value: .string(\"event\")),")
-        }
-        writer.write("payload: jsonString.data(using: .utf8)!")
-        writer.dedent()
-        writer.write(")")
-        // add initial-request message to front of the stream
-        writer.write(
-            "let encoderStream = \$L(stream: initialMessage + $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
-            ClientRuntimeTypes.EventStream.MessageEncoderStream
-        )
     }
 
     private fun renderEncodedBodyAddedToRequest(

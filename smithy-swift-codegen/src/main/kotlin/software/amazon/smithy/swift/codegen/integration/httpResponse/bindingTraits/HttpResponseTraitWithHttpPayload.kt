@@ -32,10 +32,6 @@ class HttpResponseTraitWithHttpPayload(
 
     override fun render() {
         val bodyMembers = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }
-        val initialResponseMembers = bodyMembers.filter {
-            val targetShape = it.member.targetOrSelf(ctx.model)
-            targetShape?.hasTrait(StreamingTrait::class.java) == false
-        }.toMutableSet()
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val target = ctx.model.expectShape(binding.member.target)
         val symbol = ctx.symbolProvider.toSymbol(target)
@@ -105,7 +101,6 @@ class HttpResponseTraitWithHttpPayload(
                         }
                         writer.write("let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)", ClientRuntimeTypes.EventStream.MessageDecoderStream, symbol)
                         writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
-                        writeInitialResponseMembers(ctx, writer, initialResponseMembers)
                     }
                 } else {
                     writer.openBlock("if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {", "} else {") {

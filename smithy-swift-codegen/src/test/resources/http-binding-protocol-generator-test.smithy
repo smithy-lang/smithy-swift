@@ -40,9 +40,7 @@ service Example {
         IdempotencyTokenWithoutHttpPayloadTraitOnToken,
         InlineDocument,
         InlineDocumentAsPayload,
-        RequiredHttpFields,
-        PublishMessagesInitialRequest,
-        PublishMessagesNoInitialRequest
+        RequiredHttpFields
     ]
 }
 
@@ -1412,40 +1410,4 @@ structure RequiredHttpFieldsInput {
     @required
     @length(min: 1)
     query3: String
-}
-
-@http(method: "POST", uri: "/messages/{room}")
-operation PublishMessagesInitialRequest {
-    input: PublishMessagesInputInitialRequest
-}
-
-@input
-structure PublishMessagesInputInitialRequest {
-    @httpLabel
-    @required
-    room: String
-
-    @httpPayload
-    messages: MessageStream
-}
-
-
-@http(method: "POST", uri: "/messages")
-operation PublishMessagesNoInitialRequest {
-    input: PublishMessagesInputNoInitialRequest
-}
-
-@input
-structure PublishMessagesInputNoInitialRequest {
-    @httpPayload
-    messages: MessageStream
-}
-
-@streaming
-union MessageStream {
-    message: Message
-}
-
-structure Message {
-    message: String
 }
