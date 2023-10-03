@@ -6,7 +6,6 @@
 package software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits
 
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
@@ -19,7 +18,6 @@ import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isEnum
-import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
 class HttpResponseTraitWithHttpPayload(
     val ctx: ProtocolGenerator.GenerationContext,
