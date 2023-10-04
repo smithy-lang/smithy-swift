@@ -10,10 +10,6 @@ public class HttpContext: MiddlewareContext {
         self.attributes = attributes
     }
 
-//    public func getAuthSchemes() -> Attributes {
-//        return attributes.get(key: AttributeKeys.authSchemes)!
-//    }
-
     public func getDecoder() -> ResponseDecoder {
         return attributes.get(key: AttributeKeys.decoder)!
     }
@@ -66,10 +62,6 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.path)!
     }
 
-//    public func getSelectedAuthScheme() -> SelectedAuthScheme? {
-//        return attributes.get(key: AttributeKeys.selectedAuthScheme)
-//    }
-
     public func getServiceName() -> String {
         return attributes.get(key: AttributeKeys.serviceName)!
     }
@@ -101,19 +93,6 @@ public class HttpContextBuilder {
         return self
     }
 
-//    @discardableResult
-//    public func withAuthScheme(value: AuthScheme) -> HttpContextBuilder {
-//        var authSchemes: Attributes
-//        if self.attributes.contains(key: AttributeKeys.authSchemes) {
-//            authSchemes = self.attributes.get(key: AttributeKeys.authSchemes)!
-//        } else {
-//            authSchemes = Attributes()
-//        }
-//        authSchemes.set(key: AttributeKey<AuthScheme>(name: "\(value.schemeId)"), value: value)
-//        self.attributes.set(key: AttributeKeys.authSchemes, value: authSchemes)
-//        return self
-//    }
-
     @discardableResult
     public func withDecoder(value: ResponseDecoder) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.decoder, value: value)
@@ -141,19 +120,6 @@ public class HttpContextBuilder {
     @discardableResult
     public func withIdempotencyTokenGenerator(value: IdempotencyTokenGenerator) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.idempotencyTokenGenerator, value: value)
-        return self
-    }
-
-    @discardableResult
-    public func withIdentityResolver(value: any IdentityResolver, type: IdentityType) -> HttpContextBuilder {
-        var identityResolvers: Attributes
-        if self.attributes.contains(key: AttributeKeys.identityResolvers) {
-            identityResolvers = self.attributes.get(key: AttributeKeys.identityResolvers)!
-        } else {
-            identityResolvers = Attributes()
-        }
-        identityResolvers.set(key: AttributeKey<any IdentityResolver>(name: "\(type)"), value: value)
-        self.attributes.set(key: AttributeKeys.identityResolvers, value: identityResolvers)
         return self
     }
 
@@ -199,12 +165,6 @@ public class HttpContextBuilder {
         return self
     }
 
-//    @discardableResult
-//    public func withSelectedAuthScheme(value: SelectedAuthScheme) -> HttpContextBuilder {
-//        self.attributes.set(key: AttributeKeys.selectedAuthScheme, value: value)
-//        return self
-//    }
-
     @discardableResult
     public func withServiceName(value: String) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.serviceName, value: value)
@@ -220,7 +180,6 @@ public struct AttributeKeys {
     // Namespace object for key values, hence private init
     private init() {}
 
-    // public static let authSchemes = AttributeKey<Attributes>(name: "AuthSchemes")
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
     public static let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
     public static let encoder = AttributeKey<RequestEncoder>(name: "Encoder")
@@ -237,9 +196,5 @@ public struct AttributeKeys {
     public static let operation = AttributeKey<String>(name: "Operation")
     public static let partitionId = AttributeKey<String>(name: "PartitionID")
     public static let path = AttributeKey<String>(name: "Path")
-    // public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
-
-    // Keys for different types of identity resolvers
-    public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "\(IdentityType.aws)")
 }
