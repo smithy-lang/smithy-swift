@@ -11,3 +11,7 @@ import Foundation
 public protocol Identity {
     var expiration: Date? { get }
 }
+
+public enum IdentityType: CaseIterable {
+    case aws
+}
