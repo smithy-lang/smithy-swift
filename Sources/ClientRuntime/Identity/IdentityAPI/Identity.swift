@@ -11,3 +11,8 @@ import Foundation
 public protocol Identity {
     var expiration: Date? { get }
 }
+
+// Enum of identity types supported by SDK
+public enum IdentityType: CaseIterable {
+    case aws
+}
