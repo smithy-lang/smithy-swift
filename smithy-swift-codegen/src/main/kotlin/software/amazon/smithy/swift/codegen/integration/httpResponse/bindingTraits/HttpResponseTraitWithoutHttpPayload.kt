@@ -77,7 +77,9 @@ class HttpResponseTraitWithoutHttpPayload(
                         symbol
                     )
                     writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
-                    writeInitialResponseMembers(initialResponseMembers)
+                    if (isRPCService(ctx) && initialResponseMembers.isNotEmpty()) {
+                        writeInitialResponseMembers(initialResponseMembers)
+                    }
                 }
                 writer.indent()
                 writer.write("self.\$L = nil", memberName).closeBlock("}")
@@ -177,4 +179,18 @@ class HttpResponseTraitWithoutHttpPayload(
             write("}")
         }
     }
+
+    private fun isRPCService(ctx: ProtocolGenerator.GenerationContext): Boolean {
+        return rpcBoundProtocols.contains(ctx.protocol.name)
+    }
+
+    /**
+     * A set of RPC-bound Smithy protocols
+     */
+    private val rpcBoundProtocols = setOf(
+        "awsJson1_0",
+        "awsJson1_1",
+        "awsQuery",
+        "ec2Query",
+    )
 }
