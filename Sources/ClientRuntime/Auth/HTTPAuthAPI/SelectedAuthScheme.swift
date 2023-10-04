@@ -6,8 +6,15 @@
 //
 
 public struct SelectedAuthScheme {
-    let schemeID: String
-    let identity: Identity?
-    let signingProperties: Attributes?
-    let signer: Signer?
+    public let schemeID: String
+    public let identity: Identity?
+    public let signingProperties: Attributes?
+    public let signer: Signer?
+
+    public init(schemeID: String, identity: Identity?, signingProperties: Attributes?, signer: Signer?) {
+        self.schemeID = schemeID
+        self.identity = identity
+        self.signingProperties = signingProperties
+        self.signer = signer
+    }
 }

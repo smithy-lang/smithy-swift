@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import struct Foundation.TimeInterval
+
 /// this struct implements middleware context and will serve as the context for all http middleware operations
 public class HttpContext: MiddlewareContext {
     public var attributes: Attributes
@@ -33,6 +35,14 @@ public class HttpContext: MiddlewareContext {
 
     public func getEncoder() -> RequestEncoder {
         return attributes.get(key: AttributeKeys.encoder)!
+    }
+
+    public func getExpiration() -> TimeInterval {
+        return attributes.get(key: AttributeKeys.expiration) ?? 0
+    }
+
+    public func getFlowType() -> FlowType {
+        return attributes.get(key: AttributeKeys.flowType) ?? .NORMAL
     }
 
     public func getHost() -> String? {
@@ -87,6 +97,10 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.region)
     }
 
+    public func getRequestSignature() -> String {
+        return attributes.get(key: AttributeKeys.requestSignature)!
+    }
+
     public func getSelectedAuthScheme() -> SelectedAuthScheme? {
         return attributes.get(key: AttributeKeys.selectedAuthScheme)
     }
@@ -101,6 +115,10 @@ public class HttpContext: MiddlewareContext {
 
     public func getSigningRegion() -> String? {
         return attributes.get(key: AttributeKeys.signingRegion)
+    }
+
+    public func hasUnsignedPayloadTrait() -> Bool {
+        return attributes.get(key: AttributeKeys.hasUnsignedPayloadTrait) ?? false
     }
 
     public func isBidirectionalStreamingEnabled() -> Bool {
@@ -161,6 +179,18 @@ public class HttpContextBuilder {
     @discardableResult
     public func withEncoder(value: RequestEncoder) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.encoder, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withExpiration(value: TimeInterval) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.expiration, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withFlowType(value: FlowType) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.flowType, value: value)
         return self
     }
 
@@ -238,6 +268,14 @@ public class HttpContextBuilder {
         return self
     }
 
+    /// Sets the request signature for the event stream operation
+    /// - Parameter value: `String` request signature
+    @discardableResult
+    public func withRequestSignature(value: String) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.requestSignature, value: value)
+        return self
+    }
+
     @discardableResult
     public func withSelectedAuthScheme(value: SelectedAuthScheme) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.selectedAuthScheme, value: value)
@@ -262,6 +300,12 @@ public class HttpContextBuilder {
         return self
     }
 
+    @discardableResult
+    public func withUnsignedPayloadTrait(value: Bool) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.hasUnsignedPayloadTrait, value: value)
+        return self
+    }
+
     public func build() -> HttpContext {
         return HttpContext(attributes: attributes)
     }
@@ -273,6 +317,7 @@ public enum AttributeKeys {
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
     public static let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
     public static let encoder = AttributeKey<RequestEncoder>(name: "Encoder")
+    public static let flowType = AttributeKey<FlowType>(name: "FlowType")
     public static let host = AttributeKey<String>(name: "Host")
     public static let hostPrefix = AttributeKey<String>(name: "HostPrefix")
     public static let idempotencyTokenGenerator = AttributeKey<IdempotencyTokenGenerator>(
@@ -287,11 +332,22 @@ public enum AttributeKeys {
     public static let partitionId = AttributeKey<String>(name: "PartitionID")
     public static let path = AttributeKey<String>(name: "Path")
     public static let region = AttributeKey<String>(name: "Region")
+    public static let requestSignature = AttributeKey<String>(name: "AWS_HTTP_SIGNATURE")
     public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
     public static let signingName = AttributeKey<String>(name: "SigningName")
     public static let signingRegion = AttributeKey<String>(name: "SigningRegion")
 
+    // Flags stored in signingProperties passed to signers for presigner customizations.
+    public static let hasUnsignedPayloadTrait = AttributeKey<Bool>(name: "HasUnsignedPayloadTrait")
+    public static let forceUnsignedBody = AttributeKey<Bool>(name: "ForceUnsignedBody")
+    public static let expiration = AttributeKey<TimeInterval>(name: "Expiration")
+
     // The attribute key used to store a credentials provider configured on service client config onto middleware context.
     public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "\(IdentityKind.aws)")
+}
+
+// The type of flow the mdidleware context is being constructed for
+public enum FlowType {
+    case NORMAL, PRESIGN_REQUEST, PRESIGN_URL
 }

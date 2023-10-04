@@ -55,6 +55,9 @@ public struct SignerMiddleware<OperationStackOutput: HttpResponseBinding,
         let signedInput = try await signer.sign(
             requestBuilder: input, identity: identity, signingProperties: signingProperties
         )
+        // The saved signature is used to sign event stream messages if needed.
+        context.attributes.set(key: AttributeKeys.requestSignature, value: signedInput.signature)
+
         return try await next.handle(context: context, input: signedInput)
     }
 }
