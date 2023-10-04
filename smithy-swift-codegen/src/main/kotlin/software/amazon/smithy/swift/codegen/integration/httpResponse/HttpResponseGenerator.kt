@@ -33,11 +33,23 @@ class HttpResponseGenerator(
             }
         }
 
+        if (ctx.service.errors.isNotEmpty()) {
+            httpResponseBindingErrorGenerator.renderServiceError(ctx)
+        }
         httpOperations.forEach {
-            httpResponseBindingErrorGenerator.render(ctx, it, unknownServiceErrorSymbol)
+            httpResponseBindingErrorGenerator.renderOperationError(ctx, it, unknownServiceErrorSymbol)
         }
 
-        val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
+        val modeledOperationErrors = httpOperations
+            .flatMap { it.errors }
+            .map { ctx.model.expectShape(it) as StructureShape }
+            .toSet()
+
+        val modeledServiceErrors = ctx.service.errors
+            .map { ctx.model.expectShape(it) as StructureShape }
+            .toSet()
+
+        val modeledErrors = modeledOperationErrors + modeledServiceErrors
         modeledErrors.forEach {
             httpResponseBindingErrorInitGenerator(ctx, it, httpBindingResolver, defaultTimestampFormat)
         }

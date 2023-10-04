@@ -13,7 +13,12 @@ public class SdkHttpRequest {
     public let body: HttpBody
     public let endpoint: Endpoint
     public let method: HttpMethodType
-    public var headers: Headers { endpoint.headers ?? Headers() }
+    private var additionalHeaders: Headers = Headers()
+    public var headers: Headers {
+        var allHeaders = endpoint.headers ?? Headers()
+        allHeaders.addAll(headers: additionalHeaders)
+        return allHeaders
+    }
     public var path: String { endpoint.path }
     public var host: String { endpoint.host }
     public var queryItems: [URLQueryItem]? { endpoint.queryItems }
@@ -24,6 +29,29 @@ public class SdkHttpRequest {
         self.method = method
         self.endpoint = endpoint
         self.body = body
+    }
+
+    public func toBuilder() -> SdkHttpRequestBuilder {
+        let builder = SdkHttpRequestBuilder()
+            .withBody(self.body)
+            .withMethod(self.method)
+            .withHeaders(self.headers)
+            .withPath(self.path)
+            .withHost(self.host)
+            .withPort(self.endpoint.port)
+            .withProtocol(self.endpoint.protocolType ?? .https)
+        if let qItems = self.queryItems {
+            builder.withQueryItems(qItems)
+        }
+        return builder
+    }
+
+    public func withHeader(name: String, value: String) {
+        self.additionalHeaders.add(name: name, value: value)
+    }
+
+    public func withoutHeader(name: String) {
+        self.additionalHeaders.remove(name: name)
     }
 }
 
