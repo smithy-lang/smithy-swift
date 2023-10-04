@@ -75,6 +75,7 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.path)!
     }
 
+    
     public func getSelectedAuthScheme() -> SelectedAuthScheme? {
         return attributes.get(key: AttributeKeys.selectedAuthScheme)
     }
@@ -238,7 +239,4 @@ public struct AttributeKeys {
     public static let path = AttributeKey<String>(name: "Path")
     public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
-
-    // Keys for different types of identity resolvers
-    public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "\(IdentityType.aws)")
 }
