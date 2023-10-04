@@ -12,7 +12,7 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
     let resolver: AuthSchemeResolver
     let resolverParams: AuthSchemeResolverParameters
 
-    // Initializer for middleware will take in auth scheme resolver
+    // Initializer for middleware will take in auth scheme resolver and parameters
     public init (resolver: AuthSchemeResolver, resolverParams: AuthSchemeResolverParameters) {
         self.resolver = resolver
         self.resolverParams = resolverParams
@@ -42,7 +42,9 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
         // Variable for selected auth scheme
         var resolvedAuthScheme: SelectedAuthScheme?
 
+        // For each auth option returned by auth scheme resolver:
         for option in validAuthOptions {
+            // If current auth option is noAuth, set selectedAuthScheme with nil fields and break
             if (option.schemeId == "smithy.api#noAuth") {
                 resolvedAuthScheme = SelectedAuthScheme(
                     schemeId: option.schemeId,
@@ -52,8 +54,12 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
                 )
                 break
             }
+            // Otherwise,
+            // 1) check if corresponding auth scheme for auth option is configured, then
+            // 2) check if corresponding identity resolver for the auth scheme is configured
             if let authScheme = authSchemes.get(key: AttributeKey<AuthScheme>(name: "\(option.schemeId)")),
                 let identityResolver = authScheme.identityResolver(config: identityResolverConfig) {
+                // If both 1 & 2 are satisfied, resolve auth scheme
                 do {
                     resolvedAuthScheme = await SelectedAuthScheme(
                         schemeId: option.schemeId,
@@ -69,13 +75,12 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
             }
         }
         
-        // If no auth scheme can be resolved, throw an error
+        // If no auth scheme could be resolved, throw an error
         guard let selectedAuthScheme = resolvedAuthScheme else {
             throw ClientError.authError("Could not resolve auth scheme for the operation call.")
         }
         
-        // Set the selected auth scheme in context for subsequent middleware access
-        // Pass to next middleware in chain
+        // Set the selected auth scheme in context for subsequent middleware access, then pass to next middleware in chain
         return try await next.handle(context: context.toBuilder().withSelectedAuthScheme(value: selectedAuthScheme).build(), input: input)
     }
 }

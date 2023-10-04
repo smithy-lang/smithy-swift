@@ -25,22 +25,19 @@ public struct SignerMiddleware<Output: HttpResponseBinding,
     Self.Context == H.Context,
     Self.MInput == H.Input,
     Self.MOutput == H.Output {
-        /* TASKS IN ORDER: */
-        // Retrieve resolved Auth Scheme from context
+        // Retrieve selected auth scheme from context
         let selectedAuthScheme = context.getSelectedAuthScheme()!
-        // Don't sign and return if noAuth
+        
+        // Return without signing request if resolved auth scheme is of noAuth type
         guard selectedAuthScheme.schemeId != "smithy.api#noAuth" else {
             return try await next.handle(context:context, input: input)
         }
-        // Retrieve resolved Identity from context
+
         let identity = selectedAuthScheme.identity!
-        // Retrieve correct Signer from the resolved Auth Scheme
         let signer = selectedAuthScheme.signer!
-        // Construct Attributes object that has signing properties required by Signer
         let signingProperties = selectedAuthScheme.signingProperties!
-        // Pass built input, identity, and signing properties to a call to Signer::Sign
+
         let signedInput = try await signer.sign(requestBuilder: input, identity: identity, signingProperties: signingProperties)
-        // Pass along signed input to next middleware in chain
         return try await next.handle(context: context, input: signedInput)
     }
 }
