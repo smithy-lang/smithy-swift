@@ -9,10 +9,19 @@ public class HttpContext: MiddlewareContext {
     public init(attributes: Attributes) {
         self.attributes = attributes
     }
+    
+    public func toBuilder() -> HttpContextBuilder {
+        let builder = HttpContextBuilder()
+        builder.attributes = self.attributes
+        if let response = self.response {
+            builder.response = response
+        }
+        return builder
+    }
 
-//    public func getAuthSchemes() -> Attributes {
-//        return attributes.get(key: AttributeKeys.authSchemes)!
-//    }
+    public func getAuthSchemes() -> Attributes {
+        return attributes.get(key: AttributeKeys.authSchemes)!
+    }
 
     public func getDecoder() -> ResponseDecoder {
         return attributes.get(key: AttributeKeys.decoder)!
@@ -66,9 +75,9 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.path)!
     }
 
-//    public func getSelectedAuthScheme() -> SelectedAuthScheme? {
-//        return attributes.get(key: AttributeKeys.selectedAuthScheme)
-//    }
+    public func getSelectedAuthScheme() -> SelectedAuthScheme? {
+        return attributes.get(key: AttributeKeys.selectedAuthScheme)
+    }
 
     public func getServiceName() -> String {
         return attributes.get(key: AttributeKeys.serviceName)!
@@ -101,18 +110,13 @@ public class HttpContextBuilder {
         return self
     }
 
-//    @discardableResult
-//    public func withAuthScheme(value: AuthScheme) -> HttpContextBuilder {
-//        var authSchemes: Attributes
-//        if self.attributes.contains(key: AttributeKeys.authSchemes) {
-//            authSchemes = self.attributes.get(key: AttributeKeys.authSchemes)!
-//        } else {
-//            authSchemes = Attributes()
-//        }
-//        authSchemes.set(key: AttributeKey<AuthScheme>(name: "\(value.schemeId)"), value: value)
-//        self.attributes.set(key: AttributeKeys.authSchemes, value: authSchemes)
-//        return self
-//    }
+    @discardableResult
+    public func withAuthScheme(value: AuthScheme) -> HttpContextBuilder {
+        var authSchemes: Attributes = self.attributes.get(key: AttributeKeys.authSchemes) ?? Attributes()
+        authSchemes.set(key: AttributeKey<AuthScheme>(name: "\(value.schemeId)"), value: value)
+        self.attributes.set(key: AttributeKeys.authSchemes, value: authSchemes)
+        return self
+    }
 
     @discardableResult
     public func withDecoder(value: ResponseDecoder) -> HttpContextBuilder {
@@ -145,13 +149,8 @@ public class HttpContextBuilder {
     }
 
     @discardableResult
-    public func withIdentityResolver(value: any IdentityResolver, type: IdentityType) -> HttpContextBuilder {
-        var identityResolvers: Attributes
-        if self.attributes.contains(key: AttributeKeys.identityResolvers) {
-            identityResolvers = self.attributes.get(key: AttributeKeys.identityResolvers)!
-        } else {
-            identityResolvers = Attributes()
-        }
+    public func withIdentityResolver<T: IdentityResolver>(value: T, type: IdentityType) -> HttpContextBuilder {
+        var identityResolvers: Attributes = self.attributes.get(key: AttributeKeys.identityResolvers) ?? Attributes()
         identityResolvers.set(key: AttributeKey<any IdentityResolver>(name: "\(type)"), value: value)
         self.attributes.set(key: AttributeKeys.identityResolvers, value: identityResolvers)
         return self
@@ -199,11 +198,11 @@ public class HttpContextBuilder {
         return self
     }
 
-//    @discardableResult
-//    public func withSelectedAuthScheme(value: SelectedAuthScheme) -> HttpContextBuilder {
-//        self.attributes.set(key: AttributeKeys.selectedAuthScheme, value: value)
-//        return self
-//    }
+    @discardableResult
+    public func withSelectedAuthScheme(value: SelectedAuthScheme) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.selectedAuthScheme, value: value)
+        return self
+    }
 
     @discardableResult
     public func withServiceName(value: String) -> HttpContextBuilder {
@@ -220,7 +219,7 @@ public struct AttributeKeys {
     // Namespace object for key values, hence private init
     private init() {}
 
-    // public static let authSchemes = AttributeKey<Attributes>(name: "AuthSchemes")
+    public static let authSchemes = AttributeKey<Attributes>(name: "AuthSchemes")
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
     public static let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
     public static let encoder = AttributeKey<RequestEncoder>(name: "Encoder")
@@ -237,7 +236,7 @@ public struct AttributeKeys {
     public static let operation = AttributeKey<String>(name: "Operation")
     public static let partitionId = AttributeKey<String>(name: "PartitionID")
     public static let path = AttributeKey<String>(name: "Path")
-    // public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
+    public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
 
     // Keys for different types of identity resolvers
