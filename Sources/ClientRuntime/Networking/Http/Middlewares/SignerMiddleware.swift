@@ -8,10 +8,7 @@
 import Foundation
 
 public struct SignerMiddleware<Output: HttpResponseBinding,
-                               OutputError: HttpResponseErrorBinding,
-                               SignerType: Signer,
-                               IdType: Identity>: Middleware
-where SignerType.IdentityT == IdType {
+                               OutputError: HttpResponseErrorBinding>: Middleware {
     public let id: String = "Signer"
 
     public init () {}
@@ -42,7 +39,7 @@ where SignerType.IdentityT == IdType {
         // Construct Attributes object that has signing properties required by Signer
         let signingProperties = selectedAuthScheme.signingProperties!
         // Pass built input, identity, and signing properties to a call to Signer::Sign
-        let signedInput = signer.sign(requestBuilder: input, identity: identity, signingProperties: signingProperties)
+        let signedInput = try await signer.sign(requestBuilder: input, identity: identity, signingProperties: signingProperties)
         // Pass along signed input to next middleware in chain
         return try await next.handle(context: context, input: signedInput)
     }
