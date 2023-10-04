@@ -9,6 +9,10 @@ import Foundation
 
 public protocol Signer {
     associatedtype IdentityT: Identity
-    
-    func sign(requestBuilder: SdkHttpRequestBuilder, identity: IdentityT, signingProperties: Attributes) async throws -> SdkHttpRequestBuilder
+
+    func sign(
+        requestBuilder: SdkHttpRequestBuilder,
+        identity: IdentityT,
+        signingProperties: Attributes
+    ) async throws -> SdkHttpRequestBuilder
 }
