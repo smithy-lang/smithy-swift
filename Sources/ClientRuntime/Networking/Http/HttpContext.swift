@@ -241,5 +241,5 @@ public struct AttributeKeys {
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
 
     // Keys for different types of identity resolvers
-    public static let awsIdResolver = AttributeKey<any IdentityResolver>(name:"\(IdentityType.aws)")
+    public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "\(IdentityType.aws)")
 }
