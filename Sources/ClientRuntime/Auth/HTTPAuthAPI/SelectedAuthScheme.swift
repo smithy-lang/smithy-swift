@@ -11,5 +11,5 @@ public struct SelectedAuthScheme {
     let schemeId: String
     let identity: Identity?
     let signingProperties: Attributes?
-    let signer: (any Signer)?
+    let signer: Signer?
 }
