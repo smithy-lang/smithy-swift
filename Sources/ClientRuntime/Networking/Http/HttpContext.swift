@@ -9,41 +9,49 @@ public class HttpContext: MiddlewareContext {
     public init(attributes: Attributes) {
         self.attributes = attributes
     }
-    // FIXME: Move all defined keys to separate file as constants to be used elsewhere
-    public func getPath() -> String {
-        return attributes.get(key: AttributeKey<String>(name: "Path"))!
-    }
 
-    public func getMethod() -> HttpMethodType {
-        return attributes.get(key: AttributeKey<HttpMethodType>(name: "Method"))!
+    public func getAuthSchemes() -> Attributes {
+        return attributes.get(key: AttributeKeys.authSchemes)!
+    }
+    
+    public func getDecoder() -> ResponseDecoder {
+        return attributes.get(key: AttributeKeys.decoder)!
     }
 
     public func getEncoder() -> RequestEncoder {
-        return attributes.get(key: AttributeKey<RequestEncoder>(name: "Encoder"))!
-    }
-
-    public func getDecoder() -> ResponseDecoder {
-        return attributes.get(key: AttributeKey<ResponseDecoder>(name: "Decoder"))!
+        return attributes.get(key: AttributeKeys.encoder)!
     }
 
     public func getHost() -> String? {
-        return attributes.get(key: AttributeKey<String>(name: "Host"))
-    }
-
-    public func getServiceName() -> String {
-        return attributes.get(key: AttributeKey<String>(name: "ServiceName"))!
-    }
-
-    public func getIdempotencyTokenGenerator() -> IdempotencyTokenGenerator {
-        return attributes.get(key: AttributeKey<IdempotencyTokenGenerator>(name: "IdempotencyTokenGenerator"))!
+        return attributes.get(key: AttributeKeys.host)
     }
 
     public func getHostPrefix() -> String? {
-        return attributes.get(key: AttributeKey<String>(name: "HostPrefix"))
+        return attributes.get(key: AttributeKeys.hostPrefix)
+    }
+
+    public func getIdempotencyTokenGenerator() -> IdempotencyTokenGenerator {
+        return attributes.get(key: AttributeKeys.idempotencyTokenGenerator)!
+    }
+
+    public func getIdentityResolvers() -> Attributes {
+        return attributes.get(key: AttributeKeys.identityResolvers)!
     }
 
     public func getLogger() -> LogAgent? {
-        return attributes.get(key: AttributeKey<LogAgent>(name: "Logger"))
+        return attributes.get(key: AttributeKeys.logger)
+    }
+
+    public func getMessageEncoder() -> MessageEncoder? {
+        return attributes.get(key: AttributeKeys.messageEncoder)
+    }
+
+    public func getMessageSigner() -> MessageSigner? {
+        return attributes.get(key: AttributeKeys.messageSigner)
+    }
+
+    public func getMethod() -> HttpMethodType {
+        return attributes.get(key: AttributeKeys.method)!
     }
 
     /// The partition ID to be used for this context.
@@ -51,19 +59,23 @@ public class HttpContext: MiddlewareContext {
     /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
     /// If no partition ID is provided, requests will be partitioned based on the hostname.
     public func getPartitionID() -> String? {
-        return attributes.get(key: AttributeKey<String>(name: "PartitionID"))
+        return attributes.get(key: AttributeKeys.partitionId)
     }
 
-    public func getMessageEncoder() -> MessageEncoder? {
-        return attributes.get(key: HttpContext.messageEncoder)
+    public func getPath() -> String {
+        return attributes.get(key: AttributeKeys.path)!
     }
 
-    public func getMessageSigner() -> MessageSigner? {
-        return attributes.get(key: HttpContext.messageSigner)
+    public func getSelectedAuthScheme() -> SelectedAuthScheme? {
+        return attributes.get(key: AttributeKeys.selectedAuthScheme)
+    }
+
+    public func getServiceName() -> String {
+        return attributes.get(key: AttributeKeys.serviceName)!
     }
 
     public func isBidirectionalStreamingEnabled() -> Bool {
-        return attributes.get(key: HttpContext.bidirectionalStreaming) ?? false
+        return attributes.get(key: AttributeKeys.bidirectionalStreaming) ?? false
     }
 
     /// Returns `true` if the request should use `http2` and only `http2` without falling back to `http1`
@@ -72,29 +84,11 @@ public class HttpContext: MiddlewareContext {
     }
 }
 
-extension HttpContext {
-    public static let messageEncoder = AttributeKey<MessageEncoder>(name: "MessageEncoder")
-    public static let messageSigner = AttributeKey<MessageSigner>(name: "MessageSigner")
-    public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
-}
-
 public class HttpContextBuilder {
-
     public init() {}
 
     public var attributes: Attributes = Attributes()
-    let encoder = AttributeKey<RequestEncoder>(name: "Encoder")
-    let method = AttributeKey<HttpMethodType>(name: "Method")
-    let path = AttributeKey<String>(name: "Path")
-    let operation = AttributeKey<String>(name: "Operation")
-    let host = AttributeKey<String>(name: "Host")
-    let serviceName = AttributeKey<String>(name: "ServiceName")
     var response: HttpResponse = HttpResponse()
-    let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
-    let idempotencyTokenGenerator = AttributeKey<IdempotencyTokenGenerator>(name: "IdempotencyTokenGenerator")
-    let hostPrefix = AttributeKey<String>(name: "HostPrefix")
-    let logger = AttributeKey<LogAgent>(name: "Logger")
-    let partitionID = AttributeKey<String>(name: "PartitionID")
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -106,70 +100,78 @@ public class HttpContextBuilder {
         self.attributes.set(key: key, value: value)
         return self
     }
-
+    
     @discardableResult
-    public func withEncoder(value: RequestEncoder) -> HttpContextBuilder {
-        self.attributes.set(key: encoder, value: value)
-        return self
-    }
-
-    @discardableResult
-    public func withMethod(value: HttpMethodType) -> HttpContextBuilder {
-        self.attributes.set(key: method, value: value)
-        return self
-    }
-
-    @discardableResult
-    public func withPath(value: String) -> HttpContextBuilder {
-        self.attributes.set(key: path, value: value)
-        return self
-    }
-
-    @discardableResult
-    public func withHost(value: String) -> HttpContextBuilder {
-        self.attributes.set(key: host, value: value)
-        return self
-    }
-
-    @discardableResult
-    public func withHostPrefix(value: String) -> HttpContextBuilder {
-        self.attributes.set(key: hostPrefix, value: value)
-        return self
-    }
-
-    @discardableResult
-    public func withOperation(value: String) -> HttpContextBuilder {
-        self.attributes.set(key: operation, value: value)
-        return self
-    }
-
-    @discardableResult
-    public func withServiceName(value: String) -> HttpContextBuilder {
-        self.attributes.set(key: serviceName, value: value)
+    public func withAuthScheme(value: AuthScheme) -> HttpContextBuilder {
+        var authSchemes: Attributes
+        if self.attributes.contains(key: AttributeKeys.authSchemes) {
+            authSchemes = self.attributes.get(key: AttributeKeys.authSchemes)!
+        } else {
+            authSchemes = Attributes()
+        }
+        authSchemes.set(key: AttributeKey<AuthScheme>(name: "\(value.schemeId)"), value: value)
+        self.attributes.set(key: AttributeKeys.authSchemes, value: authSchemes)
         return self
     }
 
     @discardableResult
     public func withDecoder(value: ResponseDecoder) -> HttpContextBuilder {
-        self.attributes.set(key: decoder, value: value)
+        self.attributes.set(key: AttributeKeys.decoder, value: value)
         return self
     }
 
     @discardableResult
-    public func withResponse(value: HttpResponse) -> HttpContextBuilder {
-        self.response = value
+    public func withEncoder(value: RequestEncoder) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.encoder, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withHost(value: String) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.host, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withHostPrefix(value: String) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.hostPrefix, value: value)
         return self
     }
 
     @discardableResult
     public func withIdempotencyTokenGenerator(value: IdempotencyTokenGenerator) -> HttpContextBuilder {
-        self.attributes.set(key: idempotencyTokenGenerator, value: value)
+        self.attributes.set(key: AttributeKeys.idempotencyTokenGenerator, value: value)
+        return self
+    }
+    
+    @discardableResult
+    public func withIdentityResolver(value: any IdentityResolver, type: IdentityType) -> HttpContextBuilder {
+        var identityResolvers: Attributes
+        if self.attributes.contains(key: AttributeKeys.identityResolvers) {
+            identityResolvers = self.attributes.get(key: AttributeKeys.identityResolvers)!
+        } else {
+            identityResolvers = Attributes()
+        }
+        identityResolvers.set(key: AttributeKey<any IdentityResolver>(name: "\(type)"), value: value)
+        self.attributes.set(key: AttributeKeys.identityResolvers, value: identityResolvers)
         return self
     }
 
     @discardableResult
     public func withLogger(value: LogAgent) -> HttpContextBuilder {
-        self.attributes.set(key: logger, value: value)
+        self.attributes.set(key: AttributeKeys.logger, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withMethod(value: HttpMethodType) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.method, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withOperation(value: String) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.operation, value: value)
         return self
     }
 
@@ -181,11 +183,61 @@ public class HttpContextBuilder {
     /// - Returns: `self`, after the partition ID is set as specified.
     @discardableResult
     public func withPartitionID(value: String?) -> HttpContextBuilder {
-        self.attributes.set(key: partitionID, value: value)
+        self.attributes.set(key: AttributeKeys.partitionId, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withPath(value: String) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.path, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withResponse(value: HttpResponse) -> HttpContextBuilder {
+        self.response = value
+        return self
+    }
+
+    @discardableResult
+    public func withSelectedAuthScheme(value: SelectedAuthScheme) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.selectedAuthScheme, value: value)
+        return self
+    }
+    
+    @discardableResult
+    public func withServiceName(value: String) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.serviceName, value: value)
         return self
     }
 
     public func build() -> HttpContext {
         return HttpContext(attributes: attributes)
     }
+}
+
+public struct AttributeKeys {
+    // Namespace object for key values, hence private init
+    private init() {}
+
+    //public static let authSchemes = AttributeKey<Attributes>(name: "AuthSchemes")
+    public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
+    public static let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
+    public static let encoder = AttributeKey<RequestEncoder>(name: "Encoder")
+    public static let host = AttributeKey<String>(name: "Host")
+    public static let hostPrefix = AttributeKey<String>(name: "HostPrefix")
+    public static let idempotencyTokenGenerator = AttributeKey<IdempotencyTokenGenerator>(name: "IdempotencyTokenGenerator")
+    public static let identityResolvers = AttributeKey<Attributes>(name: "IdentityResolvers")
+    public static let logger = AttributeKey<LogAgent>(name: "Logger")
+    public static let messageEncoder = AttributeKey<MessageEncoder>(name: "MessageEncoder")
+    public static let messageSigner = AttributeKey<MessageSigner>(name: "MessageSigner")
+    public static let method = AttributeKey<HttpMethodType>(name: "Method")
+    public static let operation = AttributeKey<String>(name: "Operation")
+    public static let partitionId = AttributeKey<String>(name: "PartitionID")
+    public static let path = AttributeKey<String>(name: "Path")
+    //public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
+    public static let serviceName = AttributeKey<String>(name: "ServiceName")
+    
+    // Keys for different types of identity resolvers
+    public static let awsIdResolver = AttributeKey<any IdentityResolver>(name:"\(IdentityType.aws)")
 }
