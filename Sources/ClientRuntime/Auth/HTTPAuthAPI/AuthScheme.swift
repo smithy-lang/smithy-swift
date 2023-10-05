@@ -11,6 +11,9 @@ public protocol AuthScheme {
     var schemeId: String { get }
     var signer: any Signer { get }
     var idType: IdentityType { get }
+    
+    // Hook used in AuthSchemeMiddleware to append additional signing properties needed for SigV4 auth scheme
+    func customizeSigningProperties(signingProperties: Attributes, config: HttpContext) -> Attributes
 }
 
 extension AuthScheme {

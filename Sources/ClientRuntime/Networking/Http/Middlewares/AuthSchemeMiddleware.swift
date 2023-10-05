@@ -61,11 +61,15 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
                 let identityResolver = authScheme.identityResolver(config: identityResolverConfig) {
                 // If both 1 & 2 are satisfied, resolve auth scheme
                 do {
+                    let signingProperties = authScheme.customizeSigningProperties(
+                        signingProperties: option.signingProperties,
+                        config: context
+                    )
                     resolvedAuthScheme = await SelectedAuthScheme(
                         schemeId: option.schemeId,
                         // Resolve identity using the selected resolver from auth scheme
                         identity: try identityResolver.getIdentity(identityProperties: option.identityProperties),
-                        signingProperties: option.signerProperties,
+                        signingProperties: signingProperties,
                         signer: authScheme.signer
                     )
                 } catch {
@@ -79,6 +83,7 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
         guard let selectedAuthScheme = resolvedAuthScheme else {
             throw ClientError.authError("Could not resolve auth scheme for the operation call.")
         }
+        
         
         // Set the selected auth scheme in context for subsequent middleware access, then pass to next middleware in chain
         return try await next.handle(context: context.toBuilder().withSelectedAuthScheme(value: selectedAuthScheme).build(), input: input)
