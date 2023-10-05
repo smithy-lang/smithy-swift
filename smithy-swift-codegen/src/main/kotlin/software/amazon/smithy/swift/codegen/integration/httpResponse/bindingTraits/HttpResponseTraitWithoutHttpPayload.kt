@@ -142,27 +142,35 @@ class HttpResponseTraitWithoutHttpPayload(
 
     private fun writeInitialResponseMembers(initialResponseMembers: Set<HttpBindingDescriptor>) {
         writer.apply {
-            openBlock("if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {", "} else {") {
-                write("let decoder = JSONDecoder()")
-                openBlock("do {", "} catch {") {
-                    write("let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)")
-                    initialResponseMembers.forEach { responseMember ->
-                        val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
-                        write("self.$responseMemberName = response[\"$responseMemberName\"].map { value in KinesisClientTypes.Tag(value: value) }")
-                    }
-                }
-                write("print(\"Error decoding JSON: \\(error)\")")
-                initialResponseMembers.forEach { responseMember ->
-                    val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
-                    write("self.$responseMemberName = nil")
-                }
-                closeBlock("}")
+            write("if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {")
+            indent()
+            write("let decoder = JSONDecoder()")
+            write("do {")
+            indent()
+            write("let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)")
+            initialResponseMembers.forEach { responseMember ->
+                val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
+                write("self.$responseMemberName = response[\"$responseMemberName\"].map { value in KinesisClientTypes.Tag(value: value) }")
             }
+            dedent()
+            write("} catch {")
+            indent()
+            write("print(\"Error decoding JSON: \\(error)\")")
             initialResponseMembers.forEach { responseMember ->
                 val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
                 write("self.$responseMemberName = nil")
             }
-            closeBlock("}")
+            dedent()
+            write("}")
+            dedent()
+            write("} else {")
+            indent()
+            initialResponseMembers.forEach { responseMember ->
+                val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
+                write("self.$responseMemberName = nil")
+            }
+            dedent()
+            write("}")
         }
     }
 
