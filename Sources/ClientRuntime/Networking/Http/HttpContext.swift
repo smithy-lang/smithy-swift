@@ -176,10 +176,7 @@ public class HttpContextBuilder {
     }
 }
 
-public struct AttributeKeys {
-    // Namespace object for key values, hence private init
-    private init() {}
-
+public enum AttributeKeys {
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
     public static let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
     public static let encoder = AttributeKey<RequestEncoder>(name: "Encoder")
