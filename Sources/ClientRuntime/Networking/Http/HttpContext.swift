@@ -18,9 +18,13 @@ public class HttpContext: MiddlewareContext {
         }
         return builder
     }
+    
+    public func getAuthSchemeResolver() -> AuthSchemeResolver? {
+        return attributes.get(key: AttributeKeys.authSchemeResolver)
+    }
 
-    public func getAuthSchemes() -> Attributes {
-        return attributes.get(key: AttributeKeys.authSchemes)!
+    public func getAuthSchemes() -> Attributes? {
+        return attributes.get(key: AttributeKeys.authSchemes)
     }
 
     public func getDecoder() -> ResponseDecoder {
@@ -43,8 +47,8 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.idempotencyTokenGenerator)!
     }
 
-    public func getIdentityResolvers() -> Attributes {
-        return attributes.get(key: AttributeKeys.identityResolvers)!
+    public func getIdentityResolvers() -> Attributes? {
+        return attributes.get(key: AttributeKeys.identityResolvers)
     }
 
     public func getLogger() -> LogAgent? {
@@ -108,6 +112,12 @@ public class HttpContextBuilder {
     public func with<T>(key: AttributeKey<T>,
                         value: T) -> HttpContextBuilder {
         self.attributes.set(key: key, value: value)
+        return self
+    }
+    
+    @discardableResult
+    public func withAuthSchemeResolver(value: AuthSchemeResolver) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.authSchemeResolver, value: value)
         return self
     }
 
@@ -216,10 +226,9 @@ public class HttpContextBuilder {
     }
 }
 
-public struct AttributeKeys {
-    // Namespace object for key values, hence private init
-    private init() {}
 
+public enum AttributeKeys {
+    public static let authSchemeResolver = AttributeKey<AuthSchemeResolver>(name: "AuthSchemeResolver")
     public static let authSchemes = AttributeKey<Attributes>(name: "AuthSchemes")
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
     public static let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
@@ -239,6 +248,6 @@ public struct AttributeKeys {
     public static let path = AttributeKey<String>(name: "Path")
     public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
-    
+
     public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "AWSIDResolver")
 }
