@@ -9,14 +9,8 @@ import Foundation
 
 public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: HttpResponseErrorBinding>: Middleware {
     public let id: String = "AuthScheme"
-    let resolver: AuthSchemeResolver
-    let resolverParams: AuthSchemeResolverParameters
 
-    // Initializer for middleware will take in auth scheme resolver and parameters
-    public init (resolver: AuthSchemeResolver, resolverParams: AuthSchemeResolverParameters) {
-        self.resolver = resolver
-        self.resolverParams = resolverParams
-    }
+    public init () {}
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<Output>
@@ -29,12 +23,17 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
     Self.Context == H.Context,
     Self.MInput == H.Input,
     Self.MOutput == H.Output {
-
+        // Get auth scheme resolver from context
+        guard let resolver = context.getAuthSchemeResolver() else {
+            throw ClientError.authError("No auth scheme resolver has been configured on the service.")
+        }
+        // Construct auth scheme resolver parameters
+        let resolverParams = try resolver.constructParameters(context)
         let validAuthOptions = resolver.resolveAuthScheme(params: resolverParams)
 
         // Create IdentityResolverConfiguration
         guard let identityResolvers = context.getIdentityResolvers() else {
-            throw ClientError.authError("No identity resolver configured on the service.")
+            throw ClientError.authError("No identity resolver has been configured on the service.")
         }
         let identityResolverConfig = DefaultIdentityResolverConfiguration(configuredIdResolvers: identityResolvers)
 
