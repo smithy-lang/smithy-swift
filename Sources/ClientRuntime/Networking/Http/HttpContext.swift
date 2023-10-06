@@ -216,10 +216,8 @@ public class HttpContextBuilder {
     }
 }
 
-public struct AttributeKeys {
-    // Namespace object for key values, hence private init
-    private init() {}
 
+public enum AttributeKeys {
     public static let authSchemes = AttributeKey<Attributes>(name: "AuthSchemes")
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
     public static let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
@@ -239,6 +237,6 @@ public struct AttributeKeys {
     public static let path = AttributeKey<String>(name: "Path")
     public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
-    
+
     public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "AWSIDResolver")
 }
