@@ -28,7 +28,7 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
             throw ClientError.authError("No auth scheme resolver has been configured on the service.")
         }
         // Construct auth scheme resolver parameters
-        let resolverParams = try resolver.constructParameters(context)
+        let resolverParams = try resolver.constructParameters(context: context)
         let validAuthOptions = resolver.resolveAuthScheme(params: resolverParams)
 
         // Create IdentityResolverConfiguration
