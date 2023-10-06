@@ -33,11 +33,14 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
         let validAuthOptions = resolver.resolveAuthScheme(params: resolverParams)
 
         // Create IdentityResolverConfiguration
-        let identityResolvers = context.getIdentityResolvers()
+        guard let identityResolvers = context.getIdentityResolvers() else {
+            throw ClientError.authError("No identity resolver configured on the service.")
+        }
         let identityResolverConfig = DefaultIdentityResolverConfiguration(configuredIdResolvers: identityResolvers)
 
         // Get auth schemes configured on the service
-        let authSchemes = context.getAuthSchemes()
+        // If none is confugred, create empty Attributes object.
+        let authSchemes = context.getAuthSchemes() ?? Attributes()
         
         // Variable for selected auth scheme
         var resolvedAuthScheme: SelectedAuthScheme?
