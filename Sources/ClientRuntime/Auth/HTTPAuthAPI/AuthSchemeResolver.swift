@@ -9,4 +9,5 @@ import Foundation
 
 public protocol AuthSchemeResolver {
     func resolveAuthScheme(params: AuthSchemeResolverParameters) -> Array<AuthOption>
+    func constructParameters(context: HttpContext) throws -> AuthSchemeResolverParameters
 }
