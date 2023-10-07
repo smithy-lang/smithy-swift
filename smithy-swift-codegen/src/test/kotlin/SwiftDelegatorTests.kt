@@ -25,7 +25,7 @@ class SwiftDelegatorTests {
         SwiftCodegenPlugin().execute(context)
 
         assertTrue(manifest.hasFile("example/models/GetFooInput.swift"))
-        assertTrue(manifest.hasFile("example/models/GetFooOutputResponse.swift"))
+        assertTrue(manifest.hasFile("example/models/GetFooOutput.swift"))
         assertTrue(manifest.hasFile("example/models/GetFooError.swift"))
     }
 

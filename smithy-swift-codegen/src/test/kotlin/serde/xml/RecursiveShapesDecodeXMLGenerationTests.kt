@@ -16,10 +16,10 @@ class RecursiveShapesDecodeXMLGenerationTests {
     @Test
     fun `decode recursive shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlRecursiveShapesOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlRecursiveShapesOutputBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlRecursiveShapesOutputResponseBody: Swift.Decodable {
+            extension XmlRecursiveShapesOutputBody: Swift.Decodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nested
                 }
@@ -37,10 +37,10 @@ class RecursiveShapesDecodeXMLGenerationTests {
     @Test
     fun `decode recursive nested shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesOutputBody+Decodable.swift")
         val expectedContents =
             """
-            extension XmlNestedRecursiveShapesOutputResponseBody: Swift.Decodable {
+            extension XmlNestedRecursiveShapesOutputBody: Swift.Decodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedRecursiveList
                 }
