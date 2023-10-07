@@ -30,7 +30,7 @@ class WaiterAcceptorGeneratorTests {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters", 0)
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
-            .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutputResponse, Error>) -> Bool in
+            .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutput, Error>) -> Bool in
                 switch result {
                     case .success: return true
                     case .failure: return false
@@ -45,7 +45,7 @@ class WaiterAcceptorGeneratorTests {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters", 1)
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
-            .init(state: .retry, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutputResponse, Error>) -> Bool in
+            .init(state: .retry, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutput, Error>) -> Bool in
                 guard case .failure(let error) = result else { return false }
                 return (error as? ServiceError)?.typeName == "NotFound"
             }),
@@ -58,7 +58,7 @@ class WaiterAcceptorGeneratorTests {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters", 2)
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
-            .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutputResponse, Error>) -> Bool in
+            .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutput, Error>) -> Bool in
                 // JMESPath expression: "field1"
                 // JMESPath comparator: "stringEquals"
                 // JMESPath expected value: "abc"
@@ -75,12 +75,12 @@ class WaiterAcceptorGeneratorTests {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters", 3)
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
-            .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutputResponse, Error>) -> Bool in
+            .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutput, Error>) -> Bool in
                 // JMESPath expression: "input.bucketName == output.field1"
                 // JMESPath comparator: "booleanEquals"
                 // JMESPath expected value: "true"
                 guard case .success(let unwrappedOutput) = result else { return false }
-                let inputOutput = WaiterConfiguration<HeadBucketInput, HeadBucketOutputResponse>.Acceptor.InputOutput(input: input, output: unwrappedOutput)
+                let inputOutput = WaiterConfiguration<HeadBucketInput, HeadBucketOutput>.Acceptor.InputOutput(input: input, output: unwrappedOutput)
                 let input = inputOutput.input
                 let bucketName = input?.bucketName
                 let output = inputOutput.output

@@ -37,7 +37,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitStringInput>,
-                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitStringOutputResponse>
+                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitStringOutput>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -52,7 +52,7 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = ClientRuntime.SerializeStepInput<ExplicitStringInput>
-                public typealias MOutput = ClientRuntime.OperationOutput<ExplicitStringOutputResponse>
+                public typealias MOutput = ClientRuntime.OperationOutput<ExplicitStringOutput>
                 public typealias Context = ClientRuntime.HttpContext
             }
             """.trimIndent()
@@ -72,7 +72,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitBlobInput>,
-                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitBlobOutputResponse>
+                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitBlobOutput>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -87,7 +87,7 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = ClientRuntime.SerializeStepInput<ExplicitBlobInput>
-                public typealias MOutput = ClientRuntime.OperationOutput<ExplicitBlobOutputResponse>
+                public typealias MOutput = ClientRuntime.OperationOutput<ExplicitBlobOutput>
                 public typealias Context = ClientRuntime.HttpContext
             }
             """.trimIndent()
@@ -107,7 +107,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitBlobStreamInput>,
-                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitBlobStreamOutputResponse>
+                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitBlobStreamOutput>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -121,7 +121,7 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = ClientRuntime.SerializeStepInput<ExplicitBlobStreamInput>
-                public typealias MOutput = ClientRuntime.OperationOutput<ExplicitBlobStreamOutputResponse>
+                public typealias MOutput = ClientRuntime.OperationOutput<ExplicitBlobStreamOutput>
                 public typealias Context = ClientRuntime.HttpContext
             }
             """.trimIndent()
@@ -141,7 +141,7 @@ class HttpBodyMiddlewareTests {
             
                 public func handle<H>(context: Context,
                               input: ClientRuntime.SerializeStepInput<ExplicitStructInput>,
-                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitStructOutputResponse>
+                              next: H) async throws -> ClientRuntime.OperationOutput<ExplicitStructOutput>
                 where H: Handler,
                 Self.MInput == H.Input,
                 Self.MOutput == H.Output,
@@ -168,7 +168,7 @@ class HttpBodyMiddlewareTests {
                 }
             
                 public typealias MInput = ClientRuntime.SerializeStepInput<ExplicitStructInput>
-                public typealias MOutput = ClientRuntime.OperationOutput<ExplicitStructOutputResponse>
+                public typealias MOutput = ClientRuntime.OperationOutput<ExplicitStructOutput>
                 public typealias Context = ClientRuntime.HttpContext
             }
             """.trimIndent()

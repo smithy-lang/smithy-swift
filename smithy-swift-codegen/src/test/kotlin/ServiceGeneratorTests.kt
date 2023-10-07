@@ -73,13 +73,13 @@ class ServiceGeneratorTests {
     @Test
     fun `it renders swift func signatures correctly`() {
         val expectedSignatures = listOf(
-            "func getFooStreamingInput(input: GetFooStreamingInputInput) async throws -> GetFooStreamingInputOutputResponse",
-            "func getFooNoOutput(input: GetFooNoOutputInput) async throws -> GetFooNoOutputOutputResponse",
-            "func getFooStreamingOutput(input: GetFooStreamingOutputInput) async throws -> GetFooStreamingOutputOutputResponse",
-            "func getFoo(input: GetFooInput) async throws -> GetFooOutputResponse",
-            "func getFooNoInput(input: GetFooNoInputInput) async throws -> GetFooNoInputOutputResponse",
-            "func getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputInput) async throws -> GetFooStreamingInputNoOutputOutputResponse",
-            "func getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputInput) async throws -> GetFooStreamingOutputNoInputOutputResponse"
+            "func getFooStreamingInput(input: GetFooStreamingInputInput) async throws -> GetFooStreamingInputOutput",
+            "func getFooNoOutput(input: GetFooNoOutputInput) async throws -> GetFooNoOutputOutput",
+            "func getFooStreamingOutput(input: GetFooStreamingOutputInput) async throws -> GetFooStreamingOutputOutput",
+            "func getFoo(input: GetFooInput) async throws -> GetFooOutput",
+            "func getFooNoInput(input: GetFooNoInputInput) async throws -> GetFooNoInputOutput",
+            "func getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputInput) async throws -> GetFooStreamingInputNoOutputOutput",
+            "func getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputInput) async throws -> GetFooStreamingOutputNoInputOutput"
         )
         expectedSignatures.forEach {
             commonTestContents.shouldContainOnlyOnce(it)
