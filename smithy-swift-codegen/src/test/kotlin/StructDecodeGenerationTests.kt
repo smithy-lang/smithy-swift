@@ -29,7 +29,7 @@ class StructDecodeGenerationTests {
 
     @Test
     fun `it creates decodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestOutputResponseBody+Decodable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestOutputBody+Decodable.swift"))
     }
 
     @Test
@@ -42,17 +42,17 @@ class StructDecodeGenerationTests {
 
     @Test
     fun `it creates smoke test request decodable conformance`() {
-        val contents = getModelFileContents("example", "SmokeTestOutputResponseBody+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "SmokeTestOutputBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            struct SmokeTestOutputResponseBody: Swift.Equatable {
+            struct SmokeTestOutputBody: Swift.Equatable {
                 let payload1: Swift.String?
                 let payload2: Swift.Int?
                 let payload3: ExampleClientTypes.Nested?
             }
             
-            extension SmokeTestOutputResponseBody: Swift.Decodable {
+            extension SmokeTestOutputBody: Swift.Decodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case payload1
                     case payload2
@@ -167,11 +167,11 @@ class StructDecodeGenerationTests {
     @Test
     fun `it provides decodable conformance to operation outputs with timestamps`() {
         val contents =
-            getModelFileContents("example", "TimestampInputOutputResponseBody+Decodable.swift", newTestContext.manifest)
+            getModelFileContents("example", "TimestampInputOutputBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct TimestampInputOutputResponseBody: Swift.Equatable {
+struct TimestampInputOutputBody: Swift.Equatable {
     let normal: ClientRuntime.Date?
     let dateTime: ClientRuntime.Date?
     let epochSeconds: ClientRuntime.Date?
@@ -181,7 +181,7 @@ struct TimestampInputOutputResponseBody: Swift.Equatable {
     let timestampList: [ClientRuntime.Date]?
 }
 
-extension TimestampInputOutputResponseBody: Swift.Decodable {
+extension TimestampInputOutputBody: Swift.Decodable {
     enum CodingKeys: Swift.String, Swift.CodingKey {
         case dateTime
         case epochSeconds
@@ -241,11 +241,11 @@ extension TimestampInputOutputResponseBody: Swift.Decodable {
 
     @Test
     fun `it decodes maps correctly`() {
-        val contents = getModelFileContents("example", "MapInputOutputResponseBody+Decodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "MapInputOutputBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct MapInputOutputResponseBody: Swift.Equatable {
+struct MapInputOutputBody: Swift.Equatable {
     let intMap: [Swift.String:Swift.Int]?
     let structMap: [Swift.String:ExampleClientTypes.ReachableOnlyThroughMap]?
     let enumMap: [Swift.String:ExampleClientTypes.MyEnum]?
@@ -254,7 +254,7 @@ struct MapInputOutputResponseBody: Swift.Equatable {
     let dateMap: [Swift.String:ClientRuntime.Date]?
 }
 
-extension MapInputOutputResponseBody: Swift.Decodable {
+extension MapInputOutputBody: Swift.Decodable {
     enum CodingKeys: Swift.String, Swift.CodingKey {
         case blobMap
         case dateMap
@@ -347,17 +347,17 @@ extension MapInputOutputResponseBody: Swift.Decodable {
     @Test
     fun `it decodes nested diverse shapes correctly`() {
         val contents =
-            getModelFileContents("example", "NestedShapesOutputResponseBody+Decodable.swift", newTestContext.manifest)
+            getModelFileContents("example", "NestedShapesOutputBody+Decodable.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct NestedShapesOutputResponseBody: Swift.Equatable {
+struct NestedShapesOutputBody: Swift.Equatable {
     let nestedListInDict: [Swift.String:[ClientRuntime.Date]]?
     let nestedDictInList: [[Swift.String:Swift.String]]?
     let nestedListOfListInDict: [Swift.String:[[Swift.Int]]]?
 }
 
-extension NestedShapesOutputResponseBody: Swift.Decodable {
+extension NestedShapesOutputBody: Swift.Decodable {
     enum CodingKeys: Swift.String, Swift.CodingKey {
         case nestedDictInList
         case nestedListInDict
