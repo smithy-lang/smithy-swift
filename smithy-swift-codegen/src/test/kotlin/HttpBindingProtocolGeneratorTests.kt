@@ -66,11 +66,11 @@ class HttpBindingProtocolGeneratorTests {
 
     @Test
     fun `it creates correct init for explicit struct payloads`() {
-        val contents = getModelFileContents("example", "ExplicitStructOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "ExplicitStructOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension ExplicitStructOutputResponse: ClientRuntime.HttpResponseBinding {
+extension ExplicitStructOutput: ClientRuntime.HttpResponseBinding {
     public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
         if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {
             let output: Nested2 = try responseDecoder.decode(responseBody: data)
@@ -92,12 +92,12 @@ extension ExplicitStructOutputResponse: ClientRuntime.HttpResponseBinding {
     }
 
     @Test
-    fun `httpResponseCodeOutputResponse response init content`() {
-        val contents = getModelFileContents("example", "HttpResponseCodeOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
+    fun `httpResponseCodeOutput response init content`() {
+        val contents = getModelFileContents("example", "HttpResponseCodeOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension HttpResponseCodeOutputResponse: ClientRuntime.HttpResponseBinding {
+extension HttpResponseCodeOutput: ClientRuntime.HttpResponseBinding {
     public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
         self.status = httpResponse.statusCode.rawValue
     }
@@ -108,11 +108,11 @@ extension HttpResponseCodeOutputResponse: ClientRuntime.HttpResponseBinding {
 
     @Test
     fun `decode the document type in HttpResponseBinding`() {
-        val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-extension InlineDocumentAsPayloadOutputResponse: ClientRuntime.HttpResponseBinding {
+extension InlineDocumentAsPayloadOutput: ClientRuntime.HttpResponseBinding {
     public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
         if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {
             let output: ClientRuntime.Document = try responseDecoder.decode(responseBody: data)
@@ -127,10 +127,10 @@ extension InlineDocumentAsPayloadOutputResponse: ClientRuntime.HttpResponseBindi
     }
     @Test
     fun `default fooMap to an empty map if keysForFooMap is empty`() {
-        val contents = getModelFileContents("example", "HttpPrefixHeadersOutputResponse+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "HttpPrefixHeadersOutput+HttpResponseBinding.swift", newTestContext.manifest)
         val expectedContents =
             """
-            extension HttpPrefixHeadersOutputResponse: ClientRuntime.HttpResponseBinding {
+            extension HttpPrefixHeadersOutput: ClientRuntime.HttpResponseBinding {
                 public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
                     if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
                         self.foo = fooHeaderValue

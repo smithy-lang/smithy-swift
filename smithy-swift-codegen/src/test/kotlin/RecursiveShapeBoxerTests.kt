@@ -64,11 +64,11 @@ internal class RecursiveShapeBoxerTests {
         recursiveShapesInput.shouldContain(expected)
 
         val recursiveShapesOutput = manifest
-            .getFileString("example/models/RecursiveShapesOutputResponse.swift").get()
+            .getFileString("example/models/RecursiveShapesOutput.swift").get()
         Assertions.assertNotNull(recursiveShapesOutput)
         val expected2 =
             """
-            public struct RecursiveShapesOutputResponse: Swift.Equatable {
+            public struct RecursiveShapesOutput: Swift.Equatable {
                 public var nested: ExampleClientTypes.RecursiveShapesInputOutputNested1?
             
                 public init(

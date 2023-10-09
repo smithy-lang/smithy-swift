@@ -18,11 +18,11 @@ class HttpResponseBindingIgnoreQuery {
     @Test
     fun `001 Output httpResponseBinding sets query to nil`() {
         val context = setupTests("http-query-payload.smithy", "aws.protocoltests.restjson#RestJson")
-        val contents = getFileContents(context.manifest, "/RestJson/models/IgnoreQueryParamsInResponseOutputResponse+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "/RestJson/models/IgnoreQueryParamsInResponseOutput+HttpResponseBinding.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension IgnoreQueryParamsInResponseOutputResponse: ClientRuntime.HttpResponseBinding {
+            extension IgnoreQueryParamsInResponseOutput: ClientRuntime.HttpResponseBinding {
                 public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
                     self.baz = nil
                 }

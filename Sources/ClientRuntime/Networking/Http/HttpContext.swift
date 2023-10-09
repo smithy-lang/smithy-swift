@@ -9,7 +9,7 @@ public class HttpContext: MiddlewareContext {
     public init(attributes: Attributes) {
         self.attributes = attributes
     }
-    
+
     public func toBuilder() -> HttpContextBuilder {
         let builder = HttpContextBuilder()
         builder.attributes = self.attributes
@@ -79,7 +79,6 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.path)!
     }
 
-    
     public func getSelectedAuthScheme() -> SelectedAuthScheme? {
         return attributes.get(key: AttributeKeys.selectedAuthScheme)
     }
@@ -225,7 +224,6 @@ public class HttpContextBuilder {
         return HttpContext(attributes: attributes)
     }
 }
-
 
 public enum AttributeKeys {
     public static let authSchemeResolver = AttributeKey<AuthSchemeResolver>(name: "AuthSchemeResolver")
