@@ -18,7 +18,7 @@ public class HttpContext: MiddlewareContext {
         }
         return builder
     }
-    
+
     public func getAuthSchemeResolver() -> AuthSchemeResolver? {
         return attributes.get(key: AttributeKeys.authSchemeResolver)
     }
@@ -113,7 +113,7 @@ public class HttpContextBuilder {
         self.attributes.set(key: key, value: value)
         return self
     }
-    
+
     @discardableResult
     public func withAuthSchemeResolver(value: AuthSchemeResolver) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.authSchemeResolver, value: value)
