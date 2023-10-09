@@ -247,5 +247,6 @@ public enum AttributeKeys {
     public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
 
+    // The attribute key used to store a credentials provider configured on service client config onto middleware context.
     public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "AWSIDResolver")
 }
