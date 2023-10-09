@@ -9,7 +9,7 @@ public class HttpContext: MiddlewareContext {
     public init(attributes: Attributes) {
         self.attributes = attributes
     }
-    
+
     public func toBuilder() -> HttpContextBuilder {
         let builder = HttpContextBuilder()
         builder.attributes = self.attributes
@@ -18,7 +18,7 @@ public class HttpContext: MiddlewareContext {
         }
         return builder
     }
-    
+
     public func getAuthSchemeResolver() -> AuthSchemeResolver? {
         return attributes.get(key: AttributeKeys.authSchemeResolver)
     }
@@ -79,7 +79,6 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.path)!
     }
 
-    
     public func getSelectedAuthScheme() -> SelectedAuthScheme? {
         return attributes.get(key: AttributeKeys.selectedAuthScheme)
     }
@@ -114,7 +113,7 @@ public class HttpContextBuilder {
         self.attributes.set(key: key, value: value)
         return self
     }
-    
+
     @discardableResult
     public func withAuthSchemeResolver(value: AuthSchemeResolver) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.authSchemeResolver, value: value)
@@ -226,7 +225,6 @@ public class HttpContextBuilder {
     }
 }
 
-
 public enum AttributeKeys {
     public static let authSchemeResolver = AttributeKey<AuthSchemeResolver>(name: "AuthSchemeResolver")
     public static let authSchemes = AttributeKey<Attributes>(name: "AuthSchemes")
@@ -249,5 +247,6 @@ public enum AttributeKeys {
     public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
 
+    // The attribute key used to store a credentials provider configured on service client config onto middleware context.
     public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "AWSIDResolver")
 }
