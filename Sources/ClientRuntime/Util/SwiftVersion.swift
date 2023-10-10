@@ -49,20 +49,6 @@ private func swift5Version() -> String? {
     return "5.8"
     #elseif swift(>=5.7)
     return "5.7"
-    #elseif swift(>=5.6)
-    return "5.6"
-    #elseif swift(>=5.5)
-    return "5.5"
-    #elseif swift(>=5.4)
-    return "5.4"
-    #elseif swift(>=5.3)
-    return "5.3"
-    #elseif swift(>=5.2)
-    return "5.2"
-    #elseif swift(>=5.1)
-    return "5.1"
-    #elseif swift(>=5.0)
-    return "5.0"
     #else
     return nil
     #endif
