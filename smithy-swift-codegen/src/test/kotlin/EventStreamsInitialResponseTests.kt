@@ -18,12 +18,12 @@ class EventStreamsInitialResponseTests {
         )
         val contents = getFileContents(
             context.manifest,
-            "/InitialMessageEventStreams/models/TestStreamOperationWithInitialRequestResponseOutputResponse+HttpResponseBinding.swift"
+            "/InitialMessageEventStreams/models/TestStreamOperationWithInitialRequestResponseOutput+HttpResponseBinding.swift"
         )
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             """
-            extension TestStreamOperationWithInitialRequestResponseOutputResponse: ClientRuntime.HttpResponseBinding {
+            extension TestStreamOperationWithInitialRequestResponseOutput: ClientRuntime.HttpResponseBinding {
                 public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
                     if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {
                         let messageDecoder: ClientRuntime.MessageDecoder? = nil
