@@ -6,7 +6,7 @@
 //
 
 public protocol AuthScheme {
-    var schemeId: String { get }
+    var schemeID: String { get }
     var signer: Signer { get }
     var idKind: IdentityKind { get }
     
