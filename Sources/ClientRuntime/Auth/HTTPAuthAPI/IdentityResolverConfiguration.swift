@@ -8,5 +8,5 @@
 import Foundation
 
 protocol IdentityResolverConfiguration {
-    func getIdentityResolver(identityType: IdentityKind) -> (any IdentityResolver)?
+    func getIdentityResolver(identityKind: IdentityKind) -> (any IdentityResolver)?
 }

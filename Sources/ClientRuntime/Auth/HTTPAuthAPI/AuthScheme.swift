@@ -10,11 +10,11 @@ import Foundation
 public protocol AuthScheme {
     var schemeId: String { get }
     var signer: Signer { get }
-    var idType: IdentityKind { get }
+    var idKind: IdentityKind { get }
 }
 
 extension AuthScheme {
     func identityResolver(config: IdentityResolverConfiguration) -> (any IdentityResolver)? {
-        return config.getIdentityResolver(identityType: self.idType)
+        return config.getIdentityResolver(identityKind: self.idKind)
     }
 }
