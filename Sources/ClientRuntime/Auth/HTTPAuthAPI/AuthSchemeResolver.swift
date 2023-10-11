@@ -5,9 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 public protocol AuthSchemeResolver {
-    func resolveAuthScheme(params: AuthSchemeResolverParameters) -> Array<AuthOption>
+    func resolveAuthScheme(params: AuthSchemeResolverParameters) -> [AuthOption]
     func constructParameters(context: HttpContext) throws -> AuthSchemeResolverParameters
 }

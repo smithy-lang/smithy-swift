@@ -8,7 +8,7 @@
 import Foundation
 
 public struct AuthOption {
-    let schemeId: String
+    let schemeID: String
     var identityProperties: Attributes
     var signingProperties: Attributes
 }

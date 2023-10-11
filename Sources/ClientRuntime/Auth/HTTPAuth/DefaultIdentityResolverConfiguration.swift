@@ -14,7 +14,7 @@ public struct DefaultIdentityResolverConfiguration: IdentityResolverConfiguratio
         self.credentialsProvider = configuredIdResolvers.get(key: AttributeKeys.awsIdResolver) ?? nil
     }
 
-    func getIdentityResolver(identityType: IdentityType) -> (any IdentityResolver)? {
+    func getIdentityResolver(identityType: IdentityKind) -> (any IdentityResolver)? {
         switch identityType {
         case .aws:
             return self.credentialsProvider

@@ -9,8 +9,8 @@ import Foundation
 
 public protocol AuthScheme {
     var schemeId: String { get }
-    var signer: any Signer { get }
-    var idType: IdentityType { get }
+    var signer: Signer { get }
+    var idType: IdentityKind { get }
 }
 
 extension AuthScheme {

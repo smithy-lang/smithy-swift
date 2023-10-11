@@ -159,7 +159,7 @@ public class HttpContextBuilder {
     }
 
     @discardableResult
-    public func withIdentityResolver<T: IdentityResolver>(value: T, type: IdentityType) -> HttpContextBuilder {
+    public func withIdentityResolver<T: IdentityResolver>(value: T, type: IdentityKind) -> HttpContextBuilder {
         var identityResolvers: Attributes = self.attributes.get(key: AttributeKeys.identityResolvers) ?? Attributes()
         identityResolvers.set(key: AttributeKey<any IdentityResolver>(name: "\(type)"), value: value)
         self.attributes.set(key: AttributeKeys.identityResolvers, value: identityResolvers)
