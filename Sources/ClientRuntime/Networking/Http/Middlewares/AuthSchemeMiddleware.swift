@@ -49,7 +49,7 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
             // If current auth option is noAuth, set selectedAuthScheme with nil fields and break
             if (option.schemeID == "smithy.api#noAuth") {
                 resolvedAuthScheme = SelectedAuthScheme(
-                    schemeId: option.schemeID,
+                    schemeID: option.schemeID,
                     identity: nil,
                     signingProperties: nil,
                     signer: nil
@@ -68,7 +68,7 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
                         context: context
                     )
                     resolvedAuthScheme = await SelectedAuthScheme(
-                        schemeId: option.schemeID,
+                        schemeID: option.schemeID,
                         // Resolve identity using the selected resolver from auth scheme
                         identity: try identityResolver.getIdentity(identityProperties: option.identityProperties),
                         signingProperties: signingProperties,

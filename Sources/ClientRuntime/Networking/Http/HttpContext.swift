@@ -123,7 +123,7 @@ public class HttpContextBuilder {
     @discardableResult
     public func withAuthScheme(value: AuthScheme) -> HttpContextBuilder {
         var authSchemes: Attributes = self.attributes.get(key: AttributeKeys.authSchemes) ?? Attributes()
-        authSchemes.set(key: AttributeKey<AuthScheme>(name: "\(value.schemeId)"), value: value)
+        authSchemes.set(key: AttributeKey<AuthScheme>(name: "\(value.schemeID)"), value: value)
         self.attributes.set(key: AttributeKeys.authSchemes, value: authSchemes)
         return self
     }

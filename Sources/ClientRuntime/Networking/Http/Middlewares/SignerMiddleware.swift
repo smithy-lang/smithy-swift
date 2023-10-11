@@ -29,7 +29,7 @@ public struct SignerMiddleware<Output: HttpResponseBinding,
         let selectedAuthScheme = context.getSelectedAuthScheme()!
         
         // Return without signing request if resolved auth scheme is of noAuth type
-        guard selectedAuthScheme.schemeId != "smithy.api#noAuth" else {
+        guard selectedAuthScheme.schemeID != "smithy.api#noAuth" else {
             return try await next.handle(context:context, input: input)
         }
 
