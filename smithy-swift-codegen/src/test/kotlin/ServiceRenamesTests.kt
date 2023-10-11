@@ -45,11 +45,11 @@ class ServiceRenamesTests {
             ),
             "aws.protocoltests.restjson#RestJson"
         )
-        val contents = getFileContents(context.manifest, "/RestJson/models/MyTestOperationOutputResponse.swift")
+        val contents = getFileContents(context.manifest, "/RestJson/models/MyTestOperationOutput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct MyTestOperationOutputResponse: Swift.Equatable {
+            public struct MyTestOperationOutput: Swift.Equatable {
                 public var baz: ExampleClientTypes.GreetingStruct?
             
                 public init(
