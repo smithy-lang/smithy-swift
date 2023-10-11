@@ -49,12 +49,12 @@ class HttpResponseTraitWithoutHttpPayload(
         val bodyMembersWithoutQueryTrait = bodyMembers
             .filter { !it.member.hasTrait(HttpQueryTrait::class.java) }
             .toMutableSet()
-        val initialResponseMembers = bodyMembers.filter {
-            val targetShape = it.member.targetOrSelf(ctx.model)
-            targetShape?.hasTrait(StreamingTrait::class.java) == false
-        }.toSet()
         val streamingMember = bodyMembers.firstOrNull { it.member.targetOrSelf(ctx.model).hasTrait(StreamingTrait::class.java) }
         if (streamingMember != null) {
+            val initialResponseMembers = bodyMembers.filter {
+                val targetShape = it.member.targetOrSelf(ctx.model)
+                targetShape?.hasTrait(StreamingTrait::class.java) == false
+            }.toSet()
             writeStreamingMember(streamingMember, initialResponseMembers)
         } else if (bodyMembersWithoutQueryTrait.isNotEmpty()) {
             writeNonStreamingMembers(bodyMembersWithoutQueryTrait)
