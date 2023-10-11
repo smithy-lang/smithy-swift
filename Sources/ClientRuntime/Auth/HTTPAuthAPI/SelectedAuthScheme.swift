@@ -6,7 +6,7 @@
 //
 
 public struct SelectedAuthScheme {
-    let schemeId: String
+    let schemeID: String
     let identity: Identity?
     let signingProperties: Attributes?
     let signer: Signer?
