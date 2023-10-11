@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 public struct DefaultIdentityResolverConfiguration: IdentityResolverConfiguration {
     let credentialsProvider: (any IdentityResolver)?
 
@@ -14,8 +12,8 @@ public struct DefaultIdentityResolverConfiguration: IdentityResolverConfiguratio
         self.credentialsProvider = configuredIdResolvers.get(key: AttributeKeys.awsIdResolver) ?? nil
     }
 
-    func getIdentityResolver(identityType: IdentityType) -> (any IdentityResolver)? {
-        switch identityType {
+    func getIdentityResolver(identityKind: IdentityKind) -> (any IdentityResolver)? {
+        switch identityKind {
         case .aws:
             return self.credentialsProvider
         }

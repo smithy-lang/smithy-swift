@@ -47,9 +47,9 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
         // For each auth option returned by auth scheme resolver:
         for option in validAuthOptions {
             // If current auth option is noAuth, set selectedAuthScheme with nil fields and break
-            if (option.schemeId == "smithy.api#noAuth") {
+            if (option.schemeID == "smithy.api#noAuth") {
                 resolvedAuthScheme = SelectedAuthScheme(
-                    schemeId: option.schemeId,
+                    schemeId: option.schemeID,
                     identity: nil,
                     signingProperties: nil,
                     signer: nil
@@ -59,16 +59,16 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
             // Otherwise,
             // 1) check if corresponding auth scheme for auth option is configured, then
             // 2) check if corresponding identity resolver for the auth scheme is configured
-            if let authScheme = authSchemes.get(key: AttributeKey<AuthScheme>(name: "\(option.schemeId)")),
+            if let authScheme = authSchemes.get(key: AttributeKey<AuthScheme>(name: "\(option.schemeID)")),
                 let identityResolver = authScheme.identityResolver(config: identityResolverConfig) {
                 // If both 1 & 2 are satisfied, resolve auth scheme
                 do {
                     let signingProperties = authScheme.customizeSigningProperties(
                         signingProperties: option.signingProperties,
-                        config: context
+                        context: context
                     )
                     resolvedAuthScheme = await SelectedAuthScheme(
-                        schemeId: option.schemeId,
+                        schemeId: option.schemeID,
                         // Resolve identity using the selected resolver from auth scheme
                         identity: try identityResolver.getIdentity(identityProperties: option.identityProperties),
                         signingProperties: signingProperties,

@@ -5,19 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 public protocol AuthScheme {
     var schemeId: String { get }
-    var signer: any Signer { get }
-    var idType: IdentityType { get }
+    var signer: Signer { get }
+    var idKind: IdentityKind { get }
     
     // Hook used in AuthSchemeMiddleware to append additional signing properties needed for SigV4 auth scheme
-    func customizeSigningProperties(signingProperties: Attributes, config: HttpContext) -> Attributes
+    func customizeSigningProperties(signingProperties: Attributes, context: HttpContext) -> Attributes
 }
 
 extension AuthScheme {
     func identityResolver(config: IdentityResolverConfiguration) -> (any IdentityResolver)? {
-        return config.getIdentityResolver(identityType: self.idType)
+        return config.getIdentityResolver(identityKind: self.idKind)
     }
 }
