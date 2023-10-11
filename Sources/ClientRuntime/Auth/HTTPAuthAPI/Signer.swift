@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 public protocol Signer {
     func sign<IdentityT: Identity>(
         requestBuilder: SdkHttpRequestBuilder,

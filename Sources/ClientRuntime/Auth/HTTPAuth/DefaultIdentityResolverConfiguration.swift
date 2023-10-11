@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 public struct DefaultIdentityResolverConfiguration: IdentityResolverConfiguration {
     let credentialsProvider: (any IdentityResolver)?
 

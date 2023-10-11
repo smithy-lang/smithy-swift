@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 public protocol AuthScheme {
     var schemeId: String { get }
     var signer: Signer { get }
