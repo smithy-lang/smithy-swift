@@ -53,7 +53,8 @@ class MockAWSJson11HttpProtocolCustomizations() : DefaultHttpProtocolCustomizati
         writer: SwiftWriter,
         op: OperationShape,
     ) {
-        TODO("Not yet implemented")
+        // Not yet implemented
+        return
     }
 }
 
