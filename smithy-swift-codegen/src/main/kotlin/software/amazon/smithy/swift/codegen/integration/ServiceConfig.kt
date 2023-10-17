@@ -8,6 +8,7 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
 /**
@@ -53,4 +54,14 @@ abstract class ServiceConfig(val writer: SwiftWriter, val clientName: String, va
     }
 
     open fun serviceConfigProperties(): List<ConfigField> = listOf()
+}
+
+object ServiceTypes {
+    val AuthScheme = symbol("ClientRuntime.AuthScheme")
+    val AuthSchemeResolver = symbol("ClientRuntime.AuthSchemeResolver")
+    val AuthSchemeResolverParams = symbol("ClientRuntime.AuthSchemeResolverParameters")
+
+    private fun symbol(name: String): Symbol = buildSymbol {
+        this.name = name
+    }
 }

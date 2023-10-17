@@ -6,6 +6,6 @@
 //
 
 public protocol AuthSchemeResolver {
-    func resolveAuthScheme(params: AuthSchemeResolverParameters) -> [AuthOption]
+    func resolveAuthScheme(params: AuthSchemeResolverParameters) throws -> [AuthOption]
     func constructParameters(context: HttpContext) throws -> AuthSchemeResolverParameters
 }

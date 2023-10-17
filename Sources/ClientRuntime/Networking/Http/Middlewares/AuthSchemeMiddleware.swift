@@ -29,7 +29,7 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
         }
         // Construct auth scheme resolver parameters
         let resolverParams = try resolver.constructParameters(context: context)
-        let validAuthOptions = resolver.resolveAuthScheme(params: resolverParams)
+        let validAuthOptions = try resolver.resolveAuthScheme(params: resolverParams)
 
         // Create IdentityResolverConfiguration
         guard let identityResolvers = context.getIdentityResolvers() else {

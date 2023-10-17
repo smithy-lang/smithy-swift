@@ -76,6 +76,8 @@ object ClientRuntimeTypes {
         val SerializableBodyMiddleware = runtimeSymbol("SerializableBodyMiddleware")
         val RetryMiddleware = runtimeSymbol("RetryMiddleware")
         val NoopHandler = runtimeSymbol("NoopHandler")
+        val SigningMiddleware = runtimeSymbol("SigningMiddleware")
+        val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware")
 
         object Providers {
             val URLPathProvider = runtimeSymbol("URLPathProvider")

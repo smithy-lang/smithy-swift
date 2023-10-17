@@ -38,6 +38,7 @@ import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
+import software.amazon.smithy.swift.codegen.integration.middlewares.AuthSchemeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
@@ -50,6 +51,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInp
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlHostMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.RetryMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.SigningMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpBodyMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
@@ -439,7 +441,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
 
+            operationMiddleware.appendMiddleware(operation, SigningMiddleware(ctx.model, ctx.symbolProvider))
+
             addProtocolSpecificMiddleware(ctx, operation)
+
+            operationMiddleware.appendMiddleware(operation, AuthSchemeMiddleware(ctx.model, ctx.symbolProvider))
 
             for (integration in ctx.integrations) {
                 integration.customizeMiddleware(ctx, operation, operationMiddleware)

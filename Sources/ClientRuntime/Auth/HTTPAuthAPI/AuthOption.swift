@@ -9,4 +9,14 @@ public struct AuthOption {
     let schemeID: String
     var identityProperties: Attributes
     var signingProperties: Attributes
+
+    public init (
+        schemeID: String,
+        identityProperties: Attributes = Attributes(),
+        signingProperties: Attributes = Attributes()
+    ) {
+        self.schemeID = schemeID
+        self.identityProperties = identityProperties
+        self.signingProperties = signingProperties
+    }
 }
