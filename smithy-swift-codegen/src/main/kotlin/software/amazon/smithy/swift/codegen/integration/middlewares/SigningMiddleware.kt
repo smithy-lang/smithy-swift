@@ -10,7 +10,7 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
-class SigningMiddleware (
+class SigningMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider
 ) : MiddlewareRenderable {

@@ -2,7 +2,6 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
-import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
@@ -11,16 +10,14 @@ import software.amazon.smithy.model.traits.OptionalAuthTrait
 import software.amazon.smithy.model.traits.Trait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceTypes
-import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
-import java.util.*
 
 const val AUTH_SCHEME_RESOLVER = "AuthSchemeResolver"
 const val AUTH_RESOLVER_PARAMS = "AuthSchemeResolverParameters"
 
 class AuthSchemeResolverGenerator() {
-    fun render (ctx: ProtocolGenerator.GenerationContext) {
+    fun render(ctx: ProtocolGenerator.GenerationContext) {
         val rootNamespace = ctx.settings.moduleName
         val serviceIndex = ServiceIndex(ctx.model)
 
@@ -127,9 +124,11 @@ class AuthSchemeResolverGenerator() {
                     val operations = ctx.service.operations
                     operations.forEach {
                         val opShape = ctx.model.getShape(it).get() as OperationShape
-                        if (opShape.hasTrait(AuthTrait::class.java)
-                            || opShape.hasTrait(OptionalAuthTrait::class.java)
-                            || opShape.hasTrait(UnsignedPayloadTrait::class.java)) {
+                        if (
+                            opShape.hasTrait(AuthTrait::class.java) ||
+                            opShape.hasTrait(OptionalAuthTrait::class.java) ||
+                            opShape.hasTrait(UnsignedPayloadTrait::class.java)
+                        ) {
                             val opName = it.name.toLowerCamelCase()
                             val sdkId = getSdkId(ctx)
                             val validSchemesForOp = serviceIndex.getEffectiveAuthSchemes(
@@ -159,7 +158,10 @@ class AuthSchemeResolverGenerator() {
                 if (it.key == SigV4Trait.ID) {
                     write("var sigV4Option = AuthOption(schemeID: \"${it.key}\")")
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: ${(it.value as SigV4Trait).name})")
-                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: serviceParams.region)")
+                    openBlock("guard let region = serviceParams.region else {", "}") {
+                        write("throw ClientError.authError(\"Missing region in auth scheme parameters for SigV4 auth scheme.\")")
+                    }
+                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: region)")
 
                     val unsignedBody = opShape.hasTrait(UnsignedPayloadTrait::class.java)
                     val signedBodyHeader = if ((sdkId == "s3" || sdkId == "glacier") && !unsignedBody) ".contentSha256" else ".none"
@@ -214,7 +216,7 @@ class AuthSchemeResolverGenerator() {
                 "{",
                 ServiceTypes.AuthSchemeResolverParams
             ) {
-                openBlock("guard let opName = context.getOperation() else {","}") {
+                openBlock("guard let opName = context.getOperation() else {", "}") {
                     write("throw ClientError.dataNotFound(\"Operation name not configured in middleware context for auth scheme resolver params construction.\")")
                 }
                 if (hasSigV4) {
