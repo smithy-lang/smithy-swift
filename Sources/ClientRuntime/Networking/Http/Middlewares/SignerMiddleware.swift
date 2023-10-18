@@ -31,22 +31,30 @@ public struct SignerMiddleware<OperationStackOutput: HttpResponseBinding,
 
         // Return without signing request if resolved auth scheme is of noAuth type
         guard selectedAuthScheme.schemeID != "smithy.api#noAuth" else {
-            return try await next.handle(context:context, input: input)
+            return try await next.handle(context: context, input: input)
         }
 
         // Retrieve identity, signer, and signing properties from selected auth scheme to sign the request.
         guard let identity = selectedAuthScheme.identity else {
-            throw ClientError.authError("Identity needed by signer middleware was not properly saved into loaded auth scheme.")
+            throw ClientError.authError(
+                "Identity needed by signer middleware was not properly saved into loaded auth scheme."
+            )
         }
         guard let signer = selectedAuthScheme.signer else {
-            throw ClientError.authError("Signer needed by signer middleware was not properly saved into loaded auth scheme.")
+            throw ClientError.authError(
+                "Signer needed by signer middleware was not properly saved into loaded auth scheme."
+            )
         }
         guard let signingProperties = selectedAuthScheme.signingProperties else {
-            throw ClientError.authError("Signing properties object needed by signer middleware was not properly saved into loaded auth scheme.")
+            throw ClientError.authError(
+                "Signing properties object needed by signer middleware was not properly saved into loaded auth scheme."
+            )
         }
 
         // Sign request and hand over to next middleware (handler) in line.
-        let signedInput = try await signer.sign(requestBuilder: input, identity: identity, signingProperties: signingProperties)
+        let signedInput = try await signer.sign(
+            requestBuilder: input, identity: identity, signingProperties: signingProperties
+        )
         return try await next.handle(context: context, input: signedInput)
     }
 }

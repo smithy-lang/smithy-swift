@@ -53,7 +53,7 @@ public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
         // For each auth option returned by auth scheme resolver:
         for option in validAuthOptions {
             // If current auth option is noAuth, set selectedAuthScheme with nil fields and break
-            if (option.schemeID == "smithy.api#noAuth") {
+            if option.schemeID == "smithy.api#noAuth" {
                 selectedAuthScheme = SelectedAuthScheme(
                     schemeID: option.schemeID,
                     identity: nil,
@@ -93,10 +93,14 @@ public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
 
         // If no auth scheme could be resolved, throw an error
         guard let selectedAuthScheme else {
-            throw ClientError.authError("Could not resolve auth scheme for the operation call.\nLog:\n\(log.joined(separator: "\n"))")
+            throw ClientError.authError(
+                "Could not resolve auth scheme for the operation call.\nLog:\n\(log.joined(separator: "\n"))"
+            )
         }
 
         // Set the selected auth scheme in context for subsequent middleware access, then pass to next middleware in chain
-        return try await next.handle(context: context.toBuilder().withSelectedAuthScheme(value: selectedAuthScheme).build(), input: input)
+        return try await next.handle(
+            context: context.toBuilder().withSelectedAuthScheme(value: selectedAuthScheme).build(), input: input
+        )
     }
 }
