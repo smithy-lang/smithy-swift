@@ -20,19 +20,20 @@ class ContentLengthMiddleware(val model: Model, private val alwaysIntercept: Boo
     override fun render(
         writer: SwiftWriter,
         op: OperationShape,
-        operationStackName: String
+        operationStackName: String,
     ) {
         val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
         if (hasHttpBody || alwaysIntercept) {
-            writer.write(
-                "\$L.\$L.intercept(position: \$L, middleware: \$N(requiresLength: \$L, unsignedPayload: \$L))",
-                operationStackName,
-                middlewareStep.stringValue(),
-                position.stringValue(),
-                ClientRuntimeTypes.Middleware.ContentLengthMiddleware,
-                requiresLength,
-                unsignedPayload
-            )
+            val middlewareArgs = if (requiresLength || unsignedPayload) {
+                "requiresLength: $requiresLength, unsignedPayload: $unsignedPayload"
+            } else {
+                ""
+            }
+
+            val interceptStatement = "$operationStackName.${middlewareStep.stringValue()}.intercept(" +
+                    "position: ${position.stringValue()}, middleware: ${ClientRuntimeTypes.Middleware.ContentLengthMiddleware}($middlewareArgs))"
+
+            writer.write(interceptStatement)
         }
     }
 }
