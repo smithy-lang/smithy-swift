@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -30,6 +31,7 @@ import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
 import software.amazon.smithy.model.traits.HttpQueryParamsTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
+import software.amazon.smithy.model.traits.RequiresLengthTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
@@ -62,6 +64,7 @@ import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.bodySymbol
 import software.amazon.smithy.swift.codegen.model.hasEventStreamMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.findStreamingMember
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
@@ -403,6 +406,23 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return resolved
     }
 
+    private fun hasRequiresLengthTrait(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean {
+        if (op.input.isPresent) {
+            val inputShape = ctx.model.expectShape(op.input.get())
+            val streamingMember = inputShape.findStreamingMember(ctx.model)
+            if (streamingMember != null) {
+                return streamingMember.isBlobShape
+                        && streamingMember.hasTrait<RequiresLengthTrait>()
+                        && streamingMember.hasTrait<HttpPayloadTrait>()
+            }
+        }
+        return false
+    }
+
+    private fun hasUnsignedBody(op: OperationShape): Boolean {
+        return op.hasTrait<UnsignedPayloadTrait>()
+    }
+
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
         ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
@@ -433,7 +453,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)))
             operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider))
 
-            operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, shouldRenderEncodableConformance))
+            operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, shouldRenderEncodableConformance, hasRequiresLengthTrait(ctx, operation), hasUnsignedBody(operation)))
 
             operationMiddleware.appendMiddleware(operation, DeserializeMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware(ctx.model, ctx.symbolProvider))

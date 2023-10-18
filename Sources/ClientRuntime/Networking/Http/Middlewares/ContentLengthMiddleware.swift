@@ -6,7 +6,14 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
 
     private let contentLengthHeaderName = "Content-Length"
 
-    public init() {}
+    private var requiresLength: Bool = false
+
+    private var unsignedPayload: Bool = false
+
+    public init(requiresLength: Bool = false, unsignedPayload: Bool = false) {
+        self.requiresLength = requiresLength
+        self.unsignedPayload = unsignedPayload
+    }
 
     public func handle<H>(context: Context,
                           input: MInput,
@@ -22,8 +29,12 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
         case .stream(let stream):
             if let length = stream.length {
                 input.headers.update(name: "Content-Length", value: String(length))
+            } else if !requiresLength && unsignedPayload {
+                // only for HTTP/1.1 requests, need to check explicitly in future
+                input.headers.update(name: "Transfer-Encoding", value: "Chunked")
             } else {
-                input.headers.update(name: "Transfer-Encoded", value: "Chunked")
+                let errorMessage = unsignedPayload ? "operation requires length" : "sigv4 requires length"
+                throw StreamError.notSupported(errorMessage)
             }
         default:
             input.headers.update(name: "Content-Length", value: "0")
