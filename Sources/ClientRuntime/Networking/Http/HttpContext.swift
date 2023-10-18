@@ -10,6 +10,23 @@ public class HttpContext: MiddlewareContext {
         self.attributes = attributes
     }
 
+    public func toBuilder() -> HttpContextBuilder {
+        let builder = HttpContextBuilder()
+        builder.attributes = self.attributes
+        if let response = self.response {
+            builder.response = response
+        }
+        return builder
+    }
+
+    public func getAuthSchemeResolver() -> AuthSchemeResolver? {
+        return attributes.get(key: AttributeKeys.authSchemeResolver)
+    }
+
+    public func getAuthSchemes() -> Attributes? {
+        return attributes.get(key: AttributeKeys.authSchemes)
+    }
+
     public func getDecoder() -> ResponseDecoder {
         return attributes.get(key: AttributeKeys.decoder)!
     }
@@ -30,8 +47,8 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.idempotencyTokenGenerator)!
     }
 
-    public func getIdentityResolvers() -> Attributes {
-        return attributes.get(key: AttributeKeys.identityResolvers)!
+    public func getIdentityResolvers() -> Attributes? {
+        return attributes.get(key: AttributeKeys.identityResolvers)
     }
 
     public func getLogger() -> LogAgent? {
@@ -60,6 +77,10 @@ public class HttpContext: MiddlewareContext {
 
     public func getPath() -> String {
         return attributes.get(key: AttributeKeys.path)!
+    }
+
+    public func getSelectedAuthScheme() -> SelectedAuthScheme? {
+        return attributes.get(key: AttributeKeys.selectedAuthScheme)
     }
 
     public func getServiceName() -> String {
@@ -94,6 +115,20 @@ public class HttpContextBuilder {
     }
 
     @discardableResult
+    public func withAuthSchemeResolver(value: AuthSchemeResolver) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.authSchemeResolver, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withAuthScheme(value: AuthScheme) -> HttpContextBuilder {
+        var authSchemes: Attributes = self.attributes.get(key: AttributeKeys.authSchemes) ?? Attributes()
+        authSchemes.set(key: AttributeKey<AuthScheme>(name: "\(value.schemeID)"), value: value)
+        self.attributes.set(key: AttributeKeys.authSchemes, value: authSchemes)
+        return self
+    }
+
+    @discardableResult
     public func withDecoder(value: ResponseDecoder) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.decoder, value: value)
         return self
@@ -120,6 +155,14 @@ public class HttpContextBuilder {
     @discardableResult
     public func withIdempotencyTokenGenerator(value: IdempotencyTokenGenerator) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.idempotencyTokenGenerator, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withIdentityResolver<T: IdentityResolver>(value: T, type: IdentityKind) -> HttpContextBuilder {
+        var identityResolvers: Attributes = self.attributes.get(key: AttributeKeys.identityResolvers) ?? Attributes()
+        identityResolvers.set(key: AttributeKey<any IdentityResolver>(name: "\(type)"), value: value)
+        self.attributes.set(key: AttributeKeys.identityResolvers, value: identityResolvers)
         return self
     }
 
@@ -166,6 +209,12 @@ public class HttpContextBuilder {
     }
 
     @discardableResult
+    public func withSelectedAuthScheme(value: SelectedAuthScheme) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.selectedAuthScheme, value: value)
+        return self
+    }
+
+    @discardableResult
     public func withServiceName(value: String) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.serviceName, value: value)
         return self
@@ -177,6 +226,8 @@ public class HttpContextBuilder {
 }
 
 public enum AttributeKeys {
+    public static let authSchemeResolver = AttributeKey<AuthSchemeResolver>(name: "AuthSchemeResolver")
+    public static let authSchemes = AttributeKey<Attributes>(name: "AuthSchemes")
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
     public static let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
     public static let encoder = AttributeKey<RequestEncoder>(name: "Encoder")
@@ -193,5 +244,9 @@ public enum AttributeKeys {
     public static let operation = AttributeKey<String>(name: "Operation")
     public static let partitionId = AttributeKey<String>(name: "PartitionID")
     public static let path = AttributeKey<String>(name: "Path")
+    public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
+
+    // The attribute key used to store a credentials provider configured on service client config onto middleware context.
+    public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "AWSIDResolver")
 }

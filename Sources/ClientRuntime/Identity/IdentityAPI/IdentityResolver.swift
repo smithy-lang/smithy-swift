@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 // Base protocol for all identity provider types
 public protocol IdentityResolver {
     associatedtype IdentityT: Identity
