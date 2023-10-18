@@ -31,7 +31,7 @@ class ContentLengthMiddleware(val model: Model, private val alwaysIntercept: Boo
             }
 
             val interceptStatement = "$operationStackName.${middlewareStep.stringValue()}.intercept(" +
-                    "position: ${position.stringValue()}, middleware: ${ClientRuntimeTypes.Middleware.ContentLengthMiddleware}($middlewareArgs))"
+                "position: ${position.stringValue()}, middleware: ${ClientRuntimeTypes.Middleware.ContentLengthMiddleware}($middlewareArgs))"
 
             writer.write(interceptStatement)
         }
