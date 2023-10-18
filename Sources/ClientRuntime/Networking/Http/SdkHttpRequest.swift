@@ -75,6 +75,9 @@ extension SdkHttpRequest {
         httpRequest.path = [endpoint.path, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
 
+        // Remove the "Transfer-Encoding" header if it exists since h2 does not support it
+        httpRequest.headers.remove(name: "Transfer-Encoding")
+
         // HTTP2Request used with manual writes hence we need to set the body to nil
         // so that CRT does not write the body for us (we will write it manually)
         httpRequest.body = nil

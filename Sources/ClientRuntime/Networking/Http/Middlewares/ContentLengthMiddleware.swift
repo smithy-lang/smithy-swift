@@ -30,7 +30,7 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
             if let length = stream.length {
                 input.headers.update(name: "Content-Length", value: String(length))
             } else if !requiresLength && unsignedPayload {
-                // only for HTTP/1.1 requests, should be removed in all HTTP/2 requests by SDK
+                // only for HTTP/1.1 requests, will be removed in all HTTP/2 requests
                 input.headers.update(name: "Transfer-Encoding", value: "Chunked")
             } else {
                 let errorMessage = unsignedPayload ? "operation requires length" : "sigv4 requires length"
