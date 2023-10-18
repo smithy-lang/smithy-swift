@@ -62,9 +62,9 @@ import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGenerat
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.bodySymbol
+import software.amazon.smithy.swift.codegen.model.findStreamingMember
 import software.amazon.smithy.swift.codegen.model.hasEventStreamMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.findStreamingMember
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
@@ -94,9 +94,8 @@ fun formatHeaderOrQueryValue(
     memberShape: MemberShape,
     location: HttpBinding.Location,
     bindingIndex: HttpBindingIndex,
-    defaultTimestampFormat: TimestampFormatTrait.Format
+    defaultTimestampFormat: TimestampFormatTrait.Format,
 ): Pair<String, Boolean> {
-
     return when (val shape = ctx.model.expectShape(memberShape.target)) {
         is TimestampShape -> {
             val timestampFormat = bindingIndex.determineTimestampFormat(memberShape, location, defaultTimestampFormat)
@@ -168,7 +167,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.openBlock(
                         "extension $symbolName: \$N {",
                         "}",
-                        SwiftTypes.Protocols.Encodable
+                        SwiftTypes.Protocols.Encodable,
                     ) {
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
@@ -289,7 +288,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun generateCodingKeysForMembers(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        members: List<MemberShape>
+        members: List<MemberShape>,
     ) {
         codingKeysGenerator.generateCodingKeysForMembers(ctx, writer, members)
     }
@@ -301,7 +300,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val inputType = ctx.model.expectShape(operation.input.get())
             var metadata = mapOf<ShapeMetadata, Any>(
                 Pair(ShapeMetadata.OPERATION_SHAPE, operation),
-                Pair(ShapeMetadata.SERVICE_VERSION, ctx.service.version)
+                Pair(ShapeMetadata.SERVICE_VERSION, ctx.service.version),
             )
             shapesInfo.put(inputType, metadata)
         }
@@ -339,7 +338,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     private fun resolveShapesNeedingCodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-
         val topLevelOutputMembers = getHttpBindingOperations(ctx).flatMap {
             val outputShape = ctx.model.expectShape(it.output.get())
             outputShape.members()
@@ -393,7 +391,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     RelationshipType.LIST_MEMBER,
                     RelationshipType.SET_MEMBER,
                     RelationshipType.MAP_VALUE,
-                    RelationshipType.UNION_MEMBER -> true
+                    RelationshipType.UNION_MEMBER,
+                    -> true
                     else -> false
                 }
             }.forEach {
@@ -418,8 +417,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val streamingMember = inputShape.findStreamingMember(ctx.model)
             if (streamingMember != null) {
                 return streamingMember.isBlobShape &&
-                        streamingMember.hasTrait<RequiresLengthTrait>() &&
-                        streamingMember.hasTrait<HttpPayloadTrait>()
+                       streamingMember.hasTrait<RequiresLengthTrait>() &&
+                       streamingMember.hasTrait<HttpPayloadTrait>()
             }
         }
         return false
@@ -441,7 +440,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 serviceSymbol.name,
                 defaultContentType,
                 httpProtocolCustomizable,
-                operationMiddleware
+                operationMiddleware,
             )
             clientGenerator.render()
         }
@@ -490,7 +489,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
-        path: String? = null
+        path: String? = null,
     )
     protected abstract fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,
@@ -498,7 +497,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
-        path: String
+        path: String,
     )
     protected abstract fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
 
@@ -514,11 +513,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         for (operation in topDownIndex.getContainedOperations(ctx.service)) {
             OptionalUtils.ifPresentOrElse(
                 Optional.of(getProtocolHttpBindingResolver(ctx, defaultContentType).httpTrait(operation)::class.java),
-                { containedOperations.add(operation) }
+                { containedOperations.add(operation) },
             ) {
                 LOGGER.warning(
                     "Unable to fetch $protocolName protocol request bindings for ${operation.id} because " +
-                        "it does not have an http binding trait"
+                        "it does not have an http binding trait",
                 )
             }
         }
