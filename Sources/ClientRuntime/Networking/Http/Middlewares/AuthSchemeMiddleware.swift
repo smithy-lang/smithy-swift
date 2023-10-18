@@ -7,28 +7,31 @@
 
 import Foundation
 
-public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: HttpResponseErrorBinding>: Middleware {
-    public let id: String = "AuthScheme"
+public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
+                                   OperationStackOutputError: HttpResponseErrorBinding>: Middleware {
+    public let id: String = "AuthSchemeMiddleware"
 
     public init () {}
 
     public typealias MInput = SdkHttpRequestBuilder
-    public typealias MOutput = OperationOutput<Output>
+    public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
 
     public func handle<H>(context: HttpContext,
                           input: SdkHttpRequestBuilder,
-                          next: H) async throws -> OperationOutput<Output>
+                          next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
     Self.Context == H.Context,
     Self.MInput == H.Input,
     Self.MOutput == H.Output {
-        // Get auth scheme resolver from context
+        // Get auth scheme resolver from middleware context
         guard let resolver = context.getAuthSchemeResolver() else {
             throw ClientError.authError("No auth scheme resolver has been configured on the service.")
         }
+
         // Construct auth scheme resolver parameters
         let resolverParams = try resolver.constructParameters(context: context)
+        // Retrieve valid auth options for the operation at hand
         let validAuthOptions = try resolver.resolveAuthScheme(params: resolverParams)
 
         // Create IdentityResolverConfiguration
@@ -38,17 +41,20 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
         let identityResolverConfig = DefaultIdentityResolverConfiguration(configuredIdResolvers: identityResolvers)
 
         // Get auth schemes configured on the service
-        // If none is confugred, create empty Attributes object.
-        let authSchemes = context.getAuthSchemes() ?? Attributes()
-        
+        // If none is confugred, create empty Attributes object
+        let validAuthSchemes = context.getAuthSchemes() ?? Attributes()
+
         // Variable for selected auth scheme
-        var resolvedAuthScheme: SelectedAuthScheme?
+        var selectedAuthScheme: SelectedAuthScheme?
+
+        // Error message to throw if no auth scheme can be resolved
+        var log: [String] = []
 
         // For each auth option returned by auth scheme resolver:
         for option in validAuthOptions {
             // If current auth option is noAuth, set selectedAuthScheme with nil fields and break
-            if (option.schemeID == "smithy.api#noAuth") {
-                resolvedAuthScheme = SelectedAuthScheme(
+            if option.schemeID == "smithy.api#noAuth" {
+                selectedAuthScheme = SelectedAuthScheme(
                     schemeID: option.schemeID,
                     identity: nil,
                     signingProperties: nil,
@@ -57,37 +63,44 @@ public struct AuthSchemeMiddleware<Output: HttpResponseBinding, OutputError: Htt
                 break
             }
             // Otherwise,
-            // 1) check if corresponding auth scheme for auth option is configured, then
+            // 1) check if corresponding auth scheme for current auth option is configured on the service, then
             // 2) check if corresponding identity resolver for the auth scheme is configured
-            if let authScheme = authSchemes.get(key: AttributeKey<AuthScheme>(name: "\(option.schemeID)")),
-                let identityResolver = authScheme.identityResolver(config: identityResolverConfig) {
-                // If both 1 & 2 are satisfied, resolve auth scheme
-                do {
+            // If both 1 & 2 are satisfied, resolve auth scheme and save to selectedAuthScheme
+            if let authScheme = validAuthSchemes.get(key: AttributeKey<AuthScheme>(name: "\(option.schemeID)")) {
+                if let identityResolver = authScheme.identityResolver(config: identityResolverConfig) {
+                    // Hook for auth scheme to customize signing properties
                     let signingProperties = authScheme.customizeSigningProperties(
                         signingProperties: option.signingProperties,
                         context: context
                     )
-                    resolvedAuthScheme = await SelectedAuthScheme(
+                    // Resolve identity using the resolver from auth scheme
+                    let identity = try await identityResolver.getIdentity(identityProperties: option.identityProperties)
+                    // Save selected auth scheme
+                    selectedAuthScheme = SelectedAuthScheme(
                         schemeID: option.schemeID,
-                        // Resolve identity using the selected resolver from auth scheme
-                        identity: try identityResolver.getIdentity(identityProperties: option.identityProperties),
+                        identity: identity,
                         signingProperties: signingProperties,
                         signer: authScheme.signer
                     )
-                } catch {
-                    // Could not fetch identity, move on to next auth option
+                    break
+                } else {
+                    log.append("Auth scheme \(option.schemeID) did not have an identity resolver configured.")
                 }
-                break
+            } else {
+                log.append("Auth scheme \(option.schemeID) was not enabled for this request.")
             }
         }
-        
+
         // If no auth scheme could be resolved, throw an error
-        guard let selectedAuthScheme = resolvedAuthScheme else {
-            throw ClientError.authError("Could not resolve auth scheme for the operation call.")
+        guard let selectedAuthScheme else {
+            throw ClientError.authError(
+                "Could not resolve auth scheme for the operation call.\nLog:\n\(log.joined(separator: "\n"))"
+            )
         }
-        
-        
+
         // Set the selected auth scheme in context for subsequent middleware access, then pass to next middleware in chain
-        return try await next.handle(context: context.toBuilder().withSelectedAuthScheme(value: selectedAuthScheme).build(), input: input)
+        return try await next.handle(
+            context: context.toBuilder().withSelectedAuthScheme(value: selectedAuthScheme).build(), input: input
+        )
     }
 }
