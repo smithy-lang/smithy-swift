@@ -32,6 +32,11 @@ class ContentLengthMiddlewareTests: XCTestCase {
         try await AssertHeadersArePresent(expectedHeaders: ["Content-Length": "0"])
     }
 
+    func testContentLengthSetWhenRequiresLengthAndUnsignedPayload() async throws {
+        addContentLengthMiddlewareWith(requiresLength: true, unsignedPayload: true)
+        try await AssertHeadersArePresent(expectedHeaders: ["Content-Length": "0"])
+    }
+
     func testRequiresLengthSetWithNilStreamShouldThrowError() async throws {
         addContentLengthMiddlewareWith(requiresLength: true, unsignedPayload: false)
         forceEmptyStream()

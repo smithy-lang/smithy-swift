@@ -407,24 +407,25 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     // Checks for @requiresLength trait
     // Returns true if the operation:
-    // - has a streaming member
-    // - is a blob shape
-    // - has @httpPayload trait
-    // - has @requiresLen trait
+    // - has a streaming member with @httpPayload trait
+    // - target is a blob shape with @requiresLength trait
     private fun hasRequiresLengthTrait(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean {
         if (op.input.isPresent) {
             val inputShape = ctx.model.expectShape(op.input.get())
             val streamingMember = inputShape.findStreamingMember(ctx.model)
             if (streamingMember != null) {
-                return streamingMember.isBlobShape &&
-                    streamingMember.hasTrait<RequiresLengthTrait>() &&
-                    streamingMember.hasTrait<HttpPayloadTrait>()
+                val targetShape = ctx.model.expectShape(streamingMember.target)
+                if (targetShape != null) {
+                    return streamingMember.hasTrait<HttpPayloadTrait>() &&
+                            targetShape.isBlobShape &&
+                            targetShape.hasTrait<RequiresLengthTrait>()
+                }
             }
         }
         return false
     }
 
-    // Checks for @unsignedPayload trait
+    // Checks for @unsignedPayload trait on an operation
     private fun hasUnsignedBody(op: OperationShape): Boolean {
         return op.hasTrait<UnsignedPayloadTrait>()
     }
