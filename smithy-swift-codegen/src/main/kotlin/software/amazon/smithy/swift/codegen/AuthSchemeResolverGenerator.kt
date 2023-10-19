@@ -221,7 +221,7 @@ class AuthSchemeResolverGenerator() {
                     write("throw ClientError.dataNotFound(\"Operation name not configured in middleware context for auth scheme resolver params construction.\")")
                 }
                 if (hasSigV4) {
-                    write("let opRegion = context.getSigningRegion()")
+                    write("let opRegion = context.attributes.get(key: AttributeKeys.signingRegion)")
                     write("return $returnTypeName(operation: opName, region: opRegion)")
                 } else {
                     write("return $returnTypeName(operation: opName)")
