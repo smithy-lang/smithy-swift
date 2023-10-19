@@ -192,7 +192,7 @@ class AuthSchemeResolverGenerator() {
 
                     val signedBodyHeader = if (sdkId == "s3" || sdkId == "glacier") ".contentSha256" else ".none"
                     // Set .unsignedBody to false
-                    write("sigV4Option.signingProperties.set(key: AttributeKeys.unsignedBody, value: false")
+                    write("sigV4Option.signingProperties.set(key: AttributeKeys.unsignedBody, value: false)")
                     // Set .signedBodyHeader to .contentSha256 IFF service is S3 / Glacier, set to .none otherwise.
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.signedBodyHeader, value: $signedBodyHeader)")
 
@@ -213,7 +213,7 @@ class AuthSchemeResolverGenerator() {
         writer.apply {
             openBlock(
                 "public func constructParameters(context: HttpContext) throws -> \$L {",
-                "{",
+                "}",
                 ServiceTypes.AuthSchemeResolverParams
             ) {
                 openBlock("guard let opName = context.getOperation() else {", "}") {
