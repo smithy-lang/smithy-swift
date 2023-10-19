@@ -77,7 +77,7 @@ class AuthSchemeResolverGenerator() {
 
         writer.apply {
             writer.openBlock(
-                "public struct \$L: \$L {", "}",
+                "public struct \$L: \$L {",
                 "}",
                 defaultResolverName,
                 serviceProtocolName
