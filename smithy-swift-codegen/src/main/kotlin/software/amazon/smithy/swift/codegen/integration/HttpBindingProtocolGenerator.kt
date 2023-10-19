@@ -417,8 +417,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 val targetShape = ctx.model.expectShape(streamingMember.target)
                 if (targetShape != null) {
                     return streamingMember.hasTrait<HttpPayloadTrait>() &&
-                            targetShape.isBlobShape &&
-                            targetShape.hasTrait<RequiresLengthTrait>()
+                        targetShape.isBlobShape &&
+                        targetShape.hasTrait<RequiresLengthTrait>()
                 }
             }
         }
