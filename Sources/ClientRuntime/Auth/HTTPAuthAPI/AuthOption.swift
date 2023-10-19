@@ -7,8 +7,8 @@
 
 public struct AuthOption {
     let schemeID: String
-    var identityProperties: Attributes
-    var signingProperties: Attributes
+    public var identityProperties: Attributes
+    public var signingProperties: Attributes
 
     public init (
         schemeID: String,

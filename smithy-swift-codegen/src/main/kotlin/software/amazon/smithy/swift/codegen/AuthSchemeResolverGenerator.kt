@@ -83,6 +83,7 @@ class AuthSchemeResolverGenerator() {
                 serviceProtocolName
             ) {
                 renderResolveAuthSchemeMethod(serviceIndex, ctx, writer)
+                write("")
                 renderConstructParametersMethod(
                     serviceIndex.getEffectiveAuthSchemes(ctx.service).contains(SigV4Trait.ID),
                     sdkId + AUTH_RESOLVER_PARAMS,
@@ -187,14 +188,14 @@ class AuthSchemeResolverGenerator() {
             schemes.forEach {
                 if (it.key == SigV4Trait.ID) {
                     write("var sigV4Option = AuthOption(schemeID: \"${it.key}\")")
-                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: ${(it.value as SigV4Trait).name})")
+                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: \"${(it.value as SigV4Trait).name}\")")
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: serviceParams.region)")
 
                     val signedBodyHeader = if (sdkId == "s3" || sdkId == "glacier") ".contentSha256" else ".none"
                     // Set .unsignedBody to false
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.unsignedBody, value: false)")
                     // Set .signedBodyHeader to .contentSha256 IFF service is S3 / Glacier, set to .none otherwise.
-                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signedBodyHeader, value: $signedBodyHeader)")
+                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signedBodyHeader, value: AWSSignedBodyHeader$signedBodyHeader)")
 
                     write("validAuthOptions.append(sigV4Option)")
                 } else {
