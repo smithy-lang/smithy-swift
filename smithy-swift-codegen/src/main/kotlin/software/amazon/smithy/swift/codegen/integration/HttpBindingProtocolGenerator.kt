@@ -426,9 +426,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     // Checks for @unsignedPayload trait on an operation
-    private fun hasUnsignedBody(op: OperationShape): Boolean {
-        return op.hasTrait<UnsignedPayloadTrait>()
-    }
+    private fun hasUnsignedPayloadTrait(op: OperationShape): Boolean = op.hasTrait<UnsignedPayloadTrait>()
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
@@ -460,7 +458,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)))
             operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider))
 
-            operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, shouldRenderEncodableConformance, hasRequiresLengthTrait(ctx, operation), hasUnsignedBody(operation)))
+            operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, shouldRenderEncodableConformance, hasRequiresLengthTrait(ctx, operation), hasUnsignedPayloadTrait(operation)))
 
             operationMiddleware.appendMiddleware(operation, DeserializeMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware(ctx.model, ctx.symbolProvider))

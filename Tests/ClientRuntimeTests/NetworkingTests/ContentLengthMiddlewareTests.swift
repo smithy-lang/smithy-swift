@@ -70,16 +70,16 @@ class ContentLengthMiddlewareTests: XCTestCase {
     }
         
     private func AssertHeadersArePresent(expectedHeaders: [String: String], file: StaticString = #file, line: UInt = #line) async throws -> Void {
-        _ = try await stack.handleMiddleware(context: builtContext, input: MockInput(),
-                                              next: MockHandler(handleCallback: { (_, input) in
-                                                  for (key, value) in expectedHeaders {
-                                                      XCTAssert(input.headers.value(for: key) == value, file: file, line: line)
-                                                  }
-                                                  let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
-                                                  let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
-                                                  let output = OperationOutput<MockOutput>(httpResponse: httpResponse,
-                                                                                           output: mockOutput)
-                                                  return output
-                                              }))
+        let mockHandler = MockHandler { (_, input) in
+            for (key, value) in expectedHeaders {
+                XCTAssert(input.headers.value(for: key) == value, file: file, line: line)
+            }
+            let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
+            let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+            let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
+            return output
+        }
+
+        _ = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: mockHandler)
     }
 }
