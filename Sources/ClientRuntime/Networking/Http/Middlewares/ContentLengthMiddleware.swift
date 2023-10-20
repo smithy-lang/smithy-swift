@@ -33,7 +33,7 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
                 // only for HTTP/1.1 requests, will be removed in all HTTP/2 requests
                 input.headers.update(name: "Transfer-Encoding", value: "Chunked")
             } else {
-                let operation = context.attributes.get(key: AttributeKey<String>(name: "Operation"))
+                let operation = context.attributes.get(key: AttributeKey<String>(name: "Operation")) ?? "Error getting operation name"
                 let errorMessage = unsignedPayload ?
                     "Missing content-length for operation: \(operation)" :
                     "Missing content-length for SigV4 signing on operation: \(operation)"

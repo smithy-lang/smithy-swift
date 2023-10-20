@@ -43,10 +43,14 @@ class ContentLengthMiddlewareTests: XCTestCase {
         do {
             try await AssertHeadersArePresent(expectedHeaders: ["Content-Length": "0"])
             XCTFail("Should throw error")
-        } catch let error as StreamError where error.localizedDescription.contains("requires length") {
-            // The error matches the expected case, test passes
-        } catch {
-            XCTFail("Error is not StreamError with the expected message")
+        } catch let error as StreamError {
+            switch error {
+            case .notSupported("Missing content-length for SigV4 signing on operation: Test Operation"), .notSupported("Missing content-length for operation: Test Operation"):
+                // The error matches one of the expected cases, test passes
+                break
+            default:
+                XCTFail("Error is not StreamError.notSupported with expected message")
+            }
         }
     }
 
