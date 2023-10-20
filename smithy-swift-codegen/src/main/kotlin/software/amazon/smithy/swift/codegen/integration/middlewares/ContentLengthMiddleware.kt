@@ -25,7 +25,7 @@ class ContentLengthMiddleware(val model: Model, private val alwaysIntercept: Boo
         val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
         if (hasHttpBody || alwaysIntercept) {
             val str = "requiresLength: $requiresLength, unsignedPayload: $unsignedPayload"
-            val middlewareArgs = str.takeIf {requiresLength || unsignedPayload} ?: ""
+            val middlewareArgs = str.takeIf { requiresLength || unsignedPayload } ?: ""
 
             val interceptStatement = "$operationStackName.${middlewareStep.stringValue()}.intercept(" +
                 "position: ${position.stringValue()}, middleware: ${ClientRuntimeTypes.Middleware.ContentLengthMiddleware}($middlewareArgs))"
