@@ -2,6 +2,7 @@ $version: "1.0"
 namespace com.test
 
 use aws.protocols#awsJson1_1
+use aws.auth#unsignedPayload
 
 @awsJson1_1
 service Example {
@@ -15,7 +16,10 @@ service Example {
         GetFooStreamingOutputNoInput,
         GetFooStreamingInputNoOutput,
         AllocateWidget,
-        OperationWithDeprecatedTrait
+        OperationWithDeprecatedTrait,
+        UnsignedFooBlobStream,
+        UnsignedFooBlobStreamWithLength,
+        ExplicitBlobStreamWithLength
     ]
 }
 
@@ -89,4 +93,34 @@ operation AllocateWidget {
 structure AllocateWidgetInput {
     @idempotencyToken
     clientToken: String
+}
+
+// Stream must have a known size
+@streaming
+@requiresLength
+blob BodyStreamWithLength
+
+@http(method: "POST", uri: "/explicit/blobstreamunsigned")
+@unsignedPayload
+operation UnsignedFooBlobStream {
+    input: GetFooStreamingRequest,
+    output: GetFooStreamingResponse
+}
+
+@http(method: "POST", uri: "/explicit/blobstreamunsignedwithlength")
+@unsignedPayload
+operation UnsignedFooBlobStreamWithLength {
+    input: ExplicitBlobStreamWithLengthRequest,
+    output: GetFooStreamingResponse
+}
+
+@http(method: "POST", uri: "/explicit/blobstreamwithlength")
+operation ExplicitBlobStreamWithLength {
+    input: ExplicitBlobStreamWithLengthRequest,
+    output: GetFooStreamingResponse
+}
+
+structure ExplicitBlobStreamWithLengthRequest {
+    @httpPayload
+    payload1: BodyStreamWithLength
 }

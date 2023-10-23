@@ -398,11 +398,11 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
         jsonMapsInput.shouldContain(expectedJsonMapsInput)
 
         val jsonMapsOutput = manifest
-            .getFileString("example/models/JsonMapsOutputResponse.swift").get()
+            .getFileString("example/models/JsonMapsOutput.swift").get()
         Assertions.assertNotNull(jsonMapsOutput)
         val expectedJsonMapsOutput =
             """
-            public struct JsonMapsOutputResponse: Swift.Equatable {
+            public struct JsonMapsOutput: Swift.Equatable {
                 public var denseBooleanMap: [Swift.String:Swift.Bool]?
                 public var denseNumberMap: [Swift.String:Swift.Int]?
                 public var denseStringMap: [Swift.String:Swift.String]?
