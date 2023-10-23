@@ -97,7 +97,12 @@ jobs:
       - name: Build and Run aws-sdk-swift Protocol & Unit Tests
         run: |
           cd ../aws-sdk-swift
-          swift test
+          set -o pipefail && \
+          NSUnbufferedIO=YES xcodebuild \
+            -scheme aws-sdk-swift-Package \
+            -destination '${{ matrix.destination }}' \
+            test 2>&1 \
+            | xcpretty
 
   linux:
     runs-on: ubuntu-latest
