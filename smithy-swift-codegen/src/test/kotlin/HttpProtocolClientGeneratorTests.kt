@@ -148,6 +148,111 @@ class HttpProtocolClientGeneratorTests {
         contents.shouldContainOnlyOnce(expected)
     }
 
+    @Test
+    fun `ContentLengthMiddleware generates correctly with requiresLength false and unsignedPayload true`() {
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expected =
+            """
+            public func unsignedFooBlobStream(input: UnsignedFooBlobStreamInput) async throws -> UnsignedFooBlobStreamOutput
+                {
+                    let context = ClientRuntime.HttpContextBuilder()
+                                  .withEncoder(value: encoder)
+                                  .withDecoder(value: decoder)
+                                  .withMethod(value: .post)
+                                  .withServiceName(value: serviceName)
+                                  .withOperation(value: "unsignedFooBlobStream")
+                                  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
+                                  .withLogger(value: config.logger)
+                                  .withPartitionID(value: config.partitionID)
+                                  .build()
+                    var operation = ClientRuntime.OperationStack<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput, UnsignedFooBlobStreamOutputError>(id: "unsignedFooBlobStream")
+                    operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput, UnsignedFooBlobStreamOutputError>())
+                    operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>())
+                    operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(contentType: "application/json"))
+                    operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(xmlName: "GetFooStreamingRequest"))
+                    operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware(requiresLength: false, unsignedPayload: true))
+                    operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, UnsignedFooBlobStreamOutput, UnsignedFooBlobStreamOutputError>(options: config.retryStrategyOptions))
+                    operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<UnsignedFooBlobStreamOutput, UnsignedFooBlobStreamOutputError>())
+                    operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<UnsignedFooBlobStreamOutput, UnsignedFooBlobStreamOutputError>(clientLogMode: config.clientLogMode))
+                    let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
+                    return result
+                }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `ContentLengthMiddleware generates correctly with requiresLength true and unsignedPayload false`() {
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expected =
+            """
+            public func unsignedFooBlobStreamWithLength(input: UnsignedFooBlobStreamWithLengthInput) async throws -> UnsignedFooBlobStreamWithLengthOutput
+                {
+                    let context = ClientRuntime.HttpContextBuilder()
+                                  .withEncoder(value: encoder)
+                                  .withDecoder(value: decoder)
+                                  .withMethod(value: .post)
+                                  .withServiceName(value: serviceName)
+                                  .withOperation(value: "unsignedFooBlobStreamWithLength")
+                                  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
+                                  .withLogger(value: config.logger)
+                                  .withPartitionID(value: config.partitionID)
+                                  .build()
+                    var operation = ClientRuntime.OperationStack<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>(id: "unsignedFooBlobStreamWithLength")
+                    operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>())
+                    operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>())
+                    operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(contentType: "application/octet-stream"))
+                    operation.serializeStep.intercept(position: .after, middleware: UnsignedFooBlobStreamWithLengthInputBodyMiddleware())
+                    operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware(requiresLength: true, unsignedPayload: true))
+                    operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>(options: config.retryStrategyOptions))
+                    operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>())
+                    operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>(clientLogMode: config.clientLogMode))
+                    let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
+                    return result
+                }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `ContentLengthMiddleware generates correctly with requiresLength true and unsignedPayload true`() {
+        val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expected =
+            """
+            public func unsignedFooBlobStreamWithLength(input: UnsignedFooBlobStreamWithLengthInput) async throws -> UnsignedFooBlobStreamWithLengthOutput
+                {
+                    let context = ClientRuntime.HttpContextBuilder()
+                                  .withEncoder(value: encoder)
+                                  .withDecoder(value: decoder)
+                                  .withMethod(value: .post)
+                                  .withServiceName(value: serviceName)
+                                  .withOperation(value: "unsignedFooBlobStreamWithLength")
+                                  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
+                                  .withLogger(value: config.logger)
+                                  .withPartitionID(value: config.partitionID)
+                                  .build()
+                    var operation = ClientRuntime.OperationStack<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>(id: "unsignedFooBlobStreamWithLength")
+                    operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>())
+                    operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>())
+                    operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(contentType: "application/octet-stream"))
+                    operation.serializeStep.intercept(position: .after, middleware: UnsignedFooBlobStreamWithLengthInputBodyMiddleware())
+                    operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware(requiresLength: true, unsignedPayload: true))
+                    operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>(options: config.retryStrategyOptions))
+                    operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>())
+                    operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>(clientLogMode: config.clientLogMode))
+                    let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
+                    return result
+                }
+            """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol")
