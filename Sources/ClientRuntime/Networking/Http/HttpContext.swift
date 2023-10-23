@@ -91,6 +91,14 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.serviceName)!
     }
 
+    public func getSigningName() -> String? {
+        return attributes.get(key: AttributeKeys.signingName)
+    }
+
+    public func getSigningRegion() -> String? {
+        return attributes.get(key: AttributeKeys.signingRegion)
+    }
+
     public func isBidirectionalStreamingEnabled() -> Bool {
         return attributes.get(key: AttributeKeys.bidirectionalStreaming) ?? false
     }
@@ -232,6 +240,18 @@ public class HttpContextBuilder {
         return self
     }
 
+    @discardableResult
+    public func withSigningName(value: String) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.signingName, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withSigningRegion(value: String?) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.signingRegion, value: value)
+        return self
+    }
+
     public func build() -> HttpContext {
         return HttpContext(attributes: attributes)
     }
@@ -262,5 +282,5 @@ public enum AttributeKeys {
     public static let signingRegion = AttributeKey<String>(name: "SigningRegion")
 
     // The attribute key used to store a credentials provider configured on service client config onto middleware context.
-    public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "AWSIDResolver")
+    public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "\(IdentityKind.aws)")
 }

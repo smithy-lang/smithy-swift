@@ -195,9 +195,10 @@ class AuthSchemeResolverGenerator() {
                     // Set .unsignedBody to false
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.unsignedBody, value: false)")
                     // Set .signedBodyHeader to .contentSha256 IFF service is S3 / Glacier, set to .none otherwise.
-                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signedBodyHeader, value: AWSSignedBodyHeader$signedBodyHeader)")
+                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signedBodyHeader, value: $signedBodyHeader)")
 
                     write("validAuthOptions.append(sigV4Option)")
+                    addImport("AWSClientRuntime")
                 } else {
                     write("validAuthOptions.append(AuthOption(schemeID: \"${it.key}\"))")
                 }
@@ -221,7 +222,7 @@ class AuthSchemeResolverGenerator() {
                     write("throw ClientError.dataNotFound(\"Operation name not configured in middleware context for auth scheme resolver params construction.\")")
                 }
                 if (hasSigV4) {
-                    write("let opRegion = context.attributes.get(key: AttributeKeys.signingRegion)")
+                    write("let opRegion = context.getRegion()")
                     write("return $returnTypeName(operation: opName, region: opRegion)")
                 } else {
                     write("return $returnTypeName(operation: opName)")

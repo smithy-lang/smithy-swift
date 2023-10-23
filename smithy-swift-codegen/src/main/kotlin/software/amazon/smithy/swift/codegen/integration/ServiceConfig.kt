@@ -57,7 +57,7 @@ abstract class ServiceConfig(val writer: SwiftWriter, val clientName: String, va
 }
 
 object ServiceTypes {
-    val AuthScheme = symbol("ClientRuntime.AuthScheme")
+    val AuthSchemes = symbol("[ClientRuntime.AuthScheme]")
     val AuthSchemeResolver = symbol("ClientRuntime.AuthSchemeResolver")
     val AuthSchemeResolverParams = symbol("ClientRuntime.AuthSchemeResolverParameters")
 

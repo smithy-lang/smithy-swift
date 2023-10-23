@@ -39,4 +39,8 @@ public struct Attributes {
     public mutating func remove<T>(key: AttributeKey<T>) {
         attributes.removeValue(forKey: key.name)
     }
+
+    public func getSize() -> Int {
+        return attributes.count
+    }
 }
