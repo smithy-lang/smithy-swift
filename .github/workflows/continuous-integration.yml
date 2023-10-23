@@ -101,8 +101,8 @@ jobs:
           NSUnbufferedIO=YES xcodebuild \
             -scheme aws-sdk-swift-Package \
             -destination '${{ matrix.destination }}' \
-            test 2>&1 \
-            | xcpretty
+            test 2>&1
+            # | xcpretty
 
   linux:
     runs-on: ubuntu-latest
