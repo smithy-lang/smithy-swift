@@ -12,8 +12,10 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
 
     /// Creates a new `ContentLengthMiddleware` with the supplied parameters
     /// - Parameters:
-    ///   - requiresLength: Trait requires the length of a blob stream to be known. Defaults to `nil`.
-    ///   - unsignedPayload: Trait signifies that the length of a stream may not be known. Defaults to `nil`.
+    ///   - requiresLength: Trait requires the length of a blob stream to be known. 
+    ///     When the request body is not a streaming blob, `nil` should be passed. Defaults to `nil`.
+    ///   - unsignedPayload: Trait signifies that the length of a stream in payload does not need to be known.
+    ///     When the request body is not a streaming blob, `nil` should be passed. Defaults to `nil`.
     public init(requiresLength: Bool? = nil, unsignedPayload: Bool? = nil) {
         self.requiresLength = requiresLength
         self.unsignedPayload = unsignedPayload
