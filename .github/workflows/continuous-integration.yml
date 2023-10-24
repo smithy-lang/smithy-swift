@@ -86,10 +86,16 @@ jobs:
         run: |
           cd ../aws-sdk-swift
           ./scripts/ci_steps/log_tool_versions.sh
-      - name: Build & Run Kotlin Unit Tests
+      - name: Build & Run smithy-swift Kotlin Unit Tests
         run: ./gradlew build
-      - name: Build & Run Swift Unit Tests
-        run: swift test
+      - name: Build & Run smithy-swift Swift Unit Tests
+        run: |
+          set -o pipefail && \
+          NSUnbufferedIO=YES xcodebuild \
+            -scheme ClientRuntime \
+            -destination '${{ matrix.destination }}' \
+            test 2>&1 \
+            | xcpretty
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
         run: |
           cd ../aws-sdk-swift
