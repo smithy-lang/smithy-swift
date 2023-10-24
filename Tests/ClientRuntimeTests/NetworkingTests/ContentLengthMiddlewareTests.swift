@@ -27,7 +27,7 @@ class ContentLengthMiddlewareTests: XCTestCase {
         try await AssertHeadersArePresent(expectedHeaders: ["Transfer-Encoding": "Chunked"])
     }
 
-    func testRequiresLengthSetWithNilStreamShouldThrowError() async throws {
+    func testTransferEncodingChunkedSetWithNilTraits() async throws {
         // default constructor
         addContentLengthMiddlewareWith(requiresLength: nil, unsignedPayload: nil)
         forceEmptyStream()
@@ -61,7 +61,7 @@ class ContentLengthMiddlewareTests: XCTestCase {
         }
     }
 
-    private func addContentLengthMiddlewareWith(requiresLength: Bool, unsignedPayload: Bool) {
+    private func addContentLengthMiddlewareWith(requiresLength: Bool?, unsignedPayload: Bool?) {
         stack.finalizeStep.intercept(
             position: .before,
             middleware: ContentLengthMiddleware(requiresLength: requiresLength, unsignedPayload: unsignedPayload)
