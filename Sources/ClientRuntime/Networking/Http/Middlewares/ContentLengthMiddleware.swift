@@ -10,8 +10,10 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
 
     private var unsignedPayload: Bool?
 
-    // Blob streams will explicitly set requiresLength and unsignedPayload to true or false
-    // All other streams requiresLength and unsignedPayload will default to nil
+    /// Creates a new `ContentLengthMiddleware` with the supplied parameters
+    /// - Parameters:
+    ///   - requiresLength: Trait requires the length of a blob stream to be known. Defaults to `nil`.
+    ///   - unsignedPayload: Trait signifies that the length of a stream may not be known. Defaults to `nil`.
     public init(requiresLength: Bool? = nil, unsignedPayload: Bool? = nil) {
         self.requiresLength = requiresLength
         self.unsignedPayload = unsignedPayload
