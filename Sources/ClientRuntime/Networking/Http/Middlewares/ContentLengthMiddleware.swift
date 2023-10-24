@@ -6,10 +6,12 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
 
     private let contentLengthHeaderName = "Content-Length"
 
-    private var requiresLength: Bool? = nil
+    private var requiresLength: Bool?
 
-    private var unsignedPayload: Bool? = nil
+    private var unsignedPayload: Bool?
 
+    // Blob streams will explicitly set requiresLength and unsignedPayload to true or false
+    // All other streams requiresLength and unsignedPayload will default to nil
     public init(requiresLength: Bool? = nil, unsignedPayload: Bool? = nil) {
         self.requiresLength = requiresLength
         self.unsignedPayload = unsignedPayload
@@ -29,8 +31,11 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
         case .stream(let stream):
             if let length = stream.length {
                 input.headers.update(name: "Content-Length", value: String(length))
-            } else if (requiresLength == false && unsignedPayload == true) || (requiresLength == nil && unsignedPayload == nil) {
-                // only for HTTP/1.1 requests, will be removed in all HTTP/2 requests
+            } else if (requiresLength == false && unsignedPayload == true) ||
+                        (requiresLength == nil && unsignedPayload == nil) {
+                // Transfer-Encoding can be sent on all Event Streams where length cannot be determined
+                // or on blob Data Streams where requiresLength is true and unsignedPayload is false
+                // Only for HTTP/1.1 requests, will be removed in all HTTP/2 requests
                 input.headers.update(name: "Transfer-Encoding", value: "Chunked")
             } else {
                 let operation = context.attributes.get(key: AttributeKey<String>(name: "Operation"))
