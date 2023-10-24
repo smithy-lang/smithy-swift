@@ -6,11 +6,11 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
 
     private let contentLengthHeaderName = "Content-Length"
 
-    private var requiresLength: Bool = false
+    private var requiresLength: Bool? = nil
 
-    private var unsignedPayload: Bool = false
+    private var unsignedPayload: Bool? = nil
 
-    public init(requiresLength: Bool = false, unsignedPayload: Bool = false) {
+    public init(requiresLength: Bool? = nil, unsignedPayload: Bool? = nil) {
         self.requiresLength = requiresLength
         self.unsignedPayload = unsignedPayload
     }
@@ -29,13 +29,13 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
         case .stream(let stream):
             if let length = stream.length {
                 input.headers.update(name: "Content-Length", value: String(length))
-            } else if !requiresLength && unsignedPayload {
+            } else if (requiresLength == false && unsignedPayload == true) || (requiresLength == nil && unsignedPayload == nil) {
                 // only for HTTP/1.1 requests, will be removed in all HTTP/2 requests
                 input.headers.update(name: "Transfer-Encoding", value: "Chunked")
             } else {
                 let operation = context.attributes.get(key: AttributeKey<String>(name: "Operation"))
                              ?? "Error getting operation name"
-                let errorMessage = unsignedPayload ?
+                let errorMessage = (unsignedPayload ?? false) ?
                     "Missing content-length for operation: \(operation)" :
                     "Missing content-length for SigV4 signing on operation: \(operation)"
                 throw StreamError.notSupported(errorMessage)
