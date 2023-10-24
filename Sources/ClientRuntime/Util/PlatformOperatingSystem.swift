@@ -14,7 +14,6 @@ public enum PlatformOperatingSystem: String {
     case tvOS
     case visionOS
     case unknown
-    case visionOS
 }
 
 public var currentOS: PlatformOperatingSystem {
