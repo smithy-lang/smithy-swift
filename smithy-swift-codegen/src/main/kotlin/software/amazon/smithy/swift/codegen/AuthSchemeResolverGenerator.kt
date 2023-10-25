@@ -29,6 +29,7 @@ class AuthSchemeResolverGenerator() {
             renderDefaultResolver(serviceIndex, ctx, it)
             it.write("")
             it.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            it.addImport("AWSClientRuntime")
         }
     }
 
@@ -119,35 +120,45 @@ class AuthSchemeResolverGenerator() {
                     write("throw ClientError.authError(\"Service specific auth scheme parameters type must be passed to auth scheme resolver.\")")
                 }
 
-                // Switch block for iterating over operation name cases
-                openBlock("switch serviceParams.operation {", "}") {
-                    // Handle each operation name case
-                    val operations = ctx.service.operations
-                    operations.forEach {
-                        val opShape = ctx.model.getShape(it).get() as OperationShape
-                        if (
-                            opShape.hasTrait(AuthTrait::class.java) ||
-                            opShape.hasTrait(OptionalAuthTrait::class.java) ||
-                            opShape.hasTrait(UnsignedPayloadTrait::class.java)
-                        ) {
-                            val opName = it.name.toLowerCamelCase()
-                            val sdkId = getSdkId(ctx)
-                            val validSchemesForOp = serviceIndex.getEffectiveAuthSchemes(
-                                ctx.service,
-                                it,
-                                ServiceIndex.AuthSchemeMode.NO_AUTH_AWARE
-                            )
-                            renderOperationSwitchCase(sdkId, opShape, opName, validSchemesForOp, writer)
-                        }
-                    }
-                    // Handle default case, where operations default to auth schemes defined on service shape
-                    val validSchemesForService = serviceIndex.getEffectiveAuthSchemes(ctx.service, ServiceIndex.AuthSchemeMode.NO_AUTH_AWARE)
-                    renderDefaultSwitchCase(sdkId, validSchemesForService, writer)
-                }
-
-                // Return result
-                write("return validAuthOptions")
+                renderSwitchBlock(serviceIndex, ctx, this)
             }
+        }
+    }
+
+    private fun renderSwitchBlock(
+        serviceIndex: ServiceIndex,
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter
+    ) {
+        writer.apply {
+            // Switch block for iterating over operation name cases
+            openBlock("switch serviceParams.operation {", "}") {
+                // Handle each operation name case
+                val operations = ctx.service.operations
+                operations.forEach {
+                    val opShape = ctx.model.getShape(it).get() as OperationShape
+                    if (
+                        opShape.hasTrait(AuthTrait::class.java) ||
+                        opShape.hasTrait(OptionalAuthTrait::class.java) ||
+                        opShape.hasTrait(UnsignedPayloadTrait::class.java)
+                    ) {
+                        val opName = it.name.toLowerCamelCase()
+                        val sdkId = getSdkId(ctx)
+                        val validSchemesForOp = serviceIndex.getEffectiveAuthSchemes(
+                            ctx.service,
+                            it,
+                            ServiceIndex.AuthSchemeMode.NO_AUTH_AWARE
+                        )
+                        renderOperationSwitchCase(sdkId, opShape, opName, validSchemesForOp, writer)
+                    }
+                }
+                // Handle default case, where operations default to auth schemes defined on service shape
+                val validSchemesForService = serviceIndex.getEffectiveAuthSchemes(ctx.service, ServiceIndex.AuthSchemeMode.NO_AUTH_AWARE)
+                renderDefaultSwitchCase(getSdkId(ctx), validSchemesForService, writer)
+            }
+
+            // Return result
+            write("return validAuthOptions")
         }
     }
 
@@ -198,7 +209,6 @@ class AuthSchemeResolverGenerator() {
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.signedBodyHeader, value: $signedBodyHeader)")
 
                     write("validAuthOptions.append(sigV4Option)")
-                    addImport("AWSClientRuntime")
                 } else {
                     write("validAuthOptions.append(AuthOption(schemeID: \"${it.key}\"))")
                 }
