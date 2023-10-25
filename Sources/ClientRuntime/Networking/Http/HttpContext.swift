@@ -66,7 +66,7 @@ public class HttpContext: MiddlewareContext {
     public func getMethod() -> HttpMethodType {
         return attributes.get(key: AttributeKeys.method)!
     }
-    
+
     public func getOperation() -> String? {
         return attributes.get(key: AttributeKeys.operation)
     }
@@ -139,7 +139,7 @@ public class HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.authSchemes, value: authSchemes)
         return self
     }
-    
+
     @discardableResult
     public func withAuthSchemes(value: [AuthScheme]) -> HttpContextBuilder {
         for scheme in value {
