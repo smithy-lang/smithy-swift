@@ -123,6 +123,8 @@ class HttpProtocolClientGeneratorTests {
                               .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                               .withLogger(value: config.logger)
                               .withPartitionID(value: config.partitionID)
+                              .withAuthSchemes(value: config.serviceSpecific.authSchemes)
+                              .withAuthSchemeResolver(value: config.serviceSpecific.authSchemeResolver)
                               .build()
                 var operation = ClientRuntime.OperationStack<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>(id: "allocateWidget")
                 operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> ClientRuntime.OperationOutput<AllocateWidgetOutput> in
@@ -135,10 +137,12 @@ class HttpProtocolClientGeneratorTests {
                 }
                 operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>())
                 operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutput>())
+                operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<AllocateWidgetOutput, AllocateWidgetOutputError>())
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(contentType: "application/json"))
                 operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(xmlName: "AllocateWidgetInput"))
                 operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
                 operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, AllocateWidgetOutput, AllocateWidgetOutputError>(options: config.retryStrategyOptions))
+                operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<AllocateWidgetOutput, AllocateWidgetOutputError>())
                 operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<AllocateWidgetOutput, AllocateWidgetOutputError>())
                 operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<AllocateWidgetOutput, AllocateWidgetOutputError>(clientLogMode: config.clientLogMode))
                 let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
