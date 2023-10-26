@@ -1,5 +1,6 @@
 package software.amazon.smithy.swift.codegen
 
+import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
 import software.amazon.smithy.model.knowledge.ServiceIndex
@@ -241,7 +242,10 @@ class AuthSchemeResolverGenerator() {
         }
     }
 
-    private fun getSdkId(ctx: ProtocolGenerator.GenerationContext): String {
-        return ctx.settings.sdkId.clientName()
+    // Utility function for returning sdkId from generation context
+    fun getSdkId(ctx: ProtocolGenerator.GenerationContext): String {
+        return if (ctx.service.hasTrait(ServiceTrait::class.java))
+            ctx.service.getTrait(ServiceTrait::class.java).get().sdkId.clientName()
+        else ctx.settings.sdkId.clientName()
     }
 }
