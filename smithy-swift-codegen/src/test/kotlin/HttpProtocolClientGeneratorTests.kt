@@ -125,14 +125,7 @@ class HttpProtocolClientGeneratorTests {
                               .withPartitionID(value: config.partitionID)
                               .build()
                 var operation = ClientRuntime.OperationStack<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>(id: "allocateWidget")
-                operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> ClientRuntime.OperationOutput<AllocateWidgetOutput> in
-                    let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()
-                    var copiedInput = input
-                    if input.clientToken == nil {
-                        copiedInput.clientToken = idempotencyTokenGenerator.generateToken()
-                    }
-                    return try await next.handle(context: context, input: copiedInput)
-                }
+                operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.IdempotencyTokenMiddleware<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>(keyPath: \.clientToken))
                 operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>())
                 operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutput>())
                 operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(contentType: "application/json"))
