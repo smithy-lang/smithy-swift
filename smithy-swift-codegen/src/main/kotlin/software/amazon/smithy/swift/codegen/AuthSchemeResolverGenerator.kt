@@ -14,15 +14,12 @@ import software.amazon.smithy.swift.codegen.integration.ServiceTypes
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
-const val AUTH_SCHEME_RESOLVER = "AuthSchemeResolver"
-const val AUTH_RESOLVER_PARAMS = "AuthSchemeResolverParameters"
-
 class AuthSchemeResolverGenerator() {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val rootNamespace = ctx.settings.moduleName
         val serviceIndex = ServiceIndex(ctx.model)
 
-        ctx.delegator.useFileWriter("./$rootNamespace/$AUTH_SCHEME_RESOLVER.swift") {
+        ctx.delegator.useFileWriter("./$rootNamespace/${ClientRuntimeTypes.Core.AuthSchemeResolver}.swift") {
             renderResolverParams(serviceIndex, ctx, it)
             it.write("")
             renderResolverProtocol(ctx, it)
@@ -41,7 +38,7 @@ class AuthSchemeResolverGenerator() {
     ) {
         writer.apply {
             openBlock(
-                "public struct ${getSdkId(ctx)}$AUTH_RESOLVER_PARAMS: \$L {",
+                "public struct ${getSdkId(ctx)}${ClientRuntimeTypes.Core.AuthSchemeResolverParameters}S: \$L {",
                 "}",
                 ServiceTypes.AuthSchemeResolverParams
             ) {
@@ -59,10 +56,11 @@ class AuthSchemeResolverGenerator() {
     private fun renderResolverProtocol(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {
         writer.apply {
             openBlock(
-                "public protocol ${getSdkId(ctx)}$AUTH_SCHEME_RESOLVER: \$L {",
+                "public protocol ${getSdkId(ctx)}${ClientRuntimeTypes.Core.AuthSchemeResolver}: \$L {",
                 "}",
                 ServiceTypes.AuthSchemeResolver
             ) {
+                // This is just a parent protocol that all auth scheme resolvers of a given service must conform to.
                 write("// Intentionally empty.")
             }
         }
@@ -74,8 +72,8 @@ class AuthSchemeResolverGenerator() {
         writer: SwiftWriter
     ) {
         val sdkId = getSdkId(ctx)
-        val defaultResolverName = "Default$sdkId$AUTH_SCHEME_RESOLVER"
-        val serviceProtocolName = sdkId + AUTH_SCHEME_RESOLVER
+        val defaultResolverName = "Default$sdkId${ClientRuntimeTypes.Core.AuthSchemeResolver}"
+        val serviceProtocolName = sdkId + ClientRuntimeTypes.Core.AuthSchemeResolver
 
         writer.apply {
             writer.openBlock(
@@ -88,7 +86,7 @@ class AuthSchemeResolverGenerator() {
                 write("")
                 renderConstructParametersMethod(
                     serviceIndex.getEffectiveAuthSchemes(ctx.service).contains(SigV4Trait.ID),
-                    sdkId + AUTH_RESOLVER_PARAMS,
+                    sdkId + ClientRuntimeTypes.Core.AuthSchemeResolverParameters,
                     writer
                 )
             }
@@ -101,7 +99,7 @@ class AuthSchemeResolverGenerator() {
         writer: SwiftWriter
     ) {
         val sdkId = getSdkId(ctx)
-        val serviceParamsName = sdkId + AUTH_RESOLVER_PARAMS
+        val serviceParamsName = sdkId + ClientRuntimeTypes.Core.AuthSchemeResolverParameters
 
         writer.apply {
             openBlock(
@@ -172,7 +170,8 @@ class AuthSchemeResolverGenerator() {
                     write("var sigV4Option = AuthOption(schemeID: \"${it.key}\")")
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: ${(it.value as SigV4Trait).name})")
                     openBlock("guard let region = serviceParams.region else {", "}") {
-                        write("throw ClientError.authError(\"Missing region in auth scheme parameters for SigV4 auth scheme.\")")
+                        val errorMessage = "\"Missing region in auth scheme parameters for SigV4 auth scheme.\""
+                        write("throw ClientError.authError($errorMessage)")
                     }
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: region)")
 
@@ -201,8 +200,10 @@ class AuthSchemeResolverGenerator() {
                 if (it.key == SigV4Trait.ID) {
                     write("var sigV4Option = AuthOption(schemeID: \"${it.key}\")")
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: \"${(it.value as SigV4Trait).name}\")")
-                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: serviceParams.region)")
-
+                    openBlock("guard let region = serviceParams.region else {", "}") {
+                        val errorMessage = "\"Missing region in auth scheme parameters for SigV4 auth scheme.\""
+                        write("throw ClientError.authError($errorMessage)")
+                    }
                     val signedBodyHeader = if (sdkId == "s3" || sdkId == "glacier") ".contentSha256" else ".none"
                     // Set .unsignedBody to false
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.unsignedBody, value: false)")

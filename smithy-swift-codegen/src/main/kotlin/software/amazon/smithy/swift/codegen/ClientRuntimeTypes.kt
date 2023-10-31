@@ -110,6 +110,8 @@ object ClientRuntimeTypes {
         val DateFormatter = runtimeSymbol("DateFormatter")
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")
+        val AuthSchemeResolver = runtimeSymbol("AuthSchemeResolver")
+        val AuthSchemeResolverParameters = runtimeSymbol("AuthSchemeResolverParameters")
     }
 }
 
