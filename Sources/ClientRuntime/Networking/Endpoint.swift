@@ -63,10 +63,10 @@ extension Endpoint {
     public var url: URL? {
         var components = URLComponents()
         components.scheme = protocolType?.rawValue
-        components.host = host
+        components.host = host.isEmpty ? nil : host // If host is empty, URL is invalid
         components.percentEncodedPath = path
         components.percentEncodedQuery = queryItemString
-        return components.url
+        return (components.host == nil || components.scheme == nil) ? nil : components.url
     }
 
     var queryItemString: String? {

@@ -111,7 +111,9 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testConversionToUrlRequestFailsWithInvalidEndpoint() {
-        // TODO:: When is the endpoint invalid or endpoint.url nil?
-        _ = Endpoint(host: "", path: "", protocolType: nil)
+        // Testing with an invalid endpoint where host is empty,
+        // path is empty, and protocolType is nil.
+        let endpoint = Endpoint(host: "", path: "", protocolType: nil)
+        XCTAssertNil(endpoint.url, "An invalid endpoint should result in a nil URL.")
     }
 }
