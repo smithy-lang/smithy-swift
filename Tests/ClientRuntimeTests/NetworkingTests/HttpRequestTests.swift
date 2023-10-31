@@ -7,6 +7,12 @@ import XCTest
 import AwsCommonRuntimeKit
 import struct Foundation.URLQueryItem
 @testable import ClientRuntime
+// In Linux, Foundation.URLRequest is moved to FoundationNetworking.
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#else
+import struct Foundation.URLRequest
+#endif
 
 class HttpRequestTests: NetworkingTestUtils {
 
