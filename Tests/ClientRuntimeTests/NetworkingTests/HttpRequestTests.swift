@@ -51,6 +51,31 @@ class HttpRequestTests: NetworkingTestUtils {
         }
     }
 
+    func testSdkHttpRequestToURLRequest() async throws {
+        let headers = Headers(["testname-1": "testvalue-1", "testname-2": "testvalue-2"])
+        let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
+
+        let httpBody = HttpBody.data(expectedMockRequestData)
+        let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
+        let urlRequest = try await mockHttpRequest.toURLRequest()
+
+        XCTAssertNotNil(urlRequest)
+        guard let headersFromRequest = urlRequest.allHTTPHeaderFields else {
+            XCTFail("Headers in SdkHttpRequest were not successfully converted to headers in URLRequest.")
+            // Compiler doesn't recognize XCTFail as return / exception thrown
+            return
+        }
+        XCTAssertNotNil(headersFromRequest)
+
+        // Check URLRequest fields
+        XCTAssertTrue(headersFromRequest.contains { $0.key == "testname-1" && $0.value == "testvalue-1" })
+        XCTAssertTrue(headersFromRequest.contains { $0.key == "testname-2" && $0.value == "testvalue-2" })
+        let expectedBody = try await httpBody.readData()
+        XCTAssertTrue(urlRequest.httpBody == expectedBody)
+        XCTAssertTrue(urlRequest.url == endpoint.url)
+        XCTAssertTrue(urlRequest.httpMethod == mockHttpRequest.method.rawValue)
+    }
+
     func testCRTHeadersToSdkHeaders() throws {
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")

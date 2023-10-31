@@ -5,6 +5,7 @@
 import struct Foundation.CharacterSet
 import struct Foundation.URLQueryItem
 import struct Foundation.URLComponents
+import struct Foundation.URLRequest
 import AwsCommonRuntimeKit
 
 // we need to maintain a reference to this same request while we add headers
@@ -82,6 +83,28 @@ extension SdkHttpRequest {
         // so that CRT does not write the body for us (we will write it manually)
         httpRequest.body = nil
         return httpRequest
+    }
+
+    public func toURLRequest() async throws -> URLRequest {
+        // Set URL
+        guard let url = self.endpoint.url else {
+            throw ClientError.dataNotFound("Failed to construct URLRequest due to missing URL.")
+        }
+        var request = URLRequest(url: url)
+        // Set method type
+        request.httpMethod = self.method.rawValue
+        // Set body
+        guard let body = try await self.body.readData() else {
+            throw ClientError.serializationFailed("Failed to construct URLRequest due to HTTP body conversion failure.")
+        }
+        request.httpBody = body
+        // Set headers
+        for header in self.headers.headers {
+            for value in header.value {
+                request.addValue(value, forHTTPHeaderField: header.name)
+            }
+        }
+        return request
     }
 }
 
