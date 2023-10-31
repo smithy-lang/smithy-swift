@@ -71,15 +71,14 @@ class HttpRequestTests: NetworkingTestUtils {
             // Compiler doesn't recognize XCTFail as return / exception thrown
             return
         }
-        XCTAssertNotNil(headersFromRequest)
 
         // Check URLRequest fields
         XCTAssertTrue(headersFromRequest.contains { $0.key == "Testname-1" && $0.value == "testvalue-1" })
         XCTAssertTrue(headersFromRequest.contains { $0.key == "Testname-2" && $0.value == "testvalue-2" })
         let expectedBody = try await httpBody.readData()
-        XCTAssertTrue(urlRequest.httpBody == expectedBody)
-        XCTAssertTrue(urlRequest.url == endpoint.url)
-        XCTAssertTrue(urlRequest.httpMethod == mockHttpRequest.method.rawValue)
+        XCTAssertEqual(urlRequest.httpBody, expectedBody)
+        XCTAssertEqual(urlRequest.url, endpoint.url)
+        XCTAssertEqual(urlRequest.httpMethod, mockHttpRequest.method.rawValue)
     }
 
     func testCRTHeadersToSdkHeaders() throws {
