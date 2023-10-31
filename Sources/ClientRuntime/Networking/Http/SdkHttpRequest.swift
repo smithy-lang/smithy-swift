@@ -5,11 +5,12 @@
 import struct Foundation.CharacterSet
 import struct Foundation.URLQueryItem
 import struct Foundation.URLComponents
-import struct Foundation.URLRequest
 import AwsCommonRuntimeKit
 // In Linux, Foundation.URLRequest is moved to FoundationNetworking.
 #if canImport(FoundationNetworking)
 import FoundationNetworking
+#else
+import struct Foundation.URLRequest
 #endif
 
 // we need to maintain a reference to this same request while we add headers
