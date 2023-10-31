@@ -98,14 +98,15 @@ extension SdkHttpRequest {
         var request = URLRequest(url: url)
         // Set method type
         request.httpMethod = self.method.rawValue
-        // Set body
-        guard let body = try await self.body.readData() else {
+        // Set body, handling any serialization errors
+        do {
+            request.httpBody = try await self.body.readData()
+        } catch {
             throw ClientError.serializationFailed("Failed to construct URLRequest due to HTTP body conversion failure.")
         }
-        request.httpBody = body
         // Set headers
-        for header in self.headers.headers {
-            for value in header.value {
+        self.headers.headers.forEach { header in
+            header.value.forEach { value in
                 request.addValue(value, forHTTPHeaderField: header.name)
             }
         }
