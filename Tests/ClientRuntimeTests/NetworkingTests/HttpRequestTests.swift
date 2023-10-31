@@ -58,7 +58,7 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testSdkHttpRequestToURLRequest() async throws {
-        let headers = Headers(["testname-1": "testvalue-1", "testname-2": "testvalue-2"])
+        let headers = Headers(["Testname-1": "testvalue-1", "Testname-2": "testvalue-2"])
         let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
 
         let httpBody = HttpBody.data(expectedMockRequestData)
@@ -74,8 +74,8 @@ class HttpRequestTests: NetworkingTestUtils {
         XCTAssertNotNil(headersFromRequest)
 
         // Check URLRequest fields
-        XCTAssertTrue(headersFromRequest.contains { $0.key == "testname-1" && $0.value == "testvalue-1" })
-        XCTAssertTrue(headersFromRequest.contains { $0.key == "testname-2" && $0.value == "testvalue-2" })
+        XCTAssertTrue(headersFromRequest.contains { $0.key == "Testname-1" && $0.value == "testvalue-1" })
+        XCTAssertTrue(headersFromRequest.contains { $0.key == "Testname-2" && $0.value == "testvalue-2" })
         let expectedBody = try await httpBody.readData()
         XCTAssertTrue(urlRequest.httpBody == expectedBody)
         XCTAssertTrue(urlRequest.url == endpoint.url)
