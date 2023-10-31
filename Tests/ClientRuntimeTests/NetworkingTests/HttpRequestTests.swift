@@ -63,7 +63,7 @@ class HttpRequestTests: NetworkingTestUtils {
 
         let httpBody = HttpBody.data(expectedMockRequestData)
         let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
-        let urlRequest = try await mockHttpRequest.toURLRequest()
+        let urlRequest = try await URLRequest(sdkRequest: mockHttpRequest)
 
         XCTAssertNotNil(urlRequest)
         guard let headersFromRequest = urlRequest.allHTTPHeaderFields else {

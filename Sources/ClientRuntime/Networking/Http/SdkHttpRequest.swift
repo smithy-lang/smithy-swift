@@ -89,28 +89,29 @@ extension SdkHttpRequest {
         httpRequest.body = nil
         return httpRequest
     }
+}
 
-    public func toURLRequest() async throws -> URLRequest {
+public extension URLRequest {
+    init(sdkRequest: SdkHttpRequest) async throws {
         // Set URL
-        guard let url = self.endpoint.url else {
+        guard let url = sdkRequest.endpoint.url else {
             throw ClientError.dataNotFound("Failed to construct URLRequest due to missing URL.")
         }
-        var request = URLRequest(url: url)
+        self.init(url: url)
         // Set method type
-        request.httpMethod = self.method.rawValue
+        self.httpMethod = sdkRequest.method.rawValue
         // Set body, handling any serialization errors
         do {
-            request.httpBody = try await self.body.readData()
+            self.httpBody = try await sdkRequest.body.readData()
         } catch {
             throw ClientError.serializationFailed("Failed to construct URLRequest due to HTTP body conversion failure.")
         }
         // Set headers
-        self.headers.headers.forEach { header in
+        sdkRequest.headers.headers.forEach { header in
             header.value.forEach { value in
-                request.addValue(value, forHTTPHeaderField: header.name)
+                self.addValue(value, forHTTPHeaderField: header.name)
             }
         }
-        return request
     }
 }
 
