@@ -12,11 +12,28 @@ import Darwin
 
 public class CRTClientEngine: HttpClientEngine {
     actor SerialExecutor {
+
+        struct ConnectionID: Equatable, Hashable {
+            let endpoint: Endpoint
+
+            static func ==(lhs: ConnectionID, rhs: ConnectionID) -> Bool {
+                lhs.endpoint.port == rhs.endpoint.port &&
+                lhs.endpoint.host == rhs.endpoint.host &&
+                lhs.endpoint.protocolType == rhs.endpoint.protocolType
+            }
+
+            func hash(into hasher: inout Hasher) {
+                hasher.combine(endpoint.port)
+                hasher.combine(endpoint.host)
+                hasher.combine(endpoint.protocolType)
+            }
+        }
+
         private var logger: LogAgent
 
         private let windowSize: Int
         private let maxConnectionsPerEndpoint: Int
-        private var connectionPools: [Endpoint: HTTPClientConnectionManager] = [:]
+        private var connectionPools: [ConnectionID: HTTPClientConnectionManager] = [:]
         private var http2ConnectionPools: [Endpoint: HTTP2StreamManager] = [:]
         private let sharedDefaultIO = SDKDefaultIO.shared
         private let connectTimeoutMs: UInt32?
@@ -29,9 +46,10 @@ public class CRTClientEngine: HttpClientEngine {
         }
 
         func getOrCreateConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
-            guard let connectionPool = connectionPools[endpoint] else {
+            let connectionID = ConnectionID(endpoint: endpoint)
+            guard let connectionPool = connectionPools[connectionID] else {
                 let newConnectionPool = try createConnectionPool(endpoint: endpoint)
-                connectionPools[endpoint] = newConnectionPool // save in dictionary
+                connectionPools[connectionID] = newConnectionPool // save in dictionary
                 return newConnectionPool
             }
 
