@@ -139,8 +139,8 @@ class AuthSchemeResolverGenerator() {
                 operations.filter { op ->
                     val opShape = ctx.model.getShape(op).get() as OperationShape
                     opShape.hasTrait(AuthTrait::class.java) ||
-                            opShape.hasTrait(OptionalAuthTrait::class.java) ||
-                            opShape.hasTrait(UnsignedPayloadTrait::class.java)
+                        opShape.hasTrait(OptionalAuthTrait::class.java) ||
+                        opShape.hasTrait(UnsignedPayloadTrait::class.java)
                 }.forEach { op ->
                     val opName = op.name.toLowerCamelCase()
                     val sdkId = getSdkId(ctx)
