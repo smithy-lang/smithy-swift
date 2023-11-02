@@ -38,7 +38,7 @@ class AuthSchemeResolverGenerator() {
     ) {
         writer.apply {
             openBlock(
-                "public struct ${getSdkId(ctx)}${ClientRuntimeTypes.Core.AuthSchemeResolverParameters.name}S: \$L {",
+                "public struct ${getSdkId(ctx)}${ClientRuntimeTypes.Core.AuthSchemeResolverParameters.name}: \$L {",
                 "}",
                 ServiceTypes.AuthSchemeResolverParams
             ) {
