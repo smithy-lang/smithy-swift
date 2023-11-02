@@ -172,7 +172,7 @@ class AuthSchemeResolverGenerator() {
             schemes.forEach {
                 if (it.key == SigV4Trait.ID) {
                     write("var sigV4Option = AuthOption(schemeID: \"${it.key}\")")
-                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: ${(it.value as SigV4Trait).name})")
+                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: \"${(it.value as SigV4Trait).name}\")")
                     openBlock("guard let region = serviceParams.region else {", "}") {
                         val errorMessage = "\"Missing region in auth scheme parameters for SigV4 auth scheme.\""
                         write("throw ClientError.authError($errorMessage)")

@@ -58,7 +58,7 @@ class AuthSchemeResolverGeneratorTests {
                                 validAuthOptions.append(AuthOption(schemeID: "smithy.api#httpApiKeyAuth"))
                             case "onlySigv4Auth":
                                 var sigV4Option = AuthOption(schemeID: "aws.auth#sigv4")
-                                sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: weather)
+                                sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: "weather")
                                 guard let region = serviceParams.region else {
                                     throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                                 }
@@ -68,7 +68,7 @@ class AuthSchemeResolverGeneratorTests {
                                 validAuthOptions.append(sigV4Option)
                             case "onlySigv4AuthOptional":
                                 var sigV4Option = AuthOption(schemeID: "aws.auth#sigv4")
-                                sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: weather)
+                                sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: "weather")
                                 guard let region = serviceParams.region else {
                                     throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                                 }
