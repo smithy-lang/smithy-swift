@@ -62,6 +62,8 @@ class AuthSchemeResolverGenerator() {
             ) {
                 // This is just a parent protocol that all auth scheme resolvers of a given service must conform to.
                 write("// Intentionally empty.")
+                write("// This is the parent protocol that all auth scheme resolver implementations of")
+                write("// the service ${getSdkId(ctx)} must conform to.")
             }
         }
     }
