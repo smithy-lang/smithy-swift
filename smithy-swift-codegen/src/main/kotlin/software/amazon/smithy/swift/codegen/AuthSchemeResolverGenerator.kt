@@ -19,7 +19,7 @@ class AuthSchemeResolverGenerator() {
         val rootNamespace = ctx.settings.moduleName
         val serviceIndex = ServiceIndex(ctx.model)
 
-        ctx.delegator.useFileWriter("./$rootNamespace/${ClientRuntimeTypes.Core.AuthSchemeResolver}.swift") {
+        ctx.delegator.useFileWriter("./$rootNamespace/${ClientRuntimeTypes.Core.AuthSchemeResolver.name}.swift") {
             renderResolverParams(serviceIndex, ctx, it)
             it.write("")
             renderResolverProtocol(ctx, it)
@@ -38,7 +38,7 @@ class AuthSchemeResolverGenerator() {
     ) {
         writer.apply {
             openBlock(
-                "public struct ${getSdkId(ctx)}${ClientRuntimeTypes.Core.AuthSchemeResolverParameters}S: \$L {",
+                "public struct ${getSdkId(ctx)}${ClientRuntimeTypes.Core.AuthSchemeResolverParameters.name}S: \$L {",
                 "}",
                 ServiceTypes.AuthSchemeResolverParams
             ) {
@@ -56,7 +56,7 @@ class AuthSchemeResolverGenerator() {
     private fun renderResolverProtocol(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {
         writer.apply {
             openBlock(
-                "public protocol ${getSdkId(ctx)}${ClientRuntimeTypes.Core.AuthSchemeResolver}: \$L {",
+                "public protocol ${getSdkId(ctx)}${ClientRuntimeTypes.Core.AuthSchemeResolver.name}: \$L {",
                 "}",
                 ServiceTypes.AuthSchemeResolver
             ) {
@@ -72,8 +72,8 @@ class AuthSchemeResolverGenerator() {
         writer: SwiftWriter
     ) {
         val sdkId = getSdkId(ctx)
-        val defaultResolverName = "Default$sdkId${ClientRuntimeTypes.Core.AuthSchemeResolver}"
-        val serviceProtocolName = sdkId + ClientRuntimeTypes.Core.AuthSchemeResolver
+        val defaultResolverName = "Default$sdkId${ClientRuntimeTypes.Core.AuthSchemeResolver.name}"
+        val serviceProtocolName = sdkId + ClientRuntimeTypes.Core.AuthSchemeResolver.name
 
         writer.apply {
             writer.openBlock(
@@ -86,7 +86,7 @@ class AuthSchemeResolverGenerator() {
                 write("")
                 renderConstructParametersMethod(
                     serviceIndex.getEffectiveAuthSchemes(ctx.service).contains(SigV4Trait.ID),
-                    sdkId + ClientRuntimeTypes.Core.AuthSchemeResolverParameters,
+                    sdkId + ClientRuntimeTypes.Core.AuthSchemeResolverParameters.name,
                     writer
                 )
             }
@@ -99,7 +99,7 @@ class AuthSchemeResolverGenerator() {
         writer: SwiftWriter
     ) {
         val sdkId = getSdkId(ctx)
-        val serviceParamsName = sdkId + ClientRuntimeTypes.Core.AuthSchemeResolverParameters
+        val serviceParamsName = sdkId + ClientRuntimeTypes.Core.AuthSchemeResolverParameters.name
 
         writer.apply {
             openBlock(
