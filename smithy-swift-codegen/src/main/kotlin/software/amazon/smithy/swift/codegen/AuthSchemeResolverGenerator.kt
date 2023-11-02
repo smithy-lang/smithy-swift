@@ -78,7 +78,7 @@ class AuthSchemeResolverGenerator() {
         val serviceProtocolName = sdkId + ClientRuntimeTypes.Core.AuthSchemeResolver.name
 
         writer.apply {
-            writer.openBlock(
+            openBlock(
                 "public struct \$L: \$L {",
                 "}",
                 defaultResolverName,
@@ -136,22 +136,24 @@ class AuthSchemeResolverGenerator() {
             openBlock("switch serviceParams.operation {", "}") {
                 // Handle each operation name case
                 val operations = ctx.service.operations
-                operations.forEach {
-                    val opShape = ctx.model.getShape(it).get() as OperationShape
-                    if (
-                        opShape.hasTrait(AuthTrait::class.java) ||
-                        opShape.hasTrait(OptionalAuthTrait::class.java) ||
-                        opShape.hasTrait(UnsignedPayloadTrait::class.java)
-                    ) {
-                        val opName = it.name.toLowerCamelCase()
-                        val sdkId = getSdkId(ctx)
-                        val validSchemesForOp = serviceIndex.getEffectiveAuthSchemes(
-                            ctx.service,
-                            it,
-                            ServiceIndex.AuthSchemeMode.NO_AUTH_AWARE
-                        )
-                        renderOperationSwitchCase(sdkId, opShape, opName, validSchemesForOp, writer)
-                    }
+                operations.filter { op ->
+                    val opShape = ctx.model.getShape(op).get() as OperationShape
+                    opShape.hasTrait(AuthTrait::class.java) ||
+                            opShape.hasTrait(OptionalAuthTrait::class.java) ||
+                            opShape.hasTrait(UnsignedPayloadTrait::class.java)
+                }.forEach { op ->
+                    val opName = op.name.toLowerCamelCase()
+                    val sdkId = getSdkId(ctx)
+                    val validSchemesForOp = serviceIndex.getEffectiveAuthSchemes(
+                        ctx.service, op, ServiceIndex.AuthSchemeMode.NO_AUTH_AWARE
+                    )
+                    renderOperationSwitchCase(
+                        sdkId,
+                        ctx.model.getShape(op).get() as OperationShape,
+                        opName,
+                        validSchemesForOp,
+                        writer
+                    )
                 }
                 // Handle default case, where operations default to auth schemes defined on service shape
                 val validSchemesForService = serviceIndex.getEffectiveAuthSchemes(ctx.service, ServiceIndex.AuthSchemeMode.NO_AUTH_AWARE)
