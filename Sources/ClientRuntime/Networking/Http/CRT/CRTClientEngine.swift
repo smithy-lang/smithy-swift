@@ -13,19 +13,21 @@ import Darwin
 public class CRTClientEngine: HttpClientEngine {
     actor SerialExecutor {
 
-        struct ConnectionID: Equatable, Hashable {
-            let endpoint: Endpoint
+        /// Stores the common properties of requests that should share a HTTP connection, such that requests
+        /// with equal `ConnectionID` values should be pooled together.
+        ///
+        /// Used as a dictionary key for storing CRT connection managers once they have been created.
+        /// When a new request is made, a connection manager is reused if it matches the request's scheme,
+        /// host, and port.
+        private struct ConnectionPoolID: Hashable {
+            private let protocolType: ProtocolType?
+            private let host: String
+            private let port: Int16
 
-            static func ==(lhs: ConnectionID, rhs: ConnectionID) -> Bool {
-                lhs.endpoint.port == rhs.endpoint.port &&
-                lhs.endpoint.host == rhs.endpoint.host &&
-                lhs.endpoint.protocolType == rhs.endpoint.protocolType
-            }
-
-            func hash(into hasher: inout Hasher) {
-                hasher.combine(endpoint.port)
-                hasher.combine(endpoint.host)
-                hasher.combine(endpoint.protocolType)
+            init(endpoint: Endpoint) {
+                self.protocolType = endpoint.protocolType
+                self.host = endpoint.host
+                self.port = endpoint.port
             }
         }
 
@@ -33,8 +35,8 @@ public class CRTClientEngine: HttpClientEngine {
 
         private let windowSize: Int
         private let maxConnectionsPerEndpoint: Int
-        private var connectionPools: [ConnectionID: HTTPClientConnectionManager] = [:]
-        private var http2ConnectionPools: [Endpoint: HTTP2StreamManager] = [:]
+        private var connectionPools: [ConnectionPoolID: HTTPClientConnectionManager] = [:]
+        private var http2ConnectionPools: [ConnectionPoolID: HTTP2StreamManager] = [:]
         private let sharedDefaultIO = SDKDefaultIO.shared
         private let connectTimeoutMs: UInt32?
 
@@ -46,23 +48,22 @@ public class CRTClientEngine: HttpClientEngine {
         }
 
         func getOrCreateConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
-            let connectionID = ConnectionID(endpoint: endpoint)
-            guard let connectionPool = connectionPools[connectionID] else {
+            let poolID = ConnectionPoolID(endpoint: endpoint)
+            guard let connectionPool = connectionPools[poolID] else {
                 let newConnectionPool = try createConnectionPool(endpoint: endpoint)
-                connectionPools[connectionID] = newConnectionPool // save in dictionary
+                connectionPools[poolID] = newConnectionPool // save in dictionary
                 return newConnectionPool
             }
-
             return connectionPool
         }
 
         func getOrCreateHTTP2ConnectionPool(endpoint: Endpoint) throws -> HTTP2StreamManager {
-            guard let connectionPool = http2ConnectionPools[endpoint] else {
+            let poolID = ConnectionPoolID(endpoint: endpoint)
+            guard let connectionPool = http2ConnectionPools[poolID] else {
                 let newConnectionPool = try createHTTP2ConnectionPool(endpoint: endpoint)
-                http2ConnectionPools[endpoint] = newConnectionPool // save in dictionary
+                http2ConnectionPools[poolID] = newConnectionPool // save in dictionary
                 return newConnectionPool
             }
-
             return connectionPool
         }
 
