@@ -7,6 +7,12 @@ import XCTest
 import AwsCommonRuntimeKit
 import struct Foundation.URLQueryItem
 @testable import ClientRuntime
+// In Linux, Foundation.URLRequest is moved to FoundationNetworking.
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#else
+import struct Foundation.URLRequest
+#endif
 
 class HttpRequestTests: NetworkingTestUtils {
 
@@ -49,6 +55,30 @@ class HttpRequestTests: NetworkingTestUtils {
         if let bodyLength = try httpRequest.body?.length() {
             XCTAssertEqual(Int(bodyLength), expectedMockRequestData.count)
         }
+    }
+
+    func testSdkHttpRequestToURLRequest() async throws {
+        let headers = Headers(["Testname-1": "testvalue-1", "Testname-2": "testvalue-2"])
+        let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
+
+        let httpBody = HttpBody.data(expectedMockRequestData)
+        let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
+        let urlRequest = try await URLRequest(sdkRequest: mockHttpRequest)
+
+        XCTAssertNotNil(urlRequest)
+        guard let headersFromRequest = urlRequest.allHTTPHeaderFields else {
+            XCTFail("Headers in SdkHttpRequest were not successfully converted to headers in URLRequest.")
+            // Compiler doesn't recognize XCTFail as return / exception thrown
+            return
+        }
+
+        // Check URLRequest fields
+        XCTAssertTrue(headersFromRequest.contains { $0.key == "Testname-1" && $0.value == "testvalue-1" })
+        XCTAssertTrue(headersFromRequest.contains { $0.key == "Testname-2" && $0.value == "testvalue-2" })
+        let expectedBody = try await httpBody.readData()
+        XCTAssertEqual(urlRequest.httpBody, expectedBody)
+        XCTAssertEqual(urlRequest.url, endpoint.url)
+        XCTAssertEqual(urlRequest.httpMethod, mockHttpRequest.method.rawValue)
     }
 
     func testCRTHeadersToSdkHeaders() throws {
