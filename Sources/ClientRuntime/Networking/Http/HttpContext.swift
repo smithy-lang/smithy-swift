@@ -83,6 +83,10 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.path)!
     }
 
+    public func getRegion() -> String? {
+        return attributes.get(key: AttributeKeys.region)
+    }
+
     public func getSelectedAuthScheme() -> SelectedAuthScheme? {
         return attributes.get(key: AttributeKeys.selectedAuthScheme)
     }
@@ -223,6 +227,12 @@ public class HttpContextBuilder {
     }
 
     @discardableResult
+    public func withRegion(value: String?) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.region, value: value)
+        return self
+    }
+
+    @discardableResult
     public func withResponse(value: HttpResponse) -> HttpContextBuilder {
         self.response = value
         return self
@@ -276,6 +286,7 @@ public enum AttributeKeys {
     public static let operation = AttributeKey<String>(name: "Operation")
     public static let partitionId = AttributeKey<String>(name: "PartitionID")
     public static let path = AttributeKey<String>(name: "Path")
+    public static let region = AttributeKey<String>(name: "Region")
     public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
     public static let signingName = AttributeKey<String>(name: "SigningName")
