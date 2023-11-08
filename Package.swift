@@ -21,22 +21,16 @@ let package = Package(
         .target(
             name: "ClientRuntime",
             dependencies: [
+                "SmithyXML",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "XMLCoder", package: "XMLCoder")
             ]
         ),
-        .testTarget(
-            name: "ClientRuntimeTests",
-            dependencies: ["ClientRuntime", "SmithyTestUtil"]
-        ),
-        .target(
-            name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime"]
-        ),
-        .testTarget(
-            name: "SmithyTestUtilTests",
-            dependencies: ["SmithyTestUtil"]
-        )
+        .testTarget(name: "ClientRuntimeTests", dependencies: ["ClientRuntime", "SmithyTestUtil"]),
+        .target(name: "SmithyXML"),
+        .testTarget(name: "SmithyXMLTests", dependencies: ["SmithyXML"]),
+        .target(name: "SmithyTestUtil", dependencies: ["ClientRuntime"]),
+        .testTarget(name: "SmithyTestUtilTests", dependencies: ["SmithyTestUtil"]),
     ]
 )
