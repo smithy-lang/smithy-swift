@@ -63,8 +63,6 @@ class AuthSchemeResolverGeneratorTests {
                                     throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                                 }
                                 sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: region)
-                                sigV4Option.signingProperties.set(key: AttributeKeys.unsignedBody, value: false)
-                                sigV4Option.signingProperties.set(key: AttributeKeys.signedBodyHeader, value: .none)
                                 validAuthOptions.append(sigV4Option)
                             case "onlySigv4AuthOptional":
                                 var sigV4Option = AuthOption(schemeID: "aws.auth#sigv4")
@@ -73,8 +71,6 @@ class AuthSchemeResolverGeneratorTests {
                                     throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                                 }
                                 sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: region)
-                                sigV4Option.signingProperties.set(key: AttributeKeys.unsignedBody, value: false)
-                                sigV4Option.signingProperties.set(key: AttributeKeys.signedBodyHeader, value: .none)
                                 validAuthOptions.append(sigV4Option)
                                 validAuthOptions.append(AuthOption(schemeID: "smithy.api#noAuth"))
                             case "onlyCustomAuth":
@@ -88,8 +84,6 @@ class AuthSchemeResolverGeneratorTests {
                                 guard let region = serviceParams.region else {
                                     throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                                 }
-                                sigV4Option.signingProperties.set(key: AttributeKeys.unsignedBody, value: false)
-                                sigV4Option.signingProperties.set(key: AttributeKeys.signedBodyHeader, value: .none)
                                 validAuthOptions.append(sigV4Option)
                         }
                         return validAuthOptions

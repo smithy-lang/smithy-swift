@@ -27,7 +27,6 @@ class AuthSchemeResolverGenerator() {
             renderDefaultResolver(serviceIndex, ctx, it)
             it.write("")
             it.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            it.addImport("AWSClientRuntime")
         }
     }
 
@@ -178,15 +177,6 @@ class AuthSchemeResolverGenerator() {
                         write("throw ClientError.authError($errorMessage)")
                     }
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: region)")
-
-                    val unsignedBody = opShape.hasTrait(UnsignedPayloadTrait::class.java)
-                    val signedBodyHeader = if ((sdkId == "s3" || sdkId == "glacier") && !unsignedBody) ".contentSha256" else ".none"
-                    // Set .unsignedBody to true IFF operation has UnsignedPayloadTrait
-                    write("sigV4Option.signingProperties.set(key: AttributeKeys.unsignedBody, value: $unsignedBody)")
-                    // Set .signedBodyHeader to .contentSha256 IFF service is S3 / Glacier AND operation does not have UnsignedPayloadTrait.
-                    // Set to .none otherwise.
-                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signedBodyHeader, value: $signedBodyHeader)")
-
                     write("validAuthOptions.append(sigV4Option)")
                 } else {
                     write("validAuthOptions.append(AuthOption(schemeID: \"${it.key}\"))")
@@ -208,12 +198,6 @@ class AuthSchemeResolverGenerator() {
                         val errorMessage = "\"Missing region in auth scheme parameters for SigV4 auth scheme.\""
                         write("throw ClientError.authError($errorMessage)")
                     }
-                    val signedBodyHeader = if (sdkId == "s3" || sdkId == "glacier") ".contentSha256" else ".none"
-                    // Set .unsignedBody to false
-                    write("sigV4Option.signingProperties.set(key: AttributeKeys.unsignedBody, value: false)")
-                    // Set .signedBodyHeader to .contentSha256 IFF service is S3 / Glacier, set to .none otherwise.
-                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signedBodyHeader, value: $signedBodyHeader)")
-
                     write("validAuthOptions.append(sigV4Option)")
                 } else {
                     write("validAuthOptions.append(AuthOption(schemeID: \"${it.key}\"))")
