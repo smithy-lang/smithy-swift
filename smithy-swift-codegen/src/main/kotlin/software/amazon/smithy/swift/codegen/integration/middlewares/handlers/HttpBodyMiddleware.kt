@@ -130,7 +130,7 @@ class HttpBodyMiddleware(
                                 )
                                 writer.write("input.builder.withBody(.stream(encoderStream))")
                             } else {
-                                writer.write("let $dataDeclaration = try xmlEncoder.encode(\$L, withRootKey: \"\$L\")", memberName, xmlName)
+                                writer.write("let $dataDeclaration = try xmlEncoder.encode(\$L, rootElement: \"\$L\")", memberName, xmlName)
                                 renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
                             }
                         } else {

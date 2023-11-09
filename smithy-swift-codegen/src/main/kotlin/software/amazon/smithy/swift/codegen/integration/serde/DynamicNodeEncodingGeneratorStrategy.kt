@@ -20,7 +20,7 @@ class DynamicNodeEncodingGeneratorStrategy(
     fun renderIfNeeded() {
         val hasXMLAttributes = isRestXmlProtocolAndHasXmlAttributesInMembers(ctx, shape)
         if (hasXMLAttributes || xmlNamespaces.isNotEmpty()) {
-            DynamicNodeEncodingXMLGenerator(ctx, shape, xmlNamespaces).render()
+//            DynamicNodeEncodingXMLGenerator(ctx, shape, xmlNamespaces).render()
         }
     }
 }

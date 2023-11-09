@@ -26,7 +26,7 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable,
                   let encoder = context.getEncoder()
                   let data: Data
                   if let xmlName = xmlName, let xmlEncoder = encoder as? XMLEncoder {
-                      data = try xmlEncoder.encode(input.operationInput, withRootKey: xmlName)
+                      data = try xmlEncoder.encode(input.operationInput, rootElement: xmlName)
                   } else {
                       data = try encoder.encode(input.operationInput)
                   }

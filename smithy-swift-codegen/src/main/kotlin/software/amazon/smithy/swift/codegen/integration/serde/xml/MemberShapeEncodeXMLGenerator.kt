@@ -11,8 +11,9 @@ import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.model.traits.XmlAttributeTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SmithyXMLTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeConstants
@@ -22,6 +23,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNameTraitGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNamespaceTraitGenerator
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
@@ -44,7 +46,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedContainer = "${memberName.removeSurroundingBackticks()}Container"
         if (member.hasTrait(XmlFlattenedTrait::class.java)) {
             writer.openBlock("if $memberName.isEmpty {", "} else {") {
-                writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key)
+                writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
                 writer.write("try $nestedContainer.encodeNil()")
             }
             writer.indent()
@@ -52,7 +54,7 @@ abstract class MemberShapeEncodeXMLGenerator(
             writer.dedent()
             writer.write("}")
         } else {
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
             XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
             renderListMemberItems(memberName, memberTarget, nestedContainer)
         }
@@ -76,13 +78,13 @@ abstract class MemberShapeEncodeXMLGenerator(
                 }
                 is MapShape -> {
                     val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container$level"
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
                     writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
                         renderWrappedMapMemberItem(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level)
                     }
                 }
                 is TimestampShape -> {
-                    val codingKey = writer.format("\$L(\"\$L\")", ClientRuntimeTypes.Serde.Key, nestedMemberResolvedName)
+                    val codingKey = writer.format("\$L(\"\$L\")", SmithyXMLTypes.XMLCodingKey, nestedMemberResolvedName)
                     TimestampEncodeGenerator(
                         containerName,
                         nestedMemberTargetName,
@@ -93,7 +95,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 else -> {
                     val nestedMemberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(nestedMember)
                     val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container$level"
-                    renderItem(writer, nestedMemberNamespaceTraitGenerator, nestedContainerName, containerName, nestedMemberTargetName, nestedMemberTarget, nestedMemberResolvedName)
+                    renderItem(writer, nestedMemberNamespaceTraitGenerator, nestedContainerName, containerName, nestedMemberTargetName, nestedMemberTarget, nestedMemberResolvedName, false)
                 }
             }
         }
@@ -101,7 +103,7 @@ abstract class MemberShapeEncodeXMLGenerator(
 
     private fun renderNestedListEntryMember(nestedMemberTargetName: String, nestedMemberTarget: CollectionShape, nestedMember: MemberShape, nestedMemberResolvedName: String, containerName: String, level: Int) {
         var nestedContainerName = "${nestedMemberTargetName.removeSurroundingBackticks()}Container$level"
-        writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+        writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
         XMLNamespaceTraitGenerator.construct(nestedMember)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
         renderListMemberItems(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level + 1)
     }
@@ -133,13 +135,13 @@ abstract class MemberShapeEncodeXMLGenerator(
                     }
                 }
                 is MapShape -> {
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedMemberName}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
                     writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
                         renderWrappedMapMemberItem(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level)
                     }
                 }
                 is TimestampShape -> {
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
                     XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
                     val codingKey = "Key(\"\")"
                     TimestampEncodeGenerator(
@@ -150,9 +152,9 @@ abstract class MemberShapeEncodeXMLGenerator(
                     ).generate(writer)
                 }
                 else -> {
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
                     XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
-                    writer.write("try $nestedContainerName.encode($nestedMemberTargetName, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
+                    writer.write("try $nestedContainerName.encode($nestedMemberTargetName, forKey: \$N(\"\"))", SmithyXMLTypes.XMLCodingKey)
                 }
             }
         }
@@ -161,7 +163,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         var nestedContainerName = "${nestedMemberTargetName.removeSurroundingBackticks()}Container$level"
         val defaultMemberName = if (level == 0) memberName else "member"
         val memberResolvedName = XMLNameTraitGenerator.construct(member, defaultMemberName)
-        writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${memberResolvedName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+        writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${memberResolvedName}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
         XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
         renderFlattenedListMemberItems(nestedMemberTargetName, nestedMember, nestedMemberTarget, nestedContainerName, level + 1)
     }
@@ -173,14 +175,14 @@ abstract class MemberShapeEncodeXMLGenerator(
 
         if (member.hasTrait(XmlFlattenedTrait::class.java)) {
             writer.openBlock("if $memberName.isEmpty {", "} else {") {
-                writer.write("let _ =  $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+                writer.write("let _ =  $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
             }
             writer.indent()
             renderFlattenedMapMemberItem(memberName, member, memberTarget, containerName)
             writer.dedent().write("}")
         } else {
             val nestedContainer = "${resolvedMemberName}Container"
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
             XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
             renderWrappedMapMemberItem(memberName, memberTarget, nestedContainer)
         }
@@ -198,7 +200,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
         val entryContainerName = "entryContainer$level"
         writer.openBlock("for (${nestedKeyValueName.first}, ${nestedKeyValueName.second}) in $memberName {", "}") {
-            writer.write("var $entryContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"entry\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+            writer.write("var $entryContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"entry\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
             renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level)
             when (valueTargetShape) {
                 is MapShape -> {
@@ -213,7 +215,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 }
                 is TimestampShape -> {
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level) { valueContainer ->
-                        val codingKey = "${ClientRuntimeTypes.Serde.Key}(\"\")"
+                        val codingKey = "${SmithyXMLTypes.XMLCodingKey}(\"\")"
                         TimestampEncodeGenerator(
                             valueContainer,
                             nestedKeyValueName.second,
@@ -243,7 +245,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
         val nestedContainer = "nestedContainer$level"
         writer.openBlock("for (${nestedKeyValueName.first}, ${nestedKeyValueName.second}) in $memberName {", "}") {
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
             when (valueTargetShape) {
                 is MapShape -> {
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
@@ -260,7 +262,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 is TimestampShape -> {
                     renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
                     renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level) { valueContainer ->
-                        val codingKey = writer.format("\$L(\"\")", ClientRuntimeTypes.Serde.Key)
+                        val codingKey = writer.format("\$L(\"\")", SmithyXMLTypes.XMLCodingKey)
                         val code = TimestampEncodeGenerator(
                             valueContainer,
                             nestedKeyValueName.second,
@@ -289,9 +291,9 @@ abstract class MemberShapeEncodeXMLGenerator(
         level: Int
     ) {
         val nestedKeyContainer = "keyContainer$level"
-        writer.write("var $nestedKeyContainer = $nestedContainer.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.first}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+        writer.write("var $nestedKeyContainer = $nestedContainer.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.first}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
         XMLNamespaceTraitGenerator.construct(mapShape.key)?.render(writer, nestedKeyContainer)?.appendKey(xmlNamespaces)
-        writer.write("try $nestedKeyContainer.encode(${nestedKeyValueName.first}, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
+        writer.write("try $nestedKeyContainer.encode(${nestedKeyValueName.first}, forKey: \$N(\"\"))", SmithyXMLTypes.XMLCodingKey)
     }
 
     private fun renderMapValue(
@@ -303,12 +305,12 @@ abstract class MemberShapeEncodeXMLGenerator(
         customValueRenderer: ((String) -> Unit)? = null
     ) {
         val valueContainerName = "valueContainer$level"
-        writer.write("var $valueContainerName = $entryContainerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.second}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+        writer.write("var $valueContainerName = $entryContainerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.second}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
         XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, valueContainerName)?.appendKey(xmlNamespaces)
         if (customValueRenderer != null) {
             customValueRenderer(valueContainerName)
         } else {
-            writer.write("try $valueContainerName.encode(${nestedKeyValueName.second}, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
+            writer.write("try $valueContainerName.encode(${nestedKeyValueName.second}, forKey: \$N(\"\"))", SmithyXMLTypes.XMLCodingKey)
         }
     }
 
@@ -322,7 +324,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         nextRenderer: (String) -> Unit
     ) {
         val nextContainer = "valueContainer${level + 1}"
-        writer.write("var $nextContainer = $entryContainerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.second}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
+        writer.write("var $nextContainer = $entryContainerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.second}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
         XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, nextContainer)?.appendKey(xmlNamespaces)
         nextRenderer(nextContainer)
     }
@@ -331,7 +333,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val originalMemberName = member.memberName
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
-        val codingKey = writer.format("\$L(\"\$L\")", ClientRuntimeTypes.Serde.Key, resolvedMemberName)
+        val codingKey = writer.format("\$L(\"\$L\")", SmithyXMLTypes.XMLCodingKey, resolvedMemberName)
         TimestampEncodeGenerator(
             containerName,
             memberName,
@@ -350,16 +352,17 @@ abstract class MemberShapeEncodeXMLGenerator(
             writer.openBlock("if let $memberName = $memberName {", "}") {
                 val namespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
                 val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container"
-                renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, memberTarget, resolvedMemberName)
+                val isAttribute = member.hasTrait<XmlAttributeTrait>()
+                renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, memberTarget, resolvedMemberName, isAttribute)
             }
         } else {
             if (MemberShapeEncodeConstants.primitiveSymbols.contains(memberTarget.type)) {
                 val defaultValue = getDefaultValueOfShapeType(memberTarget.type)
                 writer.openBlock("if $memberName != $defaultValue {", "}") {
-                    writer.write("try $containerName.encode($memberName, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key)
+                    writer.write("try $containerName.encode($memberName, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
                 }
             } else {
-                writer.write("try $containerName.encode($memberName, forKey: \$N(\"$resolvedMemberName\"))", ClientRuntimeTypes.Serde.Key)
+                writer.write("try $containerName.encode($memberName, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
             }
         }
     }
@@ -369,17 +372,18 @@ abstract class MemberShapeEncodeXMLGenerator(
         val namespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
         val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName).toString()
         val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container"
-        renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, memberTarget, resolvedMemberName)
+        renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, memberTarget, resolvedMemberName, false)
     }
 
-    private fun renderItem(writer: SwiftWriter, XMLNamespaceTraitGenerator: XMLNamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, memberTarget: Shape, resolvedMemberName: String) {
+    private fun renderItem(writer: SwiftWriter, XMLNamespaceTraitGenerator: XMLNamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, memberTarget: Shape, resolvedMemberName: String, isAttribute: Boolean) {
+        val attrOptions = ", location: .attribute".takeIf { isAttribute } ?: ""
         XMLNamespaceTraitGenerator?.let {
-            writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key, ClientRuntimeTypes.Serde.Key)
-            writer.write("try $nestedContainerName.encode($memberName, forKey: \$N(\"\"))", ClientRuntimeTypes.Serde.Key)
+            writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedMemberName}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
+            writer.write("try $nestedContainerName.encode($memberName, forKey: \$N(\"\"\$L))", SmithyXMLTypes.XMLCodingKey, attrOptions)
             it.render(writer, nestedContainerName)
             it.appendKey(xmlNamespaces)
         } ?: run {
-            writer.write("try $containerName.encode($memberName, forKey: \$N(\"${resolvedMemberName}\"))", ClientRuntimeTypes.Serde.Key)
+            writer.write("try $containerName.encode($memberName, forKey: \$N(\"${resolvedMemberName}\"\$L))", SmithyXMLTypes.XMLCodingKey, attrOptions)
         }
     }
 }

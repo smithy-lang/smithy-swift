@@ -12,6 +12,8 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SmithyXMLTypes
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -35,8 +37,9 @@ class StructEncodeXMLGenerator(
     }
 
     private fun renderEncodeBody() {
+        writer.addImport(SwiftDependency.SMITHY_XML.target)
         val containerName = "container"
-        writer.write("var $containerName = encoder.container(keyedBy: \$N.self)", ClientRuntimeTypes.Serde.Key)
+        writer.write("var $containerName = encoder.container(keyedBy: \$N.self)", SmithyXMLTypes.XMLCodingKey)
         renderTopLevelNamespace(containerName)
 
         val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }

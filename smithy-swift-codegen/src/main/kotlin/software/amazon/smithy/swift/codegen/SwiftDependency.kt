@@ -35,6 +35,14 @@ enum class SwiftDependency(
         "https://github.com/smithy-lang/smithy-swift",
         Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
         "smithy-swift"
+    ),
+    SMITHY_XML(
+        "SmithyXML",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
     );
 
     override fun getDependencies(): List<SymbolDependency> {

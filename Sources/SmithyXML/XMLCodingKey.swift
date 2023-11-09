@@ -7,7 +7,6 @@
 
 import Foundation
 
-@_spi(SmithyXML)
 public struct XMLCodingKey: CodingKey {
 
     public enum Location {
@@ -20,14 +19,14 @@ public struct XMLCodingKey: CodingKey {
     public let location: Location
 
     public init(stringValue: String) {
-        self.init(stringValue: stringValue, location: .element)
+        self.init(stringValue, location: .element)
     }
 
     public init(intValue: Int) {
         self.init(intValue: intValue, location: .element)
     }
 
-    public init(stringValue: String, location: Location) {
+    public init(_ stringValue: String, location: Location = .element) {
         self.stringValue = stringValue
         self.intValue = Int(stringValue)
         self.location = location

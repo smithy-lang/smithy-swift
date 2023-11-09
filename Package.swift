@@ -10,6 +10,7 @@ let package = Package(
     ],
     products: [
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
+        .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
