@@ -15,7 +15,7 @@ import shouldSyntacticSanityCheck
 
 class AuthSchemeResolverGeneratorTests {
     @Test
-    fun `test auth scheme resolver`() {
+    fun `test auth scheme resolver generation`() {
         val context = setupTests("auth-scheme-resolver-generator-test.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/Example/AuthSchemeResolver.swift")
         contents.shouldSyntacticSanityCheck()
@@ -84,6 +84,7 @@ class AuthSchemeResolverGeneratorTests {
                                 guard let region = serviceParams.region else {
                                     throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                                 }
+                                sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: region)
                                 validAuthOptions.append(sigV4Option)
                         }
                         return validAuthOptions
