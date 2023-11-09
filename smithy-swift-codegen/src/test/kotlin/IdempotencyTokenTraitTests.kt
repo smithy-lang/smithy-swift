@@ -25,6 +25,8 @@ class IdempotencyTokenTraitTests {
                                   .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                                   .withLogger(value: config.logger)
                                   .withPartitionID(value: config.partitionID)
+                                  .withAuthSchemes(value: config.authSchemes!)
+                                  .withAuthSchemeResolver(value: config.serviceSpecific.authSchemeResolver)
                                   .build()
                     var operation = ClientRuntime.OperationStack<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>(id: "idempotencyTokenWithStructure")
                     operation.initializeStep.intercept(position: .after, id: "IdempotencyTokenMiddleware") { (context, input, next) -> ClientRuntime.OperationOutput<IdempotencyTokenWithStructureOutput> in
@@ -37,10 +39,12 @@ class IdempotencyTokenTraitTests {
                     }
                     operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>())
                     operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>())
+                    operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>())
                     operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>(contentType: "application/xml"))
                     operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>(xmlName: "IdempotencyToken"))
                     operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
                     operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>(options: config.retryStrategyOptions))
+                    operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>())
                     operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>())
                     operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>(clientLogMode: config.clientLogMode))
                     let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())

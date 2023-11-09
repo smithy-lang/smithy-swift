@@ -32,10 +32,11 @@ public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
         // Construct auth scheme resolver parameters
         let resolverParams = try resolver.constructParameters(context: context)
         // Retrieve valid auth options for the operation at hand
-        let validAuthOptions = resolver.resolveAuthScheme(params: resolverParams)
+        let validAuthOptions = try resolver.resolveAuthScheme(params: resolverParams)
 
         // Create IdentityResolverConfiguration
-        guard let identityResolvers = context.getIdentityResolvers() else {
+        let identityResolvers = context.getIdentityResolvers()
+        guard let identityResolvers, identityResolvers.getSize() > 0 else {
             throw ClientError.authError("No identity resolver has been configured on the service.")
         }
         let identityResolverConfig = DefaultIdentityResolverConfiguration(configuredIdResolvers: identityResolvers)
@@ -94,7 +95,7 @@ public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
         // If no auth scheme could be resolved, throw an error
         guard let selectedAuthScheme else {
             throw ClientError.authError(
-                "Could not resolve auth scheme for the operation call.\nLog:\n\(log.joined(separator: "\n"))"
+                "Could not resolve auth scheme for the operation call. Log: \(log.joined(separator: ","))"
             )
         }
 

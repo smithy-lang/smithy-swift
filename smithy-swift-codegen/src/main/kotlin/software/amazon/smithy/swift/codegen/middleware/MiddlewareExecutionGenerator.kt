@@ -51,6 +51,8 @@ class MiddlewareExecutionGenerator(
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
         writer.write("  .withLogger(value: config.logger)")
         writer.write("  .withPartitionID(value: config.partitionID)")
+        writer.write("  .withAuthSchemes(value: config.authSchemes!)")
+        writer.write("  .withAuthSchemeResolver(value: config.serviceSpecific.authSchemeResolver)")
 
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)

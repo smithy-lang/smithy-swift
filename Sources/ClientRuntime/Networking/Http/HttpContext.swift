@@ -67,6 +67,10 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.method)!
     }
 
+    public func getOperation() -> String? {
+        return attributes.get(key: AttributeKeys.operation)
+    }
+
     /// The partition ID to be used for this context.
     ///
     /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
@@ -79,12 +83,24 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.path)!
     }
 
+    public func getRegion() -> String? {
+        return attributes.get(key: AttributeKeys.region)
+    }
+
     public func getSelectedAuthScheme() -> SelectedAuthScheme? {
         return attributes.get(key: AttributeKeys.selectedAuthScheme)
     }
 
     public func getServiceName() -> String {
         return attributes.get(key: AttributeKeys.serviceName)!
+    }
+
+    public func getSigningName() -> String? {
+        return attributes.get(key: AttributeKeys.signingName)
+    }
+
+    public func getSigningRegion() -> String? {
+        return attributes.get(key: AttributeKeys.signingRegion)
     }
 
     public func isBidirectionalStreamingEnabled() -> Bool {
@@ -125,6 +141,14 @@ public class HttpContextBuilder {
         var authSchemes: Attributes = self.attributes.get(key: AttributeKeys.authSchemes) ?? Attributes()
         authSchemes.set(key: AttributeKey<AuthScheme>(name: "\(value.schemeID)"), value: value)
         self.attributes.set(key: AttributeKeys.authSchemes, value: authSchemes)
+        return self
+    }
+
+    @discardableResult
+    public func withAuthSchemes(value: [AuthScheme]) -> HttpContextBuilder {
+        for scheme in value {
+            self.withAuthScheme(value: scheme)
+        }
         return self
     }
 
@@ -203,6 +227,12 @@ public class HttpContextBuilder {
     }
 
     @discardableResult
+    public func withRegion(value: String?) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.region, value: value)
+        return self
+    }
+
+    @discardableResult
     public func withResponse(value: HttpResponse) -> HttpContextBuilder {
         self.response = value
         return self
@@ -217,6 +247,18 @@ public class HttpContextBuilder {
     @discardableResult
     public func withServiceName(value: String) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.serviceName, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withSigningName(value: String) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.signingName, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withSigningRegion(value: String?) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.signingRegion, value: value)
         return self
     }
 
@@ -244,9 +286,12 @@ public enum AttributeKeys {
     public static let operation = AttributeKey<String>(name: "Operation")
     public static let partitionId = AttributeKey<String>(name: "PartitionID")
     public static let path = AttributeKey<String>(name: "Path")
+    public static let region = AttributeKey<String>(name: "Region")
     public static let selectedAuthScheme = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
+    public static let signingName = AttributeKey<String>(name: "SigningName")
+    public static let signingRegion = AttributeKey<String>(name: "SigningRegion")
 
     // The attribute key used to store a credentials provider configured on service client config onto middleware context.
-    public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "AWSIDResolver")
+    public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "\(IdentityKind.aws)")
 }

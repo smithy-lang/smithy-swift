@@ -76,6 +76,8 @@ object ClientRuntimeTypes {
         val SerializableBodyMiddleware = runtimeSymbol("SerializableBodyMiddleware")
         val RetryMiddleware = runtimeSymbol("RetryMiddleware")
         val NoopHandler = runtimeSymbol("NoopHandler")
+        val SigningMiddleware = runtimeSymbol("SignerMiddleware")
+        val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware")
 
         object Providers {
             val URLPathProvider = runtimeSymbol("URLPathProvider")
@@ -108,6 +110,8 @@ object ClientRuntimeTypes {
         val DateFormatter = runtimeSymbol("DateFormatter")
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")
+        val AuthSchemeResolver = runtimeSymbol("AuthSchemeResolver")
+        val AuthSchemeResolverParameters = runtimeSymbol("AuthSchemeResolverParameters")
     }
 }
 
