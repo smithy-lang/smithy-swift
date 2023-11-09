@@ -101,8 +101,13 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
         }
     }
 
-    fun addImport(packageName: String, isTestable: Boolean = false, internalSPIName: String? = null) {
-        imports.addImport(packageName, isTestable, internalSPIName)
+    fun addImport(
+        packageName: String,
+        isTestable: Boolean = false,
+        internalSPIName: String? = null,
+        importOnlyIfCanImport: Boolean = false
+    ) {
+        imports.addImport(packageName, isTestable, internalSPIName, importOnlyIfCanImport)
     }
 
     fun addFoundationImport() {

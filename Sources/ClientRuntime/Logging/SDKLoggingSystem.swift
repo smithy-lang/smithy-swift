@@ -15,13 +15,13 @@ public class SDKLoggingSystem {
         factories[label] = logHandlerFactory
     }
 
-    public class func initialize() {
+    public class func initialize(defaultLogLevel: SDKLogLevel = .info) {
         LoggingSystem.bootstrap { label in
             if let factory = factories[label] {
                 return factory.construct(label: label)
             }
             var handler = StreamLogHandler.standardOutput(label: label)
-            handler.logLevel = .info
+            handler.logLevel = defaultLogLevel.toLoggerType()
             return handler
         }
     }
