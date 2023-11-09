@@ -152,9 +152,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                     ).generate(writer)
                 }
                 else -> {
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-                    XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
-                    writer.write("try $nestedContainerName.encode($nestedMemberTargetName, forKey: \$N(\"\"))", SmithyXMLTypes.XMLCodingKey)
+                    writer.write("try $containerName.encode($nestedMemberTargetName, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
                 }
             }
         }
@@ -290,10 +288,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         nestedContainer: String,
         level: Int
     ) {
-        val nestedKeyContainer = "keyContainer$level"
-        writer.write("var $nestedKeyContainer = $nestedContainer.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.first}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-        XMLNamespaceTraitGenerator.construct(mapShape.key)?.render(writer, nestedKeyContainer)?.appendKey(xmlNamespaces)
-        writer.write("try $nestedKeyContainer.encode(${nestedKeyValueName.first}, forKey: \$N(\"\"))", SmithyXMLTypes.XMLCodingKey)
+        writer.write("try $nestedContainer.encode(${nestedKeyValueName.first}, forKey: \$N(\$S))", SmithyXMLTypes.XMLCodingKey, resolvedCodingKeys.first)
     }
 
     private fun renderMapValue(
@@ -304,14 +299,13 @@ abstract class MemberShapeEncodeXMLGenerator(
         level: Int,
         customValueRenderer: ((String) -> Unit)? = null
     ) {
-        val valueContainerName = "valueContainer$level"
-        writer.write("var $valueContainerName = $entryContainerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.second}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-        XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, valueContainerName)?.appendKey(xmlNamespaces)
-        if (customValueRenderer != null) {
-            customValueRenderer(valueContainerName)
-        } else {
-            writer.write("try $valueContainerName.encode(${nestedKeyValueName.second}, forKey: \$N(\"\"))", SmithyXMLTypes.XMLCodingKey)
-        }
+        writer.write(
+            "try \$L.encode(\$L, forKey: \$N(\$S))",
+            entryContainerName,
+            nestedKeyValueName.second,
+            SmithyXMLTypes.XMLCodingKey,
+            resolvedCodingKeys.second
+        )
     }
 
     private fun renderMapNestedValue(
@@ -342,7 +336,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         ).generate(writer)
     }
 
-    fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String) {
+    fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String, operation: String = "") {
         val symbol = ctx.symbolProvider.toSymbol(member)
         val originalMemberName = member.memberName
         val memberName = ctx.symbolProvider.toMemberName(member)
@@ -353,16 +347,16 @@ abstract class MemberShapeEncodeXMLGenerator(
                 val namespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
                 val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container"
                 val isAttribute = member.hasTrait<XmlAttributeTrait>()
-                renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, memberTarget, resolvedMemberName, isAttribute)
+                renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName + operation, memberTarget, resolvedMemberName, isAttribute)
             }
         } else {
             if (MemberShapeEncodeConstants.primitiveSymbols.contains(memberTarget.type)) {
                 val defaultValue = getDefaultValueOfShapeType(memberTarget.type)
                 writer.openBlock("if $memberName != $defaultValue {", "}") {
-                    writer.write("try $containerName.encode($memberName, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
+                    writer.write("try $containerName.encode(${memberName + operation}, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
                 }
             } else {
-                writer.write("try $containerName.encode($memberName, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
+                writer.write("try $containerName.encode(${memberName + operation}, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
             }
         }
     }

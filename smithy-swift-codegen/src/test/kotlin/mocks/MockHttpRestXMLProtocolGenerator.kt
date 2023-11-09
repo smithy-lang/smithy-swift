@@ -24,7 +24,6 @@ import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGen
 import software.amazon.smithy.swift.codegen.integration.codingKeys.DefaultCodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeEncodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeXMLGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.StructDecodeXMLGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
@@ -58,8 +57,6 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
     ) {
         val encoder = StructEncodeXMLGenerator(ctx, shapeContainingMembers, members, writer, defaultTimestampFormat)
         encoder.render()
-        val xmlNamespaces = encoder.xmlNamespaces
-        DynamicNodeEncodingGeneratorStrategy(ctx, shapeContainingMembers, xmlNamespaces).renderIfNeeded()
     }
     override fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,

@@ -20,6 +20,6 @@ public typealias XMLEncoder = SmithyXML.XMLEncoder
 
 extension XMLEncoder: RequestEncoder {
     public func encode<T>(_ value: T) throws -> Data where T: Encodable {
-        return try encode(value, rootElement: "root")
+        return try encode(value, rootElement: "\(T.self)")
     }
 }
