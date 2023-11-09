@@ -15,6 +15,7 @@ interface OperationMiddleware {
         writer: SwiftWriter,
         operation: OperationShape,
         operationStackName: String,
-        step: MiddlewareStep
+        step: MiddlewareStep,
+        clientName: String? = null,
     )
 }

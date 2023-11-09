@@ -14,7 +14,7 @@ class RequestTestEndpointResolverMiddleware(private val model: Model, private va
     override val name = "RequestTestEndpointResolver"
     override val middlewareStep = MiddlewareStep.BUILDSTEP
     override val position = MiddlewarePosition.AFTER
-    override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
+    override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String, clientName: String?) {
 
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
         val outputErrorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)

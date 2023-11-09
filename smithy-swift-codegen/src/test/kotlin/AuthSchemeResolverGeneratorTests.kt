@@ -34,12 +34,11 @@ class AuthSchemeResolverGeneratorTests {
                 }
 
                 public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
-                    public func resolveAuthScheme(params: ClientRuntime.AuthSchemeResolverParameters) throws -> [AuthOption] {
+                    public typealias Parameters = ExampleAuthSchemeResolverParameters
+                
+                    public func resolveAuthScheme(params: Parameters) throws -> [AuthOption] {
                         var validAuthOptions = Array<AuthOption>()
-                        guard let serviceParams = params as? ExampleAuthSchemeResolverParameters else {
-                            throw ClientError.authError("Service specific auth scheme parameters type must be passed to auth scheme resolver.")
-                        }
-                        switch serviceParams.operation {
+                        switch params.operation {
                             case "onlyHttpApiKeyAuth":
                                 validAuthOptions.append(AuthOption(schemeID: "smithy.api#httpApiKeyAuth"))
                             case "onlyHttpApiKeyAuthOptional":
@@ -59,7 +58,7 @@ class AuthSchemeResolverGeneratorTests {
                             case "onlySigv4Auth":
                                 var sigV4Option = AuthOption(schemeID: "aws.auth#sigv4")
                                 sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: "weather")
-                                guard let region = serviceParams.region else {
+                                guard let region = params.region else {
                                     throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                                 }
                                 sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: region)
@@ -67,7 +66,7 @@ class AuthSchemeResolverGeneratorTests {
                             case "onlySigv4AuthOptional":
                                 var sigV4Option = AuthOption(schemeID: "aws.auth#sigv4")
                                 sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: "weather")
-                                guard let region = serviceParams.region else {
+                                guard let region = params.region else {
                                     throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                                 }
                                 sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: region)
@@ -81,7 +80,7 @@ class AuthSchemeResolverGeneratorTests {
                             default:
                                 var sigV4Option = AuthOption(schemeID: "aws.auth#sigv4")
                                 sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: "weather")
-                                guard let region = serviceParams.region else {
+                                guard let region = params.region else {
                                     throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                                 }
                                 validAuthOptions.append(sigV4Option)
@@ -89,7 +88,7 @@ class AuthSchemeResolverGeneratorTests {
                         return validAuthOptions
                     }
 
-                    public func constructParameters(context: HttpContext) throws -> ClientRuntime.AuthSchemeResolverParameters {
+                    public func constructParameters(context: HttpContext) throws -> Parameters {
                         guard let opName = context.getOperation() else {
                             throw ClientError.dataNotFound("Operation name not configured in middleware context for auth scheme resolver params construction.")
                         }

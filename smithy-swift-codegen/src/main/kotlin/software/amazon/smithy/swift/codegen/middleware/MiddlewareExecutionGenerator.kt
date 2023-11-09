@@ -2,6 +2,7 @@ package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.swift.codegen.AuthSchemeResolverGenerator
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Middleware.OperationStack
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -51,7 +52,7 @@ class MiddlewareExecutionGenerator(
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
         writer.write("  .withLogger(value: config.logger)")
         writer.write("  .withPartitionID(value: config.partitionID)")
-        writer.write("  .withAuthSchemes(value: config.serviceSpecific.authSchemes)")
+        writer.write("  .withAuthSchemes(value: config.authSchemes!)")
         writer.write("  .withAuthSchemeResolver(value: config.serviceSpecific.authSchemeResolver)")
 
         val serviceShape = ctx.service
@@ -69,10 +70,11 @@ class MiddlewareExecutionGenerator(
     }
 
     private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
-        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.INITIALIZESTEP)
-        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.BUILDSTEP)
-        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.SERIALIZESTEP)
-        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.FINALIZESTEP)
-        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.DESERIALIZESTEP)
+        val clientName = AuthSchemeResolverGenerator.getSdkId(ctx)
+        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.INITIALIZESTEP, clientName)
+        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.BUILDSTEP, clientName)
+        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.SERIALIZESTEP, clientName)
+        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.FINALIZESTEP, clientName)
+        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.DESERIALIZESTEP, clientName)
     }
 }

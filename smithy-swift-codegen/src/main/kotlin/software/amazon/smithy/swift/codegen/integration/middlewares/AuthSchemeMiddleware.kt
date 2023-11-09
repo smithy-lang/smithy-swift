@@ -23,13 +23,15 @@ class AuthSchemeMiddleware(
     override fun render(
         writer: SwiftWriter,
         op: OperationShape,
-        operationStackName: String
+        operationStackName: String,
+        clientName: String?
     ) {
+        val resolver = clientName + "AuthSchemeResolver"
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
         writer.write(
-            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N>())",
-            ClientRuntimeTypes.Middleware.AuthSchemeMiddleware, output, outputError
+            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$L, \$N, \$N>())",
+            ClientRuntimeTypes.Middleware.AuthSchemeMiddleware, resolver, output, outputError
         )
     }
 }

@@ -26,6 +26,7 @@ class ContentTypeMiddleware(
         writer: SwiftWriter,
         op: OperationShape,
         operationStackName: String,
+        clientName: String?,
     ) {
         val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
         if (hasHttpBody || shouldRender) {

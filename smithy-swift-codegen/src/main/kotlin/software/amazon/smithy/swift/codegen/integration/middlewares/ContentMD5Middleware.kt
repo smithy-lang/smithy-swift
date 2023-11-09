@@ -24,7 +24,7 @@ class ContentMD5Middleware(
 
     override val position = MiddlewarePosition.BEFORE
 
-    override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
+    override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String, clientName: String?) {
         if (op.isChecksumRequired()) {
             val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
             writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$outputShapeName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)

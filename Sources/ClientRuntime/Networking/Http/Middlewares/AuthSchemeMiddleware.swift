@@ -7,7 +7,8 @@
 
 import Foundation
 
-public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
+public struct AuthSchemeMiddleware<AuthSchemeResolver: ClientRuntime.AuthSchemeResolver,
+                                   OperationStackOutput: HttpResponseBinding,
                                    OperationStackOutputError: HttpResponseErrorBinding>: Middleware {
     public let id: String = "AuthSchemeMiddleware"
 
@@ -25,7 +26,7 @@ public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
     Self.MInput == H.Input,
     Self.MOutput == H.Output {
         // Get auth scheme resolver from middleware context
-        guard let resolver = context.getAuthSchemeResolver() else {
+        guard let resolver = context.getAuthSchemeResolver() as? AuthSchemeResolver else {
             throw ClientError.authError("No auth scheme resolver has been configured on the service.")
         }
 

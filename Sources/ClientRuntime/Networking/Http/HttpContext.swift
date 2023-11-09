@@ -19,7 +19,7 @@ public class HttpContext: MiddlewareContext {
         return builder
     }
 
-    public func getAuthSchemeResolver() -> AuthSchemeResolver? {
+    public func getAuthSchemeResolver() -> (any AuthSchemeResolver)? {
         return attributes.get(key: AttributeKeys.authSchemeResolver)
     }
 
@@ -131,7 +131,7 @@ public class HttpContextBuilder {
     }
 
     @discardableResult
-    public func withAuthSchemeResolver(value: AuthSchemeResolver) -> HttpContextBuilder {
+    public func withAuthSchemeResolver(value: any AuthSchemeResolver) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.authSchemeResolver, value: value)
         return self
     }
@@ -268,7 +268,7 @@ public class HttpContextBuilder {
 }
 
 public enum AttributeKeys {
-    public static let authSchemeResolver = AttributeKey<AuthSchemeResolver>(name: "AuthSchemeResolver")
+    public static let authSchemeResolver = AttributeKey<any AuthSchemeResolver>(name: "AuthSchemeResolver")
     public static let authSchemes = AttributeKey<Attributes>(name: "AuthSchemes")
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
     public static let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")

@@ -50,11 +50,12 @@ open class OperationMiddlewareGenerator(val mutableHashMap: MutableMap<Operation
         operation: OperationShape,
         operationStackName: String,
         step: MiddlewareStep,
+        clientName: String?,
     ) {
         val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
         val step = resolveStep(stack, step)
         for (renderableMiddlware in step) {
-            renderableMiddlware.render(writer, operation, operationStackName)
+            renderableMiddlware.render(writer, operation, operationStackName, clientName)
         }
     }
 

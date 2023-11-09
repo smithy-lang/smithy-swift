@@ -28,6 +28,7 @@ class OperationInputBodyMiddleware(
         writer: SwiftWriter,
         op: OperationShape,
         operationStackName: String,
+        clientName: String?
     ) {
         val inputShape = MiddlewareShapeUtils.inputShape(model, op)
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name

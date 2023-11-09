@@ -24,7 +24,7 @@ class IdempotencyTokenMiddleware(
     override val name = "IdempotencyTokenMiddleware"
     override val middlewareStep = MiddlewareStep.INITIALIZESTEP
     override val position = MiddlewarePosition.AFTER
-    override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
+    override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String, clientName: String?) {
 
         val inputShape = model.expectShape(op.input.get())
         val idempotentMember = inputShape.members().firstOrNull { it.hasTrait<IdempotencyTokenTrait>() }

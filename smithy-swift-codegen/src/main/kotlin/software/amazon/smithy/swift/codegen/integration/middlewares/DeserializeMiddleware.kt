@@ -24,7 +24,8 @@ class DeserializeMiddleware(
     override fun render(
         writer: SwiftWriter,
         op: OperationShape,
-        operationStackName: String
+        operationStackName: String,
+        clientName: String?
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)

@@ -20,7 +20,8 @@ class ContentLengthMiddleware(val model: Model, private val alwaysIntercept: Boo
     override fun render(
         writer: SwiftWriter,
         op: OperationShape,
-        operationStackName: String
+        operationStackName: String,
+        clientName: String?,
     ) {
         val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
         if (hasHttpBody || alwaysIntercept) {

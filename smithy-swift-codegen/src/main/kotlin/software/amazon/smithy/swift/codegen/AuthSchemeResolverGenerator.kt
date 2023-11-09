@@ -83,6 +83,8 @@ class AuthSchemeResolverGenerator() {
                 defaultResolverName,
                 serviceProtocolName
             ) {
+                write("public typealias Parameters = ${sdkId + ClientRuntimeTypes.Core.AuthSchemeResolverParameters.name}")
+                write("")
                 renderResolveAuthSchemeMethod(serviceIndex, ctx, writer)
                 write("")
                 renderConstructParametersMethod(
@@ -103,23 +105,9 @@ class AuthSchemeResolverGenerator() {
         val serviceParamsName = sdkId + ClientRuntimeTypes.Core.AuthSchemeResolverParameters.name
 
         writer.apply {
-            openBlock(
-                "public func resolveAuthScheme(params: \$L) throws -> [AuthOption] {",
-                "}",
-                ServiceTypes.AuthSchemeResolverParams
-            ) {
+            openBlock("public func resolveAuthScheme(params: Parameters) throws -> [AuthOption] {", "}") {
                 // Return value of array of auth options
                 write("var validAuthOptions = Array<AuthOption>()")
-
-                // Cast params to service specific params object
-                openBlock(
-                    "guard let serviceParams = params as? \$L else {",
-                    "}",
-                    serviceParamsName
-                ) {
-                    write("throw ClientError.authError(\"Service specific auth scheme parameters type must be passed to auth scheme resolver.\")")
-                }
-
                 renderSwitchBlock(serviceIndex, ctx, this)
             }
         }
@@ -132,7 +120,7 @@ class AuthSchemeResolverGenerator() {
     ) {
         writer.apply {
             // Switch block for iterating over operation name cases
-            openBlock("switch serviceParams.operation {", "}") {
+            openBlock("switch params.operation {", "}") {
                 // Handle each operation name case
                 val operations = ctx.service.operations
                 operations.filter { op ->
@@ -172,7 +160,7 @@ class AuthSchemeResolverGenerator() {
                 if (it.key == SigV4Trait.ID) {
                     write("var sigV4Option = AuthOption(schemeID: \"${it.key}\")")
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: \"${(it.value as SigV4Trait).name}\")")
-                    openBlock("guard let region = serviceParams.region else {", "}") {
+                    openBlock("guard let region = params.region else {", "}") {
                         val errorMessage = "\"Missing region in auth scheme parameters for SigV4 auth scheme.\""
                         write("throw ClientError.authError($errorMessage)")
                     }
@@ -194,10 +182,11 @@ class AuthSchemeResolverGenerator() {
                 if (it.key == SigV4Trait.ID) {
                     write("var sigV4Option = AuthOption(schemeID: \"${it.key}\")")
                     write("sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: \"${(it.value as SigV4Trait).name}\")")
-                    openBlock("guard let region = serviceParams.region else {", "}") {
+                    openBlock("guard let region = params.region else {", "}") {
                         val errorMessage = "\"Missing region in auth scheme parameters for SigV4 auth scheme.\""
                         write("throw ClientError.authError($errorMessage)")
                     }
+                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: region)")
                     write("validAuthOptions.append(sigV4Option)")
                 } else {
                     write("validAuthOptions.append(AuthOption(schemeID: \"${it.key}\"))")
@@ -213,11 +202,7 @@ class AuthSchemeResolverGenerator() {
         writer: SwiftWriter
     ) {
         writer.apply {
-            openBlock(
-                "public func constructParameters(context: HttpContext) throws -> \$L {",
-                "}",
-                ServiceTypes.AuthSchemeResolverParams
-            ) {
+            openBlock("public func constructParameters(context: HttpContext) throws -> Parameters {", "}") {
                 openBlock("guard let opName = context.getOperation() else {", "}") {
                     write("throw ClientError.dataNotFound(\"Operation name not configured in middleware context for auth scheme resolver params construction.\")")
                 }
@@ -231,10 +216,12 @@ class AuthSchemeResolverGenerator() {
         }
     }
 
-    // Utility function for returning sdkId from generation context
-    fun getSdkId(ctx: ProtocolGenerator.GenerationContext): String {
-        return if (ctx.service.hasTrait(ServiceTrait::class.java))
-            ctx.service.getTrait(ServiceTrait::class.java).get().sdkId.clientName()
-        else ctx.settings.sdkId.clientName()
+    companion object {
+        // Utility function for returning sdkId from generation context
+        fun getSdkId(ctx: ProtocolGenerator.GenerationContext): String {
+            return if (ctx.service.hasTrait(ServiceTrait::class.java))
+                ctx.service.getTrait(ServiceTrait::class.java).get().sdkId.clientName()
+            else ctx.settings.sdkId.clientName()
+        }
     }
 }

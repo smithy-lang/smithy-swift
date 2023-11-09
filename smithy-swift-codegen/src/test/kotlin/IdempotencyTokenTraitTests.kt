@@ -25,7 +25,7 @@ class IdempotencyTokenTraitTests {
                                   .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                                   .withLogger(value: config.logger)
                                   .withPartitionID(value: config.partitionID)
-                                  .withAuthSchemes(value: config.serviceSpecific.authSchemes)
+                                  .withAuthSchemes(value: config.authSchemes!)
                                   .withAuthSchemeResolver(value: config.serviceSpecific.authSchemeResolver)
                                   .build()
                     var operation = ClientRuntime.OperationStack<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>(id: "idempotencyTokenWithStructure")
@@ -39,7 +39,7 @@ class IdempotencyTokenTraitTests {
                     }
                     operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>())
                     operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>())
-                    operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>())
+                    operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<RestXmlProtocolAuthSchemeResolver, IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>())
                     operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>(contentType: "application/xml"))
                     operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>(xmlName: "IdempotencyToken"))
                     operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())

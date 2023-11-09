@@ -25,6 +25,7 @@ class OperationInputHeadersMiddleware(
         writer: SwiftWriter,
         op: OperationShape,
         operationStackName: String,
+        clientName: String?
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name

@@ -28,7 +28,7 @@ class RetryMiddleware(
 
     override val position = MiddlewarePosition.AFTER
 
-    override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
+    override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String, clientName: String?) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
         writer.write(

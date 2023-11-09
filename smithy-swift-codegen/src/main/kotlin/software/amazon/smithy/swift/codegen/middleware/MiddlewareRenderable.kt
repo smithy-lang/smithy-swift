@@ -20,5 +20,5 @@ interface MiddlewareRenderable {
 
     val position: MiddlewarePosition
 
-    fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String)
+    fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String, clientName: String? = null)
 }
