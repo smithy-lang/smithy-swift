@@ -24,25 +24,26 @@ class IdempotencyTokenMiddleware(
     override val name = "IdempotencyTokenMiddleware"
     override val middlewareStep = MiddlewareStep.INITIALIZESTEP
     override val position = MiddlewarePosition.AFTER
-    override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
 
+    override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
         val inputShape = model.expectShape(op.input.get())
         val idempotentMember = inputShape.members().firstOrNull { it.hasTrait<IdempotencyTokenTrait>() }
         idempotentMember?.let {
             val idempotentMemberName = it.memberName.decapitalize()
+            val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
             val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
             val outputErrorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
-            writer.openBlock(
-                "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, id: \"${name}\") { (context, input, next) -> \$N<$outputShapeName> in", "}",
-                ClientRuntimeTypes.Middleware.OperationOutput
-            ) {
-                writer.write("let idempotencyTokenGenerator = context.getIdempotencyTokenGenerator()")
-                writer.write("var copiedInput = input")
-                writer.openBlock("if input.$idempotentMemberName == nil {", "}") {
-                    writer.write("copiedInput.$idempotentMemberName = idempotencyTokenGenerator.generateToken()")
-                }
-                writer.write("return try await next.handle(context: context, input: copiedInput)")
-            }
+            writer.write(
+                "\$L.\$L.intercept(position: \$L, middleware: \$N<\$L, \$L, \$L>(keyPath: \\.\$L))",
+                operationStackName,
+                middlewareStep.stringValue(),
+                position.stringValue(),
+                ClientRuntimeTypes.Middleware.IdempotencyTokenMiddleware,
+                inputShapeName,
+                outputShapeName,
+                outputErrorShapeName,
+                idempotentMemberName
+            )
         }
     }
 }

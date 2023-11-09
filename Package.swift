@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.7
 
 import PackageDescription
 
@@ -13,9 +13,9 @@ let package = Package(
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
     ],
     dependencies: [
-        .package(url: "https://github.com/awslabs/aws-crt-swift.git", .exact("0.13.0")),
+        .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.17.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
-        .package(url: "https://github.com/MaxDesiatov/XMLCoder.git", .exact("0.17.0"))
+        .package(url: "https://github.com/MaxDesiatov/XMLCoder.git", exact: "0.17.0")
     ],
     targets: [
         .target(

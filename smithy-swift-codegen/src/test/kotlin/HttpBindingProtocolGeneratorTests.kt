@@ -38,7 +38,7 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
     private fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
         return mutableListOf(
             DefaultRequestEncoder(),
-            DefaultResponseDecoder()
+            DefaultResponseDecoder(),
         )
     }
 
@@ -125,6 +125,7 @@ extension InlineDocumentAsPayloadOutput: ClientRuntime.HttpResponseBinding {
             """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `default fooMap to an empty map if keysForFooMap is empty`() {
         val contents = getModelFileContents("example", "HttpPrefixHeadersOutput+HttpResponseBinding.swift", newTestContext.manifest)

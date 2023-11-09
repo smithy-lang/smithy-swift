@@ -6,6 +6,12 @@ import struct Foundation.CharacterSet
 import struct Foundation.URLQueryItem
 import struct Foundation.URLComponents
 import AwsCommonRuntimeKit
+// In Linux, Foundation.URLRequest is moved to FoundationNetworking.
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#else
+import struct Foundation.URLRequest
+#endif
 
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
@@ -75,10 +81,37 @@ extension SdkHttpRequest {
         httpRequest.path = [endpoint.path, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
 
+        // Remove the "Transfer-Encoding" header if it exists since h2 does not support it
+        httpRequest.removeHeader(name: "Transfer-Encoding")
+
         // HTTP2Request used with manual writes hence we need to set the body to nil
         // so that CRT does not write the body for us (we will write it manually)
         httpRequest.body = nil
         return httpRequest
+    }
+}
+
+public extension URLRequest {
+    init(sdkRequest: SdkHttpRequest) async throws {
+        // Set URL
+        guard let url = sdkRequest.endpoint.url else {
+            throw ClientError.dataNotFound("Failed to construct URLRequest due to missing URL.")
+        }
+        self.init(url: url)
+        // Set method type
+        self.httpMethod = sdkRequest.method.rawValue
+        // Set body, handling any serialization errors
+        do {
+            self.httpBody = try await sdkRequest.body.readData()
+        } catch {
+            throw ClientError.serializationFailed("Failed to construct URLRequest due to HTTP body conversion failure.")
+        }
+        // Set headers
+        sdkRequest.headers.headers.forEach { header in
+            header.value.forEach { value in
+                self.addValue(value, forHTTPHeaderField: header.name)
+            }
+        }
     }
 }
 
