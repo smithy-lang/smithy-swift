@@ -198,6 +198,7 @@ class AuthSchemeResolverGenerator() {
                         val errorMessage = "\"Missing region in auth scheme parameters for SigV4 auth scheme.\""
                         write("throw ClientError.authError($errorMessage)")
                     }
+                    write("sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: region)")
                     write("validAuthOptions.append(sigV4Option)")
                 } else {
                     write("validAuthOptions.append(AuthOption(schemeID: \"${it.key}\"))")

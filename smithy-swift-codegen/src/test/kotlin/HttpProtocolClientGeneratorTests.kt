@@ -33,6 +33,8 @@ class HttpProtocolClientGeneratorTests {
                     decoder.dateDecodingStrategy = .secondsSince1970
                     decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
                     self.decoder = config.decoder ?? decoder
+                    var modeledAuthSchemes: [ClientRuntime.AuthScheme] = Array()
+                    config.authSchemes = config.authSchemes ?? modeledAuthSchemes
                     self.config = config
                 }
             
@@ -123,7 +125,7 @@ class HttpProtocolClientGeneratorTests {
                               .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                               .withLogger(value: config.logger)
                               .withPartitionID(value: config.partitionID)
-                              .withAuthSchemes(value: config.serviceSpecific.authSchemes)
+                              .withAuthSchemes(value: config.authSchemes!)
                               .withAuthSchemeResolver(value: config.serviceSpecific.authSchemeResolver)
                               .build()
                 var operation = ClientRuntime.OperationStack<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>(id: "allocateWidget")

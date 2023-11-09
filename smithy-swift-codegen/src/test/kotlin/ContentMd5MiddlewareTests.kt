@@ -25,7 +25,7 @@ class ContentMd5MiddlewareTests {
                                   .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                                   .withLogger(value: config.logger)
                                   .withPartitionID(value: config.partitionID)
-                                  .withAuthSchemes(value: config.serviceSpecific.authSchemes)
+                                  .withAuthSchemes(value: config.authSchemes!)
                                   .withAuthSchemeResolver(value: config.serviceSpecific.authSchemeResolver)
                                   .build()
                     var operation = ClientRuntime.OperationStack<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>(id: "idempotencyTokenWithStructure")
