@@ -10,13 +10,21 @@ import enum SmithyTimestamps.TimestampFormat
 
 public typealias WriterClosure<T> = (T?, Writer) throws -> Void
 
-public func mapWriter<T>(valueWriter: @escaping WriterClosure<T>, keyNodeInfo: NodeInfo, valueNodeInfo: NodeInfo, isFlattened: Bool) -> WriterClosure<[String: T]> {
+public func mapWriter<T>(
+    valueWriter: @escaping WriterClosure<T>,
+    keyNodeInfo: NodeInfo, valueNodeInfo:
+    NodeInfo, isFlattened: Bool
+) -> WriterClosure<[String: T]> {
     return { map, writer in
         try writer.writeMap(map, valueWriter: valueWriter, keyNodeInfo: keyNodeInfo, valueNodeInfo: valueNodeInfo, isFlattened: isFlattened)
     }
 }
 
-public func listWriter<T>(memberWriter: @escaping WriterClosure<T>, memberNodeInfo: NodeInfo, isFlattened: Bool) -> WriterClosure<[T]> {
+public func listWriter<T>(
+    memberWriter: @escaping WriterClosure<T>,
+    memberNodeInfo: NodeInfo,
+    isFlattened: Bool
+) -> WriterClosure<[T]> {
     return { array, writer in
         try writer.writeList(array, memberWriter: memberWriter, memberNodeInfo: memberNodeInfo, isFlattened: isFlattened)
     }
@@ -62,12 +70,3 @@ public extension Int {
         try writer.write(value)
     }
 }
-
-public extension Date {
-
-    static func write(_ value: Date?, to writer: Writer) throws {
-        // TODO: write this correctly
-        try writer.write(value?.timeIntervalSince1970)
-    }
-}
-

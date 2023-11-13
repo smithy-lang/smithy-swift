@@ -190,7 +190,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
     private fun renderBodyForHttpPayload(writer: SwiftWriter, symbol: Symbol, expectedData: String, actualData: String) {
         writer.openBlock("do {", "} catch let err {") {
-            writer.write("print(\"actual data: \\(String(data: actualData, encoding: .utf8)!)\")")
             writer.write("let expectedObj = try decoder.decode($symbol.self, from: $expectedData)")
             writer.write("let actualObj = try decoder.decode($symbol.self, from: $actualData)")
             writer.write("XCTAssertEqual(expectedObj, actualObj)")
@@ -203,7 +202,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
     private fun renderBodyComparison(writer: SwiftWriter, test: HttpRequestTestCase, symbol: Symbol, shape: Shape, expectedData: String, actualData: String) {
         writer.openBlock("do {", "} catch let err {") {
-            writer.write("print(\"actual data: \\(String(data: actualData, encoding: .utf8)!)\")")
             writer.write("let expectedObj = try decoder.decode(${symbol}Body.self, from: $expectedData)")
             writer.write("let actualObj = try decoder.decode(${symbol}Body.self, from: $actualData)")
             renderAssertions(test, shape)
