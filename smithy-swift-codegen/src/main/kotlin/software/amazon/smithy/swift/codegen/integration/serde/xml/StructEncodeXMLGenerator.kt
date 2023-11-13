@@ -35,9 +35,7 @@ class StructEncodeXMLGenerator(
             SmithyXMLTypes.Writer
         ) {
             writer.write("guard let value else { writer.detach(); return }")
-            writer.openBlock("if writer.nodeInfoPath.isEmpty {", "}") {
-                writer.write("writer.update(nodeInfo: \$N.nodeInfo)", structSymbol)
-            }
+            writer.write("writer.updateIfRootNode(rootNodeInfo: \$N.nodeInfo)", structSymbol)
             members.sortedBy { it.memberName }.forEach { writeMember(it, false) }
         }
     }

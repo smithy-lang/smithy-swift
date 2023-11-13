@@ -175,10 +175,12 @@ public class Writer {
         element.detach()
     }
 
-    public func update(nodeInfo: NodeInfo?) {
-        guard let nodeInfo else { return }
-        element.name = nodeInfo.name
-        if let namespace = nodeInfo.namespace {
+    public func updateIfRootNode(rootNodeInfo: NodeInfo) {
+        guard nodeInfoPath.isEmpty else { return }
+        if element.name?.isEmpty ?? true {
+            element.name = rootNodeInfo.name
+        }
+        if let namespace = rootNodeInfo.namespace {
             let namespaceNode = XMLNode(kind: .namespace)
             namespaceNode.name = namespace.prefix
             namespaceNode.stringValue = namespace.uri
