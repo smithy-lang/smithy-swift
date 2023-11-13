@@ -16,7 +16,6 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGenerator
@@ -24,7 +23,6 @@ import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
-import software.amazon.smithy.swift.codegen.model.recursiveSymbol
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
@@ -55,9 +53,6 @@ abstract class MemberShapeDecodeGenerator(
     fun writeDecodeForPrimitive(shape: Shape, member: MemberShape, containerName: String, ignoreDefaultValues: Boolean = false) {
         var symbol = ctx.symbolProvider.toSymbol(member)
         val memberName = ctx.symbolProvider.toMemberNames(member).second
-        if (member.hasTrait(SwiftBoxTrait::class.java)) {
-            symbol = symbol.recursiveSymbol()
-        }
         val defaultValue = symbol.defaultValue()
         val decodeVerb = if (symbol.isBoxed() || !defaultValue.isNullOrEmpty()) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberName}Decoded"

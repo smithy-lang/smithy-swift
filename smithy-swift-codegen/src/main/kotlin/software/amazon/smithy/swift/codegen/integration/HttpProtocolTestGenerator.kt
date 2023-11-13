@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
@@ -49,13 +48,12 @@ class HttpProtocolTestGenerator(
      */
     fun generateProtocolTests(): Int {
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
-        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val operationMiddleware = updateRequestTestMiddleware()
         var numTests = 0
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
-            numTests += renderRequestTests(operation, serviceSymbol, operationMiddleware)
-            numTests += renderResponseTests(operation, serviceSymbol)
-            numTests += renderErrorTestCases(operation, serviceSymbol)
+            numTests += renderRequestTests(operation, operationMiddleware)
+            numTests += renderResponseTests(operation)
+            numTests += renderErrorTestCases(operation)
         }
         return numTests
     }
@@ -90,7 +88,8 @@ class HttpProtocolTestGenerator(
         return cloned
     }
 
-    private fun renderRequestTests(operation: OperationShape, serviceSymbol: Symbol, operationMiddleware: OperationMiddleware): Int {
+    private fun renderRequestTests(operation: OperationShape, operationMiddleware: OperationMiddleware): Int {
+        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val tempTestCases = operation.getTrait(HttpRequestTestsTrait::class.java)
             .getOrNull()
             ?.getTestCasesFor(AppliesTo.CLIENT)
@@ -110,6 +109,7 @@ class HttpProtocolTestGenerator(
                 writer.addImport(SwiftDependency.XCTest.target)
 
                 requestTestBuilder
+                    .ctx(ctx)
                     .writer(writer)
                     .model(ctx.model)
                     .symbolProvider(ctx.symbolProvider)
@@ -127,7 +127,8 @@ class HttpProtocolTestGenerator(
         return requestTestCases.count()
     }
 
-    private fun renderResponseTests(operation: OperationShape, serviceSymbol: Symbol): Int {
+    private fun renderResponseTests(operation: OperationShape): Int {
+        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val tempResponseTests = operation.getTrait(HttpResponseTestsTrait::class.java)
             .getOrNull()
             ?.getTestCasesFor(AppliesTo.CLIENT)
@@ -145,6 +146,7 @@ class HttpProtocolTestGenerator(
                 writer.addImport(SwiftDependency.XCTest.target)
 
                 responseTestBuilder
+                    .ctx(ctx)
                     .writer(writer)
                     .model(ctx.model)
                     .symbolProvider(ctx.symbolProvider)
@@ -162,7 +164,8 @@ class HttpProtocolTestGenerator(
         return responseTestCases.count()
     }
 
-    private fun renderErrorTestCases(operation: OperationShape, serviceSymbol: Symbol): Int {
+    private fun renderErrorTestCases(operation: OperationShape): Int {
+        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val operationIndex: OperationIndex = OperationIndex.of(ctx.model)
         var numTestCases = 0
         for (error in operationIndex.getErrors(operation).filterNot(::serverOnly)) {
@@ -188,6 +191,7 @@ class HttpProtocolTestGenerator(
 
                     errorTestBuilder
                         .error(error)
+                        .ctx(ctx)
                         .writer(writer)
                         .model(ctx.model)
                         .symbolProvider(ctx.symbolProvider)

@@ -6,7 +6,6 @@
 package software.amazon.smithy.swift.codegen.integration.serde.xml.trait
 
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.traits.XmlAttributeTrait
 import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks

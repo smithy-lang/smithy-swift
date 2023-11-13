@@ -11,7 +11,8 @@ let package = Package(
     products: [
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
-        .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"])
+        .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
+//        .library(name: "SmithyTimestamps", targets: ["SmithyTimestamps"])
     ],
     dependencies: [
         .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.17.0"),
@@ -29,8 +30,10 @@ let package = Package(
             ]
         ),
         .testTarget(name: "ClientRuntimeTests", dependencies: ["ClientRuntime", "SmithyTestUtil"]),
-        .target(name: "SmithyXML"),
+        .target(name: "SmithyXML", dependencies: ["SmithyTimestamps"]),
         .testTarget(name: "SmithyXMLTests", dependencies: ["SmithyXML"]),
+        .target(name: "SmithyTimestamps"),
+        .testTarget(name: "SmithyTimestampsTests", dependencies: ["SmithyTimestamps"]),
         .target(name: "SmithyTestUtil", dependencies: ["ClientRuntime"]),
         .testTarget(name: "SmithyTestUtilTests", dependencies: ["SmithyTestUtil"]),
     ]

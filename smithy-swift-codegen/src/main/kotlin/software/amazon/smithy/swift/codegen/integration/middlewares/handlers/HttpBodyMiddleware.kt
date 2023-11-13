@@ -17,6 +17,7 @@ import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
+import software.amazon.smithy.swift.codegen.SmithyXMLTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
@@ -29,8 +30,8 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 class HttpBodyMiddleware(
     private val writer: SwiftWriter,
     private val ctx: ProtocolGenerator.GenerationContext,
-    inputSymbol: Symbol,
-    outputSymbol: Symbol,
+    private val inputSymbol: Symbol,
+    private val outputSymbol: Symbol,
     private val outputErrorSymbol: Symbol,
     private val requestBindings: List<HttpBindingDescriptor>
 ) : Middleware(writer, inputSymbol, OperationSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
@@ -114,9 +115,10 @@ class HttpBodyMiddleware(
                     writer.openBlock("if let $memberName = input.operationInput.$memberName {", "} else {") {
 
                         val xmlNameTrait = binding.member.getTrait<XmlNameTrait>() ?: target.getTrait<XmlNameTrait>()
-                        if (ctx.protocol == RestXmlTrait.ID && xmlNameTrait != null) {
-                            val xmlName = xmlNameTrait.value
-                            writer.write("let xmlEncoder = encoder as! XMLEncoder")
+                        if (ctx.protocol == RestXmlTrait.ID) {
+                            val xmlName = xmlNameTrait?.value ?: ctx.symbolProvider.toSymbol(target).name
+                            writer.addImport(SwiftDependency.SMITHY_XML.target)
+                            writer.write("let xmlEncoder = \$N()", SmithyXMLTypes.DocumentWriter)
                             if (target.hasTrait<StreamingTrait>() && target.isUnionShape) {
                                 writer.openBlock("guard let messageEncoder = context.getMessageEncoder() else {", "}") {
                                     writer.write("fatalError(\"Message encoder is required for streaming payload\")")
@@ -130,7 +132,8 @@ class HttpBodyMiddleware(
                                 )
                                 writer.write("input.builder.withBody(.stream(encoderStream))")
                             } else {
-                                writer.write("let $dataDeclaration = try xmlEncoder.encode(\$L, rootElement: \"\$L\")", memberName, xmlName)
+                                val targetSymbol = ctx.symbolProvider.toSymbol(target)
+                                writer.write("let $dataDeclaration = try xmlEncoder.write(\$L, rootElement: \$S, valueWriter: \$N.write(_:to:))", memberName, xmlName, targetSymbol)
                                 renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
                             }
                         } else {

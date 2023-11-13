@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct SerializableBodyMiddleware<OperationStackInput: Encodable,
+public struct SerializableBodyMiddleware<OperationStackInput,
                                          OperationStackOutput: HttpResponseBinding>: Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))BodyMiddleware"
 
-    let xmlName: String?
+    let serializer: (OperationStackInput) throws -> Data
 
-    public init(xmlName: String? = nil) {
-        self.xmlName = xmlName
+    public init(serializer: @escaping (OperationStackInput) throws -> Data) {
+        self.serializer = serializer
     }
 
     public func handle<H>(context: Context,
@@ -23,13 +23,7 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
               do {
-                  let encoder = context.getEncoder()
-                  let data: Data
-                  if let xmlName = xmlName, let xmlEncoder = encoder as? XMLEncoder {
-                      data = try xmlEncoder.encode(input.operationInput, rootElement: xmlName)
-                  } else {
-                      data = try encoder.encode(input.operationInput)
-                  }
+                  let data = try serializer(input.operationInput)
                   let body = HttpBody.data(data)
                   input.builder.withBody(body)
               } catch {

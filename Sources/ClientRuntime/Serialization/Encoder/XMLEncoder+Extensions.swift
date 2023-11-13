@@ -1,25 +1,18 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
-
-//import Foundation
-//import XMLCoder
 //
-//public typealias XMLEncoder = XMLCoder.XMLEncoder
-//extension XMLEncoder: RequestEncoder {
-//    public func encode<T>(_ value: T) throws -> Data where T: Encodable {
-//        return try encode(value, withRootKey: nil, rootAttributes: nil, header: nil)
-//    }
-//}
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
-import Foundation
+import struct Foundation.Data
 import SmithyXML
 
-public typealias XMLEncoder = SmithyXML.XMLEncoder
+public typealias XMLEncoder = SmithyXML.DocumentWriter
 
-extension XMLEncoder: RequestEncoder {
-    public func encode<T>(_ value: T) throws -> Data where T: Encodable {
-        return try encode(value, rootElement: "\(T.self)")
+extension DocumentWriter: RequestEncoder {
+    public func encode<T: Encodable>(_ value: T) throws -> Data {
+//        return try write(value, rootElement: "\(T.self)")
+        return Data()
     }
 }

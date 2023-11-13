@@ -4,28 +4,23 @@
  */
 package software.amazon.smithy.swift.codegen.integration.serde.json
 
-import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlAttributeTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
-import software.amazon.smithy.swift.codegen.SmithyXMLTypes
+import software.amazon.smithy.model.traits.XmlNameTrait
+import software.amazon.smithy.model.traits.XmlNamespaceTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeConstants
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
-import software.amazon.smithy.swift.codegen.integration.serde.TimestampEncodeGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
-import software.amazon.smithy.swift.codegen.integration.serde.getDefaultValueOfShapeType
-import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNameTraitGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.xml.trait.XMLNamespaceTraitGenerator
+import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.isBoxed
-import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 abstract class MemberShapeEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -33,351 +28,188 @@ abstract class MemberShapeEncodeXMLGenerator(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeGeneratable {
 
-    val xmlNamespaces = mutableSetOf<String>()
-
-    fun renderListMember(
-        member: MemberShape,
-        memberTarget: CollectionShape,
-        containerName: String
-    ) {
-        val originalMemberName = member.memberName
-        val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
-        val nestedContainer = "${memberName.removeSurroundingBackticks()}Container"
-        if (member.hasTrait(XmlFlattenedTrait::class.java)) {
-            writer.openBlock("if $memberName.isEmpty {", "} else {") {
-                writer.write("var $nestedContainer = $containerName.nestedUnkeyedContainer(forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
-                writer.write("try $nestedContainer.encodeNil()")
+    fun writeMember(memberShape: MemberShape, unionMember: Boolean) {
+        val prefix = "value.".takeIf { !unionMember } ?: ""
+        val targetShape = ctx.model.expectShape(memberShape.target)
+        when (targetShape) {
+            is StructureShape, is UnionShape -> {
+                writeStructureOrUnionMember(memberShape, targetShape, prefix)
             }
-            writer.indent()
-            renderFlattenedListMemberItems(memberName, member, memberTarget, containerName)
-            writer.dedent()
-            writer.write("}")
-        } else {
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-            XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
-            renderListMemberItems(memberName, memberTarget, nestedContainer)
-        }
-    }
-
-    private fun renderListMemberItems(
-        memberName: String,
-        memberTarget: CollectionShape,
-        containerName: String,
-        level: Int = 0
-    ) {
-        val nestedMember = memberTarget.member
-        val nestedMemberResolvedName = XMLNameTraitGenerator.construct(nestedMember, "member").toString()
-
-        val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
-        val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
-        writer.openBlock("for $nestedMemberTargetName in $memberName {", "}") {
-            when (nestedMemberTarget) {
-                is CollectionShape -> {
-                    renderNestedListEntryMember(nestedMemberTargetName, nestedMemberTarget, nestedMember, nestedMemberResolvedName, containerName, level)
-                }
-                is MapShape -> {
-                    val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container$level"
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-                    writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
-                        renderWrappedMapMemberItem(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level)
-                    }
-                }
-                is TimestampShape -> {
-                    val codingKey = writer.format("\$L(\"\$L\")", SmithyXMLTypes.XMLCodingKey, nestedMemberResolvedName)
-                    TimestampEncodeGenerator(
-                        containerName,
-                        nestedMemberTargetName,
-                        codingKey,
-                        TimestampHelpers.getTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    ).generate(writer)
-                }
-                else -> {
-                    val nestedMemberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(nestedMember)
-                    val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container$level"
-                    renderItem(writer, nestedMemberNamespaceTraitGenerator, nestedContainerName, containerName, nestedMemberTargetName, nestedMemberTarget, nestedMemberResolvedName, false)
-                }
+            is ListShape -> {
+                writeListMember(memberShape, targetShape, prefix)
+            }
+            is MapShape -> {
+                writeMapMember(memberShape, targetShape, prefix)
+            }
+            is TimestampShape -> {
+                writeTimestampMember(memberShape, targetShape, prefix)
+            }
+            else -> {
+                writePropertyMember(memberShape, targetShape, prefix)
             }
         }
     }
 
-    private fun renderNestedListEntryMember(nestedMemberTargetName: String, nestedMemberTarget: CollectionShape, nestedMember: MemberShape, nestedMemberResolvedName: String, containerName: String, level: Int) {
-        var nestedContainerName = "${nestedMemberTargetName.removeSurroundingBackticks()}Container$level"
-        writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${nestedMemberResolvedName}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-        XMLNamespaceTraitGenerator.construct(nestedMember)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
-        renderListMemberItems(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level + 1)
-    }
-
-    private fun renderFlattenedListMemberItems(
-        memberName: String,
-        member: MemberShape,
-        memberTarget: CollectionShape,
-        containerName: String,
-        level: Int = 0
-    ) {
-        val nestedMember = memberTarget.member
-        val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
-        val nestedMemberTargetName = "${nestedMemberTarget.id.name.toLowerCase()}$level"
-        val defaultMemberName = if (level == 0) memberName else "member"
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, defaultMemberName)
-        val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container$level"
-
-        writer.openBlock("for $nestedMemberTargetName in $memberName {", "}") {
-            when (nestedMemberTarget) {
-                is CollectionShape -> {
-                    val isBoxed = ctx.symbolProvider.toSymbol(memberTarget.member).isBoxed()
-                    if (isBoxed && !(nestedMemberTarget is SetShape)) {
-                        writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
-                            renderFlattenedListContainer(nestedMemberTargetName, nestedMemberTarget, nestedMember, memberName, member, containerName, level)
-                        }
-                    } else {
-                        renderFlattenedListContainer(nestedMemberTargetName, nestedMemberTarget, nestedMember, memberName, member, containerName, level)
-                    }
-                }
-                is MapShape -> {
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedMemberName}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-                    writer.openBlock("if let $nestedMemberTargetName = $nestedMemberTargetName {", "}") {
-                        renderWrappedMapMemberItem(nestedMemberTargetName, nestedMemberTarget, nestedContainerName, level)
-                    }
-                }
-                is TimestampShape -> {
-                    writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-                    XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
-                    val codingKey = "Key(\"\")"
-                    TimestampEncodeGenerator(
-                        nestedContainerName,
-                        nestedMemberTargetName,
-                        codingKey,
-                        TimestampHelpers.getTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    ).generate(writer)
-                }
-                else -> {
-                    writer.write("try $containerName.encode($nestedMemberTargetName, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
-                }
-            }
-        }
-    }
-    private fun renderFlattenedListContainer(nestedMemberTargetName: String, nestedMemberTarget: CollectionShape, nestedMember: MemberShape, memberName: String, member: MemberShape, containerName: String, level: Int) {
-        var nestedContainerName = "${nestedMemberTargetName.removeSurroundingBackticks()}Container$level"
-        val defaultMemberName = if (level == 0) memberName else "member"
-        val memberResolvedName = XMLNameTraitGenerator.construct(member, defaultMemberName)
-        writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${memberResolvedName}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-        XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainerName)?.appendKey(xmlNamespaces)
-        renderFlattenedListMemberItems(nestedMemberTargetName, nestedMember, nestedMemberTarget, nestedContainerName, level + 1)
-    }
-
-    fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String) {
-        val originalMemberName = member.memberName
-        val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
-
-        if (member.hasTrait(XmlFlattenedTrait::class.java)) {
-            writer.openBlock("if $memberName.isEmpty {", "} else {") {
-                writer.write("let _ =  $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-            }
-            writer.indent()
-            renderFlattenedMapMemberItem(memberName, member, memberTarget, containerName)
-            writer.dedent().write("}")
-        } else {
-            val nestedContainer = "${resolvedMemberName}Container"
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-            XMLNamespaceTraitGenerator.construct(member)?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
-            renderWrappedMapMemberItem(memberName, memberTarget, nestedContainer)
-        }
-    }
-
-    private fun renderWrappedMapMemberItem(memberName: String, mapShape: MapShape, containerName: String, level: Int = 0) {
-        val keyTargetShape = ctx.model.expectShape(mapShape.key.target)
-        val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
-
-        val resolvedCodingKeys = Pair(
-            XMLNameTraitGenerator.construct(mapShape.key, "key"),
-            XMLNameTraitGenerator.construct(mapShape.value, "value")
-        )
-
-        val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
-        val entryContainerName = "entryContainer$level"
-        writer.openBlock("for (${nestedKeyValueName.first}, ${nestedKeyValueName.second}) in $memberName {", "}") {
-            writer.write("var $entryContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"entry\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-            renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level)
-            when (valueTargetShape) {
-                is MapShape -> {
-                    renderMapNestedValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, entryContainerName, level) { valueContainer ->
-                        renderWrappedMapMemberItem(nestedKeyValueName.second, valueTargetShape, valueContainer, level + 1)
-                    }
-                }
-                is CollectionShape -> {
-                    renderMapNestedValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, entryContainerName, level) { valueContainer ->
-                        renderListMemberItems(nestedKeyValueName.second, valueTargetShape, valueContainer, level + 1)
-                    }
-                }
-                is TimestampShape -> {
-                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level) { valueContainer ->
-                        val codingKey = "${SmithyXMLTypes.XMLCodingKey}(\"\")"
-                        TimestampEncodeGenerator(
-                            valueContainer,
-                            nestedKeyValueName.second,
-                            codingKey,
-                            TimestampHelpers.getTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
-                        ).generate(writer)
-                    }
-                }
-                else -> {
-                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, entryContainerName, level)
-                }
-            }
-        }
-    }
-
-    private fun renderFlattenedMapMemberItem(memberName: String, member: MemberShape, mapShape: MapShape, containerName: String, level: Int = 0) {
-        val keyTargetShape = ctx.model.expectShape(mapShape.key.target)
-        val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
-
-        val resolvedMemberName = if (level == 0) XMLNameTraitGenerator.construct(member, memberName) else "entry"
-
-        val resolvedCodingKeys = Pair(
-            XMLNameTraitGenerator.construct(mapShape.key, "key"),
-            XMLNameTraitGenerator.construct(mapShape.value, "value")
-        )
-
-        val nestedKeyValueName = Pair("${keyTargetShape.id.name.toLowerCase()}Key$level", "${valueTargetShape.id.name.toLowerCase()}Value$level")
-        val nestedContainer = "nestedContainer$level"
-        writer.openBlock("for (${nestedKeyValueName.first}, ${nestedKeyValueName.second}) in $memberName {", "}") {
-            writer.write("var $nestedContainer = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-            when (valueTargetShape) {
-                is MapShape -> {
-                    renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
-                    renderMapNestedValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, nestedContainer, level) { nestedValueContainer ->
-                        renderFlattenedMapMemberItem(nestedKeyValueName.second, mapShape.value, valueTargetShape, nestedValueContainer, level + 1)
-                    }
-                }
-                is CollectionShape -> {
-                    renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
-                    renderMapNestedValue(nestedKeyValueName, resolvedCodingKeys, mapShape, valueTargetShape, nestedContainer, level) { nestedValueContainer ->
-                        renderListMemberItems(nestedKeyValueName.second, valueTargetShape, nestedValueContainer, level + 1)
-                    }
-                }
-                is TimestampShape -> {
-                    renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
-                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level) { valueContainer ->
-                        val codingKey = writer.format("\$L(\"\")", SmithyXMLTypes.XMLCodingKey)
-                        val code = TimestampEncodeGenerator(
-                            valueContainer,
-                            nestedKeyValueName.second,
-                            codingKey,
-                            TimestampHelpers.getTimestampFormat(mapShape.value, valueTargetShape, defaultTimestampFormat)
-                        ).generate(writer)
-                    }
-                }
-                else -> {
-                    if (level == 0) {
-                        val memberNamespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
-                        memberNamespaceTraitGenerator?.render(writer, nestedContainer)?.appendKey(xmlNamespaces)
-                    }
-                    renderMapKey(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
-                    renderMapValue(nestedKeyValueName, resolvedCodingKeys, mapShape, nestedContainer, level)
-                }
-            }
-        }
-    }
-
-    private fun renderMapKey(
-        nestedKeyValueName: Pair<String, String>,
-        resolvedCodingKeys: Pair<XMLNameTraitGenerator, XMLNameTraitGenerator>,
-        mapShape: MapShape,
-        nestedContainer: String,
-        level: Int
-    ) {
-        writer.write("try $nestedContainer.encode(${nestedKeyValueName.first}, forKey: \$N(\$S))", SmithyXMLTypes.XMLCodingKey, resolvedCodingKeys.first)
-    }
-
-    private fun renderMapValue(
-        nestedKeyValueName: Pair<String, String>,
-        resolvedCodingKeys: Pair<XMLNameTraitGenerator, XMLNameTraitGenerator>,
-        mapShape: MapShape,
-        entryContainerName: String,
-        level: Int,
-        customValueRenderer: ((String) -> Unit)? = null
-    ) {
+    private fun writeStructureOrUnionMember(memberShape: MemberShape, targetShape: Shape, prefix: String) {
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
+        val targetSymbol = ctx.symbolProvider.toSymbol(targetShape)
+        val propertyKey = nodeInfo(memberShape)
         writer.write(
-            "try \$L.encode(\$L, forKey: \$N(\$S))",
-            entryContainerName,
-            nestedKeyValueName.second,
-            SmithyXMLTypes.XMLCodingKey,
-            resolvedCodingKeys.second
+            "try \$N.write(\$L\$L, to: writer[\$L])",
+            targetSymbol,
+            prefix,
+            memberName,
+            propertyKey
         )
     }
 
-    private fun renderMapNestedValue(
-        nestedKeyValueName: Pair<String, String>,
-        resolvedCodingKeys: Pair<XMLNameTraitGenerator, XMLNameTraitGenerator>,
-        mapShape: MapShape,
-        valueTargetShape: Shape,
-        entryContainerName: String,
-        level: Int,
-        nextRenderer: (String) -> Unit
-    ) {
-        val nextContainer = "valueContainer${level + 1}"
-        writer.write("var $nextContainer = $entryContainerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedCodingKeys.second}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-        XMLNamespaceTraitGenerator.construct(mapShape.value)?.render(writer, nextContainer)?.appendKey(xmlNamespaces)
-        nextRenderer(nextContainer)
-    }
-
-    fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
-        val memberName = ctx.symbolProvider.toMemberName(member)
-        val originalMemberName = member.memberName
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName)
-        val codingKey = writer.format("\$L(\"\$L\")", SmithyXMLTypes.XMLCodingKey, resolvedMemberName)
-        TimestampEncodeGenerator(
-            containerName,
+    private fun writeTimestampMember(memberShape: MemberShape, timestampShape: TimestampShape, prefix: String) {
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
+        val timestampKey = nodeInfo(memberShape)
+        val swiftTimestampFormatCase = timestampFormat(memberShape, timestampShape)
+        writer.write(
+            "try writer[\$L].writeTimestamp(\$L\$L, format: \$L)",
+            timestampKey,
+            prefix,
             memberName,
-            codingKey,
-            TimestampHelpers.getTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        ).generate(writer)
+            swiftTimestampFormatCase
+        )
     }
 
-    fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String, operation: String = "") {
-        val symbol = ctx.symbolProvider.toSymbol(member)
-        val originalMemberName = member.memberName
+    private fun timestampFormat(memberShape: MemberShape, timestampShape: TimestampShape): String {
+        val timestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>() ?: timestampShape.getTrait<TimestampFormatTrait>() ?: TimestampFormatTrait(TimestampFormatTrait.DATE_TIME)
+        return when (timestampFormatTrait.value) {
+            TimestampFormatTrait.EPOCH_SECONDS -> ".epochSeconds"
+            TimestampFormatTrait.HTTP_DATE -> ".httpDate"
+            else -> ".dateTime"
+        }
+    }
+
+    private fun writePropertyMember(memberShape: MemberShape, targetShape: Shape, prefix: String) {
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
+        val propertyNodeInfo = nodeInfo(memberShape)
+        writer.write(
+            "try writer[\$L].write(\$L\$L)",
+            propertyNodeInfo,
+            prefix,
+            memberName
+        )
+    }
+
+    private fun writeListMember(member: MemberShape, listShape: ListShape, prefix: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName).toString()
-        val isBoxed = symbol.isBoxed()
-        if (isBoxed) {
-            writer.openBlock("if let $memberName = $memberName {", "}") {
-                val namespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
-                val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container"
-                val isAttribute = member.hasTrait<XmlAttributeTrait>()
-                renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName + operation, memberTarget, resolvedMemberName, isAttribute)
+        val listMemberWriter = valueWriter(listShape.member)
+        val listKey = nodeInfo(member)
+        val isFlattened = member.hasTrait<XmlFlattenedTrait>()
+        val memberNodeInfo = nodeInfo(listShape.member)
+        writer.write(
+            "try writer[\$L].writeList(\$L\$L, memberWriter: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+            listKey,
+            prefix,
+            memberName,
+            listMemberWriter,
+            memberNodeInfo,
+            isFlattened
+        )
+    }
+
+    private fun writeMapMember(member: MemberShape, mapShape: MapShape, prefix: String) {
+        val memberName = ctx.symbolProvider.toMemberName(member)
+        val mapKey = nodeInfo(member)
+        val keyNodeInfo = nodeInfo(mapShape.key)
+        val valueNodeInfo = nodeInfo(mapShape.value)
+        val valueWriter = valueWriter(mapShape.value)
+        val isFlattened = member.hasTrait<XmlFlattenedTrait>()
+        writer.write(
+            "try writer[\$L].writeMap(\$L\$L, valueWriter: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+            mapKey,
+            prefix,
+            memberName,
+            valueWriter,
+            keyNodeInfo,
+            valueNodeInfo,
+            isFlattened
+        )
+    }
+
+    private fun valueWriter(member: MemberShape): String {
+        val target = ctx.model.expectShape(member.target)
+        when (target) {
+            is MapShape -> {
+                val keyNodeInfo = nodeInfo(target.key)
+                val valueNodeInfo = nodeInfo(target.value)
+                val valueWriter = valueWriter(target.value)
+                val isFlattened = target.hasTrait<XmlFlattenedTrait>()
+                return writer.format(
+                    "SmithyXML.mapWriter(valueWriter: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+                    valueWriter,
+                    keyNodeInfo,
+                    valueNodeInfo,
+                    isFlattened
+                )
             }
-        } else {
-            if (MemberShapeEncodeConstants.primitiveSymbols.contains(memberTarget.type)) {
-                val defaultValue = getDefaultValueOfShapeType(memberTarget.type)
-                writer.openBlock("if $memberName != $defaultValue {", "}") {
-                    writer.write("try $containerName.encode(${memberName + operation}, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
-                }
-            } else {
-                writer.write("try $containerName.encode(${memberName + operation}, forKey: \$N(\"$resolvedMemberName\"))", SmithyXMLTypes.XMLCodingKey)
+            is ListShape -> {
+                val memberNodeInfo = nodeInfo(target.member)
+                val memberWriter = valueWriter(target.member)
+                val isFlattened = target.hasTrait<XmlFlattenedTrait>()
+                return writer.format(
+                    "SmithyXML.listWriter(memberWriter: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+                    memberWriter,
+                    memberNodeInfo,
+                    isFlattened
+                )
+            }
+            is TimestampShape -> {
+                val memberNodeInfo = nodeInfo(member)
+                return writer.format(
+                    "SmithyXML.timestampWriter(memberNodeInfo: \$L, format: \$L)",
+                    memberNodeInfo,
+                    timestampFormat(member, target)
+                )
+            }
+            else -> {
+                return writer.format("\$N.write(_:to:)", ctx.symbolProvider.toSymbol(target))
             }
         }
     }
-    fun renderEncodeAssociatedType(member: MemberShape, memberTarget: Shape, containerName: String) {
-        val memberName = ctx.symbolProvider.toMemberName(member)
-        val originalMemberName = member.memberName
-        val namespaceTraitGenerator = XMLNamespaceTraitGenerator.construct(member)
-        val resolvedMemberName = XMLNameTraitGenerator.construct(member, originalMemberName).toString()
-        val nestedContainerName = "${memberName.removeSurroundingBackticks()}Container"
-        renderItem(writer, namespaceTraitGenerator, nestedContainerName, containerName, memberName, memberTarget, resolvedMemberName, false)
+
+    fun nodeInfo(structure: StructureShape): String {
+        val xmlNameTrait = structure.getTrait<XmlNameTrait>()
+        val structureSymbol = ctx.symbolProvider.toSymbol(structure)
+        val resolvedName = xmlNameTrait?.let { it.value } ?: structureSymbol.name
+
+        val xmlNamespaceTrait = structure.getTrait<XmlNamespaceTrait>() ?: ctx.service.getTrait<XmlNamespaceTrait>()
+        val xmlNamespaceParam = xmlNamespaceTrait?.let { namespace(it) } ?: ""
+
+        return writer.format(
+            ".init(\$S\$L)",
+            resolvedName,
+            xmlNamespaceParam
+        )
     }
 
-    private fun renderItem(writer: SwiftWriter, XMLNamespaceTraitGenerator: XMLNamespaceTraitGenerator?, nestedContainerName: String, containerName: String, memberName: String, memberTarget: Shape, resolvedMemberName: String, isAttribute: Boolean) {
-        val attrOptions = ", location: .attribute".takeIf { isAttribute } ?: ""
-        XMLNamespaceTraitGenerator?.let {
-            writer.write("var $nestedContainerName = $containerName.nestedContainer(keyedBy: \$N.self, forKey: \$N(\"${resolvedMemberName}\"))", SmithyXMLTypes.XMLCodingKey, SmithyXMLTypes.XMLCodingKey)
-            writer.write("try $nestedContainerName.encode($memberName, forKey: \$N(\"\"\$L))", SmithyXMLTypes.XMLCodingKey, attrOptions)
-            it.render(writer, nestedContainerName)
-            it.appendKey(xmlNamespaces)
-        } ?: run {
-            writer.write("try $containerName.encode($memberName, forKey: \$N(\"${resolvedMemberName}\"\$L))", SmithyXMLTypes.XMLCodingKey, attrOptions)
-        }
+    private fun nodeInfo(member: MemberShape): String {
+        val xmlNameTrait = member.getTrait<XmlNameTrait>()
+        val resolvedName = xmlNameTrait?.let { it.value } ?: member.memberName
+
+        val xmlAttributeParam = ", location: .attribute".takeIf { member.hasTrait<XmlAttributeTrait>() } ?: ""
+
+        val xmlNamespaceTrait = member.getTrait<XmlNamespaceTrait>()
+        val xmlNamespaceParam = xmlNamespaceTrait?.let { namespace(it) } ?: ""
+
+        return writer.format(
+            ".init(\$S\$L\$L)",
+            resolvedName,
+            xmlAttributeParam,
+            xmlNamespaceParam
+        )
+    }
+
+    private fun namespace(xmlNamespaceTrait: XmlNamespaceTrait): String {
+        return writer.format(
+            ", namespace: .init(prefix: \$S, uri: \$S)",
+            xmlNamespaceTrait.prefix,
+            xmlNamespaceTrait.uri
+        )
     }
 }

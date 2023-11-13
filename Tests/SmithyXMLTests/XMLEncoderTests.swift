@@ -11,36 +11,36 @@ import XCTest
 class XMLEncoderTests: XCTestCase {
 
     private struct HasNestedElements: Encodable {
+
+        static func write(_ value: HasNestedElements, to writer: Writer) throws {
+            try writer[.init("a")].write(value.a)
+            try writer[.init("b")].write(value.b)
+        }
+
         let a: String
         let b: String
-
-        func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: XMLCodingKey.self)
-            try container.encode(a, forKey: XMLCodingKey(stringValue: "a"))
-            try container.encode(b, forKey: XMLCodingKey(stringValue: "b"))
-        }
     }
 
     func test_encodesXMLWithNestedElements() throws {
-        let data = try XMLEncoder().encode(HasNestedElements(a: "a", b: "b"), rootElement: "test")
-        let xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test><a>a</a><b>b</b></test>"
+        let data = try DocumentWriter().write(HasNestedElements(a: "a", b: "b"), rootElement: "test", valueWriter: HasNestedElements.write(_:to:))
+        let xml = "<test><a>a</a><b>b</b></test>"
         try AssertXMLDataEqual(data, Data(xml.utf8))
     }
 
     private struct HasNestedElementAndAttribute: Encodable {
+
+        static func write(_ value: HasNestedElementAndAttribute, to writer: Writer) throws {
+            try writer[.init("a")].write(value.a)
+            try writer[.init("b", location: .attribute)].write(value.b)
+        }
+
         let a: String
         let b: String
-
-        func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: XMLCodingKey.self)
-            try container.encode(a, forKey: XMLCodingKey(stringValue: "a"))
-            try container.encode(b, forKey: XMLCodingKey(stringValue: "b", location: .attribute))
-        }
     }
 
     func test_encodesXMLWithElementAndAttribute() throws {
-        let data = try XMLEncoder().encode(HasNestedElementAndAttribute(a: "a", b: "b"), rootElement: "test")
-        let xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test b=\"b\"><a>a</a></test>"
+        let data = try DocumentWriter().write(HasNestedElementAndAttribute(a: "a", b: "b"), rootElement: "test", valueWriter: HasNestedElementAndAttribute.write(_:to:))
+        let xml = "<test b=\"b\"><a>a</a></test>"
         try AssertXMLDataEqual(data, Data(xml.utf8))
     }
 }
