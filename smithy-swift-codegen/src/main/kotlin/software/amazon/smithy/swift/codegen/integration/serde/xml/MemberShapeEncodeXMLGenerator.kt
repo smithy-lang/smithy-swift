@@ -159,10 +159,8 @@ abstract class MemberShapeEncodeXMLGenerator(
                 )
             }
             is TimestampShape -> {
-                val memberNodeInfo = nodeInfo(member)
                 return writer.format(
-                    "SmithyXML.timestampWritingClosure(memberNodeInfo: \$L, format: \$L)",
-                    memberNodeInfo,
+                    "SmithyXML.timestampWritingClosure(format: \$L)",
                     timestampFormat(member, target)
                 )
             }
