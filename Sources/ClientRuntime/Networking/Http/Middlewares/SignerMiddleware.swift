@@ -52,7 +52,7 @@ public struct SignerMiddleware<OperationStackOutput: HttpResponseBinding,
         }
 
         // Sign request and hand over to next middleware (handler) in line.
-        let signedInput = try await signer.sign(
+        let signedInput = try await signer.signRequest(
             requestBuilder: input, identity: identity, signingProperties: signingProperties
         )
         // The saved signature is used to sign event stream messages if needed.
