@@ -59,14 +59,13 @@ class RecursiveShapesEncodeXMLGenerationTests {
                     case recursiveMember
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let bar = bar {
-                        try container.encode(bar, forKey: ClientRuntime.Key("bar"))
-                    }
-                    if let recursiveMember = recursiveMember {
-                        try container.encode(recursiveMember, forKey: ClientRuntime.Key("recursiveMember"))
-                    }
+                static var nodeInfo: SmithyXML.NodeInfo = .init("RecursiveShapesInputOutputNested2")
+            
+                static func write(_ value: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    writer.updateIfRootNode(rootNodeInfo: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2.nodeInfo)
+                    try writer[.init("bar")].write(value.bar)
+                    try RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.write(value.recursiveMember, to: writer[.init("recursiveMember")])
                 }
             
                 public init(from decoder: Swift.Decoder) throws {

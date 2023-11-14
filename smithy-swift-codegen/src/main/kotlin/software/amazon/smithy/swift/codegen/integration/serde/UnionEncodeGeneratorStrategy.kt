@@ -24,7 +24,7 @@ class UnionEncodeGeneratorStrategy(
     fun render() {
         when (ctx.protocol) {
             RestXmlTrait.ID -> {
-                UnionEncodeXMLGenerator(ctx, union, members, writer, defaultTimestampFormat).render()
+                UnionEncodeXMLGenerator(ctx, union, members, writer).render()
             }
             else -> {
                 UnionEncodeGenerator(ctx, members, writer, defaultTimestampFormat).render()

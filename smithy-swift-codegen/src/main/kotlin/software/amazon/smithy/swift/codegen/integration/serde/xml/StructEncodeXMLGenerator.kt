@@ -8,7 +8,6 @@ package software.amazon.smithy.swift.codegen.integration.serde.json
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SmithyXMLTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -18,9 +17,8 @@ class StructEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val shapeContainingMembers: Shape,
     private val members: List<MemberShape>,
-    private val writer: SwiftWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
-) : MemberShapeEncodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
+    private val writer: SwiftWriter
+) : MemberShapeEncodeXMLGenerator(ctx, writer) {
 
     override fun render() {
         writer.addImport(SwiftDependency.SMITHY_XML.target)
@@ -30,7 +28,7 @@ class StructEncodeXMLGenerator(
             writer.write("")
         }
         writer.openBlock(
-            "static func write(_ value: \$N?, to writer: \$N) throws {", "}",
+            "static func writingClosure(_ value: \$N?, to writer: \$N) throws {", "}",
             structSymbol,
             SmithyXMLTypes.Writer
         ) {

@@ -63,7 +63,7 @@ class OperationInputBodyMiddleware(
     private fun addXMLMiddleware(writer: SwiftWriter, operationStackName: String, xmlName: String, inputSymbol: Symbol, outputSymbol: Symbol) {
         writer.addImport(SwiftDependency.SMITHY_XML.target)
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N>(serializer: { try SmithyXML.DocumentWriter().write($$0, rootElement: \$S, valueWriter: \$N.write(_:to:)) }))",
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N>(serializer: { try SmithyXML.DocumentWriter().write($$0, rootElement: \$S, writingClosure: \$N.writingClosure(_:to:)) }))",
             operationStackName, middlewareStep.stringValue(), position.stringValue(), ClientRuntimeTypes.Middleware.SerializableBodyMiddleware, inputSymbol, outputSymbol, xmlName, inputSymbol
         )
     }

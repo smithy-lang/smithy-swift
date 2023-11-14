@@ -12,7 +12,6 @@ let package = Package(
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
-//        .library(name: "SmithyTimestamps", targets: ["SmithyTimestamps"])
     ],
     dependencies: [
         .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.17.0"),

@@ -133,7 +133,7 @@ class HttpBodyMiddleware(
                                 writer.write("input.builder.withBody(.stream(encoderStream))")
                             } else {
                                 val targetSymbol = ctx.symbolProvider.toSymbol(target)
-                                writer.write("let $dataDeclaration = try xmlEncoder.write(\$L, rootElement: \$S, valueWriter: \$N.write(_:to:))", memberName, xmlName, targetSymbol)
+                                writer.write("let $dataDeclaration = try xmlEncoder.write(\$L, rootElement: \$S, writingClosure: \$N.writingClosure(_:to:))", memberName, xmlName, targetSymbol)
                                 renderEncodedBodyAddedToRequest(memberName, bodyDeclaration, dataDeclaration)
                             }
                         } else {

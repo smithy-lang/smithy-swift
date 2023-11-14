@@ -132,37 +132,37 @@ public class Writer {
         try write(value?.rawValue)
     }
 
-    public func writeMap<T>(_ value: [String: T]?, valueWriter: WriterClosure<T>, keyNodeInfo: NodeInfo, valueNodeInfo: NodeInfo, isFlattened: Bool) throws {
+    public func writeMap<T>(_ value: [String: T]?, valueWritingClosure: WriterClosure<T>, keyNodeInfo: NodeInfo, valueNodeInfo: NodeInfo, isFlattened: Bool) throws {
         guard let value else { detach(); return }
         if isFlattened {
             guard let parent = self.parent else { return }
             for (key, value) in value {
                 let entryWriter = parent[.init(element.name ?? "")]
                 try entryWriter[keyNodeInfo].write(key)
-                try valueWriter(value, entryWriter[valueNodeInfo])
+                try valueWritingClosure(value, entryWriter[valueNodeInfo])
             }
             detach()
         } else {
             for (key, value) in value {
                 let entryWriter = self[.init("entry")]
                 try entryWriter[keyNodeInfo].write(key)
-                try valueWriter(value, entryWriter[valueNodeInfo])
+                try valueWritingClosure(value, entryWriter[valueNodeInfo])
             }
         }
     }
 
-    public func writeList<T>(_ value: [T]?, memberWriter: WriterClosure<T>, memberNodeInfo: NodeInfo, isFlattened: Bool) throws {
+    public func writeList<T>(_ value: [T]?, memberWritingClosure: WriterClosure<T>, memberNodeInfo: NodeInfo, isFlattened: Bool) throws {
         guard let value else { detach(); return }
         if isFlattened {
             guard let parent = self.parent else { return }
             let flattenedMemberNodeInfo = NodeInfo(element.name ?? "", location: memberNodeInfo.location, namespace: memberNodeInfo.namespace)
             for member in value {
-                try memberWriter(member, parent[flattenedMemberNodeInfo])
+                try memberWritingClosure(member, parent[flattenedMemberNodeInfo])
             }
             detach()
         } else {
             for member in value {
-                try memberWriter(member, self[memberNodeInfo])
+                try memberWritingClosure(member, self[memberNodeInfo])
             }
         }
     }

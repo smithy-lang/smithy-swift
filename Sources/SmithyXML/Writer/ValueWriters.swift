@@ -10,27 +10,27 @@ import enum SmithyTimestamps.TimestampFormat
 
 public typealias WriterClosure<T> = (T?, Writer) throws -> Void
 
-public func mapWriter<T>(
-    valueWriter: @escaping WriterClosure<T>,
+public func mapWritingClosure<T>(
+    valueWritingClosure: @escaping WriterClosure<T>,
     keyNodeInfo: NodeInfo, valueNodeInfo:
     NodeInfo, isFlattened: Bool
 ) -> WriterClosure<[String: T]> {
     return { map, writer in
-        try writer.writeMap(map, valueWriter: valueWriter, keyNodeInfo: keyNodeInfo, valueNodeInfo: valueNodeInfo, isFlattened: isFlattened)
+        try writer.writeMap(map, valueWritingClosure: valueWritingClosure, keyNodeInfo: keyNodeInfo, valueNodeInfo: valueNodeInfo, isFlattened: isFlattened)
     }
 }
 
-public func listWriter<T>(
-    memberWriter: @escaping WriterClosure<T>,
+public func listWritingClosure<T>(
+    memberWritingClosure: @escaping WriterClosure<T>,
     memberNodeInfo: NodeInfo,
     isFlattened: Bool
 ) -> WriterClosure<[T]> {
     return { array, writer in
-        try writer.writeList(array, memberWriter: memberWriter, memberNodeInfo: memberNodeInfo, isFlattened: isFlattened)
+        try writer.writeList(array, memberWritingClosure: memberWritingClosure, memberNodeInfo: memberNodeInfo, isFlattened: isFlattened)
     }
 }
 
-public func timestampWriter(memberNodeInfo: NodeInfo, format: TimestampFormat) -> WriterClosure<Date> {
+public func timestampWritingClosure(memberNodeInfo: NodeInfo, format: TimestampFormat) -> WriterClosure<Date> {
     return { date, writer in
         try writer.writeTimestamp(date, format: format)
     }
@@ -38,35 +38,35 @@ public func timestampWriter(memberNodeInfo: NodeInfo, format: TimestampFormat) -
 
 public extension String {
 
-    static func write(_ value: String?, to writer: Writer) throws {
+    static func writingClosure(_ value: String?, to writer: Writer) throws {
         try writer.write(value)
     }
 }
 
 public extension RawRepresentable where RawValue == Int {
 
-    static func write(_ value: Self?, to writer: Writer) throws {
+    static func writingClosure(_ value: Self?, to writer: Writer) throws {
         try writer.write(value?.rawValue)
     }
 }
 
 public extension RawRepresentable where RawValue == String {
 
-    static func write(_ value: Self?, to writer: Writer) throws {
+    static func writingClosure(_ value: Self?, to writer: Writer) throws {
         try writer.write(value?.rawValue)
     }
 }
 
 public extension Bool {
 
-    static func write(_ value: Bool?, to writer: Writer) throws {
+    static func writingClosure(_ value: Bool?, to writer: Writer) throws {
         try writer.write(value)
     }
 }
 
 public extension Int {
 
-    static func write(_ value: Int?, to writer: Writer) throws {
+    static func writingClosure(_ value: Int?, to writer: Writer) throws {
         try writer.write(value)
     }
 }

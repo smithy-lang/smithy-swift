@@ -12,10 +12,10 @@ public class DocumentWriter {
 
     public init() {}
 
-    public func write<T>(_ value: T, rootElement: String, valueWriter: (T, Writer) throws -> Void) throws -> Data {
+    public func write<T>(_ value: T, rootElement: String, writingClosure: (T, Writer) throws -> Void) throws -> Data {
         let rootElement = XMLElement(name: rootElement)
         let writer = Writer(element: rootElement, nodeInfoPath: [], parent: nil)
-        try valueWriter(value, writer)
+        try writingClosure(value, writer)
         return Data(rootElement.xmlString.utf8)
     }
 }

@@ -18,14 +18,13 @@ class UnionEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val shapeContainingMembers: Shape,
     private val members: List<MemberShape>,
-    private val writer: SwiftWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
-) : MemberShapeEncodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
+    private val writer: SwiftWriter
+) : MemberShapeEncodeXMLGenerator(ctx, writer) {
     override fun render() {
         writer.addImport(SwiftDependency.SMITHY_XML.target)
         val structSymbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
-            "static func write(_ value: \$N?, to writer: \$N) throws {", "}",
+            "static func writingClosure(_ value: \$N?, to writer: \$N) throws {", "}",
             structSymbol,
             SmithyXMLTypes.Writer
         ) {

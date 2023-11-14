@@ -25,7 +25,6 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 abstract class MemberShapeEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) : MemberShapeEncodeGeneratable {
 
     fun writeMember(memberShape: MemberShape, unionMember: Boolean) {
@@ -55,7 +54,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val targetSymbol = ctx.symbolProvider.toSymbol(targetShape)
         val propertyKey = nodeInfo(memberShape)
         writer.write(
-            "try \$N.write(\$L\$L, to: writer[\$L])",
+            "try \$N.writingClosure(\$L\$L, to: writer[\$L])",
             targetSymbol,
             prefix,
             memberName,
@@ -103,7 +102,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val isFlattened = member.hasTrait<XmlFlattenedTrait>()
         val memberNodeInfo = nodeInfo(listShape.member)
         writer.write(
-            "try writer[\$L].writeList(\$L\$L, memberWriter: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+            "try writer[\$L].writeList(\$L\$L, memberWritingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
             listKey,
             prefix,
             memberName,
@@ -121,7 +120,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val valueWriter = valueWriter(mapShape.value)
         val isFlattened = member.hasTrait<XmlFlattenedTrait>()
         writer.write(
-            "try writer[\$L].writeMap(\$L\$L, valueWriter: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+            "try writer[\$L].writeMap(\$L\$L, valueWritingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
             mapKey,
             prefix,
             memberName,
@@ -141,7 +140,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 val valueWriter = valueWriter(target.value)
                 val isFlattened = target.hasTrait<XmlFlattenedTrait>()
                 return writer.format(
-                    "SmithyXML.mapWriter(valueWriter: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+                    "SmithyXML.mapWritingClosure(valueWritingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
                     valueWriter,
                     keyNodeInfo,
                     valueNodeInfo,
@@ -153,7 +152,7 @@ abstract class MemberShapeEncodeXMLGenerator(
                 val memberWriter = valueWriter(target.member)
                 val isFlattened = target.hasTrait<XmlFlattenedTrait>()
                 return writer.format(
-                    "SmithyXML.listWriter(memberWriter: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+                    "SmithyXML.listWritingClosure(memberWritingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
                     memberWriter,
                     memberNodeInfo,
                     isFlattened
@@ -162,13 +161,13 @@ abstract class MemberShapeEncodeXMLGenerator(
             is TimestampShape -> {
                 val memberNodeInfo = nodeInfo(member)
                 return writer.format(
-                    "SmithyXML.timestampWriter(memberNodeInfo: \$L, format: \$L)",
+                    "SmithyXML.timestampWritingClosure(memberNodeInfo: \$L, format: \$L)",
                     memberNodeInfo,
                     timestampFormat(member, target)
                 )
             }
             else -> {
-                return writer.format("\$N.write(_:to:)", ctx.symbolProvider.toSymbol(target))
+                return writer.format("\$N.writingClosure(_:to:)", ctx.symbolProvider.toSymbol(target))
             }
         }
     }

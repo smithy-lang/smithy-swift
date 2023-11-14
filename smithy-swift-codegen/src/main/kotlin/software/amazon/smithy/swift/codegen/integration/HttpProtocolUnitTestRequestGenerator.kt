@@ -4,6 +4,10 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
+import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
@@ -19,6 +23,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
@@ -155,7 +160,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
                 val expectedData = "expectedData"
                 val actualData = "actualData"
-                writer.openBlock("try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { $expectedData, $actualData in ", "}") {
+                val isXML = ctx.service.hasTrait<RestXmlTrait>()
+                val isJSON = ctx.service.hasTrait<RestJson1Trait>() || ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>()
+                writer.openBlock("try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: \$L, isJSON: \$L) { $expectedData, $actualData in ", "}", isXML, isJSON) {
                     val httpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
 
                     httpPayloadShape?.let {
