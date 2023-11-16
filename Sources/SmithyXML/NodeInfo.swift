@@ -14,7 +14,7 @@ public struct NodeInfo {
         case attribute
     }
 
-    public struct Namespace {
+    public struct Namespace: Equatable {
         let prefix: String
         let uri: String
 

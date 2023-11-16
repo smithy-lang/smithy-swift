@@ -163,7 +163,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 val isXML = ctx.service.hasTrait<RestXmlTrait>()
                 val isJSON = ctx.service.hasTrait<RestJson1Trait>() || ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>()
                 writer.openBlock("try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: \$L, isJSON: \$L) { $expectedData, $actualData in ", "}", isXML, isJSON) {
-                    writer.write("print(\"Actual data: \\(String(data: actualData, encoding: .utf8)!)\")")
                     val httpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
 
                     httpPayloadShape?.let {

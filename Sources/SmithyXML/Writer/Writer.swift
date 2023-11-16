@@ -38,7 +38,7 @@ public class Writer {
 
     public subscript(_ nodeInfo: NodeInfo) -> Writer {
         let newChild = XMLElement(name: nodeInfo.name)
-        if let namespace = nodeInfo.namespace {
+        if let namespace = nodeInfo.namespace, !nodeInfoPath.compactMap({ $0.namespace }).contains(namespace) {
             let namespaceNode = XMLNode(kind: .namespace)
             namespaceNode.name = namespace.prefix
             namespaceNode.stringValue = namespace.uri
