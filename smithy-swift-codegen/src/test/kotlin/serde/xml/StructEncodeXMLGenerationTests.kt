@@ -63,14 +63,10 @@ class StructEncodeXMLGenerationTests {
                     case b = "other"
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let a = a {
-                        try container.encode(a, forKey: ClientRuntime.Key("value"))
-                    }
-                    if let b = b {
-                        try container.encode(b, forKey: ClientRuntime.Key("other"))
-                    }
+                static func writingClosure(_ value: RestXmlProtocolClientTypes.StructureListMember?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("value")].write(value.a)
+                    try writer[.init("other")].write(value.b)
                 }
             
                 public init(from decoder: Swift.Decoder) throws {

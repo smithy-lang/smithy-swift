@@ -24,37 +24,9 @@ class NamespaceEncodeXMLGenerationTests {
                     case nested
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if encoder.codingPath.isEmpty {
-                        try container.encode("http://foo.com", forKey: ClientRuntime.Key("xmlns"))
-                    }
-                    if let nested = nested {
-                        try container.encode(nested, forKey: ClientRuntime.Key("nested"))
-                    }
-                }
-            }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `002 xmlnamespace, XmlNamespacesInput, DynamicNodeEncoding`() {
-        val context = setupTests("Isolated/Restxml/xml-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesInput+DynamicNodeEncoding.swift")
-        val expectedContents =
-            """
-            extension XmlNamespacesInput: ClientRuntime.DynamicNodeEncoding {
-                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
-                    let xmlNamespaceValues = [
-                        "xmlns"
-                    ]
-                    if let key = key as? ClientRuntime.Key {
-                        if xmlNamespaceValues.contains(key.stringValue) {
-                            return .attribute
-                        }
-                    }
-                    return .element
+                static func writingClosure(_ value: XmlNamespacesInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try RestXmlProtocolClientTypes.XmlNamespaceNested.writingClosure(value.nested, to: writer[.init("nested", namespace: .init(prefix: "", uri: "http://boo.com"))])
                 }
             }
             """.trimIndent()
@@ -73,25 +45,10 @@ class NamespaceEncodeXMLGenerationTests {
                     case values
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if encoder.codingPath.isEmpty {
-                        try container.encode("http://boo.com", forKey: ClientRuntime.Key("xmlns"))
-                    }
-                    if let foo = foo {
-                        var fooContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("foo"))
-                        try fooContainer.encode(foo, forKey: ClientRuntime.Key(""))
-                        try fooContainer.encode("http://baz.com", forKey: ClientRuntime.Key("xmlns:baz"))
-                    }
-                    if let values = values {
-                        var valuesContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("values"))
-                        try valuesContainer.encode("http://qux.com", forKey: ClientRuntime.Key("xmlns"))
-                        for string0 in values {
-                            var valuesContainer0 = valuesContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
-                            try valuesContainer0.encode(string0, forKey: ClientRuntime.Key(""))
-                            try valuesContainer0.encode("http://bux.com", forKey: ClientRuntime.Key("xmlns"))
-                        }
-                    }
+                static func writingClosure(_ value: RestXmlProtocolClientTypes.XmlNamespaceNested?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("foo", namespace: .init(prefix: "baz", uri: "http://baz.com"))].write(value.foo)
+                    try writer[.init("values", namespace: .init(prefix: "", uri: "http://qux.com"))].writeList(value.values, memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member", namespace: .init(prefix: "", uri: "http://bux.com")), isFlattened: false)
                 }
             
                 public init(from decoder: Swift.Decoder) throws {
@@ -124,30 +81,6 @@ class NamespaceEncodeXMLGenerationTests {
     }
 
     @Test
-    fun `004 xmlnamespace, XmlNamespaceNested, nested structure needs dynamic node encoding`() {
-        val context = setupTests("Isolated/Restxml/xml-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNested+DynamicNodeEncoding.swift")
-        val expectedContents =
-            """
-            extension RestXmlProtocolClientTypes.XmlNamespaceNested: ClientRuntime.DynamicNodeEncoding {
-                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
-                    let xmlNamespaceValues = [
-                        "xmlns",
-                        "xmlns:baz"
-                    ]
-                    if let key = key as? ClientRuntime.Key {
-                        if xmlNamespaceValues.contains(key.stringValue) {
-                            return .attribute
-                        }
-                    }
-                    return .element
-                }
-            }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
     fun `005 xmlnamespace nested list, Encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-nestedlist.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNestedListInput+Encodable.swift")
@@ -158,49 +91,9 @@ class NamespaceEncodeXMLGenerationTests {
                     case nested
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if encoder.codingPath.isEmpty {
-                        try container.encode("http://foo.com", forKey: ClientRuntime.Key("xmlns"))
-                    }
-                    if let nested = nested {
-                        var nestedContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nested"))
-                        try nestedContainer.encode("http://aux.com", forKey: ClientRuntime.Key("xmlns"))
-                        for xmlnestednamespacedlist0 in nested {
-                            var xmlnestednamespacedlist0Container0 = nestedContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
-                            try xmlnestednamespacedlist0Container0.encode("http://bux.com", forKey: ClientRuntime.Key("xmlns:baz"))
-                            for string1 in xmlnestednamespacedlist0 {
-                                var xmlnestednamespacedlist0Container1 = xmlnestednamespacedlist0Container0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
-                                try xmlnestednamespacedlist0Container1.encode(string1, forKey: ClientRuntime.Key(""))
-                                try xmlnestednamespacedlist0Container1.encode("http://bar.com", forKey: ClientRuntime.Key("xmlns:bzzzz"))
-                            }
-                        }
-                    }
-                }
-            }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `006 xmlnamespace nested list, dynamic node encoding`() {
-        val context = setupTests("Isolated/Restxml/xml-namespace-nestedlist.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNestedListInput+DynamicNodeEncoding.swift")
-        val expectedContents =
-            """
-            extension XmlNamespaceNestedListInput: ClientRuntime.DynamicNodeEncoding {
-                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
-                    let xmlNamespaceValues = [
-                        "xmlns",
-                        "xmlns:baz",
-                        "xmlns:bzzzz"
-                    ]
-                    if let key = key as? ClientRuntime.Key {
-                        if xmlNamespaceValues.contains(key.stringValue) {
-                            return .attribute
-                        }
-                    }
-                    return .element
+                static func writingClosure(_ value: XmlNamespaceNestedListInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("nested", namespace: .init(prefix: "", uri: "http://aux.com"))].writeList(value.nested, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member", namespace: .init(prefix: "bzzzz", uri: "http://bar.com")), isFlattened: false), memberNodeInfo: .init("member", namespace: .init(prefix: "baz", uri: "http://bux.com")), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -218,71 +111,9 @@ class NamespaceEncodeXMLGenerationTests {
                     case nested
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if encoder.codingPath.isEmpty {
-                        try container.encode("http://foo.com", forKey: ClientRuntime.Key("xmlns"))
-                    }
-                    if let nested = nested {
-                        if nested.isEmpty {
-                            var nestedContainer = container.nestedUnkeyedContainer(forKey: ClientRuntime.Key("nested"))
-                            try nestedContainer.encodeNil()
-                        } else {
-                            for string0 in nested {
-                                var nestedContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nested"))
-                                try nestedContainer0.encode("http://aux.com", forKey: ClientRuntime.Key("xmlns:baz"))
-                                try nestedContainer0.encode(string0, forKey: ClientRuntime.Key(""))
-                            }
-                        }
-                    }
-                }
-            }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `008 xmlnamespace nested flattened list, dynamic node encoding`() {
-        val context = setupTests("Isolated/Restxml/xml-namespace-flattenedlist.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceFlattenedListInput+DynamicNodeEncoding.swift")
-        val expectedContents =
-            """
-            extension XmlNamespaceFlattenedListInput: ClientRuntime.DynamicNodeEncoding {
-                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
-                    let xmlNamespaceValues = [
-                        "xmlns",
-                        "xmlns:baz"
-                    ]
-                    if let key = key as? ClientRuntime.Key {
-                        if xmlNamespaceValues.contains(key.stringValue) {
-                            return .attribute
-                        }
-                    }
-                    return .element
-                }
-            }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `009 xmlnamespace on service, dynamic node encoding`() {
-        val context = setupTests("Isolated/Restxml/xml-namespace-onservice.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceInput+DynamicNodeEncoding.swift")
-        val expectedContents =
-            """
-            extension XmlNamespacesOnServiceInput: ClientRuntime.DynamicNodeEncoding {
-                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
-                    let xmlNamespaceValues = [
-                        "xmlns",
-                        "xmlns:xsi"
-                    ]
-                    if let key = key as? ClientRuntime.Key {
-                        if xmlNamespaceValues.contains(key.stringValue) {
-                            return .attribute
-                        }
-                    }
-                    return .element
+                static func writingClosure(_ value: XmlNamespaceFlattenedListInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("nested", namespace: .init(prefix: "baz", uri: "http://aux.com"))].writeList(value.nested, memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: true)
                 }
             }
             """.trimIndent()
@@ -301,19 +132,10 @@ class NamespaceEncodeXMLGenerationTests {
                     case nested
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if encoder.codingPath.isEmpty {
-                        try container.encode("https://example.com", forKey: ClientRuntime.Key("xmlns"))
-                    }
-                    if let foo = foo {
-                        try container.encode(foo, forKey: ClientRuntime.Key("foo"))
-                    }
-                    if let nested = nested {
-                        var nestedContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nested"))
-                        try nestedContainer.encode(nested, forKey: ClientRuntime.Key(""))
-                        try nestedContainer.encode("https://example.com", forKey: ClientRuntime.Key("xmlns:xsi"))
-                    }
+                static func writingClosure(_ value: XmlNamespacesOnServiceInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("foo")].write(value.foo)
+                    try RestXmlProtocolClientTypes.NestedWithNamespace.writingClosure(value.nested, to: writer[.init("nested", namespace: .init(prefix: "xsi", uri: "https://example.com"))])
                 }
             }
             """.trimIndent()
@@ -332,19 +154,10 @@ class NamespaceEncodeXMLGenerationTests {
                     case nested
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if encoder.codingPath.isEmpty {
-                        try container.encode("https://overridable.com", forKey: ClientRuntime.Key("xmlns"))
-                    }
-                    if let foo = foo {
-                        try container.encode(foo, forKey: ClientRuntime.Key("foo"))
-                    }
-                    if let nested = nested {
-                        var nestedContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nested"))
-                        try nestedContainer.encode(nested, forKey: ClientRuntime.Key(""))
-                        try nestedContainer.encode("https://example.com", forKey: ClientRuntime.Key("xmlns:xsi"))
-                    }
+                static func writingClosure(_ value: XmlNamespacesOnServiceOverridableInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("foo")].write(value.foo)
+                    try RestXmlProtocolClientTypes.NestedWithNamespace.writingClosure(value.nested, to: writer[.init("nested", namespace: .init(prefix: "xsi", uri: "https://example.com"))])
                 }
             }
             """.trimIndent()

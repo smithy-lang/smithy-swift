@@ -25,14 +25,9 @@ class SetEncodeXMLGenerationTests {
                     case fooEnumSet
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let fooEnumSet = fooEnumSet {
-                        var fooEnumSetContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("fooEnumSet"))
-                        for fooenum0 in fooEnumSet {
-                            try fooEnumSetContainer.encode(fooenum0, forKey: ClientRuntime.Key("member"))
-                        }
-                    }
+                static func writingClosure(_ value: XmlEnumSetInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("fooEnumSet")].writeList(value.fooEnumSet, memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -52,17 +47,9 @@ class SetEncodeXMLGenerationTests {
                     case fooEnumSet
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let fooEnumSet = fooEnumSet {
-                        var fooEnumSetContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("fooEnumSet"))
-                        for fooenumset0 in fooEnumSet {
-                            var fooenumset0Container0 = fooEnumSetContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
-                            for fooenum1 in fooenumset0 {
-                                try fooenumset0Container0.encode(fooenum1, forKey: ClientRuntime.Key("member"))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlEnumNestedSetInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("fooEnumSet")].writeList(value.fooEnumSet, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false), memberNodeInfo: .init("member"), isFlattened: false)
                 }
             }
             """.trimIndent()
