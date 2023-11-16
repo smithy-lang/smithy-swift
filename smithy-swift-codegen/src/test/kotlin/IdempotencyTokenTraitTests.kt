@@ -16,6 +16,7 @@ class IdempotencyTokenTraitTests {
                 /// - Returns: `IdempotencyTokenWithStructureOutput` : [no documentation found]
                 public func idempotencyTokenWithStructure(input: IdempotencyTokenWithStructureInput) async throws -> IdempotencyTokenWithStructureOutput
                 {
+                    let encoder = self.encoder
                     let context = ClientRuntime.HttpContextBuilder()
                                   .withEncoder(value: encoder)
                                   .withDecoder(value: decoder)
@@ -31,7 +32,7 @@ class IdempotencyTokenTraitTests {
                     operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>())
                     operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>())
                     operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>(contentType: "application/xml"))
-                    operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>(xmlName: "IdempotencyToken"))
+                    operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, SmithyXML.Writer>(documentWritingClosure: SmithyXML.XMLReadWrite.documentWritingClosure(rootNodeInfo: .init("IdempotencyToken")), inputWritingClosure: IdempotencyTokenWithStructureInput.writingClosure(_:to:)))
                     operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
                     operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>(options: config.retryStrategyOptions))
                     operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>())

@@ -95,7 +95,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SmokeTestInput, SmokeTestOutput>())
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.QueryItemMiddleware<SmokeTestInput, SmokeTestOutput>())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SmokeTestInput, SmokeTestOutput>(contentType: "application/json"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<SmokeTestInput, SmokeTestOutput>(xmlName: "SmokeTestRequest"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SmokeTestInput, SmokeTestOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<SmokeTestOutput, SmokeTestOutputError>(
@@ -103,7 +103,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
+                try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     do {
                         let expectedObj = try decoder.decode(SmokeTestInputBody.self, from: expectedData)
                         let actualObj = try decoder.decode(SmokeTestInputBody.self, from: actualData)
@@ -848,7 +848,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 return try await next.handle(context: context, input: input)
             }
             operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>(contentType: "application/json"))
-            operationStack.serializeStep.intercept(position: .after, middleware: InlineDocumentAsPayloadInputBodyMiddleware())
+            operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.PayloadBodyMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput, ClientRuntime.Document, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure(), keyPath: \.documentValue, defaultBody: "{}"))
             operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
             operationStack.deserializeStep.intercept(position: .after,
                          middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutput, InlineDocumentAsPayloadOutputError>(
@@ -856,7 +856,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                     XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                     XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                    try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
+                    try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                         do {
                             let expectedObj = try decoder.decode(ClientRuntime.Document.self, from: expectedData)
                             let actualObj = try decoder.decode(ClientRuntime.Document.self, from: actualData)
@@ -878,6 +878,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 throw serviceError
             })
         }
+    }
  """
         contents.shouldContainOnlyOnce(expectedContents)
     }

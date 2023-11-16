@@ -141,7 +141,7 @@ class StructureGeneratorTests {
             """
 public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
     public var foo: Swift.String?
-    public var nested: RecursiveShapesInputOutputNested2?
+    @Indirect public var nested: RecursiveShapesInputOutputNested2?
 
     public init(
         foo: Swift.String? = nil,
@@ -155,7 +155,7 @@ public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
 
 public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
     public var bar: Swift.String?
-    @Indirect public var recursiveMember: RecursiveShapesInputOutputNested1?
+    public var recursiveMember: RecursiveShapesInputOutputNested1?
 
     public init(
         bar: Swift.String? = nil,
