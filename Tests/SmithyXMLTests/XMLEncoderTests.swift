@@ -22,7 +22,12 @@ class XMLEncoderTests: XCTestCase {
     }
 
     func test_encodesXMLWithNestedElements() throws {
-        let data = try DocumentWriter().write(HasNestedElements(a: "a", b: "b"), rootElement: "test", valueWriter: HasNestedElements.write(_:to:))
+        let data = try SmithyXML.XMLReadWrite.documentWritingClosure(
+            rootNodeInfo: .init("test")
+        )(
+            HasNestedElements(a: "a", b: "b"),
+            HasNestedElements.write(_:to:)
+        )
         let xml = "<test><a>a</a><b>b</b></test>"
         try AssertXMLDataEqual(data, Data(xml.utf8))
     }
@@ -39,7 +44,12 @@ class XMLEncoderTests: XCTestCase {
     }
 
     func test_encodesXMLWithElementAndAttribute() throws {
-        let data = try DocumentWriter().write(HasNestedElementAndAttribute(a: "a", b: "b"), rootElement: "test", valueWriter: HasNestedElementAndAttribute.write(_:to:))
+        let data = try SmithyXML.XMLReadWrite.documentWritingClosure(
+            rootNodeInfo: .init("test")
+        )(
+            HasNestedElementAndAttribute(a: "a", b: "b"),
+            HasNestedElementAndAttribute.write(_:to:)
+        )
         let xml = "<test b=\"b\"><a>a</a></test>"
         try AssertXMLDataEqual(data, Data(xml.utf8))
     }
