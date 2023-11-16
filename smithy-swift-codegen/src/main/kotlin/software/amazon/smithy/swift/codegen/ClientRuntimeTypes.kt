@@ -22,7 +22,6 @@ object ClientRuntimeTypes {
         val SdkHttpClient = runtimeSymbol("SdkHttpClient")
         val SdkHttpRequestBuilder = runtimeSymbol("SdkHttpRequestBuilder")
         val SdkHttpRequest = runtimeSymbol("SdkHttpRequest")
-        val HttpBody = runtimeSymbol("HttpBody")
         val HttpResponse = runtimeSymbol("HttpResponse")
         val HttpResponseBinding = runtimeSymbol("HttpResponseBinding")
         val HttpResponseErrorBinding = runtimeSymbol("HttpResponseErrorBinding")

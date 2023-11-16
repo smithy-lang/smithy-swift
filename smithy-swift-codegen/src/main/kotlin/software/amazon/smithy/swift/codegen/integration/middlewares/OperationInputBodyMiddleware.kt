@@ -158,7 +158,7 @@ class OperationInputBodyMiddleware(
             operationStackName,
             middlewareStep.stringValue(),
             position.stringValue(),
-             ClientRuntimeTypes.Middleware.BlobStreamBodyMiddleware.takeIf { streaming } ?: ClientRuntimeTypes.Middleware.BlobBodyMiddleware,
+            ClientRuntimeTypes.Middleware.BlobStreamBodyMiddleware.takeIf { streaming } ?: ClientRuntimeTypes.Middleware.BlobBodyMiddleware,
             inputSymbol,
             outputSymbol,
             keyPath
