@@ -25,21 +25,17 @@ class RecursiveShapesEncodeXMLGenerationTests {
                     case nested
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let foo = foo {
-                        try container.encode(foo, forKey: ClientRuntime.Key("foo"))
-                    }
-                    if let nested = nested {
-                        try container.encode(nested, forKey: ClientRuntime.Key("nested"))
-                    }
+                static func writingClosure(_ value: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("foo")].write(value.foo)
+                    try RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2.writingClosure(value.nested, to: writer[.init("nested")])
                 }
             
                 public init(from decoder: Swift.Decoder) throws {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let fooDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .foo)
                     foo = fooDecoded
-                    let nestedDecoded = try containerValues.decodeIfPresent(Box<RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2>.self, forKey: .nested)
+                    let nestedDecoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2.self, forKey: .nested)
                     nested = nestedDecoded
                 }
             }
@@ -59,13 +55,10 @@ class RecursiveShapesEncodeXMLGenerationTests {
                     case recursiveMember
                 }
             
-                static var nodeInfo: SmithyXML.NodeInfo = .init("RecursiveShapesInputOutputNested2")
-            
-                static func write(_ value: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2?, to writer: SmithyXML.Writer) throws {
+                static func writingClosure(_ value: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2?, to writer: SmithyXML.Writer) throws {
                     guard let value else { writer.detach(); return }
-                    writer.updateIfRootNode(rootNodeInfo: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2.nodeInfo)
                     try writer[.init("bar")].write(value.bar)
-                    try RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.write(value.recursiveMember, to: writer[.init("recursiveMember")])
+                    try RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.writingClosure(value.recursiveMember, to: writer[.init("recursiveMember")])
                 }
             
                 public init(from decoder: Swift.Decoder) throws {
@@ -91,17 +84,9 @@ class RecursiveShapesEncodeXMLGenerationTests {
                     case nestedRecursiveList
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let nestedRecursiveList = nestedRecursiveList {
-                        var nestedRecursiveListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedRecursiveList"))
-                        for nestedrecursiveshapeslist0 in nestedRecursiveList {
-                            var nestedrecursiveshapeslist0Container0 = nestedRecursiveListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
-                            for recursiveshapesinputoutputnested11 in nestedrecursiveshapeslist0 {
-                                try nestedrecursiveshapeslist0Container0.encode(recursiveshapesinputoutputnested11, forKey: ClientRuntime.Key("member"))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlNestedRecursiveShapesInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("nestedRecursiveList")].writeList(value.nestedRecursiveList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false), memberNodeInfo: .init("member"), isFlattened: false)
                 }
             }
             """.trimIndent()
