@@ -11,11 +11,18 @@ import enum SmithyTimestamps.TimestampFormat
 
 public func mapWritingClosure<T>(
     valueWritingClosure: @escaping WritingClosure<T, Writer>,
-    keyNodeInfo: NodeInfo, valueNodeInfo:
-    NodeInfo, isFlattened: Bool
+    keyNodeInfo: NodeInfo,
+    valueNodeInfo: NodeInfo,
+    isFlattened: Bool
 ) -> WritingClosure<[String: T], Writer> {
     return { map, writer in
-        try writer.writeMap(map, valueWritingClosure: valueWritingClosure, keyNodeInfo: keyNodeInfo, valueNodeInfo: valueNodeInfo, isFlattened: isFlattened)
+        try writer.writeMap(
+            map,
+            valueWritingClosure: valueWritingClosure,
+            keyNodeInfo: keyNodeInfo,
+            valueNodeInfo: valueNodeInfo,
+            isFlattened: isFlattened
+        )
     }
 }
 
@@ -25,7 +32,12 @@ public func listWritingClosure<T>(
     isFlattened: Bool
 ) -> WritingClosure<[T], Writer> {
     return { array, writer in
-        try writer.writeList(array, memberWritingClosure: memberWritingClosure, memberNodeInfo: memberNodeInfo, isFlattened: isFlattened)
+        try writer.writeList(
+            array,
+            memberWritingClosure: memberWritingClosure,
+            memberNodeInfo: memberNodeInfo,
+            isFlattened: isFlattened
+        )
     }
 }
 

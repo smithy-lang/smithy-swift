@@ -22,7 +22,9 @@ public class JSONWriter {
 
 public enum JSONReadWrite {
 
-    public static func documentWritingClosure<T: Encodable>(encoder: RequestEncoder) -> DocumentWritingClosure<T, JSONWriter> {
+    public static func documentWritingClosure<T: Encodable>(
+        encoder: RequestEncoder
+    ) -> DocumentWritingClosure<T, JSONWriter> {
         return { value, writingClosure in
             let jsonEncoder = JSONWriter(encoder: encoder)
             try writingClosure(value, jsonEncoder)

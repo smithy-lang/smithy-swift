@@ -145,7 +145,13 @@ public class Writer {
         try write(value?.rawValue)
     }
 
-    public func writeMap<T>(_ value: [String: T]?, valueWritingClosure: WritingClosure<T, Writer>, keyNodeInfo: NodeInfo, valueNodeInfo: NodeInfo, isFlattened: Bool) throws {
+    public func writeMap<T>(
+        _ value: [String: T]?,
+        valueWritingClosure: WritingClosure<T, Writer>,
+        keyNodeInfo: NodeInfo,
+        valueNodeInfo: NodeInfo,
+        isFlattened: Bool
+    ) throws {
         guard let value else { detach(); return }
         if isFlattened {
             guard let parent = self.parent else { return }
@@ -164,11 +170,20 @@ public class Writer {
         }
     }
 
-    public func writeList<T>(_ value: [T]?, memberWritingClosure: WritingClosure<T, Writer>, memberNodeInfo: NodeInfo, isFlattened: Bool) throws {
+    public func writeList<T>(
+        _ value: [T]?,
+        memberWritingClosure: WritingClosure<T, Writer>,
+        memberNodeInfo: NodeInfo,
+        isFlattened: Bool
+    ) throws {
         guard let value else { detach(); return }
         if isFlattened {
             guard let parent = self.parent else { return }
-            let flattenedMemberNodeInfo = NodeInfo(element.name ?? "", location: memberNodeInfo.location, namespace: memberNodeInfo.namespace)
+            let flattenedMemberNodeInfo = NodeInfo(
+                element.name ?? "",
+                location: memberNodeInfo.location,
+                namespace: memberNodeInfo.namespace
+            )
             for member in value {
                 try memberWritingClosure(member, parent[flattenedMemberNodeInfo])
             }

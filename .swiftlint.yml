@@ -4,7 +4,7 @@ excluded:
   - Tests/ClientRuntimeTests/*
   - Tests/SmithyTestUtilTests/*
   - Tests/SmithyXMLTests/*
-  - Tests/SmithyTimestampTests/*
+  - Tests/SmithyTimestampsTests/*
 
 analyzer_rules:
   - unused_import

@@ -22,8 +22,10 @@ public class FormURLWriter {
 }
 
 public enum FormURLReadWrite {
-    
-    public static func documentWritingClosure<T: Encodable>(encoder: RequestEncoder) -> DocumentWritingClosure<T, FormURLWriter> {
+
+    public static func documentWritingClosure<T: Encodable>(
+        encoder: RequestEncoder
+    ) -> DocumentWritingClosure<T, FormURLWriter> {
         return { value, writingClosure in
             let formURLWriter = FormURLWriter(encoder: encoder)
             try writingClosure(value, formURLWriter)
