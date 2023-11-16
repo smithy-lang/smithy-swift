@@ -317,7 +317,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>(contentType: "application/json"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>(xmlName: "SimpleScalarPropertiesInputOutput"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<SimpleScalarPropertiesOutput, SimpleScalarPropertiesOutputError>(
@@ -325,7 +325,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
+                try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     do {
                         let expectedObj = try decoder.decode(SimpleScalarPropertiesInputBody.self, from: expectedData)
                         let actualObj = try decoder.decode(SimpleScalarPropertiesInputBody.self, from: actualData)
@@ -409,7 +409,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<StreamingTraitsInput, StreamingTraitsOutput>())
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutput>(contentType: "application/octet-stream"))
-        operationStack.serializeStep.intercept(position: .after, middleware: StreamingTraitsInputBodyMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BlobStreamBodyMiddleware<StreamingTraitsInput, StreamingTraitsOutput>(keyPath: \.blob))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<StreamingTraitsOutput, StreamingTraitsOutputError>(
@@ -417,7 +417,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
+                try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     XCTAssertEqual(expectedData, actualData)
                 }
             })
@@ -556,7 +556,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutput>(contentType: "application/json"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<JsonUnionsInput, JsonUnionsOutput>(xmlName: "UnionInputOutput"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<JsonUnionsInput, JsonUnionsOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<JsonUnionsOutput, JsonUnionsOutputError>(
@@ -564,7 +564,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
+                try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     do {
                         let expectedObj = try decoder.decode(JsonUnionsInputBody.self, from: expectedData)
                         let actualObj = try decoder.decode(JsonUnionsInputBody.self, from: actualData)
@@ -758,7 +758,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 return try await next.handle(context: context, input: input)
             }
             operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutput>(contentType: "application/json"))
-            operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<InlineDocumentInput, InlineDocumentOutput>(xmlName: "InlineDocumentInputOutput"))
+            operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<InlineDocumentInput, InlineDocumentOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
             operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
             operationStack.deserializeStep.intercept(position: .after,
                          middleware: MockDeserializeMiddleware<InlineDocumentOutput, InlineDocumentOutputError>(
@@ -766,7 +766,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                     XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                     XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                    try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
+                    try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                         do {
                             let expectedObj = try decoder.decode(InlineDocumentInputBody.self, from: expectedData)
                             let actualObj = try decoder.decode(InlineDocumentInputBody.self, from: actualData)
