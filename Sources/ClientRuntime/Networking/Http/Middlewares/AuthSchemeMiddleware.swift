@@ -70,7 +70,7 @@ public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
             if let authScheme = validAuthSchemes.get(key: AttributeKey<AuthScheme>(name: "\(option.schemeID)")) {
                 if let identityResolver = authScheme.identityResolver(config: identityResolverConfig) {
                     // Hook for auth scheme to customize signing properties
-                    let signingProperties = authScheme.customizeSigningProperties(
+                    let signingProperties = try authScheme.customizeSigningProperties(
                         signingProperties: option.signingProperties,
                         context: context
                     )

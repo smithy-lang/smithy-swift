@@ -154,7 +154,7 @@ class AuthSchemeResolverGenerator {
                 ServiceTypes.AuthSchemeResolverParams
             ) {
                 // Return value of array of auth options
-                write("var validAuthOptions = Array<AuthOption>()")
+                write("var validAuthOptions = [AuthOption]()")
                 // Cast params to service specific params object
                 openBlock("guard let serviceParams = params as? \$L else {", "}", serviceParamsName) {
                     write("throw ClientError.authError(\"Service specific auth scheme parameters type must be passed to auth scheme resolver.\")")
