@@ -181,7 +181,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<ExplicitStringInput, ExplicitStringOutput>(contentType: "text/plain"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ExplicitStringInputBodyMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.StringBodyMiddleware<ExplicitStringInput, ExplicitStringOutput>(keyPath: \.payload1))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<ExplicitStringOutput, ExplicitStringOutputError>(
@@ -189,7 +189,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
+                try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     XCTAssertEqual(expectedData, actualData)
                 }
             })
@@ -594,8 +594,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
     fun `it creates a unit test for recursive shapes`() {
         val contents = getTestFileContents("example", "RecursiveShapesRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
+        val expectedContents = """
     func testRestJsonRecursiveShapes() async throws {
         let urlPrefix = urlPrefixFromHost(host: "")
         let hostOnly = hostOnlyFromHost(host: "")
@@ -632,16 +631,12 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         let input = RecursiveShapesInput(
             nested: RecursiveShapesInputOutputNested1(
                 foo: "Foo1",
-                nested: Box<RecursiveShapesInputOutputNested2>(
-                    value: RecursiveShapesInputOutputNested2(
-                        bar: "Bar1",
-                        recursiveMember: RecursiveShapesInputOutputNested1(
-                            foo: "Foo2",
-                            nested: Box<RecursiveShapesInputOutputNested2>(
-                                value: RecursiveShapesInputOutputNested2(
-                                    bar: "Bar2"
-                                )
-                            )
+                nested: RecursiveShapesInputOutputNested2(
+                    bar: "Bar1",
+                    recursiveMember: RecursiveShapesInputOutputNested1(
+                        foo: "Foo2",
+                        nested: RecursiveShapesInputOutputNested2(
+                            bar: "Bar2"
                         )
                     )
                 )
@@ -665,7 +660,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutput>(contentType: "application/json"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<RecursiveShapesInput, RecursiveShapesOutput>(xmlName: "RecursiveShapesInputOutput"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<RecursiveShapesInput, RecursiveShapesOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(position: .after,
                      middleware: MockDeserializeMiddleware<RecursiveShapesOutput, RecursiveShapesOutputError>(
@@ -673,7 +668,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { expectedData, actualData in
+                try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     do {
                         let expectedObj = try decoder.decode(RecursiveShapesInputBody.self, from: expectedData)
                         let actualObj = try decoder.decode(RecursiveShapesInputBody.self, from: actualData)
@@ -797,8 +792,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
     fun `it creates a unit test for inline document as payload`() {
         val contents = getTestFileContents("example", "InlineDocumentAsPayloadRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
+        val expectedContents = """
     func testInlineDocumentAsPayloadInput() async throws {
         let urlPrefix = urlPrefixFromHost(host: "")
         let hostOnly = hostOnlyFromHost(host: "")
@@ -879,7 +873,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             })
         }
     }
- """
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }
