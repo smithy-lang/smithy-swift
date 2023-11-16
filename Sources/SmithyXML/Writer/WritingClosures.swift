@@ -6,31 +6,30 @@
 //
 
 import struct Foundation.Date
+import typealias SmithyReadWrite.WritingClosure
 import enum SmithyTimestamps.TimestampFormat
 
-public typealias WritingClosure<T> = (T?, Writer) throws -> Void
-
 public func mapWritingClosure<T>(
-    valueWritingClosure: @escaping WritingClosure<T>,
+    valueWritingClosure: @escaping WritingClosure<T, Writer>,
     keyNodeInfo: NodeInfo, valueNodeInfo:
     NodeInfo, isFlattened: Bool
-) -> WritingClosure<[String: T]> {
+) -> WritingClosure<[String: T], Writer> {
     return { map, writer in
         try writer.writeMap(map, valueWritingClosure: valueWritingClosure, keyNodeInfo: keyNodeInfo, valueNodeInfo: valueNodeInfo, isFlattened: isFlattened)
     }
 }
 
 public func listWritingClosure<T>(
-    memberWritingClosure: @escaping WritingClosure<T>,
+    memberWritingClosure: @escaping WritingClosure<T, Writer>,
     memberNodeInfo: NodeInfo,
     isFlattened: Bool
-) -> WritingClosure<[T]> {
+) -> WritingClosure<[T], Writer> {
     return { array, writer in
         try writer.writeList(array, memberWritingClosure: memberWritingClosure, memberNodeInfo: memberNodeInfo, isFlattened: isFlattened)
     }
 }
 
-public func timestampWritingClosure(format: TimestampFormat) -> WritingClosure<Date> {
+public func timestampWritingClosure(format: TimestampFormat) -> WritingClosure<Date, Writer> {
     return { date, writer in
         try writer.writeTimestamp(date, format: format)
     }

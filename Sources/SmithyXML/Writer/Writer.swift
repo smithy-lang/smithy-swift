@@ -9,6 +9,7 @@ import class Foundation.XMLElement
 import class Foundation.XMLNode
 import struct Foundation.Date
 import struct Foundation.Data
+import typealias SmithyReadWrite.WritingClosure
 import enum SmithyTimestamps.TimestampFormat
 import struct SmithyTimestamps.TimestampFormatter
 
@@ -16,6 +17,18 @@ public class Writer {
     let parent: Writer?
     let element: XMLElement
     public let nodeInfoPath: [NodeInfo]
+
+    init(rootNodeInfo: NodeInfo) {
+        self.parent = nil
+        self.nodeInfoPath = [rootNodeInfo]
+        self.element = XMLElement(name: rootNodeInfo.name)
+        if let namespace = rootNodeInfo.namespace {
+            let namespaceNode = XMLNode(kind: .namespace)
+            namespaceNode.name = namespace.prefix
+            namespaceNode.stringValue = namespace.uri
+            self.element.addNamespace(namespaceNode)
+        }
+    }
 
     init(element: XMLElement, nodeInfoPath: [NodeInfo], parent: Writer?) {
         self.element = element
@@ -132,7 +145,7 @@ public class Writer {
         try write(value?.rawValue)
     }
 
-    public func writeMap<T>(_ value: [String: T]?, valueWritingClosure: WritingClosure<T>, keyNodeInfo: NodeInfo, valueNodeInfo: NodeInfo, isFlattened: Bool) throws {
+    public func writeMap<T>(_ value: [String: T]?, valueWritingClosure: WritingClosure<T, Writer>, keyNodeInfo: NodeInfo, valueNodeInfo: NodeInfo, isFlattened: Bool) throws {
         guard let value else { detach(); return }
         if isFlattened {
             guard let parent = self.parent else { return }
@@ -151,7 +164,7 @@ public class Writer {
         }
     }
 
-    public func writeList<T>(_ value: [T]?, memberWritingClosure: WritingClosure<T>, memberNodeInfo: NodeInfo, isFlattened: Bool) throws {
+    public func writeList<T>(_ value: [T]?, memberWritingClosure: WritingClosure<T, Writer>, memberNodeInfo: NodeInfo, isFlattened: Bool) throws {
         guard let value else { detach(); return }
         if isFlattened {
             guard let parent = self.parent else { return }
@@ -173,19 +186,6 @@ public class Writer {
 
     public func detach() {
         element.detach()
-    }
-
-    public func updateIfRootNode(rootNodeInfo: NodeInfo) {
-        guard nodeInfoPath.isEmpty else { return }
-        if element.name?.isEmpty ?? true {
-            element.name = rootNodeInfo.name
-        }
-        if let namespace = rootNodeInfo.namespace {
-            let namespaceNode = XMLNode(kind: .namespace)
-            namespaceNode.name = namespace.prefix
-            namespaceNode.stringValue = namespace.uri
-            element.addNamespace(namespaceNode)
-        }
     }
 
     private func record(string: String?) {

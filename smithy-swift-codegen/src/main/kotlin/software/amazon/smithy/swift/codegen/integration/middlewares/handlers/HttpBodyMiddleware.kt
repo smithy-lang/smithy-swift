@@ -17,7 +17,7 @@ import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
-import software.amazon.smithy.swift.codegen.SmithyXMLTypes
+import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
@@ -36,7 +36,7 @@ class HttpBodyMiddleware(
     private val requestBindings: List<HttpBindingDescriptor>
 ) : Middleware(writer, inputSymbol, OperationSerializeStep(inputSymbol, outputSymbol, outputErrorSymbol)) {
 
-    override val typeName = "${inputSymbol.name}BodyMiddleware"
+    override val typeName = "${inputSymbol.name}BodyMiddleware<Writer>"
     companion object {
         fun renderBodyMiddleware(
             ctx: ProtocolGenerator.GenerationContext,
@@ -55,6 +55,7 @@ class HttpBodyMiddleware(
                     .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
 
                     val bodyMiddleware = HttpBodyMiddleware(writer, ctx, inputSymbol, outputSymbol, outputErrorSymbol, requestBindings)
                     MiddlewareGenerator(writer, bodyMiddleware).generate()
@@ -66,8 +67,26 @@ class HttpBodyMiddleware(
         renderEncodedBody()
     }
 
+    override val properties: MutableMap<String, Symbol> get() {
+        val docWritingClosureType = writer.format("\$N<\$N, Writer>", SmithyReadWriteTypes.DocumentWritingClosure, inputSymbol)
+        val inputWritingClosureType = writer.format("\$N<\$N, Writer>", SmithyReadWriteTypes.WritingClosure, inputSymbol)
+        return mutableMapOf<String, Symbol>(
+            Pair("documentWritingClosure", Symbol.builder().name(docWritingClosureType).build()),
+            Pair("inputWritingClosure", Symbol.builder().name(inputWritingClosureType).build())
+        )
+    }
+
     override fun generateInit() {
-        writer.write("public init() {}")
+        writer.openBlock(
+            "public init(documentWritingClosure: @escaping \$N<\$N, Writer>, inputWritingClosure: @escaping \$N<\$N, Writer>) {",
+            "}", SmithyReadWriteTypes.DocumentWritingClosure,
+            inputSymbol,
+            SmithyReadWriteTypes.WritingClosure,
+            inputSymbol
+        ) {
+            writer.write("self.documentWritingClosure = documentWritingClosure")
+            writer.write("self.inputWritingClosure = inputWritingClosure")
+        }
     }
 
     private fun renderEncodedBody() {
@@ -117,8 +136,6 @@ class HttpBodyMiddleware(
                         val xmlNameTrait = binding.member.getTrait<XmlNameTrait>() ?: target.getTrait<XmlNameTrait>()
                         if (ctx.protocol == RestXmlTrait.ID) {
                             val xmlName = xmlNameTrait?.value ?: ctx.symbolProvider.toSymbol(target).name
-                            writer.addImport(SwiftDependency.SMITHY_XML.target)
-                            writer.write("let xmlEncoder = \$N()", SmithyXMLTypes.DocumentWriter)
                             if (target.hasTrait<StreamingTrait>() && target.isUnionShape) {
                                 writer.openBlock("guard let messageEncoder = context.getMessageEncoder() else {", "}") {
                                     writer.write("fatalError(\"Message encoder is required for streaming payload\")")
@@ -145,7 +162,7 @@ class HttpBodyMiddleware(
                                     writer.write("fatalError(\"Message signer is required for streaming payload\")")
                                 }
                                 writer.write(
-                                    "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSinger: messageSigner)",
+                                    "let encoderStream = \$L(stream: $memberName, messageEncoder: messageEncoder, requestEncoder: encoder, messageSigner: messageSigner)",
                                     ClientRuntimeTypes.EventStream.MessageEncoderStream
                                 )
                                 writer.write("input.builder.withBody(.stream(encoderStream))")

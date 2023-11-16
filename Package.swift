@@ -10,6 +10,7 @@ let package = Package(
     ],
     products: [
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
+        .library(name: "SmithyReadWrite", targets: ["SmithyReadWrite"]),
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
@@ -29,7 +30,8 @@ let package = Package(
             ]
         ),
         .testTarget(name: "ClientRuntimeTests", dependencies: ["ClientRuntime", "SmithyTestUtil"]),
-        .target(name: "SmithyXML", dependencies: ["SmithyTimestamps"]),
+        .target(name: "SmithyReadWrite"),
+        .target(name: "SmithyXML", dependencies: ["SmithyReadWrite", "SmithyTimestamps"]),
         .testTarget(name: "SmithyXMLTests", dependencies: ["SmithyXML"]),
         .target(name: "SmithyTimestamps"),
         .testTarget(name: "SmithyTimestampsTests", dependencies: ["SmithyTimestamps"]),

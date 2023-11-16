@@ -7,15 +7,15 @@
 
 import struct Foundation.Data
 import class Foundation.XMLElement
+import typealias SmithyReadWrite.WritingClosure
 
 public class DocumentWriter {
 
-    public init() {}
+    init() {}
 
-    public func write<T>(_ value: T, rootElement: String, writingClosure: (T, Writer) throws -> Void) throws -> Data {
-        let rootElement = XMLElement(name: rootElement)
-        let writer = Writer(element: rootElement, nodeInfoPath: [], parent: nil)
+    func write<T>(_ value: T, rootNodeInfo: NodeInfo, writingClosure: WritingClosure<T, Writer>) throws -> Data {
+        let writer = Writer(rootNodeInfo: rootNodeInfo)
         try writingClosure(value, writer)
-        return Data(rootElement.xmlString.utf8)
+        return Data(writer.element.xmlString.utf8)
     }
 }

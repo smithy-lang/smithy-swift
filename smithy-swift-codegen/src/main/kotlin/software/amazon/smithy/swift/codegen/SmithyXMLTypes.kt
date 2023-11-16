@@ -9,11 +9,11 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
 
 object SmithyXMLTypes {
     val ReadableWritable = runtimeSymbol("ReadableWritable")
-    val DocumentWriter = runtimeSymbol("DocumentWriter")
     val Readable = runtimeSymbol("Readable")
     val Reader = runtimeSymbol("Reader")
     val Writer = runtimeSymbol("Writer")
     val NodeInfo = runtimeSymbol("NodeInfo")
+    val XMLReadWrite = runtimeSymbol("XMLReadWrite")
 }
 
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {

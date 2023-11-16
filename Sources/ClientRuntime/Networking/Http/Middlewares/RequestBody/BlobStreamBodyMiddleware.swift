@@ -5,14 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct SerializableBodyMiddleware<OperationStackInput,
-                                         OperationStackOutput: HttpResponseBinding>: Middleware {
-    public let id: Swift.String = "\(String(describing: OperationStackInput.self))BodyMiddleware"
+import struct Foundation.Data
 
-    let serializer: (OperationStackInput) throws -> Data
+public struct BlobStreamBodyMiddleware<OperationStackInput,
+                                    OperationStackOutput: HttpResponseBinding>: Middleware {
+    public let id: Swift.String = "BlobStreamBodyMiddleware"
 
-    public init(serializer: @escaping (OperationStackInput) throws -> Data) {
-        self.serializer = serializer
+    let keyPath: KeyPath<OperationStackInput, ByteStream?>
+
+    public init(keyPath: KeyPath<OperationStackInput, ByteStream?>) {
+        self.keyPath = keyPath
     }
 
     public func handle<H>(context: Context,
@@ -22,12 +24,9 @@ public struct SerializableBodyMiddleware<OperationStackInput,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              do {
-                  let data = try serializer(input.operationInput)
-                  let body = HttpBody.data(data)
+              if let byteStream = input.operationInput[keyPath: keyPath] {
+                  let body = HttpBody(byteStream: byteStream)
                   input.builder.withBody(body)
-              } catch {
-                  throw ClientError.serializationFailed(error.localizedDescription)
               }
               return try await next.handle(context: context, input: input)
           }

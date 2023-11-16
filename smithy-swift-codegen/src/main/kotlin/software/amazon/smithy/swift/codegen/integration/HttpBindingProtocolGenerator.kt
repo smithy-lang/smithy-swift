@@ -144,7 +144,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 HttpUrlPathProvider.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
                 HttpHeaderProvider.renderHeaderMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
                 HttpQueryItemProvider.renderQueryMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
-                HttpBodyMiddleware.renderBodyMiddleware(ctx, operation, httpBindingResolver)
+//                HttpBodyMiddleware.renderBodyMiddleware(ctx, operation, httpBindingResolver)
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
         }
