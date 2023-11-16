@@ -32,22 +32,18 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              do {
-                  if let eventStream = input.operationInput[keyPath: keyPath] {
-                      guard let messageEncoder = context.getMessageEncoder() else {
-                          fatalError("Message encoder is required for streaming payload")
-                      }
-                      guard let messageSigner = context.getMessageSigner() else {
-                          fatalError("Message signer is required for streaming payload")
-                      }
-                      #warning("FIXME")
-//                      let encoderStream = EventStream.DefaultMessageEncoderStream(stream: eventStream, messageEncoder: messageEncoder, requestEncoder: xmlEncoder, messageSinger: messageSigner)
-//                      input.builder.withBody(.stream(encoderStream))
-                  } else if let defaultBody {
-                      input.builder.withBody(HttpBody.data(Data(defaultBody.utf8)))
+              let encoder = context.getEncoder()
+              if let eventStream = input.operationInput[keyPath: keyPath] {
+                  guard let messageEncoder = context.getMessageEncoder() else {
+                      fatalError("Message encoder is required for streaming payload")
                   }
-              } catch {
-                  throw ClientError.serializationFailed(error.localizedDescription)
+                  guard let messageSigner = context.getMessageSigner() else {
+                      fatalError("Message signer is required for streaming payload")
+                  }
+                  let encoderStream = EventStream.DefaultMessageEncoderStream(stream: eventStream, messageEncoder: messageEncoder, requestEncoder: encoder, messageSigner: messageSigner)
+                  input.builder.withBody(.stream(encoderStream))
+              } else if let defaultBody {
+                  input.builder.withBody(HttpBody.data(Data(defaultBody.utf8)))
               }
               return try await next.handle(context: context, input: input)
           }
