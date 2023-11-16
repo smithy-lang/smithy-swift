@@ -10,8 +10,9 @@ import typealias SmithyReadWrite.DocumentWritingClosure
 import typealias SmithyReadWrite.WritingClosure
 
 public struct EventStreamBodyMiddleware<OperationStackInput,
-                                         OperationStackOutput: HttpResponseBinding,
-                                        OperationStackInputPayload: MessageMarshallable>: Middleware {
+                                        OperationStackOutput: HttpResponseBinding,
+                                        OperationStackInputPayload: MessageMarshallable>:
+                                        Middleware {
     public let id: Swift.String = "EventStreamBodyMiddleware"
 
     let keyPath: KeyPath<OperationStackInput, AsyncThrowingStream<OperationStackInputPayload, Swift.Error>?>
@@ -40,7 +41,12 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
                   guard let messageSigner = context.getMessageSigner() else {
                       fatalError("Message signer is required for streaming payload")
                   }
-                  let encoderStream = EventStream.DefaultMessageEncoderStream(stream: eventStream, messageEncoder: messageEncoder, requestEncoder: encoder, messageSigner: messageSigner)
+                  let encoderStream = EventStream.DefaultMessageEncoderStream(
+                    stream: eventStream,
+                    messageEncoder: messageEncoder,
+                    requestEncoder: encoder,
+                    messageSigner: messageSigner
+                  )
                   input.builder.withBody(.stream(encoderStream))
               } else if let defaultBody {
                   input.builder.withBody(HttpBody.data(Data(defaultBody.utf8)))
