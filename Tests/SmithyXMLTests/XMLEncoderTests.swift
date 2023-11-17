@@ -29,7 +29,7 @@ class XMLEncoderTests: XCTestCase {
             HasNestedElements.write(_:to:)
         )
         let xml = "<test><a>a</a><b>b</b></test>"
-        try AssertXMLDataEqual(data, Data(xml.utf8))
+        XCTAssertEqual(String(data: data, encoding: .utf8), xml)
     }
 
     private struct HasNestedElementAndAttribute: Encodable {
@@ -51,6 +51,6 @@ class XMLEncoderTests: XCTestCase {
             HasNestedElementAndAttribute.write(_:to:)
         )
         let xml = "<test b=\"b\"><a>a</a></test>"
-        try AssertXMLDataEqual(data, Data(xml.utf8))
+        XCTAssertEqual(String(data: data, encoding: .utf8), xml)
     }
 }

@@ -199,14 +199,9 @@ public class Writer {
 
     private func record(string: String?) {
         guard let string, let key = nodeInfoPath.last else { detach(); return }
-        let xmlKey = nodeInfoPath.last
-        switch xmlKey?.kind ?? .element {
+        switch key.kind {
         case .attribute:
-            guard let parent = element.parent as? XMLElement else { break }
-            let attribute = XMLNode(kind: .attribute)
-            attribute.name = key.name
-            attribute.stringValue = string
-            parent.addAttribute(attribute)
+            (element.parent as? XMLElement)?.addAttribute(name: key.name, value: string)
             detach()
         case .element:
             element.stringValue = string
@@ -235,5 +230,12 @@ private extension XMLElement {
         namespaceNode.name = namespace.prefix
         namespaceNode.stringValue = namespace.uri
         addNamespace(namespaceNode)
+    }
+
+    func addAttribute(name: String, value: String) {
+        let attribute = XMLNode(kind: .attribute)
+        attribute.name = name
+        attribute.stringValue = value
+        addAttribute(attribute)
     }
 }
