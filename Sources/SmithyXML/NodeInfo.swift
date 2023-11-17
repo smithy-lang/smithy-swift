@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Foundation.XMLNode
-
 public struct NodeInfo {
 
     public enum Location {
@@ -32,12 +30,5 @@ public struct NodeInfo {
         self.name = name
         self.location = location
         self.namespace = namespace
-    }
-
-    var kind: XMLNode.Kind {
-        switch location {
-        case .element: return .element
-        case .attribute: return .attribute
-        }
     }
 }

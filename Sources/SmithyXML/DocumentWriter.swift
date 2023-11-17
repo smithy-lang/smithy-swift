@@ -6,7 +6,6 @@
 //
 
 import struct Foundation.Data
-import class Foundation.XMLElement
 import typealias SmithyReadWrite.WritingClosure
 
 public class DocumentWriter {

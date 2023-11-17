@@ -5,8 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if canImport(FoundationXML)
+import class FoundationXML.XMLElement
+import class FoundationXML.XMLNode
+#else
 import class Foundation.XMLElement
 import class Foundation.XMLNode
+#endif
 import struct Foundation.Date
 import struct Foundation.Data
 import typealias SmithyReadWrite.WritingClosure
@@ -218,6 +223,16 @@ public class Writer {
             element.stringValue = string
         default:
             fatalError("Unhandled type of XML node")
+        }
+    }
+}
+
+private extension NodeInfo {
+
+    var kind: XMLNode.Kind {
+        switch location {
+        case .element: return .element
+        case .attribute: return .attribute
         }
     }
 }
