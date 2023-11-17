@@ -26,13 +26,7 @@ public class Writer {
     init(rootNodeInfo: NodeInfo) {
         self.parent = nil
         self.nodeInfoPath = [rootNodeInfo]
-        self.element = XMLElement(name: rootNodeInfo.name)
-        if let namespace = rootNodeInfo.namespace {
-            let namespaceNode = XMLNode(kind: .namespace)
-            namespaceNode.name = namespace.prefix
-            namespaceNode.stringValue = namespace.uri
-            self.element.addNamespace(namespaceNode)
-        }
+        self.element = XMLElement(name: rootNodeInfo.name, namespace: rootNodeInfo.namespace)
     }
 
     init(element: XMLElement, nodeInfoPath: [NodeInfo], parent: Writer?) {
@@ -42,13 +36,8 @@ public class Writer {
     }
 
     public subscript(_ nodeInfo: NodeInfo) -> Writer {
-        let newChild = XMLElement(name: nodeInfo.name)
-        if let namespace = nodeInfo.namespace, !nodeInfoPath.compactMap({ $0.namespace }).contains(namespace) {
-            let namespaceNode = XMLNode(kind: .namespace)
-            namespaceNode.name = namespace.prefix
-            namespaceNode.stringValue = namespace.uri
-            newChild.addNamespace(namespaceNode)
-        }
+        let namespace = nodeInfoPath.compactMap({ $0.namespace }).contains(nodeInfo.namespace) ? nil : nodeInfo.namespace
+        let newChild = XMLElement(name: nodeInfo.name, namespace: namespace)
         element.addChild(newChild)
         return Writer(element: newChild, nodeInfoPath: nodeInfoPath + [nodeInfo], parent: self)
     }
@@ -234,5 +223,17 @@ private extension NodeInfo {
         case .element: return .element
         case .attribute: return .attribute
         }
+    }
+}
+
+private extension XMLElement {
+
+    convenience init(name: String, namespace: NodeInfo.Namespace?) {
+        self.init(name: name)
+        guard let namespace else { return }
+        let namespaceNode = XMLNode(kind: .namespace)
+        namespaceNode.name = namespace.prefix
+        namespaceNode.stringValue = namespace.uri
+        addNamespace(namespaceNode)
     }
 }

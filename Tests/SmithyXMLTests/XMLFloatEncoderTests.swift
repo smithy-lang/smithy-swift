@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if canImport(FoundationXML)
+import class FoundationXML.XMLDocument
+#endif
 import XCTest
 import SmithyXML
 

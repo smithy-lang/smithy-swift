@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if canImport(FoundationXML)
+import class FoundationXML.XMLDocument
+#endif
 import XCTest
 
 func AssertXMLDataEqual(_ lhs: Data, _ rhs: Data, file: StaticString = #file, line: UInt = #line) throws {
