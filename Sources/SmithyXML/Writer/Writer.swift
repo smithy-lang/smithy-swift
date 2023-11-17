@@ -172,16 +172,16 @@ public class Writer {
     ) throws {
         guard let value else { detach(); return }
         if isFlattened {
-            guard let parent = self.parent else { return }
+            defer { detach() }
+            guard let parent = self.parent, let name = element.name, !name.isEmpty else { return }
             let flattenedMemberNodeInfo = NodeInfo(
-                element.name ?? "",
+                name,
                 location: memberNodeInfo.location,
                 namespace: memberNodeInfo.namespace
             )
             for member in value {
                 try memberWritingClosure(member, parent[flattenedMemberNodeInfo])
             }
-            detach()
         } else {
             for member in value {
                 try memberWritingClosure(member, self[memberNodeInfo])
