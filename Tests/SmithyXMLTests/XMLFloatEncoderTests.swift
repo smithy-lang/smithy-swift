@@ -5,11 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if canImport(FoundationXML)
-import class FoundationXML.XMLDocument
-#else
-import class Foundation.XMLDocument
-#endif
 import XCTest
 import SmithyXML
 
@@ -28,44 +23,37 @@ class XMLFloatEncoderTests: XCTestCase {
 
     func test_serializesInfinity() throws {
         let fp = HasFPElements(f: .infinity, d: .infinity)
-        let data = try SmithyXML.XMLReadWrite.documentWritingClosure(
+        let actualData = try SmithyXML.XMLReadWrite.documentWritingClosure(
             rootNodeInfo: .init("fp")
         )(
             fp,
             HasFPElements.write(_:to:)
         )
-        let doc = try XMLDocument(data: data)
-        XCTAssertEqual(value(document: doc, member: "f"), "Infinity")
-        XCTAssertEqual(value(document: doc, member: "d"), "Infinity")
+        let expectedData = Data("<fp><f>Infinity</f><d>Infinity</d></fp>".utf8)
+        XCTAssertEqual(actualData, expectedData)
     }
 
     func test_serializesNegativeInfinity() throws {
         let fp = HasFPElements(f: -.infinity, d: -.infinity)
-        let data = try SmithyXML.XMLReadWrite.documentWritingClosure(
+        let actualData = try SmithyXML.XMLReadWrite.documentWritingClosure(
             rootNodeInfo: .init("fp")
         )(
             fp,
             HasFPElements.write(_:to:)
         )
-        let doc = try XMLDocument(data: data)
-        XCTAssertEqual(value(document: doc, member: "f"), "-Infinity")
-        XCTAssertEqual(value(document: doc, member: "d"), "-Infinity")
+        let expectedData = Data("<fp><f>-Infinity</f><d>-Infinity</d></fp>".utf8)
+        XCTAssertEqual(actualData, expectedData)
     }
 
     func test_serializesNaN() throws {
         let fp = HasFPElements(f: .nan, d: .nan)
-        let data = try SmithyXML.XMLReadWrite.documentWritingClosure(
+        let actualData = try SmithyXML.XMLReadWrite.documentWritingClosure(
             rootNodeInfo: .init("fp")
         )(
             fp,
             HasFPElements.write(_:to:)
         )
-        let doc = try XMLDocument(data: data)
-        XCTAssertEqual(value(document: doc, member: "f"), "NaN")
-        XCTAssertEqual(value(document: doc, member: "d"), "NaN")
-    }
-
-    private func value(document: XMLDocument, member: String) -> String? {
-        document.children?.first { $0.name == "fp" }?.children?.first { $0.name == member }?.stringValue
+        let expectedData = Data("<fp><f>NaN</f><d>NaN</d></fp>".utf8)
+        XCTAssertEqual(actualData, expectedData)
     }
 }
