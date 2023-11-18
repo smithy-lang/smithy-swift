@@ -11,23 +11,37 @@ import typealias SmithyReadWrite.WritingClosure
 import enum SmithyTimestamps.TimestampFormat
 import struct SmithyTimestamps.TimestampFormatter
 
+/// A class used to encode a tree of model data as XML.
+///
+/// Custom types (i.e. structures and unions) that are to be written as XML need to provide
+/// a writing closure.  A writing closure is code generated for Smithy model types.
+///
+/// This writer will write all Swift types used by Smithy models, and will also write Swift
+/// `Array` and `Dictionary` (optionally as flattened XML) given a writing closure for
+/// their enclosed data types.
 public class Writer {
     var content = ""
     var children: [Writer] = []
     weak var parent: Writer?
     let nodeInfo: NodeInfo
-    public let nodeInfoPath: [NodeInfo]
+    let nodeInfoPath: [NodeInfo]
 
+    // MARK: - init & deinit
+    
+    /// Used by the `DocumentWriter` to begin serialization of a model to XML.
+    /// - Parameter rootNodeInfo: The node info for the root XML node.
     init(rootNodeInfo: NodeInfo) {
         self.nodeInfo = rootNodeInfo
         self.nodeInfoPath = [rootNodeInfo]
     }
 
-    init(nodeInfo: NodeInfo, nodeInfoPath: [NodeInfo], parent: Writer?) {
+    private init(nodeInfo: NodeInfo, nodeInfoPath: [NodeInfo], parent: Writer?) {
         self.nodeInfo = nodeInfo
         self.nodeInfoPath = nodeInfoPath
         self.parent = parent
     }
+
+    // MARK: - creating and detaching writers for subelements
 
     public subscript(_ nodeInfo: NodeInfo) -> Writer {
         let namespace = nodeInfoPath.compactMap { $0.namespace }.contains(nodeInfo.namespace) ? nil : nodeInfo.namespace
@@ -36,20 +50,16 @@ public class Writer {
         addChild(newChild)
         return newChild
     }
-
-    func addChild(_ child: Writer) {
-        children.append(child)
-        child.parent = self
-    }
-
+    
+    /// Detaches this writer from its parent.  Typically used when this writer no longer
+    /// belongs in the tree, either because its data is nil or its contents were flattened
+    /// into its parents.
     public func detach() {
         parent?.children.removeAll { $0 === self }
         parent = nil
     }
 
-    public func writeNil() throws {
-        record(string: "null")
-    }
+    // MARK: - Writing values
 
     public func write(_ value: Bool?) throws {
         record(string: value.map { $0 ? "true" : "false" })
@@ -103,32 +113,12 @@ public class Writer {
         record(string: value.map { "\($0)" })
     }
 
-    public func write(_ value: Int32?) throws {
-        record(string: value.map { "\($0)" })
-    }
-
-    public func write(_ value: Int64?) throws {
-        record(string: value.map { "\($0)" })
-    }
-
-    public func write(_ value: UInt?) throws {
-        record(string: value.map { "\($0)" })
-    }
-
     public func write(_ value: UInt8?) throws {
         record(string: value.map { "\($0)" })
     }
 
-    public func write(_ value: UInt16?) throws {
-        record(string: value.map { "\($0)" })
-    }
-
-    public func write(_ value: UInt32?) throws {
-        record(string: value.map { "\($0)" })
-    }
-
-    public func write(_ value: UInt64?) throws {
-        record(string: value.map { "\($0)" })
+    public func write(_ value: Data?) throws {
+        try write(value?.base64EncodedString())
     }
 
     public func writeTimestamp(_ value: Date?, format: TimestampFormat) throws {
@@ -153,13 +143,13 @@ public class Writer {
     ) throws {
         guard let value else { detach(); return }
         if isFlattened {
+            defer { detach() }
             guard let parent = self.parent else { return }
             for (key, value) in value {
                 let entryWriter = parent[.init(nodeInfo.name)]
                 try entryWriter[keyNodeInfo].write(key)
                 try valueWritingClosure(value, entryWriter[valueNodeInfo])
             }
-            detach()
         } else {
             for (key, value) in value {
                 let entryWriter = self[.init("entry")]
@@ -194,8 +184,11 @@ public class Writer {
         }
     }
 
-    public func write(_ value: Data?) throws {
-        try write(value?.base64EncodedString())
+    // MARK: - Private methods
+
+    private func addChild(_ child: Writer) {
+        children.append(child)
+        child.parent = self
     }
 
     private func record(string: String?) {
