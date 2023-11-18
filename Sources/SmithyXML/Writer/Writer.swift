@@ -5,13 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if canImport(FoundationXML)
-import class FoundationXML.XMLElement
-import class FoundationXML.XMLNode
-#else
-import class Foundation.XMLElement
-import class Foundation.XMLNode
-#endif
 import struct Foundation.Date
 import struct Foundation.Data
 import typealias SmithyReadWrite.WritingClosure
@@ -19,27 +12,39 @@ import enum SmithyTimestamps.TimestampFormat
 import struct SmithyTimestamps.TimestampFormatter
 
 public class Writer {
-    let parent: Writer?
-    let element: XMLElement
+    var content = ""
+    var children: [Writer] = []
+    weak var parent: Writer?
+    let nodeInfo: NodeInfo
     public let nodeInfoPath: [NodeInfo]
 
     init(rootNodeInfo: NodeInfo) {
-        self.parent = nil
+        self.nodeInfo = rootNodeInfo
         self.nodeInfoPath = [rootNodeInfo]
-        self.element = XMLElement(name: rootNodeInfo.name, namespace: rootNodeInfo.namespace)
     }
 
-    init(element: XMLElement, nodeInfoPath: [NodeInfo], parent: Writer?) {
-        self.element = element
+    init(nodeInfo: NodeInfo, nodeInfoPath: [NodeInfo], parent: Writer?) {
+        self.nodeInfo = nodeInfo
         self.nodeInfoPath = nodeInfoPath
         self.parent = parent
     }
 
     public subscript(_ nodeInfo: NodeInfo) -> Writer {
-        let namespace = nodeInfoPath.compactMap({ $0.namespace }).contains(nodeInfo.namespace) ? nil : nodeInfo.namespace
-        let newChild = XMLElement(name: nodeInfo.name, namespace: namespace)
-        element.addChild(newChild)
-        return Writer(element: newChild, nodeInfoPath: nodeInfoPath + [nodeInfo], parent: self)
+        let namespace = nodeInfoPath.compactMap { $0.namespace }.contains(nodeInfo.namespace) ? nil : nodeInfo.namespace
+        let newNodeInfo = NodeInfo(nodeInfo.name, location: nodeInfo.location, namespace: namespace)
+        let newChild = Writer(nodeInfo: newNodeInfo, nodeInfoPath: nodeInfoPath + [newNodeInfo], parent: self)
+        addChild(newChild)
+        return newChild
+    }
+
+    func addChild(_ child: Writer) {
+        children.append(child)
+        child.parent = self
+    }
+
+    public func detach() {
+        parent?.children.removeAll { $0 === self }
+        parent = nil
     }
 
     public func writeNil() throws {
@@ -150,7 +155,7 @@ public class Writer {
         if isFlattened {
             guard let parent = self.parent else { return }
             for (key, value) in value {
-                let entryWriter = parent[.init(element.name ?? "")]
+                let entryWriter = parent[.init(nodeInfo.name)]
                 try entryWriter[keyNodeInfo].write(key)
                 try valueWritingClosure(value, entryWriter[valueNodeInfo])
             }
@@ -173,9 +178,9 @@ public class Writer {
         guard let value else { detach(); return }
         if isFlattened {
             defer { detach() }
-            guard let parent = self.parent, let name = element.name, !name.isEmpty else { return }
+            guard let parent = self.parent, !nodeInfo.name.isEmpty else { return }
             let flattenedMemberNodeInfo = NodeInfo(
-                name,
+                nodeInfo.name,
                 location: memberNodeInfo.location,
                 namespace: memberNodeInfo.namespace
             )
@@ -193,49 +198,8 @@ public class Writer {
         try write(value?.base64EncodedString())
     }
 
-    public func detach() {
-        element.detach()
-    }
-
     private func record(string: String?) {
-        guard let string, let key = nodeInfoPath.last else { detach(); return }
-        switch key.kind {
-        case .attribute:
-            (element.parent as? XMLElement)?.addAttribute(name: key.name, value: string)
-            detach()
-        case .element:
-            element.stringValue = string
-        default:
-            fatalError("Unhandled type of XML node")
-        }
-    }
-}
-
-private extension NodeInfo {
-
-    var kind: XMLNode.Kind {
-        switch location {
-        case .element: return .element
-        case .attribute: return .attribute
-        }
-    }
-}
-
-private extension XMLElement {
-
-    convenience init(name: String, namespace: NodeInfo.Namespace?) {
-        self.init(name: name)
-        guard let namespace else { return }
-        let namespaceNode = XMLNode(kind: .namespace)
-        namespaceNode.name = namespace.prefix
-        namespaceNode.stringValue = namespace.uri
-        addNamespace(namespaceNode)
-    }
-
-    func addAttribute(name: String, value: String) {
-        let attribute = XMLNode(kind: .attribute)
-        attribute.name = name
-        attribute.stringValue = value
-        addAttribute(attribute)
+        guard let string else { detach(); return }
+        content = string
     }
 }

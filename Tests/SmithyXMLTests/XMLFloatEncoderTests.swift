@@ -32,6 +32,7 @@ class XMLFloatEncoderTests: XCTestCase {
             fp,
             HasFPElements.write(_:to:)
         )
+        print(String(data: data, encoding: .utf8)!)
         let doc = try XMLDocument(data: data)
         XCTAssertEqual(value(document: doc, member: "f"), "Infinity")
         XCTAssertEqual(value(document: doc, member: "d"), "Infinity")
@@ -45,6 +46,7 @@ class XMLFloatEncoderTests: XCTestCase {
             fp,
             HasFPElements.write(_:to:)
         )
+        print(String(data: data, encoding: .utf8)!)
         let doc = try XMLDocument(data: data)
         XCTAssertEqual(value(document: doc, member: "f"), "-Infinity")
         XCTAssertEqual(value(document: doc, member: "d"), "-Infinity")
@@ -58,12 +60,13 @@ class XMLFloatEncoderTests: XCTestCase {
             fp,
             HasFPElements.write(_:to:)
         )
+        print(String(data: data, encoding: .utf8)!)
         let doc = try XMLDocument(data: data)
         XCTAssertEqual(value(document: doc, member: "f"), "NaN")
         XCTAssertEqual(value(document: doc, member: "d"), "NaN")
     }
 
-    private func value(document: XMLDocument, member: String) -> String? {
+    private func value(document: Foundation.XMLDocument, member: String) -> String? {
         document.children?.first { $0.name == "fp" }?.children?.first { $0.name == member }?.stringValue
     }
 }

@@ -8,13 +8,11 @@
 import struct Foundation.Data
 import typealias SmithyReadWrite.WritingClosure
 
-public class DocumentWriter {
+public enum DocumentWriter {
 
-    init() {}
-
-    func write<T>(_ value: T, rootNodeInfo: NodeInfo, writingClosure: WritingClosure<T, Writer>) throws -> Data {
+    static func write<T>(_ value: T, rootNodeInfo: NodeInfo, writingClosure: WritingClosure<T, Writer>) throws -> Data {
         let writer = Writer(rootNodeInfo: rootNodeInfo)
         try writingClosure(value, writer)
-        return Data(writer.element.xmlString.utf8)
+        return writer.xmlString()
     }
 }

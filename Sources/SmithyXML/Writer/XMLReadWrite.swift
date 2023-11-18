@@ -11,7 +11,7 @@ public enum XMLReadWrite {
 
     public static func documentWritingClosure<T>(rootNodeInfo: NodeInfo) -> DocumentWritingClosure<T, Writer> {
         return { value, writingClosure in
-            try DocumentWriter().write(value, rootNodeInfo: rootNodeInfo, writingClosure: writingClosure)
+            try DocumentWriter.write(value, rootNodeInfo: rootNodeInfo, writingClosure: writingClosure)
         }
     }
 }

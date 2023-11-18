@@ -53,4 +53,15 @@ class XMLEncoderTests: XCTestCase {
         let xml = "<test b=\"b\"><a>a</a></test>"
         XCTAssertEqual(String(data: data, encoding: .utf8), xml)
     }
+
+    func test_encodesXMLWithElementAndAttributeAndNamespace() throws {
+        let data = try SmithyXML.XMLReadWrite.documentWritingClosure(
+            rootNodeInfo: .init("test", namespace: .init(prefix: "", uri: "https://www.def.com/1.0"))
+        )(
+            HasNestedElementAndAttribute(a: "a&a", b: "<b>"),
+            HasNestedElementAndAttribute.write(_:to:)
+        )
+        let xml = "<test xmlns=\"https://www.def.com/1.0\" b=\"&lt;b&gt;\"><a>a&amp;a</a></test>"
+        XCTAssertEqual(String(data: data, encoding: .utf8), xml)
+    }
 }
