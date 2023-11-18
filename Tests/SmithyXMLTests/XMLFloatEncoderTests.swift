@@ -7,6 +7,8 @@
 
 #if canImport(FoundationXML)
 import class FoundationXML.XMLDocument
+#else
+import class Foundation.XMLDocument
 #endif
 import XCTest
 import SmithyXML
@@ -32,7 +34,6 @@ class XMLFloatEncoderTests: XCTestCase {
             fp,
             HasFPElements.write(_:to:)
         )
-        print(String(data: data, encoding: .utf8)!)
         let doc = try XMLDocument(data: data)
         XCTAssertEqual(value(document: doc, member: "f"), "Infinity")
         XCTAssertEqual(value(document: doc, member: "d"), "Infinity")
@@ -46,7 +47,6 @@ class XMLFloatEncoderTests: XCTestCase {
             fp,
             HasFPElements.write(_:to:)
         )
-        print(String(data: data, encoding: .utf8)!)
         let doc = try XMLDocument(data: data)
         XCTAssertEqual(value(document: doc, member: "f"), "-Infinity")
         XCTAssertEqual(value(document: doc, member: "d"), "-Infinity")
@@ -60,7 +60,6 @@ class XMLFloatEncoderTests: XCTestCase {
             fp,
             HasFPElements.write(_:to:)
         )
-        print(String(data: data, encoding: .utf8)!)
         let doc = try XMLDocument(data: data)
         XCTAssertEqual(value(document: doc, member: "f"), "NaN")
         XCTAssertEqual(value(document: doc, member: "d"), "NaN")
