@@ -66,7 +66,7 @@ class XMLFloatEncoderTests: XCTestCase {
         XCTAssertEqual(value(document: doc, member: "d"), "NaN")
     }
 
-    private func value(document: Foundation.XMLDocument, member: String) -> String? {
+    private func value(document: XMLDocument, member: String) -> String? {
         document.children?.first { $0.name == "fp" }?.children?.first { $0.name == member }?.stringValue
     }
 }

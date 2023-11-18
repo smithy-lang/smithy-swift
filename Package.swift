@@ -31,7 +31,18 @@ let package = Package(
         ),
         .testTarget(name: "ClientRuntimeTests", dependencies: ["ClientRuntime", "SmithyTestUtil"]),
         .target(name: "SmithyReadWrite"),
-        .target(name: "SmithyXML", dependencies: ["SmithyReadWrite", "SmithyTimestamps"]),
+        .target(
+            name: "SmithyXML", 
+            dependencies: [
+                "SmithyReadWrite", 
+                "SmithyTimestamps", 
+                .target(name: "LibXML2", condition: .when(platforms: [.linux]))
+            ]
+        ),
+        .systemLibrary(name: "LibXML2", pkgConfig: "libxml-2.0", providers: [
+            .apt(["libxml2 libxml2-dev"]),
+            .yum(["libxml2 libxml2-devel"])
+        ]),
         .testTarget(name: "SmithyXMLTests", dependencies: ["SmithyXML"]),
         .target(name: "SmithyTimestamps"),
         .testTarget(name: "SmithyTimestampsTests", dependencies: ["SmithyTimestamps"]),

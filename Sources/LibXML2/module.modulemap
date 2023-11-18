@@ -1,0 +1,5 @@
+module LibXML2 {
+    header "shim.h"
+    link "xml2"
+    export *
+}

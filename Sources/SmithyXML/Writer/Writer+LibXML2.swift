@@ -6,7 +6,7 @@
 //
 
 #if os(Linux)
-    import CLibXML2
+    import LibXML2
 #else
     import libxml2
 #endif
