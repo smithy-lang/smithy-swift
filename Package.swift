@@ -29,24 +29,45 @@ let package = Package(
                 .product(name: "XMLCoder", package: "XMLCoder")
             ]
         ),
-        .testTarget(name: "ClientRuntimeTests", dependencies: ["ClientRuntime", "SmithyTestUtil"]),
         .target(name: "SmithyReadWrite"),
         .target(
-            name: "SmithyXML", 
+            name: "SmithyXML",
             dependencies: [
-                "SmithyReadWrite", 
-                "SmithyTimestamps", 
+                "SmithyReadWrite",
+                "SmithyTimestamps",
                 .target(name: "LibXML2", condition: .when(platforms: [.linux]))
             ]
         ),
-        .systemLibrary(name: "LibXML2", pkgConfig: "libxml-2.0", providers: [
-            .apt(["libxml2 libxml2-dev"]),
-            .yum(["libxml2 libxml2-devel"])
-        ]),
-        .testTarget(name: "SmithyXMLTests", dependencies: ["SmithyXML"]),
-        .target(name: "SmithyTimestamps"),
-        .testTarget(name: "SmithyTimestampsTests", dependencies: ["SmithyTimestamps"]),
-        .target(name: "SmithyTestUtil", dependencies: ["ClientRuntime"]),
-        .testTarget(name: "SmithyTestUtilTests", dependencies: ["SmithyTestUtil"]),
+        .systemLibrary(
+            name: "LibXML2",
+            pkgConfig: "libxml-2.0",
+            providers: [
+                .apt(["libxml2 libxml2-dev"]),
+                .yum(["libxml2 libxml2-devel"])
+            ]
+        ),
+        .target(
+            name: "SmithyTimestamps"
+        ),
+        .target(
+            name: "SmithyTestUtil",
+            dependencies: ["ClientRuntime"]
+        ),
+        .testTarget(
+            name: "ClientRuntimeTests",
+            dependencies: ["ClientRuntime", "SmithyTestUtil"]
+        ),
+        .testTarget(
+            name: "SmithyXMLTests",
+            dependencies: ["SmithyXML"]
+        ),
+        .testTarget(
+            name: "SmithyTimestampsTests",
+            dependencies: ["SmithyTimestamps"]
+        ),
+        .testTarget(
+            name: "SmithyTestUtilTests",
+            dependencies: ["SmithyTestUtil"]
+        ),
     ]
 )

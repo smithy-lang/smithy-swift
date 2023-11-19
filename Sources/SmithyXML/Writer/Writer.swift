@@ -27,7 +27,7 @@ public class Writer {
     let nodeInfoPath: [NodeInfo]
 
     // MARK: - init & deinit
-    
+
     /// Used by the `DocumentWriter` to begin serialization of a model to XML.
     /// - Parameter rootNodeInfo: The node info for the root XML node.
     init(rootNodeInfo: NodeInfo) {
@@ -50,7 +50,7 @@ public class Writer {
         addChild(newChild)
         return newChild
     }
-    
+
     /// Detaches this writer from its parent.  Typically used when this writer no longer
     /// belongs in the tree, either because its data is nil or its contents were flattened
     /// into its parents.

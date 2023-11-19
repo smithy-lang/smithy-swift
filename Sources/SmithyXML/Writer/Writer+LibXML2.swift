@@ -14,7 +14,7 @@ import struct Foundation.Data
 
 /// Extends Writer to copy its tree into libxml2, then write the tree to XML data.
 extension Writer {
-    
+
     /// Translates this Writer and its children into XML ready to be sent.
     /// - Returns: A `Data` value containing this writer's UTF-8 XML representation.
     func xmlString() -> Data {
@@ -43,7 +43,6 @@ extension Writer {
         return data
     }
 
-    
     /// Translates the data in this `Writer` to a libxml2 node.
     ///
     /// Used to transform the `Writer` tree into a corresponding tree of libxml nodes for rendering to XML.
