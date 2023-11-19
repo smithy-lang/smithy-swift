@@ -168,7 +168,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         "}",
                         encodableOrNot,
                     ) {
-                        codableImport?.let { writer.addImport(it) }
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
                         if (shouldRenderCodingKeysForEncodable) {
@@ -228,7 +227,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             writer.openBlock("extension \$N: \$N {", "}", symbol, codableProtocol) {
-                codableImport?.let { writer.addImport(it) }
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 val members = shape.members().toList()
                 when (shape) {
@@ -278,7 +276,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             writer.write("")
             writer.openBlock("extension ${decodeSymbol.name}: \$N {", "}", decodableProtocol) {
-                codableImport?.let { writer.addImport(it) }
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("")
@@ -479,7 +476,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     open val codableProtocol = SwiftTypes.Protocols.Codable
     open val encodableProtocol: Symbol? = SwiftTypes.Protocols.Encodable
     open val decodableProtocol = SwiftTypes.Protocols.Decodable
-    open val codableImport: String? = null
 
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
     protected abstract val codingKeysGenerator: CodingKeysGenerator
