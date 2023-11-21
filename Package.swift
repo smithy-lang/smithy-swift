@@ -35,11 +35,11 @@ let package = Package(
             dependencies: [
                 "SmithyReadWrite",
                 "SmithyTimestamps",
-                .target(name: "LibXML2", condition: .when(platforms: [.linux]))
+                .target(name: "libxml2", condition: .when(platforms: [.linux]))
             ]
         ),
         .systemLibrary(
-            name: "LibXML2",
+            name: "libxml2",
             pkgConfig: "libxml-2.0",
             providers: [
                 .apt(["libxml2 libxml2-dev"]),
