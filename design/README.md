@@ -1,7 +1,5 @@
 # smithy-swift Design Documents
 
-### Legacy docs: available [here](DESIGN.md)
-
 ### Design template: available [here](rfc-00000-template.md)
 
 Designs are generally conceived, written and reviewed internally.

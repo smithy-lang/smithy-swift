@@ -113,7 +113,6 @@ class ShapeValueGenerator(
             .indent()
             .call { block() }
             .dedent()
-            // TODO:: fix indentation when `writeInline` retains indent
             .writeInline("\n)")
 
         if (recursiveMemberWithTrait) {
@@ -336,11 +335,6 @@ class ShapeValueGenerator(
                 ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,
                 ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT -> writer.writeInline("\$L", node.value)
 
-                /*
-                TODO:: When https://github.com/apple/swift-numerics supports Integer conforming to Real protocol,
-                        we need to change "Array(String($L).utf8)" to Complex<Integer>. Apple's work is being
-                        tracked in apple/swift-numerics#5
-                 */
                 ShapeType.BIG_INTEGER -> {
                     writer.addImport(SwiftDependency.BIG.target)
                     writer.writeInline("Array(String(\$L).utf8)", node.value)

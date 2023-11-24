@@ -67,7 +67,6 @@ class StructEncodeFormURLGenerator(
         }
     }
 
-    // TODO: Make this pluggable so that this code can exist in aws-sdk-swift
     private fun addConstantMembers(containerName: String) {
         if (shapeMetadata.containsKey(ShapeMetadata.OPERATION_SHAPE) && shapeMetadata.containsKey(ShapeMetadata.SERVICE_VERSION)) {
             val operationShape = shapeMetadata[ShapeMetadata.OPERATION_SHAPE] as OperationShape
