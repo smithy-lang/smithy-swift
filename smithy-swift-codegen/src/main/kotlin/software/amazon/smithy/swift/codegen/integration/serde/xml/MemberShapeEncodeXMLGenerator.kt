@@ -35,7 +35,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val targetShape = ctx.model.expectShape(memberShape.target)
         when (targetShape) {
             is StructureShape, is UnionShape -> {
-                writeStructureOrUnionMember(memberShape, targetShape, prefix)
+                writeStructureOrUnionMember(memberShape, prefix)
             }
             is ListShape -> {
                 writeListMember(memberShape, targetShape, prefix)
@@ -52,16 +52,16 @@ abstract class MemberShapeEncodeXMLGenerator(
         }
     }
 
-    private fun writeStructureOrUnionMember(memberShape: MemberShape, targetShape: Shape, prefix: String) {
+    private fun writeStructureOrUnionMember(memberShape: MemberShape, prefix: String) {
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
-        val targetSymbol = ctx.symbolProvider.toSymbol(targetShape)
         val propertyKey = nodeInfoUtils.nodeInfo(memberShape)
+        val writingClosure = writingClosureUtils.writingClosure(memberShape)
         writer.write(
-            "try \$N.writingClosure(\$L\$L, to: writer[\$L])",
-            targetSymbol,
+            "try writer[\$L].write(\$L\$L, writingClosure: \$L)",
+            propertyKey,
             prefix,
             memberName,
-            propertyKey
+            writingClosure
         )
     }
 

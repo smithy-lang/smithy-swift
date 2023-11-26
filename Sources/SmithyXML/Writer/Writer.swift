@@ -184,6 +184,10 @@ public class Writer {
         }
     }
 
+    public func write<T>(_ value: T, writingClosure: WritingClosure<T, Writer>) throws {
+        try writingClosure(value, self)
+    }
+
     // MARK: - Private methods
 
     private func addChild(_ child: Writer) {

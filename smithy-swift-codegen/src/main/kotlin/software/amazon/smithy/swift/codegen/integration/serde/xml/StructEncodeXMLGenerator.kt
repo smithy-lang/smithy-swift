@@ -27,7 +27,10 @@ class StructEncodeXMLGenerator(
             structSymbol,
             SmithyXMLTypes.Writer
         ) {
-            writer.write("guard let value else { writer.detach(); return }")
+            writer.write(
+                "guard \$L else { writer.detach(); return }",
+                "value != nil".takeIf { members.isEmpty() } ?: "let value"
+            )
             members.sortedBy { it.memberName }.forEach { writeMember(it, false) }
         }
     }
