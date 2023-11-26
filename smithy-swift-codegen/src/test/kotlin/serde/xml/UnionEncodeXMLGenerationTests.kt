@@ -17,8 +17,7 @@ class UnionEncodeXMLGenerationTests {
     fun `001 XmlUnionShape+Codable`() {
         val context = setupTests("Isolated/Restxml/xml-unions.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape+Codable.swift")
-        val expectedContents =
-            """
+        val expectedContents = """
 extension RestXmlProtocolClientTypes.XmlUnionShape: Swift.Codable {
     enum CodingKeys: Swift.String, Swift.CodingKey {
         case datavalue = "dataValue"
@@ -43,11 +42,11 @@ extension RestXmlProtocolClientTypes.XmlUnionShape: Swift.Codable {
             case let .stringlist(stringlist):
                 try writer[.init("stringList")].writeList(stringlist, memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false)
             case let .structvalue(structvalue):
-                try RestXmlProtocolClientTypes.XmlNestedUnionStruct.writingClosure(structvalue, to: writer[.init("structValue")])
+                try writer[.init("structValue")].write(structvalue, writingClosure: RestXmlProtocolClientTypes.XmlNestedUnionStruct.writingClosure(_:to:))
             case let .timestampvalue(timestampvalue):
                 try writer[.init("timeStampValue")].writeTimestamp(timestampvalue, format: .dateTime)
             case let .unionvalue(unionvalue):
-                try RestXmlProtocolClientTypes.XmlUnionShape.writingClosure(unionvalue, to: writer[.init("unionValue")])
+                try writer[.init("unionValue")].write(unionvalue, writingClosure: RestXmlProtocolClientTypes.XmlUnionShape.writingClosure(_:to:))
             case let .sdkUnknown(sdkUnknown):
                 try writer[.init("sdkUnknown")].write(sdkUnknown)
         }
@@ -109,8 +108,7 @@ extension RestXmlProtocolClientTypes.XmlUnionShape: Swift.Codable {
         }
     }
 }
-            """.trimIndent()
-
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

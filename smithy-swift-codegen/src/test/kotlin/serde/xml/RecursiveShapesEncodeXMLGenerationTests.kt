@@ -17,29 +17,28 @@ class RecursiveShapesEncodeXMLGenerationTests {
     fun `001 encode recursive shape Nested1`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/RecursiveShapesInputOutputNested1+Codable.swift")
-        val expectedContents =
-            """
-            extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case foo
-                    case nested
-                }
-            
-                static func writingClosure(_ value: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("foo")].write(value.foo)
-                    try RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2.writingClosure(value.nested, to: writer[.init("nested")])
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let fooDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .foo)
-                    foo = fooDecoded
-                    let nestedDecoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2.self, forKey: .nested)
-                    nested = nestedDecoded
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1: Swift.Codable {
+    enum CodingKeys: Swift.String, Swift.CodingKey {
+        case foo
+        case nested
+    }
+
+    static func writingClosure(_ value: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer[.init("foo")].write(value.foo)
+        try writer[.init("nested")].write(value.nested, writingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2.writingClosure(_:to:))
+    }
+
+    public init(from decoder: Swift.Decoder) throws {
+        let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+        let fooDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .foo)
+        foo = fooDecoded
+        let nestedDecoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2.self, forKey: .nested)
+        nested = nestedDecoded
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -47,30 +46,28 @@ class RecursiveShapesEncodeXMLGenerationTests {
     fun `encode recursive shape Nested2`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/RecursiveShapesInputOutputNested2+Codable.swift")
-        val expectedContents =
-            """
-            extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case bar
-                    case recursiveMember
-                }
-            
-                static func writingClosure(_ value: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("bar")].write(value.bar)
-                    try RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.writingClosure(value.recursiveMember, to: writer[.init("recursiveMember")])
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let barDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .bar)
-                    bar = barDecoded
-                    let recursiveMemberDecoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.self, forKey: .recursiveMember)
-                    recursiveMember = recursiveMemberDecoded
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2: Swift.Codable {
+    enum CodingKeys: Swift.String, Swift.CodingKey {
+        case bar
+        case recursiveMember
+    }
 
+    static func writingClosure(_ value: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer[.init("bar")].write(value.bar)
+        try writer[.init("recursiveMember")].write(value.recursiveMember, writingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.writingClosure(_:to:))
+    }
+
+    public init(from decoder: Swift.Decoder) throws {
+        let containerValues = try decoder.container(keyedBy: CodingKeys.self)
+        let barDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .bar)
+        bar = barDecoded
+        let recursiveMemberDecoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.self, forKey: .recursiveMember)
+        recursiveMember = recursiveMemberDecoded
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
     @Test
