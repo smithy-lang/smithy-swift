@@ -45,7 +45,7 @@ class OperationInputBodyMiddleware(
         op: OperationShape,
         operationStackName: String,
     ) {
-        if (!alwaysSendBody && !MiddlewareShapeUtils.hasHttpBody(ctx.model, op)) { return }
+        if (!alwaysSendBody && !MiddlewareShapeUtils.hasHttpBody(ctx.model, op)) return
         val writingClosureUtils = WritingClosureUtils(ctx, writer)
         val documentWritingClosureUtils = DocumentWritingClosureUtils(ctx, writer)
         val inputShape = MiddlewareShapeUtils.inputShape(model, op)
@@ -59,7 +59,7 @@ class OperationInputBodyMiddleware(
         var isPayloadMember = false
         var defaultBody = "\"{}\"".takeIf { ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>() || ctx.service.hasTrait<RestJson1Trait>() } ?: "nil"
         var payloadMember = inputShape.members().find { it.hasTrait<HttpPayloadTrait>() }
-        if (payloadMember != null) {
+        payloadMember?.let { payloadMember ->
             payloadShape = ctx.model.expectShape(payloadMember.target)
             val memberName = ctx.symbolProvider.toMemberName(payloadMember)
             keyPath = writer.format("\\.\$L", memberName)

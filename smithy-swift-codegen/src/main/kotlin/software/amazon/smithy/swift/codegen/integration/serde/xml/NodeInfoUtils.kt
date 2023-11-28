@@ -33,16 +33,11 @@ class NodeInfoUtils(
     fun nodeInfo(member: MemberShape, forRootNode: Boolean = false): String {
         val targetShape = ctx.model.expectShape(member.target)
 
-        val resolvedName: String
-        if (forRootNode) {
+        val resolvedName = if (forRootNode) {
             val xmlName = member.getTrait<XmlNameTrait>()?.value ?: targetShape.getTrait<XmlNameTrait>()?.value
-            if (xmlName != null) {
-                resolvedName = xmlName
-            } else {
-                resolvedName = ctx.symbolProvider.toSymbol(targetShape).name
-            }
+            xmlName ?: ctx.symbolProvider.toSymbol(targetShape).name
         } else {
-            resolvedName = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
+            member.getTrait<XmlNameTrait>()?.value ?: member.memberName
         }
 
         val xmlAttributeParam = ", location: .attribute".takeIf { member.hasTrait<XmlAttributeTrait>() } ?: ""
@@ -59,14 +54,12 @@ class NodeInfoUtils(
     }
 
     private fun namespaceParam(xmlNamespaceTrait: XmlNamespaceTrait?): String {
-        if (xmlNamespaceTrait != null) {
-            return writer.format(
+        return xmlNamespaceTrait?.let {
+            writer.format(
                 ", namespace: .init(prefix: \$S, uri: \$S)",
-                xmlNamespaceTrait.prefix,
-                xmlNamespaceTrait.uri
+                it.prefix,
+                it.uri
             )
-        } else {
-            return ""
-        }
+        } ?: ""
     }
 }

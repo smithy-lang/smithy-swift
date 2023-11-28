@@ -37,18 +37,23 @@ class WritingClosureUtils(
     }
 
     private fun writingClosure(shape: Shape, memberTimestampFormatTrait: TimestampFormatTrait? = null): String {
-        if (ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>() || ctx.service.hasTrait<RestJson1Trait>()) {
-            return "JSONReadWrite.writingClosure()"
-        } else if (ctx.service.hasTrait<AwsQueryTrait>() || ctx.service.hasTrait<Ec2QueryTrait>()) {
-            return "FormURLReadWrite.writingClosure()"
+        when {
+            ctx.service.hasTrait<AwsJson1_0Trait>() ||
+                ctx.service.hasTrait<AwsJson1_1Trait>() ||
+                ctx.service.hasTrait<RestJson1Trait>() -> {
+                return "JSONReadWrite.writingClosure()"
+            }
+            ctx.service.hasTrait<AwsQueryTrait>() || ctx.service.hasTrait<Ec2QueryTrait>() -> {
+                return "FormURLReadWrite.writingClosure()"
+            }
         }
-        when (shape) {
+        return when (shape) {
             is MapShape -> {
                 val keyNodeInfo = nodeInfoUtils.nodeInfo(shape.key)
                 val valueNodeInfo = nodeInfoUtils.nodeInfo(shape.value)
                 val valueWriter = writingClosure(shape.value)
                 val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
-                return writer.format(
+                writer.format(
                     "SmithyXML.mapWritingClosure(valueWritingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
                     valueWriter,
                     keyNodeInfo,
@@ -56,28 +61,25 @@ class WritingClosureUtils(
                     isFlattened
                 )
             }
-
             is ListShape -> {
                 val memberNodeInfo = nodeInfoUtils.nodeInfo(shape.member)
                 val memberWriter = writingClosure(shape.member)
                 val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
-                return writer.format(
+                writer.format(
                     "SmithyXML.listWritingClosure(memberWritingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
                     memberWriter,
                     memberNodeInfo,
                     isFlattened
                 )
             }
-
             is TimestampShape -> {
-                return writer.format(
+                writer.format(
                     "SmithyXML.timestampWritingClosure(format: \$L)",
                     TimestampUtils.timestampFormat(memberTimestampFormatTrait, shape)
                 )
             }
-
             else -> {
-                return writer.format("\$N.writingClosure(_:to:)", ctx.symbolProvider.toSymbol(shape))
+                writer.format("\$N.writingClosure(_:to:)", ctx.symbolProvider.toSymbol(shape))
             }
         }
     }
