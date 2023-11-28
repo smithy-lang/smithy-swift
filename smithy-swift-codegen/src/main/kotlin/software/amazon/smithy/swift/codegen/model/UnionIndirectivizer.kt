@@ -5,13 +5,12 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.selector.PathFinder
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
-import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.transform.ModelTransformer
-import software.amazon.smithy.swift.codegen.customtraits.IndirectUnionMemberTrait
+import software.amazon.smithy.swift.codegen.customtraits.RecursiveUnionTrait
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 
 object UnionIndirectivizer {
@@ -67,7 +66,7 @@ object UnionIndirectivizer {
             ModelTransformer.create().mapShapes(model) { shape ->
                 if (shape.id == unionShapeToIndirectivize.id) {
                     println("Applying trait to union ${unionShapeToIndirectivize}")
-                    shape.asUnionShape().get().toBuilder().addTrait(IndirectUnionMemberTrait()).build()
+                    shape.asUnionShape().get().toBuilder().addTrait(RecursiveUnionTrait()).build()
                 } else {
                     shape
                 }
@@ -84,7 +83,7 @@ object UnionIndirectivizer {
             when {
                 it is ListShape ||
                 it is MapShape ||
-                it is UnionShape && it.hasTrait<IndirectUnionMemberTrait>() ||
+                it is UnionShape && it.hasTrait<RecursiveUnionTrait>() ||
                 it is StructureShape && it.hasTrait<SwiftBoxTrait>() ||
                 it is SetShape -> true
                 else -> false
