@@ -29,8 +29,8 @@ object UnionIndirectivizer {
     private fun transformInner(model: Model): Model? {
         val index = TopologicalIndex(model)
         val recursiveUnions = index.recursiveShapes.filter { it.isUnionShape }
-        val loops = recursiveUnions.map {
-            shapeId -> index.getRecursiveClosure(shapeId)
+        val loops = recursiveUnions.map { shape: Shape ->
+            index.getRecursiveClosure(shape)
         }
         val loopToFix = loops.firstOrNull { loop: Set<PathFinder.Path> ->
             !containsIndirection(loop.map { it.startShape })
@@ -54,10 +54,10 @@ object UnionIndirectivizer {
         return loop.find {
             when {
                 it is ListShape ||
-                it is MapShape ||
-                it is UnionShape && it.hasTrait<RecursiveUnionTrait>() ||
-                it is StructureShape && it.hasTrait<SwiftBoxTrait>() ||
-                it is SetShape -> true
+                    it is MapShape ||
+                    it is UnionShape && it.hasTrait<RecursiveUnionTrait>() ||
+                    it is StructureShape && it.hasTrait<SwiftBoxTrait>() ||
+                    it is SetShape -> true
                 else -> false
             }
         } != null
