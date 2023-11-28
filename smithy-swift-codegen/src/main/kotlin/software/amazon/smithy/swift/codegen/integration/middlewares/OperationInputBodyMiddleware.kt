@@ -30,7 +30,7 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 class OperationInputBodyMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
-    val alwaysSendBody: Boolean = false
+    private val alwaysSendBody: Boolean = false
 ) : MiddlewareRenderable {
 
     override val name = "OperationInputBodyMiddleware"
@@ -57,14 +57,14 @@ class OperationInputBodyMiddleware(
         var payloadWritingClosure = writingClosureUtils.writingClosure(payloadShape)
         var documentWritingClosure = documentWritingClosureUtils.closure(payloadShape)
         var isPayloadMember = false
-        var defaultBody = "\"{}\"".takeIf { ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>() || ctx.service.hasTrait<RestJson1Trait>() } ?: "nil"
-        var payloadMember = inputShape.members().find { it.hasTrait<HttpPayloadTrait>() }
-        payloadMember?.let { payloadMember ->
-            payloadShape = ctx.model.expectShape(payloadMember.target)
-            val memberName = ctx.symbolProvider.toMemberName(payloadMember)
+        val defaultBody = "\"{}\"".takeIf { ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>() || ctx.service.hasTrait<RestJson1Trait>() } ?: "nil"
+        val payloadMember = inputShape.members().find { it.hasTrait<HttpPayloadTrait>() }
+        payloadMember?.let {
+            payloadShape = ctx.model.expectShape(it.target)
+            val memberName = ctx.symbolProvider.toMemberName(it)
             keyPath = writer.format("\\.\$L", memberName)
-            payloadWritingClosure = writingClosureUtils.writingClosure(payloadMember)
-            documentWritingClosure = documentWritingClosureUtils.closure(payloadMember)
+            payloadWritingClosure = writingClosureUtils.writingClosure(it)
+            documentWritingClosure = documentWritingClosureUtils.closure(it)
             isPayloadMember = true
         }
         val isStreaming = payloadShape.hasTrait<StreamingTrait>()
@@ -82,7 +82,7 @@ class OperationInputBodyMiddleware(
                 addAggregateMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
             }
             is BlobShape -> {
-                addBlobStreamMiddleware(writer, operationStackName, inputSymbol, outputSymbol, keyPath, defaultBody, isStreaming)
+                addBlobStreamMiddleware(writer, operationStackName, inputSymbol, outputSymbol, keyPath, isStreaming)
             }
             is EnumShape -> {
                 addEnumMiddleware(writer, operationStackName, ClientRuntimeTypes.Middleware.EnumBodyMiddleware, inputSymbol, outputSymbol, payloadSymbol, keyPath)
@@ -152,7 +152,7 @@ class OperationInputBodyMiddleware(
         )
     }
 
-    private fun addBlobStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, keyPath: String, defaultBody: String, streaming: Boolean) {
+    private fun addBlobStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, keyPath: String, streaming: Boolean) {
         writer.write(
             "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N>(keyPath: \$L))",
             operationStackName,
