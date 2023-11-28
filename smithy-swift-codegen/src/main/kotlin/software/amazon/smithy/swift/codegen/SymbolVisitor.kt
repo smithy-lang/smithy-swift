@@ -97,7 +97,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     override fun toMemberName(shape: MemberShape): String {
         val containingShape = model.expectShape(shape.container)
         if (containingShape is UnionShape) {
-            val name = escaper.escapeMemberName(shape.memberName)
+            val name = escaper.escapeMemberName(shape.memberName.toLowerCamelCase())
             return if (!name.equals("sdkUnknown")) lowerCase(name) else name
         }
         return escaper.escapeMemberName(shape.memberName.toLowerCamelCase())
@@ -115,10 +115,6 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
 
     override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Int16", "0")
 
-    /*
-    TODO:: When https://github.com/apple/swift-numerics supports Integer conforming to Real protocol, we need to
-            change  [UInt8] to Complex<Integer>. Apple's work is being tracked in apple/swift-numerics#5
-     */
     override fun bigIntegerShape(shape: BigIntegerShape): Symbol = createBigSymbol(shape, "[UInt8]")
 
     override fun bigDecimalShape(shape: BigDecimalShape): Symbol = createBigSymbol(shape, "Complex<Double>")
@@ -197,7 +193,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     override fun resourceShape(shape: ResourceShape): Symbol {
-        // TODO create resource type
+        // May implement a resource type in future
         return createSymbolBuilder(shape, "Any", true).build()
     }
 

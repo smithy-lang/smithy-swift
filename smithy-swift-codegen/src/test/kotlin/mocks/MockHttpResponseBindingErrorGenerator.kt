@@ -36,14 +36,7 @@ class MockHttpResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratabl
     }
 
     override fun renderServiceError(ctx: ProtocolGenerator.GenerationContext) {
-        /*
-
-        TODO(
-            "Organize test suites of smithy-swift and aws-sdk-swift " +
-                "and see if this class and consumers of this class should be moved to aws-sdk-swift " +
-                "OR AWS protocol tests in aws-sdk-swift should be moved to smithy-swift."
-        )
-
-        */
+        // not yet implemented
+        return
     }
 }

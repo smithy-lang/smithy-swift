@@ -27,7 +27,6 @@ class StreamableHttpBody: IStreamable {
             position = .min
         }
 
-        /// TODO: simplify logger creation
         logger = SwiftLogger(label: "HttpContent")
     }
 

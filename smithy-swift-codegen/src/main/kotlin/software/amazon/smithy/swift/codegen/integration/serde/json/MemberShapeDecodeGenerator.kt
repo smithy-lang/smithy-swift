@@ -174,11 +174,21 @@ abstract class MemberShapeDecodeGenerator(
                     } else { // decode date as a string manually
                         val dateName = "date$level"
                         val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
-                        writer.write(
-                            "let \$L = try containerValues.timestampStringAsDate(\$L, format: .\$L, forKey: .\$L)",
-                            dateName, iteratorName, swiftTimestampName, topLevelMember.memberName
-                        )
-                        writer.write("${decodedMemberName}$terminator.$insertMethod($dateName)")
+                        if (!isSparse) {
+                            writer.openBlock("if let $iteratorName = $iteratorName {", "}") {
+                                writer.write(
+                                    "let \$L = try containerValues.timestampStringAsDate(\$L, format: .\$L, forKey: .\$L)",
+                                    dateName, iteratorName, swiftTimestampName, topLevelMember.memberName
+                                )
+                                writer.write("${decodedMemberName}$terminator.$insertMethod($dateName)")
+                            }
+                        } else {
+                            writer.write(
+                                "let \$L = try containerValues.timestampStringAsDate(\$L, format: .\$L, forKey: .\$L)",
+                                dateName, iteratorName, swiftTimestampName, topLevelMember.memberName
+                            )
+                            writer.write("${decodedMemberName}$terminator.$insertMethod($dateName)")
+                        }
                     }
                 }
                 is CollectionShape -> {
