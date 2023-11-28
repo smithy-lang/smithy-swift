@@ -97,7 +97,7 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     override fun toMemberName(shape: MemberShape): String {
         val containingShape = model.expectShape(shape.container)
         if (containingShape is UnionShape) {
-            val name = escaper.escapeMemberName(shape.memberName)
+            val name = escaper.escapeMemberName(shape.memberName.toLowerCamelCase())
             return if (!name.equals("sdkUnknown")) lowerCase(name) else name
         }
         return escaper.escapeMemberName(shape.memberName.toLowerCamelCase())
