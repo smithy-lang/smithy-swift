@@ -76,6 +76,8 @@ class ServiceGenerator(
          * Helper method for generating in-line documentation for operation
          */
         private fun renderOperationDoc(model: Model, service: ServiceShape, op: OperationShape, writer: SwiftWriter) {
+            writer.writeDocs("Performs the \\`${op.id.name}\\` operation on the \\`${service.id.name}\\` service.")
+            writer.writeDocs("")
             writer.writeShapeDocs(op)
             writer.writeAvailableAttribute(model, op)
 

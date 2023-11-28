@@ -106,38 +106,40 @@ class HttpProtocolClientGeneratorTests {
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
-        extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {
-            /// This is a very cool operation.
-            ///
-            /// - Parameter AllocateWidgetInput : [no documentation found]
-            ///
-            /// - Returns: `AllocateWidgetOutput` : [no documentation found]
-            public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutput
-            {
-                let context = ClientRuntime.HttpContextBuilder()
-                              .withEncoder(value: encoder)
-                              .withDecoder(value: decoder)
-                              .withMethod(value: .post)
-                              .withServiceName(value: serviceName)
-                              .withOperation(value: "allocateWidget")
-                              .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
-                              .withLogger(value: config.logger)
-                              .withPartitionID(value: config.partitionID)
-                              .build()
-                var operation = ClientRuntime.OperationStack<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>(id: "allocateWidget")
-                operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.IdempotencyTokenMiddleware<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>(keyPath: \.clientToken))
-                operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>())
-                operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutput>())
-                operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(contentType: "application/json"))
-                operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(xmlName: "AllocateWidgetInput"))
-                operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
-                operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, AllocateWidgetOutput, AllocateWidgetOutputError>(options: config.retryStrategyOptions))
-                operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<AllocateWidgetOutput, AllocateWidgetOutputError>())
-                operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<AllocateWidgetOutput, AllocateWidgetOutputError>(clientLogMode: config.clientLogMode))
-                let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
-                return result
-            }
-        """.trimIndent()
+extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {
+    /// Performs the `AllocateWidget` operation on the `Example` service.
+    ///
+    /// This is a very cool operation.
+    ///
+    /// - Parameter AllocateWidgetInput : [no documentation found]
+    ///
+    /// - Returns: `AllocateWidgetOutput` : [no documentation found]
+    public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutput
+    {
+        let context = ClientRuntime.HttpContextBuilder()
+                      .withEncoder(value: encoder)
+                      .withDecoder(value: decoder)
+                      .withMethod(value: .post)
+                      .withServiceName(value: serviceName)
+                      .withOperation(value: "allocateWidget")
+                      .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
+                      .withLogger(value: config.logger)
+                      .withPartitionID(value: config.partitionID)
+                      .build()
+        var operation = ClientRuntime.OperationStack<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>(id: "allocateWidget")
+        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.IdempotencyTokenMiddleware<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>(keyPath: \.clientToken))
+        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<AllocateWidgetInput, AllocateWidgetOutput, AllocateWidgetOutputError>())
+        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutput>())
+        operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(contentType: "application/json"))
+        operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.SerializableBodyMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(xmlName: "AllocateWidgetInput"))
+        operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, AllocateWidgetOutput, AllocateWidgetOutputError>(options: config.retryStrategyOptions))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<AllocateWidgetOutput, AllocateWidgetOutputError>())
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<AllocateWidgetOutput, AllocateWidgetOutputError>(clientLogMode: config.clientLogMode))
+        let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
+        return result
+    }
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
