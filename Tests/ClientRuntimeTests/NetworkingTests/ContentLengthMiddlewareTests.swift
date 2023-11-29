@@ -7,7 +7,7 @@ import SmithyTestUtil
 
 class ContentLengthMiddlewareTests: XCTestCase {
     private var builtContext: HttpContext!
-    private var stack: OperationStack<MockInput, MockOutput, MockMiddlewareError>!
+    private var stack: OperationStack<MockInput, MockOutput>!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -18,7 +18,7 @@ class ContentLengthMiddlewareTests: XCTestCase {
                   .withDecoder(value: JSONDecoder())
                   .withOperation(value: "Test Operation")
                   .build()
-        stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
+        stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")
     }
 
     func testTransferEncodingChunkedSetWhenStreamLengthIsNil() async throws {

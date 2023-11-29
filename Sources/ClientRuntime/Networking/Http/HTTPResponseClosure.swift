@@ -5,4 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+public typealias HTTPResponseClosure<T> = (HttpResponse) async throws -> T
+
+public func responseClosure<T: HttpResponseBinding, Decoder: ResponseDecoder>(decoder: Decoder) -> HTTPResponseClosure<T> {
+    return { response in
+        return try await T(httpResponse: response, decoder: decoder)
+    }
+}

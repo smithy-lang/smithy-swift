@@ -7,15 +7,15 @@
 
 public struct DeserializeMiddleware<Output>: Middleware {
     public var id: String = "Deserialize"
-    let outputBinding: HTTPResponseBinding<Output>
-    let outputErrorBinding: HttpResponseErrorBinding
+    let httpResponseClosure: HTTPResponseClosure<Output>
+    let httpResponseErrorClosure: HTTPResponseErrorClosure
 
     public init(
-        outputBinding: @escaping HTTPResponseBinding<Output>,
-        outputErrorBinding: @escaping HttpResponseErrorBinding
+        _ httpResponseClosure: @escaping HTTPResponseClosure<Output>,
+        _ httpResponseErrorClosure: @escaping HTTPResponseErrorClosure
     ) {
-        self.outputBinding = outputBinding
-        self.outputErrorBinding = outputErrorBinding
+        self.httpResponseClosure = httpResponseClosure
+        self.httpResponseErrorClosure = httpResponseErrorClosure
     }
     public func handle<H>(context: HttpContext,
                           input: SdkHttpRequest,
@@ -28,7 +28,7 @@ public struct DeserializeMiddleware<Output>: Middleware {
             let response = try await next.handle(context: context, input: input) // call handler to get http response
             var copiedResponse = response
             if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
-                let output = try await outputBinding(response.httpResponse)
+                let output = try await httpResponseClosure(response.httpResponse)
                 copiedResponse.output = output
                 return copiedResponse
             } else {
@@ -38,7 +38,7 @@ public struct DeserializeMiddleware<Output>: Middleware {
                 // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
                 let bodyData = try await copiedResponse.httpResponse.body.readData()
                 copiedResponse.httpResponse.body = .data(bodyData)
-                throw try await outputErrorBinding(copiedResponse.httpResponse)
+                throw try await httpResponseErrorClosure(copiedResponse.httpResponse)
           }
     }
 

@@ -14,7 +14,7 @@ class MutateHeaderMiddlewareTests: XCTestCase {
     var clientEngine: MockHttpClientEngine! = nil
     var httpClient: SdkHttpClient! = nil
     var builtContext: HttpContext! = nil
-    var stack: OperationStack<MockInput, MockOutput, MockMiddlewareError>! = nil
+    var stack: OperationStack<MockInput, MockOutput>! = nil
     override func setUp() {
         httpClientConfiguration = HttpClientConfiguration()
         clientEngine = MockHttpClientEngine()
@@ -26,7 +26,7 @@ class MutateHeaderMiddlewareTests: XCTestCase {
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
             .build()
-        stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
+        stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")
         stack.serializeStep.intercept(position: .after,
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestName", headerValue: "TestValue"))
         stack.deserializeStep.intercept(position: .after,

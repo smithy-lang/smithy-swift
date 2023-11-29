@@ -29,17 +29,21 @@ class DeserializeMiddleware(
         operationStackName: String
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
-        val outputBinding = ""
-        val outputErrorBinding = ""
+        val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
+        val httpResponseClosure = "responseClosure(decoder: decoder)"
+        val httpResponseErrorClosure = writer.format(
+            "responseErrorClosure(\$N.self, decoder: decoder)",
+            outputError
+        )
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N>(outputBinding: \$L, outputErrorBinding: \$L))",
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N>(\$L, \$L))",
             operationStackName,
             middlewareStep.stringValue(),
             position.stringValue(),
             ClientRuntimeTypes.Middleware.DeserializeMiddleware,
             output,
-            outputBinding,
-            outputErrorBinding
+            httpResponseClosure,
+            httpResponseErrorClosure
         )
     }
 }
