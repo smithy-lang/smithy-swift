@@ -24,18 +24,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        for (stringKey0, greetingstructValue0) in myMap {
-                            var entryContainer0 = myMapContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                            var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                            try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                            var valueContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                            try valueContainer0.encode(greetingstructValue0, forKey: ClientRuntime.Key(""))
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap")].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -53,18 +44,9 @@ class MapEncodeXMLGenerationTests {
                     case `protocol` = "protocol"
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let `protocol` = `protocol` {
-                        var protocolContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("protocol"))
-                        for (stringKey0, greetingstructValue0) in `protocol` {
-                            var entryContainer0 = protocolContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                            var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                            try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                            var valueContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                            try valueContainer0.encode(greetingstructValue0, forKey: ClientRuntime.Key(""))
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsWithNameProtocolInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("protocol")].writeMap(value.`protocol`, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -82,24 +64,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
-                            var entryContainer0 = myMapContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                            var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                            try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                            var valueContainer1 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                            for (stringKey1, greetingstructValue1) in xmlmapsnestednestedinputoutputmapValue0 {
-                                var entryContainer1 = valueContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                                var keyContainer1 = entryContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                                try keyContainer1.encode(stringKey1, forKey: ClientRuntime.Key(""))
-                                var valueContainer1 = entryContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                                try valueContainer1.encode(greetingstructValue1, forKey: ClientRuntime.Key(""))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsNestedInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap")].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -117,30 +84,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
-                            var entryContainer0 = myMapContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                            var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                            try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                            var valueContainer1 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                            for (stringKey1, xmlmapsnestednestednestedinputoutputmapValue1) in xmlmapsnestednestedinputoutputmapValue0 {
-                                var entryContainer1 = valueContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                                var keyContainer1 = entryContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                                try keyContainer1.encode(stringKey1, forKey: ClientRuntime.Key(""))
-                                var valueContainer2 = entryContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                                for (stringKey2, greetingstructValue2) in xmlmapsnestednestednestedinputoutputmapValue1 {
-                                    var entryContainer2 = valueContainer2.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                                    var keyContainer2 = entryContainer2.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                                    try keyContainer2.encode(stringKey2, forKey: ClientRuntime.Key(""))
-                                    var valueContainer2 = entryContainer2.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                                    try valueContainer2.encode(greetingstructValue2, forKey: ClientRuntime.Key(""))
-                                }
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsNestedNestedInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap")].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -158,21 +104,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let myMap = myMap {
-                        if myMap.isEmpty {
-                            let _ =  container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        } else {
-                            for (stringKey0, greetingstructValue0) in myMap {
-                                var nestedContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                                var keyContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                                try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                                var valueContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                                try valueContainer0.encode(greetingstructValue0, forKey: ClientRuntime.Key(""))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlFlattenedMapsInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap")].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: true)
                 }
             }
             """.trimIndent()
@@ -190,27 +124,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let myMap = myMap {
-                        if myMap.isEmpty {
-                            let _ =  container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        } else {
-                            for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
-                                var nestedContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                                var keyContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                                try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                                var valueContainer1 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                                for (stringKey1, greetingstructValue1) in xmlmapsnestednestedinputoutputmapValue0 {
-                                    var nestedContainer1 = valueContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                                    var keyContainer1 = nestedContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                                    try keyContainer1.encode(stringKey1, forKey: ClientRuntime.Key(""))
-                                    var valueContainer1 = nestedContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                                    try valueContainer1.encode(greetingstructValue1, forKey: ClientRuntime.Key(""))
-                                }
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsFlattenedNestedInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap")].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: true)
                 }
             }
             """.trimIndent()
@@ -228,18 +144,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        for (stringKey0, greetingstructValue0) in myMap {
-                            var entryContainer0 = myMapContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                            var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("Attribute"))
-                            try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                            var valueContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("Setting"))
-                            try valueContainer0.encode(greetingstructValue0, forKey: ClientRuntime.Key(""))
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsXmlNameInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap")].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: .init("Attribute"), valueNodeInfo: .init("Setting"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -257,21 +164,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let myMap = myMap {
-                        if myMap.isEmpty {
-                            let _ =  container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        } else {
-                            for (stringKey0, greetingstructValue0) in myMap {
-                                var nestedContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                                var keyContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("SomeCustomKey"))
-                                try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                                var valueContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("SomeCustomValue"))
-                                try valueContainer0.encode(greetingstructValue0, forKey: ClientRuntime.Key(""))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsXmlNameFlattenedInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap")].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: .init("SomeCustomKey"), valueNodeInfo: .init("SomeCustomValue"), isFlattened: true)
                 }
             }
             """.trimIndent()
@@ -289,24 +184,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
-                            var entryContainer0 = myMapContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                            var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("CustomKey1"))
-                            try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                            var valueContainer1 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("CustomValue1"))
-                            for (stringKey1, greetingstructValue1) in xmlmapsnestednestedinputoutputmapValue0 {
-                                var entryContainer1 = valueContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                                var keyContainer1 = entryContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("CustomKey2"))
-                                try keyContainer1.encode(stringKey1, forKey: ClientRuntime.Key(""))
-                                var valueContainer1 = entryContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("CustomValue2"))
-                                try valueContainer1.encode(greetingstructValue1, forKey: ClientRuntime.Key(""))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsXmlNameNestedInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap")].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: .init("CustomKey2"), valueNodeInfo: .init("CustomValue2"), isFlattened: false), keyNodeInfo: .init("CustomKey1"), valueNodeInfo: .init("CustomValue1"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -324,27 +204,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let myMap = myMap {
-                        if myMap.isEmpty {
-                            let _ =  container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        } else {
-                            for (stringKey0, xmlmapsnestednestedinputoutputmapValue0) in myMap {
-                                var nestedContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                                var keyContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("yek"))
-                                try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                                var valueContainer1 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("eulav"))
-                                for (stringKey1, stringValue1) in xmlmapsnestednestedinputoutputmapValue0 {
-                                    var nestedContainer1 = valueContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                                    var keyContainer1 = nestedContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("K"))
-                                    try keyContainer1.encode(stringKey1, forKey: ClientRuntime.Key(""))
-                                    var valueContainer1 = nestedContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("V"))
-                                    try valueContainer1.encode(stringValue1, forKey: ClientRuntime.Key(""))
-                                }
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsFlattenedNestedXmlNameInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap")].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: .init("K"), valueNodeInfo: .init("V"), isFlattened: false), keyNodeInfo: .init("yek"), valueNodeInfo: .init("eulav"), isFlattened: true)
                 }
             }
             """.trimIndent()
@@ -362,24 +224,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if encoder.codingPath.isEmpty {
-                        try container.encode("http://aoo.com", forKey: ClientRuntime.Key("xmlns"))
-                    }
-                    if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        try myMapContainer.encode("http://boo.com", forKey: ClientRuntime.Key("xmlns"))
-                        for (stringKey0, stringValue0) in myMap {
-                            var entryContainer0 = myMapContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                            var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("Quality"))
-                            try keyContainer0.encode("http://doo.com", forKey: ClientRuntime.Key("xmlns"))
-                            try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                            var valueContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("Degree"))
-                            try valueContainer0.encode("http://eoo.com", forKey: ClientRuntime.Key("xmlns"))
-                            try valueContainer0.encode(stringValue0, forKey: ClientRuntime.Key(""))
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap", namespace: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: .init("Quality", namespace: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Degree", namespace: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -396,27 +243,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if encoder.codingPath.isEmpty {
-                        try container.encode("http://aoo.com", forKey: ClientRuntime.Key("xmlns"))
-                    }
-                    if let myMap = myMap {
-                        if myMap.isEmpty {
-                            let _ =  container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        } else {
-                            for (stringKey0, stringValue0) in myMap {
-                                var nestedContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                                try nestedContainer0.encode("http://boo.com", forKey: ClientRuntime.Key("xmlns"))
-                                var keyContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("Uid"))
-                                try keyContainer0.encode("http://doo.com", forKey: ClientRuntime.Key("xmlns"))
-                                try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                                var valueContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("Val"))
-                                try valueContainer0.encode("http://eoo.com", forKey: ClientRuntime.Key("xmlns"))
-                                try valueContainer0.encode(stringValue0, forKey: ClientRuntime.Key(""))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsFlattenedXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap", namespace: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: .init("Uid", namespace: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Val", namespace: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
                 }
             }
             """.trimIndent()
@@ -434,32 +263,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if encoder.codingPath.isEmpty {
-                        try container.encode("http://aoo.com", forKey: ClientRuntime.Key("xmlns"))
-                    }
-                    if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        try myMapContainer.encode("http://boo.com", forKey: ClientRuntime.Key("xmlns"))
-                        for (stringKey0, xmlmapsnestednestedxmlnamespaceinputoutputmapValue0) in myMap {
-                            var entryContainer0 = myMapContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                            var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("yek"))
-                            try keyContainer0.encode("http://doo.com", forKey: ClientRuntime.Key("xmlns"))
-                            try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                            var valueContainer1 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("eulav"))
-                            try valueContainer1.encode("http://eoo.com", forKey: ClientRuntime.Key("xmlns"))
-                            for (stringKey1, stringValue1) in xmlmapsnestednestedxmlnamespaceinputoutputmapValue0 {
-                                var entryContainer1 = valueContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                                var keyContainer1 = entryContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("K"))
-                                try keyContainer1.encode("http://goo.com", forKey: ClientRuntime.Key("xmlns"))
-                                try keyContainer1.encode(stringKey1, forKey: ClientRuntime.Key(""))
-                                var valueContainer1 = entryContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("V"))
-                                try valueContainer1.encode("http://hoo.com", forKey: ClientRuntime.Key("xmlns"))
-                                try valueContainer1.encode(stringValue1, forKey: ClientRuntime.Key(""))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsNestedXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap", namespace: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: .init("K", namespace: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespace: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespace: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespace: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -476,34 +282,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if encoder.codingPath.isEmpty {
-                        try container.encode("http://aoo.com", forKey: ClientRuntime.Key("xmlns"))
-                    }
-                    if let myMap = myMap {
-                        if myMap.isEmpty {
-                            let _ =  container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        } else {
-                            for (stringKey0, xmlmapsnestednestednamespaceinputoutputmapValue0) in myMap {
-                                var nestedContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                                var keyContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("yek"))
-                                try keyContainer0.encode("http://doo.com", forKey: ClientRuntime.Key("xmlns"))
-                                try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                                var valueContainer1 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("eulav"))
-                                try valueContainer1.encode("http://eoo.com", forKey: ClientRuntime.Key("xmlns"))
-                                for (stringKey1, stringValue1) in xmlmapsnestednestednamespaceinputoutputmapValue0 {
-                                    var nestedContainer1 = valueContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                                    var keyContainer1 = nestedContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("K"))
-                                    try keyContainer1.encode("http://goo.com", forKey: ClientRuntime.Key("xmlns"))
-                                    try keyContainer1.encode(stringKey1, forKey: ClientRuntime.Key(""))
-                                    var valueContainer1 = nestedContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("V"))
-                                    try valueContainer1.encode("http://hoo.com", forKey: ClientRuntime.Key("xmlns"))
-                                    try valueContainer1.encode(stringValue1, forKey: ClientRuntime.Key(""))
-                                }
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsFlattenedNestedXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap", namespace: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: .init("K", namespace: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespace: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespace: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespace: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
                 }
             }
             """.trimIndent()
@@ -520,20 +301,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let myMap = myMap {
-                        var myMapContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        for (stringKey0, xmlsimplestringlistValue0) in myMap {
-                            var entryContainer0 = myMapContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                            var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                            try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                            var valueContainer1 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                            for string1 in xmlsimplestringlistValue0 {
-                                try valueContainer1.encode(string1, forKey: ClientRuntime.Key("member"))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsContainListInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap")].writeMap(value.myMap, valueWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -550,23 +320,9 @@ class MapEncodeXMLGenerationTests {
                     case myMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let myMap = myMap {
-                        if myMap.isEmpty {
-                            let _ =  container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                        } else {
-                            for (stringKey0, xmlsimplestringlistValue0) in myMap {
-                                var nestedContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("myMap"))
-                                var keyContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                                try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                                var valueContainer1 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                                for string1 in xmlsimplestringlistValue0 {
-                                    try valueContainer1.encode(string1, forKey: ClientRuntime.Key("member"))
-                                }
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsFlattenedContainListInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("myMap")].writeMap(value.myMap, valueWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: true)
                 }
             }
             """.trimIndent()
@@ -583,18 +339,9 @@ class MapEncodeXMLGenerationTests {
                     case timestampMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let timestampMap = timestampMap {
-                        var timestampMapContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("timestampMap"))
-                        for (stringKey0, timestampValue0) in timestampMap {
-                            var entryContainer0 = timestampMapContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                            var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                            try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                            var valueContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                            try valueContainer0.encodeTimestamp(timestampValue0, format: .epochSeconds, forKey: ClientRuntime.Key(""))
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsTimestampsInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("timestampMap")].writeMap(value.timestampMap, valueWritingClosure: SmithyXML.timestampWritingClosure(format: .epochSeconds), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -612,21 +359,9 @@ class MapEncodeXMLGenerationTests {
                     case timestampMap
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let timestampMap = timestampMap {
-                        if timestampMap.isEmpty {
-                            let _ =  container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("timestampMap"))
-                        } else {
-                            for (stringKey0, timestampValue0) in timestampMap {
-                                var nestedContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("timestampMap"))
-                                var keyContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                                try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                                var valueContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                                try valueContainer0.encodeTimestamp(timestampValue0, format: .epochSeconds, forKey: ClientRuntime.Key(""))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlMapsFlattenedTimestampsInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("timestampMap")].writeMap(value.timestampMap, valueWritingClosure: SmithyXML.timestampWritingClosure(format: .epochSeconds), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: true)
                 }
             }
             """.trimIndent()
@@ -645,43 +380,10 @@ class MapEncodeXMLGenerationTests {
                 case nestedMap
             }
         
-            public func encode(to encoder: Swift.Encoder) throws {
-                var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                if let flatNestedMap = flatNestedMap {
-                    if flatNestedMap.isEmpty {
-                        let _ =  container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("flatNestedMap"))
-                    } else {
-                        for (stringKey0, fooenummapValue0) in flatNestedMap {
-                            var nestedContainer0 = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("flatNestedMap"))
-                            var keyContainer0 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                            try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                            var valueContainer1 = nestedContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                            for (stringKey1, fooenumValue1) in fooenummapValue0 {
-                                var nestedContainer1 = valueContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                                var keyContainer1 = nestedContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                                try keyContainer1.encode(stringKey1, forKey: ClientRuntime.Key(""))
-                                var valueContainer1 = nestedContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                                try valueContainer1.encode(fooenumValue1, forKey: ClientRuntime.Key(""))
-                            }
-                        }
-                    }
-                }
-                if let nestedMap = nestedMap {
-                    var nestedMapContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedMap"))
-                    for (stringKey0, fooenummapValue0) in nestedMap {
-                        var entryContainer0 = nestedMapContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                        var keyContainer0 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                        try keyContainer0.encode(stringKey0, forKey: ClientRuntime.Key(""))
-                        var valueContainer1 = entryContainer0.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                        for (stringKey1, fooenumValue1) in fooenummapValue0 {
-                            var entryContainer1 = valueContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("entry"))
-                            var keyContainer1 = entryContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("key"))
-                            try keyContainer1.encode(stringKey1, forKey: ClientRuntime.Key(""))
-                            var valueContainer1 = entryContainer1.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("value"))
-                            try valueContainer1.encode(fooenumValue1, forKey: ClientRuntime.Key(""))
-                        }
-                    }
-                }
+            static func writingClosure(_ value: NestedXmlMapsInput?, to writer: SmithyXML.Writer) throws {
+                guard let value else { writer.detach(); return }
+                try writer[.init("flatNestedMap")].writeMap(value.flatNestedMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: true)
+                try writer[.init("nestedMap")].writeMap(value.nestedMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false), keyNodeInfo: .init("key"), valueNodeInfo: .init("value"), isFlattened: false)
             }
         }
             """.trimIndent()

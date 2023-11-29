@@ -30,10 +30,8 @@ import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGen
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.CollectionMemberCodingKey
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.MapKeyValue
-import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
-import software.amazon.smithy.swift.codegen.model.recursiveSymbol
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 abstract class MemberShapeDecodeXMLGenerator(
@@ -267,9 +265,6 @@ abstract class MemberShapeDecodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-        if (member.hasTrait(SwiftBoxTrait::class.java)) {
-            memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
-        }
         val decodedMemberName = "${memberName}Decoded"
 
         writer.openBlock("if $containerName.contains(.$memberNameUnquoted) {", "} else {") {
@@ -296,9 +291,6 @@ abstract class MemberShapeDecodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(member)
-        if (member.hasTrait(SwiftBoxTrait::class.java)) {
-            memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
-        }
         val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion || (member.hasTrait<DefaultTrait>())) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberNameUnquoted}Decoded"
 

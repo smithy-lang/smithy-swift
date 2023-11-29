@@ -2,6 +2,7 @@ package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Middleware.OperationStack
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -26,7 +27,7 @@ class MiddlewareExecutionGenerator(
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
 
-    fun render(op: OperationShape, onError: (SwiftWriter, String) -> Unit) {
+    fun render(service: ServiceShape, op: OperationShape, onError: (SwiftWriter, String) -> Unit) {
         val operationErrorName = "${op.toUpperCamelCase()}OutputError"
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op).name
@@ -36,7 +37,7 @@ class MiddlewareExecutionGenerator(
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
         writer.write("var $operationStackName = \$N<$inputShapeName, $outputShapeName, $operationErrorName>(id: \"${op.toLowerCamelCase()}\")", OperationStack)
-        renderMiddlewares(op, operationStackName)
+        renderMiddlewares(ctx, op, operationStackName)
     }
 
     private fun renderContextAttributes(op: OperationShape) {
@@ -66,11 +67,11 @@ class MiddlewareExecutionGenerator(
         }
     }
 
-    private fun renderMiddlewares(op: OperationShape, operationStackName: String) {
-        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.INITIALIZESTEP)
-        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.BUILDSTEP)
-        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.SERIALIZESTEP)
-        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.FINALIZESTEP)
-        operationMiddleware.renderMiddleware(writer, op, operationStackName, MiddlewareStep.DESERIALIZESTEP)
+    private fun renderMiddlewares(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, operationStackName: String) {
+        operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.INITIALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.BUILDSTEP)
+        operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.SERIALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.FINALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.DESERIALIZESTEP)
     }
 }

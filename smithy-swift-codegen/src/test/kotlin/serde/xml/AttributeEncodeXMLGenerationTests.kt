@@ -14,29 +14,6 @@ import org.junit.jupiter.api.Test
 
 class AttributeEncodeXMLGenerationTests {
     @Test
-    fun `001 xml attributes encoding for input type`() {
-        val context = setupTests("Isolated/Restxml/xml-attr.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlAttributesInput+DynamicNodeEncoding.swift")
-        val expectedContents =
-            """
-            extension XmlAttributesInput: ClientRuntime.DynamicNodeEncoding {
-                public static func nodeEncoding(for key: Swift.CodingKey) -> ClientRuntime.NodeEncoding {
-                    let codingKeys = [
-                        "test"
-                    ]
-                    if let key = key as? ClientRuntime.Key {
-                        if codingKeys.contains(key.stringValue) {
-                            return .attribute
-                        }
-                    }
-                    return .element
-                }
-            }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
     fun `002 creates encodable`() {
         val context = setupTests("Isolated/Restxml/xml-attr.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlAttributesInput+Encodable.swift")
@@ -48,14 +25,10 @@ class AttributeEncodeXMLGenerationTests {
                     case foo
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let attr = attr {
-                        try container.encode(attr, forKey: ClientRuntime.Key("test"))
-                    }
-                    if let foo = foo {
-                        try container.encode(foo, forKey: ClientRuntime.Key("foo"))
-                    }
+                static func writingClosure(_ value: XmlAttributesInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("test", location: .attribute)].write(value.attr)
+                    try writer[.init("foo")].write(value.foo)
                 }
             }
             """.trimIndent()

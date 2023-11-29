@@ -22,7 +22,6 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
-import software.amazon.smithy.swift.codegen.model.recursiveSymbol
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.errorShapeName
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
@@ -120,13 +119,10 @@ class StructureGenerator(
         membersSortedByName.forEach {
             var (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
-            if (it.hasTrait<SwiftBoxTrait>()) {
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                memberSymbol = memberSymbol.recursiveSymbol()
-            }
-
+            val indirect = it.hasTrait<SwiftBoxTrait>()
+            val indirectOrNot = "@Indirect ".takeIf { indirect } ?: ""
             writer.writeAvailableAttribute(model, it)
-            writer.write("public var \$L: \$T", memberName, memberSymbol)
+            writer.write("\$Lpublic var \$L: \$T", indirectOrNot, memberName, memberSymbol)
         }
     }
 
@@ -134,12 +130,13 @@ class StructureGenerator(
         val hasMembers = membersSortedByName.isNotEmpty()
 
         if (hasMembers) {
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.openBlock("public init(", ")") {
                 for ((index, member) in membersSortedByName.withIndex()) {
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
                     val terminator = if (index == membersSortedByName.size - 1) "" else ","
-                    val symbolToUse = if (member.hasTrait(SwiftBoxTrait::class.java)) memberSymbol.recursiveSymbol() else memberSymbol
+                    val symbolToUse = memberSymbol
                     writer.write("\$L: \$D$terminator", memberName, symbolToUse)
                 }
             }
@@ -230,7 +227,9 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.writeMemberDocs(model, it)
                     writer.writeAvailableAttribute(model, it)
-                    writer.write("public internal(set) var \$L: \$D", memberName, memberSymbol)
+                    val targetShape = model.expectShape(it.target)
+                    val boxedOrNot = "@Boxed ".takeIf { targetShape.hasTrait<SwiftBoxTrait>() }
+                    writer.write("\$Lpublic internal(set) var \$L: \$D", boxedOrNot, memberName, memberSymbol)
                 }
             }
             writer.write("")

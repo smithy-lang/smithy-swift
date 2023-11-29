@@ -221,9 +221,10 @@ open class HttpRequestTestBase: XCTestCase {
     }
 
     public func genericAssertEqualHttpBodyData(
-        _ expected: HttpBody,
-        _ actual: HttpBody,
-        _ encoder: Any,
+        expected: HttpBody,
+        actual: HttpBody,
+        isXML: Bool,
+        isJSON: Bool,
         _ callback: (Data, Data) -> Void,
         file: StaticString = #filePath,
         line: UInt = #line
@@ -231,9 +232,9 @@ open class HttpRequestTestBase: XCTestCase {
         let expectedData = try await expected.readData()
         let actualData = try await actual.readData()
         if shouldCompareData(expectedData, actualData) {
-            if encoder is XMLEncoder {
+            if isXML {
                 XCTAssertXMLDataEqual(actualData!, expectedData!, file: file, line: line)
-            } else if encoder is JSONEncoder {
+            } else if isJSON {
                 XCTAssertJSONDataEqual(actualData!, expectedData!, file: file, line: line)
             }
             callback(expectedData!, actualData!)

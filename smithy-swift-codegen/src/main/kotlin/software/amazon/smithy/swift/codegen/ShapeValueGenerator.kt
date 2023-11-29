@@ -25,9 +25,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.recursiveSymbol
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
@@ -47,11 +45,11 @@ class ShapeValueGenerator(
      * @param shape the shape that will be declared.
      * @param params parameters to fill the generated shape declaration.
      */
-    fun writeShapeValueInline(writer: SwiftWriter, shape: Shape, params: Node, recursiveMemberWithTrait: Boolean = false) {
+    fun writeShapeValueInline(writer: SwiftWriter, shape: Shape, params: Node) {
         val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
 
         when (shape.type) {
-            ShapeType.STRUCTURE -> structDecl(writer, shape.asStructureShape().get(), recursiveMemberWithTrait) {
+            ShapeType.STRUCTURE -> structDecl(writer, shape.asStructureShape().get()) {
                 params.accept(nodeVisitor)
             }
             ShapeType.MAP -> mapDecl(writer) {
@@ -73,52 +71,13 @@ class ShapeValueGenerator(
         }
     }
 
-    private fun structDecl(writer: SwiftWriter, shape: StructureShape, recursiveMemberWithTrait: Boolean, block: () -> Unit) {
-        var symbol = if (recursiveMemberWithTrait) symbolProvider.toSymbol(shape).recursiveSymbol() else symbolProvider.toSymbol(shape)
-
-        /*
-            The following line changes the generated code from structure instantiation to
-            Box<T> class instantiation for members with SwiftBoxTrait.
-
-            Changes the instantiation of recursive structure from:-
-                RecursiveShapesInputOutputNested1(
-                    foo: "Foo1",
-                    nested: RecursiveShapesInputOutputNested2(
-                        bar: "Bar1"
-                    )
-                 )
-
-            To:-
-            RecursiveShapesInputOutputNested1(
-            foo: "Foo1",
-            nested: Box<RecursiveShapesInputOutputNested2>(
-                value: RecursiveShapesInputOutputNested2(
-                    bar: "Bar1"
-                )
-            )
-        )
-        */
-        if (recursiveMemberWithTrait) {
-            writer.writeInline("\$N(", symbol)
-                .indent()
-                .writeInline("\nvalue: ")
-
-            symbol = symbolProvider.toSymbol(shape)
-        }
-        /*
-            The only change with recursive member is that "Box<T>( value: " appended
-            and the rest of the logic is same as non-recursive members. So, there is no "else" here.
-         */
+    private fun structDecl(writer: SwiftWriter, shape: StructureShape, block: () -> Unit) {
+        var symbol = symbolProvider.toSymbol(shape)
         writer.writeInline("\$N(", symbol)
             .indent()
             .call { block() }
             .dedent()
             .writeInline("\n)")
-
-        if (recursiveMemberWithTrait) {
-            writer.dedent()
-                .writeInline("\n)")
-        }
     }
 
     private fun unionDecl(writer: SwiftWriter, shape: UnionShape, block: () -> Unit) {
@@ -236,7 +195,6 @@ class ShapeValueGenerator(
                         val member = currShape.getMember(keyNode.value).orElseThrow {
                             CodegenException("unknown member ${currShape.id}.${keyNode.value}")
                         }
-                        val recursiveMemberWithTrait = member.hasTrait(SwiftBoxTrait::class.java)
                         memberShape = generator.model.expectShape(member.target)
                         val memberName = generator.symbolProvider.toMemberNames(member).second
                         // NOTE - `write()` appends a newline and keeps indentation,
@@ -245,7 +203,7 @@ class ShapeValueGenerator(
                         // This is our workaround for the moment to keep indentation but not insert
                         // a newline at the end.
                         writer.writeInline("\n\$L: ", memberName)
-                        generator.writeShapeValueInline(writer, memberShape, valueNode, recursiveMemberWithTrait)
+                        generator.writeShapeValueInline(writer, memberShape, valueNode)
                         if (i < node.members.size - 1) {
                             writer.writeInline(",")
                         }

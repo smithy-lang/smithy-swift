@@ -464,7 +464,7 @@ extension NestedShapesOutputBody: Swift.Decodable {
                         try encodeContainer.encode(foo, forKey: .foo)
                     }
                     if let nested = self.nested {
-                        try encodeContainer.encode(nested.value, forKey: .nested)
+                        try encodeContainer.encode(nested, forKey: .nested)
                     }
                 }
             
@@ -472,7 +472,7 @@ extension NestedShapesOutputBody: Swift.Decodable {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let fooDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .foo)
                     foo = fooDecoded
-                    let nestedDecoded = try containerValues.decodeIfPresent(Box<ExampleClientTypes.RecursiveShapesInputOutputNested2>.self, forKey: .nested)
+                    let nestedDecoded = try containerValues.decodeIfPresent(ExampleClientTypes.RecursiveShapesInputOutputNested2.self, forKey: .nested)
                     nested = nestedDecoded
                 }
             }

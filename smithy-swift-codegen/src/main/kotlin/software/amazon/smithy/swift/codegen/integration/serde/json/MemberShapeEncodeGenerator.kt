@@ -20,7 +20,6 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampEncodeGenerator
@@ -48,11 +47,6 @@ abstract class MemberShapeEncodeGenerator(
      special types like enum, timestamp, blob
      */
     private fun getShapeExtension(shape: Shape, memberName: String, isBoxed: Boolean, isUnwrapped: Boolean = true): String {
-        val isRecursiveMember = when (shape) {
-            is MemberShape -> shape.hasTrait(SwiftBoxTrait::class.java)
-            else -> false
-        }
-
         // target shape type to deserialize is either the shape itself or member.target
         val target = when (shape) {
             is MemberShape -> ctx.model.expectShape(shape.target)
@@ -63,7 +57,7 @@ abstract class MemberShapeEncodeGenerator(
         return when (target) {
             is StringShape -> if (target.hasTrait<EnumTrait>()) "$memberNameOptional.rawValue" else memberName
             is BlobShape -> if (target.hasTrait<StreamingTrait>()) "$memberNameOptional" else "$memberNameOptional.base64EncodedString()"
-            else -> if (isRecursiveMember) "$memberName.value" else memberName
+            else -> memberName
         }
     }
 

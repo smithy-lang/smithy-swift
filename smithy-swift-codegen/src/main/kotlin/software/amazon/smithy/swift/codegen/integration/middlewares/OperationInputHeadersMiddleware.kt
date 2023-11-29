@@ -5,6 +5,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
@@ -22,6 +23,7 @@ class OperationInputHeadersMiddleware(
     override val position = MiddlewarePosition.AFTER
 
     override fun render(
+        ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         op: OperationShape,
         operationStackName: String,

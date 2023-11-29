@@ -24,11 +24,9 @@ class BlobEncodeXMLGenerationTests {
                     case data
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let data = data {
-                        try container.encode(data, forKey: ClientRuntime.Key("data"))
-                    }
+                static func writingClosure(_ value: XmlBlobsInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("data")].write(value.data)
                 }
             }
             """.trimIndent()
@@ -47,17 +45,9 @@ class BlobEncodeXMLGenerationTests {
                     case nestedBlobList
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let nestedBlobList = nestedBlobList {
-                        var nestedBlobListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedBlobList"))
-                        for nestedbloblist0 in nestedBlobList {
-                            var nestedbloblist0Container0 = nestedBlobListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
-                            for blob1 in nestedbloblist0 {
-                                try nestedbloblist0Container0.encode(blob1, forKey: ClientRuntime.Key("member"))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlBlobsNestedInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("nestedBlobList")].writeList(value.nestedBlobList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: ClientRuntime.Data.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false), memberNodeInfo: .init("member"), isFlattened: false)
                 }
             }
             """.trimIndent()
