@@ -11,9 +11,11 @@ struct PresignerShim<OperationStackOutput>: Middleware {
     public let id: String = "PresignerShim"
 
     private let handler: PresignerShimHandler
+    private let output: OperationStackOutput
 
-    init(handler: @escaping PresignerShimHandler) {
+    init(handler: @escaping PresignerShimHandler, output: OperationStackOutput) {
         self.handler = handler
+        self.output = output
     }
 
     public typealias MInput = SdkHttpRequestBuilder
@@ -29,6 +31,6 @@ struct PresignerShim<OperationStackOutput>: Middleware {
           Self.MOutput == H.Output {
               handler(input)
               let httpResponse = HttpResponse(body: .none, statusCode: .ok)
-              return .init(httpResponse: httpResponse, output: nil)
+              return .init(httpResponse: httpResponse, output: output)
           }
 }

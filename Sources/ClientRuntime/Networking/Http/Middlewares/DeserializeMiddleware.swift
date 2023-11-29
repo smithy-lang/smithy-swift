@@ -28,7 +28,7 @@ public struct DeserializeMiddleware<Output>: Middleware {
             let response = try await next.handle(context: context, input: input) // call handler to get http response
             var copiedResponse = response
             if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
-                let output = try await httpResponseClosure(response.httpResponse)
+                let output = try await httpResponseClosure(copiedResponse.httpResponse)
                 copiedResponse.output = output
                 return copiedResponse
             } else {

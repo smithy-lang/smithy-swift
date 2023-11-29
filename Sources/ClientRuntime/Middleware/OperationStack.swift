@@ -48,6 +48,7 @@ public struct OperationStack<OperationStackInput, OperationStackOutput> {
     mutating public func presignedRequest<H: Handler>(
         context: HttpContext,
         input: OperationStackInput,
+        output: OperationStackOutput,
         next: H
     ) async throws -> SdkHttpRequestBuilder? where
     H.Input == SdkHttpRequest,
@@ -58,7 +59,7 @@ public struct OperationStack<OperationStackInput, OperationStackOutput> {
             position: .after,
             middleware: PresignerShim<OperationStackOutput>(handler: { buildInMiddleware in
                 builder = buildInMiddleware
-            }))
+            }, output: output))
         _ = try await handleMiddleware(context: context, input: input, next: next)
         return builder
     }
