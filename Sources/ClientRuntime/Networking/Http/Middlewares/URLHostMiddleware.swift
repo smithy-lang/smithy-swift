@@ -6,7 +6,7 @@
 //
 
 public struct URLHostMiddleware<OperationStackInput,
-                                OperationStackOutput: HttpResponseBinding>: Middleware {
+                                OperationStackOutput>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))URLHostMiddleware"
 
     let host: String?

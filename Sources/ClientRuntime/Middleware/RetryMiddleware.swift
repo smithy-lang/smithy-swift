@@ -5,8 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryErrorInfoProvider,
-    Output: HttpResponseBinding, OutputError: HttpResponseErrorBinding>: Middleware {
+public struct RetryMiddleware<Strategy: RetryStrategy,
+                              ErrorInfoProvider: RetryErrorInfoProvider,
+                              Output>: Middleware {
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<Output>

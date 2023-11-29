@@ -12,9 +12,7 @@ public class SdkHttpClient {
         self.engine = engine
     }
 
-    public func getHandler<Output: HttpResponseBinding>() -> AnyHandler<SdkHttpRequest,
-                                                                        OperationOutput<Output>,
-                                                                        HttpContext> {
+    public func getHandler<Output>() -> AnyHandler<SdkHttpRequest, OperationOutput<Output>, HttpContext> {
         let clientHandler = ClientHandler<Output>(engine: engine)
         return clientHandler.eraseToAnyHandler()
     }
@@ -24,7 +22,7 @@ public class SdkHttpClient {
     }
 }
 
-struct ClientHandler<Output: HttpResponseBinding>: Handler {
+struct ClientHandler<Output>: Handler {
     let engine: HttpClientEngine
     func handle(context: HttpContext, input: SdkHttpRequest) async throws -> OperationOutput<Output> {
         let httpResponse: HttpResponse
@@ -39,8 +37,6 @@ struct ClientHandler<Output: HttpResponseBinding>: Handler {
     }
 
     typealias Input = SdkHttpRequest
-
     typealias Output = OperationOutput<Output>
-
     typealias Context = HttpContext
 }

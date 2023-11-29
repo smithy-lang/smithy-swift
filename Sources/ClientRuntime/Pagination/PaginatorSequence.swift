@@ -5,9 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct PaginatorSequence<Input: PaginateToken,
-                                Output: HttpResponseBinding>: AsyncSequence
-where Input.Token: Equatable {
+public struct PaginatorSequence<Input: PaginateToken, Output>: AsyncSequence where Input.Token: Equatable {
     public typealias Element = Output
     let input: Input
     let inputKey: KeyPath<Input, Input.Token?>?

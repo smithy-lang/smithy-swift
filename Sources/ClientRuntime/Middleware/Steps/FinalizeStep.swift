@@ -9,13 +9,13 @@
 // Takes Request, and returns result or error.
 //
 // Receives result or error from Deserialize step.
-public typealias FinalizeStep<O: HttpResponseBinding> = MiddlewareStep<HttpContext,
+public typealias FinalizeStep<Output> = MiddlewareStep<HttpContext,
                                                                        SdkHttpRequestBuilder,
-                                                                       OperationOutput<O>>
+                                                                       OperationOutput<Output>>
 
 public let FinalizeStepId = "Finalize"
 
-public struct FinalizeStepHandler<OperationStackOutput: HttpResponseBinding,
+public struct FinalizeStepHandler<OperationStackOutput,
                                   H: Handler>: Handler where H.Context == HttpContext,
                                                              H.Input == SdkHttpRequest,
                                                              H.Output == OperationOutput<OperationStackOutput> {

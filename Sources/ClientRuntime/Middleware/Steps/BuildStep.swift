@@ -8,13 +8,13 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives result or error from Finalize step.
-public typealias BuildStep<O: HttpResponseBinding> = MiddlewareStep<HttpContext,
-                                                                    SdkHttpRequestBuilder,
-                                                                    OperationOutput<O>>
+public typealias BuildStep<Output> = MiddlewareStep<HttpContext,
+                                                    SdkHttpRequestBuilder,
+                                                    OperationOutput<Output>>
 
 public let BuildStepId = "Build"
 
-public struct BuildStepHandler<OperationStackOutput: HttpResponseBinding,
+public struct BuildStepHandler<OperationStackOutput,
                                H: Handler>: Handler where H.Context == HttpContext,
                                                           H.Input == SdkHttpRequestBuilder,
                                                           H.Output == OperationOutput<OperationStackOutput> {

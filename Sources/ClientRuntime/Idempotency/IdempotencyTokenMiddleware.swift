@@ -6,8 +6,7 @@
 //
 
 public struct IdempotencyTokenMiddleware<OperationStackInput,
-                                         OperationStackOutput: HttpResponseBinding,
-                                         OperationStackError: HttpResponseErrorBinding>: ClientRuntime.Middleware {
+                                         OperationStackOutput>: ClientRuntime.Middleware {
     public let id: Swift.String = "IdempotencyTokenMiddleware"
     private let keyPath: WritableKeyPath<OperationStackInput, String?>
 

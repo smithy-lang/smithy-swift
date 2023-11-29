@@ -6,8 +6,7 @@
 //
 
 public struct URLPathMiddleware<OperationStackInput: URLPathProvider,
-                                OperationStackOutput: HttpResponseBinding,
-                                OperationStackError: HttpResponseErrorBinding>: ClientRuntime.Middleware {
+                                OperationStackOutput>: ClientRuntime.Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))URLPathMiddleware"
 
     let urlPrefix: Swift.String?

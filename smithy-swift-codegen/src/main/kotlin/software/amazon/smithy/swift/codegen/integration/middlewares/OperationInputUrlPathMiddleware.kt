@@ -31,7 +31,6 @@ class OperationInputUrlPathMiddleware(
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-        val errorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName, $errorShapeName>($inputParameters))", ClientRuntimeTypes.Middleware.URLPathMiddleware)
+        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName>($inputParameters))", ClientRuntimeTypes.Middleware.URLPathMiddleware)
     }
 }

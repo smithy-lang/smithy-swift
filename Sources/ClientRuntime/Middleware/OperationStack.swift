@@ -1,9 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct OperationStack<OperationStackInput,
-                             OperationStackOutput: HttpResponseBinding,
-                             OperationStackError: HttpResponseErrorBinding> {
+public struct OperationStack<OperationStackInput, OperationStackOutput> {
 
     /// returns the unique id for the operation stack as middleware
     public var id: String
@@ -15,14 +13,11 @@ public struct OperationStack<OperationStackInput,
 
     public init(id: String) {
         self.id = id
-        self.initializeStep = InitializeStep<OperationStackInput,
-                                             OperationStackOutput>(id: InitializeStepId)
-        self.serializeStep = SerializeStep<OperationStackInput,
-                                           OperationStackOutput>(id: SerializeStepId)
+        self.initializeStep = InitializeStep<OperationStackInput, OperationStackOutput>(id: InitializeStepId)
+        self.serializeStep = SerializeStep<OperationStackInput, OperationStackOutput>(id: SerializeStepId)
         self.buildStep = BuildStep<OperationStackOutput>(id: BuildStepId)
         self.finalizeStep = FinalizeStep<OperationStackOutput>(id: FinalizeStepId)
         self.deserializeStep = DeserializeStep<OperationStackOutput>(id: DeserializeStepId)
-
     }
 
     /// This execute will execute the stack and use your next as the last closure in the chain
@@ -61,7 +56,7 @@ public struct OperationStack<OperationStackInput,
         var builder: SdkHttpRequestBuilder?
         self.finalizeStep.intercept(
             position: .after,
-            middleware: PresignerShim<OperationStackOutput, OperationStackError>(handler: { buildInMiddleware in
+            middleware: PresignerShim<OperationStackOutput>(handler: { buildInMiddleware in
                 builder = buildInMiddleware
             }))
         _ = try await handleMiddleware(context: context, input: input, next: next)

@@ -29,7 +29,17 @@ class DeserializeMiddleware(
         operationStackName: String
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
-        val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N>())", ClientRuntimeTypes.Middleware.DeserializeMiddleware, output, outputError)
+        val outputBinding = ""
+        val outputErrorBinding = ""
+        writer.write(
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N>(outputBinding: \$L, outputErrorBinding: \$L))",
+            operationStackName,
+            middlewareStep.stringValue(),
+            position.stringValue(),
+            ClientRuntimeTypes.Middleware.DeserializeMiddleware,
+            output,
+            outputBinding,
+            outputErrorBinding
+        )
     }
 }
