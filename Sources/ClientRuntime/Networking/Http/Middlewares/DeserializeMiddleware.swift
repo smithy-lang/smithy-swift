@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct DeserializeMiddleware<Output>: Middleware {
+public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
     public var id: String = "Deserialize"
-    let httpResponseClosure: HTTPResponseClosure<Output>
+    let httpResponseClosure: HTTPResponseClosure<OperationStackOutput>
     let httpResponseErrorClosure: HTTPResponseErrorClosure
 
     public init(
-        _ httpResponseClosure: @escaping HTTPResponseClosure<Output>,
+        _ httpResponseClosure: @escaping HTTPResponseClosure<OperationStackOutput>,
         _ httpResponseErrorClosure: @escaping HTTPResponseErrorClosure
     ) {
         self.httpResponseClosure = httpResponseClosure
@@ -19,7 +19,7 @@ public struct DeserializeMiddleware<Output>: Middleware {
     }
     public func handle<H>(context: HttpContext,
                           input: SdkHttpRequest,
-                          next: H) async throws -> OperationOutput<Output>
+                          next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
             Self.MInput == H.Input,
             Self.MOutput == H.Output,
@@ -43,7 +43,7 @@ public struct DeserializeMiddleware<Output>: Middleware {
     }
 
     public typealias MInput = SdkHttpRequest
-    public typealias MOutput = OperationOutput<Output>
+    public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
 
 }

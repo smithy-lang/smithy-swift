@@ -10,16 +10,16 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives raw response, or error from underlying handler.
-public typealias DeserializeStep<Output> = MiddlewareStep<HttpContext,
-                                                                          SdkHttpRequest,
-                                                                          OperationOutput<Output>>
+public typealias DeserializeStep<OperationStackOutput> = MiddlewareStep<HttpContext,
+                                                                        SdkHttpRequest,
+                                                                        OperationOutput<OperationStackOutput>>
 
 public let DeserializeStepId = "Deserialize"
 
-public struct DeserializeStepHandler<OperationStackOutput,
-                                     H: Handler>: Handler where H.Context == HttpContext,
-                                                                H.Input == SdkHttpRequest,
-                                                                H.Output == OperationOutput<OperationStackOutput> {
+public struct DeserializeStepHandler<OperationStackOutput, H: Handler>: Handler 
+    where H.Context == HttpContext,
+          H.Input == SdkHttpRequest,
+          H.Output == OperationOutput<OperationStackOutput> {
 
     public typealias Input = SdkHttpRequest
 

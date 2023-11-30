@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct IdempotencyTokenMiddleware<OperationStackInput,
-                                         OperationStackOutput>: ClientRuntime.Middleware {
+public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutput>: ClientRuntime.Middleware {
     public let id: Swift.String = "IdempotencyTokenMiddleware"
     private let keyPath: WritableKeyPath<OperationStackInput, String?>
 

@@ -5,17 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct PaginatorSequence<Input: PaginateToken, Output>: AsyncSequence where Input.Token: Equatable {
-    public typealias Element = Output
+public struct PaginatorSequence<Input: PaginateToken, OperationStackOutput>: AsyncSequence 
+    where Input.Token: Equatable {
+    
+    public typealias Element = OperationStackOutput
     let input: Input
     let inputKey: KeyPath<Input, Input.Token?>?
-    let outputKey: KeyPath<Output, Input.Token?>
-    let paginationFunction: (Input) async throws -> Output
+    let outputKey: KeyPath<OperationStackOutput, Input.Token?>
+    let paginationFunction: (Input) async throws -> OperationStackOutput
 
     public init(input: Input,
                 inputKey: KeyPath<Input, Input.Token?>? = nil,
-                outputKey: KeyPath<Output, Input.Token?>,
-                paginationFunction: @escaping (Input) async throws -> Output) {
+                outputKey: KeyPath<OperationStackOutput, Input.Token?>,
+                paginationFunction: @escaping (Input) async throws -> OperationStackOutput) {
         self.input = input
         self.inputKey = inputKey
         self.outputKey = outputKey
@@ -29,7 +31,7 @@ public struct PaginatorSequence<Input: PaginateToken, Output>: AsyncSequence whe
         var isFirstPage: Bool = true
 
         // swiftlint:disable force_cast
-        public mutating func next() async throws -> Output? {
+        public mutating func next() async throws -> OperationStackOutput? {
             while token != nil || isFirstPage {
 
                 if let token = token,

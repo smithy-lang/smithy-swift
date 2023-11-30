@@ -7,11 +7,11 @@
 
 public typealias HTTPResponseErrorClosure = (HttpResponse) async throws -> Error
 
-public func responseErrorClosure<E: HttpResponseErrorBinding, Decoder: ResponseDecoder>(
-    _ errorBinding: E.Type,
+public func responseErrorClosure<OperationErrorBinding: HttpResponseErrorBinding, Decoder: ResponseDecoder>(
+    _ errorBinding: OperationErrorBinding.Type,
     decoder: Decoder
 ) -> HTTPResponseErrorClosure {
     return { response in
-        return try await E.makeError(httpResponse: response, decoder: decoder)
+        try await OperationErrorBinding.makeError(httpResponse: response, decoder: decoder)
     }
 }
