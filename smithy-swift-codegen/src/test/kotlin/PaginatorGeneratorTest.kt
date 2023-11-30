@@ -125,6 +125,18 @@ class PaginatorGeneratorTest {
         contents.shouldContainOnlyOnce(expectedCode)
     }
 
+    @Test
+    fun testRenderPaginatorTruncatable() {
+        val context = setupTests("pagination-truncation.smithy", "software.amazon.smithy.swift.codegen.synthetic#Lambda")
+        val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
+        val expected = """
+    public func listFunctionsTruncatedPaginated(input: ListFunctionsTruncatedInput) -> ClientRuntime.PaginatorSequence<ListFunctionsTruncatedInput, ListFunctionsTruncatedOutput> {
+        return ClientRuntime.PaginatorSequence<ListFunctionsTruncatedInput, ListFunctionsTruncatedOutput>(input: input, inputKey: \ListFunctionsTruncatedInput.marker, outputKey: \ListFunctionsTruncatedOutput.nextMarker, isTruncatedKey: \ListFunctionsTruncatedOutput.isTruncated, paginationFunction: self.listFunctionsTruncated(input:))
+    }
+"""
+        contents.shouldContainOnlyOnce(expected)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "Test", "2019-12-16", "Test")

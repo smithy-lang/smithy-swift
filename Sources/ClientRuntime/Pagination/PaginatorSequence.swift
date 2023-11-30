@@ -12,15 +12,18 @@ where Input.Token: Equatable {
     let input: Input
     let inputKey: KeyPath<Input, Input.Token?>?
     let outputKey: KeyPath<Output, Input.Token?>
+    var isTruncatedKey: KeyPath<Output, Bool>? = nil
     let paginationFunction: (Input) async throws -> Output
 
     public init(input: Input,
                 inputKey: KeyPath<Input, Input.Token?>? = nil,
                 outputKey: KeyPath<Output, Input.Token?>,
+                isTruncatedKey: KeyPath<Output, Bool>? = nil,
                 paginationFunction: @escaping (Input) async throws -> Output) {
         self.input = input
         self.inputKey = inputKey
         self.outputKey = outputKey
+        self.isTruncatedKey = isTruncatedKey
         self.paginationFunction = paginationFunction
     }
 
@@ -45,6 +48,16 @@ where Input.Token: Equatable {
                 if token != nil && token == input[keyPath: sequence.inputKey!] {
                     break
                 }
+
+                // Use isTruncatedKey from the sequence to check if pagination should continue
+                if let isTruncatedKey = sequence.isTruncatedKey {
+                    let isTruncated = output[keyPath: isTruncatedKey]
+                    if !isTruncated {
+                        // set token to nil to break out of the next iteration
+                        token = nil
+                    }
+                }
+
                 return output
             }
             return nil
