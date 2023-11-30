@@ -5,19 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct PaginatorSequence<Input: PaginateToken, OperationStackOutput>: AsyncSequence 
-    where Input.Token: Equatable {
-    
-    public typealias Element = OperationStackOutput
-    let input: Input
-    let inputKey: KeyPath<Input, Input.Token?>?
-    let outputKey: KeyPath<OperationStackOutput, Input.Token?>
-    let paginationFunction: (Input) async throws -> OperationStackOutput
+public struct PaginatorSequence<OperationStackInput: PaginateToken, OperationStackOutput>: AsyncSequence
+    where OperationStackInput.Token: Equatable {
 
-    public init(input: Input,
-                inputKey: KeyPath<Input, Input.Token?>? = nil,
-                outputKey: KeyPath<OperationStackOutput, Input.Token?>,
-                paginationFunction: @escaping (Input) async throws -> OperationStackOutput) {
+    public typealias Element = OperationStackOutput
+    let input: OperationStackInput
+    let inputKey: KeyPath<OperationStackInput, OperationStackInput.Token?>?
+    let outputKey: KeyPath<OperationStackOutput, OperationStackInput.Token?>
+    let paginationFunction: (OperationStackInput) async throws -> OperationStackOutput
+
+    public init(input: OperationStackInput,
+                inputKey: KeyPath<OperationStackInput, OperationStackInput.Token?>? = nil,
+                outputKey: KeyPath<OperationStackOutput, OperationStackInput.Token?>,
+                paginationFunction: @escaping (OperationStackInput) async throws -> OperationStackOutput) {
         self.input = input
         self.inputKey = inputKey
         self.outputKey = outputKey
@@ -25,9 +25,9 @@ public struct PaginatorSequence<Input: PaginateToken, OperationStackOutput>: Asy
     }
 
     public struct PaginationIterator: AsyncIteratorProtocol {
-        var input: Input
+        var input: OperationStackInput
         let sequence: PaginatorSequence
-        var token: Input.Token?
+        var token: OperationStackInput.Token?
         var isFirstPage: Bool = true
 
         // swiftlint:disable force_cast
