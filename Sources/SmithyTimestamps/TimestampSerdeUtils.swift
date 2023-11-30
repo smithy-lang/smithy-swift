@@ -6,6 +6,7 @@
 //
 
 import func Foundation.floor
+import struct Foundation.Date
 
 /// Custom timestamp serialization formats
 /// https://smithy.io/2.0/spec/protocol-traits.html#smithy-api-timestampformat-trait
@@ -251,11 +252,11 @@ extension DecodingError {
     }
 }
 
-extension ClientRuntime.Date {
+extension Date {
     /// Creates a date from a string using the given formatters.
     /// The date returned will be from the first formatter, in the given formatters list, that is able to successfully convert the date to a string.
     /// Returns `nil` if the none of the given formatters were able to create a date from the given string or if formatters is empty.
-    init?(from string: String, formatters: [ClientRuntime.DateFormatter]) {
+    init?(from string: String, formatters: [DateFormatter]) {
         for formatter in formatters {
             if let date = formatter.date(from: string) {
                 self = date

@@ -141,11 +141,11 @@ class StructureGeneratorTests {
             """
 public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
     public var foo: Swift.String?
-    public var nested: Box<RecursiveShapesInputOutputNested2>?
+    @Indirect public var nested: RecursiveShapesInputOutputNested2?
 
     public init(
         foo: Swift.String? = nil,
-        nested: Box<RecursiveShapesInputOutputNested2>? = nil
+        nested: RecursiveShapesInputOutputNested2? = nil
     )
     {
         self.foo = foo

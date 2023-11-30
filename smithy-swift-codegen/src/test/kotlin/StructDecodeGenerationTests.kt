@@ -213,8 +213,10 @@ extension TimestampInputOutputBody: Swift.Decodable {
                 if let list0 = list0 {
                     list0Decoded0 = [Swift.String]()
                     for timestamp1 in list0 {
-                        let date1 = try containerValues.timestampStringAsDate(timestamp1, format: .dateTime, forKey: .nestedTimestampList)
-                        list0Decoded0?.append(date1)
+                        if let timestamp1 = timestamp1 {
+                            let date1 = try containerValues.timestampStringAsDate(timestamp1, format: .dateTime, forKey: .nestedTimestampList)
+                            list0Decoded0?.append(date1)
+                        }
                     }
                 }
                 if let list0Decoded0 = list0Decoded0 {
@@ -228,8 +230,10 @@ extension TimestampInputOutputBody: Swift.Decodable {
         if let timestampListContainer = timestampListContainer {
             timestampListDecoded0 = [ClientRuntime.Date]()
             for timestamp0 in timestampListContainer {
-                let date0 = try containerValues.timestampStringAsDate(timestamp0, format: .dateTime, forKey: .timestampList)
-                timestampListDecoded0?.append(date0)
+                if let timestamp0 = timestamp0 {
+                    let date0 = try containerValues.timestampStringAsDate(timestamp0, format: .dateTime, forKey: .timestampList)
+                    timestampListDecoded0?.append(date0)
+                }
             }
         }
         timestampList = timestampListDecoded0
@@ -375,8 +379,10 @@ extension NestedShapesOutputBody: Swift.Decodable {
                 if let timestamplist0 = timestamplist0 {
                     timestamplist0Decoded0 = [Swift.String]()
                     for timestamp1 in timestamplist0 {
-                        let date1 = try containerValues.timestampStringAsDate(timestamp1, format: .dateTime, forKey: .nestedListInDict)
-                        timestamplist0Decoded0?.append(date1)
+                        if let timestamp1 = timestamp1 {
+                            let date1 = try containerValues.timestampStringAsDate(timestamp1, format: .dateTime, forKey: .nestedListInDict)
+                            timestamplist0Decoded0?.append(date1)
+                        }
                     }
                 }
                 nestedListInDictDecoded0?[key0] = timestamplist0Decoded0
@@ -458,7 +464,7 @@ extension NestedShapesOutputBody: Swift.Decodable {
                         try encodeContainer.encode(foo, forKey: .foo)
                     }
                     if let nested = self.nested {
-                        try encodeContainer.encode(nested.value, forKey: .nested)
+                        try encodeContainer.encode(nested, forKey: .nested)
                     }
                 }
             
@@ -466,7 +472,7 @@ extension NestedShapesOutputBody: Swift.Decodable {
                     let containerValues = try decoder.container(keyedBy: CodingKeys.self)
                     let fooDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .foo)
                     foo = fooDecoded
-                    let nestedDecoded = try containerValues.decodeIfPresent(Box<ExampleClientTypes.RecursiveShapesInputOutputNested2>.self, forKey: .nested)
+                    let nestedDecoded = try containerValues.decodeIfPresent(ExampleClientTypes.RecursiveShapesInputOutputNested2.self, forKey: .nested)
                     nested = nestedDecoded
                 }
             }

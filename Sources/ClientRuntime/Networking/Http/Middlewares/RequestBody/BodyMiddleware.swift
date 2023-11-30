@@ -5,14 +5,24 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct SerializableBodyMiddleware<OperationStackInput: Encodable,
-                                         OperationStackOutput: HttpResponseBinding>: Middleware {
-    public let id: Swift.String = "\(String(describing: OperationStackInput.self))BodyMiddleware"
+import struct Foundation.Data
+import typealias SmithyReadWrite.DocumentWritingClosure
+import typealias SmithyReadWrite.WritingClosure
 
-    let xmlName: String?
+public struct BodyMiddleware<OperationStackInput,
+                             OperationStackOutput: HttpResponseBinding,
+                             Writer>: Middleware {
+    public let id: Swift.String = "BodyMiddleware"
 
-    public init(xmlName: String? = nil) {
-        self.xmlName = xmlName
+    let documentWritingClosure: DocumentWritingClosure<OperationStackInput, Writer>
+    let inputWritingClosure: WritingClosure<OperationStackInput, Writer>
+
+    public init(
+        documentWritingClosure: @escaping DocumentWritingClosure<OperationStackInput, Writer>,
+        inputWritingClosure: @escaping WritingClosure<OperationStackInput, Writer>
+    ) {
+        self.documentWritingClosure = documentWritingClosure
+        self.inputWritingClosure = inputWritingClosure
     }
 
     public func handle<H>(context: Context,
@@ -23,13 +33,7 @@ public struct SerializableBodyMiddleware<OperationStackInput: Encodable,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
               do {
-                  let encoder = context.getEncoder()
-                  let data: Data
-                  if let xmlName = xmlName, let xmlEncoder = encoder as? XMLEncoder {
-                      data = try xmlEncoder.encode(input.operationInput, withRootKey: xmlName)
-                  } else {
-                      data = try encoder.encode(input.operationInput)
-                  }
+                  let data = try documentWritingClosure(input.operationInput, inputWritingClosure)
                   let body = HttpBody.data(data)
                   input.builder.withBody(body)
               } catch {

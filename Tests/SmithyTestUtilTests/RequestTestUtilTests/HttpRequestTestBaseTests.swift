@@ -212,7 +212,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) throws -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
-                try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, JSONEncoder()) { (expectedData, actualData) in
+                try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { (expectedData, actualData) in
                     do {
                          let decoder = JSONDecoder()
                          let expectedObj = try decoder.decode(SayHelloInputBody.self, from: expectedData)
