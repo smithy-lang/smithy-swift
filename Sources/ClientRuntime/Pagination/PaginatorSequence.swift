@@ -12,7 +12,7 @@ where Input.Token: Equatable {
     let input: Input
     let inputKey: KeyPath<Input, Input.Token?>?
     let outputKey: KeyPath<Output, Input.Token?>
-    var isTruncatedKey: KeyPath<Output, Bool>? = nil
+    var isTruncatedKey: KeyPath<Output, Bool>?
     let paginationFunction: (Input) async throws -> Output
 
     public init(input: Input,
