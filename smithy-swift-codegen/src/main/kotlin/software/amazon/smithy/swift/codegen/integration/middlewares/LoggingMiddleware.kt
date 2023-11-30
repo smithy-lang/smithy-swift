@@ -35,7 +35,7 @@ class LoggingMiddleware(
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N>(${middlewareParamsString()}))", ClientRuntimeTypes.Middleware.LoggerMiddleware, output, outputError)
+        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N>(${middlewareParamsString()}))", ClientRuntimeTypes.Middleware.LoggerMiddleware, output)
     }
 
     private fun middlewareParamsString(): String {

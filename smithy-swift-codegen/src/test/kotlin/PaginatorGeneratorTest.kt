@@ -72,7 +72,7 @@ class PaginatorGeneratorTest {
                 )}
         }
         
-        extension PaginatorSequence where Input == ListFunctionsInput, Output == ListFunctionsOutput {
+        extension PaginatorSequence where OperationStackInput == ListFunctionsInput, OperationStackOutput == ListFunctionsOutput {
             /// This paginator transforms the `AsyncSequence` returned by `listFunctionsPaginated`
             /// to access the nested member `[TestClientTypes.FunctionConfiguration]`
             /// - Returns: `[TestClientTypes.FunctionConfiguration]`
@@ -112,7 +112,7 @@ class PaginatorGeneratorTest {
                 )}
         }
         
-        extension PaginatorSequence where Input == PaginatedMapInput, Output == PaginatedMapOutput {
+        extension PaginatorSequence where OperationStackInput == PaginatedMapInput, OperationStackOutput == PaginatedMapOutput {
             /// This paginator transforms the `AsyncSequence` returned by `paginatedMapPaginated`
             /// to access the nested member `[(String, Swift.Int)]`
             /// - Returns: `[(String, Swift.Int)]`

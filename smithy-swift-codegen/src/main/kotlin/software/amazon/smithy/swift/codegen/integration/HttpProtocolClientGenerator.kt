@@ -53,7 +53,6 @@ open class HttpProtocolClientGenerator(
                 ServiceGenerator.renderOperationDefinition(model, serviceShape, symbolProvider, writer, operationsIndex, it)
                 writer.openBlock("{", "}") {
                     val operationStackName = "operation"
-                    writer.write("let encoder = self.encoder")
                     val generator = MiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, httpProtocolCustomizable, operationMiddleware, operationStackName)
                     generator.render(serviceShape, it) { writer, labelMemberName ->
                         writer.write("throw \$N(\"uri component $labelMemberName unexpectedly nil\")", ClientRuntimeTypes.Core.UnknownClientError)

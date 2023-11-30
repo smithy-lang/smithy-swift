@@ -182,7 +182,7 @@ class PaginatorGenerator : SwiftIntegration {
         writer.write("")
         val itemSymbolShape = itemDesc.itemSymbol.getProperty("shape").getOrNull() as? Shape
 
-        writer.openBlock("extension PaginatorSequence where Input == \$N, Output == \$N {", "}", inputSymbol, outputSymbol) {
+        writer.openBlock("extension PaginatorSequence where OperationStackInput == \$N, OperationStackOutput == \$N {", "}", inputSymbol, outputSymbol) {
             val docBody = """
         This paginator transforms the `AsyncSequence` returned by `${operationShape.toLowerCamelCase()}Paginated`
         to access the nested member `${itemDesc.collectionLiteral}`

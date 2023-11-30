@@ -5,19 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct PaginatorSequence<Input: PaginateToken,
-                                Output: HttpResponseBinding>: AsyncSequence
-where Input.Token: Equatable {
-    public typealias Element = Output
-    let input: Input
-    let inputKey: KeyPath<Input, Input.Token?>?
-    let outputKey: KeyPath<Output, Input.Token?>
-    let paginationFunction: (Input) async throws -> Output
+public struct PaginatorSequence<OperationStackInput: PaginateToken, OperationStackOutput>: AsyncSequence
+    where OperationStackInput.Token: Equatable {
 
-    public init(input: Input,
-                inputKey: KeyPath<Input, Input.Token?>? = nil,
-                outputKey: KeyPath<Output, Input.Token?>,
-                paginationFunction: @escaping (Input) async throws -> Output) {
+    public typealias Element = OperationStackOutput
+    let input: OperationStackInput
+    let inputKey: KeyPath<OperationStackInput, OperationStackInput.Token?>?
+    let outputKey: KeyPath<OperationStackOutput, OperationStackInput.Token?>
+    let paginationFunction: (OperationStackInput) async throws -> OperationStackOutput
+
+    public init(input: OperationStackInput,
+                inputKey: KeyPath<OperationStackInput, OperationStackInput.Token?>? = nil,
+                outputKey: KeyPath<OperationStackOutput, OperationStackInput.Token?>,
+                paginationFunction: @escaping (OperationStackInput) async throws -> OperationStackOutput) {
         self.input = input
         self.inputKey = inputKey
         self.outputKey = outputKey
@@ -25,13 +25,13 @@ where Input.Token: Equatable {
     }
 
     public struct PaginationIterator: AsyncIteratorProtocol {
-        var input: Input
+        var input: OperationStackInput
         let sequence: PaginatorSequence
-        var token: Input.Token?
+        var token: OperationStackInput.Token?
         var isFirstPage: Bool = true
 
         // swiftlint:disable force_cast
-        public mutating func next() async throws -> Output? {
+        public mutating func next() async throws -> OperationStackOutput? {
             while token != nil || isFirstPage {
 
                 if let token = token,

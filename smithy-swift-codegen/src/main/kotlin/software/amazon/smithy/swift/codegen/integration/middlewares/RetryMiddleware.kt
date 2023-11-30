@@ -33,12 +33,11 @@ class RetryMiddleware(
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
         writer.write(
-            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N, \$N, \$N>(options: config.retryStrategyOptions))",
+            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N, \$N>(options: config.retryStrategyOptions))",
             ClientRuntimeTypes.Middleware.RetryMiddleware,
             ClientRuntimeTypes.Core.DefaultRetryStrategy,
             retryErrorInfoProviderSymbol,
-            output,
-            outputError
+            output
         )
     }
 }

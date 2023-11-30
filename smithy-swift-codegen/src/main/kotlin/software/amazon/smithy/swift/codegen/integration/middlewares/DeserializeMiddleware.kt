@@ -30,6 +30,20 @@ class DeserializeMiddleware(
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N>())", ClientRuntimeTypes.Middleware.DeserializeMiddleware, output, outputError)
+        val httpResponseClosure = "responseClosure(decoder: decoder)"
+        val httpResponseErrorClosure = writer.format(
+            "responseErrorClosure(\$N.self, decoder: decoder)",
+            outputError
+        )
+        writer.write(
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N>(\$L, \$L))",
+            operationStackName,
+            middlewareStep.stringValue(),
+            position.stringValue(),
+            ClientRuntimeTypes.Middleware.DeserializeMiddleware,
+            output,
+            httpResponseClosure,
+            httpResponseErrorClosure
+        )
     }
 }

@@ -8,7 +8,7 @@
 import struct Foundation.Data
 
 public struct EnumBodyMiddleware<OperationStackInput,
-                                 OperationStackOutput: HttpResponseBinding,
+                                 OperationStackOutput,
                                  Primitive: RawRepresentable>: Middleware where Primitive.RawValue == String {
     public let id: Swift.String = "EnumBodyMiddleware"
 
