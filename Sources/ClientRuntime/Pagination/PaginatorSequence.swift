@@ -12,13 +12,13 @@ public struct PaginatorSequence<OperationStackInput: PaginateToken, OperationSta
     let input: OperationStackInput
     let inputKey: KeyPath<OperationStackInput, OperationStackInput.Token?>?
     let outputKey: KeyPath<OperationStackOutput, OperationStackInput.Token?>
-    var isTruncatedKey: KeyPath<Output, Bool>?
+    var isTruncatedKey: KeyPath<OperationStackOutput, Bool>?
     let paginationFunction: (OperationStackInput) async throws -> OperationStackOutput
 
     public init(input: OperationStackInput,
                 inputKey: KeyPath<OperationStackInput, OperationStackInput.Token?>? = nil,
                 outputKey: KeyPath<OperationStackOutput, OperationStackInput.Token?>,
-                isTruncatedKey: KeyPath<Output, Bool>? = nil,
+                isTruncatedKey: KeyPath<OperationStackOutput, Bool>? = nil,
                 paginationFunction: @escaping (OperationStackInput) async throws -> OperationStackOutput) {
         self.input = input
         self.inputKey = inputKey
