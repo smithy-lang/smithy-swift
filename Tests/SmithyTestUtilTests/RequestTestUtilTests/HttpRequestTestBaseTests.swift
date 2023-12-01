@@ -170,7 +170,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                   forbiddenHeader: "forbidden header",
                                   requiredHeader: "required header")
 
-        var operationStack = OperationStack<SayHelloInput, MockOutput, MockMiddlewareError>(id: "SayHelloInputRequest")
+        var operationStack = OperationStack<SayHelloInput, MockOutput>(id: "SayHelloInputRequest")
         operationStack.initializeStep.intercept(position: .before, middleware: SayHelloInputURLHostMiddleware(host: HttpRequestTestBaseTests.host))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<MockOutput> in
             input.withMethod(context.getMethod())

@@ -12,10 +12,10 @@ public class SdkHttpClient {
         self.engine = engine
     }
 
-    public func getHandler<Output: HttpResponseBinding>() -> AnyHandler<SdkHttpRequest,
-                                                                        OperationOutput<Output>,
-                                                                        HttpContext> {
-        let clientHandler = ClientHandler<Output>(engine: engine)
+    public func getHandler<OperationStackOutput>() 
+        -> AnyHandler<SdkHttpRequest, OperationOutput<OperationStackOutput>, HttpContext> {
+
+        let clientHandler = ClientHandler<OperationStackOutput>(engine: engine)
         return clientHandler.eraseToAnyHandler()
     }
 
@@ -24,9 +24,9 @@ public class SdkHttpClient {
     }
 }
 
-struct ClientHandler<Output: HttpResponseBinding>: Handler {
+struct ClientHandler<OperationStackOutput>: Handler {
     let engine: HttpClientEngine
-    func handle(context: HttpContext, input: SdkHttpRequest) async throws -> OperationOutput<Output> {
+    func handle(context: HttpContext, input: SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput> {
         let httpResponse: HttpResponse
 
         if context.shouldForceH2(), let crtEngine = engine as? CRTClientEngine {
@@ -35,12 +35,10 @@ struct ClientHandler<Output: HttpResponseBinding>: Handler {
             httpResponse = try await engine.execute(request: input)
         }
 
-        return OperationOutput<Output>(httpResponse: httpResponse)
+        return OperationOutput<OperationStackOutput>(httpResponse: httpResponse)
     }
 
     typealias Input = SdkHttpRequest
-
-    typealias Output = OperationOutput<Output>
-
+    typealias Output = OperationOutput<OperationStackOutput>
     typealias Context = HttpContext
 }

@@ -7,8 +7,7 @@
 
 import struct Foundation.Data
 
-public struct StringBodyMiddleware<OperationStackInput,
-                                   OperationStackOutput: HttpResponseBinding>: Middleware {
+public struct StringBodyMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: Swift.String = "\(OperationStackInput.self)StringBodyMiddleware"
 
     let keyPath: KeyPath<OperationStackInput, String?>

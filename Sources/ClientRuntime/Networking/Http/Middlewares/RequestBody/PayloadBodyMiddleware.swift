@@ -10,7 +10,7 @@ import typealias SmithyReadWrite.DocumentWritingClosure
 import typealias SmithyReadWrite.WritingClosure
 
 public struct PayloadBodyMiddleware<OperationStackInput,
-                                    OperationStackOutput: HttpResponseBinding,
+                                    OperationStackOutput,
                                     OperationStackInputPayload,
                                     Writer>: Middleware {
     public let id: Swift.String = "PayloadBodyMiddleware"

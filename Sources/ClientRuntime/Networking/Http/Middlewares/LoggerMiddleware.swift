@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct LoggerMiddleware<Output: HttpResponseBinding,
-                               OutputError: HttpResponseErrorBinding>: Middleware {
+public struct LoggerMiddleware<OperationStackOutput>: Middleware {
 
     public let id: String = "Logger"
 
@@ -18,7 +17,7 @@ public struct LoggerMiddleware<Output: HttpResponseBinding,
 
     public func handle<H>(context: Context,
                           input: SdkHttpRequest,
-                          next: H) async throws -> OperationOutput<Output>
+                          next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
@@ -46,7 +45,6 @@ public struct LoggerMiddleware<Output: HttpResponseBinding,
     }
 
     public typealias MInput = SdkHttpRequest
-    public typealias MOutput = OperationOutput<Output>
+    public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
-    public typealias MError = OutputError
 }

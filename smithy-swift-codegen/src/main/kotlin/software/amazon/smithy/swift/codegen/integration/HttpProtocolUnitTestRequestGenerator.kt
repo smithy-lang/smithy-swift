@@ -106,7 +106,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("  .build()")
             }
             val operationStack = "operationStack"
-            writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol, $outputErrorName>(id: \"${test.id}\")")
+            writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol>(id: \"${test.id}\")")
 
             operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.INITIALIZESTEP)
             operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.BUILDSTEP)

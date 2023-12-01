@@ -35,14 +35,13 @@ class IdempotencyTokenMiddleware(
             val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
             val outputErrorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
             writer.write(
-                "\$L.\$L.intercept(position: \$L, middleware: \$N<\$L, \$L, \$L>(keyPath: \\.\$L))",
+                "\$L.\$L.intercept(position: \$L, middleware: \$N<\$L, \$L>(keyPath: \\.\$L))",
                 operationStackName,
                 middlewareStep.stringValue(),
                 position.stringValue(),
                 ClientRuntimeTypes.Middleware.IdempotencyTokenMiddleware,
                 inputShapeName,
                 outputShapeName,
-                outputErrorShapeName,
                 idempotentMemberName
             )
         }

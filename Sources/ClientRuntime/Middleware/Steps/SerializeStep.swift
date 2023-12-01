@@ -7,18 +7,15 @@
 /// Converts Input Parameters into a Request, and returns the result or error.
 ///
 /// Receives result or error from Build step.
-public typealias SerializeStep<I,
-                               O: HttpResponseBinding> = MiddlewareStep<HttpContext,
-                                                                        SerializeStepInput<I>,
-                                                                        OperationOutput<O>>
+public typealias SerializeStep<OperationStackInput, OperationStackOutput> =
+    MiddlewareStep<HttpContext, SerializeStepInput<OperationStackInput>, OperationOutput<OperationStackOutput>>
 
 public let SerializeStepId = "Serialize"
 
-public struct SerializeStepHandler<OperationStackInput,
-                                   OperationStackOutput: HttpResponseBinding,
-                                   H: Handler>: Handler where H.Context == HttpContext,
-                                                              H.Input == SdkHttpRequestBuilder,
-                                                              H.Output == OperationOutput<OperationStackOutput> {
+public struct SerializeStepHandler<OperationStackInput, OperationStackOutput, H: Handler>: Handler
+    where H.Context == HttpContext,
+          H.Input == SdkHttpRequestBuilder,
+          H.Output == OperationOutput<OperationStackOutput> {
 
     public typealias Input = SerializeStepInput<OperationStackInput>
 

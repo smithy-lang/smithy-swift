@@ -8,7 +8,7 @@
 import struct Foundation.Data
 
 public struct BlobBodyMiddleware<OperationStackInput,
-                                    OperationStackOutput: HttpResponseBinding>: Middleware {
+                                    OperationStackOutput>: Middleware {
     public let id: Swift.String = "BlobBodyMiddleware"
 
     let keyPath: KeyPath<OperationStackInput, Data?>
