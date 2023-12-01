@@ -16,7 +16,7 @@ public typealias DeserializeStep<OperationStackOutput> = MiddlewareStep<HttpCont
 
 public let DeserializeStepId = "Deserialize"
 
-public struct DeserializeStepHandler<OperationStackOutput, H: Handler>: Handler 
+public struct DeserializeStepHandler<OperationStackOutput, H: Handler>: Handler
     where H.Context == HttpContext,
           H.Input == SdkHttpRequest,
           H.Output == OperationOutput<OperationStackOutput> {
