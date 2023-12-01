@@ -139,28 +139,18 @@ class PaginatorGenerator : SwiftIntegration {
                     .firstOrNull { it.hasTrait(PaginationTruncationMember.ID) }
                     ?.defaultName()
 
-                if (isTruncatedFlag != null) {
-                    writer.write(
-                        "return \$N<\$N, \$N>(input: input, inputKey: \\\$N.$markerLiteral, outputKey: \\\$N.$nextMarkerLiteral, isTruncatedKey: \\\$N.$isTruncatedFlag, paginationFunction: self.\$L(input:))",
-                        ClientRuntimeTypes.Core.PaginatorSequence,
-                        inputSymbol,
-                        outputSymbol,
-                        inputSymbol,
-                        outputSymbol,
-                        outputSymbol,
-                        operationShape.toLowerCamelCase(),
-                    )
-                } else {
-                    writer.write(
-                        "return \$N<\$N, \$N>(input: input, inputKey: \\\$N.$markerLiteral, outputKey: \\\$N.$nextMarkerLiteral, paginationFunction: self.\$L(input:))",
-                        ClientRuntimeTypes.Core.PaginatorSequence,
-                        inputSymbol,
-                        outputSymbol,
-                        inputSymbol,
-                        outputSymbol,
-                        operationShape.toLowerCamelCase(),
-                    )
-                }
+                val isTruncatedPart = if (isTruncatedFlag != null) ", isTruncatedKey: \\\$N.$isTruncatedFlag" else ""
+                writer.write(
+                    "return \$N<\$N, \$N>(input: input, inputKey: \\\$N.$markerLiteral, outputKey: \\\$N.$nextMarkerLiteral$isTruncatedPart, paginationFunction: self.\$L(input:))",
+                    ClientRuntimeTypes.Core.PaginatorSequence,
+                    inputSymbol,
+                    outputSymbol,
+                    inputSymbol,
+                    outputSymbol,
+                    // Only add outputSymbol if isTruncatedFlag is not null
+                    *if (isTruncatedFlag != null) arrayOf(outputSymbol) else arrayOf(),
+                    operationShape.toLowerCamelCase(),
+                )
             }
         }
 
