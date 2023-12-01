@@ -131,7 +131,7 @@ class PaginatorGeneratorTest {
         val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
         val expected = """
     public func listFunctionsTruncatedPaginated(input: ListFunctionsTruncatedInput) -> ClientRuntime.PaginatorSequence<ListFunctionsTruncatedInput, ListFunctionsTruncatedOutput> {
-        return ClientRuntime.PaginatorSequence<ListFunctionsTruncatedInput, ListFunctionsTruncatedOutput>(input: input, inputKey: \ListFunctionsTruncatedInput.marker, outputKey: \ListFunctionsTruncatedOutput.nextMarker, isTruncatedKey: \ListFunctionsTruncatedOutput.isTruncated, paginationFunction: self.listFunctionsTruncated(input:))
+        return ClientRuntime.PaginatorSequence<ListFunctionsTruncatedInput, ListFunctionsTruncatedOutput>(input: input, inputKey: \.marker, outputKey: \.nextMarker, isTruncatedKey: \.isTruncated, paginationFunction: self.listFunctionsTruncated(input:))
     }
 """
         contents.shouldContainOnlyOnce(expected)

@@ -139,16 +139,12 @@ class PaginatorGenerator : SwiftIntegration {
                     .firstOrNull { it.hasTrait(PaginationTruncationMember.ID) }
                     ?.defaultName()
 
-                val isTruncatedPart = if (isTruncatedFlag != null) ", isTruncatedKey: \\\$N.$isTruncatedFlag" else ""
+                val isTruncatedPart = if (isTruncatedFlag != null) ", isTruncatedKey: \\.$isTruncatedFlag" else ""
                 writer.write(
-                    "return \$N<\$N, \$N>(input: input, inputKey: \\\$N.$markerLiteral, outputKey: \\\$N.$nextMarkerLiteral$isTruncatedPart, paginationFunction: self.\$L(input:))",
+                    "return \$N<\$N, \$N>(input: input, inputKey: \\.$markerLiteral, outputKey: \\.$nextMarkerLiteral$isTruncatedPart, paginationFunction: self.\$L(input:))",
                     ClientRuntimeTypes.Core.PaginatorSequence,
                     inputSymbol,
                     outputSymbol,
-                    inputSymbol,
-                    outputSymbol,
-                    // Only add outputSymbol if isTruncatedFlag is not null
-                    *if (isTruncatedFlag != null) arrayOf(outputSymbol) else arrayOf(),
                     operationShape.toLowerCamelCase(),
                 )
             }
