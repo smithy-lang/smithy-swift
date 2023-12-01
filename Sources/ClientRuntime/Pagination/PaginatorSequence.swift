@@ -18,6 +18,7 @@ public struct PaginatorSequence<OperationStackInput: PaginateToken, OperationSta
     public init(input: OperationStackInput,
                 inputKey: KeyPath<OperationStackInput, OperationStackInput.Token?>? = nil,
                 outputKey: KeyPath<OperationStackOutput, OperationStackInput.Token?>,
+                isTruncatedKey: KeyPath<Output, Bool>? = nil,
                 paginationFunction: @escaping (OperationStackInput) async throws -> OperationStackOutput) {
         self.input = input
         self.inputKey = inputKey
