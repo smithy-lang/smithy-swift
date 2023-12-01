@@ -25,7 +25,7 @@ class PaginatorGeneratorTest {
             ///     - input: A `[ListFunctionsInput]` to start pagination
             /// - Returns: An `AsyncSequence` that can iterate over `ListFunctionsOutput`
             public func listFunctionsPaginated(input: ListFunctionsInput) -> ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutput> {
-                return ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutput>(input: input, inputKey: \ListFunctionsInput.marker, outputKey: \ListFunctionsOutput.nextMarker, paginationFunction: self.listFunctions(input:))
+                return ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutput>(input: input, inputKey: \.marker, outputKey: \.nextMarker, paginationFunction: self.listFunctions(input:))
             }
         }
 
@@ -58,7 +58,7 @@ class PaginatorGeneratorTest {
             ///     - input: A `[ListFunctionsInput]` to start pagination
             /// - Returns: An `AsyncSequence` that can iterate over `ListFunctionsOutput`
             public func listFunctionsPaginated(input: ListFunctionsInput) -> ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutput> {
-                return ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutput>(input: input, inputKey: \ListFunctionsInput.marker, outputKey: \ListFunctionsOutput.nextMarker, paginationFunction: self.listFunctions(input:))
+                return ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutput>(input: input, inputKey: \.marker, outputKey: \.nextMarker, paginationFunction: self.listFunctions(input:))
             }
         }
         
@@ -100,7 +100,7 @@ class PaginatorGeneratorTest {
             ///     - input: A `[PaginatedMapInput]` to start pagination
             /// - Returns: An `AsyncSequence` that can iterate over `PaginatedMapOutput`
             public func paginatedMapPaginated(input: PaginatedMapInput) -> ClientRuntime.PaginatorSequence<PaginatedMapInput, PaginatedMapOutput> {
-                return ClientRuntime.PaginatorSequence<PaginatedMapInput, PaginatedMapOutput>(input: input, inputKey: \PaginatedMapInput.nextToken, outputKey: \PaginatedMapOutput.inner?.token, paginationFunction: self.paginatedMap(input:))
+                return ClientRuntime.PaginatorSequence<PaginatedMapInput, PaginatedMapOutput>(input: input, inputKey: \.nextToken, outputKey: \.inner?.token, paginationFunction: self.paginatedMap(input:))
             }
         }
         
@@ -123,6 +123,18 @@ class PaginatorGeneratorTest {
         """.trimIndent()
 
         contents.shouldContainOnlyOnce(expectedCode)
+    }
+
+    @Test
+    fun testRenderPaginatorTruncatable() {
+        val context = setupTests("pagination-truncation.smithy", "software.amazon.smithy.swift.codegen.synthetic#Lambda")
+        val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
+        val expected = """
+    public func listFunctionsTruncatedPaginated(input: ListFunctionsTruncatedInput) -> ClientRuntime.PaginatorSequence<ListFunctionsTruncatedInput, ListFunctionsTruncatedOutput> {
+        return ClientRuntime.PaginatorSequence<ListFunctionsTruncatedInput, ListFunctionsTruncatedOutput>(input: input, inputKey: \.marker, outputKey: \.nextMarker, isTruncatedKey: \.isTruncated, paginationFunction: self.listFunctionsTruncated(input:))
+    }
+"""
+        contents.shouldContainOnlyOnce(expected)
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {

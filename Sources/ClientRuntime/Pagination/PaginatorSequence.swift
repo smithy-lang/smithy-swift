@@ -12,15 +12,18 @@ public struct PaginatorSequence<OperationStackInput: PaginateToken, OperationSta
     let input: OperationStackInput
     let inputKey: KeyPath<OperationStackInput, OperationStackInput.Token?>?
     let outputKey: KeyPath<OperationStackOutput, OperationStackInput.Token?>
+    var isTruncatedKey: KeyPath<OperationStackOutput, Bool>?
     let paginationFunction: (OperationStackInput) async throws -> OperationStackOutput
 
     public init(input: OperationStackInput,
                 inputKey: KeyPath<OperationStackInput, OperationStackInput.Token?>? = nil,
                 outputKey: KeyPath<OperationStackOutput, OperationStackInput.Token?>,
+                isTruncatedKey: KeyPath<OperationStackOutput, Bool>? = nil,
                 paginationFunction: @escaping (OperationStackInput) async throws -> OperationStackOutput) {
         self.input = input
         self.inputKey = inputKey
         self.outputKey = outputKey
+        self.isTruncatedKey = isTruncatedKey
         self.paginationFunction = paginationFunction
     }
 
@@ -45,6 +48,16 @@ public struct PaginatorSequence<OperationStackInput: PaginateToken, OperationSta
                 if token != nil && token == input[keyPath: sequence.inputKey!] {
                     break
                 }
+
+                // Use isTruncatedKey from the sequence to check if pagination should continue
+                if let isTruncatedKey = sequence.isTruncatedKey {
+                    let isTruncated = output[keyPath: isTruncatedKey]
+                    if !isTruncated {
+                        // set token to nil to break out of the next iteration
+                        token = nil
+                    }
+                }
+
                 return output
             }
             return nil

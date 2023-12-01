@@ -12,7 +12,7 @@ public class SdkHttpClient {
         self.engine = engine
     }
 
-    public func getHandler<OperationStackOutput>() 
+    public func getHandler<OperationStackOutput>()
         -> AnyHandler<SdkHttpRequest, OperationOutput<OperationStackOutput>, HttpContext> {
 
         let clientHandler = ClientHandler<OperationStackOutput>(engine: engine)
