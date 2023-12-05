@@ -12,35 +12,35 @@ import AwsCommonRuntimeKit
 class HttpBodyTests: XCTestCase {
     func testWhenDataIsEmptyThenIsEmptyIsTrue() {
         let data = Data()
-        let body = HttpBody.data(data)
+        let body = ByteStream.data(data)
         XCTAssertTrue(body.isEmpty)
     }
 
     func testWhenDataIsNilThenIsEmptyIsTrue() {
-        let body = HttpBody.data(nil)
+        let body = ByteStream.data(nil)
         XCTAssertTrue(body.isEmpty)
     }
 
     func testWhenDataIsNotEmptyThenIsEmptyIsFalse() {
         let data = "foo".data(using: .utf8)!
-        let body = HttpBody.data(data)
+        let body = ByteStream.data(data)
         XCTAssertFalse(body.isEmpty)
     }
 
     func testWhenStreamIsEmptyThenIsEmptyIsTrue() {
         _ = BufferedStream(data: .init())
-        let body = HttpBody.stream(BufferedStream())
+        let body = ByteStream.stream(BufferedStream())
         XCTAssertTrue(body.isEmpty)
     }
 
     func testWhenStreamIsNotEmptyThenIsEmptyIsFalse() {
         let stream = BufferedStream(data: .init("foo".data(using: .utf8)!))
-        let body = HttpBody.stream(stream)
+        let body = ByteStream.stream(stream)
         XCTAssertFalse(body.isEmpty)
     }
 
     func testWhenBodyIsNoneThenIsEmptyIsTrue() {
-        let body = HttpBody.none
+        let body = ByteStream.none
         XCTAssertTrue(body.isEmpty)
     }
 }

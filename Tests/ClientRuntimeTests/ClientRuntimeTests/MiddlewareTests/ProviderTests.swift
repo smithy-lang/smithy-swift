@@ -32,7 +32,7 @@ class ProviderTests: HttpRequestTestBase {
                                         next: MockHandler { (context, request) in
 
             XCTAssert(context.getPath() == "/3")
-            let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
+            let httpResponse = HttpResponse(body: ByteStream.none, statusCode: HttpStatusCode.ok)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
             return output
         })

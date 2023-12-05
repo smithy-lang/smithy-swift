@@ -24,7 +24,7 @@ class HttpRequestTests: NetworkingTestUtils {
         let headers = Headers(["header-item-name": "header-item-value"])
         let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
 
-        let httpBody = HttpBody.data(expectedMockRequestData)
+        let httpBody = ByteStream.data(expectedMockRequestData)
         let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
         mockHttpRequest.withHeader(name: "foo", value: "bar")
         let httpRequest = try mockHttpRequest.toHttpRequest()
@@ -61,7 +61,7 @@ class HttpRequestTests: NetworkingTestUtils {
         let headers = Headers(["Testname-1": "testvalue-1", "Testname-2": "testvalue-2"])
         let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
 
-        let httpBody = HttpBody.data(expectedMockRequestData)
+        let httpBody = ByteStream.data(expectedMockRequestData)
         let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
         let urlRequest = try await URLRequest(sdkRequest: mockHttpRequest)
 
