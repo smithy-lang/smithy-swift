@@ -10,6 +10,7 @@ import class Foundation.FileHandle
 public enum ByteStream {
     case data(Data?)
     case stream(Stream)
+    case none
 
     // Read Data
     public func readData() async throws -> Data? {
@@ -21,6 +22,8 @@ public enum ByteStream {
                 try stream.seek(toOffset: 0)
             }
             return try await stream.readToEndAsync()
+        case .none:
+            return nil
         }
     }
 
@@ -71,7 +74,9 @@ extension ByteStream {
         case .data(let data):
             return data?.isEmpty ?? true
         case .stream(let stream):
-            return stream.isEmpty // Assuming Stream has an 'isEmpty' property
+            return stream.isEmpty
+         case .none:
+            return true
         }
     }
 }
