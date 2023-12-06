@@ -26,14 +26,17 @@ public enum ByteStream {
             return nil
         }
     }
+}
 
-    // Equatable Conformance
+extension ByteStream: Equatable {
     public static func ==(lhs: ByteStream, rhs: ByteStream) -> Bool {
         switch (lhs, rhs) {
         case (.data(let lhsData), .data(let rhsData)):
             return lhsData == rhsData
         case (.stream(let lhsStream), .stream(let rhsStream)):
             return lhsStream === rhsStream
+        case (.none, .none):
+            return true
         default:
             return false
         }
@@ -68,12 +71,12 @@ extension ByteStream: Codable {
 extension ByteStream {
 
     // Static property for an empty ByteStream
-    static var empty: ByteStream {
+    public static var empty: ByteStream {
         .data(nil)
     }
 
     // Returns true if the byte stream is empty
-    var isEmpty: Bool {
+    public var isEmpty: Bool {
         switch self {
         case .data(let data):
             return data?.isEmpty ?? true
