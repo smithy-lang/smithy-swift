@@ -38,15 +38,16 @@ public enum ByteStream {
             return false
         }
     }
+}
 
-    // Codable Conformance
+extension ByteStream: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        if let data = try? container.decode(Data.self) {
-            self = .data(data)
+        if container.decodeNil() {
+            self = .data(nil)
         } else {
-            let stream = try container.decode(Stream.self)
-            self = .stream(stream)
+            let data = try container.decode(Data.self)
+            self = .data(data)
         }
     }
 
@@ -55,11 +56,14 @@ public enum ByteStream {
         switch self {
         case .data(let data):
             try container.encode(data)
-        case .stream(let stream):
-            try container.encode(stream)
+        case .stream:
+            throw EncodingError.invalidValue(self, EncodingError.Context(codingPath: encoder.codingPath, debugDescription: "Cannot encode a stream."))
+        case .none:
+            try container.encodeNil()
         }
     }
 }
+
 
 extension ByteStream {
 
@@ -95,6 +99,8 @@ extension ByteStream: CustomDebugStringConvertible {
             } else {
                 return "Stream (non-seekable, Position: \(stream.position), Length: \(stream.length ?? -1))"
             }
+        default:
+            bodyAsString = "nil"
         }
     }
 }
