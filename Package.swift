@@ -6,7 +6,9 @@ let package = Package(
     name: "smithy-swift",
     platforms: [
         .macOS(.v10_15),
-        .iOS(.v13)
+        .iOS(.v13),
+        .tvOS(.v13),
+        .watchOS(.v6)
     ],
     products: [
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
