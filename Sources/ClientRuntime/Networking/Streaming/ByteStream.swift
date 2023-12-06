@@ -90,17 +90,21 @@ extension ByteStream: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {
         case .data(let data):
-            return data.map { String(describing: $0) } ?? "nil (Data)"
+            return data?.description ?? "nil (Data)"
         case .stream(let stream):
             if stream.isSeekable {
                 let currentPosition = stream.position
                 defer { try? stream.seek(toOffset: currentPosition) }
-                return (try? stream.readToEnd().description) ?? "Stream not readable"
+                if let data = try? stream.readToEnd() {
+                    return data.description
+                } else {
+                    return "Stream not readable"
+                }
             } else {
                 return "Stream (non-seekable, Position: \(stream.position), Length: \(stream.length ?? -1))"
             }
-        default:
-            bodyAsString = "nil"
+        case .none:
+            return "nil"
         }
     }
 }
