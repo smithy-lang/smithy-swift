@@ -42,10 +42,10 @@ public struct PayloadBodyMiddleware<OperationStackInput,
               do {
                   if let payload = input.operationInput[keyPath: keyPath] {
                       let data = try documentWritingClosure(payload, inputWritingClosure)
-                      let body = HttpBody.data(data)
+                      let body = ByteStream.data(data)
                       input.builder.withBody(body)
                   } else if let defaultBody {
-                      input.builder.withBody(HttpBody.data(Data(defaultBody.utf8)))
+                      input.builder.withBody(ByteStream.data(Data(defaultBody.utf8)))
                   }
               } catch {
                   throw ClientError.serializationFailed(error.localizedDescription)

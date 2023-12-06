@@ -14,7 +14,7 @@ extension HTTP2Stream {
         return 1024
     }
 
-    /// Writes the HttpBody to the stream asynchronously
+    /// Writes the ByteStream to the stream asynchronously
     /// There is no recommended size for the data to write. The data will be written in chunks of `manualWriteBufferSize` bytes.
     /// - Parameter body: The body to write
     /// - Throws: Throws an error if the write fails

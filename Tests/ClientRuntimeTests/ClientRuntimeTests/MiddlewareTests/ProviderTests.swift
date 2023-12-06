@@ -55,7 +55,7 @@ class ProviderTests: HttpRequestTestBase {
             XCTAssert(request.queryItems?.first(where: { queryItem in
                 queryItem.value == "3"
             }) != nil)
-            let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
+            let httpResponse = HttpResponse(body: ByteStream.none, statusCode: HttpStatusCode.ok)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
             return output
         })
@@ -85,7 +85,7 @@ class ProviderTests: HttpRequestTestBase {
             XCTAssert(request.headers.headers.first(where: { header in
                 header.value == ["3"]
             }) != nil)
-            let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
+            let httpResponse = HttpResponse(body: ByteStream.none, statusCode: HttpStatusCode.ok)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
             return output
         })

@@ -23,7 +23,7 @@ public struct StringBodyMiddleware<OperationStackInput, OperationStackOutput>: M
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              let body = HttpBody.data(Data((input.operationInput[keyPath: keyPath] ?? "").utf8))
+              let body = ByteStream.data(Data((input.operationInput[keyPath: keyPath] ?? "").utf8))
               input.builder.withBody(body)
               return try await next.handle(context: context, input: input)
           }

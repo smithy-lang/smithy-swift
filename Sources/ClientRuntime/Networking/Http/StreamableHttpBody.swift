@@ -7,15 +7,15 @@
 
 import AwsCommonRuntimeKit
 
-/// A class that implements the `IStreamable` protocol for `HttpBody`.
+/// A class that implements the `IStreamable` protocol for `ByteStream`.
 /// It acts as a bridge between AWS SDK and CRT.
 class StreamableHttpBody: IStreamable {
 
     var position: Data.Index
-    let body: HttpBody
+    let body: ByteStream
     let logger: SwiftLogger
 
-    init(body: HttpBody) {
+    init(body: ByteStream) {
         self.body = body
 
         switch body {

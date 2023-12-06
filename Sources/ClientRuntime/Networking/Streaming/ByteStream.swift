@@ -16,7 +16,7 @@ public enum ByteStream {
         switch self {
         case .data(let data):
             return data
-        case .stream(let stream):
+        case .stream(let stßream):
             if stream.isSeekable {
                 try stream.seek(toOffset: 0)
             }

@@ -102,7 +102,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                                                 Self.MOutput == H.Output {
 
             let encoder = context.getEncoder()
-            let body = HttpBody.data(try encoder.encode(input.operationInput))
+            let body = ByteStream.data(try encoder.encode(input.operationInput))
             input.builder.withBody(body)
             return try await next.handle(context: context, input: input)
 
@@ -210,8 +210,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             }
 
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) throws -> Void in
-                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
                 try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { (expectedData, actualData) in
                     do {
                          let decoder = JSONDecoder()
@@ -224,7 +224,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                 }
             })
 
-            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+            let response = HttpResponse(body: ByteStream.none, statusCode: .ok)
             let mockOutput = try! MockOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<MockOutput>(httpResponse: response, output: mockOutput)
             return output
