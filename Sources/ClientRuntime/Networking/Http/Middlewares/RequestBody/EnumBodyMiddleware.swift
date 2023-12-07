@@ -26,7 +26,7 @@ public struct EnumBodyMiddleware<OperationStackInput,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
               let bodyString = input.operationInput[keyPath: keyPath]?.rawValue ?? ""
-              let body = HttpBody.data(Data(bodyString.utf8))
+              let body = ByteStream.data(Data(bodyString.utf8))
               input.builder.withBody(body)
               return try await next.handle(context: context, input: input)
           }

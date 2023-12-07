@@ -100,8 +100,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                      middleware: MockDeserializeMiddleware<SmokeTestOutput, SmokeTestOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
                 try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     do {
                         let expectedObj = try decoder.decode(SmokeTestInputBody.self, from: expectedData)
@@ -115,14 +115,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                     }
                 }
             })
-            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+            let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
             let mockOutput = try await SmokeTestOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<SmokeTestOutput>(httpResponse: response, output: mockOutput)
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
             let serviceError = try await SmokeTestOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
             throw serviceError
         })
@@ -186,20 +186,20 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                      middleware: MockDeserializeMiddleware<ExplicitStringOutput, ExplicitStringOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
                 try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     XCTAssertEqual(expectedData, actualData)
                 }
             })
-            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+            let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
             let mockOutput = try await ExplicitStringOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<ExplicitStringOutput>(httpResponse: response, output: mockOutput)
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
             let serviceError = try await ExplicitStringOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
             throw serviceError
         })
@@ -252,14 +252,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                      middleware: MockDeserializeMiddleware<EmptyInputAndEmptyOutputOutput, EmptyInputAndEmptyOutputOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             try await self.assertEqual(expected, actual)
-            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+            let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
             let mockOutput = try await EmptyInputAndEmptyOutputOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<EmptyInputAndEmptyOutputOutput>(httpResponse: response, output: mockOutput)
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
             let serviceError = try await EmptyInputAndEmptyOutputOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
             throw serviceError
         })
@@ -322,8 +322,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                      middleware: MockDeserializeMiddleware<SimpleScalarPropertiesOutput, SimpleScalarPropertiesOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
                 try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     do {
                         let expectedObj = try decoder.decode(SimpleScalarPropertiesInputBody.self, from: expectedData)
@@ -342,14 +342,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                     }
                 }
             })
-            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+            let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
             let mockOutput = try await SimpleScalarPropertiesOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<SimpleScalarPropertiesOutput>(httpResponse: response, output: mockOutput)
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
             let serviceError = try await SimpleScalarPropertiesOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
             throw serviceError
         })
@@ -413,20 +413,20 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                      middleware: MockDeserializeMiddleware<StreamingTraitsOutput, StreamingTraitsOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
                 try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     XCTAssertEqual(expectedData, actualData)
                 }
             })
-            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+            let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
             let mockOutput = try await StreamingTraitsOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<StreamingTraitsOutput>(httpResponse: response, output: mockOutput)
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
             let serviceError = try await StreamingTraitsOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
             throw serviceError
         })
@@ -486,14 +486,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                      middleware: MockDeserializeMiddleware<HttpPrefixHeadersOutput, HttpPrefixHeadersOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             try await self.assertEqual(expected, actual)
-            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+            let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
             let mockOutput = try await HttpPrefixHeadersOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<HttpPrefixHeadersOutput>(httpResponse: response, output: mockOutput)
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
             let serviceError = try await HttpPrefixHeadersOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
             throw serviceError
         })
@@ -559,8 +559,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                      middleware: MockDeserializeMiddleware<JsonUnionsOutput, JsonUnionsOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
                 try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     do {
                         let expectedObj = try decoder.decode(JsonUnionsInputBody.self, from: expectedData)
@@ -571,14 +571,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                     }
                 }
             })
-            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+            let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
             let mockOutput = try await JsonUnionsOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<JsonUnionsOutput>(httpResponse: response, output: mockOutput)
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
             let serviceError = try await JsonUnionsOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
             throw serviceError
         })
@@ -663,8 +663,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                      middleware: MockDeserializeMiddleware<RecursiveShapesOutput, RecursiveShapesOutputError>(
                              id: "TestDeserializeMiddleware"){ context, actual in
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
+                XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
                 try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                     do {
                         let expectedObj = try decoder.decode(RecursiveShapesInputBody.self, from: expectedData)
@@ -675,14 +675,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                     }
                 }
             })
-            let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+            let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
             let mockOutput = try await RecursiveShapesOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<RecursiveShapesOutput>(httpResponse: response, output: mockOutput)
             return output
         })
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+            let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
             let serviceError = try await RecursiveShapesOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
             throw serviceError
         })
@@ -755,8 +755,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                          middleware: MockDeserializeMiddleware<InlineDocumentOutput, InlineDocumentOutputError>(
                                  id: "TestDeserializeMiddleware"){ context, actual in
                 try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                    XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                    XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                    XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
+                    XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
                     try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                         do {
                             let expectedObj = try decoder.decode(InlineDocumentInputBody.self, from: expectedData)
@@ -768,14 +768,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                         }
                     }
                 })
-                let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+                let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
                 let mockOutput = try await InlineDocumentOutput(httpResponse: response, decoder: nil)
                 let output = OperationOutput<InlineDocumentOutput>(httpResponse: response, output: mockOutput)
                 return output
             })
             _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
                 XCTFail("Deserialize was mocked out, this should fail")
-                let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+                let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
                 let serviceError = try await InlineDocumentOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
                 throw serviceError
             })
@@ -845,8 +845,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                          middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutput, InlineDocumentAsPayloadOutputError>(
                                  id: "TestDeserializeMiddleware"){ context, actual in
                 try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                    XCTAssertNotNil(actualHttpBody, "The actual HttpBody is nil")
-                    XCTAssertNotNil(expectedHttpBody, "The expected HttpBody is nil")
+                    XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
+                    XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
                     try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { expectedData, actualData in
                         do {
                             let expectedObj = try decoder.decode(ClientRuntime.Document.self, from: expectedData)
@@ -857,14 +857,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                         }
                     }
                 })
-                let response = HttpResponse(body: HttpBody.none, statusCode: .ok)
+                let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
                 let mockOutput = try await InlineDocumentAsPayloadOutput(httpResponse: response, decoder: nil)
                 let output = OperationOutput<InlineDocumentAsPayloadOutput>(httpResponse: response, output: mockOutput)
                 return output
             })
             _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in
                 XCTFail("Deserialize was mocked out, this should fail")
-                let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)
+                let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
                 let serviceError = try await InlineDocumentAsPayloadOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
                 throw serviceError
             })

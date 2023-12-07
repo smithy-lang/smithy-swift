@@ -34,7 +34,7 @@ public struct BodyMiddleware<OperationStackInput,
           Self.Context == H.Context {
               do {
                   let data = try documentWritingClosure(input.operationInput, inputWritingClosure)
-                  let body = HttpBody.data(data)
+                  let body = ByteStream.data(data)
                   input.builder.withBody(body)
               } catch {
                   throw ClientError.serializationFailed(error.localizedDescription)

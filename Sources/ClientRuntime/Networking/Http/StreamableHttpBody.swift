@@ -7,15 +7,15 @@
 
 import AwsCommonRuntimeKit
 
-/// A class that implements the `IStreamable` protocol for `HttpBody`.
+/// A class that implements the `IStreamable` protocol for `ByteStream`.
 /// It acts as a bridge between AWS SDK and CRT.
 class StreamableHttpBody: IStreamable {
 
     var position: Data.Index
-    let body: HttpBody
+    let body: ByteStream
     let logger: SwiftLogger
 
-    init(body: HttpBody) {
+    init(body: ByteStream) {
         self.body = body
 
         switch body {
@@ -23,7 +23,7 @@ class StreamableHttpBody: IStreamable {
             position = data?.startIndex ?? .min
         case .stream(let stream):
             position = stream.position
-        case .none:
+        case .noStream:
             position = .min
         }
 
@@ -39,7 +39,7 @@ class StreamableHttpBody: IStreamable {
             return UInt64(data?.count ?? 0)
         case .stream(let stream):
             return UInt64(stream.length ?? 0)
-        case .none:
+        case .noStream:
             return 0
         }
     }
@@ -69,7 +69,7 @@ class StreamableHttpBody: IStreamable {
             }
             logger.debug("seeking to offset \(offset) in data")
             try stream.seek(toOffset: Int(offset))
-        case .none:
+        case .noStream:
             position = .min
         }
     }
@@ -99,7 +99,7 @@ class StreamableHttpBody: IStreamable {
                 return nil
             }
             return data.count
-        case .none:
+        case .noStream:
             return nil
         }
     }

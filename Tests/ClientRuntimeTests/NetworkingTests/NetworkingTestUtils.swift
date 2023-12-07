@@ -30,7 +30,7 @@ class NetworkingTestUtils: XCTestCase {
         let headers = Headers(["header-item-name": "header-item-value"])
         let endpoint = getMockEndpoint(headers: headers)
 
-        let httpBody = HttpBody.data(expectedMockRequestData)
+        let httpBody = ByteStream.data(expectedMockRequestData)
         mockHttpDataRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
     }
 
@@ -41,7 +41,7 @@ class NetworkingTestUtils: XCTestCase {
         let headers = Headers(["header-item-name": "header-item-value"])
         let endpoint = getMockEndpoint(headers: headers)
 
-        let httpBody = HttpBody(byteStream: ByteStream.from(data: expectedMockRequestData))
+        let httpBody = ByteStream.data(expectedMockRequestData)
         mockHttpStreamRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
     }
 

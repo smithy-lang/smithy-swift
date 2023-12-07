@@ -49,7 +49,7 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
                   )
                   input.builder.withBody(.stream(encoderStream))
               } else if let defaultBody {
-                  input.builder.withBody(HttpBody.data(Data(defaultBody.utf8)))
+                  input.builder.withBody(ByteStream.data(Data(defaultBody.utf8)))
               }
               return try await next.handle(context: context, input: input)
           }

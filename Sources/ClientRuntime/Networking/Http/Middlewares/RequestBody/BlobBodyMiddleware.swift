@@ -24,7 +24,7 @@ public struct BlobBodyMiddleware<OperationStackInput,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              let body = HttpBody.data(input.operationInput[keyPath: keyPath])
+              let body = ByteStream.data(input.operationInput[keyPath: keyPath])
               input.builder.withBody(body)
               return try await next.handle(context: context, input: input)
           }

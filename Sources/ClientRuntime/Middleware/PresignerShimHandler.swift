@@ -30,7 +30,7 @@ struct PresignerShim<OperationStackOutput>: Middleware {
           Self.MInput == H.Input,
           Self.MOutput == H.Output {
               handler(input)
-              let httpResponse = HttpResponse(body: .none, statusCode: .ok)
+              let httpResponse = HttpResponse(body: .noStream, statusCode: .ok)
               return .init(httpResponse: httpResponse, output: output)
           }
 }
