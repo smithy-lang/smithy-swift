@@ -169,7 +169,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
             }
             let decodedBody = try JSONDecoder().decode(ResponseWrapper.self, from: data)
             XCTAssertEqual(decodedBody.json, body)
-        case .data, .none:
+        case .data, .noStream:
             XCTFail("Unexpected response body type")
         }
     }

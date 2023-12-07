@@ -248,7 +248,7 @@ open class HttpRequestTestBase: XCTestCase {
         case .stream(let byteStream):
             let data = try byteStream.readToEnd()
             return .success(data)
-        case .none:
+        case .noStream:
             return .failure(InternalHttpRequestTestBaseError("ByteStream is not Data Type"))
         }
     }

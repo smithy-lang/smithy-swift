@@ -26,7 +26,7 @@ public struct ExpectedSdkHttpRequest {
                 queryItems: [URLQueryItem]? = nil,
                 forbiddenQueryItems: [URLQueryItem]? = nil,
                 requiredQueryItems: [URLQueryItem]? = nil,
-                body: ByteStream = ByteStream.none) {
+                body: ByteStream = ByteStream.noStream) {
         self.method = method
         self.endpoint = endpoint
         self.headers = headers
@@ -49,7 +49,7 @@ public class ExpectedSdkHttpRequestBuilder {
     var methodType: HttpMethodType = .get
     var host: String = ""
     var path: String = "/"
-    var body: ByteStream = .none
+    var body: ByteStream = .noStream
     var queryItems = [URLQueryItem]()
     var forbiddenQueryItems = [URLQueryItem]()
     var requiredQueryItems = [URLQueryItem]()

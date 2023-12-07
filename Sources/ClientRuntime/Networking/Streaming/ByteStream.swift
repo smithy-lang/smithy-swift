@@ -10,7 +10,7 @@ import class Foundation.FileHandle
 public enum ByteStream {
     case data(Data?)
     case stream(Stream)
-    case none
+    case noStream
 
     // Read Data
     public func readData() async throws -> Data? {
@@ -22,7 +22,7 @@ public enum ByteStream {
                 try stream.seek(toOffset: 0)
             }
             return try await stream.readToEndAsync()
-        case .none:
+        case .noStream:
             return nil
         }
     }
@@ -35,7 +35,7 @@ extension ByteStream: Equatable {
             return lhsData == rhsData
         case (.stream(let lhsStream), .stream(let rhsStream)):
             return lhsStream === rhsStream
-        case (.none, .none):
+        case (.noStream, .noStream):
             return true
         default:
             return false
@@ -61,7 +61,7 @@ extension ByteStream: Codable {
             try container.encode(data)
         case .stream:
             throw EncodingError.invalidValue(self, EncodingError.Context(codingPath: encoder.codingPath, debugDescription: "Cannot encode a stream."))
-        case .none:
+        case .noStream:
             try container.encodeNil()
         }
     }
@@ -82,7 +82,7 @@ extension ByteStream {
             return data?.isEmpty ?? true
         case .stream(let stream):
             return stream.isEmpty
-         case .none:
+         case .noStream:
             return true
         }
     }
@@ -106,7 +106,7 @@ extension ByteStream: CustomDebugStringConvertible {
             } else {
                 return "Stream (non-seekable, Position: \(stream.position), Length: \(stream.length ?? -1))"
             }
-        case .none:
+        case .noStream:
             return "nil"
         }
     }

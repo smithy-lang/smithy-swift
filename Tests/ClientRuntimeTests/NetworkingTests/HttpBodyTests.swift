@@ -40,7 +40,7 @@ class HttpBodyTests: XCTestCase {
     }
 
     func testWhenBodyIsNoneThenIsEmptyIsTrue() {
-        let body = ByteStream.none
+        let body = ByteStream.noStream
         XCTAssertTrue(body.isEmpty)
     }
 }

@@ -10,7 +10,7 @@ public class HttpResponse: HttpUrlResponse {
     public var body: ByteStream
     public var statusCode: HttpStatusCode
 
-    public init(headers: Headers = .init(), statusCode: HttpStatusCode = .processing, body: ByteStream = .none) {
+    public init(headers: Headers = .init(), statusCode: HttpStatusCode = .processing, body: ByteStream = .noStream) {
         self.headers = headers
         self.statusCode = statusCode
         self.body = body

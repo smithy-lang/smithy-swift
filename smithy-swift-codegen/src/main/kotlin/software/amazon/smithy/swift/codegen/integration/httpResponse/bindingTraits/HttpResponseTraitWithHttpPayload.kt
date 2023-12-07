@@ -85,7 +85,7 @@ class HttpResponseTraitWithHttpPayload(
                     writer.write("self.\$L = try stream.readToEnd()", memberName)
                 }
                 writer.dedent()
-                    .write("case .none:")
+                    .write("case .noStream:")
                     .indent()
                     .write("self.\$L = nil", memberName).closeBlock("}")
             }

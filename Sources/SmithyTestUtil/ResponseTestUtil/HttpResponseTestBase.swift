@@ -26,7 +26,7 @@ open class HttpResponseTestBase: XCTestCase {
         }
 
         return HttpResponse(headers: internalHeaders,
-                            body: content ?? .none,
+                            body: content ?? .noStream,
                             statusCode: HttpStatusCode(rawValue: Int(code)) ?? HttpStatusCode.badRequest)
 
     }

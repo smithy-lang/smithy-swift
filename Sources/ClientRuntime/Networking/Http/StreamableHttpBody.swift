@@ -23,7 +23,7 @@ class StreamableHttpBody: IStreamable {
             position = data?.startIndex ?? .min
         case .stream(let stream):
             position = stream.position
-        case .none:
+        case .noStream:
             position = .min
         }
 
@@ -39,7 +39,7 @@ class StreamableHttpBody: IStreamable {
             return UInt64(data?.count ?? 0)
         case .stream(let stream):
             return UInt64(stream.length ?? 0)
-        case .none:
+        case .noStream:
             return 0
         }
     }
@@ -69,7 +69,7 @@ class StreamableHttpBody: IStreamable {
             }
             logger.debug("seeking to offset \(offset) in data")
             try stream.seek(toOffset: Int(offset))
-        case .none:
+        case .noStream:
             position = .min
         }
     }
@@ -99,7 +99,7 @@ class StreamableHttpBody: IStreamable {
                 return nil
             }
             return data.count
-        case .none:
+        case .noStream:
             return nil
         }
     }

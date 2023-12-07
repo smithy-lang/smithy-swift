@@ -98,7 +98,7 @@ class HttpResponseTraitWithoutHttpPayload(
                     .indent()
                 writer.write("self.\$L = .stream(stream)", memberName)
                 writer.dedent()
-                    .write("case .none:")
+                    .write("case .noStream:")
                     .indent()
                     .write("self.\$L = nil", memberName).closeBlock("}")
             }

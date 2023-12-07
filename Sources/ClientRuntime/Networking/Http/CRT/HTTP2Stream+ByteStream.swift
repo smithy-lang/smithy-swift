@@ -27,7 +27,7 @@ extension HTTP2Stream {
                 try await writeData(data: data, endOfStream: false)
             }
             try await writeData(data: .init(), endOfStream: true)
-        case .none:
+        case .noStream:
             try await writeData(data: .init(), endOfStream: true)
         }
     }
