@@ -60,13 +60,18 @@ extension ByteStream: Codable {
         case .data(let data):
             try container.encode(data)
         case .stream:
-            throw EncodingError.invalidValue(self, EncodingError.Context(codingPath: encoder.codingPath, debugDescription: "Cannot encode a stream."))
+            throw EncodingError.invalidValue(
+                self,
+                EncodingError.Context(
+                    codingPath: encoder.codingPath,
+                    debugDescription: "Cannot encode a stream."
+                )
+            )
         case .noStream:
             try container.encodeNil()
         }
     }
 }
-
 
 extension ByteStream {
 
@@ -82,7 +87,7 @@ extension ByteStream {
             return data?.isEmpty ?? true
         case .stream(let stream):
             return stream.isEmpty
-         case .noStream:
+        case .noStream:
             return true
         }
     }
