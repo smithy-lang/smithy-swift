@@ -2,6 +2,23 @@
 
 import PackageDescription
 
+// Define libxml2 only on Linux, since it causes warnings
+// about "pkgconfig not found" on Mac
+#if os(Linux)
+let libXML2DependencyOrNil: Target.Dependency? = "libxml2"
+let libXML2TargetOrNil: Target? = Target.systemLibrary(
+    name: "libxml2",
+    pkgConfig: "libxml-2.0",
+    providers: [
+        .apt(["libxml2 libxml2-dev"]),
+        .yum(["libxml2 libxml2-devel"])
+    ]
+)
+#else
+let libXML2DependencyOrNil: Target.Dependency? = nil
+let libXML2TargetOrNil: Target? = nil
+#endif
+
 let package = Package(
     name: "smithy-swift",
     platforms: [
@@ -37,17 +54,10 @@ let package = Package(
             dependencies: [
                 "SmithyReadWrite",
                 "SmithyTimestamps",
-                .target(name: "libxml2", condition: .when(platforms: [.linux]))
-            ]
+                libXML2DependencyOrNil
+            ].compactMap { $0 }
         ),
-        .systemLibrary(
-            name: "libxml2",
-            pkgConfig: "libxml-2.0",
-            providers: [
-                .apt(["libxml2 libxml2-dev"]),
-                .yum(["libxml2 libxml2-devel"])
-            ]
-        ),
+        libXML2TargetOrNil,
         .target(
             name: "SmithyTimestamps"
         ),
@@ -71,5 +81,5 @@ let package = Package(
             name: "SmithyTestUtilTests",
             dependencies: ["SmithyTestUtil"]
         ),
-    ]
+    ].compactMap { $0 }
 )
