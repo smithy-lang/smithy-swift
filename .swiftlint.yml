@@ -3,6 +3,8 @@ excluded:
   - Sources/SmithyTestUtil/*
   - Tests/ClientRuntimeTests/*
   - Tests/SmithyTestUtilTests/*
+  - Tests/SmithyXMLTests/*
+  - Tests/SmithyTimestampsTests/*
 
 analyzer_rules:
   - unused_import

@@ -13,11 +13,9 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
-import software.amazon.smithy.swift.codegen.model.recursiveSymbol
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 class UnionDecodeXMLGenerator(
@@ -93,9 +91,6 @@ class UnionDecodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-        if (member.hasTrait(SwiftBoxTrait::class.java)) {
-            memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
-        }
         val decodedMemberName = "${memberName}Decoded"
         writer.write("let $decodedMemberName = try $containerName.decode(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
         renderAssigningDecodedMember(memberName, decodedMemberName)

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct MapKeyValue<K, V, CustomKeyName, CustomValueName>: Codable where K: Codable, V: Codable {
+public struct MapKeyValue<K, V, CustomKeyName, CustomValueName>: Decodable where K: Decodable, V: Decodable {
     public let key: K
     public let value: V
 

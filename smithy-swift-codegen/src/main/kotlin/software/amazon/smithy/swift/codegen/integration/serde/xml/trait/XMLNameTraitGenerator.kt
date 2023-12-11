@@ -8,6 +8,7 @@ package software.amazon.smithy.swift.codegen.integration.serde.xml.trait
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 class XMLNameTraitGenerator(val xmlNameValue: String) {
     companion object {
@@ -15,7 +16,7 @@ class XMLNameTraitGenerator(val xmlNameValue: String) {
             shape.getTrait<XmlNameTrait>()?.let {
                 return XMLNameTraitGenerator(it.value.toString())
             }
-            val unquotedDefaultMemberName = defaultMemberName.removeSurrounding("`", "`")
+            val unquotedDefaultMemberName = defaultMemberName.removeSurroundingBackticks()
             return XMLNameTraitGenerator(unquotedDefaultMemberName)
         }
     }

@@ -14,11 +14,11 @@ extension HTTP2Stream {
         return 1024
     }
 
-    /// Writes the HttpBody to the stream asynchronously
+    /// Writes the ByteStream to the stream asynchronously
     /// There is no recommended size for the data to write. The data will be written in chunks of `manualWriteBufferSize` bytes.
     /// - Parameter body: The body to write
     /// - Throws: Throws an error if the write fails
-    func write(body: HttpBody) async throws {
+    func write(body: ByteStream) async throws {
         switch body {
         case .data(let data):
             try await writeData(data: data ?? .init(), endOfStream: true)
@@ -27,7 +27,7 @@ extension HTTP2Stream {
                 try await writeData(data: data, endOfStream: false)
             }
             try await writeData(data: .init(), endOfStream: true)
-        case .none:
+        case .noStream:
             try await writeData(data: .init(), endOfStream: true)
         }
     }

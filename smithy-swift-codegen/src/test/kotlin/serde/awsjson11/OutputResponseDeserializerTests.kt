@@ -73,7 +73,7 @@ class OutputDeserializerTests {
                         self.streamingData = .data(data)
                     case .stream(let stream):
                         self.streamingData = .stream(stream)
-                    case .none:
+                    case .noStream:
                         self.streamingData = nil
                     }
                 }

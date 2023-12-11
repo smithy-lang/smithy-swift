@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import ClientRuntime
+@testable import SmithyTimestamps
 
 class TimestampSerdeUtilsTests: XCTestCase {
 

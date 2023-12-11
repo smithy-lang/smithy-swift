@@ -11,7 +11,7 @@ import XCTest
 
 class IdempotencyTokenMiddlewareTests: XCTestCase {
 
-    private typealias Subject = IdempotencyTokenMiddleware<TestInputType, TestOutputType, TestOutputErrorType>
+    private typealias Subject = IdempotencyTokenMiddleware<TestInputType, TestOutputType>
 
     let token = "def"
     let previousToken = "abc"

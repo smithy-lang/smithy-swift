@@ -16,7 +16,7 @@ import struct Foundation.URLRequest
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
 public class SdkHttpRequest {
-    public let body: HttpBody
+    public let body: ByteStream
     public let endpoint: Endpoint
     public let method: HttpMethodType
     private var additionalHeaders: Headers = Headers()
@@ -31,7 +31,7 @@ public class SdkHttpRequest {
 
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
-                body: HttpBody = HttpBody.none) {
+                body: ByteStream = ByteStream.noStream) {
         self.method = method
         self.endpoint = endpoint
         self.body = body
@@ -169,7 +169,7 @@ public class SdkHttpRequestBuilder {
     var methodType: HttpMethodType = .get
     var host: String = ""
     var path: String = "/"
-    var body: HttpBody = .none
+    var body: ByteStream = .noStream
     var queryItems: [URLQueryItem]?
     var port: Int16 = 443
     var protocolType: ProtocolType = .https
@@ -219,7 +219,7 @@ public class SdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withBody(_ value: HttpBody) -> SdkHttpRequestBuilder {
+    public func withBody(_ value: ByteStream) -> SdkHttpRequestBuilder {
         self.body = value
         return self
     }
