@@ -39,7 +39,8 @@ class HttpProtocolTestGenerator(
     private val serdeContext: HttpProtocolUnitTestGenerator.SerdeContext,
     private val imports: List<String> = listOf(),
     // list of test IDs to ignore/skip
-    private val testsToIgnore: Set<String> = setOf()
+    private val testsToIgnore: Set<String> = setOf(),
+    private val tagsToIgnore: Set<String> = setOf(),
 ) {
     private val LOGGER = Logger.getLogger(javaClass.name)
 
@@ -94,7 +95,7 @@ class HttpProtocolTestGenerator(
             .getOrNull()
             ?.getTestCasesFor(AppliesTo.CLIENT)
             .orEmpty()
-        val requestTestCases = filterProtocolTestCases(tempTestCases)
+        val requestTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempTestCases))
         if (requestTestCases.isNotEmpty()) {
             val testClassName = "${operation.toUpperCamelCase()}RequestTest"
             val testFilename = "./${ctx.settings.testModuleName}/$testClassName.swift"
@@ -133,7 +134,7 @@ class HttpProtocolTestGenerator(
             .getOrNull()
             ?.getTestCasesFor(AppliesTo.CLIENT)
             .orEmpty()
-        val responseTestCases = filterProtocolTestCases(tempResponseTests)
+        val responseTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempResponseTests))
         if (responseTestCases.isNotEmpty()) {
             val testClassName = "${operation.id.name.capitalize()}ResponseTest"
             val testFilename = "./${ctx.settings.testModuleName}/$testClassName.swift"
@@ -173,7 +174,7 @@ class HttpProtocolTestGenerator(
                 .getOrNull()
                 ?.getTestCasesFor(AppliesTo.CLIENT)
                 .orEmpty()
-            val testCases = filterProtocolTestCases(tempTestCases)
+            val testCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempTestCases))
             numTestCases += testCases.count()
             if (testCases.isNotEmpty()) {
                 // multiple error (tests) may be associated with a single operation,
@@ -213,6 +214,11 @@ class HttpProtocolTestGenerator(
     private fun <T : HttpMessageTestCase> filterProtocolTestCases(testCases: List<T>): List<T> = testCases.filter {
         it.protocol == ctx.protocol && it.id !in testsToIgnore
     }
+
+    private fun <T : HttpMessageTestCase> filterProtocolTestCasesByTags(testCases: List<T>): List<T> =
+        testCases.filter { testCase ->
+            testCase.protocol == ctx.protocol && tagsToIgnore.none { tag -> testCase.hasTag(tag) }
+        }
 }
 
 private fun serverOnly(shape: Shape): Boolean = shape.hasTag("server-only")
