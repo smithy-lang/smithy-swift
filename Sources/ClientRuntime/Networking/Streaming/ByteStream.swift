@@ -116,3 +116,13 @@ extension ByteStream: CustomDebugStringConvertible {
         }
     }
 }
+
+extension ByteStream {
+
+    /// Returns ByteStream from a FileHandle object.
+    /// - Parameter fileHandle: FileHandle object to be converted to ByteStream.
+    /// - Returns: ByteStream representation of the FileHandle object.
+    public static func from(fileHandle: FileHandle) -> ByteStream {
+        return .stream(FileStream(fileHandle: fileHandle))
+    }
+}
