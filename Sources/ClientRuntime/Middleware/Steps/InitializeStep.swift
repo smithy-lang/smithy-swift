@@ -7,18 +7,15 @@
 /// Takes Input Parameters, and returns result or error.
 ///
 /// Receives result or error from Serialize step.
-public typealias InitializeStep<I,
-                                O: HttpResponseBinding> = MiddlewareStep<HttpContext,
-                                                                         I,
-                                                                         OperationOutput<O>>
+public typealias InitializeStep<OperationStackInput, OperationStackOutput> =
+    MiddlewareStep<HttpContext, OperationStackInput, OperationOutput<OperationStackOutput>>
 
 public let InitializeStepId = "Initialize"
 
-public struct InitializeStepHandler<OperationStackInput,
-                                    OperationStackOutput: HttpResponseBinding,
-                                    H: Handler>: Handler where H.Context == HttpContext,
-                                                               H.Input == SerializeStepInput<OperationStackInput>,
-                                                               H.Output == OperationOutput<OperationStackOutput> {
+public struct InitializeStepHandler<OperationStackInput, OperationStackOutput, H: Handler>: Handler
+    where H.Context == HttpContext,
+          H.Input == SerializeStepInput<OperationStackInput>,
+          H.Output == OperationOutput<OperationStackOutput> {
 
     public typealias Input = OperationStackInput
 

@@ -17,10 +17,10 @@ class MemberShapeDecodeXMLGeneratorTests {
     @Test
     fun `001 set default value for a missing value of a scalar member`() {
         val context = setupTests("Isolated/Restxml/xml-scalarmember-default-value.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesOutputBody+Decodable.swift")
         val expectedContents =
             """
-        extension SimpleScalarPropertiesOutputResponseBody: Swift.Decodable {
+        extension SimpleScalarPropertiesOutputBody: Swift.Decodable {
             enum CodingKeys: Swift.String, Swift.CodingKey {
                 case byteValue
                 case doubleValue = "DoubleDribble"

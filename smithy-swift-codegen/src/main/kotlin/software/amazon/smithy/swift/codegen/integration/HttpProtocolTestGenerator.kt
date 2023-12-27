@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
@@ -40,7 +39,8 @@ class HttpProtocolTestGenerator(
     private val serdeContext: HttpProtocolUnitTestGenerator.SerdeContext,
     private val imports: List<String> = listOf(),
     // list of test IDs to ignore/skip
-    private val testsToIgnore: Set<String> = setOf()
+    private val testsToIgnore: Set<String> = setOf(),
+    private val tagsToIgnore: Set<String> = setOf(),
 ) {
     private val LOGGER = Logger.getLogger(javaClass.name)
 
@@ -49,13 +49,12 @@ class HttpProtocolTestGenerator(
      */
     fun generateProtocolTests(): Int {
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
-        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val operationMiddleware = updateRequestTestMiddleware()
         var numTests = 0
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
-            numTests += renderRequestTests(operation, serviceSymbol, operationMiddleware)
-            numTests += renderResponseTests(operation, serviceSymbol)
-            numTests += renderErrorTestCases(operation, serviceSymbol)
+            numTests += renderRequestTests(operation, operationMiddleware)
+            numTests += renderResponseTests(operation)
+            numTests += renderErrorTestCases(operation)
         }
         return numTests
     }
@@ -90,12 +89,13 @@ class HttpProtocolTestGenerator(
         return cloned
     }
 
-    private fun renderRequestTests(operation: OperationShape, serviceSymbol: Symbol, operationMiddleware: OperationMiddleware): Int {
+    private fun renderRequestTests(operation: OperationShape, operationMiddleware: OperationMiddleware): Int {
+        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val tempTestCases = operation.getTrait(HttpRequestTestsTrait::class.java)
             .getOrNull()
             ?.getTestCasesFor(AppliesTo.CLIENT)
             .orEmpty()
-        val requestTestCases = filterProtocolTestCases(tempTestCases)
+        val requestTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempTestCases))
         if (requestTestCases.isNotEmpty()) {
             val testClassName = "${operation.toUpperCamelCase()}RequestTest"
             val testFilename = "./${ctx.settings.testModuleName}/$testClassName.swift"
@@ -110,6 +110,7 @@ class HttpProtocolTestGenerator(
                 writer.addImport(SwiftDependency.XCTest.target)
 
                 requestTestBuilder
+                    .ctx(ctx)
                     .writer(writer)
                     .model(ctx.model)
                     .symbolProvider(ctx.symbolProvider)
@@ -127,12 +128,13 @@ class HttpProtocolTestGenerator(
         return requestTestCases.count()
     }
 
-    private fun renderResponseTests(operation: OperationShape, serviceSymbol: Symbol): Int {
+    private fun renderResponseTests(operation: OperationShape): Int {
+        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val tempResponseTests = operation.getTrait(HttpResponseTestsTrait::class.java)
             .getOrNull()
             ?.getTestCasesFor(AppliesTo.CLIENT)
             .orEmpty()
-        val responseTestCases = filterProtocolTestCases(tempResponseTests)
+        val responseTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempResponseTests))
         if (responseTestCases.isNotEmpty()) {
             val testClassName = "${operation.id.name.capitalize()}ResponseTest"
             val testFilename = "./${ctx.settings.testModuleName}/$testClassName.swift"
@@ -145,6 +147,7 @@ class HttpProtocolTestGenerator(
                 writer.addImport(SwiftDependency.XCTest.target)
 
                 responseTestBuilder
+                    .ctx(ctx)
                     .writer(writer)
                     .model(ctx.model)
                     .symbolProvider(ctx.symbolProvider)
@@ -162,7 +165,8 @@ class HttpProtocolTestGenerator(
         return responseTestCases.count()
     }
 
-    private fun renderErrorTestCases(operation: OperationShape, serviceSymbol: Symbol): Int {
+    private fun renderErrorTestCases(operation: OperationShape): Int {
+        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val operationIndex: OperationIndex = OperationIndex.of(ctx.model)
         var numTestCases = 0
         for (error in operationIndex.getErrors(operation).filterNot(::serverOnly)) {
@@ -170,7 +174,7 @@ class HttpProtocolTestGenerator(
                 .getOrNull()
                 ?.getTestCasesFor(AppliesTo.CLIENT)
                 .orEmpty()
-            val testCases = filterProtocolTestCases(tempTestCases)
+            val testCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempTestCases))
             numTestCases += testCases.count()
             if (testCases.isNotEmpty()) {
                 // multiple error (tests) may be associated with a single operation,
@@ -188,6 +192,7 @@ class HttpProtocolTestGenerator(
 
                     errorTestBuilder
                         .error(error)
+                        .ctx(ctx)
                         .writer(writer)
                         .model(ctx.model)
                         .symbolProvider(ctx.symbolProvider)
@@ -209,6 +214,11 @@ class HttpProtocolTestGenerator(
     private fun <T : HttpMessageTestCase> filterProtocolTestCases(testCases: List<T>): List<T> = testCases.filter {
         it.protocol == ctx.protocol && it.id !in testsToIgnore
     }
+
+    private fun <T : HttpMessageTestCase> filterProtocolTestCasesByTags(testCases: List<T>): List<T> =
+        testCases.filter { testCase ->
+            testCase.protocol == ctx.protocol && tagsToIgnore.none { tag -> testCase.hasTag(tag) }
+        }
 }
 
 private fun serverOnly(shape: Shape): Boolean = shape.hasTag("server-only")

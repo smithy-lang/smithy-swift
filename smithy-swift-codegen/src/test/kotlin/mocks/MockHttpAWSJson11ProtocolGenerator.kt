@@ -53,7 +53,8 @@ class MockAWSJson11HttpProtocolCustomizations() : DefaultHttpProtocolCustomizati
         writer: SwiftWriter,
         op: OperationShape,
     ) {
-        TODO("Not yet implemented")
+        // Not yet implemented
+        return
     }
 }
 
@@ -96,8 +97,9 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
+        path: String?
     ) {
-        val encodeGenerator = StructEncodeGenerator(ctx, members, writer, defaultTimestampFormat)
+        val encodeGenerator = StructEncodeGenerator(ctx, members, writer, defaultTimestampFormat, path)
         encodeGenerator.render()
     }
     override fun renderStructDecode(
@@ -106,8 +108,9 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
+        path: String
     ) {
-        val decodeGenerator = StructDecodeGenerator(ctx, members, writer, defaultTimestampFormat)
+        val decodeGenerator = StructDecodeGenerator(ctx, members, writer, defaultTimestampFormat, path)
         decodeGenerator.render()
     }
 

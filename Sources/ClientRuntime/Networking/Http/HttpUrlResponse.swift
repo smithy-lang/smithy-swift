@@ -7,6 +7,6 @@ import AwsCommonRuntimeKit
 
 protocol HttpUrlResponse {
     var headers: Headers { get set }
-    var body: HttpBody { get set}
+    var body: ByteStream { get set}
     var statusCode: HttpStatusCode {get set}
 }

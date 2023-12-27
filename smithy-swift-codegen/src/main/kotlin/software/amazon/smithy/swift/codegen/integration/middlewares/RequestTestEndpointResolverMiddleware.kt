@@ -5,6 +5,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
@@ -14,7 +15,7 @@ class RequestTestEndpointResolverMiddleware(private val model: Model, private va
     override val name = "RequestTestEndpointResolver"
     override val middlewareStep = MiddlewareStep.BUILDSTEP
     override val position = MiddlewarePosition.AFTER
-    override fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String) {
+    override fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
 
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
         val outputErrorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)

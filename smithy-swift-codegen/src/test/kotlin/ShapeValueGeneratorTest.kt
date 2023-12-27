@@ -356,10 +356,8 @@ MyStruct(
         var expected = """
         RecursiveShapesInputOutputNested1(
             foo: "Foo1",
-            nested: Box<RecursiveShapesInputOutputNested2>(
-                value: RecursiveShapesInputOutputNested2(
-                    bar: "Bar1"
-                )
+            nested: RecursiveShapesInputOutputNested2(
+                bar: "Bar1"
             )
         )
         """.trimIndent()

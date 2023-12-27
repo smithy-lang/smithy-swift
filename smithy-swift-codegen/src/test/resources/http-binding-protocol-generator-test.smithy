@@ -951,7 +951,7 @@ blob StreamingBlob
 
 @readonly
 @http(uri: "/HttpPrefixHeaders", method: "GET")
-@externalDocumentation("httpPrefixHeaders Trait": "https://awslabs.github.io/smithy/1.0/spec/http.html#httpprefixheaders-trait")
+@externalDocumentation("httpPrefixHeaders Trait": "https://smithy.io/2.0/spec/http-bindings.html#httpprefixheaders-trait")
 operation HttpPrefixHeaders  {
     input: HttpPrefixHeadersInputOutput,
     output: HttpPrefixHeadersInputOutput

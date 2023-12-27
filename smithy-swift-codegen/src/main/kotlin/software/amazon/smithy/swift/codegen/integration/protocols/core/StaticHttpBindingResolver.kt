@@ -57,7 +57,7 @@ open class StaticHttpBindingResolver(
 }
 
 // Create a [HttpBindingDescriptor] based on traits on [MemberShape]
-// See https://awslabs.github.io/smithy/1.0/spec/core/http-traits.html
+// See https://smithy.io/2.0/spec/http-bindings.html#http-bindings
 private fun MemberShape.toHttpBindingDescriptor(): HttpBindingDescriptor =
     when {
         hasTrait<HttpHeaderTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.HEADER, expectTrait<HttpHeaderTrait>().value)

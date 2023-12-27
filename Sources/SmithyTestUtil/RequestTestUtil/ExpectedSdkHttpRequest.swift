@@ -8,7 +8,7 @@
 import ClientRuntime
 
 public struct ExpectedSdkHttpRequest {
-    public var body: HttpBody
+    public var body: ByteStream
     public var headers: Headers?
     public var forbiddenHeaders: [String]?
     public var requiredHeaders: [String]?
@@ -26,7 +26,7 @@ public struct ExpectedSdkHttpRequest {
                 queryItems: [URLQueryItem]? = nil,
                 forbiddenQueryItems: [URLQueryItem]? = nil,
                 requiredQueryItems: [URLQueryItem]? = nil,
-                body: HttpBody = HttpBody.none) {
+                body: ByteStream = ByteStream.noStream) {
         self.method = method
         self.endpoint = endpoint
         self.headers = headers
@@ -49,7 +49,7 @@ public class ExpectedSdkHttpRequestBuilder {
     var methodType: HttpMethodType = .get
     var host: String = ""
     var path: String = "/"
-    var body: HttpBody = .none
+    var body: ByteStream = .noStream
     var queryItems = [URLQueryItem]()
     var forbiddenQueryItems = [URLQueryItem]()
     var requiredQueryItems = [URLQueryItem]()
@@ -103,7 +103,7 @@ public class ExpectedSdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withBody(_ value: HttpBody) -> ExpectedSdkHttpRequestBuilder {
+    public func withBody(_ value: ByteStream) -> ExpectedSdkHttpRequestBuilder {
         self.body = value
         return self
     }

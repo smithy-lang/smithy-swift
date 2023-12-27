@@ -2,6 +2,7 @@ package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 interface OperationMiddleware {
     fun appendMiddleware(operation: OperationShape, renderableMiddleware: MiddlewareRenderable)
@@ -12,6 +13,7 @@ interface OperationMiddleware {
     fun clone(): OperationMiddleware
 
     fun renderMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         operation: OperationShape,
         operationStackName: String,

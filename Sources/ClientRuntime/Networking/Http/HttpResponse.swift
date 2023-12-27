@@ -7,16 +7,16 @@ import AwsCommonRuntimeKit
 public class HttpResponse: HttpUrlResponse {
 
     public var headers: Headers
-    public var body: HttpBody
+    public var body: ByteStream
     public var statusCode: HttpStatusCode
 
-    public init(headers: Headers = .init(), statusCode: HttpStatusCode = .processing, body: HttpBody = .none) {
+    public init(headers: Headers = .init(), statusCode: HttpStatusCode = .processing, body: ByteStream = .noStream) {
         self.headers = headers
         self.statusCode = statusCode
         self.body = body
     }
 
-    public init(headers: Headers = .init(), body: HttpBody, statusCode: HttpStatusCode) {
+    public init(headers: Headers = .init(), body: ByteStream, statusCode: HttpStatusCode) {
         self.body = body
         self.statusCode = statusCode
         self.headers = headers

@@ -4,6 +4,10 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
+import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
@@ -19,6 +23,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
@@ -101,19 +106,19 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("  .build()")
             }
             val operationStack = "operationStack"
-            writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol, $outputErrorName>(id: \"${test.id}\")")
+            writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol>(id: \"${test.id}\")")
 
-            operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.INITIALIZESTEP)
-            operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.BUILDSTEP)
-            operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.SERIALIZESTEP)
-            operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.FINALIZESTEP)
-            operationMiddleware.renderMiddleware(writer, operation, operationStack, MiddlewareStep.DESERIALIZESTEP)
+            operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.INITIALIZESTEP)
+            operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.BUILDSTEP)
+            operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.SERIALIZESTEP)
+            operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.FINALIZESTEP)
+            operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.DESERIALIZESTEP)
 
             renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
 
             writer.openBlock("_ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
                 writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
-                writer.write("let httpResponse = HttpResponse(body: .none, statusCode: .badRequest)")
+                writer.write("let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)")
                 writer.write("let serviceError = try await $outputErrorName.makeError(httpResponse: httpResponse, decoder: decoder)")
                 writer.write("throw serviceError")
             }
@@ -138,7 +143,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.write("             middleware: MockDeserializeMiddleware<$outputSymbol, $outputErrorName>(")
         writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
             renderBodyAssert(test, inputSymbol, inputShape)
-            writer.write("let response = HttpResponse(body: HttpBody.none, statusCode: .ok)")
+            writer.write("let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)")
             writer.write("let mockOutput = try await $outputSymbol(httpResponse: response, decoder: nil)")
             writer.write("let output = OperationOutput<$outputSymbol>(httpResponse: response, output: mockOutput)")
             writer.write("return output")
@@ -151,11 +156,13 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 "try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
                 "})"
             ) {
-                writer.write("XCTAssertNotNil(actualHttpBody, \"The actual HttpBody is nil\")")
-                writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected HttpBody is nil\")")
+                writer.write("XCTAssertNotNil(actualHttpBody, \"The actual ByteStream is nil\")")
+                writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected ByteStream is nil\")")
                 val expectedData = "expectedData"
                 val actualData = "actualData"
-                writer.openBlock("try await self.genericAssertEqualHttpBodyData(expectedHttpBody!, actualHttpBody!, encoder) { $expectedData, $actualData in ", "}") {
+                val isXML = ctx.service.hasTrait<RestXmlTrait>()
+                val isJSON = ctx.service.hasTrait<RestJson1Trait>() || ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>()
+                writer.openBlock("try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: \$L, isJSON: \$L) { $expectedData, $actualData in ", "}", isXML, isJSON) {
                     val httpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
 
                     httpPayloadShape?.let {

@@ -14,7 +14,7 @@ public struct MockSerializeStreamMiddleware: Middleware {
     where H: Handler, HttpContext == H.Context,
           SerializeStepInput<MockStreamInput> == H.Input,
           OperationOutput<MockOutput> == H.Output {
-              input.builder.withBody(.init(byteStream: input.operationInput.body))
+              input.builder.withBody(input.operationInput.body)
               return try await next.handle(context: context, input: input)
     }
 

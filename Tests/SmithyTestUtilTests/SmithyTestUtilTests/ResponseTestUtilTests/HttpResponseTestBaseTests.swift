@@ -14,7 +14,7 @@ class HttpResponseTestBaseTests: HttpResponseTestBase {
         let statusCode = 200
         let headers = ["headerKey1": "headerValue1", "headerKey2": "headerValue2"]
         let bodyData = "{\"greeting\": \"Hello There\"}".data(using: .utf8)!
-        let content = HttpBody.data(bodyData)
+        let content = ByteStream.data(bodyData)
 
         guard let httpResponse = buildHttpResponse(code: statusCode, headers: headers, content: content) else {
             XCTFail("Failed to build Http Response")

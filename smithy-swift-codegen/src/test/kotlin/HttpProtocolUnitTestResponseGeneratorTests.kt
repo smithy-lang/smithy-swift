@@ -56,9 +56,9 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual = try await SmokeTestOutputResponse(httpResponse: httpResponse, decoder: decoder)
+        let actual = try await SmokeTestOutput(httpResponse: httpResponse, decoder: decoder)
 
-        let expected = SmokeTestOutputResponse(
+        let expected = SmokeTestOutput(
             boolHeader: false,
             intHeader: 1,
             payload1: "explicit string",
@@ -102,9 +102,9 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual = try await HttpPrefixHeadersOutputResponse(httpResponse: httpResponse)
+        let actual = try await HttpPrefixHeadersOutput(httpResponse: httpResponse)
 
-        let expected = HttpPrefixHeadersOutputResponse(
+        let expected = HttpPrefixHeadersOutput(
             foo: "Foo",
             fooMap: [
                 "abc": "ABC",
@@ -138,9 +138,9 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual = try await HttpPrefixHeadersOutputResponse(httpResponse: httpResponse)
+        let actual = try await HttpPrefixHeadersOutput(httpResponse: httpResponse)
 
-        let expected = HttpPrefixHeadersOutputResponse(
+        let expected = HttpPrefixHeadersOutput(
             foo: "Foo"
         )
 
@@ -179,9 +179,9 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual = try await JsonUnionsOutputResponse(httpResponse: httpResponse, decoder: decoder)
+        let actual = try await JsonUnionsOutput(httpResponse: httpResponse, decoder: decoder)
 
-        let expected = JsonUnionsOutputResponse(
+        let expected = JsonUnionsOutput(
             contents: MyUnion.stringvalue("foo")
 
         )
@@ -230,21 +230,17 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual = try await RecursiveShapesOutputResponse(httpResponse: httpResponse, decoder: decoder)
+        let actual = try await RecursiveShapesOutput(httpResponse: httpResponse, decoder: decoder)
 
-        let expected = RecursiveShapesOutputResponse(
+        let expected = RecursiveShapesOutput(
             nested: RecursiveShapesInputOutputNested1(
                 foo: "Foo1",
-                nested: Box<RecursiveShapesInputOutputNested2>(
-                    value: RecursiveShapesInputOutputNested2(
-                        bar: "Bar1",
-                        recursiveMember: RecursiveShapesInputOutputNested1(
-                            foo: "Foo2",
-                            nested: Box<RecursiveShapesInputOutputNested2>(
-                                value: RecursiveShapesInputOutputNested2(
-                                    bar: "Bar2"
-                                )
-                            )
+                nested: RecursiveShapesInputOutputNested2(
+                    bar: "Bar1",
+                    recursiveMember: RecursiveShapesInputOutputNested1(
+                        foo: "Foo2",
+                        nested: RecursiveShapesInputOutputNested2(
+                            bar: "Bar2"
                         )
                     )
                 )
@@ -254,6 +250,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         XCTAssertEqual(expected.nested, actual.nested)
 
     }
+}
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -288,9 +285,9 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                     let decoder = ClientRuntime.JSONDecoder()
                     decoder.dateDecodingStrategy = .secondsSince1970
                     decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-                    let actual = try await InlineDocumentOutputResponse(httpResponse: httpResponse, decoder: decoder)
+                    let actual = try await InlineDocumentOutput(httpResponse: httpResponse, decoder: decoder)
             
-                    let expected = InlineDocumentOutputResponse(
+                    let expected = InlineDocumentOutput(
                         documentValue: try decoder.decode(Document.self, from:
                             ""${'"'}
                             {
@@ -337,9 +334,9 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                     let decoder = ClientRuntime.JSONDecoder()
                     decoder.dateDecodingStrategy = .secondsSince1970
                     decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-                    let actual = try await InlineDocumentAsPayloadOutputResponse(httpResponse: httpResponse, decoder: decoder)
+                    let actual = try await InlineDocumentAsPayloadOutput(httpResponse: httpResponse, decoder: decoder)
             
-                    let expected = InlineDocumentAsPayloadOutputResponse(
+                    let expected = InlineDocumentAsPayloadOutput(
                         documentValue: try decoder.decode(Document.self, from:
                             ""${'"'}
                             {

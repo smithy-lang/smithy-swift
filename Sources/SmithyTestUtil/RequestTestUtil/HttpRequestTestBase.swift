@@ -31,7 +31,7 @@ open class HttpRequestTestBase: XCTestCase {
                                          queryParams: [String]? = nil,
                                          forbiddenQueryParams: [String]? = nil,
                                          requiredQueryParams: [String]? = nil,
-                                         body: HttpBody?,
+                                         body: ByteStream?,
                                          host: String,
                                          resolvedHost: String?) -> ExpectedSdkHttpRequest {
         let builder = ExpectedSdkHttpRequestBuilder()
@@ -102,7 +102,7 @@ open class HttpRequestTestBase: XCTestCase {
     }
 
     // Per spec, host can contain a path prefix, so this function is used to get only the host
-    // https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#smithy-test-httprequesttests-trait
+    // https://smithy.io/2.0/additional-specs/http-protocol-compliance-tests.html#smithy-test-httprequesttests-trait
     public func hostOnlyFromHost(host: String) -> String? {
         guard !host.isEmpty, let hostOnly = URL(string: "http://\(host)")?.host else {
             return nil
@@ -190,12 +190,12 @@ open class HttpRequestTestBase: XCTestCase {
      Asserts `HttpRequest` objects match
      /// - Parameter expected: Expected `HttpRequest`
      /// - Parameter actual: Actual `HttpRequest` to compare against
-     /// - Parameter assertEqualHttpBody: Close to assert equality of `HttpBody` components
+     /// - Parameter assertEqualHttpBody: Close to assert equality of `ByteStream` components
      */
     public func assertEqual(
         _ expected: ExpectedSdkHttpRequest,
         _ actual: SdkHttpRequest,
-        _ assertEqualHttpBody: ((HttpBody?, HttpBody?) async throws -> Void)? = nil,
+        _ assertEqualHttpBody: ((ByteStream?, ByteStream?) async throws -> Void)? = nil,
         file: StaticString = #filePath,
         line: UInt = #line
     ) async throws {
@@ -215,15 +215,16 @@ open class HttpRequestTestBase: XCTestCase {
 
         assertRequiredQueryItems(expected.requiredQueryItems, actual.queryItems, file: file, line: line)
 
-        // assert the contents of HttpBody match, if no body was on the test, no assertions are to be made about the body
-        // https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#httprequesttests
+        // assert the contents of ByteStream match, if no body was on the test, no assertions are to be made about the body
+        // https://smithy.io/2.0/additional-specs/http-protocol-compliance-tests.html#smithy-test-httprequesttests-trait
         try await assertEqualHttpBody?(expected.body, actual.body)
     }
 
     public func genericAssertEqualHttpBodyData(
-        _ expected: HttpBody,
-        _ actual: HttpBody,
-        _ encoder: Any,
+        expected: ByteStream,
+        actual: ByteStream,
+        isXML: Bool,
+        isJSON: Bool,
         _ callback: (Data, Data) -> Void,
         file: StaticString = #filePath,
         line: UInt = #line
@@ -231,24 +232,24 @@ open class HttpRequestTestBase: XCTestCase {
         let expectedData = try await expected.readData()
         let actualData = try await actual.readData()
         if shouldCompareData(expectedData, actualData) {
-            if encoder is XMLEncoder {
+            if isXML {
                 XCTAssertXMLDataEqual(actualData!, expectedData!, file: file, line: line)
-            } else if encoder is JSONEncoder {
+            } else if isJSON {
                 XCTAssertJSONDataEqual(actualData!, expectedData!, file: file, line: line)
             }
             callback(expectedData!, actualData!)
         }
     }
 
-    private func extractData(_ httpBody: HttpBody) throws -> Result<Data?, Error> {
+    private func extractData(_ httpBody: ByteStream) throws -> Result<Data?, Error> {
         switch httpBody {
         case .data(let actualData):
             return .success(actualData)
         case .stream(let byteStream):
             let data = try byteStream.readToEnd()
             return .success(data)
-        case .none:
-            return .failure(InternalHttpRequestTestBaseError("HttpBody is not Data Type"))
+        case .noStream:
+            return .failure(InternalHttpRequestTestBaseError("ByteStream is not Data Type"))
         }
     }
 
@@ -256,10 +257,10 @@ open class HttpRequestTestBase: XCTestCase {
         if expected == nil && actual == nil {
             return false
         } else if expected != nil && actual == nil {
-            XCTFail("actual data in HttpBody is nil but expected is not")
+            XCTFail("actual data in ByteStream is nil but expected is not")
             return false
         } else if expected == nil && actual != nil {
-            XCTFail("expected data in HttpBody is nil but actual is not")
+            XCTFail("expected data in ByteStream is nil but actual is not")
             return false
         }
         return true
@@ -369,7 +370,7 @@ open class HttpRequestTestBase: XCTestCase {
             )
             XCTAssertTrue(values.contains(expectedQueryItem.value),
                           """
-                          expected query item not found.
+                          expected query item value not found for \"\(expectedQueryItem.name)\".
                           Expected Value: \(expectedQueryItem.value ?? "nil")
                           Actual Values: \(values)
                           """,

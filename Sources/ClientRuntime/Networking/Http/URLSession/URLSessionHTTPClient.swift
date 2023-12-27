@@ -85,7 +85,7 @@ public final class URLSessionHTTPClient: HttpClientEngine {
                 let headers = Headers(httpHeaders: httpHeaders)
                 let responseStream = BufferedStream()
                 connection.responseStream = responseStream
-                let body = HttpBody.stream(responseStream)
+                let body = ByteStream.stream(responseStream)
                 let response = HttpResponse(headers: headers, body: body, statusCode: statusCode)
                 connection.continuation?.resume(returning: response)
                 connection.continuation = nil
@@ -150,7 +150,7 @@ public final class URLSessionHTTPClient: HttpClientEngine {
             case .stream(let stream):
                 requestStream = stream
                 urlRequest = makeURLRequest(from: request, inputStream: bodyStream)
-            case .none:
+            case .noStream:
                 requestStream = BufferedStream(data: nil, isClosed: true)
                 urlRequest = makeURLRequest(from: request, inputStream: nil)
             }
