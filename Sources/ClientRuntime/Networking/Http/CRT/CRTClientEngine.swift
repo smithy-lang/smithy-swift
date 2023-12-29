@@ -294,13 +294,9 @@ public class CRTClientEngine: HttpClientEngine {
                 self.logger.error("Response encountered an error: \(error)")
             }
 
-            do {
-                // closing the stream is required to signal to the caller that the response is complete
-                // and no more data will be received in this stream
-                try stream.close()
-            } catch {
-                self.logger.error("Failed to close stream: \(error)")
-            }
+            // closing the stream is required to signal to the caller that the response is complete
+            // and no more data will be received in this stream
+            stream.close()
         }
 
         requestOptions.http2ManualDataWrites = http2ManualDataWrites

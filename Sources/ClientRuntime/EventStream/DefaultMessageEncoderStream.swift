@@ -119,7 +119,6 @@ extension EventStream {
                 data.append(moreData)
             }
             return data
-//            fatalError("readToEndAsync() is not supported by AsyncStream backed streams")
         }
 
         /// Reads up to `count` bytes from the stream asynchronously

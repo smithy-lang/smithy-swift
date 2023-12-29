@@ -5,7 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+import class Foundation.NSObject
+import class Foundation.Stream
+import class Foundation.InputStream
+import class Foundation.OutputStream
+import class Foundation.Thread
+import class Foundation.RunLoop
+import protocol Foundation.StreamDelegate
 
 class FoundationStreamBridge: NSObject, StreamDelegate {
     /// The `ReadableStream` that will serve as the input to this bridge.
