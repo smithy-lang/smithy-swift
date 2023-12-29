@@ -150,10 +150,7 @@ public class CRTClientEngine: HttpClientEngine {
         self.serialExecutor = SerialExecutor(config: config)
     }
 
-    public func execute(request: SdkHttpRequest, bidirectional: Bool) async throws -> HttpResponse {
-        guard !bidirectional else {
-            return try await executeHTTP2Request(request: request)
-        }
+    public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
 
@@ -207,7 +204,7 @@ public class CRTClientEngine: HttpClientEngine {
 
     // Forces an Http2 request that uses CRT's `HTTP2StreamManager`.
     // This may be removed or improved as part of SRA work and CRT adapting to SRA for HTTP.
-    private func executeHTTP2Request(request: SdkHttpRequest) async throws -> HttpResponse {
+    func executeHTTP2Request(request: SdkHttpRequest) async throws -> HttpResponse {
         let connectionMgr = try await serialExecutor.getOrCreateHTTP2ConnectionPool(endpoint: request.endpoint)
 
         self.logger.debug("Using HTTP/2 connection")
