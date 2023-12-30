@@ -6,6 +6,7 @@
 //
 
 #if os(Linux)
+import Foundation
 import FoundationNetworking
 #else
 import class Foundation.InputStream
@@ -199,13 +200,14 @@ public final class URLSessionHTTPClient: HttpClientEngine {
         return try await withCheckedThrowingContinuation { continuation in
 
             // Get the request stream to use for the body, if any.
-            let requestStream: ReadableStream? = switch request.body {
+            let requestStream: ReadableStream?
+            switch request.body {
             case .data(let data):
-                BufferedStream(data: data, isClosed: true)
+                requestStream = BufferedStream(data: data, isClosed: true)
             case .stream(let stream):
-                stream
+                requestStream = stream
             case .noStream:
-                nil
+                requestStream = nil
             }
 
             // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
@@ -213,7 +215,7 @@ public final class URLSessionHTTPClient: HttpClientEngine {
             let streamBridge = requestStream.map { FoundationStreamBridge(readableStream: $0, bufferSize: 4096) }
 
             // Create the request (with a streaming body when needed.)
-            let urlRequest = makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
+            let urlRequest = self.makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
 
             // Create the data task and associated connection object, then place them in storage.
             let dataTask = session.dataTask(with: urlRequest)

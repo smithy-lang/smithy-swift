@@ -15,7 +15,7 @@ class FoundationStreamBridgeTests: XCTestCase {
         // Our test data may be 100 to 1000 bytes long
         let dataSize = Int.random(in: 100...1000)
 
-        // The buffer may be as small a 4 bytes, up to 1.5x as big as the data
+        // The buffer may be as small as 4 bytes, up to 1.5x as big as the data
         let bufferSize = Int.random(in: 4...1500)
 
         // Fill a data buffer with dataSize random numbers
