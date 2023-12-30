@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-
+import func Foundation.autoreleasepool
 import class Foundation.NSObject
 import class Foundation.Stream
 import class Foundation.InputStream
@@ -13,85 +13,133 @@ import class Foundation.Thread
 import class Foundation.RunLoop
 import protocol Foundation.StreamDelegate
 
+/// Reads data from a smithy-swift native `ReadableStream` and streams the data to a Foundation `InputStream`.
+///
+/// Used to permit SDK streaming request bodies to be used with `URLSession`-based HTTP requests.
 class FoundationStreamBridge: NSObject, StreamDelegate {
+
+    /// The max number of bytes to buffer internally (and transfer) at any given time.
+    let bufferSize: Int
+
+    /// A buffer to hold data that has been read from the ReadableStream but not yet written to the OutputStream.
+    private var buffer: Data
+
     /// The `ReadableStream` that will serve as the input to this bridge.
     /// The bridge will read bytes from this stream and dump them to the Foundation stream
     /// pair  as they become available.
     let readableStream: ReadableStream
 
-    /// The max number of bytes to buffer internally (and transfer) at any given time.
-    let bufferSize: Int
-
     /// A Foundation stream that will carry the bytes read from the readableStream as they become available.
-    let foundationInputStream: InputStream
+    let inputStream: InputStream
 
-    private let foundationOutputStream: OutputStream
-    private var buffer: Data
-    private var thread: Thread?
+    /// A Foundation `OutputStream` that will read from the `ReadableStream`
+    private let outputStream: OutputStream
+
+    /// `true` if the readable stream has been found to be empty, `false` otherwise.  Will flip to `true` if the readable stream is read,
+    /// and `nil` is returned.
+    private var readableStreamEmpty = false
+
+    /// Foundation Streams require a run loop on which to post callbacks for their delegates.
+    /// A single shared `Thread` is started and is used to host the RunLoop for all Foundation Stream callbacks.
+    private static let thread: Thread = {
+        let thread = Thread { autoreleasepool { RunLoop.current.run() } }
+        thread.name = "StreamBridgeRunLoop"
+        thread.start()
+        return thread
+    }()
 
     // MARK: - init & deinit
 
-    init(readableStream: ReadableStream, bufferSize: Int = 1024) {
-        self.readableStream = readableStream
-        self.bufferSize = bufferSize
+    /// Creates a stream bridge taking the passed `ReadableStream` as its input
+    ///
+    /// Data will be buffered in an internal, in-memory buffer.  The Foundation `InputStream` that exposes `readableStream`
+    /// is exposed by the `inputStream` property after creation.
+    /// - Parameters:
+    ///   - readableStream: The `ReadableStream` that serves as the input to the bridge.
+    ///   - bufferSize: The number of bytes in the in-memory buffer.  The buffer is allocated for this size no matter if in use or not.
+    ///   Defaults to 4096 bytes.
+    init(readableStream: ReadableStream, bufferSize: Int = 4096) {
         var inputStream: InputStream?
         var outputStream: OutputStream?
+
+        // Create a "bound stream pair" of Foundation streams.
+        // Data written into the output stream will automatically flow to the inputStream for reading.
+        // The bound streams have a buffer between them of size equal to the buffer held by this bridge.
         Foundation.Stream.getBoundStreams(
             withBufferSize: bufferSize, inputStream: &inputStream, outputStream: &outputStream
         )
         guard let inputStream, let outputStream else {
+            // Fail with fatalError since this is not a failure that would happen in normal operation.
             fatalError("Get pair of bound streams failed.  Please file a bug with AWS SDK for Swift to report.")
         }
-        self.foundationInputStream = inputStream
-        self.foundationOutputStream = outputStream
+        self.bufferSize = bufferSize
         self.buffer = Data(capacity: bufferSize)
+        self.readableStream = readableStream
+        self.inputStream = inputStream
+        self.outputStream = outputStream
     }
 
     // MARK: - Opening & closing
 
+    /// Schedule the output stream on the special thread reserved for stream callbacks
     func open() {
-        thread = Thread(block: {
-            self.foundationOutputStream.delegate = self
-            self.foundationOutputStream.schedule(in: RunLoop.current, forMode: .default)
-            self.foundationOutputStream.open()
-            RunLoop.current.run()
-        })
-        thread?.start()
+        perform(#selector(scheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
     }
 
+    /// Configure the output stream to make StreamDelegate callback to this bridge using the special thread / run loop, and open the output stream.
+    /// The input stream is not included here.  It will be configured by URLSession when the HTTP request is initiated.
+    @objc private func scheduleOnThread() {
+        outputStream.delegate = self
+        outputStream.schedule(in: RunLoop.current, forMode: .default)
+        outputStream.open()
+    }
+
+    /// Unschedule the output stream.  Unscheduling must be performed on the special stream callback thread.
     func close() {
-        foundationOutputStream.close()
-        foundationInputStream.close()
-        thread?.cancel()
-        thread = nil
+        perform(#selector(unscheduleFromThread), on: Self.thread, with: nil, waitUntilDone: false)
+    }
+
+    /// Close the output stream and remove it from the thread / run loop.
+    @objc private func unscheduleFromThread() {
+        outputStream.close()
+        outputStream.delegate = nil
+        outputStream.remove(from: RunLoop.current, forMode: .default)
+    }
+
+    // MARK: - Status
+
+    /// `true` when the bridge has no more data, nor will it ever.
+    var exhausted: Bool {
+        readableStreamEmpty && buffer.isEmpty
     }
 
     // MARK: - Writing to bridge
 
-    private func writeToOutput() async throws {
-        let data = try await readableStream.readAsync(upToCount: bufferSize - buffer.count)
-        guard let data = data else {
-            foundationOutputStream.close()
-            thread?.cancel()
-            return
+    /// Tries to read from the readable stream if possible, then transfer the data to the output stream.
+    func writeToOutput() async throws {
+        if !readableStreamEmpty, let data = try await readableStream.readAsync(upToCount: bufferSize - buffer.count) {
+            buffer.append(data)
+        } else {
+            readableStreamEmpty = true
+            outputStream.close()
         }
-        buffer.append(data)
-        guard !buffer.isEmpty else { return }
+        var result = 0
         buffer.withUnsafeBytes { bufferPtr in
             let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress!
-            let result = foundationOutputStream.write(bytePtr, maxLength: buffer.count)
-            if result > 0 {
-                print("OUTPUTSTREAMBRIDGE WROTE \(result) BYTES")
-                buffer.removeFirst(result)
-            }
+            result = outputStream.write(bytePtr, maxLength: buffer.count)
         }
+        if result > 0 { buffer.removeFirst(result) }
     }
 
     // MARK: - StreamDelegate protocol
 
+    /// The stream places this callback when appropriate.  Call will be delivered on the special thread / run loop for stream callbacks.
     @objc func stream(_ aStream: Foundation.Stream, handle eventCode: Foundation.Stream.Event) {
         switch eventCode {
         case .hasSpaceAvailable:
+            // Since space is available, try and read from the ReadableStream and
+            // transfer the data to the Foundation stream pair.
+            // Use a `Task` to perform the operation within Swift concurrency.
             Task { try await writeToOutput() }
         default:
             break

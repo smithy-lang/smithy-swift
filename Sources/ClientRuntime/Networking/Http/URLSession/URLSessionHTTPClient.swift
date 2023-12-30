@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if os(Linux)
+import FoundationNetworking
+#else
 import class Foundation.InputStream
 import class Foundation.NSObject
 import class Foundation.NSRecursiveLock
@@ -17,8 +20,18 @@ import class Foundation.URLSession
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
+#endif
 import AwsCommonRuntimeKit
 
+/// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
+///
+/// This client is usable on all Swift platforms that support the URLSession library.
+///
+/// Use of this client is recommended on all Apple platforms, and is required on Apple Watch ( see
+/// [TN3135: Low-level networking on watchOS](https://developer.apple.com/documentation/technotes/tn3135-low-level-networking-on-watchos)
+/// for details about allowable modes of networking on the Apple Watch platform.)
+///
+/// On Linux platforms, we recommend using the CRT-based HTTP client for its configurability and performance.
 public final class URLSessionHTTPClient: HttpClientEngine {
 
     /// Holds a connection's associated resources from the time the connection is executed to when it completes.
@@ -45,7 +58,6 @@ public final class URLSessionHTTPClient: HttpClientEngine {
         /// A response stream that streams the response back to the caller.  Data is buffered in-memory until read by the caller.
         let responseStream = BufferedStream()
 
-        
         /// Creates a new connection object
         /// - Parameters:
         ///   - streamBridge: The `FoundationStreamBridge` for the connection.
@@ -59,20 +71,20 @@ public final class URLSessionHTTPClient: HttpClientEngine {
     /// Provides thread-safe associative storage of `Connection`s keyed by their `URLSessionDataTask`.
     final class Storage: @unchecked Sendable {
 
-        /// Lock used to enforce exclusive access to this Storage object.
+        /// Lock used to enforce exclusive access to this `Storage` object.
         private let lock = NSRecursiveLock()
 
-        /// Connections, keyed by the URLSessionTask associated with them.
+        /// A dictionary of `Connection`s, keyed by the `URLSessionTask` associated with them.
         private var connections = [URLSessionTask: Connection]()
 
-        /// Adds a connection to the storage, keyed by its URLSessionTask.
+        /// Adds a connection to the storage, keyed by its `URLSessionTask`.
         func set(_ connection: Connection, for key: URLSessionTask) {
             lock.lock()
             defer { lock.unlock() }
             connections[key] = connection
         }
 
-        /// Allows modification of the
+        /// Allows modification of a `Connection` while holding exclusive access to it.
         ///
         /// Do not keep a reference to the connection outside the scope of `block`, or modify the connection after `block` returns.
         func modify(_ key: URLSessionTask, block: (Connection) -> Void) {
@@ -99,7 +111,9 @@ public final class URLSessionHTTPClient: HttpClientEngine {
             self.logger = logger
         }
 
-        func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse) async -> URLSession.ResponseDisposition {
+        func urlSession(
+            _ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse
+        ) async -> URLSession.ResponseDisposition {
             logger.debug("urlSession(_:dataTask:didReceive:) called")
             storage.modify(dataTask) { connection in
                 guard let httpResponse = response as? HTTPURLResponse else {
@@ -160,14 +174,31 @@ public final class URLSessionHTTPClient: HttpClientEngine {
     private let delegate: SessionDelegate
     private var logger: LogAgent
 
+    // MARK: - init & deinit
+
+    /// Creates a new `URLSessionHTTPClient`.
+    ///
+    /// The client is created with its own internal `URLSession`, which is configured with system defaults and with a private delegate for handling
+    /// URL task lifecycle events.
     public init() {
         self.logger = SwiftLogger(label: "URLSessionHTTPClient")
         self.delegate = SessionDelegate(logger: logger)
         self.session = URLSession(configuration: .default, delegate: self.delegate, delegateQueue: nil)
     }
 
+    // MARK: - HttpClientEngine protocol
+
+    /// Executes the passed HTTP request using Foundation's `URLSession` HTTP client.
+    ///
+    /// The request is converted to a `URLRequest`, and (if required) the streaming body is bridged to a Foundation `InputStream` and streamed to
+    /// the remote server.
+    /// - Parameter request: The request to be submitted to the server.  Fields must be filled in sufficiently to form a valid URL.
+    /// - Returns: The response to the request.  This call may return as soon as a complete response is received but before the body finishes streaming;
+    /// the response body will continue to stream back to the caller.
     public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
         return try await withCheckedThrowingContinuation { continuation in
+
+            // Get the request stream to use for the body, if any.
             let requestStream: ReadableStream? = switch request.body {
             case .data(let data):
                 BufferedStream(data: data, isClosed: true)
@@ -176,14 +207,26 @@ public final class URLSessionHTTPClient: HttpClientEngine {
             case .noStream:
                 nil
             }
-            let streamBridge = requestStream.map { FoundationStreamBridge(readableStream: $0) }
-            let urlRequest = makeURLRequest(from: request, httpBodyStream: streamBridge?.foundationInputStream)
+
+            // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
+            // that URLSession can stream its request body from.
+            let streamBridge = requestStream.map { FoundationStreamBridge(readableStream: $0, bufferSize: 4096) }
+
+            // Create the request (with a streaming body when needed.)
+            let urlRequest = makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
+
+            // Create the data task and associated connection object, then place them in storage.
             let dataTask = session.dataTask(with: urlRequest)
-            delegate.storage.set(Connection(streamBridge: streamBridge, continuation: continuation), for: dataTask)
+            let connection = Connection(streamBridge: streamBridge, continuation: continuation)
+            delegate.storage.set(connection, for: dataTask)
+
+            // Start the HTTP connection and start streaming the request body data
             dataTask.resume()
             streamBridge?.open()
         }
     }
+
+    // MARK: - Private methods
 
     private func makeURLRequest(from request: SdkHttpRequest, httpBodyStream: InputStream?) -> URLRequest {
         var components = URLComponents()
@@ -211,6 +254,5 @@ public final class URLSessionHTTPClient: HttpClientEngine {
 /// Errors that are particular to the URLSession-based AWS HTTP client.
 /// Please file a bug with aws-sdk-swift if you experience any of these errors.
 public enum URLSessionHTTPClientError: Error {
-    case FoundationStreamError
     case responseNotHTTP
 }
