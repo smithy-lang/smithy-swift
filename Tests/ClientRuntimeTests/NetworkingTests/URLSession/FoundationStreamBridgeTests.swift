@@ -15,7 +15,7 @@ class FoundationStreamBridgeTests: XCTestCase {
 
     func test_open_streamsAllDataToOutputBuffer() async throws {
 
-        for n in (1...10000) {
+        for n in (1...10_000) {
             // Our test data may be 100 to 1000 bytes long
             let dataSize = Int.random(in: 100...1000)
 
@@ -34,25 +34,24 @@ class FoundationStreamBridgeTests: XCTestCase {
             var bridgedData = Data()
 
             // Create a temp buffer we can use to copy the input stream bytes
-            var temp = Data(count: bufferSize)
+            let temp = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
 
             // Open the input stream & read it to exhaustion
             subject.inputStream.open()
             while !subject.exhausted || subject.inputStream.hasBytesAvailable {
-                temp.withUnsafeMutableBytes { bufferPtr in
-                    let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress!
-
-                    // Copy the input stream to the temp buffer.  When count is positive,
-                    // bytes were read
-                    let count = subject.inputStream.read(bytePtr, maxLength: bufferSize)
-                    if count > 0 {
-                        // Add the read bytes onto the bridged data
-                        bridgedData.append(bytePtr, count: count)
-                    }
+                // Copy the input stream to the temp buffer.  When count is positive,
+                // bytes were read
+                let count = subject.inputStream.read(temp, maxLength: bufferSize)
+                if count > 0 {
+                    // Add the read bytes onto the bridged data
+                    bridgedData.append(temp, count: count)
                 }
             }
             // Once the subject is exhausted, all data should have been bridged and the subject may be closed
             await subject.close()
+
+            // Dispose of the temp buffer
+            temp.deallocate()
 
 //            XCTAssertEqual(bridgedData, originalData)
 //            if bridgedData != originalData {

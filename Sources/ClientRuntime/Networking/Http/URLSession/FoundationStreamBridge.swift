@@ -123,39 +123,62 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// Tries to read from the readable stream if possible, then transfer the data to the output stream.
     private func writeToOutput() async throws {
-        if !readableStreamEmpty, let data = try await readableStream.readAsync(upToCount: bufferSize - buffer.count) {
-            buffer.append(data)
+        var data = Data()
+        if !readableStreamEmpty, let newData = try await readableStream.readAsync(upToCount: bufferSize - bufferCount) {
+            data = newData
         } else {
             readableStreamEmpty = true
             await close()
         }
-        let result = await writeToOutputStream()
-        if result.count > 0 {
-            buffer.removeFirst(result.count)
-        } else if result.count < 0, let error = result.error {
+        let result = await writeToOutputStream(data: data)
+        if let error = result.error {
             throw error
         }
     }
 
     private class StreamWriteResult: NSObject {
-        var count = 0
+        var data = Data()
         var error: Error? = nil
     }
 
-    private func writeToOutputStream() async -> StreamWriteResult {
+    private func writeToOutputStream(data: Data) async -> StreamWriteResult {
         await withCheckedContinuation { continuation in
             let result = StreamWriteResult()
+            result.data = data
             perform(#selector(writeToOutputStreamOnThread), on: Self.thread, with: result, waitUntilDone: true)
             continuation.resume(returning: result)
         }
     }
 
     @objc private func writeToOutputStreamOnThread(_ result: StreamWriteResult) {
+        buffer.append(result.data)
+        var count = 0
         buffer.withUnsafeBytes { bufferPtr in
             let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress!
-            result.count = outputStream.write(bytePtr, maxLength: buffer.count)
+            count = outputStream.write(bytePtr, maxLength: buffer.count)
+        }
+        if count > 0 {
+            buffer.removeFirst(count)
         }
         result.error = outputStream.streamError
+    }
+
+    private var bufferCount: Int {
+        get async {
+            await withCheckedContinuation { continuation in
+                let bc = BufferCountResult()
+                perform(#selector(bufferCountOnThread(_:)), on: Self.thread, with: bc, waitUntilDone: true)
+                continuation.resume(returning: bc.count)
+            }
+        }
+    }
+
+    @objc private func bufferCountOnThread(_ bc: BufferCountResult) {
+        bc.count = buffer.count
+    }
+
+    class BufferCountResult: NSObject {
+        var count = 0
     }
 
     // MARK: - StreamDelegate protocol
