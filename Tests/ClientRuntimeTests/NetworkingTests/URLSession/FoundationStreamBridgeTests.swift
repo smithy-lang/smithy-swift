@@ -27,7 +27,7 @@ class FoundationStreamBridgeTests: XCTestCase {
             let bufferSize = Int.random(in: 4...1500)
 
             // Fill a data buffer with dataSize random numbers
-            let originalData = Data((0...dataSize).map { _ in UInt8.random(in: UInt8.min...UInt8.max) })
+            let originalData = Data((0..<dataSize).map { _ in UInt8.random(in: UInt8.min...UInt8.max) })
 
             // Create a stream bridge with our original data & open it
             let bufferedStream = BufferedStream(data: originalData, isClosed: true)
@@ -44,7 +44,7 @@ class FoundationStreamBridgeTests: XCTestCase {
 
             // Open the input stream & read it to exhaustion
             subject.inputStream.open()
-            while !subject.exhausted || subject.inputStream.hasBytesAvailable {
+            while await !subject.exhausted || subject.inputStream.hasBytesAvailable {
                 // Copy the input stream to the temp buffer.  When count is positive,
                 // bytes were read
                 let count = subject.inputStream.read(temp, maxLength: bufferSize)

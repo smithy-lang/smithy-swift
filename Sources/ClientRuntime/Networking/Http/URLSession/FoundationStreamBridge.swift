@@ -43,6 +43,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// and `nil` is returned.
     private var readableStreamEmpty = false
 
+    /// A serial DispatchQueue to run the `perform`-on-thread operations.
     private static let queue = DispatchQueue(label: "AWSFoundationStreamBridge")
 
     /// Foundation Streams require a run loop on which to post callbacks for their delegates.
@@ -115,11 +116,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
     }
 
-    /// Close the output stream and remove it from the thread / run loop.
+    /// Close the output stream and it removes itself from the thread / run loop.
     @objc private func unscheduleOnThread() {
         outputStream.close()
         outputStream.delegate = nil
-        outputStream.remove(from: RunLoop.current, forMode: .default)
     }
 
     // MARK: - Status
@@ -128,7 +128,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     ///
     /// The `inputStream` may still have remaining data, however.
     var exhausted: Bool {
-        readableStreamEmpty && buffer.isEmpty
+        get async {
+            let bufferEmpty = await bufferCount == 0
+            return readableStreamEmpty && bufferEmpty
+        }
     }
 
     // MARK: - Writing to bridge
