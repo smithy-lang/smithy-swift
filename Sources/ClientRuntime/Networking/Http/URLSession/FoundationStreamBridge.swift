@@ -43,7 +43,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// and `nil` is returned.
     private var readableStreamEmpty = false
 
-    /// A serial DispatchQueue to run the `perform`-on-thread operations.
+    /// A shared serial DispatchQueue to run the `perform`-on-thread operations.
     private static let queue = DispatchQueue(label: "AWSFoundationStreamBridge")
 
     /// Foundation Streams require a run loop on which to post callbacks for their delegates.

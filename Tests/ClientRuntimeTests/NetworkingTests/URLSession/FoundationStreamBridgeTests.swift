@@ -56,6 +56,9 @@ class FoundationStreamBridgeTests: XCTestCase {
             // Once the subject is exhausted, all data should have been bridged and the subject may be closed
             await subject.close()
 
+            // Close the inputStream as well
+            subject.inputStream.close()
+
             // Verify data was all bridged
             XCTAssertEqual(bridgedData, originalData, "Run \(run) failed (dataSize: \(dataSize), bufferSize: \(bufferSize)")
         }
