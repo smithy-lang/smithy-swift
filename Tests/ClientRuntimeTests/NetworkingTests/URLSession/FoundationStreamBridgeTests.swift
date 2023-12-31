@@ -19,6 +19,8 @@ class FoundationStreamBridgeTests: XCTestCase {
         // not readily reproducible causes, so run this test repeatedly to help uncover
         // problems
         for run in 1...10_000 {
+            print("")
+            print("Run \(run)")
 
             // Our test data may be 100 to 1000 bytes long
             let dataSize = Int.random(in: 100...1000)
@@ -44,16 +46,23 @@ class FoundationStreamBridgeTests: XCTestCase {
 
             // Open the input stream & read it to exhaustion
             subject.inputStream.open()
+            print("Opened input stream")
             while ![.atEnd, .error].contains(subject.inputStream.streamStatus) {
                 // Copy the input stream to the temp buffer.  When count is positive, bytes were read
                 let count = subject.inputStream.read(temp, maxLength: bufferSize)
+                print("Read from input stream")
                 if count > 0 {
                     // Add the read bytes onto the bridged data
                     bridgedData.append(temp, count: count)
+                    print("Added to bridged data")
+                } else if count < 0 {
+                    print("Stream error")
+                    XCTAssertNil(subject.inputStream.streamError)
                 }
             }
             // Once the subject is exhausted, all data should have been bridged and the subject may be closed
             await subject.close()
+            print("Closed subject")
 
             // Close the inputStream as well
             subject.inputStream.close()

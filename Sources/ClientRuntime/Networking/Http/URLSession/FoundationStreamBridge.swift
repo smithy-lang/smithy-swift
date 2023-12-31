@@ -91,16 +91,16 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Schedule the output stream on the special thread reserved for stream callbacks
     func open() async {
         await withCheckedContinuation { continuation in
-            Self.queue.async {
-                self.perform(#selector(self.scheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
-            }
+//            Self.queue.async {
+                self.perform(#selector(self.openOnThread), on: Self.thread, with: nil, waitUntilDone: false)
+//            }
             continuation.resume()
         }
     }
 
     /// Configure the output stream to make StreamDelegate callback to this bridge using the special thread / run loop, and open the output stream.
     /// The input stream is not included here.  It will be configured by URLSession when the HTTP request is initiated.
-    @objc private func scheduleOnThread() {
+    @objc private func openOnThread() {
         outputStream.delegate = self
         outputStream.schedule(in: RunLoop.current, forMode: .default)
         outputStream.open()
@@ -109,30 +109,18 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Unschedule the output stream.  Unscheduling must be performed on the special stream callback thread.
     func close() async {
         await withCheckedContinuation { continuation in
-            Self.queue.async {
-                self.perform(#selector(self.unscheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
-            }
+//            Self.queue.async {
+                self.perform(#selector(self.closeOnThread), on: Self.thread, with: nil, waitUntilDone: false)
+//            }
             continuation.resume()
         }
     }
 
     /// Close the output stream and it removes itself from the thread / run loop.
-    @objc private func unscheduleOnThread() {
+    @objc private func closeOnThread() {
         outputStream.close()
         outputStream.remove(from: RunLoop.current, forMode: .default)
         outputStream.delegate = nil
-    }
-
-    // MARK: - Status
-
-    /// `true` when the bridge has no more data, nor will it ever.
-    ///
-    /// The `inputStream` may still have remaining data, however.
-    var exhausted: Bool {
-        get async {
-            let bufferEmpty = await bufferCount == 0
-            return readableStreamEmpty && bufferEmpty
-        }
     }
 
     // MARK: - Writing to bridge
@@ -140,11 +128,13 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Tries to read from the readable stream if possible, then transfer the data to the output stream.
     private func writeToOutput() async throws {
         var data = Data()
-        if !readableStreamEmpty, let newData = try await readableStream.readAsync(upToCount: bufferSize - bufferCount) {
-            data = newData
-        } else {
-            readableStreamEmpty = true
-            await close()
+        if !readableStreamEmpty {
+            if let newData = try await readableStream.readAsync(upToCount: bufferSize - bufferCount) {
+                data = newData
+            } else {
+                readableStreamEmpty = true
+                await close()
+            }
         }
         try await writeToOutputStream(data: data)
     }
@@ -156,7 +146,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     private func writeToOutputStream(data: Data) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            Self.queue.async {
+//            Self.queue.async {
                 let result = WriteToOutputStreamResult()
                 result.data = data
                 self.perform(#selector(self.writeToOutputStreamOnThread), on: Self.thread, with: result, waitUntilDone: true)
@@ -165,11 +155,12 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                 } else {
                     continuation.resume()
                 }
-            }
+//            }
         }
     }
 
     @objc private func writeToOutputStreamOnThread(_ result: WriteToOutputStreamResult) {
+        guard !buffer.isEmpty || !result.data.isEmpty else { return }
         buffer.append(result.data)
         var writeCount = 0
         buffer.withUnsafeBytes { bufferPtr in
@@ -189,11 +180,11 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     private var bufferCount: Int {
         get async {
             await withCheckedContinuation { continuation in
-                Self.queue.async {
+//                Self.queue.async {
                     let bc = BufferCountResult()
                     self.perform(#selector(self.bufferCountOnThread(_:)), on: Self.thread, with: bc, waitUntilDone: true)
                     continuation.resume(returning: bc.count)
-                }
+//                }
             }
         }
     }
