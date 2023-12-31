@@ -100,13 +100,13 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Unschedule the output stream.  Unscheduling must be performed on the special stream callback thread.
     func close() async {
         await withCheckedContinuation { continuation in
-            perform(#selector(unscheduleFromThread), on: Self.thread, with: nil, waitUntilDone: false)
+            perform(#selector(unscheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
             continuation.resume()
         }
     }
 
     /// Close the output stream and remove it from the thread / run loop.
-    @objc private func unscheduleFromThread() {
+    @objc private func unscheduleOnThread() {
         outputStream.close()
         outputStream.delegate = nil
         outputStream.remove(from: RunLoop.current, forMode: .default)
@@ -130,30 +130,32 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             await close()
         }
         let result = await writeToOutputStream()
-        if result > 0 {
-            buffer.removeFirst(result)
-        } else if result < 0, let error = outputStream.streamError {
+        if result.count > 0 {
+            buffer.removeFirst(result.count)
+        } else if result.count < 0, let error = result.error {
             throw error
         }
     }
 
-    private class Result: NSObject {
-        var value = 0
+    private class StreamWriteResult: NSObject {
+        var count = 0
+        var error: Error? = nil
     }
 
-    private func writeToOutputStream() async -> Int {
+    private func writeToOutputStream() async -> StreamWriteResult {
         await withCheckedContinuation { continuation in
-            let result = Result()
+            let result = StreamWriteResult()
             perform(#selector(writeToOutputStreamOnThread), on: Self.thread, with: result, waitUntilDone: true)
-            continuation.resume(returning: result.value)
+            continuation.resume(returning: result)
         }
     }
 
-    @objc private func writeToOutputStreamOnThread(_ result: Result) {
+    @objc private func writeToOutputStreamOnThread(_ result: StreamWriteResult) {
         buffer.withUnsafeBytes { bufferPtr in
             let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress!
-            result.value = outputStream.write(bytePtr, maxLength: buffer.count)
+            result.count = outputStream.write(bytePtr, maxLength: buffer.count)
         }
+        result.error = outputStream.streamError
     }
 
     // MARK: - StreamDelegate protocol

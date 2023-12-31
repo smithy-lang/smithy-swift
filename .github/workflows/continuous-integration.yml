@@ -89,6 +89,7 @@ jobs:
       - name: Build & Run smithy-swift Kotlin Unit Tests
         run: ./gradlew build
       - name: Build & Run smithy-swift Swift Unit Tests
+        timeout-minutes: 15
         run: |
           set -o pipefail && \
           NSUnbufferedIO=YES xcodebuild \
