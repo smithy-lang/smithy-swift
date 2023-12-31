@@ -43,13 +43,13 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// and `nil` is returned.
     private var readableStreamEmpty = false
 
-    private static let queue = DispatchQueue(label: "FoundationStreamBridge")
+    private static let queue = DispatchQueue(label: "AWSFoundationStreamBridge")
 
     /// Foundation Streams require a run loop on which to post callbacks for their delegates.
     /// A single shared `Thread` is started and is used to host the RunLoop for all Foundation Stream callbacks.
     private static let thread: Thread = {
         let thread = Thread { autoreleasepool { RunLoop.current.run() } }
-        thread.name = "AWSStreamBridgeRunLoop"
+        thread.name = "AWSFoundationStreamBridge"
         thread.start()
         return thread
     }()
@@ -76,7 +76,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         )
         guard let inputStream, let outputStream else {
             // Fail with fatalError since this is not a failure that would happen in normal operation.
-            fatalError("Get pair of bound streams failed.  Please file a bug with AWS SDK for Swift to report.")
+            fatalError("Get pair of bound streams failed.  Please file a bug with AWS SDK for Swift.")
         }
         self.bufferSize = bufferSize
         self.buffer = Data(capacity: bufferSize)
@@ -145,7 +145,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         try await writeToOutputStream(data: data)
     }
 
-    private class StreamWriteResult: NSObject {
+    private class WriteToOutputStreamResult: NSObject {
         var data = Data()
         var error: Error?
     }
@@ -153,7 +153,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     private func writeToOutputStream(data: Data) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             Self.queue.async {
-                let result = StreamWriteResult()
+                let result = WriteToOutputStreamResult()
                 result.data = data
                 self.perform(#selector(self.writeToOutputStreamOnThread), on: Self.thread, with: result, waitUntilDone: true)
                 if let error = result.error {
@@ -165,7 +165,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
     }
 
-    @objc private func writeToOutputStreamOnThread(_ result: StreamWriteResult) {
+    @objc private func writeToOutputStreamOnThread(_ result: WriteToOutputStreamResult) {
         buffer.append(result.data)
         var writeCount = 0
         buffer.withUnsafeBytes { bufferPtr in
@@ -194,8 +194,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
     }
 
-    @objc private func bufferCountOnThread(_ bc: BufferCountResult) {
-        bc.count = buffer.count
+    @objc private func bufferCountOnThread(_ result: BufferCountResult) {
+        result.count = buffer.count
     }
 
     // MARK: - StreamDelegate protocol

@@ -15,11 +15,15 @@ class FoundationStreamBridgeTests: XCTestCase {
 
     func test_open_streamsAllDataToOutputBuffer() async throws {
 
-        for _ in 1...10_000 {
+        // FoundationStreamBridge is susceptible to spurious bugs due to data races & other
+        // not readily reproducible causes, so run this test repeatedly to help uncover
+        // problems
+        for run in 1...10_000 {
+
             // Our test data may be 100 to 1000 bytes long
             let dataSize = Int.random(in: 100...1000)
 
-            // The buffer may be as small as 4 bytes, up to 1.5x as big as the data
+            // The buffer may be as small as 4 bytes, up to 1.5x as big as the max data size
             let bufferSize = Int.random(in: 4...1500)
 
             // Fill a data buffer with dataSize random numbers
@@ -53,7 +57,7 @@ class FoundationStreamBridgeTests: XCTestCase {
             await subject.close()
 
             // Verify data was all bridged
-            XCTAssertEqual(bridgedData, originalData)
+            XCTAssertEqual(bridgedData, originalData, "Run \(run) failed (dataSize: \(dataSize), bufferSize: \(bufferSize)")
         }
     }
 }
