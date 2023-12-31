@@ -124,18 +124,27 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             buffer.append(data)
         } else {
             readableStreamEmpty = true
-            outputStream.close()
+            close()
         }
-        var result = 0
-        buffer.withUnsafeBytes { bufferPtr in
-            let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress!
-            result = outputStream.write(bytePtr, maxLength: buffer.count)
-        }
+        let r = Result()
+        perform(#selector(writeToOutputStream), on: Self.thread, with: r, waitUntilDone: true)
+        let result = r.result
         if result > 0 {
             buffer.removeFirst(result)
             print("Wrote \(result) bytes to output stream")
         } else if result < 0, let error = outputStream.streamError {
             throw error
+        }
+    }
+
+    class Result: NSObject {
+        var result = 0
+    }
+
+    @objc func writeToOutputStream(_ r: Result) {
+        buffer.withUnsafeBytes { bufferPtr in
+            let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress!
+            r.result = outputStream.write(bytePtr, maxLength: buffer.count)
         }
     }
 
