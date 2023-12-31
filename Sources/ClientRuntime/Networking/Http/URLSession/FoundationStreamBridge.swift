@@ -43,6 +43,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// and `nil` is returned.
     private var readableStreamEmpty = false
 
+    private static let queue = DispatchQueue(label: "FoundationStreamBridge")
+
     /// Foundation Streams require a run loop on which to post callbacks for their delegates.
     /// A single shared `Thread` is started and is used to host the RunLoop for all Foundation Stream callbacks.
     private static let thread: Thread = {
@@ -88,8 +90,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Schedule the output stream on the special thread reserved for stream callbacks
     func open() async {
         await withCheckedContinuation { continuation in
-            DispatchQueue.global().async {
-                self.perform(#selector(self.scheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
+            Self.queue.async {
+                self.perform(#selector(self.scheduleOnThread), on: Self.thread, with: nil, waitUntilDone: true)
                 continuation.resume()
             }
         }
@@ -106,8 +108,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Unschedule the output stream.  Unscheduling must be performed on the special stream callback thread.
     func close() async {
         await withCheckedContinuation { continuation in
-            DispatchQueue.global().async {
-                self.perform(#selector(self.unscheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
+            Self.queue.async {
+                self.perform(#selector(self.unscheduleOnThread), on: Self.thread, with: nil, waitUntilDone: true)
                 continuation.resume()
             }
         }
@@ -123,6 +125,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     // MARK: - Status
 
     /// `true` when the bridge has no more data, nor will it ever.
+    ///
+    /// The `inputStream` may still have remaining data, however.
     var exhausted: Bool {
         readableStreamEmpty && buffer.isEmpty
     }
@@ -148,7 +152,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     private func writeToOutputStream(data: Data) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            DispatchQueue.global().async {
+            Self.queue.async {
                 let result = StreamWriteResult()
                 result.data = data
                 self.perform(#selector(self.writeToOutputStreamOnThread), on: Self.thread, with: result, waitUntilDone: true)
@@ -181,7 +185,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     private var bufferCount: Int {
         get async {
             await withCheckedContinuation { continuation in
-                DispatchQueue.global().async {
+                Self.queue.async {
                     let bc = BufferCountResult()
                     self.perform(#selector(self.bufferCountOnThread(_:)), on: Self.thread, with: bc, waitUntilDone: true)
                     continuation.resume(returning: bc.count)

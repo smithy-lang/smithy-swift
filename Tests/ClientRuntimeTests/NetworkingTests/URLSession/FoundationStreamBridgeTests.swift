@@ -15,7 +15,7 @@ class FoundationStreamBridgeTests: XCTestCase {
 
     func test_open_streamsAllDataToOutputBuffer() async throws {
 
-        for n in (1...10_000) {
+        for _ in 1...10_000 {
             // Our test data may be 100 to 1000 bytes long
             let dataSize = Int.random(in: 100...1000)
 
@@ -54,7 +54,6 @@ class FoundationStreamBridgeTests: XCTestCase {
 
             // Verify data was all bridged
             XCTAssertEqual(bridgedData, originalData)
-            print("--- run \(n) done ---")
         }
     }
 }
