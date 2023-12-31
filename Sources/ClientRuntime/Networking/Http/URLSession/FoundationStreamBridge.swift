@@ -7,6 +7,7 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
+import class Foundation.DispatchQueue
 import func Foundation.autoreleasepool
 import class Foundation.NSObject
 import class Foundation.Stream
@@ -87,8 +88,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Schedule the output stream on the special thread reserved for stream callbacks
     func open() async {
         await withCheckedContinuation { continuation in
-            perform(#selector(scheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
-            continuation.resume()
+            DispatchQueue.global().async {
+                self.perform(#selector(self.scheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
+                continuation.resume()
+            }
         }
     }
 
@@ -103,8 +106,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Unschedule the output stream.  Unscheduling must be performed on the special stream callback thread.
     func close() async {
         await withCheckedContinuation { continuation in
-            perform(#selector(unscheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
-            continuation.resume()
+            DispatchQueue.global().async {
+                self.perform(#selector(self.unscheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
+                continuation.resume()
+            }
         }
     }
 
@@ -143,13 +148,15 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     private func writeToOutputStream(data: Data) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            let result = StreamWriteResult()
-            result.data = data
-            perform(#selector(writeToOutputStreamOnThread), on: Self.thread, with: result, waitUntilDone: true)
-            if let error = result.error {
-                continuation.resume(throwing: error)
-            } else {
-                continuation.resume()
+            DispatchQueue.global().async {
+                let result = StreamWriteResult()
+                result.data = data
+                self.perform(#selector(self.writeToOutputStreamOnThread), on: Self.thread, with: result, waitUntilDone: true)
+                if let error = result.error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
             }
         }
     }
@@ -167,22 +174,24 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         result.error = outputStream.streamError
     }
 
+    private class BufferCountResult: NSObject {
+        var count = 0
+    }
+
     private var bufferCount: Int {
         get async {
             await withCheckedContinuation { continuation in
-                let bc = BufferCountResult()
-                perform(#selector(bufferCountOnThread(_:)), on: Self.thread, with: bc, waitUntilDone: true)
-                continuation.resume(returning: bc.count)
+                DispatchQueue.global().async {
+                    let bc = BufferCountResult()
+                    self.perform(#selector(self.bufferCountOnThread(_:)), on: Self.thread, with: bc, waitUntilDone: true)
+                    continuation.resume(returning: bc.count)
+                }
             }
         }
     }
 
     @objc private func bufferCountOnThread(_ bc: BufferCountResult) {
         bc.count = buffer.count
-    }
-
-    class BufferCountResult: NSObject {
-        var count = 0
     }
 
     // MARK: - StreamDelegate protocol
