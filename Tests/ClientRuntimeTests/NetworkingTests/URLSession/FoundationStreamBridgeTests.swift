@@ -48,9 +48,10 @@ class FoundationStreamBridgeTests: XCTestCase {
             subject.inputStream.open()
             print("Opened input stream")
             while ![.atEnd, .error].contains(subject.inputStream.streamStatus) {
+                print("Start read from input stream")
                 // Copy the input stream to the temp buffer.  When count is positive, bytes were read
                 let count = subject.inputStream.read(temp, maxLength: bufferSize)
-                print("Read from input stream")
+                print("End read from input stream")
                 if count > 0 {
                     // Add the read bytes onto the bridged data
                     bridgedData.append(temp, count: count)
