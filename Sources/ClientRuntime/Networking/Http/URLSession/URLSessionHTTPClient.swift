@@ -221,7 +221,7 @@ public final class URLSessionHTTPClient: HttpClientEngine {
 
             // Start the HTTP connection and start streaming the request body data
             dataTask.resume()
-            streamBridge?.open()
+            Task { await streamBridge?.open() }
         }
     }
 

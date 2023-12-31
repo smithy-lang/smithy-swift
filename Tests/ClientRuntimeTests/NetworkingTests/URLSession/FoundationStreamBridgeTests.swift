@@ -28,13 +28,15 @@ class FoundationStreamBridgeTests: XCTestCase {
             // Create a stream bridge with our original data & open it
             let bufferedStream = BufferedStream(data: originalData, isClosed: true)
             let subject = FoundationStreamBridge(readableStream: bufferedStream, bufferSize: bufferSize)
-            subject.open()
+            await subject.open()
 
             // This will hold the data that is bridged from the ReadableStream to the Foundation InputStream
             var bridgedData = Data()
 
             // Create a temp buffer we can use to copy the input stream bytes
+            // We are responsible for deallocating it
             let temp = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+            defer { temp.deallocate() }
 
             // Open the input stream & read it to exhaustion
             subject.inputStream.open()
@@ -49,14 +51,6 @@ class FoundationStreamBridgeTests: XCTestCase {
             }
             // Once the subject is exhausted, all data should have been bridged and the subject may be closed
             await subject.close()
-
-            // Dispose of the temp buffer
-            temp.deallocate()
-
-//            XCTAssertEqual(bridgedData, originalData)
-//            if bridgedData != originalData {
-//                print("Mismatch")
-//            }
 
             // Verify data was all bridged
             XCTAssertEqual(bridgedData, originalData)

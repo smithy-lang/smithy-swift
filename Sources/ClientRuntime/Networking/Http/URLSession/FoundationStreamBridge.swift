@@ -46,7 +46,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// A single shared `Thread` is started and is used to host the RunLoop for all Foundation Stream callbacks.
     private static let thread: Thread = {
         let thread = Thread { autoreleasepool { RunLoop.current.run() } }
-        thread.name = "StreamBridgeRunLoop"
+        thread.name = "AWSStreamBridgeRunLoop"
         thread.start()
         return thread
     }()
@@ -85,8 +85,11 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     // MARK: - Opening & closing
 
     /// Schedule the output stream on the special thread reserved for stream callbacks
-    func open() {
-        perform(#selector(scheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
+    func open() async {
+        await withCheckedContinuation { continuation in
+            perform(#selector(scheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
+            continuation.resume()
+        }
     }
 
     /// Configure the output stream to make StreamDelegate callback to this bridge using the special thread / run loop, and open the output stream.
@@ -130,35 +133,36 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             readableStreamEmpty = true
             await close()
         }
-        let result = await writeToOutputStream(data: data)
-        if let error = result.error {
-            throw error
-        }
+        try await writeToOutputStream(data: data)
     }
 
     private class StreamWriteResult: NSObject {
         var data = Data()
-        var error: Error? = nil
+        var error: Error?
     }
 
-    private func writeToOutputStream(data: Data) async -> StreamWriteResult {
-        await withCheckedContinuation { continuation in
+    private func writeToOutputStream(data: Data) async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             let result = StreamWriteResult()
             result.data = data
             perform(#selector(writeToOutputStreamOnThread), on: Self.thread, with: result, waitUntilDone: true)
-            continuation.resume(returning: result)
+            if let error = result.error {
+                continuation.resume(throwing: error)
+            } else {
+                continuation.resume()
+            }
         }
     }
 
     @objc private func writeToOutputStreamOnThread(_ result: StreamWriteResult) {
         buffer.append(result.data)
-        var count = 0
+        var writeCount = 0
         buffer.withUnsafeBytes { bufferPtr in
             let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress!
-            count = outputStream.write(bytePtr, maxLength: buffer.count)
+            writeCount = outputStream.write(bytePtr, maxLength: buffer.count)
         }
-        if count > 0 {
-            buffer.removeFirst(count)
+        if writeCount > 0 {
+            buffer.removeFirst(writeCount)
         }
         result.error = outputStream.streamError
     }
