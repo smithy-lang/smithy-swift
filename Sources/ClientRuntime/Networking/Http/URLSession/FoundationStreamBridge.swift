@@ -119,6 +119,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Close the output stream and it removes itself from the thread / run loop.
     @objc private func unscheduleOnThread() {
         outputStream.close()
+        outputStream.remove(from: RunLoop.current, forMode: .default)
         outputStream.delegate = nil
     }
 

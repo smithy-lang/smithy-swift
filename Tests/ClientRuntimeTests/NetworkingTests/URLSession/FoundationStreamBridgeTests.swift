@@ -44,7 +44,7 @@ class FoundationStreamBridgeTests: XCTestCase {
 
             // Open the input stream & read it to exhaustion
             subject.inputStream.open()
-            while await !subject.exhausted || subject.inputStream.hasBytesAvailable {
+            while await !subject.exhausted || ![.atEnd, .error].contains(subject.inputStream.streamStatus) {
                 // Copy the input stream to the temp buffer.  When count is positive,
                 // bytes were read
                 let count = subject.inputStream.read(temp, maxLength: bufferSize)
