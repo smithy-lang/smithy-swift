@@ -15,7 +15,6 @@ class FoundationStreamBridgeTests: XCTestCase {
 
     func test_open_streamsAllDataToOutputBuffer() async throws {
 
-
         for n in (1...10000) {
             // Our test data may be 100 to 1000 bytes long
             let dataSize = Int.random(in: 100...1000)
@@ -39,7 +38,7 @@ class FoundationStreamBridgeTests: XCTestCase {
 
             // Open the input stream & read it to exhaustion
             subject.inputStream.open()
-            while !subject.exhausted {
+            while !subject.exhausted || subject.inputStream.hasBytesAvailable {
                 temp.withUnsafeMutableBytes { bufferPtr in
                     let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress!
 
