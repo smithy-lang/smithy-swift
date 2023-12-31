@@ -47,6 +47,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     private static let queue = DispatchQueue(label: "AWSFoundationStreamBridge")
 
     /// Foundation Streams require a run loop on which to post callbacks for their delegates.
+    /// All stream operations should be performed on the same thread as the delegate callbacks.
     /// A single shared `Thread` is started and is used to host the RunLoop for all Foundation Stream callbacks.
     private static let thread: Thread = {
         let thread = Thread { autoreleasepool { RunLoop.current.run() } }

@@ -22,10 +22,10 @@ jobs:
           # - macos-12
           - macos-13
         xcode:
-          - Xcode_14.1
+          - Xcode_14.3.1
           - Xcode_15.0
         destination:
-          - 'platform=iOS Simulator,OS=16.1,name=iPhone 14'
+          - 'platform=iOS Simulator,OS=16.4,name=iPhone 14'
           - 'platform=iOS Simulator,OS=17.0,name=iPhone 15'
           - 'platform=OS X'
         exclude:
@@ -36,11 +36,11 @@ jobs:
           # - runner: macos-13
           #   xcode: Xcode_14.0.1
           # Don't run old iOS simulator with new Xcode
-          - destination: 'platform=iOS Simulator,OS=16.1,name=iPhone 14'
+          - destination: 'platform=iOS Simulator,OS=16.4,name=iPhone 14'
             xcode: Xcode_15.0
           # Don't run new iOS simulator with old Xcode
           - destination: 'platform=iOS Simulator,OS=17.0,name=iPhone 15'
-            xcode: Xcode_14.1
+            xcode: Xcode_14.3.1
     steps:
       - name: Checkout smithy-swift
         uses: actions/checkout@v3
