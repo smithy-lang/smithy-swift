@@ -162,7 +162,7 @@ public final class URLSessionHTTPClient: HttpClientEngine {
                 }
 
                 // Close the stream bridge so that its resources are deallocated
-                connection.streamBridge?.close()
+                Task { await connection.streamBridge?.close() }
             }
             storage.remove(task)
         }

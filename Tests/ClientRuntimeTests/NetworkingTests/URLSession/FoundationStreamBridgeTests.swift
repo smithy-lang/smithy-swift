@@ -15,15 +15,13 @@ class FoundationStreamBridgeTests: XCTestCase {
 
     func test_open_streamsAllDataToOutputBuffer() async throws {
 
-        (1...1000).forEach { n in
-            print("--- start run \(n) ---")
+
+        for n in (1...10000) {
             // Our test data may be 100 to 1000 bytes long
             let dataSize = Int.random(in: 100...1000)
-            print("data size: \(dataSize)")
 
             // The buffer may be as small as 4 bytes, up to 1.5x as big as the data
             let bufferSize = Int.random(in: 4...1500)
-            print("buffer size: \(bufferSize)")
 
             // Fill a data buffer with dataSize random numbers
             let originalData = Data((0...dataSize).map { _ in UInt8.random(in: UInt8.min...UInt8.max) })
@@ -51,12 +49,16 @@ class FoundationStreamBridgeTests: XCTestCase {
                     if count > 0 {
                         // Add the read bytes onto the bridged data
                         bridgedData.append(bytePtr, count: count)
-                        print("Read \(count) bytes, buffer: \(bridgedData.count) total")
                     }
                 }
             }
             // Once the subject is exhausted, all data should have been bridged and the subject may be closed
-            subject.close()
+            await subject.close()
+
+//            XCTAssertEqual(bridgedData, originalData)
+//            if bridgedData != originalData {
+//                print("Mismatch")
+//            }
 
             // Verify data was all bridged
             XCTAssertEqual(bridgedData, originalData)

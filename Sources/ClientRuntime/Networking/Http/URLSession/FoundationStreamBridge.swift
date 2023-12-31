@@ -98,8 +98,11 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     }
 
     /// Unschedule the output stream.  Unscheduling must be performed on the special stream callback thread.
-    func close() {
-        perform(#selector(unscheduleFromThread), on: Self.thread, with: nil, waitUntilDone: false)
+    func close() async {
+        await withCheckedContinuation { continuation in
+            perform(#selector(unscheduleFromThread), on: Self.thread, with: nil, waitUntilDone: false)
+            continuation.resume()
+        }
     }
 
     /// Close the output stream and remove it from the thread / run loop.
@@ -119,32 +122,37 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     // MARK: - Writing to bridge
 
     /// Tries to read from the readable stream if possible, then transfer the data to the output stream.
-    func writeToOutput() async throws {
+    private func writeToOutput() async throws {
         if !readableStreamEmpty, let data = try await readableStream.readAsync(upToCount: bufferSize - buffer.count) {
             buffer.append(data)
         } else {
             readableStreamEmpty = true
-            close()
+            await close()
         }
-        let r = Result()
-        perform(#selector(writeToOutputStream), on: Self.thread, with: r, waitUntilDone: true)
-        let result = r.result
+        let result = await writeToOutputStream()
         if result > 0 {
             buffer.removeFirst(result)
-            print("Wrote \(result) bytes to output stream")
         } else if result < 0, let error = outputStream.streamError {
             throw error
         }
     }
 
-    class Result: NSObject {
-        var result = 0
+    private class Result: NSObject {
+        var value = 0
     }
 
-    @objc func writeToOutputStream(_ r: Result) {
+    private func writeToOutputStream() async -> Int {
+        await withCheckedContinuation { continuation in
+            let result = Result()
+            perform(#selector(writeToOutputStreamOnThread), on: Self.thread, with: result, waitUntilDone: true)
+            continuation.resume(returning: result.value)
+        }
+    }
+
+    @objc private func writeToOutputStreamOnThread(_ result: Result) {
         buffer.withUnsafeBytes { bufferPtr in
             let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress!
-            r.result = outputStream.write(bytePtr, maxLength: buffer.count)
+            result.value = outputStream.write(bytePtr, maxLength: buffer.count)
         }
     }
 
