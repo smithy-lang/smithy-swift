@@ -91,7 +91,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     func open() async {
         await withCheckedContinuation { continuation in
             Self.queue.async {
-                self.perform(#selector(self.scheduleOnThread), on: Self.thread, with: nil, waitUntilDone: true)
+                self.perform(#selector(self.scheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
                 continuation.resume()
             }
         }
@@ -109,7 +109,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     func close() async {
         await withCheckedContinuation { continuation in
             Self.queue.async {
-                self.perform(#selector(self.unscheduleOnThread), on: Self.thread, with: nil, waitUntilDone: true)
+                self.perform(#selector(self.unscheduleOnThread), on: Self.thread, with: nil, waitUntilDone: false)
                 continuation.resume()
             }
         }
