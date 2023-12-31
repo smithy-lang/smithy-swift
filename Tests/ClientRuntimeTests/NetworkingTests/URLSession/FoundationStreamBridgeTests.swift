@@ -44,9 +44,8 @@ class FoundationStreamBridgeTests: XCTestCase {
 
             // Open the input stream & read it to exhaustion
             subject.inputStream.open()
-            while await !subject.exhausted || ![.atEnd, .error].contains(subject.inputStream.streamStatus) {
-                // Copy the input stream to the temp buffer.  When count is positive,
-                // bytes were read
+            while ![.atEnd, .error].contains(subject.inputStream.streamStatus) {
+                // Copy the input stream to the temp buffer.  When count is positive, bytes were read
                 let count = subject.inputStream.read(temp, maxLength: bufferSize)
                 if count > 0 {
                     // Add the read bytes onto the bridged data
@@ -58,6 +57,9 @@ class FoundationStreamBridgeTests: XCTestCase {
 
             // Close the inputStream as well
             subject.inputStream.close()
+
+            // Fail in the event of a stream error
+            XCTAssertNil(subject.inputStream.streamError, "Stream failed with error: \(subject.inputStream.streamError?.localizedDescription ?? "")")
 
             // Verify data was all bridged
             XCTAssertEqual(bridgedData, originalData, "Run \(run) failed (dataSize: \(dataSize), bufferSize: \(bufferSize)")
