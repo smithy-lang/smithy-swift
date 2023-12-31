@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
+
 import Foundation
 import XCTest
 @testable import ClientRuntime
@@ -55,3 +57,5 @@ class FoundationStreamBridgeTests: XCTestCase {
         XCTAssertEqual(bridgedData, originalData)
     }
 }
+
+#endif

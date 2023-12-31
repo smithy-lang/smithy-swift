@@ -4,6 +4,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
+
+#if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
+
 import func Foundation.autoreleasepool
 import class Foundation.NSObject
 import class Foundation.Stream
@@ -128,7 +131,12 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress!
             result = outputStream.write(bytePtr, maxLength: buffer.count)
         }
-        if result > 0 { buffer.removeFirst(result) }
+        if result > 0 {
+            buffer.removeFirst(result)
+            print("Wrote \(result) bytes to output stream")
+        } else if result < 0, let error = outputStream.streamError {
+            throw error
+        }
     }
 
     // MARK: - StreamDelegate protocol
@@ -146,3 +154,5 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
     }
 }
+
+#endif

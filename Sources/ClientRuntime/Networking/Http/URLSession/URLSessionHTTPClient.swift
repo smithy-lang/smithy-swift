@@ -5,10 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if os(Linux)
-import Foundation
-import FoundationNetworking
-#else
+#if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
+
 import class Foundation.InputStream
 import class Foundation.NSObject
 import class Foundation.NSRecursiveLock
@@ -21,7 +19,6 @@ import class Foundation.URLSession
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
-#endif
 import AwsCommonRuntimeKit
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
@@ -258,3 +255,5 @@ public final class URLSessionHTTPClient: HttpClientEngine {
 public enum URLSessionHTTPClientError: Error {
     case responseNotHTTP
 }
+
+#endif
