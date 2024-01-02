@@ -44,6 +44,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     private var readableStreamEmpty = false
 
     /// A shared serial DispatchQueue to run the `perform`-on-thread operations.
+    /// Performing thread operations on an async queue allows Swift concurrency tasks to not block.
     private static let queue = DispatchQueue(label: "AWSFoundationStreamBridge")
 
     /// Foundation Streams require a run loop on which to post callbacks for their delegates.
@@ -89,7 +90,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     // MARK: - Opening & closing
 
-    /// Schedule the output stream on the special thread reserved for stream callbacks
+    /// Schedule the output stream on the special thread reserved for stream callbacks.
+    /// Do not wait to complete opening before returning.
     func open() async {
         await withCheckedContinuation { continuation in
             Self.queue.async {
@@ -100,14 +102,15 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     }
 
     /// Configure the output stream to make StreamDelegate callback to this bridge using the special thread / run loop, and open the output stream.
-    /// The input stream is not included here.  It will be configured by URLSession when the HTTP request is initiated.
+    /// The input stream is not included here.  It will be configured by `URLSession` when the HTTP request is initiated.
     @objc private func openOnThread() {
         outputStream.delegate = self
         outputStream.schedule(in: RunLoop.current, forMode: .default)
         outputStream.open()
     }
 
-    /// Unschedule the output stream.  Unscheduling must be performed on the special stream callback thread.
+    /// Unschedule the output stream on the special stream callback thread.
+    /// Do not wait to complete closing before returning.
     func close() async {
         await withCheckedContinuation { continuation in
             Self.queue.async {
@@ -117,7 +120,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
     }
 
-    /// Close the output stream and it removes itself from the thread / run loop.
+    /// Close the output stream and remove it from the thread / run loop.
     @objc private func closeOnThread() {
         outputStream.close()
         outputStream.remove(from: RunLoop.current, forMode: .default)
@@ -145,12 +148,14 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         var error: Error?
     }
 
+    /// Write the passed data to the output stream, using the reserved thread.
     private func writeToOutputStream(data: Data) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             Self.queue.async {
                 let result = WriteToOutputStreamResult()
                 result.data = data
-                self.perform(#selector(self.writeToOutputStreamOnThread), on: Self.thread, with: result, waitUntilDone: true)
+                let selector = #selector(self.writeToOutputStreamOnThread)
+                self.perform(selector, on: Self.thread, with: result, waitUntilDone: true)
                 if let error = result.error {
                     continuation.resume(throwing: error)
                 } else {
@@ -160,6 +165,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
     }
 
+    /// Append the new data to the buffer, then write to the output stream.  Return any error to the caller using the param object.
     @objc private func writeToOutputStreamOnThread(_ result: WriteToOutputStreamResult) {
         guard !buffer.isEmpty || !result.data.isEmpty else { return }
         buffer.append(result.data)
@@ -174,29 +180,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         result.error = outputStream.streamError
     }
 
-    private class BufferCountResult: NSObject {
-        var count = 0
-    }
-
-    private var bufferCount: Int {
-        get async {
-            await withCheckedContinuation { continuation in
-                Self.queue.async {
-                    let bc = BufferCountResult()
-                    self.perform(#selector(self.bufferCountOnThread(_:)), on: Self.thread, with: bc, waitUntilDone: true)
-                    continuation.resume(returning: bc.count)
-                }
-            }
-        }
-    }
-
-    @objc private func bufferCountOnThread(_ result: BufferCountResult) {
-        result.count = buffer.count
-    }
-
     // MARK: - StreamDelegate protocol
 
     /// The stream places this callback when appropriate.  Call will be delivered on the special thread / run loop for stream callbacks.
+    /// `.hasSpaceAvailable` prompts this type to query the readable stream for more data.
     @objc func stream(_ aStream: Foundation.Stream, handle eventCode: Foundation.Stream.Event) {
         switch eventCode {
         case .hasSpaceAvailable:

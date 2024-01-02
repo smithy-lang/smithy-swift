@@ -16,6 +16,7 @@ import struct Foundation.URLRequest
 import class Foundation.URLResponse
 import class Foundation.HTTPURLResponse
 import class Foundation.URLSession
+import class Foundation.URLSessionConfiguration
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
@@ -23,7 +24,8 @@ import AwsCommonRuntimeKit
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
 ///
-/// This client is usable on all Swift platforms that support the URLSession library.
+/// This client is usable on all Swift platforms that support both the `URLSession` library and Objective-C interoperability features
+/// (these are generally the Apple platforms.)
 ///
 /// Use of this client is recommended on all Apple platforms, and is required on Apple Watch ( see
 /// [TN3135: Low-level networking on watchOS](https://developer.apple.com/documentation/technotes/tn3135-low-level-networking-on-watchos)
@@ -100,15 +102,22 @@ public final class URLSessionHTTPClient: HttpClientEngine {
         }
     }
 
-    /// Handles URLSession
+    /// Handles URLSession delegate callbacks.
     private final class SessionDelegate: NSObject, URLSessionDataDelegate {
+
+        /// Holds connection records for all in-progress connections.
         let storage = Storage()
+
+        /// Logger for HTTP-related events.
         let logger: LogAgent
 
         init(logger: LogAgent) {
             self.logger = logger
         }
 
+        /// Called when the initial response to a HTTP request is received.
+        /// This callback is made as soon as the initial response + headers is complete.
+        /// Response body data may continue to stream in after this callback is received.
         func urlSession(
             _ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse
         ) async -> URLSession.ResponseDisposition {
@@ -135,6 +144,7 @@ public final class URLSessionHTTPClient: HttpClientEngine {
             return .allow
         }
 
+        /// Called when response data is received.
         func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
             logger.debug("urlSession(_:dataTask:didReceive:) called with \(data.count) bytes")
             storage.modify(dataTask) { connection in
@@ -147,8 +157,13 @@ public final class URLSessionHTTPClient: HttpClientEngine {
             }
         }
 
+        /// Called when a HTTP request completes, either successfully or not.
+        /// If an error occurs, it will be returned here.
+        /// If the error is returned prior to the initial response, the request fails with an error.
+        /// If the error is returned after the initial response, the error is used to fail the response stream.
         func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-            logger.debug("urlSession(_:task:didCompleteWithError:) called with\(error == nil ? "out" : "") error")
+            logger.debug("urlSession(_:task:didCompleteWithError:) called. \(error == nil ? "Success" : "Failure")")
+            if let error { logger.debug("  Error: \(error.localizedDescription)") }
             storage.modify(task) { connection in
                 if let error = connection.error ?? error {
                     if let continuation = connection.continuation {
@@ -164,12 +179,19 @@ public final class URLSessionHTTPClient: HttpClientEngine {
                 // Close the stream bridge so that its resources are deallocated
                 Task { await connection.streamBridge?.close() }
             }
+
+            // Task is complete & no longer needed.  Remove it from storage.
             storage.remove(task)
         }
     }
 
+    /// The `URLSession` used to perform HTTP requests.
     let session: URLSession
+
+    /// The delegate object used to handle `URLSessionTask` callbacks.
     private let delegate: SessionDelegate
+
+    /// The logger for this HTTP client.
     private var logger: LogAgent
 
     // MARK: - init & deinit
@@ -178,10 +200,11 @@ public final class URLSessionHTTPClient: HttpClientEngine {
     ///
     /// The client is created with its own internal `URLSession`, which is configured with system defaults and with a private delegate for handling
     /// URL task lifecycle events.
-    public init() {
+    /// - Parameter urlsessionConfiguration: The configuration to use for the client's `URLSession`.
+    public init(_ urlsessionConfiguration: URLSessionConfiguration = .default) {
         self.logger = SwiftLogger(label: "URLSessionHTTPClient")
         self.delegate = SessionDelegate(logger: logger)
-        self.session = URLSession(configuration: .default, delegate: self.delegate, delegateQueue: nil)
+        self.session = URLSession(configuration: urlsessionConfiguration, delegate: delegate, delegateQueue: nil)
     }
 
     // MARK: - HttpClientEngine protocol
@@ -227,6 +250,11 @@ public final class URLSessionHTTPClient: HttpClientEngine {
 
     // MARK: - Private methods
 
+    /// Create a `URLRequest` for the Smithy operation to be performed.
+    /// - Parameters:
+    ///   - request: The SDK-native, signed `SdkHttpRequest` ready to be transmitted.
+    ///   - httpBodyStream: A Foundation `InputStream` carrying the HTTP body for this request.
+    /// - Returns: A `URLRequest` ready to be transmitted by `URLSession` for this operation.
     private func makeURLRequest(from request: SdkHttpRequest, httpBodyStream: InputStream?) -> URLRequest {
         var components = URLComponents()
         components.scheme = request.endpoint.protocolType?.rawValue ?? "https"
@@ -250,7 +278,7 @@ public final class URLSessionHTTPClient: HttpClientEngine {
     }
 }
 
-/// Errors that are particular to the URLSession-based AWS HTTP client.
+/// Errors that are particular to the URLSession-based Smithy HTTP client.
 /// Please file a bug with aws-sdk-swift if you experience any of these errors.
 public enum URLSessionHTTPClientError: Error {
     case responseNotHTTP
