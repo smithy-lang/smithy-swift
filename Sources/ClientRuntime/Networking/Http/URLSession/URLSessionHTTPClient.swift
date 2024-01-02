@@ -71,6 +71,15 @@ public final class URLSessionHTTPClient: HttpClientEngine {
     /// Provides thread-safe associative storage of `Connection`s keyed by their `URLSessionDataTask`.
     final class Storage: @unchecked Sendable {
 
+        /// Ensure all continuations are resumed before deallocation.
+        ///
+        /// This should never happen in practice but is being done defensively.
+        deinit {
+            connections.values.forEach {
+                $0.continuation?.resume(throwing: URLSessionHTTPClientError.unresumedConnection)
+            }
+        }
+
         /// Lock used to enforce exclusive access to this `Storage` object.
         private let lock = NSRecursiveLock()
 
@@ -207,6 +216,11 @@ public final class URLSessionHTTPClient: HttpClientEngine {
         self.session = URLSession(configuration: urlsessionConfiguration, delegate: delegate, delegateQueue: nil)
     }
 
+    /// On deallocation, finish any in-process tasks before disposing of the `URLSession`.
+    deinit {
+        session.finishTasksAndInvalidate()
+    }
+
     // MARK: - HttpClientEngine protocol
 
     /// Executes the passed HTTP request using Foundation's `URLSession` HTTP client.
@@ -279,9 +293,15 @@ public final class URLSessionHTTPClient: HttpClientEngine {
 }
 
 /// Errors that are particular to the URLSession-based Smithy HTTP client.
-/// Please file a bug with aws-sdk-swift if you experience any of these errors.
 public enum URLSessionHTTPClientError: Error {
+
+    /// A non-HTTP response was returned by the server.
+    /// Please file a bug with aws-sdk-swift if you experience this error.
     case responseNotHTTP
+
+    /// A connection was not ended
+    /// Please file a bug with aws-sdk-swift if you experience this error.
+    case unresumedConnection
 }
 
 #endif
