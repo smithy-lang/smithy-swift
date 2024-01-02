@@ -130,7 +130,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     private func writeToOutput() async throws {
         var data = Data()
         if !readableStreamEmpty {
-            if let newData = try await readableStream.readAsync(upToCount: bufferSize - bufferCount) {
+            if let newData = try await readableStream.readAsync(upToCount: bufferSize) {
                 data = newData
             } else {
                 readableStreamEmpty = true

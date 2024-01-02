@@ -117,14 +117,8 @@ jobs:
           NSUnbufferedIO=YES xcodebuild \
             -scheme smithy-swift-Package \
             -destination '${{ matrix.destination }}' \
-            build 2>&1 \
-            | xcpretty
-          set -o pipefail && \
-          NSUnbufferedIO=YES xcodebuild \
-            -scheme smithy-swift-Package \
-            -destination '${{ matrix.destination }}' \
             test 2>&1
-            # | xcpretty
+            | xcpretty
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
         run: |
           cd ../aws-sdk-swift
