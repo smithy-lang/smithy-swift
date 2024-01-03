@@ -10,7 +10,7 @@ import Glibc
 import Darwin
 #endif
 
-public class CRTClientEngine: HttpClientEngine {
+public class CRTClientEngine: HTTPClient {
     actor SerialExecutor {
 
         /// Stores the common properties of requests that should share a HTTP connection, such that requests
@@ -150,7 +150,7 @@ public class CRTClientEngine: HttpClientEngine {
         self.serialExecutor = SerialExecutor(config: config)
     }
 
-    public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
+    public func send(request: SdkHttpRequest) async throws -> HttpResponse {
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
 

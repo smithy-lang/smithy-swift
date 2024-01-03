@@ -32,7 +32,7 @@ import AwsCommonRuntimeKit
 /// for details about allowable modes of networking on the Apple Watch platform.)
 ///
 /// On Linux platforms, we recommend using the CRT-based HTTP client for its configurability and performance.
-public final class URLSessionHTTPClient: HttpClientEngine {
+public final class URLSessionHTTPClient: HTTPClient {
 
     /// Holds a connection's associated resources from the time the connection is executed to when it completes.
     final class Connection {
@@ -230,7 +230,7 @@ public final class URLSessionHTTPClient: HttpClientEngine {
     /// - Parameter request: The request to be submitted to the server.  Fields must be filled in sufficiently to form a valid URL.
     /// - Returns: The response to the request.  This call may return as soon as a complete response is received but before the body finishes streaming;
     /// the response body will continue to stream back to the caller.
-    public func execute(request: SdkHttpRequest) async throws -> HttpResponse {
+    public func send(request: SdkHttpRequest) async throws -> HttpResponse {
         return try await withCheckedThrowingContinuation { continuation in
 
             // Get the request stream to use for the body, if any.

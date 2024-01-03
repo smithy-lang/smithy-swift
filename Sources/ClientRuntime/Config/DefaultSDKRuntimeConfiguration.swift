@@ -28,7 +28,7 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
     /// The HTTP client to be used for HTTP connections.
     ///
     /// If none is provided, the AWS CRT HTTP client will be used.
-    public var httpClientEngine: HttpClientEngine
+    public var httpClientEngine: HTTPClient
 
     /// The HTTP client configuration.
     ///
@@ -88,12 +88,12 @@ public extension DefaultSDKRuntimeConfiguration {
     /// The default HTTP client to use when none is configured
     ///
     /// Is the CRT HTTP client.
-    static var defaultHttpClientEngine: HttpClientEngine { CRTClientEngine() }
+    static var defaultHttpClientEngine: HTTPClient { CRTClientEngine() }
 
     /// The default HTTP client with a specified timeout
     ///
     /// Is the CRT HTTP client.
-    static func httpClientEngineWithTimeout(timeoutMs: UInt32) -> HttpClientEngine {
+    static func httpClientEngineWithTimeout(timeoutMs: UInt32) -> HTTPClient {
         return CRTClientEngine(config: CRTClientEngineConfig(connectTimeoutMs: timeoutMs))
     }
 
