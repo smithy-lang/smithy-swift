@@ -22,7 +22,7 @@ class HttpClientTests: NetworkingTestUtils {
     }
 
     func testExecuteRequest() async throws {
-        let resp = try await httpClient.execute(request: mockHttpDataRequest)
+        let resp = try await httpClient.send(request: mockHttpDataRequest)
         XCTAssertNotNil(resp)
         XCTAssert(resp.statusCode == HttpStatusCode.ok)
     }
