@@ -35,7 +35,7 @@ import AwsCommonRuntimeKit
 public final class URLSessionHTTPClient: HTTPClient {
 
     /// Holds a connection's associated resources from the time the connection is executed to when it completes.
-    final class Connection {
+    private final class Connection {
 
         /// The `FoundationStreamBridge` for the request body, if any.
         ///
@@ -69,7 +69,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     }
 
     /// Provides thread-safe associative storage of `Connection`s keyed by their `URLSessionDataTask`.
-    final class Storage: @unchecked Sendable {
+    private final class Storage: @unchecked Sendable {
 
         /// Ensure all continuations are resumed before deallocation.
         ///
@@ -194,6 +194,9 @@ public final class URLSessionHTTPClient: HTTPClient {
         }
     }
 
+    /// The `HttpClientConfiguration` for this HTTP client.
+    let config: HttpClientConfiguration
+
     /// The `URLSession` used to perform HTTP requests.
     let session: URLSession
 
@@ -210,9 +213,12 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// The client is created with its own internal `URLSession`, which is configured with system defaults and with a private delegate for handling
     /// URL task lifecycle events.
     /// - Parameter urlsessionConfiguration: The configuration to use for the client's `URLSession`.
-    public init(_ urlsessionConfiguration: URLSessionConfiguration = .default) {
+    public init(httpClientConfiguration: HttpClientConfiguration) {
+        self.config = httpClientConfiguration
         self.logger = SwiftLogger(label: "URLSessionHTTPClient")
         self.delegate = SessionDelegate(logger: logger)
+        var urlsessionConfiguration = URLSessionConfiguration.default
+        urlsessionConfiguration = URLSessionConfiguration.from(httpClientConfiguration: httpClientConfiguration)
         self.session = URLSession(configuration: urlsessionConfiguration, delegate: delegate, delegateQueue: nil)
     }
 
@@ -271,7 +277,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// - Returns: A `URLRequest` ready to be transmitted by `URLSession` for this operation.
     private func makeURLRequest(from request: SdkHttpRequest, httpBodyStream: InputStream?) -> URLRequest {
         var components = URLComponents()
-        components.scheme = request.endpoint.protocolType?.rawValue ?? "https"
+        components.scheme = config.protocolType?.rawValue ?? request.endpoint.protocolType?.rawValue ?? "https"
         components.host = request.endpoint.host
         components.percentEncodedPath = request.path
         if let queryItems = request.queryItems, !queryItems.isEmpty {
@@ -283,7 +289,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = request.method.rawValue
         urlRequest.httpBodyStream = httpBodyStream
-        for header in request.headers.headers {
+        for header in request.headers.headers + (config.defaultHeaders?.headers ?? []) {
             for value in header.value {
                 urlRequest.addValue(value, forHTTPHeaderField: header.name)
             }

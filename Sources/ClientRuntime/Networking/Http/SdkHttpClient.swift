@@ -19,12 +19,12 @@ public class SdkHttpClient {
         return clientHandler.eraseToAnyHandler()
     }
 
-    func execute(request: SdkHttpRequest) async throws -> HttpResponse {
+    func send(request: SdkHttpRequest) async throws -> HttpResponse {
         return try await engine.send(request: request)
     }
 }
 
-struct ClientHandler<OperationStackOutput>: Handler {
+private struct ClientHandler<OperationStackOutput>: Handler {
     let engine: HTTPClient
     func handle(context: HttpContext, input: SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput> {
         let httpResponse: HttpResponse

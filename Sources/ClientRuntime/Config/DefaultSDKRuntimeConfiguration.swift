@@ -72,8 +72,8 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
         self.clientName = clientName
         self.encoder = nil
         self.decoder = nil
-        self.httpClientEngine = Self.defaultHttpClientEngine
         self.httpClientConfiguration = Self.defaultHttpClientConfiguration
+        self.httpClientEngine = Self.makeClient(httpClientConfiguration: self.httpClientConfiguration)
         self.idempotencyTokenGenerator = Self.defaultIdempotencyTokenGenerator
         self.retryStrategyOptions = Self.defaultRetryStrategyOptions
         self.logger = Self.defaultLogger(clientName: clientName)
@@ -85,16 +85,18 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
 // Exposing these as static properties/methods allows them to be used by custom config objects.
 public extension DefaultSDKRuntimeConfiguration {
 
-    /// The default HTTP client to use when none is configured
+    /// The default HTTP client for the target platform, configured with the supplied configuration.
     ///
-    /// Is the CRT HTTP client.
-    static var defaultHttpClientEngine: HTTPClient { CRTClientEngine() }
-
-    /// The default HTTP client with a specified timeout
-    ///
-    /// Is the CRT HTTP client.
-    static func httpClientEngineWithTimeout(timeoutMs: UInt32) -> HTTPClient {
-        return CRTClientEngine(config: CRTClientEngineConfig(connectTimeoutMs: timeoutMs))
+    /// - Parameter httpClientConfiguration: The configuration for the HTTP client.
+    /// - Returns: The `CRTClientEngine` client on Mac & Linux platforms, returns `URLSessionHttpClient` on non-Mac Apple platforms.
+    static func makeClient(httpClientConfiguration: HttpClientConfiguration) -> HTTPClient {
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+        return URLSessionHTTPClient(httpClientConfiguration: httpClientConfiguration)
+        #else
+        let connectTimeoutMs = httpClientConfiguration.connectTimeout.map { UInt32($0 * 1_000_000) }
+        let config = CRTClientEngineConfig(connectTimeoutMs: connectTimeoutMs)
+        return CRTClientEngine(config: config)
+        #endif
     }
 
     /// The HTTP client configuration to use when none is provided.
