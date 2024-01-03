@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+#if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
+
+import class Foundation.URLSessionConfiguration
 
 extension URLSessionConfiguration {
 
@@ -17,3 +19,5 @@ extension URLSessionConfiguration {
         return config
     }
 }
+
+#endif
