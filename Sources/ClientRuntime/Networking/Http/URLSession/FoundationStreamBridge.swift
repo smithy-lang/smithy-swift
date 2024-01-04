@@ -38,10 +38,22 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// A Foundation `OutputStream` that will read from the `ReadableStream`
     private let outputStream: OutputStream
+    
+    /// Actor used to isolate the stream status from multiple concurrent accesses.
+    actor ReadableStreamStatus {
 
-    /// `true` if the readable stream has been found to be empty, `false` otherwise.  Will flip to `true` if the readable stream is read,
-    /// and `nil` is returned.
-    private var readableStreamEmpty = false
+        /// `true` if the readable stream has been found to be empty, `false` otherwise.  Will flip to `true` if the readable stream is read,
+        /// and `nil` is returned.
+        var isEmpty = false
+
+        /// Sets stream status to indicate the stream is empty.
+        func setIsEmpty() async {
+            isEmpty = true
+        }
+    }
+
+    /// Actor used to isolate the stream status from multiple concurrent accesses.
+    private var readableStreamStatus = ReadableStreamStatus()
 
     /// A shared serial DispatchQueue to run the `perform`-on-thread operations.
     /// Performing thread operations on an async queue allows Swift concurrency tasks to not block.
@@ -132,11 +144,11 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Tries to read from the readable stream if possible, then transfer the data to the output stream.
     private func writeToOutput() async throws {
         var data = Data()
-        if !readableStreamEmpty {
+        if await !readableStreamStatus.isEmpty {
             if let newData = try await readableStream.readAsync(upToCount: bufferSize) {
                 data = newData
             } else {
-                readableStreamEmpty = true
+                await readableStreamStatus.setIsEmpty()
                 await close()
             }
         }

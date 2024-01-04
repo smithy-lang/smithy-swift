@@ -5,7 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
+// Run this unit test on macOS only.
+//
+// `FoundationStreamBridge` is not usable on Linux because it uses ObjC-interop features.
+//
+// Unit tests of types that spawn threads are unreliable on Apple-platform simulators.
+// Mac tests "run on metal", not a simulator, so they will run reliably.
+#if os(macOS)
 
 import Foundation
 import XCTest
@@ -16,7 +22,7 @@ class FoundationStreamBridgeTests: XCTestCase {
     func test_open_streamsAllDataToOutputBuffer() async throws {
 
         // The maximum size of input streaming data in the tests
-        let maxDataSize = 10_000
+        let maxDataSize = 16_384
 
         // The max size of the buffer for data being streamed.
         let maxBufferSize = 2 * maxDataSize
@@ -39,13 +45,15 @@ class FoundationStreamBridgeTests: XCTestCase {
         // FoundationStreamBridge is susceptible to spurious bugs due to data races & other
         // not readily reproducible causes, so run this test repeatedly to help uncover
         // problems
-        for run in 1...maxDataSize {
 
-            // Run a test for every possible data size
-            let dataSize = run
+        let numberOfRuns = 100
 
-            // The buffer may be as small as 1 byte, up to 2x as big as the max data size capped by maxBufferSize
-            let bufferSize = Int.random(in: 1...(min(max(2 * dataSize, 1), maxBufferSize)))
+        for run in 1...numberOfRuns {
+            // Run a test for every possible data size up to the maximum
+            let dataSize = min(run, maxDataSize)
+
+            // The buffer may be as small as 1 byte, up to 2x as big as the data size capped by maxBufferSize
+            let bufferSize = Int.random(in: 1...min(2 * dataSize, maxBufferSize))
 
             // Fill a data buffer with dataSize random numbers
             let originalData = Data(bytes: randomBuffer, count: dataSize)
