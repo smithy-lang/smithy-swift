@@ -289,7 +289,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = request.method.rawValue
         urlRequest.httpBodyStream = httpBodyStream
-        for header in request.headers.headers + (config.defaultHeaders?.headers ?? []) {
+        for header in request.headers.headers + config.defaultHeaders.headers {
             for value in header.value {
                 urlRequest.addValue(value, forHTTPHeaderField: header.name)
             }
