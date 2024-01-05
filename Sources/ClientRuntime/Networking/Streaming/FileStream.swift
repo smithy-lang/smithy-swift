@@ -132,6 +132,8 @@ final class FileStream: Stream {
     }
 
     func closeWithError(_ error: Error) {
+        // The error is only relevant when streaming to a programmatic consumer, not to disk.
+        // So close the file handle in this case, and the error is dropped.
         close()
     }
 }

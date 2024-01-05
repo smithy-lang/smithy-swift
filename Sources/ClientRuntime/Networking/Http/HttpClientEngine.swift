@@ -6,7 +6,7 @@ import AwsCommonRuntimeKit
 
 /// The interface for a client that can be used to perform SDK operations over HTTP.
 public protocol HTTPClient {
-    
+
     /// Executes an HTTP request to perform an SDK operation.
     ///
     /// The request must be fully formed (i.e. endpoint resolved, signed, etc.) before sending.  Modifying the request after signature may

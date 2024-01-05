@@ -17,7 +17,7 @@ public class HttpClientConfiguration {
     /// HTTP headers to be submitted with every HTTP request.
     ///
     /// If none is provided, defaults to no extra headers.
-    public var defaultHeaders: Headers?
+    public var defaultHeaders: Headers
 
     // add any other properties here you want to give the service operations
     // control over to be mapped to the Http Client
@@ -26,7 +26,7 @@ public class HttpClientConfiguration {
     ///
     /// If none is provided, the default protocol for the operation will be used
     public var protocolType: ProtocolType?
-    
+
     /// Creates a configuration object for a SDK HTTP client.
     ///
     /// Not all configuration settings may be followed by all clients.
@@ -37,7 +37,7 @@ public class HttpClientConfiguration {
     ///   - protocolType: The HTTP scheme (`http` or `https`) to be used for API requests.  Defaults to the operation's standard configuration.
     public init(
         connectTimeout: TimeInterval? = nil,
-        defaultHeaders: Headers? = nil,
+        defaultHeaders: Headers = Headers(),
         protocolType: ProtocolType? = nil
     ) {
         self.protocolType = protocolType

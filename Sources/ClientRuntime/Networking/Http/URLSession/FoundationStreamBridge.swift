@@ -38,7 +38,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// A Foundation `OutputStream` that will read from the `ReadableStream`
     private let outputStream: OutputStream
-    
+
     /// Actor used to isolate the stream status from multiple concurrent accesses.
     actor ReadableStreamStatus {
 
