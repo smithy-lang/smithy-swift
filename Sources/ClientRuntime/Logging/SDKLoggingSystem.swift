@@ -16,7 +16,7 @@ public actor SDKLoggingSystem {
         factories[label] = logHandlerFactory
     }
 
-    public static func initialize(defaultLogLevel: SDKLogLevel = .info) {
+    public static func initialize(defaultLogLevel: SDKLogLevel = .info) async {
         if isInitialized { return } else { isInitialized = true }
         LoggingSystem.bootstrap { label in
             if let factory = factories[label] {
@@ -28,7 +28,7 @@ public actor SDKLoggingSystem {
         }
     }
 
-    public static func initialize(logLevel: SDKLogLevel) {
+    public static func initialize(logLevel: SDKLogLevel) async {
         if isInitialized { return } else { isInitialized = true }
         LoggingSystem.bootstrap { label in
             var handler = StreamLogHandler.standardOutput(label: label)
