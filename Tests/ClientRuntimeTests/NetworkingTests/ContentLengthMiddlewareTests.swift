@@ -24,14 +24,14 @@ class ContentLengthMiddlewareTests: XCTestCase {
     func testTransferEncodingChunkedSetWhenStreamLengthIsNil() async throws {
         addContentLengthMiddlewareWith(requiresLength: false, unsignedPayload: true)
         forceEmptyStream()
-        try await AssertHeadersArePresent(expectedHeaders: ["Transfer-Encoding": "Chunked"])
+        try await AssertHeadersArePresent(expectedHeaders: ["Transfer-Encoding": "chunked"])
     }
 
     func testTransferEncodingChunkedSetWithNilTraits() async throws {
         // default constructor
         addContentLengthMiddlewareWith(requiresLength: nil, unsignedPayload: nil)
         forceEmptyStream()
-        try await AssertHeadersArePresent(expectedHeaders: ["Transfer-Encoding": "Chunked"])
+        try await AssertHeadersArePresent(expectedHeaders: ["Transfer-Encoding": "chunked"])
     }
 
     func testContentLengthSetWhenStreamLengthAvailableAndRequiresLengthSet() async throws {

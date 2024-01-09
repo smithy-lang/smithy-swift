@@ -66,6 +66,8 @@ public class BufferedStream: Stream {
     /// Access this value only while `lock` is locked, to prevent simultaneous access.
     private var _dataCount: Int
 
+    private var _error: Error?
+
     /// When locked, this `NSRecursiveLock` grants safe, exclusive access to the properties on this type.
     /// Note: `NSRecursiveLock` is `@Sendable` so it is safe to use with Swift concurrency.
     private let lock = NSRecursiveLock()
@@ -134,6 +136,7 @@ public class BufferedStream: Stream {
         // if we're closed and there's no data left, return nil
         // this will signal the end of the stream
         if _isClosed && chunk.isEmpty == true {
+            if let error = _error { throw error }
             return nil
         }
 
@@ -202,10 +205,22 @@ public class BufferedStream: Stream {
     }
 
     /// Closes the stream.
-    public func close() throws {
+    public func close() {
         lock.withLockingClosure {
+            guard !_isClosed else { return }
             _isClosed = true
             _length = _dataCount
+            _serviceReadersIfPossible()
+        }
+    }
+
+    /// Closes the stream.
+    public func closeWithError(_ error: Error) {
+        lock.withLockingClosure {
+            guard !_isClosed else { return }
+            _isClosed = true
+            _length = _dataCount
+            _error = error
             _serviceReadersIfPossible()
         }
     }
