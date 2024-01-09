@@ -37,10 +37,11 @@ public class HttpClientConfiguration {
     ///   - protocolType: The HTTP scheme (`http` or `https`) to be used for API requests.  Defaults to the operation's standard configuration.
     public init(
         connectTimeout: TimeInterval? = nil,
-        defaultHeaders: Headers = Headers(),
-        protocolType: ProtocolType? = nil
+        protocolType: ProtocolType = .https,
+        defaultHeaders: Headers = Headers()
     ) {
         self.protocolType = protocolType
         self.defaultHeaders = defaultHeaders
+        self.connectTimeout = connectTimeout
     }
 }
