@@ -5,370 +5,161 @@
 
 package software.amazon.smithy.swift.codegen.integration.serde.xml
 
-import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.model.shapes.BlobShape
-import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.BigDecimalShape
+import software.amazon.smithy.model.shapes.BigIntegerShape
+import software.amazon.smithy.model.shapes.BooleanShape
+import software.amazon.smithy.model.shapes.ByteShape
+import software.amazon.smithy.model.shapes.DoubleShape
+import software.amazon.smithy.model.shapes.EnumShape
+import software.amazon.smithy.model.shapes.FloatShape
+import software.amazon.smithy.model.shapes.IntEnumShape
+import software.amazon.smithy.model.shapes.IntegerShape
 import software.amazon.smithy.model.shapes.ListShape
+import software.amazon.smithy.model.shapes.LongShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShortShape
+import software.amazon.smithy.model.shapes.StringShape
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.DefaultTrait
-import software.amazon.smithy.model.traits.SparseTrait
-import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
-import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
-import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
-import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.CollectionMemberCodingKey
-import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.MapKeyValue
+import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ReadingClosureUtils
+import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.isBoxed
-import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
+import software.amazon.smithy.swift.codegen.model.isError
+import software.amazon.smithy.swift.codegen.swiftEnumCaseName
+import java.util.*
 
-abstract class MemberShapeDecodeXMLGenerator(
+class MemberShapeDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
-) : MemberShapeDecodeGeneratable {
-    abstract fun renderAssigningDecodedMember(memberName: String, decodedMemberName: String, isBoxed: Boolean = false)
-    abstract fun renderAssigningSymbol(memberName: String, symbol: String)
-    abstract fun renderAssigningNil(memberName: String)
-    abstract fun renderListMember(member: MemberShape, memberTarget: CollectionShape, containerName: String)
-    abstract fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String)
+    private val shapeContainingMembers: Shape,
+) {
+    private val nodeInfoUtils = NodeInfoUtils(ctx, writer)
+    private val readingClosureUtils = ReadingClosureUtils(ctx, writer)
 
-    fun renderListMember(memberName: String, containerName: String, member: MemberShape, memberTarget: CollectionShape) {
-        val memberIsFlattened = member.hasTrait(XmlFlattenedTrait::class.java)
-        var currContainerName = containerName
-        var currContainerKey = ".$memberName"
-        var containerUsedForDecoding: String
-        var ifNilOrIfLetStatement: String
-        val nextContainerName = "${memberName}WrappedContainer"
-        if (!memberIsFlattened) {
-            val memberCodingKey = CollectionMemberCodingKey.construct(memberTarget.member)
-            memberCodingKey.renderStructs(writer)
-            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<${memberCodingKey.keyTag()}>.CodingKeys.self, forKey: $currContainerKey)")
-            currContainerKey = ".member"
-            currContainerName = nextContainerName
-            containerUsedForDecoding = currContainerName
-            ifNilOrIfLetStatement = "if let $currContainerName = $currContainerName {"
-        } else {
-            writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: CodingKeys.self, forKey: $currContainerKey)")
-            // currContainerKey is intentionally not updated. This container is only used to detect empty lists, not for decoding.
-            currContainerName = nextContainerName
-            containerUsedForDecoding = containerName
-            ifNilOrIfLetStatement = "if $currContainerName != nil {"
+    fun render(member: MemberShape) {
+        val targetShape = ctx.model.expectShape(member.target)
+        val readExp = when (targetShape) {
+            is StructureShape, is UnionShape -> renderStructOrUnionExp(member, targetShape)
+            is MapShape -> renderMapExp(member, targetShape)
+            is ListShape -> renderListExp(member, targetShape)
+            is TimestampShape -> renderTimestampExp(member, targetShape)
+            else -> renderMemberExp(member)
         }
-
-        writer.openBlock(ifNilOrIfLetStatement, "} else {") {
-            val memberBuffer = "${memberName}Buffer"
-            val memberContainerName = "${memberName.removeSurroundingBackticks()}Container"
-            val (memberTargetSymbol, memberTargetSymbolName) = nestedMemberTargetSymbolMapper(memberTarget)
-            writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent($memberTargetSymbolName.self, forKey: $currContainerKey)")
-            writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
-            writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
-                writer.write("$memberBuffer = \$N()", memberTargetSymbol)
-                renderListMemberItems(memberTarget, memberContainerName, memberBuffer, containerUsedForDecoding, currContainerKey)
-            }
-            renderAssigningDecodedMember(memberName, memberBuffer)
-        }
-        writer.indent()
-        renderAssigningSymbol(memberName, "[]")
-        writer.dedent().write("}")
-    }
-
-    private fun renderListMemberItems(memberTarget: CollectionShape, memberContainerName: String, memberBuffer: String, containerUsedForDecoding: String, currentContainerKey: String, level: Int = 0) {
-        val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
-        val nestedMember = memberTarget.member
-        val nestedMemberTargetSymbol = ctx.symbolProvider.toSymbol(nestedMemberTarget)
-
-        val nestedMemberTargetType = "${nestedMemberTarget.type.name.toLowerCase()}"
-        val nestedContainerName = "${nestedMemberTargetType.removeSurroundingBackticks()}Container$level"
-        val nestedMemberBuffer = "${nestedMemberTargetType.removeSurroundingBackticks()}Buffer$level"
-        val insertMethod = when (memberTarget) {
-            is SetShape -> "insert"
-            is ListShape -> "append"
-            else -> "append"
-        }
-        if (nestedMemberTarget is CollectionShape || nestedMemberTarget is MapShape) {
-            writer.write("var $nestedMemberBuffer: \$T = nil", nestedMemberTargetSymbol)
-        }
-
-        writer.openBlock("for $nestedContainerName in $memberContainerName {", "}") {
-            when (nestedMemberTarget) {
-                is ListShape -> {
-                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, containerUsedForDecoding, currentContainerKey, level + 1)
-                    writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
-                        writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
-                    }
-                }
-                is MapShape -> {
-                    renderMapEntry(nestedMemberTarget, nestedContainerName, "entry", nestedMemberBuffer, memberContainerName, currentContainerKey, level + 1)
-                    writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
-                        writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
-                    }
-                }
-                is SetShape -> {
-                    renderNestedListMemberTarget(nestedMemberTarget, nestedContainerName, nestedMemberBuffer, containerUsedForDecoding, currentContainerKey, level + 1)
-                    writer.openBlock("if let $nestedMemberBuffer = $nestedMemberBuffer {", "}") {
-                        writer.write("$memberBuffer?.$insertMethod($nestedMemberBuffer)")
-                    }
-                }
-                is TimestampShape -> {
-                    val timestampFormat = TimestampHelpers.getTimestampFormat(nestedMember, nestedMemberTarget, defaultTimestampFormat)
-                    val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
-                    writer.write(
-                        "try \$L?.\$L(\$L.timestampStringAsDate(\$L, format: .\$L, forKey: \$L))",
-                        memberBuffer, insertMethod, containerUsedForDecoding, nestedContainerName, swiftTimestampName, currentContainerKey
-                    )
-                }
-                else -> {
-                    writer.write("$memberBuffer?.$insertMethod($nestedContainerName)")
-                }
-            }
-        }
-    }
-
-    private fun renderNestedListMemberTarget(memberTarget: CollectionShape, containerName: String, memberBuffer: String, containerUsedForDecoding: String, currentContainerKey: String, level: Int) {
-        val nestedMemberTarget = ctx.model.expectShape(memberTarget.member.target)
-        val nestedMemberTargetIsBoxed = ctx.symbolProvider.toSymbol(memberTarget.member).isBoxed() && memberTarget.hasTrait<SparseTrait>()
-
-        val isSetShape = memberTarget is SetShape
-
-        val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-        writer.write("$memberBuffer = \$N()", memberTargetSymbol)
-        if (nestedMemberTargetIsBoxed && !isSetShape) {
-            writer.openBlock("if let $containerName = $containerName {", "}") {
-                renderListMemberItems(memberTarget, containerName, memberBuffer, containerUsedForDecoding, currentContainerKey, level)
-            }
-        } else {
-            renderListMemberItems(memberTarget, containerName, memberBuffer, containerUsedForDecoding, currentContainerKey, level)
-        }
-    }
-
-    fun renderMapMember(member: MemberShape, memberTarget: MapShape, containerName: String, memberName: String) {
-        val memberTargetValue = ctx.symbolProvider.toSymbol(memberTarget.value)
-        val symbolOptional = if (ctx.symbolProvider.toSymbol(member).isBoxed()) "?" else ""
-
-        val memberNameUnquoted = memberName.removeSurrounding("`", "`")
-        var currContainerName = containerName
-        var currContainerKey = ".$memberNameUnquoted"
-        val memberIsFlattened = member.hasTrait<XmlFlattenedTrait>()
-        val keyedBySymbolForContainer = determineSymbolForShapeInMap(memberTarget, ClientRuntimeTypes.Serde.MapEntry, true)
-        var containerUsedForDecoding: String
-        var ifNilOrIfLetStatement: String
-        val nextContainerName = "${memberNameUnquoted}WrappedContainer"
-        writer.write("let $nextContainerName = $currContainerName.nestedContainerNonThrowable(keyedBy: $keyedBySymbolForContainer.CodingKeys.self, forKey: $currContainerKey)")
-        val keyedDecodingContainerKey = currContainerKey
-        if (!memberIsFlattened) {
-            currContainerKey = ".entry"
-            currContainerName = nextContainerName
-            containerUsedForDecoding = currContainerName
-            ifNilOrIfLetStatement = "if let $currContainerName = $currContainerName {"
-        } else {
-            // currContainerKey is intentionally not updated. This container is only used to detect empty lists, not for decoding.
-            currContainerName = nextContainerName
-            containerUsedForDecoding = containerName
-            ifNilOrIfLetStatement = "if $currContainerName != nil {"
-        }
-
-        writer.openBlock(ifNilOrIfLetStatement, "} else {") {
-            val memberBuffer = "${memberNameUnquoted}Buffer"
-            val memberContainerName = "${memberNameUnquoted}Container"
-            val memberTargetSymbol = "[${SwiftTypes.String}:$memberTargetValue]"
-
-            val symbolToDecodeTo = determineSymbolForShapeInMap(memberTarget, ClientRuntimeTypes.Serde.MapKeyValue, false)
-            writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent([$symbolToDecodeTo].self, forKey: $currContainerKey)")
-            writer.write("var $memberBuffer: ${memberTargetSymbol}$symbolOptional = nil")
-            writer.openBlock("if let $memberContainerName = $memberContainerName {", "}") {
-                writer.write("$memberBuffer = $memberTargetSymbol()")
-                renderMapMemberItems(memberTarget.value, memberContainerName, memberBuffer, nextContainerName, keyedDecodingContainerKey)
-            }
-            renderAssigningDecodedMember(memberName, memberBuffer)
-        }
-        writer.indent()
-        renderAssigningSymbol(memberName, "[:]")
-        writer.dedent().write("}")
-    }
-
-    private fun renderMapMemberItems(memberShape: MemberShape, memberContainerName: String, memberBuffer: String, parentKeyedContainerName: String, currentContainerKey: String, level: Int = 0) {
-        val memberTarget = ctx.model.expectShape(memberShape.target)
-        val itemInContainerName = "${memberTarget.type.name.toLowerCase().removeSurroundingBackticks()}Container$level"
-
-        val nestedBuffer = "nestedBuffer$level"
-        val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-        if (memberTarget is CollectionShape || memberTarget is MapShape) {
-            writer.write("var $nestedBuffer: \$T = nil", memberTargetSymbol)
-        }
-
-        writer.openBlock("for $itemInContainerName in $memberContainerName {", "}") {
-            when (memberTarget) {
-                is CollectionShape -> {
-                    writer.write("$nestedBuffer = \$N()", memberTargetSymbol)
-                    renderListMemberItems(memberTarget, "$itemInContainerName.value.member", nestedBuffer, parentKeyedContainerName, currentContainerKey, level)
-                    writer.write("$memberBuffer?[$itemInContainerName.key] = $nestedBuffer")
-                }
-                is MapShape -> {
-                    renderMapEntry(memberTarget, itemInContainerName, "value.entry", nestedBuffer, parentKeyedContainerName, currentContainerKey, level)
-                    writer.write("$memberBuffer?[$itemInContainerName.key] = $nestedBuffer")
-                }
-                is TimestampShape -> {
-                    val timestampFormat = TimestampHelpers.getTimestampFormat(memberShape, memberTarget, defaultTimestampFormat)
-                    val swiftTimestampName = TimestampHelpers.generateTimestampFormatEnumValue(timestampFormat)
-                    writer.write(
-                        "\$L?[\$L.key] = try \$L.timestampStringAsDate(\$L.value, format: .\$L, forKey: \$L)",
-                        memberBuffer, itemInContainerName, parentKeyedContainerName, itemInContainerName, swiftTimestampName, currentContainerKey
-                    )
-                }
-                else -> {
-                    writer.write("$memberBuffer?[$itemInContainerName.key] = $itemInContainerName.value")
-                }
-            }
-        }
-    }
-
-    private fun renderMapEntry(memberTarget: MapShape, itemInContainerName: String, entryLocation: String, memberBuffer: String, parentKeyedContainerName: String, currentContainerKey: String, level: Int) {
-        val entryContainerName = "${itemInContainerName}NestedEntry$level"
-
-        val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-        writer.write("$memberBuffer = \$N()", memberTargetSymbol)
-        writer.openBlock("if let $entryContainerName = $itemInContainerName.$entryLocation {", "}") {
-            renderMapMemberItems(memberTarget.value, entryContainerName, memberBuffer, parentKeyedContainerName, currentContainerKey, level + 1)
-        }
-    }
-
-    open fun renderTimestampMember(member: MemberShape, memberTarget: TimestampShape, containerName: String) {
-        val memberName = ctx.symbolProvider.toMemberName(member).removeSurrounding("`", "`")
-        val memberTargetSymbol = ctx.symbolProvider.toSymbol(member)
-        val timestampFormat = TimestampHelpers.getTimestampFormat(member, memberTarget, defaultTimestampFormat)
-        val decodedMemberName = writer.format("\$LDecoded", memberName)
-        val codingKey = writer.format(".\$L", memberName)
-        val decodingCode = TimestampDecodeGenerator(
-            decodedMemberName,
-            containerName,
-            codingKey,
-            timestampFormat,
-            memberTargetSymbol.isBoxed()
-        ).generate(writer)
-        renderAssigningDecodedMember(memberName, decodedMemberName)
-    }
-
-    open fun renderBlobMember(member: MemberShape, memberTarget: BlobShape, containerName: String) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val memberNameUnquoted = memberName.removeSurrounding("`", "`")
-        var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-        val decodedMemberName = "${memberName}Decoded"
-
-        writer.openBlock("if $containerName.contains(.$memberNameUnquoted) {", "} else {") {
-            writer.openBlock("do {", "} catch {") {
-                writer.write("let $decodedMemberName = try $containerName.decodeIfPresent(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
-                renderAssigningDecodedMember(memberName, decodedMemberName)
-            }
-            writer.indent()
-            renderEmptyDataForBlobTarget(memberTarget, memberName)
-            writer.dedent().write("}")
+        if (shapeContainingMembers.isUnionShape) {
+            writer.write("return .\$L(\$L)", memberName, readExp)
+        } else if (shapeContainingMembers.isError) {
+            writer.write("value.properties.\$L = \$L", memberName, readExp)
+        } else {
+            writer.write("value.\$L = \$L", memberName, readExp)
         }
-        writer.indent()
-        renderAssigningNil(memberName)
-        writer.dedent().write("}")
     }
 
-    private fun renderEmptyDataForBlobTarget(memberTarget: Shape, memberName: String) {
-        val isStreaming = memberTarget.hasTrait<StreamingTrait>()
-        val value = if (isStreaming) "${ClientRuntimeTypes.Core.ByteStream}.data(\"\".data(using: .utf8)!)" else "\"\".data(using: .utf8)"
-        renderAssigningDecodedMember(memberName, "$value")
+    fun renderStructOrUnionExp(memberShape: MemberShape, shape: Shape): String {
+        val propertyNodeInfo = nodeInfoUtils.nodeInfo(memberShape)
+        val readingClosure = readingClosureUtils.readingClosure(memberShape)
+        return writer.format(
+            "try reader[\$L].\$L(readingClosure: \$L)",
+            propertyNodeInfo,
+            readMethodName("read"),
+            readingClosure
+        )
     }
 
-    fun renderScalarMember(member: MemberShape, memberTarget: Shape, containerName: String, unkeyed: Boolean = false, isUnion: Boolean = false) {
-        val memberName = ctx.symbolProvider.toMemberName(member)
-        val memberNameUnquoted = memberName.removeSurrounding("`", "`")
-        var memberTargetSymbol = ctx.symbolProvider.toSymbol(member)
-        val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion || (member.hasTrait<DefaultTrait>())) "decodeIfPresent" else "decode"
-        val decodedMemberName = "${memberNameUnquoted}Decoded"
+    fun renderListExp(memberShape: MemberShape, listShape: ListShape): String {
+        val nodeInfo = nodeInfoUtils.nodeInfo(memberShape)
+        val memberReadingClosure = readingClosureUtils.readingClosure(listShape.member)
+        val memberNodeInfo = nodeInfoUtils.nodeInfo(listShape.member)
+        val isFlattened = memberShape.hasTrait<XmlFlattenedTrait>()
+        return writer.format(
+            "try reader[\$L].\$L(memberReadingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+            nodeInfo,
+            readMethodName("readList"),
+            memberReadingClosure,
+            memberNodeInfo,
+            isFlattened
+        )
+    }
 
-        val defaultValNilCoalescing = member.getTrait(DefaultTrait::class.java).getOrNull()?.let { trait ->
-            val defaultVal = trait.toNode()
-            when {
-                defaultVal.isStringNode() -> "?? \"$defaultVal\""
-                defaultVal.isNullNode() -> "?? nil"
-                else -> "?? $defaultVal"
+    fun renderMapExp(member: MemberShape, mapShape: MapShape): String {
+        val mapNodeInfo = nodeInfoUtils.nodeInfo(member)
+        val valueReadingClosure = ReadingClosureUtils(ctx, writer).readingClosure(mapShape.value)
+        val keyNodeInfo = nodeInfoUtils.nodeInfo(mapShape.key)
+        val valueNodeInfo = nodeInfoUtils.nodeInfo(mapShape.value)
+        val isFlattened = member.hasTrait<XmlFlattenedTrait>()
+        return writer.format(
+            "try reader[\$L].\$L(valueReadingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+            mapNodeInfo,
+            readMethodName("readMap"),
+            valueReadingClosure,
+            keyNodeInfo,
+            valueNodeInfo,
+            isFlattened
+        )
+    }
+
+    fun renderTimestampExp(memberShape: MemberShape, timestampShape: TimestampShape): String {
+        val timestampNodeInfo = NodeInfoUtils(ctx, writer).nodeInfo(memberShape)
+        val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
+        val swiftTimestampFormatCase = TimestampUtils.timestampFormat(memberTimestampFormatTrait, timestampShape)
+        return writer.format("try reader[\$L].\$L(format: \$L)",
+            timestampNodeInfo,
+            readMethodName("readTimestamp"),
+            swiftTimestampFormatCase
+        )
+    }
+
+    fun renderMemberExp(memberShape: MemberShape): String {
+        val propertyNodeInfo = nodeInfoUtils.nodeInfo(memberShape)
+        return writer.format(
+            "try reader[\$L].\$L()\$L",
+            propertyNodeInfo,
+            readMethodName("read"),
+            default(memberShape),
+        )
+    }
+
+    private fun readMethodName(baseName: String): String {
+        return "${baseName}${"".takeIf { shapeContainingMembers.isUnionShape } ?: "IfPresent"}"
+    }
+
+    private fun default(memberShape: MemberShape): String {
+        val targetShape = ctx.model.expectShape(memberShape.target)
+        val defaultTrait = memberShape.getTrait<DefaultTrait>() ?: targetShape.getTrait<DefaultTrait>()
+        return defaultTrait?.toNode()?.let {
+            // If the default value is null, provide no default.
+            if (it.isNullNode) { return "" }
+            // Provide a default value dependent on the type.
+            return when (targetShape) {
+                is EnumShape -> " ?? ${swiftEnumCaseName(Optional.of(it.expectStringNode().value), "")}"
+                is IntEnumShape -> " ?? ${swiftEnumCaseName(Optional.of(it.expectStringNode().value), "")}"
+                is StringShape -> " ?? ${it.expectStringNode().value}"
+                is ByteShape -> " ?? ${it.expectNumberNode().value}"
+                is ShortShape -> " ?? ${it.expectNumberNode().value}"
+                is IntegerShape -> " ?? ${it.expectNumberNode().value}"
+                is LongShape -> " ?? ${it.expectNumberNode().value}"
+                is FloatShape -> " ?? ${it.expectNumberNode().value}"
+                is DoubleShape -> " ?? ${it.expectNumberNode().value}"
+                is BigIntegerShape -> " ?? ${it.expectNumberNode().value}"
+                is BigDecimalShape -> " ?? ${it.expectNumberNode().value}"
+                is BooleanShape -> " ?? ${it.expectBooleanNode().value}"
+                // Lists can only have empty list as default value
+                is ListShape, is SetShape -> " ?? []"
+                // Maps can only have empty map as default value
+                is MapShape -> " ?? [:]"
+                else -> ""
             }
+        // If there is no default trait, provide no default value.
         } ?: ""
-
-        if (unkeyed) {
-            writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self)", memberTargetSymbol)
-        } else {
-            writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberNameUnquoted) $defaultValNilCoalescing", memberTargetSymbol)
-        }
-        renderAssigningDecodedMember(memberName, decodedMemberName, member.hasTrait(SwiftBoxTrait::class.java))
-    }
-
-    private fun nestedMemberTargetSymbolMapper(collectionShape: CollectionShape): Pair<Symbol, String> {
-        val symbol = ctx.symbolProvider.toSymbol(collectionShape)
-        if (symbol.name.contains("[${ClientRuntimeTypes.Core.Date}]")) {
-            val updatedName = symbol.name.replace("[${ClientRuntimeTypes.Core.Date}]", "[${SwiftTypes.String}]")
-            return Pair(symbol, updatedName)
-        }
-        val nestedMemberTarget = ctx.model.expectShape(collectionShape.member.target)
-        val symbolName = "[${convertListSymbolName(nestedMemberTarget)}]"
-        return Pair(symbol, symbolName)
-    }
-
-    private fun convertListSymbolName(shape: Shape): String {
-        val mappedSymbol = when (shape) {
-            is ListShape -> {
-                val nestedShape = ctx.model.expectShape(shape.member.target)
-                "[${convertListSymbolName(nestedShape)}]"
-            }
-            is SetShape -> {
-                val nestedShape = ctx.model.expectShape(shape.member.target)
-                "[${convertListSymbolName(nestedShape)}]"
-            }
-            is MapShape -> {
-                return determineSymbolForShapeInMap(shape, ClientRuntimeTypes.Serde.MapEntry, true)
-            }
-            else -> {
-                ctx.symbolProvider.toSymbol(shape).toString()
-            }
-        }
-        return mappedSymbol
-    }
-
-    private fun determineSymbolForShapeInMap(currShape: Shape, containingSymbol: Symbol, shouldRenderStructs: Boolean, level: Int = 0): String {
-        var mappedSymbol = when (currShape) {
-            is MapShape -> {
-                val keyValueName = MapKeyValue.constructMapKeyValue(currShape.key, currShape.value, level)
-                if (shouldRenderStructs) {
-                    keyValueName.renderStructs(writer)
-                }
-                val targetShape = ctx.model.expectShape(currShape.value.target)
-                val valueEvaluated = determineSymbolForShapeInMap(targetShape, ClientRuntimeTypes.Serde.MapEntry, shouldRenderStructs, level + 1)
-                "$containingSymbol<${SwiftTypes.String}, $valueEvaluated, ${keyValueName.keyTag()}, ${keyValueName.valueTag()}>"
-            }
-            is CollectionShape -> {
-                val collectionName = CollectionMemberCodingKey.construct(currShape.member, level)
-                if (shouldRenderStructs) {
-                    collectionName.renderStructs(writer)
-                }
-                val targetShape = ctx.model.expectShape(currShape.member.target)
-                val nestedShape = determineSymbolForShapeInMap(targetShape, ClientRuntimeTypes.Serde.MapEntry, shouldRenderStructs, level + 1)
-                "${ClientRuntimeTypes.Serde.CollectionMember}<$nestedShape, ${collectionName.keyTag()}>"
-            }
-            is TimestampShape -> {
-                SwiftTypes.String.toString()
-            }
-            else -> {
-                ctx.symbolProvider.toSymbol(currShape).toString()
-            }
-        }
-        return mappedSymbol
     }
 }

@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+//import SmithyXML
+
 public enum Document {
     case array([Document])
     case boolean(Bool)
@@ -11,6 +13,22 @@ public enum Document {
     case string(String)
     case null
 }
+
+//extension Document {
+//
+//    static func writingClosure(_ value: Document?, to writer: SmithyXML.Writer) throws {
+//        guard let value else { writer.detach; return }
+//        switch self {
+//        case .array(let array):
+//            writer["array"].writeList(array, memberWritingClosure: Self.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false)
+//        }
+//    }
+//
+//    static func readingClosure(from reader: SmithyXML.Reader) throws -> Document {
+//
+//    }
+//}
+
 extension Document: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()

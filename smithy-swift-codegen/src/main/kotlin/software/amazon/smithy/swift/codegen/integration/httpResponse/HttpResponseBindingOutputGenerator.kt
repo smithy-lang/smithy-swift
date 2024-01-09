@@ -18,14 +18,14 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTrai
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitResponseCode
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 
-class HttpResponseBindingOutputGenerator(
-    val ctx: ProtocolGenerator.GenerationContext,
-    val op: OperationShape,
-    val httpBindingResolver: HttpBindingResolver,
-    val defaultTimestampFormat: TimestampFormatTrait.Format
-) {
+class HttpResponseBindingOutputGenerator(): HttpResponseBindingOutputGeneratable {
 
-    fun render() {
+    override fun render(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        httpBindingResolver: HttpBindingResolver,
+        defaultTimestampFormat: TimestampFormatTrait.Format
+    ) {
         if (op.output.isEmpty) {
             return
         }

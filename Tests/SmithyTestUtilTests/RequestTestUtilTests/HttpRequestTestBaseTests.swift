@@ -38,7 +38,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         public typealias Context = ClientRuntime.HttpContext
     }
 
-    struct SayHelloInputQueryItemMiddleware<StackOutput: HttpResponseBinding>: Middleware {
+    struct SayHelloInputQueryItemMiddleware<StackOutput>: Middleware {
 
         var id: String = "SayHelloInputQueryItemMiddleware"
 
@@ -66,7 +66,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         typealias Context = HttpContext
     }
 
-    struct SayHelloInputHeaderMiddleware<StackOutput: HttpResponseBinding>: Middleware {
+    struct SayHelloInputHeaderMiddleware<StackOutput>: Middleware {
         var id: String = "SayHelloInputHeaderMiddleware"
 
         func handle<H>(context: HttpContext,
@@ -91,7 +91,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         typealias Context = HttpContext
     }
 
-    struct SayHelloInputBodyMiddleware<StackOutput: HttpResponseBinding>: Middleware {
+    struct SayHelloInputBodyMiddleware<StackOutput>: Middleware {
         var id: String = "SayHelloInputBodyMiddleware"
 
         func handle<H>(context: HttpContext,
@@ -181,8 +181,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputHeaderMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware())
-        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(
-            id: "TestDeserializeMiddleware") { _, actual in
+        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput>(
+            id: "TestDeserializeMiddleware", responseClosure: { _ in try MockOutput() }) { _, actual in
 
             let forbiddenQueryParams = ["ForbiddenQuery"]
             for forbiddenQueryParam in forbiddenQueryParams {
@@ -212,20 +212,11 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) throws -> Void in
                 XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
                 XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
-                try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: false, isJSON: true) { (expectedData, actualData) in
-                    do {
-                         let decoder = JSONDecoder()
-                         let expectedObj = try decoder.decode(SayHelloInputBody.self, from: expectedData)
-                         let actualObj = try decoder.decode(SayHelloInputBody.self, from: actualData)
-                         XCTAssertEqual(expectedObj, actualObj)
-                     } catch let err {
-                         XCTFail("Failed to verify body \(err)")
-                     }
-                }
+                try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: .json)
             })
 
             let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
-            let mockOutput = try! MockOutput(httpResponse: response, decoder: nil)
+            let mockOutput = MockOutput()
             let output = OperationOutput<MockOutput>(httpResponse: response, output: mockOutput)
             return output
            })

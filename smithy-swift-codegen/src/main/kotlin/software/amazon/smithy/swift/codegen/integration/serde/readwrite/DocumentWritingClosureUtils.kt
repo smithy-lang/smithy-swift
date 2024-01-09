@@ -18,19 +18,6 @@ class DocumentWritingClosureUtils(
     val ctx: ProtocolGenerator.GenerationContext,
     val writer: SwiftWriter
 ) {
-    private enum class AwsProtocol {
-        XML, FORM_URL, JSON
-    }
-
-    private val awsProtocol: AwsProtocol
-        get() = if (ctx.service.hasTrait<RestXmlTrait>()) {
-            AwsProtocol.XML
-        } else if (ctx.service.hasTrait<AwsQueryTrait>() || ctx.service.hasTrait<Ec2QueryTrait>()) {
-            AwsProtocol.FORM_URL
-        } else {
-            AwsProtocol.JSON
-        }
-
     fun closure(memberShape: MemberShape): String {
         val rootNodeInfo = NodeInfoUtils(ctx, writer).nodeInfo(memberShape, true)
         return closure(rootNodeInfo)
@@ -41,42 +28,42 @@ class DocumentWritingClosureUtils(
         return closure(rootNodeInfo)
     }
     private fun closure(rootNodeInfo: String): String {
-        when (awsProtocol) {
-            AwsProtocol.XML -> {
+        when (ctx.service.requestWireProtocol) {
+            WireProtocol.XML -> {
                 return writer.format("\$N.documentWritingClosure(rootNodeInfo: \$L)", readWriteSymbol(), rootNodeInfo)
             }
-            AwsProtocol.FORM_URL, AwsProtocol.JSON -> {
+            WireProtocol.FORM_URL, WireProtocol.JSON -> {
                 return writer.format("\$N.documentWritingClosure(encoder: encoder)", readWriteSymbol())
             }
         }
     }
 
     fun writerSymbol(): Symbol {
-        when (awsProtocol) {
-            AwsProtocol.XML -> {
+        when (ctx.service.requestWireProtocol) {
+            WireProtocol.XML -> {
                 writer.addImport(SwiftDependency.SMITHY_XML.target)
                 return SmithyXMLTypes.Writer
             }
-            AwsProtocol.FORM_URL -> {
+            WireProtocol.FORM_URL -> {
                 return ClientRuntimeTypes.Serde.FormURLWriter
             }
-            AwsProtocol.JSON -> {
+            WireProtocol.JSON -> {
                 return ClientRuntimeTypes.Serde.JSONWriter
             }
         }
     }
 
     private fun readWriteSymbol(): Symbol {
-        when (awsProtocol) {
-            AwsProtocol.XML -> {
+        when (ctx.service.requestWireProtocol) {
+            WireProtocol.XML -> {
                 writer.addImport(SwiftDependency.SMITHY_XML.target)
                 return SmithyXMLTypes.XMLReadWrite
             }
-            AwsProtocol.FORM_URL -> {
+            WireProtocol.FORM_URL -> {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 return ClientRuntimeTypes.Serde.FormURLReadWrite
             }
-            AwsProtocol.JSON -> {
+            WireProtocol.JSON -> {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 return ClientRuntimeTypes.Serde.JSONReadWrite
             }

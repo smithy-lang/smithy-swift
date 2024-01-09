@@ -16,3 +16,12 @@ public protocol MessageUnmarshallable {
     ///              using the same decoder.
     init(message: EventStream.Message, decoder: ResponseDecoder) throws
 }
+
+public typealias UnmarshalClosure<T> = (EventStream.Message) throws -> T
+
+
+public func jsonUnmarshalClosure<T: MessageUnmarshallable>(responseDecoder: ResponseDecoder) -> UnmarshalClosure<T> {
+    return { message in
+        try T(message: message, decoder: responseDecoder)
+    }
+}

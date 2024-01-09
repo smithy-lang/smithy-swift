@@ -8,7 +8,7 @@
 import XCTest
 @_spi(SmithyXML) import SmithyXML
 
-class XMLEncoderTests: XCTestCase {
+class WriterTests: XCTestCase {
 
     private struct HasNestedElements: Encodable {
 

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct NodeInfo {
+public struct NodeInfo: Equatable {
 
     public enum Location {
         case element
@@ -30,5 +30,16 @@ public struct NodeInfo {
         self.name = name
         self.location = location
         self.namespace = namespace
+    }
+}
+
+extension NodeInfo: ExpressibleByStringLiteral {
+
+    public typealias StringLiteralType = String
+    
+    /// Creates a new `NodeInfo` with the passed string as name, location of `.element`, and `nil` namespace.
+    /// - Parameter value: The name for the node info.
+    public init(stringLiteral value: String) {
+        self.init(value)
     }
 }

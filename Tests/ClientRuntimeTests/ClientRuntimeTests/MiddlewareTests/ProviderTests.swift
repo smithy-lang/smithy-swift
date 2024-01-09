@@ -26,7 +26,7 @@ class ProviderTests: HttpRequestTestBase {
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
         operationStack.initializeStep.intercept(position: .after, middleware: URLPathMiddleware<MockInput, MockOutput>())
-        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
+        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
         _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
                                         next: MockHandler { (context, request) in
@@ -46,7 +46,7 @@ class ProviderTests: HttpRequestTestBase {
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
         operationStack.serializeStep.intercept(position: .after, middleware: QueryItemMiddleware())
-        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
+        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
         _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
                                         next: MockHandler { (context, request) in
@@ -76,7 +76,7 @@ class ProviderTests: HttpRequestTestBase {
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
         operationStack.serializeStep.intercept(position: .after, middleware: HeaderMiddleware())
-        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
+        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
         _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
                                         next: MockHandler { (context, request) in

@@ -5,6 +5,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.XmlAttributeTrait
 import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.model.traits.XmlNamespaceTrait
+import software.amazon.smithy.swift.codegen.SmithyXMLTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.getTrait
@@ -23,11 +24,7 @@ class NodeInfoUtils(
         val xmlNamespaceTrait = shape.getTrait<XmlNamespaceTrait>() ?: ctx.service.getTrait<XmlNamespaceTrait>()
         val xmlNamespaceParam = namespaceParam(xmlNamespaceTrait)
 
-        return writer.format(
-            ".init(\$S\$L)",
-            resolvedName,
-            xmlNamespaceParam
-        )
+        return nodeInfo(resolvedName, "", xmlNamespaceParam)
     }
 
     fun nodeInfo(member: MemberShape, forRootNode: Boolean = false): String {
@@ -45,12 +42,7 @@ class NodeInfoUtils(
         val xmlNamespaceTrait = member.getTrait<XmlNamespaceTrait>() ?: targetShape.getTrait<XmlNamespaceTrait>() ?: ctx.service.getTrait<XmlNamespaceTrait>().takeIf { forRootNode }
         val xmlNamespaceParam = namespaceParam(xmlNamespaceTrait)
 
-        return writer.format(
-            ".init(\$S\$L\$L)",
-            resolvedName,
-            xmlAttributeParam,
-            xmlNamespaceParam
-        )
+        return nodeInfo(resolvedName, xmlAttributeParam, xmlNamespaceParam)
     }
 
     private fun namespaceParam(xmlNamespaceTrait: XmlNamespaceTrait?): String {
@@ -61,5 +53,18 @@ class NodeInfoUtils(
                 it.uri
             )
         } ?: ""
+    }
+
+    private fun nodeInfo(resolvedName: String, xmlAttributeParam: String, xmlNamespaceParam: String): String {
+        if (xmlAttributeParam == "" && xmlNamespaceParam == "") {
+            return writer.format("\$S", resolvedName)
+        } else {
+            return writer.format(
+                ".init(\$S\$L\$L)",
+                resolvedName,
+                xmlAttributeParam,
+                xmlNamespaceParam
+            )
+        }
     }
 }

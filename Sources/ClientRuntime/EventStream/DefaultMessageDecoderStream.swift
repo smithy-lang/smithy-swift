@@ -8,28 +8,28 @@
 extension EventStream {
 
     /// Stream adapter that decodes input data into `EventStream.Message` objects.
-    public struct DefaultMessageDecoderStream<Event: MessageUnmarshallable>: MessageDecoderStream {
+    public struct DefaultMessageDecoderStream<Event>: MessageDecoderStream {
         public typealias Element = Event
 
         let stream: Stream
         let messageDecoder: MessageDecoder
-        let responseDecoder: ResponseDecoder
+        let unmarshalClosure: UnmarshalClosure<Event>
 
-        public init(stream: Stream, messageDecoder: MessageDecoder, responseDecoder: ResponseDecoder) {
+        public init(stream: Stream, messageDecoder: MessageDecoder, unmarshalClosure: @escaping UnmarshalClosure<Event>) {
             self.stream = stream
             self.messageDecoder = messageDecoder
-            self.responseDecoder = responseDecoder
+            self.unmarshalClosure = unmarshalClosure
         }
 
         public struct AsyncIterator: AsyncIteratorProtocol {
             let stream: Stream
             let messageDecoder: MessageDecoder
-            let responseDecoder: ResponseDecoder
+            let unmarshalClosure: UnmarshalClosure<Event>
 
-            init(stream: Stream, messageDecoder: MessageDecoder, responseDecoder: ResponseDecoder) {
+            init(stream: Stream, messageDecoder: MessageDecoder, unmarshalClosure: @escaping UnmarshalClosure<Event>) {
                 self.stream = stream
                 self.messageDecoder = messageDecoder
-                self.responseDecoder = responseDecoder
+                self.unmarshalClosure = unmarshalClosure
             }
 
             mutating public func next() async throws -> Event? {
@@ -42,8 +42,7 @@ extension EventStream {
 
                     // if we have a message in the decoder buffer, return it
                     if let message = try messageDecoder.message() {
-                        let event = try Element(message: message, decoder: responseDecoder)
-                        return event
+                        return try unmarshalClosure(message)
                     }
 
                     data = try await stream.readAsync(upToCount: Int.max)
@@ -61,7 +60,7 @@ extension EventStream {
             AsyncIterator(
                 stream: stream,
                 messageDecoder: messageDecoder,
-                responseDecoder: responseDecoder
+                unmarshalClosure: unmarshalClosure
             )
         }
     }

@@ -7,16 +7,18 @@
 
 import ClientRuntime
 
-public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBinding,
-                                        OperationStackError: HttpResponseErrorBinding>: Middleware {
-    // swiftlint:disable line_length
-    public typealias MockDeserializeMiddlewareCallback = (Context,
-                                                          SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput>?
+public struct MockDeserializeMiddleware<OperationStackOutput>: Middleware {
+
+    public typealias MockDeserializeMiddlewareCallback =
+        (Context, SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput>?
+
     public var id: String
+    let responseClosure: HTTPResponseClosure<OperationStackOutput>
     let callback: MockDeserializeMiddlewareCallback?
 
-    public init(id: String, callback: MockDeserializeMiddlewareCallback? = nil) {
+    public init(id: String, responseClosure: @escaping HTTPResponseClosure<OperationStackOutput>, callback: MockDeserializeMiddlewareCallback? = nil) {
         self.id = id
+        self.responseClosure = responseClosure
         self.callback = callback
     }
 
@@ -28,8 +30,7 @@ public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBindin
           Self.MOutput == H.Output,
           Self.Context == H.Context {
 
-              if let callback = self.callback,
-                 let callbackReturnValue = try await callback(context, input) {
+              if let callbackReturnValue = try await callback?(context, input) {
                   return callbackReturnValue
               }
 
@@ -37,8 +38,7 @@ public struct MockDeserializeMiddleware<OperationStackOutput: HttpResponseBindin
 
               var copiedResponse = response
 
-              let decoder = context.getDecoder()
-              let output = try await OperationStackOutput(httpResponse: copiedResponse.httpResponse, decoder: decoder)
+              let output = try await responseClosure(copiedResponse.httpResponse)
               copiedResponse.output = output
 
               return copiedResponse
