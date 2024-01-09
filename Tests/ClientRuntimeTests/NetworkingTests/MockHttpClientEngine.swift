@@ -7,12 +7,12 @@ import Foundation
 import AwsCommonRuntimeKit
 @testable import ClientRuntime
 
-class MockHttpClientEngine: HttpClientEngine {
+class MockHttpClientEngine: HTTPClient {
     func successHttpResponse(request: SdkHttpRequest) -> HttpResponse {
         return HttpResponse(headers: request.headers, body: ByteStream.empty, statusCode: HttpStatusCode.ok)
     }
 
-    func execute(request: SdkHttpRequest) async throws -> HttpResponse {
+    func send(request: SdkHttpRequest) async throws -> HttpResponse {
         return successHttpResponse(request: request)
     }
 }
