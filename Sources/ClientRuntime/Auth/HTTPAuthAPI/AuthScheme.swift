@@ -11,7 +11,7 @@ public protocol AuthScheme {
     var idKind: IdentityKind { get }
 
     // Hook used by AuthSchemeMiddleware that allows signing properties customization, if needed by an auth scheme
-    func customizeSigningProperties(signingProperties: Attributes, context: HttpContext) -> Attributes
+    func customizeSigningProperties(signingProperties: Attributes, context: HttpContext) throws -> Attributes
 }
 
 extension AuthScheme {

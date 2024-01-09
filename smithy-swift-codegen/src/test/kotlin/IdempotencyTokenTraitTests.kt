@@ -27,6 +27,7 @@ class IdempotencyTokenTraitTests {
                                   .withPartitionID(value: config.partitionID)
                                   .withAuthSchemes(value: config.authSchemes!)
                                   .withAuthSchemeResolver(value: config.serviceSpecific.authSchemeResolver)
+                                  .withUnsignedPayloadTrait(value: false)
                                   .build()
                     var operation = ClientRuntime.OperationStack<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>(id: "idempotencyTokenWithStructure")
                     operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.IdempotencyTokenMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>(keyPath: \.token))

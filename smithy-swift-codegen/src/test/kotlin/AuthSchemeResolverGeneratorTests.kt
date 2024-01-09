@@ -35,7 +35,7 @@ class AuthSchemeResolverGeneratorTests {
 
                 public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
                     public func resolveAuthScheme(params: ClientRuntime.AuthSchemeResolverParameters) throws -> [AuthOption] {
-                        var validAuthOptions = Array<AuthOption>()
+                        var validAuthOptions = [AuthOption]()
                         guard let serviceParams = params as? ExampleAuthSchemeResolverParameters else {
                             throw ClientError.authError("Service specific auth scheme parameters type must be passed to auth scheme resolver.")
                         }
