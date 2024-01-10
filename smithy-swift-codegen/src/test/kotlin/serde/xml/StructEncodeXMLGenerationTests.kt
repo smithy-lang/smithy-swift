@@ -33,38 +33,18 @@ class StructEncodeXMLGenerationTests {
                     case trueBooleanValue
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let byteValue = byteValue {
-                        try container.encode(byteValue, forKey: ClientRuntime.Key("byteValue"))
-                    }
-                    if let doubleValue = doubleValue {
-                        try container.encode(doubleValue, forKey: ClientRuntime.Key("DoubleDribble"))
-                    }
-                    if let falseBooleanValue = falseBooleanValue {
-                        try container.encode(falseBooleanValue, forKey: ClientRuntime.Key("falseBooleanValue"))
-                    }
-                    if let floatValue = floatValue {
-                        try container.encode(floatValue, forKey: ClientRuntime.Key("floatValue"))
-                    }
-                    if let integerValue = integerValue {
-                        try container.encode(integerValue, forKey: ClientRuntime.Key("integerValue"))
-                    }
-                    if let longValue = longValue {
-                        try container.encode(longValue, forKey: ClientRuntime.Key("longValue"))
-                    }
-                    if let `protocol` = `protocol` {
-                        try container.encode(`protocol`, forKey: ClientRuntime.Key("protocol"))
-                    }
-                    if let shortValue = shortValue {
-                        try container.encode(shortValue, forKey: ClientRuntime.Key("shortValue"))
-                    }
-                    if let stringValue = stringValue {
-                        try container.encode(stringValue, forKey: ClientRuntime.Key("stringValue"))
-                    }
-                    if let trueBooleanValue = trueBooleanValue {
-                        try container.encode(trueBooleanValue, forKey: ClientRuntime.Key("trueBooleanValue"))
-                    }
+                static func writingClosure(_ value: SimpleScalarPropertiesInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("byteValue")].write(value.byteValue)
+                    try writer[.init("DoubleDribble")].write(value.doubleValue)
+                    try writer[.init("falseBooleanValue")].write(value.falseBooleanValue)
+                    try writer[.init("floatValue")].write(value.floatValue)
+                    try writer[.init("integerValue")].write(value.integerValue)
+                    try writer[.init("longValue")].write(value.longValue)
+                    try writer[.init("protocol")].write(value.`protocol`)
+                    try writer[.init("shortValue")].write(value.shortValue)
+                    try writer[.init("stringValue")].write(value.stringValue)
+                    try writer[.init("trueBooleanValue")].write(value.trueBooleanValue)
                 }
             }
             """.trimIndent()
@@ -83,14 +63,10 @@ class StructEncodeXMLGenerationTests {
                     case b = "other"
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let a = a {
-                        try container.encode(a, forKey: ClientRuntime.Key("value"))
-                    }
-                    if let b = b {
-                        try container.encode(b, forKey: ClientRuntime.Key("other"))
-                    }
+                static func writingClosure(_ value: RestXmlProtocolClientTypes.StructureListMember?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("value")].write(value.a)
+                    try writer[.init("other")].write(value.b)
                 }
             
                 public init(from decoder: Swift.Decoder) throws {

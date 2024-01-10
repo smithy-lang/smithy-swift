@@ -4,7 +4,7 @@
  */
 
 import XCTest
-@testable import ClientRuntime
+@testable import SmithyTimestamps
 
 class DateFormatterTests: XCTestCase {
 

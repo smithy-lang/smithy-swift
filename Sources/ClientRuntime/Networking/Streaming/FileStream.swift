@@ -5,11 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+import class Foundation.FileHandle
+import class Foundation.NSRecursiveLock
 
-/// A `Stream` that wraps a `FileHandle`.
+/// A `Stream` that wraps a `FileHandle` for reading the file.
+///
 /// - Note: This class is thread-safe.
-class FileStream: Stream {
+final class FileStream: Stream {
+
     /// Returns the length of the stream, if known
     var length: Int? {
         guard let len = try? fileHandle.length() else {
@@ -118,13 +121,19 @@ class FileStream: Stream {
     }
 
     /// Closes the stream.
-    func close() throws {
-       try lock.withLockingClosure {
+    func close() {
+       lock.withLockingClosure {
            if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
-               try fileHandle.close()
+               try? fileHandle.close()
            } else {
                fileHandle.closeFile()
            }
         }
+    }
+
+    func closeWithError(_ error: Error) {
+        // The error is only relevant when streaming to a programmatic consumer, not to disk.
+        // So close the file handle in this case, and the error is dropped.
+        close()
     }
 }

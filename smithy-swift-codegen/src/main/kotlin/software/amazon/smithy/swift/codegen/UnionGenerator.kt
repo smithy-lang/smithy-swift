@@ -8,9 +8,11 @@ package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
+import software.amazon.smithy.swift.codegen.customtraits.RecursiveUnionTrait
 import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -71,28 +73,21 @@ class UnionGenerator(
     fun renderUnion() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        val indirectKeywordIfNeeded = if (needsIndirectKeyword(unionSymbol.name, shape)) "indirect " else ""
-        writer.openBlock("public ${indirectKeywordIfNeeded}enum \$union.name:L: \$N {", "}\n", SwiftTypes.Protocols.Equatable) {
+        val indirectOrNot = "indirect ".takeIf { shape.hasTrait<RecursiveUnionTrait>() } ?: ""
+        writer.openBlock("public ${indirectOrNot}enum \$union.name:L: \$N {", "}\n", SwiftTypes.Protocols.Equatable) {
             // event streams (@streaming union) MAY have variants that target errors.
             // These errors if encountered on the stream will be thrown as an exception rather
             // than showing up as one of the possible events the consumer will see on the stream (AsyncThrowingStream<T>).
             val members = shape.eventStreamEvents(model)
 
-            members.forEach {
-                writer.writeMemberDocs(model, it)
-                val enumCaseName = symbolProvider.toMemberName(it)
-                val enumCaseAssociatedType = symbolProvider.toSymbol(it)
+            members.forEach { member: MemberShape ->
+                writer.writeMemberDocs(model, member)
+                val enumCaseName = symbolProvider.toMemberName(member)
+                val enumCaseAssociatedType = symbolProvider.toSymbol(member)
                 writer.write("case \$L(\$L)", enumCaseName, enumCaseAssociatedType)
             }
             // add the sdkUnknown case which will always be last
             writer.write("case sdkUnknown(\$N)", SwiftTypes.String)
         }
-    }
-
-    private fun needsIndirectKeyword(unionSymbolName: String, shape: UnionShape): Boolean {
-        val membersReferencingUnion = shape.allMembers.values.filter {
-            (symbolProvider.toSymbol(it).name).equals(unionSymbolName)
-        }
-        return membersReferencingUnion.isNotEmpty()
     }
 }

@@ -22,7 +22,7 @@ class OperationStackTests: HttpRequestTestBase {
             .withOperation(value: "Test Operation")
         let builtContext = addContextValues.build()
 
-        var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
+        var stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")
         stack.initializeStep.intercept(position: .before, middleware: MockInitializeMiddleware(id: "TestInitializeMiddleware", callback: { _, _ in
             self.checkOrder(&currExpectCount, 1)
         }))
@@ -55,7 +55,7 @@ class OperationStackTests: HttpRequestTestBase {
                                             next: MockHandler { (_, request) in
                                                 self.checkOrder(&currExpectCount, 6)
                                                 XCTAssert(request.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
-                                                let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
+                                                let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
                                                 return output
                                             })

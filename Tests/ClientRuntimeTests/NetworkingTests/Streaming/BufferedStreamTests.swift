@@ -62,7 +62,7 @@ final class BufferedStreamTests: XCTestCase {
 
     func test_read_readsRemainingDataThenNilWhenStreamIsClosed() throws {
         let subject = BufferedStream(data: testData)
-        try subject.close()
+        subject.close()
         let readData1 = try subject.read(upToCount: Int.max)
         XCTAssertEqual(testData, readData1)
         let readData2 = try subject.read(upToCount: Int.max)
@@ -73,7 +73,7 @@ final class BufferedStreamTests: XCTestCase {
 
     func test_readToEnd_readsToEnd() throws {
         let subject = BufferedStream(data: testData)
-        try subject.close()
+        subject.close()
 
         let readData = try subject.readToEnd()
         XCTAssertEqual(readData, testData)
@@ -87,7 +87,7 @@ final class BufferedStreamTests: XCTestCase {
 
     func test_readToEndAsync_readsToEnd() async throws {
         let subject = BufferedStream(data: testData)
-        try subject.close()
+        subject.close()
 
         let readData = try await subject.readToEndAsync()
         XCTAssertEqual(readData, testData)
@@ -135,7 +135,7 @@ final class BufferedStreamTests: XCTestCase {
         let subject = BufferedStream(data: testData)
         let readData1 = try await subject.readAsync(upToCount: 4)
         XCTAssertEqual(testData[0..<4], readData1)
-        try subject.close()
+        subject.close()
         let readData2 = try await subject.readAsync(upToCount: Int.max)
         XCTAssertEqual(testData[4...], readData2)
         let readData3 = try await subject.readAsync(upToCount: Int.max)
@@ -169,7 +169,7 @@ final class BufferedStreamTests: XCTestCase {
     func test_length_returnsInitialLengthAfterStreamCloses() throws {
         let sut = BufferedStream(data: testData)
 
-        try sut.close()
+        sut.close()
 
         XCTAssertEqual(sut.length, testData.count)
     }
@@ -178,7 +178,7 @@ final class BufferedStreamTests: XCTestCase {
         let sut = BufferedStream(data: testData)
         try sut.write(contentsOf: additionalData)
 
-        try sut.close()
+        sut.close()
 
         XCTAssertEqual(sut.length, testData.count + additionalData.count)
     }

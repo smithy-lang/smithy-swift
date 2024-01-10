@@ -3,7 +3,7 @@
 
 import AwsCommonRuntimeKit
 
-public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding>: Middleware {
+public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
     public let id: String = "ContentMD5"
 
     private let contentMD5HeaderName = "Content-MD5"

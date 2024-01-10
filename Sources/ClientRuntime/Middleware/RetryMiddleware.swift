@@ -5,11 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryErrorInfoProvider,
-    Output: HttpResponseBinding, OutputError: HttpResponseErrorBinding>: Middleware {
+public struct RetryMiddleware<Strategy: RetryStrategy,
+                              ErrorInfoProvider: RetryErrorInfoProvider,
+                              OperationStackOutput>: Middleware {
 
     public typealias MInput = SdkHttpRequestBuilder
-    public typealias MOutput = OperationOutput<Output>
+    public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
 
     public var id: String { "Retry" }
@@ -20,7 +21,8 @@ public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryE
     }
 
     public func handle<H>(context: Context, input: SdkHttpRequestBuilder, next: H) async throws ->
-        OperationOutput<Output> where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
+        OperationOutput<OperationStackOutput>
+        where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
 
         let partitionID = try getPartitionID(context: context, input: input)
         let token = try await strategy.acquireInitialRetryToken(tokenScope: partitionID)
@@ -28,7 +30,8 @@ public struct RetryMiddleware<Strategy: RetryStrategy, ErrorInfoProvider: RetryE
     }
 
     private func sendRequest<H>(token: Strategy.Token, context: Context, input: MInput, next: H) async throws ->
-        OperationOutput<Output> where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
+        OperationOutput<OperationStackOutput>
+        where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
 
         do {
             let serviceResponse = try await next.handle(context: context, input: input)

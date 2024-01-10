@@ -53,7 +53,9 @@ public protocol WriteableStream: AnyObject {
     func write(contentsOf data: Data) throws
 
     /// Closes the stream
-    func close() throws
+    func close()
+
+    func closeWithError(_ error: Error)
 }
 
 /// Protocol that provides reading and writing data to a stream
