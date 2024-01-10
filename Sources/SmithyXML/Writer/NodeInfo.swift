@@ -25,11 +25,13 @@ public struct NodeInfo: Equatable {
     public let name: String
     public let location: Location
     public let namespace: Namespace?
+    public let thisNodeNamespace: Namespace?
 
-    public init(_ name: String, location: Location = .element, namespace: Namespace? = nil) {
+    public init(_ name: String, location: Location = .element, namespace: Namespace? = nil, thisNodeNamespace: Namespace? = nil) {
         self.name = name
         self.location = location
         self.namespace = namespace
+        self.thisNodeNamespace = thisNodeNamespace
     }
 }
 

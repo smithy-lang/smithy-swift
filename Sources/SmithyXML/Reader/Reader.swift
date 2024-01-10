@@ -12,11 +12,11 @@ import enum SmithyTimestamps.TimestampFormat
 import struct SmithyTimestamps.TimestampFormatter
 
 public class Reader {
-    var content: String? = nil
-    public var children: [Reader] = []
-    public weak var parent: Reader?
+    public internal(set) var content: String? = nil
+    public internal(set) var children: [Reader] = []
+    public internal(set) weak var parent: Reader?
     public let nodeInfo: NodeInfo
-    var nodeInfoPath: [NodeInfo] { (parent?.nodeInfoPath ?? []) + [nodeInfo] }
+    public var nodeInfoPath: [NodeInfo] { (parent?.nodeInfoPath ?? []) + [nodeInfo] }
 
     // MARK: - init & deinit
 
@@ -229,14 +229,21 @@ public class Reader {
         valueNodeInfo: NodeInfo,
         isFlattened: Bool
     ) throws -> [String: T]? {
-        if isFlattened && parent?.content == nil || !isFlattened && content == nil { return nil }
         var dict = [String: T]()
-        let entries = isFlattened ? 
-            parent?.children.filter { $0.nodeInfo.name == nodeInfo.name } ?? [] :
-            children.filter { $0.nodeInfo.name == "entry" }
-        for entry in entries {
-            guard let key = entry[keyNodeInfo].content, let value = try valueReadingClosure(entry[valueNodeInfo]) else { continue }
-            dict[key] = value
+        if isFlattened {
+            let entries = (parent?.children ?? []).filter { $0.nodeInfo.name == nodeInfo.name }
+            guard !entries.isEmpty else { return nil }
+            for entry in entries {
+                guard let key = entry[keyNodeInfo].content, let value = try valueReadingClosure(entry[valueNodeInfo]) else { continue }
+                dict[key] = value
+            }
+        } else {
+            if content == nil { return nil }
+            let entries = children.filter { $0.nodeInfo.name == "entry" }
+            for entry in entries {
+                guard let key = entry[keyNodeInfo].content, let value = try valueReadingClosure(entry[valueNodeInfo]) else { continue }
+                dict[key] = value
+            }
         }
         return dict
     }
@@ -259,19 +266,26 @@ public class Reader {
         }
     }
 
-    public func readListIfPresent<T>(
-        memberReadingClosure: ReadingClosure<T, Reader>,
+    public func readListIfPresent<Member>(
+        memberReadingClosure: ReadingClosure<Member, Reader>,
         memberNodeInfo: NodeInfo,
         isFlattened: Bool
-    ) throws -> [T]? {
-        if isFlattened && parent?.content == nil || !isFlattened && content == nil { return nil }
-        var list = [T]()
-        let members = isFlattened ?
-            parent?.children.filter { $0.nodeInfo.name == nodeInfo.name } ?? [] :
-            children.filter { $0.nodeInfo.name == "member" }
-        for member in members {
-            guard let value = try memberReadingClosure(member[memberNodeInfo]) else { continue }
-            list.append(value)
+    ) throws -> [Member]? {
+        var list = [Member]()
+        if isFlattened {
+            let members = (parent?.children ?? []).filter { $0.nodeInfo.name == nodeInfo.name }
+            guard !members.isEmpty else { return nil }
+            for member in members {
+                guard let value = try memberReadingClosure(member) else { continue }
+                list.append(value)
+            }
+        } else {
+            if content == nil { return nil }
+            let members = children.filter { $0.nodeInfo.name == memberNodeInfo.name }
+            for member in members {
+                guard let value = try memberReadingClosure(member) else { continue }
+                list.append(value)
+            }
         }
         return list
     }

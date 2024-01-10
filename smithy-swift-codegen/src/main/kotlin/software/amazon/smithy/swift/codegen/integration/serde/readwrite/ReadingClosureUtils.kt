@@ -62,7 +62,7 @@ class ReadingClosureUtils(
                 )
             }
             else -> {
-                return writer.format("\$N.readingClosure(from:)", ctx.symbolProvider.toSymbol(shape))
+                return writer.format("\$N.readingClosure", ctx.symbolProvider.toSymbol(shape))
             }
         }
     }

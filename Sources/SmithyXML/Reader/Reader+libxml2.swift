@@ -42,7 +42,11 @@ extension Reader {
         guard let location = xmlNodePtr.pointee.type.nodeInfoLocation else { return nil }
 
         // Create a Reader namespace if one is present on the XML node
+        // This is the namespace defined on this node, if any
         var namespace: NodeInfo.Namespace?
+
+        // This is the namespace that applies to this node
+        var thisNodeNamespace: NodeInfo.Namespace?
 
         // href must be present for there to be a namespace
         if xmlNodePtr.pointee.nsDef != nil && xmlNodePtr.pointee.nsDef.pointee.href != nil {
@@ -61,6 +65,23 @@ extension Reader {
             }
         }
 
+        // href must be present for there to be a namespace
+        if xmlNodePtr.pointee.ns != nil {
+
+            // Convert prefix to a Swift string.  Prefix may be nil, defaults to "xmlns" in that case
+            let prefix = xmlNodePtr.pointee.ns.pointee.prefix?.withMemoryRebound(to: CChar.self, capacity: 0) { cStringPtr in
+                String(cString: cStringPtr, encoding: .utf8)
+            } ?? "xmlns"
+
+            // Convert href to a Swift string
+            let href = xmlNodePtr.pointee.ns.pointee.href?.withMemoryRebound(to: CChar.self, capacity: 0) { cStringPtr in
+                String(cString: cStringPtr, encoding: .utf8)
+            }
+            if let href {
+                thisNodeNamespace = .init(prefix: prefix, uri: href)
+            }
+        }
+
         // Get the name for the node as a Swift string.
         let name = xmlNodePtr.pointee.name.withMemoryRebound(to: CChar.self, capacity: 0) { cStringPtr in
             String(cString: cStringPtr, encoding: .utf8)
@@ -68,7 +89,7 @@ extension Reader {
         guard let name else { throw XMLError.invalidNodeName }
 
         // Create a new Reader for this node.
-        let parent = Reader(nodeInfo: .init(name, location: location, namespace: namespace))
+        let parent = Reader(nodeInfo: .init(name, location: location, namespace: namespace, thisNodeNamespace: thisNodeNamespace))
 
         // Get the content (i.e. element text) for this node.  Convert it to a Swift string.
         let contentPtr = xmlNodeGetContent(xmlNodePtr)

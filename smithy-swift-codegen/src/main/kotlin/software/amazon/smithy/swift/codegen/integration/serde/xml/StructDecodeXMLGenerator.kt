@@ -9,6 +9,7 @@ import software.amazon.smithy.aws.traits.customizations.S3UnwrappedXmlOutputTrai
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SmithyXMLTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -28,21 +29,26 @@ open class StructDecodeXMLGenerator(
 
     override fun render() {
         writer.addImport(SwiftDependency.SMITHY_XML.target)
+        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         val symbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
-            "static func readingClosure(from reader: \$N) throws -> \$N {", "}",
-            SmithyXMLTypes.Reader,
-            symbol
+            "static var readingClosure: \$N<\$N, \$N> {", "}",
+            SmithyReadWriteTypes.ReadingClosure,
+            symbol,
+            SmithyXMLTypes.Reader
         ) {
-            if (members.isEmpty()) {
-                writer.write("return \$N()", symbol)
-            } else {
-                writer.write("var value = \$N()", symbol)
-                if (isUnwrapped){
-                    writer.write("let reader = reader.parent ?? reader")
+            writer.openBlock("return { reader in", "}") {
+                writer.write("guard reader.content != nil else { return nil }")
+                if (members.isEmpty()) {
+                    writer.write("return \$N()", symbol)
+                } else {
+                    writer.write("var value = \$N()", symbol)
+                    if (isUnwrapped){
+                        writer.write("let reader = reader.parent ?? reader")
+                    }
+                    members.forEach { memberGenerator.render(it) }
+                    writer.write("return value")
                 }
-                members.forEach { memberGenerator.render(it) }
-                writer.write("return value")
             }
         }
     }

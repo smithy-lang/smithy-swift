@@ -12,6 +12,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SmithyXMLTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
@@ -31,25 +32,29 @@ class UnionDecodeXMLGenerator(
     private val memberGenerator = MemberShapeDecodeXMLGenerator(ctx, writer, shapeContainingMembers)
     override fun render() {
         writer.addImport(SwiftDependency.SMITHY_XML.target)
+        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         val symbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
-            "static func readingClosure(from reader: \$N) throws -> \$N {",
-            "}",
+            "static var readingClosure: \$N<\$N, \$N> {", "}",
+            SmithyReadWriteTypes.ReadingClosure,
+            symbol,
             SmithyXMLTypes.Reader,
-            symbol
         ) {
-            writer.write("let name = reader.children.first?.nodeInfo.name")
-            writer.openBlock("switch name {", "}") {
-                members.forEach {
-                    writer.write("case \$S:", it.memberName)
+            writer.openBlock("return { reader in", "}") {
+                writer.write("guard reader.content != nil else { return nil }")
+                writer.write("let name = reader.children.first?.nodeInfo.name")
+                writer.openBlock("switch name {", "}") {
+                    members.forEach {
+                        writer.write("case \$S:", it.memberName)
+                        writer.indent()
+                        memberGenerator.render(it)
+                        writer.dedent()
+                    }
+                    writer.write("default:")
                     writer.indent()
-                    memberGenerator.render(it)
+                    writer.write("return .sdkUnknown(name ?? \"\")")
                     writer.dedent()
                 }
-                writer.write("default:")
-                writer.indent()
-                writer.write("return .sdkUnknown(name ?? \"\")")
-                writer.dedent()
             }
         }
     }

@@ -14,9 +14,9 @@ public func mapReadingClosure<T>(
     keyNodeInfo: NodeInfo,
     valueNodeInfo: NodeInfo,
     isFlattened: Bool
-) -> ReadingClosure<[String: T]?, Reader> {
+) -> ReadingClosure<[String: T], Reader> {
     return { reader in
-        try reader.readMap(
+        try reader.readMapIfPresent(
             valueReadingClosure: valueReadingClosure,
             keyNodeInfo: keyNodeInfo,
             valueNodeInfo: valueNodeInfo,
@@ -31,7 +31,7 @@ public func listReadingClosure<T>(
     isFlattened: Bool
 ) -> ReadingClosure<[T], Reader> {
     return { reader in
-        try reader.readList(
+        try reader.readListIfPresent(
             memberReadingClosure: memberReadingClosure,
             memberNodeInfo: memberNodeInfo,
             isFlattened: isFlattened
@@ -41,56 +41,69 @@ public func listReadingClosure<T>(
 
 public func timestampReadingClosure(format: TimestampFormat) -> ReadingClosure<Date, Reader> {
     return { reader in
-        try reader.readTimestamp(format: format)
+        try reader.readTimestampIfPresent(format: format)
     }
 }
 
 public extension String {
 
-    static func readingClosure(from reader: Reader) throws -> String? {
-        try reader.read()
+    static var readingClosure: ReadingClosure<String, Reader> {
+        return { reader in
+            try reader.readIfPresent()
+        }
     }
 }
 
 public extension RawRepresentable where RawValue == Int {
 
-    static func readingClosure(from reader: Reader) throws -> Self? {
-        try reader.read()
+    static var readingClosure: ReadingClosure<Self, Reader> {
+        return { reader in
+            try reader.readIfPresent()
+        }
     }
 }
 
 public extension RawRepresentable where RawValue == String {
 
-    static func readingClosure(from reader: Reader) throws -> Self? {
-        try reader.read()
+    static var readingClosure: ReadingClosure<Self, Reader> {
+        return { reader in
+            try reader.readIfPresent()
+        }
     }
 }
 
 public extension Bool {
 
-    static func readingClosure(from reader: Reader) throws -> Bool? {
-        try reader.read()
+    static var readingClosure: ReadingClosure<Bool, Reader> {
+        return { reader in
+            try reader.readIfPresent()
+        }
     }
 }
 
 public extension Int {
 
-    static func readingClosure(from reader: Reader) throws -> Int? {
-        try reader.read()
+    static var readingClosure: ReadingClosure<Int, Reader> {
+        return { reader in
+            try reader.readIfPresent()
+        }
     }
 }
 
 public extension Float {
 
-    static func readingClosure(from reader: Reader) throws -> Float? {
-        try reader.read()
+    static var readingClosure: ReadingClosure<Float, Reader> {
+        return { reader in
+            try reader.readIfPresent()
+        }
     }
 }
 
 public extension Double {
 
-    static func readingClosure(from reader: Reader) throws -> Double? {
-        try reader.read()
+    static var readingClosure: ReadingClosure<Double, Reader> {
+        return { reader in
+            try reader.readIfPresent()
+        }
     }
 }
-
