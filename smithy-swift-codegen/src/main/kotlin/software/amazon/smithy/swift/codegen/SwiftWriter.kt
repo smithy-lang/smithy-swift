@@ -255,11 +255,11 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
      * Writes member shape documentation comments if docs are present.
      */
     fun writeMemberDocs(model: Model, member: MemberShape) {
-        member.getMemberTrait(model, DocumentationTrait::class.java).getOrNull()?.let { writeDocs(it.value) }
+        member.getMemberTrait(model, DocumentationTrait::class.java).orElse(null)?.let { writeDocs(it.value) }
         member.getMemberTrait(
             model,
             RequiredTrait::class.java
-        ).getOrNull()?.let { writeDocs("This member is required.") }
+        ).orElse(null)?.let { writeDocs("This member is required.") }
     }
 
     /**

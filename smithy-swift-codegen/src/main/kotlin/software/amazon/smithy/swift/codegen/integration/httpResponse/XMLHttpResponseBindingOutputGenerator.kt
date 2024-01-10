@@ -19,7 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProto
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
-class XMLHttpResponseBindingOutputGenerator(): HttpResponseBindingOutputGeneratable {
+class XMLHttpResponseBindingOutputGenerator() : HttpResponseBindingOutputGeneratable {
 
     override fun render(
         ctx: ProtocolGenerator.GenerationContext,

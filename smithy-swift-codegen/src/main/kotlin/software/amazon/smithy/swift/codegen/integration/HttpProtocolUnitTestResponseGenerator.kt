@@ -17,7 +17,6 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasStreamingMember
@@ -120,7 +119,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             renderResponseDecoder()
         }
         val responseClosure = ResponseClosureUtils(ctx, writer, operation).render()
-        writer.write("let actual: \$N = try await \$L(httpResponse)", outputStruct , responseClosure)
+        writer.write("let actual: \$N = try await \$L(httpResponse)", outputStruct, responseClosure)
     }
 
     protected fun renderResponseDecoder() {
@@ -162,7 +161,7 @@ fun renderMemberAssertions(writer: SwiftWriter, test: HttpMessageTestCase, membe
         if (member.isStructureShape) {
             writer.write("XCTAssert(\$L === \$L)", expectedMemberName, actualMemberName)
         } else if ((shape.isDoubleShape || shape.isFloatShape)) {
-            val stringNodes = test.params.stringMap.values.map { it.asStringNode().getOrNull() }
+            val stringNodes = test.params.stringMap.values.map { it.asStringNode().orElse(null) }
             if (stringNodes.isNotEmpty() && stringNodes.mapNotNull { it?.value }.contains("NaN")) {
                 writer.write("XCTAssertEqual(\$L$suffix.isNaN, \$L$suffix.isNaN)", expectedMemberName, actualMemberName)
             } else {

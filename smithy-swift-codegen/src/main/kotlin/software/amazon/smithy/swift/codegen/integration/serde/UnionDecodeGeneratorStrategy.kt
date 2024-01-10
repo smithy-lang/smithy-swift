@@ -5,15 +5,14 @@
 
 package software.amazon.smithy.swift.codegen.integration.serde
 
-import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.UnionDecodeGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.xml.UnionDecodeXMLGenerator
 
 class UnionDecodeGeneratorStrategy(
@@ -24,8 +23,8 @@ class UnionDecodeGeneratorStrategy(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
     fun render() {
-        when (ctx.service.awsProtocol) {
-            AWSProtocol.REST_XML, AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY -> {
+        when (ctx.service.responseWireProtocol) {
+            WireProtocol.XML -> {
                 UnionDecodeXMLGenerator(ctx, shapeContainingMembers, members, writer).render()
             }
             else -> {

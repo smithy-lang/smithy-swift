@@ -6,28 +6,26 @@
 package software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.SmithyXMLTypes
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ReadingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.xml.MemberShapeDecodeXMLGenerator
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isEnum
 
 class XMLHttpResponseTraitWithHttpPayload(
     val ctx: ProtocolGenerator.GenerationContext,
     val binding: HttpBindingDescriptor,
-    val writer: SwiftWriter
+    val writer: SwiftWriter,
+    val shapeContainingMembers: Shape,
 ) : HttpResponseBindingRenderable {
-
-    val readingClosureUtils = ReadingClosureUtils(ctx, writer)
 
     override fun render() {
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
@@ -37,14 +35,14 @@ class XMLHttpResponseTraitWithHttpPayload(
             ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
         when (target.type) {
             ShapeType.DOCUMENT -> {
-                writer.openBlock("if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {", "}") {
-                    writer.write("// shapetype document")
+                writer.write("#error(\"Not implemented\")")
+//                writer.openBlock("if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {", "}") {
 //                    writer.write(
 //                        "let output: \$N = try responseDecoder.decode(responseBody: data)",
 //                        symbol
 //                    )
 //                    writer.write("value.\$L = output", memberName)
-                }
+//                }
             }
             ShapeType.STRING -> {
                 writer.openBlock("if let data = try await httpResponse.body.readData(), let output = \$N(data: data, encoding: .utf8) {", "}", SwiftTypes.String) {
@@ -100,8 +98,8 @@ class XMLHttpResponseTraitWithHttpPayload(
                         writer.write("value.\$L = decoderStream.toAsyncStream()", memberName)
                     }
                 } else {
-                    val readingClosure = readingClosureUtils.readingClosure(binding.member)
-                    writer.write("value.\$L = try reader.read(readingClosure: \$L)", memberName, readingClosure)
+                    MemberShapeDecodeXMLGenerator(ctx, writer, shapeContainingMembers)
+                        .render(binding.member, true)
                 }
             }
             else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")

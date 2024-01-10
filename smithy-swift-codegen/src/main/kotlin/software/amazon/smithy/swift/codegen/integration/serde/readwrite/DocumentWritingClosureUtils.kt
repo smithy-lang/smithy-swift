@@ -1,8 +1,5 @@
 package software.amazon.smithy.swift.codegen.integration.serde.readwrite
 
-import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
-import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
-import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
@@ -12,7 +9,6 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.NodeInfoUtils
-import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class DocumentWritingClosureUtils(
     val ctx: ProtocolGenerator.GenerationContext,

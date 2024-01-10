@@ -18,7 +18,7 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTrai
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitResponseCode
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 
-class HttpResponseBindingOutputGenerator(): HttpResponseBindingOutputGeneratable {
+class HttpResponseBindingOutputGenerator() : HttpResponseBindingOutputGeneratable {
 
     override fun render(
         ctx: ProtocolGenerator.GenerationContext,

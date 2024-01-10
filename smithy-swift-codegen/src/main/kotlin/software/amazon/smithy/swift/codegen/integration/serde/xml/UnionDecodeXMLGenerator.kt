@@ -5,23 +5,14 @@
 
 package software.amazon.smithy.swift.codegen.integration.serde.xml
 
-import software.amazon.smithy.model.shapes.BlobShape
-import software.amazon.smithy.model.shapes.CollectionShape
-import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.TimestampShape
-import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SmithyXMLTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
-import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
-import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 class UnionDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,

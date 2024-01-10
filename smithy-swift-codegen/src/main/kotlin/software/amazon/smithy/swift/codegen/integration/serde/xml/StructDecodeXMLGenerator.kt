@@ -43,7 +43,7 @@ open class StructDecodeXMLGenerator(
                     writer.write("return \$N()", symbol)
                 } else {
                     writer.write("var value = \$N()", symbol)
-                    if (isUnwrapped){
+                    if (isUnwrapped) {
                         writer.write("let reader = reader.parent ?? reader")
                     }
                     members.forEach { memberGenerator.render(it) }

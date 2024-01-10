@@ -13,7 +13,6 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlHostMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.RequestTestEndpointResolverMiddleware
@@ -92,7 +91,7 @@ class HttpProtocolTestGenerator(
     private fun renderRequestTests(operation: OperationShape, operationMiddleware: OperationMiddleware): Int {
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val tempTestCases = operation.getTrait(HttpRequestTestsTrait::class.java)
-            .getOrNull()
+            .orElse(null)
             ?.getTestCasesFor(AppliesTo.CLIENT)
             .orEmpty()
         val requestTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempTestCases))
@@ -131,7 +130,7 @@ class HttpProtocolTestGenerator(
     private fun renderResponseTests(operation: OperationShape): Int {
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val tempResponseTests = operation.getTrait(HttpResponseTestsTrait::class.java)
-            .getOrNull()
+            .orElse(null)
             ?.getTestCasesFor(AppliesTo.CLIENT)
             .orEmpty()
         val responseTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempResponseTests))
@@ -171,7 +170,7 @@ class HttpProtocolTestGenerator(
         var numTestCases = 0
         for (error in operationIndex.getErrors(operation).filterNot(::serverOnly)) {
             val tempTestCases = error.getTrait(HttpResponseTestsTrait::class.java)
-                .getOrNull()
+                .orElse(null)
                 ?.getTestCasesFor(AppliesTo.CLIENT)
                 .orEmpty()
             val testCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempTestCases))

@@ -36,7 +36,6 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.swiftEnumCaseName
-import java.util.*
 
 class MemberShapeDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -46,14 +45,14 @@ class MemberShapeDecodeXMLGenerator(
     private val nodeInfoUtils = NodeInfoUtils(ctx, writer)
     private val readingClosureUtils = ReadingClosureUtils(ctx, writer)
 
-    fun render(member: MemberShape) {
+    fun render(member: MemberShape, isPayload: Boolean = false) {
         val targetShape = ctx.model.expectShape(member.target)
         val readExp = when (targetShape) {
-            is StructureShape, is UnionShape -> renderStructOrUnionExp(member, targetShape)
+            is StructureShape, is UnionShape -> renderStructOrUnionExp(member, isPayload)
             is MapShape -> renderMapExp(member, targetShape)
             is ListShape -> renderListExp(member, targetShape)
             is TimestampShape -> renderTimestampExp(member, targetShape)
-            else -> renderMemberExp(member)
+            else -> renderMemberExp(member, isPayload)
         }
         val memberName = ctx.symbolProvider.toMemberName(member)
         if (shapeContainingMembers.isUnionShape) {
@@ -65,25 +64,23 @@ class MemberShapeDecodeXMLGenerator(
         }
     }
 
-    fun renderStructOrUnionExp(memberShape: MemberShape, shape: Shape): String {
-        val propertyNodeInfo = nodeInfoUtils.nodeInfo(memberShape)
+    private fun renderStructOrUnionExp(memberShape: MemberShape, isPayload: Boolean): String {
         val readingClosure = readingClosureUtils.readingClosure(memberShape)
         return writer.format(
-            "try reader[\$L].\$L(readingClosure: \$L)",
-            propertyNodeInfo,
+            "try \$L.\$L(readingClosure: \$L)",
+            reader(memberShape, isPayload),
             readMethodName("read"),
             readingClosure
         )
     }
 
-    fun renderListExp(memberShape: MemberShape, listShape: ListShape): String {
-        val nodeInfo = nodeInfoUtils.nodeInfo(memberShape)
+    private fun renderListExp(memberShape: MemberShape, listShape: ListShape): String {
         val memberReadingClosure = readingClosureUtils.readingClosure(listShape.member)
         val memberNodeInfo = nodeInfoUtils.nodeInfo(listShape.member)
         val isFlattened = memberShape.hasTrait<XmlFlattenedTrait>()
         return writer.format(
-            "try reader[\$L].\$L(memberReadingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
-            nodeInfo,
+            "try \$L.\$L(memberReadingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+            reader(memberShape, false),
             readMethodName("readList"),
             memberReadingClosure,
             memberNodeInfo,
@@ -91,15 +88,14 @@ class MemberShapeDecodeXMLGenerator(
         )
     }
 
-    fun renderMapExp(member: MemberShape, mapShape: MapShape): String {
-        val mapNodeInfo = nodeInfoUtils.nodeInfo(member)
+    private fun renderMapExp(memberShape: MemberShape, mapShape: MapShape): String {
         val valueReadingClosure = ReadingClosureUtils(ctx, writer).readingClosure(mapShape.value)
         val keyNodeInfo = nodeInfoUtils.nodeInfo(mapShape.key)
         val valueNodeInfo = nodeInfoUtils.nodeInfo(mapShape.value)
-        val isFlattened = member.hasTrait<XmlFlattenedTrait>()
+        val isFlattened = memberShape.hasTrait<XmlFlattenedTrait>()
         return writer.format(
-            "try reader[\$L].\$L(valueReadingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
-            mapNodeInfo,
+            "try \$L.\$L(valueReadingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+            reader(memberShape, false),
             readMethodName("readMap"),
             valueReadingClosure,
             keyNodeInfo,
@@ -108,22 +104,21 @@ class MemberShapeDecodeXMLGenerator(
         )
     }
 
-    fun renderTimestampExp(memberShape: MemberShape, timestampShape: TimestampShape): String {
-        val timestampNodeInfo = NodeInfoUtils(ctx, writer).nodeInfo(memberShape)
+    private fun renderTimestampExp(memberShape: MemberShape, timestampShape: TimestampShape): String {
         val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
         val swiftTimestampFormatCase = TimestampUtils.timestampFormat(memberTimestampFormatTrait, timestampShape)
-        return writer.format("try reader[\$L].\$L(format: \$L)",
-            timestampNodeInfo,
+        return writer.format(
+            "try \$L.\$L(format: \$L)",
+            reader(memberShape, false),
             readMethodName("readTimestamp"),
             swiftTimestampFormatCase
         )
     }
 
-    fun renderMemberExp(memberShape: MemberShape): String {
-        val propertyNodeInfo = nodeInfoUtils.nodeInfo(memberShape)
+    private fun renderMemberExp(memberShape: MemberShape, isPayload: Boolean): String {
         return writer.format(
-            "try reader[\$L].\$L()\$L",
-            propertyNodeInfo,
+            "try \$L.\$L()\$L",
+            reader(memberShape, isPayload),
             readMethodName("read"),
             default(memberShape),
         )
@@ -131,6 +126,11 @@ class MemberShapeDecodeXMLGenerator(
 
     private fun readMethodName(baseName: String): String {
         return "${baseName}${"".takeIf { shapeContainingMembers.isUnionShape } ?: "IfPresent"}"
+    }
+
+    private fun reader(memberShape: MemberShape, isPayload: Boolean): String {
+        val nodeInfo = nodeInfoUtils.nodeInfo(memberShape)
+        return "reader".takeIf { isPayload } ?: writer.format("reader[\$L]", nodeInfo)
     }
 
     private fun default(memberShape: MemberShape): String {
@@ -141,8 +141,8 @@ class MemberShapeDecodeXMLGenerator(
             if (it.isNullNode) { return "" }
             // Provide a default value dependent on the type.
             return when (targetShape) {
-                is EnumShape -> " ?? ${swiftEnumCaseName(Optional.of(it.expectStringNode().value), "")}"
-                is IntEnumShape -> " ?? ${swiftEnumCaseName(Optional.of(it.expectStringNode().value), "")}"
+                is EnumShape -> " ?? ${swiftEnumCaseName(it.expectStringNode().value, "")}"
+                is IntEnumShape -> " ?? ${swiftEnumCaseName(it.expectStringNode().value, "")}"
                 is StringShape -> " ?? ${it.expectStringNode().value}"
                 is ByteShape -> " ?? ${it.expectNumberNode().value}"
                 is ShortShape -> " ?? ${it.expectNumberNode().value}"
@@ -157,9 +157,9 @@ class MemberShapeDecodeXMLGenerator(
                 is ListShape, is SetShape -> " ?? []"
                 // Maps can only have empty map as default value
                 is MapShape -> " ?? [:]"
+                // No default provided for other shapes
                 else -> ""
             }
-        // If there is no default trait, provide no default value.
-        } ?: ""
+        } ?: "" // If there is no default trait, provide no default value.
     }
 }

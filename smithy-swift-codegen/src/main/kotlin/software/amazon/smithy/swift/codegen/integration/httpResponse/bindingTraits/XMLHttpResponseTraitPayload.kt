@@ -22,7 +22,7 @@ class XMLHttpResponseTraitPayload(
     override fun render() {
         val httpPayload = responseBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
-            XMLHttpResponseTraitWithHttpPayload(ctx, httpPayload, writer).render()
+            XMLHttpResponseTraitWithHttpPayload(ctx, httpPayload, writer, outputShape).render()
         } else {
             val httpResponseTraitWithoutPayload = httpResponseTraitWithoutPayloadFactory?.let {
                 it.construct(ctx, responseBindings, outputShape, writer)

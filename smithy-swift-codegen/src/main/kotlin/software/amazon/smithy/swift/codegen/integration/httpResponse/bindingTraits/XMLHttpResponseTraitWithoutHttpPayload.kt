@@ -9,7 +9,6 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
-import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
@@ -20,7 +19,6 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.isRPCBound
 import software.amazon.smithy.swift.codegen.integration.serde.xml.MemberShapeDecodeXMLGenerator
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
 class XMLHttpResponseTraitWithoutHttpPayload(
@@ -98,8 +96,6 @@ class XMLHttpResponseTraitWithoutHttpPayload(
             MemberShapeDecodeXMLGenerator(ctx, writer, outputShape).render(it.member)
         }
     }
-
-    private val path: String = "properties.".takeIf { outputShape.hasTrait<ErrorTrait>() } ?: ""
 
     private fun writeInitialResponseMembers(initialResponseMembers: Set<HttpBindingDescriptor>) {
         writer.apply {

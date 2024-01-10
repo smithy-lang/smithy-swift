@@ -20,7 +20,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequ
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysCustomizationXmlName
-import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.codingKeys.DefaultCodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
