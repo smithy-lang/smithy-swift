@@ -11,6 +11,11 @@ import AwsCommonRuntimeKit
 
 class HashFunctionTests: XCTestCase {
 
+    override func setUp() {
+        // Initialize function needs to be called before interacting with CRT
+        CommonRuntimeKit.initialize()
+    }
+
     func testCRC32() {
         guard let hashFunction = HashFunction.from(string: "crc32") else {
             XCTFail("CRC32 not found")
@@ -99,9 +104,6 @@ class HashFunctionTests: XCTestCase {
     }
 
     func testHashFunctionToHexString() {
-        // Must be called to work on linux
-        CommonRuntimeKit.initialize()
-
         let testData = Data("Hello, world!".utf8)
 
         // CRC32
