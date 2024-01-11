@@ -16,7 +16,7 @@ import struct Foundation.URLRequest
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
 public class SdkHttpRequest {
-    public let body: ByteStream
+    public var body: ByteStream
     public let endpoint: Endpoint
     public let method: HttpMethodType
     private var additionalHeaders: Headers = Headers()
@@ -102,7 +102,9 @@ public extension URLRequest {
         self.httpMethod = sdkRequest.method.rawValue
         // Set body, handling any serialization errors
         do {
-            self.httpBody = try await sdkRequest.body.readData()
+            let data = try await sdkRequest.body.readData()
+            sdkRequest.body = .data(data)
+            self.httpBody = data
         } catch {
             throw ClientError.serializationFailed("Failed to construct URLRequest due to HTTP body conversion failure.")
         }
