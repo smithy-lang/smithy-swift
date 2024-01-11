@@ -85,7 +85,7 @@ public class CRTClientEngine: HTTPClient {
                 clientBootstrap: sharedDefaultIO.clientBootstrap,
                 hostName: endpoint.host,
                 initialWindowSize: windowSize,
-                port: UInt16(endpoint.port),
+                port: UInt32(endpoint.port),
                 proxyOptions: nil,
                 socketOptions: socketOptions,
                 tlsOptions: tlsConnectionOptions,
@@ -118,7 +118,7 @@ public class CRTClientEngine: HTTPClient {
             let options = HTTP2StreamManagerOptions(
                 clientBootstrap: sharedDefaultIO.clientBootstrap,
                 hostName: endpoint.host,
-                port: UInt16(endpoint.port),
+                port: UInt32(endpoint.port),
                 maxConnections: maxConnectionsPerEndpoint,
                 socketOptions: socketOptions,
                 tlsOptions: tlsConnectionOptions,
