@@ -61,10 +61,6 @@ enum HashFunction {
     }
 }
 
-protocol HexStringable {
-    func toHexString() -> String
-}
-
 extension Data {
 
     // Create a Data type from a UInt32 value
@@ -81,6 +77,10 @@ extension Data {
 
         return self.withUnsafeBytes { $0.load(as: UInt32.self) }
     }
+}
+
+protocol HexStringable {
+    func toHexString() -> String
 }
 
 extension Data: HexStringable {
