@@ -235,16 +235,12 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let expected = RecursiveShapesOutput(
             nested: RecursiveShapesInputOutputNested1(
                 foo: "Foo1",
-                nested: Box<RecursiveShapesInputOutputNested2>(
-                    value: RecursiveShapesInputOutputNested2(
-                        bar: "Bar1",
-                        recursiveMember: RecursiveShapesInputOutputNested1(
-                            foo: "Foo2",
-                            nested: Box<RecursiveShapesInputOutputNested2>(
-                                value: RecursiveShapesInputOutputNested2(
-                                    bar: "Bar2"
-                                )
-                            )
+                nested: RecursiveShapesInputOutputNested2(
+                    bar: "Bar1",
+                    recursiveMember: RecursiveShapesInputOutputNested1(
+                        foo: "Foo2",
+                        nested: RecursiveShapesInputOutputNested2(
+                            bar: "Bar2"
                         )
                     )
                 )
@@ -254,6 +250,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         XCTAssertEqual(expected.nested, actual.nested)
 
     }
+}
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }

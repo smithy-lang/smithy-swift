@@ -16,7 +16,7 @@ final class RetryIntegrationTests: XCTestCase {
 
     private var context: HttpContext!
     private var next: TestOutputHandler!
-    private var subject: RetryMiddleware<DefaultRetryStrategy, DefaultRetryErrorInfoProvider, TestOutputResponse, TestOutputError>!
+    private var subject: RetryMiddleware<DefaultRetryStrategy, DefaultRetryErrorInfoProvider, TestOutputResponse>!
     private var quota: RetryQuota { get async { await subject.strategy.quotaRepository.quota(partitionID: partitionID) } }
 
     private func setUp(availableCapacity: Int, maxCapacity: Int, maxRetriesBase: Int, maxBackoff: TimeInterval) async {
@@ -34,7 +34,7 @@ final class RetryIntegrationTests: XCTestCase {
 
         // Create a retry strategy with custom backoff strategy & custom max retries & custom capacity
         let retryStrategyOptions = RetryStrategyOptions(backoffStrategy: backoffStrategy, maxRetriesBase: maxRetriesBase, availableCapacity: availableCapacity, maxCapacity: maxCapacity)
-        subject = RetryMiddleware<DefaultRetryStrategy, DefaultRetryErrorInfoProvider, TestOutputResponse, TestOutputError>(options: retryStrategyOptions)
+        subject = RetryMiddleware<DefaultRetryStrategy, DefaultRetryErrorInfoProvider, TestOutputResponse>(options: retryStrategyOptions)
 
         // Replace the retry strategy's sleeper with a mock, to allow tests to run without delay and for us to
         // check the delay time

@@ -12,7 +12,7 @@ extension EventStream {
     public class DefaultMessageEncoderStream<Event: MessageMarshallable>: MessageEncoderStream, Stream {
         let stream: AsyncThrowingStream<Event, Error>
         let messageEncoder: MessageEncoder
-        let messageSinger: MessageSigner
+        let messageSigner: MessageSigner
         let requestEncoder: RequestEncoder
         var readAsyncIterator: AsyncIterator?
 
@@ -20,11 +20,11 @@ extension EventStream {
             stream: AsyncThrowingStream<Event, Error>,
             messageEncoder: MessageEncoder,
             requestEncoder: RequestEncoder,
-            messageSinger: MessageSigner
+            messageSigner: MessageSigner
         ) {
             self.stream = stream
             self.messageEncoder = messageEncoder
-            self.messageSinger = messageSinger
+            self.messageSigner = messageSigner
             self.requestEncoder = requestEncoder
             self.readAsyncIterator = makeAsyncIterator()
         }
@@ -32,7 +32,7 @@ extension EventStream {
         public struct AsyncIterator: AsyncIteratorProtocol {
             let stream: AsyncThrowingStream<Event, Error>
             let messageEncoder: MessageEncoder
-            var messageSinger: MessageSigner
+            var messageSigner: MessageSigner
             let requestEncoder: RequestEncoder
 
             private var lastMessageSent: Bool = false
@@ -42,12 +42,12 @@ extension EventStream {
                 stream: AsyncThrowingStream<Event, Error>,
                 messageEncoder: MessageEncoder,
                 requestEncoder: RequestEncoder,
-                messageSinger: MessageSigner
+                messageSigner: MessageSigner
             ) {
                 self.stream = stream
                 self.streamIterator = stream.makeAsyncIterator()
                 self.messageEncoder = messageEncoder
-                self.messageSinger = messageSinger
+                self.messageSigner = messageSigner
                 self.requestEncoder = requestEncoder
             }
 
@@ -56,7 +56,7 @@ extension EventStream {
                     // There are no more messages in the base stream
                     // if we have not sent the last message, send it now
                     guard lastMessageSent else {
-                        let emptySignedMessage = try await messageSinger.signEmpty()
+                        let emptySignedMessage = try await messageSigner.signEmpty()
                         let data = try messageEncoder.encode(message: emptySignedMessage)
                         lastMessageSent = true
                         return data
@@ -70,7 +70,7 @@ extension EventStream {
                 let message = try event.marshall(encoder: requestEncoder)
 
                 // sign the message
-                let signedMessage = try await messageSinger.sign(message: message)
+                let signedMessage = try await messageSigner.sign(message: message)
 
                 // encode again the signed message
                 let data = try messageEncoder.encode(message: signedMessage)
@@ -83,7 +83,7 @@ extension EventStream {
                 stream: stream,
                 messageEncoder: messageEncoder,
                 requestEncoder: requestEncoder,
-                messageSinger: messageSinger
+                messageSigner: messageSigner
             )
         }
 
@@ -114,7 +114,11 @@ extension EventStream {
         }
 
         public func readToEndAsync() async throws -> ClientRuntime.Data? {
-            fatalError("readToEndAsync() is not supported by AsyncStream backed streams")
+            var data = Data()
+            while let moreData = try await readAsync(upToCount: Int.max) {
+                data.append(moreData)
+            }
+            return data
         }
 
         /// Reads up to `count` bytes from the stream asynchronously
@@ -167,7 +171,11 @@ extension EventStream {
         }
 
         /// Closing the stream is a no-op because the underlying async stream is not owned by this stream
-        public func close() throws {
+        public func close() {
+            // no-op
+        }
+
+        public func closeWithError(_ error: Error) {
             // no-op
         }
     }

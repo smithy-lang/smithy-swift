@@ -11,22 +11,22 @@ extension EventStream {
     public struct DefaultMessageDecoderStream<Event: MessageUnmarshallable>: MessageDecoderStream {
         public typealias Element = Event
 
-        let stream: Stream
+        let stream: ReadableStream
         let messageDecoder: MessageDecoder
         let responseDecoder: ResponseDecoder
 
-        public init(stream: Stream, messageDecoder: MessageDecoder, responseDecoder: ResponseDecoder) {
+        public init(stream: ReadableStream, messageDecoder: MessageDecoder, responseDecoder: ResponseDecoder) {
             self.stream = stream
             self.messageDecoder = messageDecoder
             self.responseDecoder = responseDecoder
         }
 
         public struct AsyncIterator: AsyncIteratorProtocol {
-            let stream: Stream
+            let stream: ReadableStream
             let messageDecoder: MessageDecoder
             let responseDecoder: ResponseDecoder
 
-            init(stream: Stream, messageDecoder: MessageDecoder, responseDecoder: ResponseDecoder) {
+            init(stream: ReadableStream, messageDecoder: MessageDecoder, responseDecoder: ResponseDecoder) {
                 self.stream = stream
                 self.messageDecoder = messageDecoder
                 self.responseDecoder = responseDecoder

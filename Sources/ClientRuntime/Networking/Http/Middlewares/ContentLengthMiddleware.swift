@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>: Middleware {
+public struct ContentLengthMiddleware<OperationStackOutput>: Middleware {
     public let id: String = "ContentLength"
 
     private let contentLengthHeaderName = "Content-Length"
@@ -40,7 +40,7 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
                 // Transfer-Encoding can be sent on all Event Streams where length cannot be determined
                 // or on blob Data Streams where requiresLength is true and unsignedPayload is false
                 // Only for HTTP/1.1 requests, will be removed in all HTTP/2 requests
-                input.headers.update(name: "Transfer-Encoding", value: "Chunked")
+                input.headers.update(name: "Transfer-Encoding", value: "chunked")
             } else {
                 let operation = context.attributes.get(key: AttributeKey<String>(name: "Operation"))
                              ?? "Error getting operation name"
@@ -49,10 +49,9 @@ public struct ContentLengthMiddleware<OperationStackOutput: HttpResponseBinding>
                     "Missing content-length for SigV4 signing on operation: \(operation)"
                 throw StreamError.notSupported(errorMessage)
             }
-        default:
+        case .noStream:
             input.headers.update(name: "Content-Length", value: "0")
         }
-
         return try await next.handle(context: context, input: input)
     }
 

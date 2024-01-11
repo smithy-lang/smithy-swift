@@ -89,11 +89,11 @@ internal class RecursiveShapeBoxerTests {
             extension ExampleClientTypes {
                 public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
                     public var foo: Swift.String?
-                    public var nested: Box<ExampleClientTypes.RecursiveShapesInputOutputNested2>?
+                    @Indirect public var nested: ExampleClientTypes.RecursiveShapesInputOutputNested2?
             
                     public init(
                         foo: Swift.String? = nil,
-                        nested: Box<ExampleClientTypes.RecursiveShapesInputOutputNested2>? = nil
+                        nested: ExampleClientTypes.RecursiveShapesInputOutputNested2? = nil
                     )
                     {
                         self.foo = foo

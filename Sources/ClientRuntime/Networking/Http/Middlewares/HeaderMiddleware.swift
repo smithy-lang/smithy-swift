@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct HeaderMiddleware<OperationStackInput: HeaderProvider,
-                               OperationStackOutput: HttpResponseBinding>: Middleware {
+public struct HeaderMiddleware<OperationStackInput: HeaderProvider, OperationStackOutput>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))HeadersMiddleware"
 
     public init() {}

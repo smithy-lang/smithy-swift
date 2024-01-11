@@ -5,10 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct NoopHandler<Output: HttpResponseBinding>: Handler {
+public struct NoopHandler<OperationStackOutput>: Handler {
     public init() {}
 
-    public func handle(context: HttpContext, input: SdkHttpRequest) async throws -> OperationOutput<Output> {
-        return OperationOutput<Output>(httpResponse: HttpResponse())
+    public func handle(
+        context: HttpContext,
+        input: SdkHttpRequest
+    ) async throws -> OperationOutput<OperationStackOutput> {
+        return OperationOutput<OperationStackOutput>(httpResponse: HttpResponse())
     }
 }

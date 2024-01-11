@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct MutateHeadersMiddleware<OperationStackOutput: HttpResponseBinding>: Middleware {
+public struct MutateHeadersMiddleware<OperationStackOutput>: Middleware {
 
     public let id: String = "MutateHeaders"
 

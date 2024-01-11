@@ -27,23 +27,12 @@ class EnumEncodeXMLGenerationTests {
                     case fooEnumList
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let fooEnum1 = fooEnum1 {
-                        try container.encode(fooEnum1, forKey: ClientRuntime.Key("fooEnum1"))
-                    }
-                    if let fooEnum2 = fooEnum2 {
-                        try container.encode(fooEnum2, forKey: ClientRuntime.Key("fooEnum2"))
-                    }
-                    if let fooEnum3 = fooEnum3 {
-                        try container.encode(fooEnum3, forKey: ClientRuntime.Key("fooEnum3"))
-                    }
-                    if let fooEnumList = fooEnumList {
-                        var fooEnumListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("fooEnumList"))
-                        for fooenum0 in fooEnumList {
-                            try fooEnumListContainer.encode(fooenum0, forKey: ClientRuntime.Key("member"))
-                        }
-                    }
+                static func writingClosure(_ value: XmlEnumsInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("fooEnum1")].write(value.fooEnum1)
+                    try writer[.init("fooEnum2")].write(value.fooEnum2)
+                    try writer[.init("fooEnum3")].write(value.fooEnum3)
+                    try writer[.init("fooEnumList")].writeList(value.fooEnumList, memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -61,17 +50,9 @@ class EnumEncodeXMLGenerationTests {
                     case nestedEnumsList
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let nestedEnumsList = nestedEnumsList {
-                        var nestedEnumsListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedEnumsList"))
-                        for nestedenumslist0 in nestedEnumsList {
-                            var nestedenumslist0Container0 = nestedEnumsListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
-                            for fooenum1 in nestedenumslist0 {
-                                try nestedenumslist0Container0.encode(fooenum1, forKey: ClientRuntime.Key("member"))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlEnumsNestedInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("nestedEnumsList")].writeList(value.nestedEnumsList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false), memberNodeInfo: .init("member"), isFlattened: false)
                 }
             }
             """.trimIndent()

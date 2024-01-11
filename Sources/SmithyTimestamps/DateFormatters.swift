@@ -6,6 +6,7 @@
 import class Foundation.DateFormatter
 import struct Foundation.TimeZone
 import struct Foundation.Locale
+import struct Foundation.Date
 
 public typealias DateFormatter = Foundation.DateFormatter
 

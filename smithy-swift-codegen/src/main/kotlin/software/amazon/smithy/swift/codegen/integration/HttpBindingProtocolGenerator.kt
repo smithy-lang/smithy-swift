@@ -54,7 +54,6 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInp
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.RetryMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.SigningMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.HttpBodyMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
@@ -146,7 +145,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 HttpUrlPathProvider.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
                 HttpHeaderProvider.renderHeaderMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
                 HttpQueryItemProvider.renderQueryMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
-                HttpBodyMiddleware.renderBodyMiddleware(ctx, operation, httpBindingResolver)
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
         }
@@ -166,10 +164,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .toList()
             if (httpBodyMembers.isNotEmpty() || shouldRenderEncodableConformance) {
                 ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
+                    val encodableOrNot = encodableProtocol?.let { writer.format(": \$N", it) } ?: ""
                     writer.openBlock(
-                        "extension $symbolName: \$N {",
+                        "extension $symbolName\$L {",
                         "}",
-                        SwiftTypes.Protocols.Encodable,
+                        encodableOrNot,
                     ) {
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
@@ -229,7 +228,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-            writer.openBlock("extension \$N: \$N {", "}", symbol, SwiftTypes.Protocols.Codable) {
+            writer.openBlock("extension \$N: \$N {", "}", symbol, codableProtocol) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 val members = shape.members().toList()
                 when (shape) {
@@ -250,7 +249,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         unionMembersForCodingKeys.add(0, sdkUnknownMember)
                         generateCodingKeysForMembers(ctx, writer, unionMembersForCodingKeys)
                         writer.write("")
-                        UnionEncodeGeneratorStrategy(ctx, members, writer, defaultTimestampFormat).render()
+                        UnionEncodeGeneratorStrategy(ctx, shape, members, writer, defaultTimestampFormat).render()
                         writer.write("")
                         UnionDecodeGeneratorStrategy(ctx, members, writer, defaultTimestampFormat).render()
                     }
@@ -278,7 +277,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
             writer.write("")
-            writer.openBlock("extension ${decodeSymbol.name}: \$N {", "}", SwiftTypes.Protocols.Decodable) {
+            writer.openBlock("extension ${decodeSymbol.name}: \$N {", "}", decodableProtocol) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("")
@@ -479,6 +478,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     override val operationMiddleware = OperationMiddlewareGenerator()
+
+    open val codableProtocol = SwiftTypes.Protocols.Codable
+    open val encodableProtocol: Symbol? = SwiftTypes.Protocols.Encodable
+    open val decodableProtocol = SwiftTypes.Protocols.Decodable
 
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
     protected abstract val codingKeysGenerator: CodingKeysGenerator

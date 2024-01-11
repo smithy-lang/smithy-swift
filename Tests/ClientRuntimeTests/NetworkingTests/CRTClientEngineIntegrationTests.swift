@@ -33,7 +33,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
         let request = SdkHttpRequest(method: .get, endpoint: Endpoint(host: "httpbin.org", path: "/get", headers: headers))
-        let response = try await httpClient.execute(request: request)
+        let response = try await httpClient.send(request: request)
 
         XCTAssertNotNil(response)
         XCTAssert(response.statusCode == HttpStatusCode.ok)
@@ -49,8 +49,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let encodedData = try encoder.encode(body)
         let request = SdkHttpRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post", headers: headers),
-                                     body: HttpBody.data(encodedData))
-        let response = try await httpClient.execute(request: request)
+                                     body: ByteStream.data(encodedData))
+        let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
         XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
@@ -62,8 +62,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         headers.add(name: "Host", value: "httpbin.org")
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024", headers: headers),
-                                     body: HttpBody.stream(BufferedStream()))
-        let response = try await httpClient.execute(request: request)
+                                     body: ByteStream.stream(BufferedStream()))
+        let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
         XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
@@ -76,10 +76,10 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
 
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024", headers: headers),
-                                     body: HttpBody.stream(BufferedStream()))
-        let response = try await httpClient.execute(request: request)
+                                     body: ByteStream.stream(BufferedStream()))
+        let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        if case let HttpBody.stream(unwrappedStream) = response.body {
+        if case let ByteStream.stream(unwrappedStream) = response.body {
             let bodyCount = try await unwrappedStream.readToEndAsync()?.count
             XCTAssertEqual(bodyCount, 1024)
         } else {
@@ -96,10 +96,10 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
 
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1", headers: headers),
-                                     body: HttpBody.stream(BufferedStream()))
-        let response = try await httpClient.execute(request: request)
+                                     body: ByteStream.stream(BufferedStream()))
+        let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        if case let HttpBody.stream(unwrappedStream) = response.body {
+        if case let ByteStream.stream(unwrappedStream) = response.body {
             let bodyCount = try await unwrappedStream.readToEndAsync()?.count
             XCTAssertEqual(bodyCount, 1)
         } else {
@@ -116,10 +116,10 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
 
         let request = SdkHttpRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/3000", headers: headers),
-                                     body: HttpBody.stream(BufferedStream()))
-        let response = try await httpClient.execute(request: request)
+                                     body: ByteStream.stream(BufferedStream()))
+        let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        if case let HttpBody.stream(unwrappedStream) = response.body {
+        if case let ByteStream.stream(unwrappedStream) = response.body {
             let bodyCount = try await unwrappedStream.readToEndAsync()?.count
             XCTAssertEqual(bodyCount, 3000)
         } else {
@@ -139,8 +139,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
 
         let request = SdkHttpRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post", headers: headers),
-                                     body: HttpBody.stream(BufferedStream(data: encodedData)))
-        let response = try await httpClient.execute(request: request)
+                                     body: ByteStream.stream(BufferedStream(data: encodedData)))
+        let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
         XCTAssert(response.statusCode == HttpStatusCode.ok)
     }
@@ -169,7 +169,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
             }
             let decodedBody = try JSONDecoder().decode(ResponseWrapper.self, from: data)
             XCTAssertEqual(decodedBody.json, body)
-        case .data, .none:
+        case .data, .noStream:
             XCTFail("Unexpected response body type")
         }
     }

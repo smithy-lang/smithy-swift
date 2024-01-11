@@ -1,25 +1,34 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0.
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
-public struct DeserializeMiddleware<Output: HttpResponseBinding,
-                                    OutputError: HttpResponseErrorBinding>: Middleware {
-
+public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
     public var id: String = "Deserialize"
-    public init() {}
+    let httpResponseClosure: HTTPResponseClosure<OperationStackOutput>
+    let httpResponseErrorClosure: HTTPResponseErrorClosure
+
+    public init(
+        _ httpResponseClosure: @escaping HTTPResponseClosure<OperationStackOutput>,
+        _ httpResponseErrorClosure: @escaping HTTPResponseErrorClosure
+    ) {
+        self.httpResponseClosure = httpResponseClosure
+        self.httpResponseErrorClosure = httpResponseErrorClosure
+    }
     public func handle<H>(context: HttpContext,
                           input: SdkHttpRequest,
-                          next: H) async throws -> OperationOutput<Output>
+                          next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
             Self.MInput == H.Input,
             Self.MOutput == H.Output,
             Self.Context == H.Context {
 
-            let decoder = context.getDecoder()
             let response = try await next.handle(context: context, input: input) // call handler to get http response
             var copiedResponse = response
             if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
-                let output = try await Output(httpResponse: copiedResponse.httpResponse,
-                                        decoder: decoder)
+                let output = try await httpResponseClosure(copiedResponse.httpResponse)
                 copiedResponse.output = output
                 return copiedResponse
             } else {
@@ -29,14 +38,12 @@ public struct DeserializeMiddleware<Output: HttpResponseBinding,
                 // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
                 let bodyData = try await copiedResponse.httpResponse.body.readData()
                 copiedResponse.httpResponse.body = .data(bodyData)
-                let error = try await OutputError.makeError(httpResponse: copiedResponse.httpResponse,
-                                            decoder: decoder)
-                throw error
+                throw try await httpResponseErrorClosure(copiedResponse.httpResponse)
           }
     }
 
     public typealias MInput = SdkHttpRequest
-    public typealias MOutput = OperationOutput<Output>
+    public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
 
 }
