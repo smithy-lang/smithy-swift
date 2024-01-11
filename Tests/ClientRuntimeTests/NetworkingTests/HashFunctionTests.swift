@@ -7,6 +7,7 @@
 
 import XCTest
 @testable import ClientRuntime
+import AwsCommonRuntimeKit
 
 class HashFunctionTests: XCTestCase {
 
@@ -98,6 +99,9 @@ class HashFunctionTests: XCTestCase {
     }
 
     func testHashFunctionToHexString() {
+        // Must be called to work on linux
+        CommonRuntimeKit.initialize()
+
         let testData = Data("Hello, world!".utf8)
 
         // CRC32
