@@ -59,8 +59,8 @@ class AuthSchemeResolverGenerator {
                     //   endpoint resolver's auth scheme resolution to resolve an auth scheme.
                     renderEndpointParamFields(ctx, this)
                 } else {
-                    // If service supports SigV4 auth scheme, it's a special-case for now - change once sigv4a trait is added
-                    //   and it becomes possible at model level to notate custom members for a given auth scheme.
+                    // If service supports SigV4/SigV4a auth scheme, it's a special-case for now - change once
+                    // it becomes possible at model level to notate custom members for a given auth scheme.
                     // Region has to be in params in addition to operation string.
                     if (serviceIndex.getEffectiveAuthSchemes(ctx.service).contains(SigV4Trait.ID)) {
                         write("// Region is used for SigV4 auth scheme")

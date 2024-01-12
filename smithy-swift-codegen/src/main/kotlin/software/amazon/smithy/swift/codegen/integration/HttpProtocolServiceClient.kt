@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.aws.traits.auth.SigV4ATrait
 import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.ServiceIndex
@@ -44,6 +45,9 @@ open class HttpProtocolServiceClient(
                 writer.write("var modeledAuthSchemes: [ClientRuntime.AuthScheme] = Array()")
                 if (ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service).contains(SigV4Trait.ID)) {
                     writer.write("modeledAuthSchemes.append(SigV4AuthScheme())")
+                }
+                if (ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service).contains(SigV4ATrait.ID)) {
+                    writer.write("modeledAuthSchemes.append(SigV4AAuthScheme())")
                 }
                 writer.write("config.authSchemes = config.authSchemes ?? modeledAuthSchemes")
                 writer.write("self.config = config")
