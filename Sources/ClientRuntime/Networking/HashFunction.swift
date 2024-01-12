@@ -5,6 +5,11 @@
 
 import AwsCommonRuntimeKit
 
+enum HashResult {
+    case data(Data)
+    case integer(UInt32)
+}
+
 enum HashFunction {
     case crc32, crc32c, sha1, sha256, md5
 
@@ -28,54 +33,36 @@ enum HashFunction {
         }
     }
 
-    func computeHash(of data: Data) throws -> Data? {
+    func computeHash(of data: Data) throws -> HashResult? {
         switch self {
         case .crc32:
             // Should turn this result back into a UInt32 using .toUInt32()
-            return Data(fromUInt32: data.computeCRC32())
+            return .integer(data.computeCRC32())
         case .crc32c:
             // Should turn this result back into a UInt32 using .toUInt32()
-            return Data(fromUInt32: data.computeCRC32C())
+            return .integer(data.computeCRC32C())
         case .sha1:
             do {
                 let hashed = try data.computeSHA1()
-                return Data(hashed)
+                return .data(hashed)
             } catch {
                 throw ClientRuntime.ClientError.unknownError("Error computing SHA1: \(error)")
             }
         case .sha256:
             do {
                 let hashed = try data.computeSHA256()
-                return Data(hashed)
+                return .data(hashed)
             } catch {
                 throw ClientRuntime.ClientError.unknownError("Error computing SHA256: \(error)")
             }
         case .md5:
             do {
                 let hashed = try data.computeMD5()
-                return Data(hashed)
+                return .data(hashed)
             } catch {
                 throw ClientRuntime.ClientError.unknownError("Error computing MD5: \(error)")
             }
         }
-    }
-}
-
-extension Data {
-
-    // Create a Data type from a UInt32 value
-    init(fromUInt32 value: UInt32) {
-        var val = value // Create a mutable UInt32
-        self = Swift.withUnsafeBytes(of: &val) { Data($0) }
-    }
-
-    // Convert a Data type to UInt32
-    func toUInt32() -> UInt32? {
-        guard self.count == MemoryLayout<UInt32>.size else {
-            return nil // Ensures the data is of the correct size
-        }
-
-        return self.withUnsafeBytes { $0.load(as: UInt32.self) }
     }
 }
 
@@ -96,5 +83,18 @@ extension UInt32: HexStringable {
     // Convert a UInt32 type to a hexademical String
     func toHexString() -> String {
         return String(format: "%08x", self)
+    }
+}
+
+extension HashResult: HexStringable {
+
+    // Convert a HashResult to a hexadecimal String
+    func toHexString() -> String {
+        switch self {
+        case .data(let data):
+            return data.toHexString()
+        case .integer(let integer):
+            return integer.toHexString()
+        }
     }
 }
