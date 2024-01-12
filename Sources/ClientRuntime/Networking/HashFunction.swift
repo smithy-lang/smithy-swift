@@ -10,6 +10,11 @@ enum HashResult {
     case integer(UInt32)
 }
 
+enum HashError: Error {
+    case invalidInput
+    case hashingFailed(reason: String)
+}
+
 enum HashFunction {
     case crc32, crc32c, sha1, sha256, md5
 
@@ -46,21 +51,21 @@ enum HashFunction {
                 let hashed = try data.computeSHA1()
                 return .data(hashed)
             } catch {
-                throw ClientRuntime.ClientError.unknownError("Error computing SHA1: \(error)")
+                throw HashError.hashingFailed(reason: "Error computing SHA1: \(error)")
             }
         case .sha256:
             do {
                 let hashed = try data.computeSHA256()
                 return .data(hashed)
             } catch {
-                throw ClientRuntime.ClientError.unknownError("Error computing SHA256: \(error)")
+                throw HashError.hashingFailed(reason: "Error computing SHA256: \(error)")
             }
         case .md5:
             do {
                 let hashed = try data.computeMD5()
                 return .data(hashed)
             } catch {
-                throw ClientRuntime.ClientError.unknownError("Error computing MD5: \(error)")
+                throw HashError.hashingFailed(reason: "Error computing MD5: \(error)")
             }
         }
     }
