@@ -11,7 +11,7 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
-class SigningMiddleware(
+class SignerMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider
 ) : MiddlewareRenderable {
@@ -31,7 +31,7 @@ class SigningMiddleware(
         val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
         writer.write(
             "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N>())",
-            ClientRuntimeTypes.Middleware.SigningMiddleware, output, outputError
+            ClientRuntimeTypes.Middleware.SignerMiddleware, output, outputError
         )
     }
 }

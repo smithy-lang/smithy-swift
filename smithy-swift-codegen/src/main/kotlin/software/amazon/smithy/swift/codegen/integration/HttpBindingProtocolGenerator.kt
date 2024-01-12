@@ -53,7 +53,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInp
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlHostMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.RetryMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.SigningMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.SignerMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
@@ -465,7 +465,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
 
-            operationMiddleware.appendMiddleware(operation, SigningMiddleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, SignerMiddleware(ctx.model, ctx.symbolProvider))
 
             addProtocolSpecificMiddleware(ctx, operation)
 
