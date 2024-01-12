@@ -38,13 +38,11 @@ enum HashFunction {
         }
     }
 
-    func computeHash(of data: Data) throws -> HashResult? {
+    func computeHash(of data: Data) throws -> HashResult {
         switch self {
         case .crc32:
-            // Should turn this result back into a UInt32 using .toUInt32()
             return .integer(data.computeCRC32())
         case .crc32c:
-            // Should turn this result back into a UInt32 using .toUInt32()
             return .integer(data.computeCRC32C())
         case .sha1:
             do {
@@ -71,35 +69,15 @@ enum HashFunction {
     }
 }
 
-protocol HexStringable {
-    func toHexString() -> String
-}
-
-extension Data: HexStringable {
-
-    // Convert a Data type to a hexademical String
-    func toHexString() -> String {
-        return map { String(format: "%02x", $0) }.joined()
-    }
-}
-
-extension UInt32: HexStringable {
-
-    // Convert a UInt32 type to a hexademical String
-    func toHexString() -> String {
-        return String(format: "%08x", self)
-    }
-}
-
-extension HashResult: HexStringable {
+extension HashResult {
 
     // Convert a HashResult to a hexadecimal String
     func toHexString() -> String {
         switch self {
         case .data(let data):
-            return data.toHexString()
+            return data.map { String(format: "%02x", $0) }.joined()
         case .integer(let integer):
-            return integer.toHexString()
+            return String(format: "%08x", integer)
         }
     }
 }
