@@ -30,8 +30,8 @@ public func responseErrorClosure<Reader>(
 
 public func responseDocumentBinding() -> HTTPResponseDocumentBinding<Reader> {
     return { response in
-        let data = try await response.body.readData() ?? Data()
+        let data = try await response.body.readData()
         response.body = .data(data)
-        return try Reader.from(data: data)
+        return try Reader.from(data: data ?? Data())
     }
 }

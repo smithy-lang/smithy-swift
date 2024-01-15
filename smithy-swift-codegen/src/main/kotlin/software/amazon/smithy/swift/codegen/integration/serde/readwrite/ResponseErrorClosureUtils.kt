@@ -15,7 +15,7 @@ class ResponseErrorClosureUtils(
         val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
         return when {
             ctx.service.responseWireProtocol == WireProtocol.XML -> {
-                writer.format("responseErrorClosure(\$N.responseErrorBinding(httpResponse:reader:), responseDocumentBinding())", outputErrorSymbol)
+                writer.format("responseErrorClosure(\$N.httpBinding, responseDocumentBinding())", outputErrorSymbol)
             }
             else -> writer.format("responseErrorClosure(\$N.self, decoder: decoder)", outputErrorSymbol)
         }

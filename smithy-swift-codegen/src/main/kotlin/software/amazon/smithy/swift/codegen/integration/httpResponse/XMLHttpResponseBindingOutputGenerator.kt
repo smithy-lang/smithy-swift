@@ -31,38 +31,40 @@ class XMLHttpResponseBindingOutputGenerator() : HttpResponseBindingOutputGenerat
             return
         }
         val outputShape = ctx.model.expectShape(op.outputShape)
-        val outputShapeName = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op).name
+        val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
         var responseBindings = httpBindingResolver.responseBindings(op)
         val headerBindings = responseBindings
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$outputShapeName+HttpResponseBinding.swift")
-            .name(outputShapeName)
+            .definitionFile("./$rootNamespace/models/${outputSymbol.name}+HttpResponseBinding.swift")
+            .name(outputSymbol.name)
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addImport(SwiftDependency.SMITHY_XML.target)
             writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
-            writer.openBlock("extension \$L {", "}", outputShapeName) {
+            writer.openBlock("extension \$N {", "}", outputSymbol) {
                 writer.write("")
                 writer.openBlock(
-                    "static func responseOutputBinding(httpResponse: \$N, reader responseReader: \$N) async throws -> \$L {",
+                    "static var httpBinding: \$N<\$N, \$N> {",
                     "}",
-                    ClientRuntimeTypes.Http.HttpResponse,
+                    ClientRuntimeTypes.Http.HTTPResponseOutputBinding,
+                    outputSymbol,
                     SmithyXMLTypes.Reader,
-                    outputShapeName
                 ) {
-                    writer.write("let reader = \$L", reader(ctx, op, writer))
-                    writer.write("var value = \$L()", outputShapeName)
-                    XMLHttpResponseHeaders(ctx, false, headerBindings, defaultTimestampFormat, writer).render()
-                    XMLHttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                    XMLHttpResponseTraitPayload(ctx, responseBindings, outputShape, writer).render()
-                    XMLHttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
-                    XMLHttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
-                    writer.write("return value")
+                    writer.openBlock("{ httpResponse, responseReader in", "}") {
+                        writer.write("let reader = \$L", reader(ctx, op, writer))
+                        writer.write("var value = \$N()", outputSymbol)
+                        XMLHttpResponseHeaders(ctx, false, headerBindings, defaultTimestampFormat, writer).render()
+                        XMLHttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
+                        XMLHttpResponseTraitPayload(ctx, responseBindings, outputShape, writer).render()
+                        XMLHttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
+                        XMLHttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
+                        writer.write("return value")
+                    }
                 }
             }
             writer.write("")

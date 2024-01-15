@@ -97,7 +97,7 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
             httpProtocolCustomizable,
             operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
-            HttpProtocolUnitTestGenerator.SerdeContext("XMLEncoder()", "XMLDecoder()")
+            HttpProtocolUnitTestGenerator.SerdeContext(null, null)
         ).generateProtocolTests()
     }
 }

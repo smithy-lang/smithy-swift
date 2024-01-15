@@ -28,6 +28,8 @@ object ClientRuntimeTypes {
         val HttpError = runtimeSymbol("HTTPError")
         val UnknownHttpServiceError = runtimeSymbol("UnknownHttpServiceError")
         val HttpContextBuilder = runtimeSymbol("HttpContextBuilder")
+        val HTTPResponseOutputBinding = runtimeSymbol("HTTPResponseOutputBinding")
+        val HTTPResponseErrorBinding = runtimeSymbol("HTTPResponseErrorBinding")
     }
 
     object Serde {
@@ -53,6 +55,7 @@ object ClientRuntimeTypes {
         val Message = runtimeSymbol("EventStream.Message")
         val MessageEncoderStream = runtimeSymbol("EventStream.DefaultMessageEncoderStream")
         val MessageDecoderStream = runtimeSymbol("EventStream.DefaultMessageDecoderStream")
+        val UnmarshalClosure = runtimeSymbol("UnmarshalClosure")
     }
 
     object Middleware {

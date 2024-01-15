@@ -46,6 +46,7 @@ val ServiceShape.responseWireProtocol: WireProtocol
         AWSProtocol.REST_JSON_1, AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1 -> WireProtocol.JSON
     }
 
+// Whether this AWS protocol is RPC.
 val ServiceShape.isRPCBound: Boolean
     get() = when (awsProtocol) {
         AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1, AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY -> true

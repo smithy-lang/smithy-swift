@@ -91,7 +91,7 @@ class XMLHttpResponseTraitWithHttpPayload(
                             writer.write("let messageDecoder: \$D", ClientRuntimeTypes.EventStream.MessageDecoder)
                         }
                         writer.write(
-                            "let decoderStream = \$N(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal(message:))",
+                            "let decoderStream = \$N(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
                             ClientRuntimeTypes.EventStream.MessageDecoderStream,
                             symbol,
                         )

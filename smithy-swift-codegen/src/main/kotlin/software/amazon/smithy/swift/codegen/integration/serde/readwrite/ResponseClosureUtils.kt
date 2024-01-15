@@ -16,7 +16,7 @@ class ResponseClosureUtils(
                 val outputShape = ctx.model.expectShape(op.outputShape)
                 val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
                 writer.format(
-                    "responseClosure(\$N.responseOutputBinding(httpResponse:reader:), responseDocumentBinding())",
+                    "responseClosure(\$N.httpBinding, responseDocumentBinding())",
                     outputSymbol
                 )
             }
