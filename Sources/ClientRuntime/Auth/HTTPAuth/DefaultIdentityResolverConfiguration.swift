@@ -6,16 +6,16 @@
 //
 
 public struct DefaultIdentityResolverConfiguration: IdentityResolverConfiguration {
-    let credentialsProvider: (any IdentityResolver)?
+    let credentialsProvider: Attributes
 
     public init(configuredIdResolvers: Attributes) {
-        self.credentialsProvider = configuredIdResolvers.get(key: AttributeKeys.awsIdResolver) ?? nil
+        self.credentialsProvider = configuredIdResolvers
     }
 
     func getIdentityResolver(identityKind: IdentityKind) -> (any IdentityResolver)? {
         switch identityKind {
         case .aws:
-            return self.credentialsProvider
+            return self.credentialsProvider.get(key: AttributeKeys.awsIdResolver)
         }
     }
 }

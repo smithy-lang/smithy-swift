@@ -76,7 +76,7 @@ object ClientRuntimeTypes {
         val RetryMiddleware = runtimeSymbol("RetryMiddleware")
         val IdempotencyTokenMiddleware = runtimeSymbol("IdempotencyTokenMiddleware")
         val NoopHandler = runtimeSymbol("NoopHandler")
-        val SigningMiddleware = runtimeSymbol("SignerMiddleware")
+        val SignerMiddleware = runtimeSymbol("SignerMiddleware")
         val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware")
         val BodyMiddleware = runtimeSymbol("BodyMiddleware")
         val PayloadBodyMiddleware = runtimeSymbol("PayloadBodyMiddleware")
