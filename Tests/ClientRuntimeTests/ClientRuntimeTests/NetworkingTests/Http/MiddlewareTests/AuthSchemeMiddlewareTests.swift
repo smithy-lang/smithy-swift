@@ -115,7 +115,6 @@ class AuthSchemeMiddlewareTests: XCTestCase {
     func testAuthOderABCNoAuthSelectNoAuth() async throws {
         let context = contextBuilder
             .withOperation(value: "authABCNoAuth")
-            .withAuthScheme(value: MockNoAuth())
             .build()
         try await AssertSelectedAuthSchemeMatches(builtContext: context, expectedAuthScheme: "smithy.api#noAuth")
     }
