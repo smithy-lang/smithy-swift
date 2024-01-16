@@ -11,7 +11,7 @@ import SmithyTestUtil
 
 class AuthSchemeMiddlewareTests: XCTestCase {
     private var contextBuilder: HttpContextBuilder!
-    private var operationStack: OperationStack<MockInput, MockOutput, MockMiddlewareError>!
+    private var operationStack: OperationStack<MockInput, MockOutput>!
 
     override func setUp() async throws {
         try await super.setUp()
@@ -19,7 +19,7 @@ class AuthSchemeMiddlewareTests: XCTestCase {
             .withAuthSchemeResolver(value: DefaultMockAuthSchemeResolver())
             .withAuthScheme(value: MockNoAuth())
             .withIdentityResolver(value: MockIdentityResolver(), type: .aws)
-        operationStack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "auth scheme middleware test stack")
+        operationStack = OperationStack<MockInput, MockOutput>(id: "auth scheme middleware test stack")
     }
 
     // Test exception cases
@@ -123,14 +123,14 @@ class AuthSchemeMiddlewareTests: XCTestCase {
     private func AssertSelectedAuthSchemeMatches(builtContext: HttpContext, expectedAuthScheme: String) async throws {
         operationStack.buildStep.intercept(position: .before, middleware: AuthSchemeMiddleware<MockOutput, MockMiddlewareError>())
 
-        let mockHandler = MockHandler { (context, input) in
+        let mockHandler = MockHandler(handleCallback: { (context, input) in
             let selectedAuthScheme = context.getSelectedAuthScheme()
             XCTAssertEqual(expectedAuthScheme, selectedAuthScheme?.schemeID)
-            let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
+            let httpResponse = HttpResponse(body: .noStream, statusCode: HttpStatusCode.ok)
             let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
             return output
-        }
+        })
 
         _ = try await operationStack.handleMiddleware(context: builtContext, input: MockInput(), next: mockHandler)
     }

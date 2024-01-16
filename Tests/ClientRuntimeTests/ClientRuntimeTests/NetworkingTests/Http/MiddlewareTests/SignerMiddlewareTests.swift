@@ -11,12 +11,12 @@ import SmithyTestUtil
 
 class SignerMiddlewareTests: XCTestCase {
     private var contextBuilder: HttpContextBuilder!
-    private var operationStack: OperationStack<MockInput, MockOutput, MockMiddlewareError>!
+    private var operationStack: OperationStack<MockInput, MockOutput>!
 
     override func setUp() async throws {
         try await super.setUp()
         contextBuilder = HttpContextBuilder()
-        operationStack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "auth scheme middleware test stack")
+        operationStack = OperationStack<MockInput, MockOutput>(id: "auth scheme middleware test stack")
     }
     
     // Test exception cases
@@ -101,13 +101,13 @@ class SignerMiddlewareTests: XCTestCase {
     private func AssertRequestWasSigned(builtContext: HttpContext) async throws {
         operationStack.finalizeStep.intercept(position: .before, middleware: SignerMiddleware<MockOutput, MockMiddlewareError>())
 
-        let mockHandler = MockHandler { (context, input) in
+        let mockHandler = MockHandler(handleCallback: { (context, input) in
             XCTAssertEqual(input.headers.value(for: "Mock-Authorization"), "Mock-Signed")
-            let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
+            let httpResponse = HttpResponse(body: .noStream, statusCode: HttpStatusCode.ok)
             let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
             return output
-        }
+        })
 
         _ = try await operationStack.handleMiddleware(context: builtContext, input: MockInput(), next: mockHandler)
     }
