@@ -104,8 +104,7 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         val context = setupTests("Isolated/number-type-test.smithy", "aws.protocoltests.restjson#RestJson")
         val contents = getFileContents(context.manifest, "/RestJsonTests/InputAndOutputWithHeadersResponseTest.swift")
 
-        val expectedContents =
-            """
+        val expectedContents = """
 class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
     /// Supports handling NaN float header values.
     func testRestJsonSupportsNaNFloatHeaderOutputs() async throws {
@@ -121,7 +120,10 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
             return
         }
 
-        let actual = try await InputAndOutputWithHeadersOutput(httpResponse: httpResponse)
+        let decoder = ClientRuntime.JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+        let actual: InputAndOutputWithHeadersOutput = try await responseClosure(decoder: decoder)(httpResponse)
 
         let expected = InputAndOutputWithHeadersOutput(
             headerDouble: Swift.Double.nan,
@@ -133,7 +135,7 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
 
     }
 }
-            """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -154,7 +156,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
             headers: [
                 "Content-Type": "application/json"
             ],
-            body: .data( ""${'"'}
+            body: .data(Data(""${'"'}
             {
                 "stringValue": "string",
                 "documentValue": [
@@ -174,7 +176,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
                     }
                 ]
             }
-            ""${'"'}.data(using: .utf8)!),
+            ""${'"'}.utf8)),
             host: "",
             resolvedHost: ""
         )
@@ -206,7 +208,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
                 ,
                 stringValue: "string"
             )
-        """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

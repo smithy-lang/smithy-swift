@@ -19,27 +19,18 @@ class BlobDecodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsOutputBody+Decodable.swift")
         val expectedContents = """
-        extension XmlBlobsOutputBody: Swift.Decodable {
-            enum CodingKeys: Swift.String, Swift.CodingKey {
-                case data
-            }
-        
-            public init(from decoder: Swift.Decoder) throws {
-                let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                if containerValues.contains(.data) {
-                    do {
-                        let dataDecoded = try containerValues.decodeIfPresent(ClientRuntime.Data.self, forKey: .data)
-                        data = dataDecoded
-                    } catch {
-                        data = "".data(using: .utf8)
-                    }
-                } else {
-                    data = nil
-                }
-            }
-        }
-        """.trimIndent()
+extension XmlBlobsOutputBody {
 
+    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlBlobsOutput, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = XmlBlobsOutput()
+            value.data = try reader["data"].readIfPresent()
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -48,43 +39,18 @@ class BlobDecodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedOutputBody+Decodable.swift")
         val expectedContents = """
-        extension XmlBlobsNestedOutputBody: Swift.Decodable {
-            enum CodingKeys: Swift.String, Swift.CodingKey {
-                case nestedBlobList
-            }
-        
-            public init(from decoder: Swift.Decoder) throws {
-                let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                if containerValues.contains(.nestedBlobList) {
-                    struct KeyVal0{struct member{}}
-                    let nestedBlobListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedBlobList)
-                    if let nestedBlobListWrappedContainer = nestedBlobListWrappedContainer {
-                        let nestedBlobListContainer = try nestedBlobListWrappedContainer.decodeIfPresent([[ClientRuntime.Data]].self, forKey: .member)
-                        var nestedBlobListBuffer:[[ClientRuntime.Data]]? = nil
-                        if let nestedBlobListContainer = nestedBlobListContainer {
-                            nestedBlobListBuffer = [[ClientRuntime.Data]]()
-                            var listBuffer0: [ClientRuntime.Data]? = nil
-                            for listContainer0 in nestedBlobListContainer {
-                                listBuffer0 = [ClientRuntime.Data]()
-                                for blobContainer1 in listContainer0 {
-                                    listBuffer0?.append(blobContainer1)
-                                }
-                                if let listBuffer0 = listBuffer0 {
-                                    nestedBlobListBuffer?.append(listBuffer0)
-                                }
-                            }
-                        }
-                        nestedBlobList = nestedBlobListBuffer
-                    } else {
-                        nestedBlobList = []
-                    }
-                } else {
-                    nestedBlobList = nil
-                }
-            }
-        }
-        """.trimIndent()
+extension XmlBlobsNestedOutputBody {
 
+    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlBlobsNestedOutput, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = XmlBlobsNestedOutput()
+            value.nestedBlobList = try reader["nestedBlobList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: ClientRuntime.Data.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {

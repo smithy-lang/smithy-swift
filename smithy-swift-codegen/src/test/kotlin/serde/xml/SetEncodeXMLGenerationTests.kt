@@ -18,42 +18,29 @@ class SetEncodeXMLGenerationTests {
     fun `001 wrapped set serialization`() {
         val context = setupTests("Isolated/Restxml/xml-sets.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumSetInput+Encodable.swift")
-        val expectedContents =
-            """
-            extension XmlEnumSetInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case fooEnumSet
-                }
-            
-                static func writingClosure(_ value: XmlEnumSetInput?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("fooEnumSet")].writeList(value.fooEnumSet, memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false)
-                }
-            }
-            """.trimIndent()
-
+        val expectedContents = """
+extension XmlEnumSetInput {
+    static func writingClosure(_ value: XmlEnumSetInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer["fooEnumSet"].writeList(value.fooEnumSet, memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: false)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `002 wrapped nested set serialization`() {
         val context = setupTests("Isolated/Restxml/xml-sets-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        print(listFilesFromManifest(context.manifest))
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumNestedSetInput+Encodable.swift")
-        val expectedContents =
-            """
-            extension XmlEnumNestedSetInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case fooEnumSet
-                }
-            
-                static func writingClosure(_ value: XmlEnumNestedSetInput?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("fooEnumSet")].writeList(value.fooEnumSet, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false), memberNodeInfo: .init("member"), isFlattened: false)
-                }
-            }
-            """.trimIndent()
-
+        val expectedContents = """
+extension XmlEnumNestedSetInput {
+    static func writingClosure(_ value: XmlEnumNestedSetInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer["fooEnumSet"].writeList(value.fooEnumSet, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

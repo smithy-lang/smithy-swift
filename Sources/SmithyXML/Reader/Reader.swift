@@ -12,7 +12,7 @@ import enum SmithyTimestamps.TimestampFormat
 import struct SmithyTimestamps.TimestampFormatter
 
 public class Reader {
-    public internal(set) var content: String? = nil
+    public internal(set) var content: String?
     public internal(set) var children: [Reader] = []
     public internal(set) weak var parent: Reader?
     public let nodeInfo: NodeInfo
@@ -39,7 +39,9 @@ public class Reader {
     // MARK: - creating and detaching readers for subelements
 
     public subscript(_ nodeInfo: NodeInfo) -> Reader {
-        if let match = children.first(where: { nodeInfo.prefix == $0.nodeInfo.prefix && nodeInfo.name == $0.nodeInfo.name }) {
+        if let match = children.first(where: {
+            nodeInfo.prefix == $0.nodeInfo.prefix && nodeInfo.name == $0.nodeInfo.name
+        }) {
             return match
         } else {
             // The queried node doesn't exist.  Return one that has nil content.
@@ -235,14 +237,16 @@ public class Reader {
             let entries = (parent?.children ?? []).filter { $0.nodeInfo.name == nodeInfo.name }
             guard !entries.isEmpty else { return nil }
             for entry in entries {
-                guard let key = entry[keyNodeInfo].content, let value = try valueReadingClosure(entry[valueNodeInfo]) else { continue }
+                guard let key = entry[keyNodeInfo].content,
+                      let value = try valueReadingClosure(entry[valueNodeInfo]) else { continue }
                 dict[key] = value
             }
         } else {
             if content == nil { return nil }
             let entries = children.filter { $0.nodeInfo.name == "entry" }
             for entry in entries {
-                guard let key = entry[keyNodeInfo].content, let value = try valueReadingClosure(entry[valueNodeInfo]) else { continue }
+                guard let key = entry[keyNodeInfo].content,
+                      let value = try valueReadingClosure(entry[valueNodeInfo]) else { continue }
                 dict[key] = value
             }
         }

@@ -43,7 +43,12 @@ public struct NodeInfo: Equatable {
     /// The XML namespace that is defined on this XML node.
     public let namespace: Namespace?
 
-    public init(_ name: String, location: Location = .element, namespaceDef: Namespace? = nil, namespace: Namespace? = nil) {
+    public init(
+        _ name: String,
+        location: Location = .element,
+        namespaceDef: Namespace? = nil,
+        namespace: Namespace? = nil
+    ) {
         let (prefix, baseName) = Self.components(from: name)
         self._prefix = prefix
         self.name = baseName
@@ -65,7 +70,7 @@ public struct NodeInfo: Equatable {
 extension NodeInfo: ExpressibleByStringLiteral {
 
     public typealias StringLiteralType = String
-    
+
     /// Creates a new `NodeInfo` with the string literal as name, location of `.element`, and `nil` namespace & namespaceDef.
     /// - Parameter value: The name for the `NodeInfo`.
     public init(stringLiteral value: String) {

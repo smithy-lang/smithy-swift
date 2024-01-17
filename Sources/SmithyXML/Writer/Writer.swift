@@ -42,7 +42,8 @@ public class Writer {
     // MARK: - creating and detaching writers for subelements
 
     public subscript(_ nodeInfo: NodeInfo) -> Writer {
-        let namespaceDef = nodeInfoPath.compactMap { $0.namespaceDef }.contains(nodeInfo.namespaceDef) ? nil : nodeInfo.namespaceDef
+        let namespaceDef = nodeInfoPath.compactMap { $0.namespaceDef }.contains(nodeInfo.namespaceDef) ?
+            nil : nodeInfo.namespaceDef
         let newNodeInfo = NodeInfo(nodeInfo.name, location: nodeInfo.location, namespaceDef: namespaceDef)
         let newChild = Writer(nodeInfo: newNodeInfo, parent: self)
         addChild(newChild)

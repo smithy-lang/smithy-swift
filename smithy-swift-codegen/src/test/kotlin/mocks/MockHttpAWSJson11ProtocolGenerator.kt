@@ -75,7 +75,7 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
             httpProtocolCustomizable,
             operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
-            HttpProtocolUnitTestGenerator.SerdeContext("JSONEncoder()", "JSONDecoder()", ".secondsSince1970")
+//            HttpProtocolUnitTestGenerator.SerdeContext("JSONEncoder()", "JSONDecoder()", ".secondsSince1970")
         ).generateProtocolTests()
     }
 

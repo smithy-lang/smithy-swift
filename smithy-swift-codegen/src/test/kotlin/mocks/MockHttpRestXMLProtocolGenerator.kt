@@ -36,16 +36,20 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
     override val protocol: ShapeId = RestXmlTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val httpProtocolCustomizable = MockRestXMLHttpProtocolCustomizations()
-    override val codingKeysGenerator = DefaultCodingKeysGenerator(CodingKeysCustomizationXmlName())
+    override val codingKeysGenerator = null
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
         unknownServiceErrorSymbol,
         defaultTimestampFormat,
         HttpResponseBindingOutputGenerator(),
         MockHttpResponseBindingErrorGenerator()
     )
-    override val shouldRenderDecodableBodyStructForInputShapes = true
-    override val shouldRenderCodingKeysForEncodable = true
+    override val shouldRenderDecodableBodyStructForInputShapes = false
+    override val shouldRenderCodingKeysForEncodable = false
     override val shouldRenderEncodableConformance = false
+
+    override val codableProtocol = null
+    override val encodableProtocol = null
+    override val decodableProtocol = null
 
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
@@ -97,7 +101,6 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
             httpProtocolCustomizable,
             operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
-            HttpProtocolUnitTestGenerator.SerdeContext(null, null)
         ).generateProtocolTests()
     }
 }
