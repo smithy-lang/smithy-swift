@@ -19,7 +19,9 @@ public protocol MessageUnmarshallable {
 
 public typealias UnmarshalClosure<T> = (EventStream.Message) throws -> T
 
-
+/// Provides an `UnmarshalClosure` for event payloads that are Swift `Decodable`.
+/// - Parameter responseDecoder: The Swift `Decoder` to be used for decoding this event payload.
+/// - Returns: An `UnmarshalClosure` that uses the provided decoder to decode event payloads.
 public func jsonUnmarshalClosure<T: MessageUnmarshallable>(responseDecoder: ResponseDecoder) -> UnmarshalClosure<T> {
     return { message in
         try T(message: message, decoder: responseDecoder)

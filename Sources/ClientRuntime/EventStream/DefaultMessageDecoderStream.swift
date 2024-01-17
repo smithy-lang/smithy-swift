@@ -15,7 +15,11 @@ extension EventStream {
         let messageDecoder: MessageDecoder
         let unmarshalClosure: UnmarshalClosure<Event>
 
-        public init(stream: ReadableStream, messageDecoder: MessageDecoder, unmarshalClosure: @escaping UnmarshalClosure<Event>) {
+        public init(
+            stream: ReadableStream,
+            messageDecoder: MessageDecoder,
+            unmarshalClosure: @escaping UnmarshalClosure<Event>
+        ) {
             self.stream = stream
             self.messageDecoder = messageDecoder
             self.unmarshalClosure = unmarshalClosure
@@ -26,7 +30,11 @@ extension EventStream {
             let messageDecoder: MessageDecoder
             let unmarshalClosure: UnmarshalClosure<Event>
 
-            init(stream: ReadableStream, messageDecoder: MessageDecoder, unmarshalClosure: @escaping UnmarshalClosure<Event>) {
+            init(
+                stream: ReadableStream,
+                messageDecoder: MessageDecoder,
+                unmarshalClosure: @escaping UnmarshalClosure<Event>
+            ) {
                 self.stream = stream
                 self.messageDecoder = messageDecoder
                 self.unmarshalClosure = unmarshalClosure

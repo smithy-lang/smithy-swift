@@ -35,14 +35,9 @@ class XMLHttpResponseTraitWithHttpPayload(
             ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
         when (target.type) {
             ShapeType.DOCUMENT -> {
+                // Smithy Document is currently not used in AWS.
+                // If this is eventually required by a model, a Swift compile error will occur.
                 writer.write("#error(\"Not implemented\")")
-//                writer.openBlock("if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {", "}") {
-//                    writer.write(
-//                        "let output: \$N = try responseDecoder.decode(responseBody: data)",
-//                        symbol
-//                    )
-//                    writer.write("value.\$L = output", memberName)
-//                }
             }
             ShapeType.STRING -> {
                 writer.openBlock("if let data = try await httpResponse.body.readData(), let output = \$N(data: data, encoding: .utf8) {", "}", SwiftTypes.String) {

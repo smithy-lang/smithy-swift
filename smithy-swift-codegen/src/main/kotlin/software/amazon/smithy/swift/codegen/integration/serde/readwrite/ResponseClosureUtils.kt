@@ -11,12 +11,12 @@ class ResponseClosureUtils(
 ) {
 
     fun render(): String {
-        return when {
-            ctx.service.responseWireProtocol == WireProtocol.XML -> {
+        return when (ctx.service.responseWireProtocol) {
+            WireProtocol.XML -> {
                 val outputShape = ctx.model.expectShape(op.outputShape)
                 val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
                 writer.format(
-                    "responseClosure(\$N.httpBinding, responseDocumentBinding())",
+                    "responseClosure(\$N.httpBinding, responseDocumentBinding)",
                     outputSymbol
                 )
             }
