@@ -39,9 +39,10 @@ public class Reader {
     // MARK: - creating and detaching readers for subelements
 
     public subscript(_ nodeInfo: NodeInfo) -> Reader {
-        if let match = children.first(where: { $0.nodeInfo.name == nodeInfo.name }) {
+        if let match = children.first(where: { nodeInfo.prefix == $0.nodeInfo.prefix && nodeInfo.name == $0.nodeInfo.name }) {
             return match
         } else {
+            // The queried node doesn't exist.  Return one that has nil content.
             return Reader(nodeInfo: nodeInfo, parent: self)
         }
     }

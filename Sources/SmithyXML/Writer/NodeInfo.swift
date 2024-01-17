@@ -22,16 +22,43 @@ public struct NodeInfo: Equatable {
         }
     }
 
-    public let name: String
-    public let location: Location
-    public let namespace: Namespace?
-    public let thisNodeNamespace: Namespace?
+    public var prefix: String? {
+        namespace?.prefix ?? _prefix
+    }
 
-    public init(_ name: String, location: Location = .element, namespace: Namespace? = nil, thisNodeNamespace: Namespace? = nil) {
-        self.name = name
+    /// The namespace prefix parsed from the name of this node, if any.
+    private let _prefix: String
+
+    /// The name for this XML node, with its namespace removed.
+    public let name: String
+
+    /// The location for this XML node.
+    ///
+    /// Supported locations are `element` and `attribute`.  XML nodes for other locations are ignored.
+    public let location: Location
+
+    /// The XML namespace that applies to this node, if any.
+    public let namespaceDef: Namespace?
+
+    /// The XML namespace that is defined on this XML node.
+    public let namespace: Namespace?
+
+    public init(_ name: String, location: Location = .element, namespaceDef: Namespace? = nil, namespace: Namespace? = nil) {
+        let (prefix, baseName) = Self.components(from: name)
+        self._prefix = prefix
+        self.name = baseName
         self.location = location
+        self.namespaceDef = namespaceDef
         self.namespace = namespace
-        self.thisNodeNamespace = thisNodeNamespace
+    }
+
+    private static func components(from name: String) -> (String, String) {
+        let components = name.split(separator: ":")
+        if components.count == 2 {
+            return (String(components[0]), String(components[1]))
+        } else {
+            return ("", name)
+        }
     }
 }
 
@@ -39,8 +66,8 @@ extension NodeInfo: ExpressibleByStringLiteral {
 
     public typealias StringLiteralType = String
     
-    /// Creates a new `NodeInfo` with the passed string as name, location of `.element`, and `nil` namespace.
-    /// - Parameter value: The name for the node info.
+    /// Creates a new `NodeInfo` with the string literal as name, location of `.element`, and `nil` namespace & namespaceDef.
+    /// - Parameter value: The name for the `NodeInfo`.
     public init(stringLiteral value: String) {
         self.init(value)
     }

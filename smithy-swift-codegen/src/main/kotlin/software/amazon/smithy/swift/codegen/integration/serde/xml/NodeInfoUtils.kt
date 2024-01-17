@@ -47,7 +47,7 @@ class NodeInfoUtils(
     private fun namespaceParam(xmlNamespaceTrait: XmlNamespaceTrait?): String {
         return xmlNamespaceTrait?.let {
             writer.format(
-                ", namespace: .init(prefix: \$S, uri: \$S)",
+                ", namespaceDef: .init(prefix: \$S, uri: \$S)",
                 it.prefix,
                 it.uri
             )

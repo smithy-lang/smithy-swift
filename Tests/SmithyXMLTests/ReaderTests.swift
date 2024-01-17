@@ -49,14 +49,14 @@ class ReaderTests: XCTestCase {
     func test_readsRootNamespace() throws {
         let reader = try Reader.from(data: xmlData)
 
-        XCTAssertEqual(reader.nodeInfo.namespace, .init(prefix: "xmlns", uri: "https://abc.def.com"))
+        XCTAssertEqual(reader.nodeInfo.namespaceDef, .init(prefix: "", uri: "https://abc.def.com"))
         XCTAssertEqual(reader.children.count, 3)
     }
 
     func test_readsSubNamespace() throws {
         let reader = try Reader.from(data: xmlData)
 
-        XCTAssertEqual(reader.children[1].nodeInfo.namespace, .init(prefix: "a2abc", uri: "https://def.ghi.com"))
+        XCTAssertEqual(reader.children[1].nodeInfo.namespaceDef, .init(prefix: "a2abc", uri: "https://def.ghi.com"))
         XCTAssertEqual(reader.children.count, 3)
     }
 }

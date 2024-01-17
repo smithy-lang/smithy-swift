@@ -24,7 +24,7 @@ public class Writer {
     var children: [Writer] = []
     weak var parent: Writer?
     let nodeInfo: NodeInfo
-    let nodeInfoPath: [NodeInfo]
+    public var nodeInfoPath: [NodeInfo] { (parent?.nodeInfoPath ?? []) + [nodeInfo] }
 
     // MARK: - init & deinit
 
@@ -32,21 +32,19 @@ public class Writer {
     /// - Parameter rootNodeInfo: The node info for the root XML node.
     init(rootNodeInfo: NodeInfo) {
         self.nodeInfo = rootNodeInfo
-        self.nodeInfoPath = [rootNodeInfo]
     }
 
-    private init(nodeInfo: NodeInfo, nodeInfoPath: [NodeInfo], parent: Writer?) {
+    private init(nodeInfo: NodeInfo, parent: Writer?) {
         self.nodeInfo = nodeInfo
-        self.nodeInfoPath = nodeInfoPath
         self.parent = parent
     }
 
     // MARK: - creating and detaching writers for subelements
 
     public subscript(_ nodeInfo: NodeInfo) -> Writer {
-        let namespace = nodeInfoPath.compactMap { $0.namespace }.contains(nodeInfo.namespace) ? nil : nodeInfo.namespace
-        let newNodeInfo = NodeInfo(nodeInfo.name, location: nodeInfo.location, namespace: namespace)
-        let newChild = Writer(nodeInfo: newNodeInfo, nodeInfoPath: nodeInfoPath + [newNodeInfo], parent: self)
+        let namespaceDef = nodeInfoPath.compactMap { $0.namespaceDef }.contains(nodeInfo.namespaceDef) ? nil : nodeInfo.namespaceDef
+        let newNodeInfo = NodeInfo(nodeInfo.name, location: nodeInfo.location, namespaceDef: namespaceDef)
+        let newChild = Writer(nodeInfo: newNodeInfo, parent: self)
         addChild(newChild)
         return newChild
     }
@@ -172,7 +170,7 @@ public class Writer {
             let flattenedMemberNodeInfo = NodeInfo(
                 nodeInfo.name,
                 location: memberNodeInfo.location,
-                namespace: memberNodeInfo.namespace
+                namespaceDef: memberNodeInfo.namespaceDef
             )
             for member in value {
                 try memberWritingClosure(member, parent[flattenedMemberNodeInfo])

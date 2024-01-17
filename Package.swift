@@ -69,7 +69,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyXMLTests",
-            dependencies: ["SmithyXML"]
+            dependencies: ["SmithyXML", "ClientRuntime"]
         ),
         .testTarget(
             name: "SmithyTimestampsTests",

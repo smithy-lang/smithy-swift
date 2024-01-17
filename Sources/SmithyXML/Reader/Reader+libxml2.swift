@@ -41,46 +41,11 @@ extension Reader {
         // Only element nodes and attribute nodes are supported.  nodeInfoLocation is nil for all others.
         guard let location = xmlNodePtr.pointee.type.nodeInfoLocation else { return nil }
 
-        // Create a Reader namespace if one is present on the XML node
         // This is the namespace defined on this node, if any
-        var namespace: NodeInfo.Namespace?
+        let namespaceDef = Self.namespace(xmlNodePtr.pointee.nsDef)
 
         // This is the namespace that applies to this node
-        var thisNodeNamespace: NodeInfo.Namespace?
-
-        // href must be present for there to be a namespace
-        if xmlNodePtr.pointee.nsDef != nil && xmlNodePtr.pointee.nsDef.pointee.href != nil {
-
-            // Convert prefix to a Swift string.  Prefix may be nil, defaults to "xmlns" in that case
-            let prefix = xmlNodePtr.pointee.nsDef.pointee.prefix?.withMemoryRebound(to: CChar.self, capacity: 0) { cStringPtr in
-                String(cString: cStringPtr, encoding: .utf8)
-            } ?? "xmlns"
-
-            // Convert href to a Swift string
-            let href = xmlNodePtr.pointee.nsDef.pointee.href.withMemoryRebound(to: CChar.self, capacity: 0) { cStringPtr in
-                String(cString: cStringPtr, encoding: .utf8)
-            }
-            if let href {
-                namespace = .init(prefix: prefix, uri: href)
-            }
-        }
-
-        // href must be present for there to be a namespace
-        if xmlNodePtr.pointee.ns != nil {
-
-            // Convert prefix to a Swift string.  Prefix may be nil, defaults to "xmlns" in that case
-            let prefix = xmlNodePtr.pointee.ns.pointee.prefix?.withMemoryRebound(to: CChar.self, capacity: 0) { cStringPtr in
-                String(cString: cStringPtr, encoding: .utf8)
-            } ?? "xmlns"
-
-            // Convert href to a Swift string
-            let href = xmlNodePtr.pointee.ns.pointee.href?.withMemoryRebound(to: CChar.self, capacity: 0) { cStringPtr in
-                String(cString: cStringPtr, encoding: .utf8)
-            }
-            if let href {
-                thisNodeNamespace = .init(prefix: prefix, uri: href)
-            }
-        }
+        let namespace = Self.namespace(xmlNodePtr.pointee.ns)
 
         // Get the name for the node as a Swift string.
         let name = xmlNodePtr.pointee.name.withMemoryRebound(to: CChar.self, capacity: 0) { cStringPtr in
@@ -89,7 +54,7 @@ extension Reader {
         guard let name else { throw XMLError.invalidNodeName }
 
         // Create a new Reader for this node.
-        let parent = Reader(nodeInfo: .init(name, location: location, namespace: namespace, thisNodeNamespace: thisNodeNamespace))
+        let parent = Reader(nodeInfo: .init(name, location: location, namespaceDef: namespaceDef, namespace: namespace))
 
         // Get the content (i.e. element text) for this node.  Convert it to a Swift string.
         let contentPtr = xmlNodeGetContent(xmlNodePtr)
@@ -120,6 +85,9 @@ extension Reader {
         // Loop through all attributes.
         while xmlAttrPtr != nil {
 
+            // Get the namespace for this attribute
+            let namespace = Self.namespace(xmlAttrPtr?.pointee.ns)
+
             // Get the attribute name as a C string.
             let attrName = xmlAttrPtr!.pointee.name.withMemoryRebound(to: CChar.self, capacity: 0) { attrNamePtr in
                 String(cString: attrNamePtr, encoding: .utf8)
@@ -128,7 +96,7 @@ extension Reader {
             if let attrName, !attrName.isEmpty {
 
                 // Create a new Reader node for this attribute
-                let child = Reader(nodeInfo: .init(attrName, location: .attribute))
+                let child = Reader(nodeInfo: .init(attrName, location: .attribute, namespace: namespace))
 
                 // Get the attribute content as a C string
                 let contentPtr = xmlNodeListGetString(xmlNodePtr.pointee.doc, xmlAttrPtr?.pointee.children, 1)
@@ -146,6 +114,22 @@ extension Reader {
         }
 
         return parent
+    }
+
+    private static func namespace(_ ns: UnsafeMutablePointer<xmlNs>?) -> NodeInfo.Namespace? {
+        guard let ns = ns?.pointee else { return nil }
+
+        // Convert href to a Swift string
+        guard let href = ns.href?.withMemoryRebound(to: CChar.self, capacity: 0, { cStringPtr in
+            String(cString: cStringPtr, encoding: .utf8)
+        }) else { return nil }
+
+        // Convert prefix to a Swift string.  Prefix may be nil, defaults to "" in that case
+        let prefix = ns.prefix?.withMemoryRebound(to: CChar.self, capacity: 0, { cStringPtr in
+            String(cString: cStringPtr, encoding: .utf8)
+        }) ?? ""
+
+        return .init(prefix: prefix, uri: href)
     }
 }
 
