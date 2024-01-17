@@ -10,7 +10,6 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import listFilesFromManifest
 import org.junit.jupiter.api.Test
 
 class SetEncodeXMLGenerationTests {
