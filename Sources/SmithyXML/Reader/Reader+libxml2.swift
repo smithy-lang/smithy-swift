@@ -136,10 +136,10 @@ extension Reader {
 private extension xmlElementType {
 
     var nodeInfoLocation: NodeInfo.Location? {
-        return switch self {
-        case XML_ELEMENT_NODE: .element
-        case XML_ATTRIBUTE_NODE: .attribute
-        default: nil
+        switch self {
+        case XML_ELEMENT_NODE: return .element
+        case XML_ATTRIBUTE_NODE: return .attribute
+        default: return nil
         }
     }
 }
