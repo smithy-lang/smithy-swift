@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 import XCTest
+import AwsCommonRuntimeKit
 import SmithyTestUtil
 @testable import ClientRuntime
 
@@ -11,6 +12,10 @@ class FlexibleChecksumsRequestMiddlewareTests: XCTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
+
+        // Initialize function needs to be called before interacting with CRT
+        CommonRuntimeKit.initialize()
+
         builtContext = HttpContextBuilder()
                   .withMethod(value: .get)
                   .withPath(value: "/")
