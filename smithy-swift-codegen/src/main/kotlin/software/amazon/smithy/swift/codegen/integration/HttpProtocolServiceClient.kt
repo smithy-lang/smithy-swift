@@ -8,6 +8,7 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
 open class HttpProtocolServiceClient(
     ctx: ProtocolGenerator.GenerationContext,
@@ -25,37 +26,56 @@ open class HttpProtocolServiceClient(
             writer.write("let serviceName = \"${serviceName}\"")
             writer.write("let encoder: \$N", ClientRuntimeTypes.Serde.RequestEncoder)
             writer.write("let decoder: \$N", ClientRuntimeTypes.Serde.ResponseDecoder)
+            writer.write("")
             properties.forEach { prop ->
                 prop.addImportsAndDependencies(writer)
             }
+            renderInitFunction(properties)
             writer.write("")
-            writer.openBlock("public init(config: \$L) {", "}", serviceConfig.typeName) {
-                writer.write("client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)", ClientRuntimeTypes.Http.SdkHttpClient)
-                properties.forEach { prop ->
-                    prop.renderInstantiation(writer)
-                    if (prop.needsConfigure) {
-                        prop.renderConfiguration(writer)
-                    }
-                    prop.renderInitialization(writer, "config")
-                }
-
-                writer.write("self.config = config")
-            }
-            writer.write("")
-            renderConvenienceInit(serviceSymbol)
+            renderConvenienceInitFunctions(serviceSymbol)
         }
         writer.write("")
-        serviceConfig.renderInitializers(serviceSymbol)
-        writer.write("")
+        renderServiceExtension(serviceSymbol)
         renderLogHandlerFactory(serviceSymbol)
+    }
+
+    open fun renderInitFunction(properties: List<ClientProperty>) {
+        writer.openBlock("public init(config: \$L) {", "}", serviceConfig.typeName) {
+            writer.write(
+                "client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)",
+                ClientRuntimeTypes.Http.SdkHttpClient
+            )
+
+            properties.forEach { prop ->
+                prop.renderInstantiation(writer)
+                if (prop.needsConfigure) {
+                    prop.renderConfiguration(writer)
+                }
+                prop.renderInitialization(writer, "config")
+            }
+
+            writer.write("self.config = config")
+        }
         writer.write("")
     }
 
-    open fun renderConvenienceInit(serviceSymbol: Symbol) {
+    open fun renderConvenienceInitFunctions(serviceSymbol: Symbol) {
         writer.openBlock("public convenience init() throws {", "}") {
-            writer.write("let config = try ${serviceConfig.typeName}()")
+            writer.write("let config = try ${serviceConfig.typeName}(\"${serviceName}\", \"${serviceSymbol.name}\")")
             writer.write("self.init(config: config)")
         }
+        writer.write("")
+    }
+
+    open fun renderServiceExtension(serviceSymbol: Symbol) {
+        writer.openBlock("extension ${serviceSymbol.name} {", "}") {
+            writer.write(
+                "public typealias \$LConfiguration = \$N",
+                serviceConfig.clientName.toUpperCamelCase(),
+                ClientRuntimeTypes.Core.DefaultSDKRuntimeConfiguration
+            )
+        }
+        writer.write("")
     }
 
     private fun renderLogHandlerFactory(serviceSymbol: Symbol) {
@@ -73,5 +93,6 @@ open class HttpProtocolServiceClient(
                 writer.write("self.logLevel = logLevel")
             }
         }
+        writer.write("")
     }
 }

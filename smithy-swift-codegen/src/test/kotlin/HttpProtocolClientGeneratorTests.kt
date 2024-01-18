@@ -37,25 +37,14 @@ class HttpProtocolClientGeneratorTests {
                 }
             
                 public convenience init() throws {
-                    let config = try RestJsonProtocol.RestJsonProtocolConfiguration()
+                    let config = try RestJsonProtocol.RestJsonProtocolConfiguration("Rest Json Protocol", "RestJsonProtocolClient")
                     self.init(config: config)
                 }
+            
             }
             
-            public init(runtimeConfig: ClientRuntime.DefaultSDKRuntimeConfiguration) throws {
-                self.clientLogMode = runtimeConfig.clientLogMode
-                self.decoder = runtimeConfig.decoder
-                self.encoder = runtimeConfig.encoder
-                self.httpClientConfiguration = runtimeConfig.httpClientConfiguration
-                self.httpClientEngine = runtimeConfig.httpClientEngine
-                self.idempotencyTokenGenerator = runtimeConfig.idempotencyTokenGenerator
-                self.logger = runtimeConfig.logger
-                self.retryStrategyOptions = runtimeConfig.retryStrategyOptions
-            }
-            
-            public convenience init() throws {
-                let defaultRuntimeConfig = try ClientRuntime.DefaultSDKRuntimeConfiguration("Rest Json Protocol")
-                try self.init(runtimeConfig: defaultRuntimeConfig)
+            extension RestJsonProtocolClient {
+                public typealias RestJsonProtocolConfiguration = ClientRuntime.DefaultSDKRuntimeConfiguration
             }
             
             public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandlerFactory {

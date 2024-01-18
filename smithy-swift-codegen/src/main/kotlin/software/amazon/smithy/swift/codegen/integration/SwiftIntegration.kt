@@ -13,6 +13,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.config.ClientConfiguration
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 
@@ -169,4 +170,14 @@ interface SwiftIntegration {
     fun serviceErrorProtocolSymbol(): Symbol? {
         return null
     }
+
+    /**
+     * Returns a list of default Plugins for configuring client configuration's default properties
+     */
+    fun plugins(): List<Plugin> = emptyList()
+
+    /**
+     * Returns a list of ClientConfiguration protocols to be implemented by the client configuration
+     */
+    fun clientConfigurations(): List<ClientConfiguration> = emptyList()
 }
