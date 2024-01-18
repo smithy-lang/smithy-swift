@@ -87,7 +87,7 @@ class FlexibleChecksumsRequestMiddlewareTests: XCTestCase {
             expectedChecksum: "yKEG5Q=="
         )
     }
-    
+
     func testNilChecksumAlgorithm() async throws {
         let testData = ByteStream.data(Data("Hello, world!".utf8))
         setNormalPayload(
@@ -149,7 +149,7 @@ class FlexibleChecksumsRequestMiddlewareTests: XCTestCase {
         }
 
         _ = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: mockHandler)
-        
+
         if !checkLogs.isEmpty {
             checkLogs.forEach { expectedLog in
                 XCTAssertTrue(testLogger.messages.contains { $0.level == .info && $0.message.contains(expectedLog) }, "Expected log message not found")
