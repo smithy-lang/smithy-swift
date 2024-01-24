@@ -100,8 +100,7 @@ public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
         }
 
         // Set the selected auth scheme in context for subsequent middleware access, then pass to next middleware in chain
-        return try await next.handle(
-            context: context.toBuilder().withSelectedAuthScheme(value: selectedAuthScheme).build(), input: input
-        )
+        context.attributes.set(key: AttributeKeys.selectedAuthScheme, value: selectedAuthScheme)
+        return try await next.handle(context: context, input: input)
     }
 }
