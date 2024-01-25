@@ -98,7 +98,7 @@ final class DefaultRetryErrorInfoProviderTests: XCTestCase {
     func test_returnsNilWhenErrorIsServerAndNotRetryableNotThrottling() {
 
         struct ModeledServerError: Error, ModeledError {
-            static var typeName: String { "ModeledClientError" }
+            static var typeName: String { "ModeledServerError" }
             static var fault: ClientRuntime.ErrorFault { .server }
             static var isRetryable: Bool { false }
             static var isThrottling: Bool { false }
