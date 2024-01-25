@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-public typealias URLQueryItem = MyURLQueryItem
+public typealias URLQueryItem = SDKURLQueryItem
 
-public struct MyURLQueryItem: Hashable {
+public struct SDKURLQueryItem: Hashable {
     public var name: String
     public var value: String?
 
