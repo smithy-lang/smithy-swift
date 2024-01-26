@@ -31,7 +31,7 @@ class OperationInputUrlPathMiddleware(
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-        val params = "".takeIf { inputParameters.isEmpty() } ?: "${inputParameters}, "
+        val params = "".takeIf { inputParameters.isEmpty() } ?: "$inputParameters, "
         writer.write(
             "\$L.\$L.intercept(position: \$L, middleware: \$N<\$L, \$L>(\$L\$L.urlPathProvider(_:)))",
             operationStackName,

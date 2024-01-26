@@ -25,7 +25,7 @@ class ProviderTests: HttpRequestTestBase {
         let context = HttpContextBuilder().withDecoder(value: JSONDecoder()).build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
-        operationStack.initializeStep.intercept(position: .after, middleware: URLPathMiddleware<MockInput, MockOutput>(urlPathProvider: MockInput.urlPathProvider(_:)))
+        operationStack.initializeStep.intercept(position: .after, middleware: URLPathMiddleware<MockInput, MockOutput>(MockInput.urlPathProvider(_:)))
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
         _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
@@ -45,7 +45,7 @@ class ProviderTests: HttpRequestTestBase {
         let context = HttpContextBuilder().withDecoder(value: JSONDecoder()).build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
-        operationStack.serializeStep.intercept(position: .after, middleware: QueryItemMiddleware(queryItemProvider: MockInput.queryItemProvider(_:)))
+        operationStack.serializeStep.intercept(position: .after, middleware: QueryItemMiddleware(MockInput.queryItemProvider(_:)))
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
         _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
@@ -75,7 +75,7 @@ class ProviderTests: HttpRequestTestBase {
         let context = HttpContextBuilder().withDecoder(value: JSONDecoder()).build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
-        operationStack.serializeStep.intercept(position: .after, middleware: HeaderMiddleware(headerProvider: MockInput.headerProvider(_:)))
+        operationStack.serializeStep.intercept(position: .after, middleware: HeaderMiddleware(MockInput.headerProvider(_:)))
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
         _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
