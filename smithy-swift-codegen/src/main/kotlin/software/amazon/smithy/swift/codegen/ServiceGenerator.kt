@@ -6,7 +6,6 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
@@ -16,29 +15,13 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 
-/*
-* Generates a Swift protocol for the service
- */
-class ServiceGenerator(
-    settings: SwiftSettings,
-    private val model: Model,
-    private val symbolProvider: SymbolProvider,
-    private val writer: SwiftWriter,
-    private val delegator: SwiftDelegator,
-    private val protocolGenerator: ProtocolGenerator? = null,
-    private val protocolGenerationContext: ProtocolGenerator.GenerationContext?
-) {
-    private var service = settings.getService(model)
-    private val serviceSymbol: Symbol by lazy {
-        symbolProvider.toSymbol(service)
-    }
+class ServiceGenerator() {
 
     companion object {
         /**
-         * Renders the definition of operation
+         * Renders the definition of operation, followed by no CR
          */
         fun renderOperationDefinition(
             model: Model,
@@ -64,7 +47,7 @@ class ServiceGenerator(
             val accessSpecifier = if (insideProtocol) "" else "public "
 
             writer.writeInline(
-                "\$Lfunc \$L(\$L) async throws -> \$L ",
+                "\$Lfunc \$L(\$L) async throws -> \$L",
                 accessSpecifier,
                 operationName,
                 inputParam,
