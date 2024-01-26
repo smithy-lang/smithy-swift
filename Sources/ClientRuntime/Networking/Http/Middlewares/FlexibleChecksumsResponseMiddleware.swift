@@ -46,8 +46,9 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         
         // Determine if any checksum headers are present
         logger.debug("HEADERS: \(response.httpResponse.headers)")
-        let _checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST.first { response.httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil }
-        guard let checksumHeader = _checksumHeader else {
+        guard let checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST.first {
+            response.httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil
+        } else {
             logger.warn("User requested checksum validation, but the response headers did not contain any valid checksums")
             return try await next.handle(context: context, input: input)
         }

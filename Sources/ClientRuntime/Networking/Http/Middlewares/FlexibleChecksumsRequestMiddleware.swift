@@ -21,7 +21,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
         
         // Initialize logger
         guard let logger = context.getLogger() else {
-            return try await next.handle(context: context, input: input)
+            throw ClientError.unknownError("No logger found!")
         }
 
         // Get supported list of checksums in priority order
@@ -29,7 +29,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
         
         // Skip flexible checksums workflow if no valid checksum algorithms are provided
         guard let checksumAlgorithm: HashFunction = validationList.first else {
-            logger.info("Found no supported checksums! Skipping flexible checksums workflow...")
+            logger.error("Found no supported checksums! Skipping flexible checksums workflow...")
             return try await next.handle(context: context, input: input)
         }
         
