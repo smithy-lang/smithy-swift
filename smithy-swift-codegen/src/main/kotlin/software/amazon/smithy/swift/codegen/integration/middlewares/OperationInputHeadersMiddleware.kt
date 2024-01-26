@@ -28,11 +28,18 @@ class OperationInputHeadersMiddleware(
         op: OperationShape,
         operationStackName: String,
     ) {
+        if (!MiddlewareShapeUtils.hasHttpHeaders(model, op)) { return }
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-        val hasHeaders = MiddlewareShapeUtils.hasHttpHeaders(model, op)
-        if (hasHeaders) {
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName>())", ClientRuntimeTypes.Middleware.HeaderMiddleware)
-        }
+        writer.write(
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$L, \$L>(\$L.headerProvider(_:)))",
+            operationStackName,
+            middlewareStep.stringValue(),
+            position.stringValue(),
+            ClientRuntimeTypes.Middleware.HeaderMiddleware,
+            inputShapeName,
+            outputShapeName,
+            inputShapeName,
+        )
     }
 }

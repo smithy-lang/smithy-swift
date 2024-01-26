@@ -5,10 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct HeaderMiddleware<OperationStackInput: HeaderProvider, OperationStackOutput>: Middleware {
+public struct HeaderMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))HeadersMiddleware"
 
-    public init() {}
+    let headerProvider: HeaderProvider<OperationStackInput>
+
+    public init(_ headerProvider: @escaping HeaderProvider<OperationStackInput>) {
+        self.headerProvider = headerProvider
+    }
 
     public func handle<H>(context: Context,
                           input: MInput,
@@ -17,8 +21,7 @@ public struct HeaderMiddleware<OperationStackInput: HeaderProvider, OperationSta
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              input.builder.withHeaders(input.operationInput.headers)
-
+              input.builder.withHeaders(headerProvider(input.operationInput))
               return try await next.handle(context: context, input: input)
           }
 

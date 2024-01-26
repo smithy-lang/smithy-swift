@@ -15,7 +15,7 @@ class ProviderTests: HttpRequestTestBase {
         var mockInput = MockInput()
         mockInput.value = 3
 
-        XCTAssert(mockInput.urlPath == "/3")
+        XCTAssert(MockInput.urlPathProvider(mockInput) == "/3")
     }
 
     func testURLPathMiddleware() async throws {
@@ -25,7 +25,7 @@ class ProviderTests: HttpRequestTestBase {
         let context = HttpContextBuilder().withDecoder(value: JSONDecoder()).build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
-        operationStack.initializeStep.intercept(position: .after, middleware: URLPathMiddleware<MockInput, MockOutput>())
+        operationStack.initializeStep.intercept(position: .after, middleware: URLPathMiddleware<MockInput, MockOutput>(urlPathProvider: MockInput.urlPathProvider(_:)))
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
         _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
@@ -45,7 +45,7 @@ class ProviderTests: HttpRequestTestBase {
         let context = HttpContextBuilder().withDecoder(value: JSONDecoder()).build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
-        operationStack.serializeStep.intercept(position: .after, middleware: QueryItemMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: QueryItemMiddleware(queryItemProvider: MockInput.queryItemProvider(_:)))
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
         _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
@@ -65,7 +65,7 @@ class ProviderTests: HttpRequestTestBase {
         var mockInput = MockInput()
         mockInput.value = 3
 
-        XCTAssert(mockInput.headers.headers.count == 1)
+        XCTAssert(MockInput.headerProvider(mockInput).headers.count == 1)
     }
 
     func testHeaderMiddleware() async throws {
@@ -75,7 +75,7 @@ class ProviderTests: HttpRequestTestBase {
         let context = HttpContextBuilder().withDecoder(value: JSONDecoder()).build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
-        operationStack.serializeStep.intercept(position: .after, middleware: HeaderMiddleware())
+        operationStack.serializeStep.intercept(position: .after, middleware: HeaderMiddleware(headerProvider: MockInput.headerProvider(_:)))
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
         _ = try await operationStack.handleMiddleware(context: context,
                                         input: mockInput,
@@ -92,28 +92,29 @@ class ProviderTests: HttpRequestTestBase {
     }
 }
 
-extension MockInput: URLPathProvider, QueryItemProvider, HeaderProvider {
-    public var urlPath: String? {
-        guard let value = value else {
+extension MockInput {
+
+    static func urlPathProvider(_ mock: MockInput) -> String? {
+        guard let value = mock.value else {
             return nil
         }
         return "/\(value)"
     }
 
-    public var queryItems: [ClientRuntime.URLQueryItem] {
-        var items = [ClientRuntime.URLQueryItem]()
+    static func queryItemProvider(_ mock: MockInput) -> [SDKURLQueryItem] {
+        var items = [SDKURLQueryItem]()
 
-        if let value = value {
-            let valueQueryItem = ClientRuntime.URLQueryItem(name: "test", value: "\(value)")
+        if let value = mock.value {
+            let valueQueryItem = SDKURLQueryItem(name: "test", value: "\(value)")
             items.append(valueQueryItem)
         }
         return items
     }
 
-    public var headers: Headers {
+    static func headerProvider(_ mock: MockInput) -> Headers {
         var items = Headers()
 
-        if let value = value {
+        if let value = mock.value {
             let headerItem = Header(name: "test", value: "\(value)")
             items.add(headerItem)
         }

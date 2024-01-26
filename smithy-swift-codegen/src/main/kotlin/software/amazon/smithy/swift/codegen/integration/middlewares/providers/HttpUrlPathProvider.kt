@@ -49,8 +49,14 @@ class HttpUrlPathProvider(
     }
 
     fun renderProvider(writer: SwiftWriter) {
-        writer.openBlock("extension \$N: \$N {", "}", inputSymbol, ClientRuntimeTypes.Middleware.Providers.URLPathProvider) {
-            writer.openBlock("public var urlPath: \$T {", "}", SwiftTypes.String) {
+        writer.openBlock("extension \$N {", "}", inputSymbol) {
+            writer.write("")
+            writer.openBlock(
+                "static func urlPathProvider(_ value: \$N) -> \$T {",
+                "}",
+                inputSymbol,
+                SwiftTypes.String,
+            ) {
                 renderUriPath()
             }
         }
@@ -102,7 +108,7 @@ class HttpUrlPathProvider(
 
                 // unwrap the label members if boxed
                 if (symbol.isBoxed()) {
-                    writer.openBlock("guard let $labelMemberName = $labelMemberName else {", "}") {
+                    writer.openBlock("guard let $labelMemberName = value.$labelMemberName else {", "}") {
                         writer.write("return nil")
                     }
                 }
