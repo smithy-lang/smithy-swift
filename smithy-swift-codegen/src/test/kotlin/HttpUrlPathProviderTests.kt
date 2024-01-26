@@ -8,17 +8,17 @@ class HttpUrlPathProviderTests {
         val context = setupTests("http-binding-protocol-generator-test.smithy")
         val contents = getModelFileContents("example", "SmokeTestInput+UrlPathProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension SmokeTestInput: ClientRuntime.URLPathProvider {
-                public var urlPath: Swift.String? {
-                    guard let label1 = label1 else {
-                        return nil
-                    }
-                    return "/smoketest/\(label1.urlPercentEncoding())/foo"
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension SmokeTestInput {
+
+    static func urlPathProvider(_ value: SmokeTestInput) -> Swift.String? {
+        guard let label1 = value.label1 else {
+            return nil
+        }
+        return "/smoketest/\(label1.urlPercentEncoding())/foo"
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -29,20 +29,20 @@ class HttpUrlPathProviderTests {
         contents.shouldSyntacticSanityCheck()
 
         // All http labels are implicitly required, even if the smithy spec doesn't specify the required trait
-        val expectedContents =
-            """
-            extension RequiredHttpFieldsInput: ClientRuntime.URLPathProvider {
-                public var urlPath: Swift.String? {
-                    guard let label1 = label1 else {
-                        return nil
-                    }
-                    guard let label2 = label2 else {
-                        return nil
-                    }
-                    return "/RequiredHttpFields/\(label1.urlPercentEncoding())/\(label2.urlPercentEncoding())"
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension RequiredHttpFieldsInput {
+
+    static func urlPathProvider(_ value: RequiredHttpFieldsInput) -> Swift.String? {
+        guard let label1 = value.label1 else {
+            return nil
+        }
+        guard let label2 = value.label2 else {
+            return nil
+        }
+        return "/RequiredHttpFields/\(label1.urlPercentEncoding())/\(label2.urlPercentEncoding())"
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

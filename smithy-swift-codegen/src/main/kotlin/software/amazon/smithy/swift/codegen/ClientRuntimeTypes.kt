@@ -101,7 +101,7 @@ object ClientRuntimeTypes {
         val Date = runtimeSymbol("Date")
         val Data = runtimeSymbol("Data")
         val Document = runtimeSymbol("Document")
-        val URLQueryItem = runtimeSymbol("URLQueryItem")
+        val SDKURLQueryItem = runtimeSymbol("SDKURLQueryItem")
         val URL = runtimeSymbol("URL")
         val ModeledError = runtimeSymbol("ModeledError")
         val UnknownClientError = runtimeSymbol("ClientError.unknownError")

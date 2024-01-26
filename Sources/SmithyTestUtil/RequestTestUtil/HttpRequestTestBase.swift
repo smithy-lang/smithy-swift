@@ -116,10 +116,10 @@ open class HttpRequestTestBase: XCTestCase {
             if queryParamComponents.count > 1 {
                 let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
 
-                builder.withQueryItem(URLQueryItem(name: queryParamComponents[0],
+                builder.withQueryItem(SDKURLQueryItem(name: queryParamComponents[0],
                                                    value: value))
             } else {
-                builder.withQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
+                builder.withQueryItem(SDKURLQueryItem(name: queryParamComponents[0], value: nil))
             }
         }
     }
@@ -130,10 +130,10 @@ open class HttpRequestTestBase: XCTestCase {
             if queryParamComponents.count > 1 {
                 let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
 
-                builder.withForbiddenQueryItem(URLQueryItem(name: queryParamComponents[0],
+                builder.withForbiddenQueryItem(SDKURLQueryItem(name: queryParamComponents[0],
                                                    value: value))
             } else {
-                builder.withForbiddenQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
+                builder.withForbiddenQueryItem(SDKURLQueryItem(name: queryParamComponents[0], value: nil))
             }
         }
     }
@@ -144,10 +144,10 @@ open class HttpRequestTestBase: XCTestCase {
             if queryParamComponents.count > 1 {
                 let value = sanitizeStringForNonConformingValues(queryParamComponents[1])
 
-                builder.withRequiredQueryItem(URLQueryItem(name: queryParamComponents[0],
+                builder.withRequiredQueryItem(SDKURLQueryItem(name: queryParamComponents[0],
                                                    value: value))
             } else {
-                builder.withRequiredQueryItem(URLQueryItem(name: queryParamComponents[0], value: nil))
+                builder.withRequiredQueryItem(SDKURLQueryItem(name: queryParamComponents[0], value: nil))
             }
         }
     }
@@ -165,7 +165,7 @@ open class HttpRequestTestBase: XCTestCase {
     /**
      Check if a Query Item with given name exists in array of `URLQueryItem`
      */
-    public func queryItemExists(_ queryItemName: String, in queryItems: [ClientRuntime.URLQueryItem]?) -> Bool {
+    public func queryItemExists(_ queryItemName: String, in queryItems: [SDKURLQueryItem]?) -> Bool {
         guard let queryItems = queryItems else {
             return false
         }
@@ -347,8 +347,8 @@ open class HttpRequestTestBase: XCTestCase {
     }
 
     public func assertQueryItems(
-        _ expected: [ClientRuntime.URLQueryItem]?,
-        _ actual: [ClientRuntime.URLQueryItem]?,
+        _ expected: [SDKURLQueryItem]?,
+        _ actual: [SDKURLQueryItem]?,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
@@ -381,8 +381,8 @@ open class HttpRequestTestBase: XCTestCase {
     }
 
     public func assertForbiddenQueryItems(
-        _ expected: [ClientRuntime.URLQueryItem]?,
-        _ actual: [ClientRuntime.URLQueryItem]?,
+        _ expected: [SDKURLQueryItem]?,
+        _ actual: [SDKURLQueryItem]?,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
@@ -404,8 +404,8 @@ open class HttpRequestTestBase: XCTestCase {
     }
 
     public func assertRequiredQueryItems(
-        _ expected: [ClientRuntime.URLQueryItem]?,
-        _ actual: [ClientRuntime.URLQueryItem]?,
+        _ expected: [SDKURLQueryItem]?,
+        _ actual: [SDKURLQueryItem]?,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {

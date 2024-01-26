@@ -7,7 +7,7 @@ import Foundation
 
 public struct Endpoint: Hashable {
     public let path: String
-    public let queryItems: [URLQueryItem]?
+    public let queryItems: [SDKURLQueryItem]?
     public let protocolType: ProtocolType?
     public let host: String
     public let port: Int16
@@ -43,7 +43,7 @@ public struct Endpoint: Hashable {
     public init(host: String,
                 path: String = "/",
                 port: Int16 = 443,
-                queryItems: [URLQueryItem]? = nil,
+                queryItems: [SDKURLQueryItem]? = nil,
                 protocolType: ProtocolType? = .https,
                 headers: Headers? = nil,
                 properties: [String: AnyHashable] = [:]) {
