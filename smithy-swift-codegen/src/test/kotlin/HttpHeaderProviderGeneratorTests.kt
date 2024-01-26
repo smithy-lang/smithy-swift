@@ -23,21 +23,21 @@ class HttpHeaderProviderGeneratorTests {
     fun `it creates smoke test request builder`() {
         val contents = getModelFileContents("example", "SmokeTestInput+HeaderProvider.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension SmokeTestInput: ClientRuntime.HeaderProvider {
-                public var headers: ClientRuntime.Headers {
-                    var items = ClientRuntime.Headers()
-                    if let header1 = header1 {
-                        items.add(Header(name: "X-Header1", value: Swift.String(header1)))
-                    }
-                    if let header2 = header2 {
-                        items.add(Header(name: "X-Header2", value: Swift.String(header2)))
-                    }
-                    return items
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension SmokeTestInput {
+
+    static func headerProvider(_ value: SmokeTestInput) -> ClientRuntime.Headers {
+        var items = ClientRuntime.Headers()
+        if let header1 = value.header1 {
+            items.add(Header(name: "X-Header1", value: Swift.String(header1)))
+        }
+        if let header2 = value.header2 {
+            items.add(Header(name: "X-Header2", value: Swift.String(header2)))
+        }
+        return items
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -45,18 +45,18 @@ class HttpHeaderProviderGeneratorTests {
     fun `it builds headers with enums as raw values`() {
         val contents = getModelFileContents("example", "EnumInputInput+HeaderProvider.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension EnumInputInput: ClientRuntime.HeaderProvider {
-                public var headers: ClientRuntime.Headers {
-                    var items = ClientRuntime.Headers()
-                    if let enumHeader = enumHeader {
-                        items.add(Header(name: "X-EnumHeader", value: Swift.String(enumHeader.rawValue)))
-                    }
-                    return items
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension EnumInputInput {
+
+    static func headerProvider(_ value: EnumInputInput) -> ClientRuntime.Headers {
+        var items = ClientRuntime.Headers()
+        if let enumHeader = value.enumHeader {
+            items.add(Header(name: "X-EnumHeader", value: Swift.String(enumHeader.rawValue)))
+        }
+        return items
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -68,18 +68,18 @@ class HttpHeaderProviderGeneratorTests {
             newTestContext.manifest
         )
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput: ClientRuntime.HeaderProvider {
-                public var headers: ClientRuntime.Headers {
-                    var items = ClientRuntime.Headers()
-                    if let token = token {
-                        items.add(Header(name: "token", value: Swift.String(token)))
-                    }
-                    return items
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
+
+    static func headerProvider(_ value: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput) -> ClientRuntime.Headers {
+        var items = ClientRuntime.Headers()
+        if let token = value.token {
+            items.add(Header(name: "token", value: Swift.String(token)))
+        }
+        return items
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -88,21 +88,21 @@ class HttpHeaderProviderGeneratorTests {
         val contents =
             getModelFileContents("example", "TimestampInputInput+HeaderProvider.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension TimestampInputInput: ClientRuntime.HeaderProvider {
-                public var headers: ClientRuntime.Headers {
-                    var items = ClientRuntime.Headers()
-                    if let headerEpoch = headerEpoch {
-                        items.add(Header(name: "X-Epoch", value: Swift.String(TimestampFormatter(format: .epochSeconds).string(from: headerEpoch))))
-                    }
-                    if let headerHttpDate = headerHttpDate {
-                        items.add(Header(name: "X-Date", value: Swift.String(TimestampFormatter(format: .httpDate).string(from: headerHttpDate))))
-                    }
-                    return items
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension TimestampInputInput {
+
+    static func headerProvider(_ value: TimestampInputInput) -> ClientRuntime.Headers {
+        var items = ClientRuntime.Headers()
+        if let headerEpoch = value.headerEpoch {
+            items.add(Header(name: "X-Epoch", value: Swift.String(TimestampFormatter(format: .epochSeconds).string(from: headerEpoch))))
+        }
+        if let headerHttpDate = value.headerHttpDate {
+            items.add(Header(name: "X-Date", value: Swift.String(TimestampFormatter(format: .httpDate).string(from: headerHttpDate))))
+        }
+        return items
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
