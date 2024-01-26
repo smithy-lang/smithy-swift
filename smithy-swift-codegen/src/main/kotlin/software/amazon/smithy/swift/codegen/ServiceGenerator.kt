@@ -10,7 +10,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
-import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
@@ -64,11 +63,12 @@ class ServiceGenerator(
 
             val accessSpecifier = if (insideProtocol) "" else "public "
 
-            writer.write(
-                "${accessSpecifier}func \$L(\$L) async throws -> \$L",
+            writer.writeInline(
+                "\$Lfunc \$L(\$L) async throws -> \$L ",
+                accessSpecifier,
                 operationName,
                 inputParam,
-                outputShapeName
+                outputShapeName,
             )
         }
 
@@ -109,61 +109,6 @@ class ServiceGenerator(
             val docTrait = model.getShape(shapeId).get().getTrait(DocumentationTrait::class.java).getOrNull()
             return docTrait?.value ?: "[no documentation found]"
         }
-    }
-
-    fun render() {
-        // add imports
-//        writer.addImport(serviceSymbol)
-
-        // generate protocol
-//        renderSwiftProtocol()
-    }
-
-    /**
-     * Generates an appropriate Swift Protocol for a Smithy Service shape.
-     *
-     * For example, given the following Smithy model:
-     *
-     * ```
-     * namespace smithy.example
-     *
-     * use aws.protocols#awsJson1_1
-     *
-     *   @awsJson1_1
-     *  service Example {
-     *   version: "1.0.0",
-     *   operations: [GetFoo]
-     *   }
-     *
-     *  operation GetFoo {
-     *   input: GetFooInput,
-     *   output: GetFooOutput,
-     *   errors: [GetFooError]
-     *   }
-     *
-     * ```
-     * We will generate the following:
-     * ```
-     * public protocol ExampleServiceProtocol {
-     *      func getFoo(input: GetFooInput) async throws -> GetFooResponse
-     * }
-     * ```
-     */
-    private fun renderSwiftProtocol() {
-        val topDownIndex = TopDownIndex.of(model)
-        val operations = topDownIndex.getContainedOperations(service)
-        val operationsIndex = OperationIndex.of(model)
-
-        writer.writeShapeDocs(service)
-        writer.writeAvailableAttribute(model, service)
-        writer.openBlock("public protocol ${serviceSymbol.name}Protocol {")
-            .call {
-                operations.forEach { op ->
-                    renderOperationDefinition(model, service, symbolProvider, writer, operationsIndex, op, true)
-                }
-            }
-            .closeBlock("}")
-            .write("")
     }
 }
 

@@ -1,2 +1,3 @@
 software.amazon.smithy.swift.codegen.PaginatorGenerator
 software.amazon.smithy.swift.codegen.waiters.WaiterIntegration
+software.amazon.smithy.swift.codegen.ServiceNamespaceIntegration

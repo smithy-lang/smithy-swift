@@ -11,7 +11,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
-import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
 typealias HttpMethodCallback = (OperationShape) -> String
@@ -28,7 +27,6 @@ class MiddlewareExecutionGenerator(
     private val symbolProvider = ctx.symbolProvider
 
     fun render(service: ServiceShape, op: OperationShape, onError: (SwiftWriter, String) -> Unit) {
-        val operationErrorName = "${op.toUpperCamelCase()}OutputError"
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op).name
         writer.write("let context = \$N()", ClientRuntimeTypes.Http.HttpContextBuilder)
@@ -36,7 +34,14 @@ class MiddlewareExecutionGenerator(
             renderContextAttributes(op)
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
-        writer.write("var $operationStackName = \$N<$inputShapeName, $outputShapeName>(id: \"${op.toLowerCamelCase()}\")", OperationStack)
+        writer.write(
+            "var \$L = \$N<\$L, \$L>(id: \$S)",
+            operationStackName,
+            OperationStack,
+            inputShapeName,
+            outputShapeName,
+            op.toLowerCamelCase(),
+        )
         renderMiddlewares(ctx, op, operationStackName)
     }
 
