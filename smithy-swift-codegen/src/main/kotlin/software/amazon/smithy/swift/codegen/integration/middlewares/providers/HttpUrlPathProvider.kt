@@ -9,7 +9,6 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -49,8 +48,14 @@ class HttpUrlPathProvider(
     }
 
     fun renderProvider(writer: SwiftWriter) {
-        writer.openBlock("extension \$N: \$N {", "}", inputSymbol, ClientRuntimeTypes.Middleware.Providers.URLPathProvider) {
-            writer.openBlock("public var urlPath: \$T {", "}", SwiftTypes.String) {
+        writer.openBlock("extension \$N {", "}", inputSymbol) {
+            writer.write("")
+            writer.openBlock(
+                "static func urlPathProvider(_ value: \$N) -> \$T {",
+                "}",
+                inputSymbol,
+                SwiftTypes.String,
+            ) {
                 renderUriPath()
             }
         }
@@ -102,7 +107,7 @@ class HttpUrlPathProvider(
 
                 // unwrap the label members if boxed
                 if (symbol.isBoxed()) {
-                    writer.openBlock("guard let $labelMemberName = $labelMemberName else {", "}") {
+                    writer.openBlock("guard let $labelMemberName = value.$labelMemberName else {", "}") {
                         writer.write("return nil")
                     }
                 }

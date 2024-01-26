@@ -32,7 +32,16 @@ class OperationInputQueryItemMiddleware(
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
         val hasQueryItems = MiddlewareShapeUtils.hasQueryItems(model, op)
         if (hasQueryItems) {
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName>())", ClientRuntimeTypes.Middleware.QueryItemMiddleware)
+            writer.write(
+                "\$L.\$L.intercept(position: \$L, middleware: \$N<\$L, \$L>(\$L.queryItemProvider(_:)))",
+                operationStackName,
+                middlewareStep.stringValue(),
+                position.stringValue(),
+                ClientRuntimeTypes.Middleware.QueryItemMiddleware,
+                inputShapeName,
+                outputShapeName,
+                inputShapeName,
+            )
         }
     }
 }
