@@ -33,7 +33,7 @@ class WaiterGenerator(
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             val serviceSymbol = ctx.symbolProvider.toSymbol(service)
 
-            // Render an extension on the service protocol, which will contain the waitUntil... methods
+            // Render an extension on the service client, which will hold the waitUntil... methods
             writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
 
                 // Get the operation shapes for this service
