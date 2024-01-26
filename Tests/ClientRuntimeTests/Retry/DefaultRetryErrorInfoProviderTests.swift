@@ -9,7 +9,7 @@ import Foundation
 import XCTest
 @testable import ClientRuntime
 
-class DefaultRetryErrorInfoProviderTests: XCTestCase {
+final class DefaultRetryErrorInfoProviderTests: XCTestCase {
 
     // MARK: - Modeled errors
 

@@ -66,8 +66,14 @@ class HttpHeaderProvider(
     }
 
     fun renderProvider(writer: SwiftWriter) {
-        writer.openBlock("extension \$N: \$N {", "}", inputSymbol, ClientRuntimeTypes.Middleware.Providers.HeaderProvider) {
-            writer.openBlock("public var headers: \$N {", "}", ClientRuntimeTypes.Http.Headers) {
+        writer.openBlock("extension \$N {", "}", inputSymbol) {
+            writer.write("")
+            writer.openBlock(
+                "static func headerProvider(_ value: \$N) -> \$N {",
+                "}",
+                inputSymbol,
+                ClientRuntimeTypes.Http.Headers,
+            ) {
                 writer.write("var items = \$N()", ClientRuntimeTypes.Http.Headers)
                 generateHeaders()
                 generatePrefixHeaders()
@@ -83,7 +89,7 @@ class HttpHeaderProvider(
             val paramName = it.locationName
             val isBoxed = ctx.symbolProvider.toSymbol(it.member).isBoxed()
             if (isBoxed) {
-                writer.openBlock("if let $memberName = $memberName {", "}") {
+                writer.openBlock("if let $memberName = value.$memberName {", "}") {
                     if (memberTarget is CollectionShape) {
                         writer.openBlock("$memberName.forEach { headerValue in ", "}") {
                             renderHeader(memberTarget.member, "headerValue", paramName, true)
@@ -129,7 +135,7 @@ class HttpHeaderProvider(
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
 
-            writer.openBlock("if let $memberName = $memberName {", "}") {
+            writer.openBlock("if let $memberName = value.$memberName {", "}") {
                 val mapValueShape = memberTarget.asMapShape().get().value
                 val mapValueShapeTarget = ctx.model.expectShape(mapValueShape.target)
                 val mapValueShapeTargetSymbol = ctx.symbolProvider.toSymbol(mapValueShapeTarget)

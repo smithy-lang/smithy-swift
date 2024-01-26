@@ -5,11 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct QueryItemMiddleware<OperationStackInput: QueryItemProvider,
-                                  OperationStackOutput: HttpResponseBinding>: Middleware {
+public struct QueryItemMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))QueryItemMiddleware"
 
-    public init() {}
+    let queryItemProvider: QueryItemProvider<OperationStackInput>
+
+    public init(_ queryItemProvider: @escaping QueryItemProvider<OperationStackInput>) {
+        self.queryItemProvider = queryItemProvider
+    }
 
     public func handle<H>(context: Context,
                           input: MInput,
@@ -18,7 +21,7 @@ public struct QueryItemMiddleware<OperationStackInput: QueryItemProvider,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              for queryItem in try input.operationInput.queryItems {
+              for queryItem in try queryItemProvider(input.operationInput) {
                   input.builder.withQueryItem(queryItem)
               }
 

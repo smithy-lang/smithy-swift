@@ -96,7 +96,7 @@ fun buildMockPluginContext(model: Model, manifest: FileManifest, serviceShapeId:
 
 fun createModelWithStructureWithoutErrorTrait(): Model {
     return """
-        namespace smithy.example,
+        namespace smithy.example
         /// This is documentation about the shape.
         structure MyStruct {
           foo: String,

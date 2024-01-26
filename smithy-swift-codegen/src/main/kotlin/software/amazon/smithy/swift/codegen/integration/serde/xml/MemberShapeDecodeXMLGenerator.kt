@@ -14,6 +14,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
+import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -22,6 +23,7 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
+import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampDecodeGenerator
@@ -30,7 +32,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.Col
 import software.amazon.smithy.swift.codegen.integration.serde.xml.collection.MapKeyValue
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
-import software.amazon.smithy.swift.codegen.model.recursiveSymbol
+import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 abstract class MemberShapeDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -68,7 +70,7 @@ abstract class MemberShapeDecodeXMLGenerator(
 
         writer.openBlock(ifNilOrIfLetStatement, "} else {") {
             val memberBuffer = "${memberName}Buffer"
-            val memberContainerName = "${memberName}Container"
+            val memberContainerName = "${memberName.removeSurroundingBackticks()}Container"
             val (memberTargetSymbol, memberTargetSymbolName) = nestedMemberTargetSymbolMapper(memberTarget)
             writer.write("let $memberContainerName = try $containerUsedForDecoding.decodeIfPresent($memberTargetSymbolName.self, forKey: $currContainerKey)")
             writer.write("var $memberBuffer:\$T = nil", memberTargetSymbol)
@@ -89,8 +91,8 @@ abstract class MemberShapeDecodeXMLGenerator(
         val nestedMemberTargetSymbol = ctx.symbolProvider.toSymbol(nestedMemberTarget)
 
         val nestedMemberTargetType = "${nestedMemberTarget.type.name.toLowerCase()}"
-        val nestedContainerName = "${nestedMemberTargetType}Container$level"
-        val nestedMemberBuffer = "${nestedMemberTargetType}Buffer$level"
+        val nestedContainerName = "${nestedMemberTargetType.removeSurroundingBackticks()}Container$level"
+        val nestedMemberBuffer = "${nestedMemberTargetType.removeSurroundingBackticks()}Buffer$level"
         val insertMethod = when (memberTarget) {
             is SetShape -> "insert"
             is ListShape -> "append"
@@ -199,7 +201,7 @@ abstract class MemberShapeDecodeXMLGenerator(
 
     private fun renderMapMemberItems(memberShape: MemberShape, memberContainerName: String, memberBuffer: String, parentKeyedContainerName: String, currentContainerKey: String, level: Int = 0) {
         val memberTarget = ctx.model.expectShape(memberShape.target)
-        val itemInContainerName = "${memberTarget.type.name.toLowerCase()}Container$level"
+        val itemInContainerName = "${memberTarget.type.name.toLowerCase().removeSurroundingBackticks()}Container$level"
 
         val nestedBuffer = "nestedBuffer$level"
         val memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
@@ -263,9 +265,6 @@ abstract class MemberShapeDecodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-        if (member.hasTrait(SwiftBoxTrait::class.java)) {
-            memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
-        }
         val decodedMemberName = "${memberName}Decoded"
 
         writer.openBlock("if $containerName.contains(.$memberNameUnquoted) {", "} else {") {
@@ -284,7 +283,7 @@ abstract class MemberShapeDecodeXMLGenerator(
 
     private fun renderEmptyDataForBlobTarget(memberTarget: Shape, memberName: String) {
         val isStreaming = memberTarget.hasTrait<StreamingTrait>()
-        val value = if (isStreaming) "${ClientRuntimeTypes.Core.ByteStream}.from(data: \"\".data(using: .utf8)!)" else "\"\".data(using: .utf8)"
+        val value = if (isStreaming) "${ClientRuntimeTypes.Core.ByteStream}.data(\"\".data(using: .utf8)!)" else "\"\".data(using: .utf8)"
         renderAssigningDecodedMember(memberName, "$value")
     }
 
@@ -292,15 +291,22 @@ abstract class MemberShapeDecodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val memberNameUnquoted = memberName.removeSurrounding("`", "`")
         var memberTargetSymbol = ctx.symbolProvider.toSymbol(member)
-        if (member.hasTrait(SwiftBoxTrait::class.java)) {
-            memberTargetSymbol = memberTargetSymbol.recursiveSymbol()
-        }
-        val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion) "decodeIfPresent" else "decode"
+        val decodeVerb = if (memberTargetSymbol.isBoxed() && !isUnion || (member.hasTrait<DefaultTrait>())) "decodeIfPresent" else "decode"
         val decodedMemberName = "${memberNameUnquoted}Decoded"
+
+        val defaultValNilCoalescing = member.getTrait(DefaultTrait::class.java).getOrNull()?.let { trait ->
+            val defaultVal = trait.toNode()
+            when {
+                defaultVal.isStringNode() -> "?? \"$defaultVal\""
+                defaultVal.isNullNode() -> "?? nil"
+                else -> "?? $defaultVal"
+            }
+        } ?: ""
+
         if (unkeyed) {
             writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self)", memberTargetSymbol)
         } else {
-            writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberNameUnquoted)", memberTargetSymbol)
+            writer.write("let $decodedMemberName = try $containerName.$decodeVerb(\$N.self, forKey: .$memberNameUnquoted) $defaultValNilCoalescing", memberTargetSymbol)
         }
         renderAssigningDecodedMember(memberName, decodedMemberName, member.hasTrait(SwiftBoxTrait::class.java))
     }

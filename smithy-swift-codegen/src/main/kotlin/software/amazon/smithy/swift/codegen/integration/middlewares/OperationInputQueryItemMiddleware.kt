@@ -5,6 +5,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
@@ -22,6 +23,7 @@ class OperationInputQueryItemMiddleware(
     override val position = MiddlewarePosition.AFTER
 
     override fun render(
+        ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         op: OperationShape,
         operationStackName: String,
@@ -30,7 +32,16 @@ class OperationInputQueryItemMiddleware(
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
         val hasQueryItems = MiddlewareShapeUtils.hasQueryItems(model, op)
         if (hasQueryItems) {
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName>())", ClientRuntimeTypes.Middleware.QueryItemMiddleware)
+            writer.write(
+                "\$L.\$L.intercept(position: \$L, middleware: \$N<\$L, \$L>(\$L.queryItemProvider(_:)))",
+                operationStackName,
+                middlewareStep.stringValue(),
+                position.stringValue(),
+                ClientRuntimeTypes.Middleware.QueryItemMiddleware,
+                inputShapeName,
+                outputShapeName,
+                inputShapeName,
+            )
         }
     }
 }

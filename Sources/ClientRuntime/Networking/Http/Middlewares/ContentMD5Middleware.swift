@@ -3,7 +3,7 @@
 
 import AwsCommonRuntimeKit
 
-public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding>: Middleware {
+public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
     public let id: String = "ContentMD5"
 
     private let contentMD5HeaderName = "Content-MD5"
@@ -20,13 +20,11 @@ public struct ContentMD5Middleware<OperationStackOutput: HttpResponseBinding>: M
 
         switch input.body {
         case .data(let data):
-            guard
-                let data = data,
-                let bodyString = String(data: data, encoding: .utf8)
-            else {
+            guard let data = data else {
                 return try await next.handle(context: context, input: input)
             }
-            let base64Encoded = try bodyString.base64EncodedMD5()
+            let md5Hash = try data.computeMD5()
+            let base64Encoded = md5Hash.base64EncodedString()
             input.headers.update(name: "Content-MD5", value: base64Encoded)
         case .stream:
             guard let logger = context.getLogger() else {

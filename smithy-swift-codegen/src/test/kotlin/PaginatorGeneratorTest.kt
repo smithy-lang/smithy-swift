@@ -16,16 +16,16 @@ class PaginatorGeneratorTest {
         val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
         val expected = """
         extension TestClient {
-            /// Paginate over `[ListFunctionsOutputResponse]` results.
+            /// Paginate over `[ListFunctionsOutput]` results.
             ///
             /// When this operation is called, an `AsyncSequence` is created. AsyncSequences are lazy so no service
             /// calls are made until the sequence is iterated over. This also means there is no guarantee that the request is valid
             /// until then. If there are errors in your request, you will see the failures only after you start iterating.
             /// - Parameters:
             ///     - input: A `[ListFunctionsInput]` to start pagination
-            /// - Returns: An `AsyncSequence` that can iterate over `ListFunctionsOutputResponse`
-            public func listFunctionsPaginated(input: ListFunctionsInput) -> ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutputResponse> {
-                return ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutputResponse>(input: input, inputKey: \ListFunctionsInput.marker, outputKey: \ListFunctionsOutputResponse.nextMarker, paginationFunction: self.listFunctions(input:))
+            /// - Returns: An `AsyncSequence` that can iterate over `ListFunctionsOutput`
+            public func listFunctionsPaginated(input: ListFunctionsInput) -> ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutput> {
+                return ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutput>(input: input, inputKey: \.marker, outputKey: \.nextMarker, paginationFunction: self.listFunctions(input:))
             }
         }
 
@@ -49,16 +49,16 @@ class PaginatorGeneratorTest {
         val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
         val expectedCode = """
         extension TestClient {
-            /// Paginate over `[ListFunctionsOutputResponse]` results.
+            /// Paginate over `[ListFunctionsOutput]` results.
             ///
             /// When this operation is called, an `AsyncSequence` is created. AsyncSequences are lazy so no service
             /// calls are made until the sequence is iterated over. This also means there is no guarantee that the request is valid
             /// until then. If there are errors in your request, you will see the failures only after you start iterating.
             /// - Parameters:
             ///     - input: A `[ListFunctionsInput]` to start pagination
-            /// - Returns: An `AsyncSequence` that can iterate over `ListFunctionsOutputResponse`
-            public func listFunctionsPaginated(input: ListFunctionsInput) -> ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutputResponse> {
-                return ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutputResponse>(input: input, inputKey: \ListFunctionsInput.marker, outputKey: \ListFunctionsOutputResponse.nextMarker, paginationFunction: self.listFunctions(input:))
+            /// - Returns: An `AsyncSequence` that can iterate over `ListFunctionsOutput`
+            public func listFunctionsPaginated(input: ListFunctionsInput) -> ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutput> {
+                return ClientRuntime.PaginatorSequence<ListFunctionsInput, ListFunctionsOutput>(input: input, inputKey: \.marker, outputKey: \.nextMarker, paginationFunction: self.listFunctions(input:))
             }
         }
         
@@ -72,7 +72,7 @@ class PaginatorGeneratorTest {
                 )}
         }
         
-        extension PaginatorSequence where Input == ListFunctionsInput, Output == ListFunctionsOutputResponse {
+        extension PaginatorSequence where OperationStackInput == ListFunctionsInput, OperationStackOutput == ListFunctionsOutput {
             /// This paginator transforms the `AsyncSequence` returned by `listFunctionsPaginated`
             /// to access the nested member `[TestClientTypes.FunctionConfiguration]`
             /// - Returns: `[TestClientTypes.FunctionConfiguration]`
@@ -91,16 +91,16 @@ class PaginatorGeneratorTest {
         val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
         val expectedCode = """
         extension TestClient {
-            /// Paginate over `[PaginatedMapOutputResponse]` results.
+            /// Paginate over `[PaginatedMapOutput]` results.
             ///
             /// When this operation is called, an `AsyncSequence` is created. AsyncSequences are lazy so no service
             /// calls are made until the sequence is iterated over. This also means there is no guarantee that the request is valid
             /// until then. If there are errors in your request, you will see the failures only after you start iterating.
             /// - Parameters:
             ///     - input: A `[PaginatedMapInput]` to start pagination
-            /// - Returns: An `AsyncSequence` that can iterate over `PaginatedMapOutputResponse`
-            public func paginatedMapPaginated(input: PaginatedMapInput) -> ClientRuntime.PaginatorSequence<PaginatedMapInput, PaginatedMapOutputResponse> {
-                return ClientRuntime.PaginatorSequence<PaginatedMapInput, PaginatedMapOutputResponse>(input: input, inputKey: \PaginatedMapInput.nextToken, outputKey: \PaginatedMapOutputResponse.inner?.token, paginationFunction: self.paginatedMap(input:))
+            /// - Returns: An `AsyncSequence` that can iterate over `PaginatedMapOutput`
+            public func paginatedMapPaginated(input: PaginatedMapInput) -> ClientRuntime.PaginatorSequence<PaginatedMapInput, PaginatedMapOutput> {
+                return ClientRuntime.PaginatorSequence<PaginatedMapInput, PaginatedMapOutput>(input: input, inputKey: \.nextToken, outputKey: \.inner?.token, paginationFunction: self.paginatedMap(input:))
             }
         }
         
@@ -112,7 +112,7 @@ class PaginatorGeneratorTest {
                 )}
         }
         
-        extension PaginatorSequence where Input == PaginatedMapInput, Output == PaginatedMapOutputResponse {
+        extension PaginatorSequence where OperationStackInput == PaginatedMapInput, OperationStackOutput == PaginatedMapOutput {
             /// This paginator transforms the `AsyncSequence` returned by `paginatedMapPaginated`
             /// to access the nested member `[(String, Swift.Int)]`
             /// - Returns: `[(String, Swift.Int)]`
@@ -123,6 +123,18 @@ class PaginatorGeneratorTest {
         """.trimIndent()
 
         contents.shouldContainOnlyOnce(expectedCode)
+    }
+
+    @Test
+    fun testRenderPaginatorTruncatable() {
+        val context = setupTests("pagination-truncation.smithy", "software.amazon.smithy.swift.codegen.synthetic#Lambda")
+        val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
+        val expected = """
+    public func listFunctionsTruncatedPaginated(input: ListFunctionsTruncatedInput) -> ClientRuntime.PaginatorSequence<ListFunctionsTruncatedInput, ListFunctionsTruncatedOutput> {
+        return ClientRuntime.PaginatorSequence<ListFunctionsTruncatedInput, ListFunctionsTruncatedOutput>(input: input, inputKey: \.marker, outputKey: \.nextMarker, isTruncatedKey: \.isTruncated, paginationFunction: self.listFunctionsTruncated(input:))
+    }
+"""
+        contents.shouldContainOnlyOnce(expected)
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {

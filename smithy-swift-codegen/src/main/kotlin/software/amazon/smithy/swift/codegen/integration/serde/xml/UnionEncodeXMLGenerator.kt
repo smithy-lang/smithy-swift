@@ -5,53 +5,41 @@
 
 package software.amazon.smithy.swift.codegen.integration.serde.xml
 
-import software.amazon.smithy.model.shapes.CollectionShape
-import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.TimestampShape
-import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.SwiftTypes
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.swift.codegen.SmithyXMLTypes
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.MemberShapeEncodeXMLGenerator
 
 class UnionEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
+    private val shapeContainingMembers: Shape,
     private val members: List<MemberShape>,
-    private val writer: SwiftWriter,
-    defaultTimestampFormat: TimestampFormatTrait.Format
-) : MemberShapeEncodeXMLGenerator(ctx, writer, defaultTimestampFormat) {
+    private val writer: SwiftWriter
+) : MemberShapeEncodeXMLGenerator(ctx, writer) {
     override fun render() {
-        val containerName = "container"
-        writer.openBlock("public func encode(to encoder: \$N) throws {", "}", SwiftTypes.Encoder) {
-            writer.write("var $containerName = encoder.container(keyedBy: \$N.self)", ClientRuntimeTypes.Serde.Key)
-            writer.openBlock("switch self {", "}") {
+        writer.addImport(SwiftDependency.SMITHY_XML.target)
+        val structSymbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
+        writer.openBlock(
+            "static func writingClosure(_ value: \$N?, to writer: \$N) throws {", "}",
+            structSymbol,
+            SmithyXMLTypes.Writer
+        ) {
+            writer.write("guard let value else { writer.detach(); return }")
+            writer.openBlock("switch value {", "}") {
                 val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
                 membersSortedByName.forEach { member ->
-                    val memberTarget = ctx.model.expectShape(member.target)
                     val memberName = ctx.symbolProvider.toMemberName(member)
                     writer.write("case let .\$L(\$L):", memberName, memberName)
                     writer.indent()
-                    when (memberTarget) {
-                        is CollectionShape -> {
-                            renderListMember(member, memberTarget, containerName)
-                        }
-                        is MapShape -> {
-                            renderMapMember(member, memberTarget, containerName)
-                        }
-                        is TimestampShape -> {
-                            renderTimestampMember(member, memberTarget, containerName)
-                        }
-                        else -> {
-                            renderEncodeAssociatedType(member, memberTarget, containerName)
-                        }
-                    }
+                    writeMember(member, true)
                     writer.dedent()
                 }
                 writer.write("case let .sdkUnknown(sdkUnknown):")
                 writer.indent()
-                writer.write("try container.encode(sdkUnknown, forKey: \$N(\"sdkUnknown\"))", ClientRuntimeTypes.Serde.Key)
+                writer.write("try writer[.init(\"sdkUnknown\")].write(sdkUnknown)")
                 writer.dedent()
             }
         }

@@ -70,10 +70,18 @@ class HttpQueryItemProvider(
     }
 
     fun renderProvider(writer: SwiftWriter) {
-        writer.openBlock("extension \$N: \$N {", "}", inputSymbol, ClientRuntimeTypes.Middleware.Providers.QueryItemProvider) {
-            writer.openBlock("public var queryItems: [\$N] {", "}", ClientRuntimeTypes.Core.URLQueryItem) {
-                writer.openBlock("get throws {", "}") {
-                    writer.write("var items = [\$N]()", ClientRuntimeTypes.Core.URLQueryItem)
+        writer.openBlock("extension \$N {", "}", inputSymbol) {
+            writer.write("")
+            writer.openBlock(
+                "static func queryItemProvider(_ value: \$N) throws -> [\$N] {",
+                "}",
+                inputSymbol,
+                ClientRuntimeTypes.Core.SDKURLQueryItem
+            ) {
+                if (queryLiterals.isEmpty() && queryBindings.isEmpty()) {
+                    writer.write("return []")
+                } else {
+                    writer.write("var items = [\$N]()", ClientRuntimeTypes.Core.SDKURLQueryItem)
                     generateQueryItems()
                     writer.write("return items")
                 }
@@ -84,7 +92,7 @@ class HttpQueryItemProvider(
     private fun generateQueryItems() {
         queryLiterals.forEach { (queryItemKey, queryItemValue) ->
             val queryValue = if (queryItemValue.isBlank()) "nil" else "\"${queryItemValue}\""
-            writer.write("items.append(\$N(name: \$S, value: \$L))", ClientRuntimeTypes.Core.URLQueryItem, queryItemKey, queryValue)
+            writer.write("items.append(\$N(name: \$S, value: \$L))", ClientRuntimeTypes.Core.SDKURLQueryItem, queryItemKey, queryValue)
         }
 
         var httpQueryParamBinding: HttpBindingDescriptor? = null
@@ -111,7 +119,7 @@ class HttpQueryItemProvider(
     }
 
     private fun renderHttpQueryParamMap(memberTarget: MapShape, memberName: String) {
-        writer.openBlock("if let $memberName = $memberName {", "}") {
+        writer.openBlock("if let $memberName = value.$memberName {", "}") {
             val currentQueryItemsNames = "currentQueryItemNames"
             writer.write("let $currentQueryItemsNames = items.map({\$L.name})", "\$0")
 
@@ -121,13 +129,13 @@ class HttpQueryItemProvider(
                     writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
                         val suffix = if (memberTarget.hasTrait<SparseTrait>()) "?" else ""
                         writer.openBlock("value0$suffix.forEach { value1 in", "}") {
-                            writer.write("let queryItem = \$N(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem)
+                            writer.write("let queryItem = \$N(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())", ClientRuntimeTypes.Core.SDKURLQueryItem)
                             writer.write("items.append(queryItem)")
                         }
                     }
                 } else {
                     writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
-                        writer.write("let queryItem = \$N(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem)
+                        writer.write("let queryItem = \$N(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())", ClientRuntimeTypes.Core.SDKURLQueryItem)
                         writer.write("items.append(queryItem)")
                     }
                 }
@@ -138,7 +146,7 @@ class HttpQueryItemProvider(
     fun renderHttpQuery(queryBinding: HttpBindingDescriptor, memberName: String, memberTarget: Shape, paramName: String, bindingIndex: HttpBindingIndex, isBoxed: Boolean) {
         if (isBoxed) {
             if (queryBinding.member.isRequired()) {
-                writer.openBlock("guard let \$L = \$L else {", "}", memberName, memberName) {
+                writer.openBlock("guard let \$L = value.\$L else {", "}", memberName, memberName) {
                     writer.write(
                         "let message = \"Creating a URL Query Item failed. \$L is required and must not be nil.\"",
                         memberName
@@ -148,14 +156,14 @@ class HttpQueryItemProvider(
                 if (memberTarget is CollectionShape) {
                     renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
                 } else {
-                    renderQueryItem(queryBinding.member, bindingIndex, memberName, paramName)
+                    renderQueryItem(queryBinding.member, bindingIndex, memberName, paramName, true)
                 }
             } else {
-                writer.openBlock("if let $memberName = $memberName {", "}") {
+                writer.openBlock("if let $memberName = value.$memberName {", "}") {
                     if (memberTarget is CollectionShape) {
                         renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
                     } else {
-                        renderQueryItem(queryBinding.member, bindingIndex, memberName, paramName)
+                        renderQueryItem(queryBinding.member, bindingIndex, memberName, paramName, true)
                     }
                 }
             }
@@ -163,12 +171,12 @@ class HttpQueryItemProvider(
             if (memberTarget is CollectionShape) {
                 renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
             } else {
-                renderQueryItem(queryBinding.member, bindingIndex, memberName, paramName)
+                renderQueryItem(queryBinding.member, bindingIndex, memberName, paramName, false)
             }
         }
     }
 
-    private fun renderQueryItem(member: MemberShape, bindingIndex: HttpBindingIndex, originalMemberName: String, paramName: String) {
+    private fun renderQueryItem(member: MemberShape, bindingIndex: HttpBindingIndex, originalMemberName: String, paramName: String, unwrapped: Boolean) {
         var (memberName, requiresDoCatch) = formatHeaderOrQueryValue(
             ctx,
             originalMemberName,
@@ -180,15 +188,16 @@ class HttpQueryItemProvider(
         if (requiresDoCatch) {
             renderDoCatch(memberName, paramName)
         } else {
+            val prefix = "".takeIf { unwrapped } ?: "value."
             if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider)) {
-                writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
+                writer.openBlock("if value.$memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
                     val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                    writer.write("let $queryItemName = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($memberName).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
+                    writer.write("let $queryItemName = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($prefix$memberName).urlPercentEncoding())", ClientRuntimeTypes.Core.SDKURLQueryItem, SwiftTypes.String)
                     writer.write("items.append($queryItemName)")
                 }
             } else {
                 val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                writer.write("let $queryItemName = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($memberName).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
+                writer.write("let $queryItemName = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($prefix$memberName).urlPercentEncoding())", ClientRuntimeTypes.Core.SDKURLQueryItem, SwiftTypes.String)
                 writer.write("items.append($queryItemName)")
             }
         }
@@ -213,7 +222,7 @@ class HttpQueryItemProvider(
             if (requiresDoCatch) {
                 renderDoCatch(queryItemValue, paramName)
             } else {
-                writer.write("let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValue).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
+                writer.write("let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValue).urlPercentEncoding())", ClientRuntimeTypes.Core.SDKURLQueryItem, SwiftTypes.String)
                 writer.write("items.append(queryItem)")
             }
         }
@@ -222,7 +231,7 @@ class HttpQueryItemProvider(
     private fun renderDoCatch(queryItemValueWithExtension: String, paramName: String) {
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let base64EncodedValue = $queryItemValueWithExtension")
-            writer.write("let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValueWithExtension).urlPercentEncoding())", ClientRuntimeTypes.Core.URLQueryItem, SwiftTypes.String)
+            writer.write("let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValueWithExtension).urlPercentEncoding())", ClientRuntimeTypes.Core.SDKURLQueryItem, SwiftTypes.String)
             writer.write("items.append(queryItem)")
         }
         writer.write("}")

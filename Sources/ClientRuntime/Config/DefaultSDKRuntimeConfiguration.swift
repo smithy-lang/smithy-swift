@@ -9,9 +9,6 @@
 public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy,
     DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider> {
 
-    public typealias DefaultSDKRuntimeRetryStrategy = DefaultRetryStrategy
-    public typealias DefaultSDKRuntimeRetryErrorInfoProvider = DefaultRetryErrorInfoProvider
-
     /// The name of this Smithy service.
     public var serviceName: String
 
@@ -31,7 +28,7 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
     /// The HTTP client to be used for HTTP connections.
     ///
     /// If none is provided, the AWS CRT HTTP client will be used.
-    public var httpClientEngine: HttpClientEngine
+    public var httpClientEngine: HTTPClient
 
     /// The HTTP client configuration.
     ///
@@ -75,8 +72,8 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
         self.clientName = clientName
         self.encoder = nil
         self.decoder = nil
-        self.httpClientEngine = Self.defaultHttpClientEngine
         self.httpClientConfiguration = Self.defaultHttpClientConfiguration
+        self.httpClientEngine = Self.makeClient(httpClientConfiguration: self.httpClientConfiguration)
         self.idempotencyTokenGenerator = Self.defaultIdempotencyTokenGenerator
         self.retryStrategyOptions = Self.defaultRetryStrategyOptions
         self.logger = Self.defaultLogger(clientName: clientName)
@@ -88,10 +85,19 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
 // Exposing these as static properties/methods allows them to be used by custom config objects.
 public extension DefaultSDKRuntimeConfiguration {
 
-    /// The default HTTP client to use when none is configured
+    /// The default HTTP client for the target platform, configured with the supplied configuration.
     ///
-    /// Is the CRT HTTP client.
-    static var defaultHttpClientEngine: HttpClientEngine { CRTClientEngine() }
+    /// - Parameter httpClientConfiguration: The configuration for the HTTP client.
+    /// - Returns: The `CRTClientEngine` client on Mac & Linux platforms, returns `URLSessionHttpClient` on non-Mac Apple platforms.
+    static func makeClient(httpClientConfiguration: HttpClientConfiguration) -> HTTPClient {
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS) || os(macOS)
+        return URLSessionHTTPClient(httpClientConfiguration: httpClientConfiguration)
+        #else
+        let connectTimeoutMs = httpClientConfiguration.connectTimeout.map { UInt32($0 * 1_000_000) }
+        let config = CRTClientEngineConfig(connectTimeoutMs: connectTimeoutMs)
+        return CRTClientEngine(config: config)
+        #endif
+    }
 
     /// The HTTP client configuration to use when none is provided.
     ///

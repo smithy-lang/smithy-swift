@@ -6,34 +6,67 @@ import struct Foundation.CharacterSet
 import struct Foundation.URLQueryItem
 import struct Foundation.URLComponents
 import AwsCommonRuntimeKit
+// In Linux, Foundation.URLRequest is moved to FoundationNetworking.
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#else
+import struct Foundation.URLRequest
+#endif
 
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
 public class SdkHttpRequest {
-    public let body: HttpBody
+    public let body: ByteStream
     public let endpoint: Endpoint
     public let method: HttpMethodType
-    public var headers: Headers { endpoint.headers ?? Headers() }
+    private var additionalHeaders: Headers = Headers()
+    public var headers: Headers {
+        var allHeaders = endpoint.headers ?? Headers()
+        allHeaders.addAll(headers: additionalHeaders)
+        return allHeaders
+    }
     public var path: String { endpoint.path }
     public var host: String { endpoint.host }
-    public var queryItems: [URLQueryItem]? { endpoint.queryItems }
+    public var queryItems: [SDKURLQueryItem]? { endpoint.queryItems }
 
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
-                body: HttpBody = HttpBody.none) {
+                body: ByteStream = ByteStream.noStream) {
         self.method = method
         self.endpoint = endpoint
         self.body = body
+    }
+
+    public func toBuilder() -> SdkHttpRequestBuilder {
+        let builder = SdkHttpRequestBuilder()
+            .withBody(self.body)
+            .withMethod(self.method)
+            .withHeaders(self.headers)
+            .withPath(self.path)
+            .withHost(self.host)
+            .withPort(self.endpoint.port)
+            .withProtocol(self.endpoint.protocolType ?? .https)
+        if let qItems = self.queryItems {
+            builder.withQueryItems(qItems)
+        }
+        return builder
+    }
+
+    public func withHeader(name: String, value: String) {
+        self.additionalHeaders.add(name: name, value: value)
+    }
+
+    public func withoutHeader(name: String) {
+        self.additionalHeaders.remove(name: name)
     }
 }
 
 extension SdkHttpRequest {
 
-    public func toHttpRequest(escaping: Bool = false) throws -> HTTPRequest {
+    public func toHttpRequest() throws -> HTTPRequest {
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        let encodedPath = escaping ? endpoint.path.urlPercentEncodedForPath : endpoint.path
-        httpRequest.path = [encodedPath, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
+        httpRequest.path = [endpoint.path, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
         httpRequest.body = StreamableHttpBody(body: body)
         return httpRequest
@@ -42,17 +75,43 @@ extension SdkHttpRequest {
     /// Convert the SDK request to a CRT HTTPRequestBase
     /// CRT converts the HTTPRequestBase to HTTP2Request internally if the protocol is HTTP/2
     /// - Returns: the CRT request
-    public func toHttp2Request(escaping: Bool = false) throws -> HTTPRequestBase {
+    public func toHttp2Request() throws -> HTTPRequestBase {
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        let encodedPath = escaping ? endpoint.path.urlPercentEncodedForPath : endpoint.path
-        httpRequest.path = [encodedPath, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
+        httpRequest.path = [endpoint.path, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
+
+        // Remove the "Transfer-Encoding" header if it exists since h2 does not support it
+        httpRequest.removeHeader(name: "Transfer-Encoding")
 
         // HTTP2Request used with manual writes hence we need to set the body to nil
         // so that CRT does not write the body for us (we will write it manually)
         httpRequest.body = nil
         return httpRequest
+    }
+}
+
+public extension URLRequest {
+    init(sdkRequest: SdkHttpRequest) async throws {
+        // Set URL
+        guard let url = sdkRequest.endpoint.url else {
+            throw ClientError.dataNotFound("Failed to construct URLRequest due to missing URL.")
+        }
+        self.init(url: url)
+        // Set method type
+        self.httpMethod = sdkRequest.method.rawValue
+        // Set body, handling any serialization errors
+        do {
+            self.httpBody = try await sdkRequest.body.readData()
+        } catch {
+            throw ClientError.serializationFailed("Failed to construct URLRequest due to HTTP body conversion failure.")
+        }
+        // Set headers
+        sdkRequest.headers.headers.forEach { header in
+            header.value.forEach { value in
+                self.addValue(value, forHTTPHeaderField: header.name)
+            }
+        }
     }
 }
 
@@ -87,8 +146,8 @@ extension SdkHttpRequestBuilder {
         host = originalRequest.host
         if let crtRequest = crtRequest as? HTTPRequest, let components = URLComponents(string: crtRequest.path) {
             path = components.percentEncodedPath
-            queryItems = components.percentEncodedQueryItems?.map { URLQueryItem(name: $0.name, value: $0.value) }
-                ?? [URLQueryItem]()
+            queryItems = components.percentEncodedQueryItems?.map { SDKURLQueryItem(name: $0.name, value: $0.value) }
+                ?? [SDKURLQueryItem]()
         } else if crtRequest as? HTTP2Request != nil {
             assertionFailure("HTTP2Request not supported")
         } else {
@@ -110,12 +169,12 @@ public class SdkHttpRequestBuilder {
     var methodType: HttpMethodType = .get
     var host: String = ""
     var path: String = "/"
-    var body: HttpBody = .none
-    var queryItems: [URLQueryItem]?
+    var body: ByteStream = .noStream
+    var queryItems: [SDKURLQueryItem]?
     var port: Int16 = 443
     var protocolType: ProtocolType = .https
 
-    public var currentQueryItems: [URLQueryItem]? {
+    public var currentQueryItems: [SDKURLQueryItem]? {
         return queryItems
     }
 
@@ -160,20 +219,20 @@ public class SdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withBody(_ value: HttpBody) -> SdkHttpRequestBuilder {
+    public func withBody(_ value: ByteStream) -> SdkHttpRequestBuilder {
         self.body = value
         return self
     }
 
     @discardableResult
-    public func withQueryItems(_ value: [URLQueryItem]) -> SdkHttpRequestBuilder {
+    public func withQueryItems(_ value: [SDKURLQueryItem]) -> SdkHttpRequestBuilder {
         self.queryItems = self.queryItems ?? []
         self.queryItems?.append(contentsOf: value)
         return self
     }
 
     @discardableResult
-    public func withQueryItem(_ value: URLQueryItem) -> SdkHttpRequestBuilder {
+    public func withQueryItem(_ value: SDKURLQueryItem) -> SdkHttpRequestBuilder {
         withQueryItems([value])
     }
 

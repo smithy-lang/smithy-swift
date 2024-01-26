@@ -2,6 +2,7 @@ package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 open class OperationMiddlewareGenerator(val mutableHashMap: MutableMap<OperationShape, MiddlewareStack> = mutableMapOf()) : OperationMiddleware {
 
@@ -46,6 +47,7 @@ open class OperationMiddlewareGenerator(val mutableHashMap: MutableMap<Operation
     }
 
     override fun renderMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         operation: OperationShape,
         operationStackName: String,
@@ -53,8 +55,8 @@ open class OperationMiddlewareGenerator(val mutableHashMap: MutableMap<Operation
     ) {
         val stack = middlewareMap.getOrPut(operation) { MiddlewareStack() }
         val step = resolveStep(stack, step)
-        for (renderableMiddlware in step) {
-            renderableMiddlware.render(writer, operation, operationStackName)
+        for (renderableMiddleware in step) {
+            renderableMiddleware.render(ctx, writer, operation, operationStackName)
         }
     }
 

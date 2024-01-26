@@ -16,7 +16,7 @@ final class RetryIntegrationTests: XCTestCase {
 
     private var context: HttpContext!
     private var next: TestOutputHandler!
-    private var subject: RetryMiddleware<DefaultRetryStrategy, DefaultRetryErrorInfoProvider, TestOutputResponse, TestOutputError>!
+    private var subject: RetryMiddleware<DefaultRetryStrategy, DefaultRetryErrorInfoProvider, TestOutputResponse>!
     private var quota: RetryQuota { get async { await subject.strategy.quotaRepository.quota(partitionID: partitionID) } }
 
     private func setUp(availableCapacity: Int, maxCapacity: Int, maxRetriesBase: Int, maxBackoff: TimeInterval) async {
@@ -34,11 +34,12 @@ final class RetryIntegrationTests: XCTestCase {
 
         // Create a retry strategy with custom backoff strategy & custom max retries & custom capacity
         let retryStrategyOptions = RetryStrategyOptions(backoffStrategy: backoffStrategy, maxRetriesBase: maxRetriesBase, availableCapacity: availableCapacity, maxCapacity: maxCapacity)
-        subject = RetryMiddleware<DefaultRetryStrategy, DefaultRetryErrorInfoProvider, TestOutputResponse, TestOutputError>(options: retryStrategyOptions)
+        subject = RetryMiddleware<DefaultRetryStrategy, DefaultRetryErrorInfoProvider, TestOutputResponse>(options: retryStrategyOptions)
 
         // Replace the retry strategy's sleeper with a mock, to allow tests to run without delay and for us to
         // check the delay time
-        subject.strategy.sleeper = { self.next.actualDelay = $0 }
+        // Treat nil and 0.0 time the same (change 0.0 to nil)
+        subject.strategy.sleeper = { self.next.actualDelay = ($0 != 0.0) ? $0 : nil }
 
         // Set the quota on the test output handler so it can verify state during tests
         next.quota = await quota
@@ -117,7 +118,7 @@ final class RetryIntegrationTests: XCTestCase {
     }
 }
 
-struct TestStep {
+private struct TestStep {
 
     enum Response: Equatable {
         case success
@@ -135,30 +136,41 @@ struct TestStep {
     let expectedOutcome: Outcome
     let retryQuota: Int
     let delay: TimeInterval?
+    let file: StaticString
+    let line: UInt
+
+    init(response: Response, expectedOutcome: Outcome, retryQuota: Int, delay: TimeInterval?, file: StaticString = #file, line: UInt = #line) {
+        self.response = response
+        self.expectedOutcome = expectedOutcome
+        self.retryQuota = retryQuota
+        self.delay = delay
+        self.file = file
+        self.line = line
+    }
 }
 
-struct TestInput {}
+private struct TestInput {}
 
-struct TestOutputResponse: HttpResponseBinding {
+private struct TestOutputResponse: HttpResponseBinding {
     init() {}
     init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws {}
 }
 
-enum TestOutputError: HttpResponseErrorBinding {
+private enum TestOutputError: HttpResponseErrorBinding {
     static func makeError(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws -> Error {
         RetryIntegrationTestError.dontCallThisMethod  // is never called
     }
 }
 
-class TestOutputHandler: Handler {
+private class TestOutputHandler: Handler {
 
     typealias Input = SdkHttpRequestBuilder
     typealias Output = OperationOutput<TestOutputResponse>
     typealias Context = HttpContext
 
     var index = 0
-    var testSteps = [TestStep]()
-    var latestTestStep: TestStep?
+    fileprivate var testSteps = [TestStep]()
+    private var latestTestStep: TestStep?
     var quota: RetryQuota!
     var actualDelay: TimeInterval?
     var finalError: Error?
@@ -191,7 +203,7 @@ class TestOutputHandler: Handler {
         XCTAssertEqual(testStep.retryQuota, availableCapacity)
 
         // Test delay
-        XCTAssertEqual(testStep.delay, actualDelay)
+        XCTAssertEqual(testStep.delay, actualDelay, file: testStep.file, line: testStep.line)
         actualDelay = nil
 
         // When called after all test steps have been performed, this
@@ -199,17 +211,17 @@ class TestOutputHandler: Handler {
         guard atEnd else { return }
         switch testStep.expectedOutcome {
         case .success:
-            if let error = finalError { XCTFail("Unexpected error: \(error)") }
+            if let error = finalError { XCTFail("Unexpected error: \(error)", file: testStep.file, line: testStep.line) }
         case .retryQuotaExceeded, .maxAttemptsExceeded:
-            if !(finalError is TestHTTPError) { XCTFail("Test did not end on service error") }
+            if !(finalError is TestHTTPError) { XCTFail("Test did not end on service error", file: testStep.file, line: testStep.line) }
         case .retryRequest:
-            XCTFail("Test should not end on retry")
+            XCTFail("Test should not end on retry", file: testStep.file, line: testStep.line)
         }
     }
 }
 
 // Thrown during a test to simulate a server response with a given HTTP status code.
-struct TestHTTPError: HTTPError, Error {
+private struct TestHTTPError: HTTPError, Error {
     var httpResponse: ClientRuntime.HttpResponse
 
     init(statusCode: Int) {
@@ -219,7 +231,7 @@ struct TestHTTPError: HTTPError, Error {
 }
 
 // These errors are thrown when a test fails.
-enum RetryIntegrationTestError: Error {
+private enum RetryIntegrationTestError: Error {
     case dontCallThisMethod
     case noRemainingTestSteps
     case maxAttemptsExceeded

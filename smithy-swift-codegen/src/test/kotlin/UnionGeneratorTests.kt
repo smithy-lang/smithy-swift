@@ -13,6 +13,7 @@ import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.UnionGenerator
+import software.amazon.smithy.swift.codegen.model.UnionIndirectivizer
 
 class UnionGeneratorTests {
 
@@ -111,11 +112,13 @@ class UnionGeneratorTests {
         )
         val simpleUnionShape = simpleUnionShapeBuilder.build()
         val model = createModelFromShapes(simpleUnionShape)
-        val settings = model.defaultSettings()
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
+        val transformedModel = UnionIndirectivizer.transform(model)
+        val settings = transformedModel.defaultSettings()
+        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(transformedModel, settings)
         val writer = SwiftWriter("MockPackage")
+        val transformedUnionShape = transformedModel.expectShape(simpleUnionShape.id).asUnionShape().get()
 
-        val generator = UnionGenerator(model, provider, writer, simpleUnionShape, settings)
+        val generator = UnionGenerator(transformedModel, provider, writer, transformedUnionShape, settings)
         generator.render()
 
         val contents = writer.toString()

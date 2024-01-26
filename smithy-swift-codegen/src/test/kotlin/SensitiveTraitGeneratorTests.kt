@@ -28,11 +28,11 @@ class SensitiveTraitGeneratorTests {
     fun `SensitiveTraitInRequestOutput+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitInRequestOutputResponse+CustomDebugStringConvertible.swift").get()
+            .getFileString("example/models/SensitiveTraitInRequestOutput+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitInRequestOutputResponse: Swift.CustomDebugStringConvertible {
+            extension SensitiveTraitInRequestOutput: Swift.CustomDebugStringConvertible {
                 public var debugDescription: Swift.String {
                     "CONTENT_REDACTED"
                 }
@@ -45,13 +45,13 @@ class SensitiveTraitGeneratorTests {
     fun `AllSensitiveMemberStruct+CustomDebugStringConvertible`() {
         val manifest = setupTest()
         var extensionWithSensitiveTrait = manifest
-            .getFileString("example/models/SensitiveTraitTestRequestOutputResponse+CustomDebugStringConvertible.swift").get()
+            .getFileString("example/models/SensitiveTraitTestRequestOutput+CustomDebugStringConvertible.swift").get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            extension SensitiveTraitTestRequestOutputResponse: Swift.CustomDebugStringConvertible {
+            extension SensitiveTraitTestRequestOutput: Swift.CustomDebugStringConvertible {
                 public var debugDescription: Swift.String {
-                    "SensitiveTraitTestRequestOutputResponse(bar: \"CONTENT_REDACTED\", baz: \"CONTENT_REDACTED\", foo: \"CONTENT_REDACTED\")"}
+                    "SensitiveTraitTestRequestOutput(bar: \"CONTENT_REDACTED\", baz: \"CONTENT_REDACTED\", foo: \"CONTENT_REDACTED\")"}
             }
             """.trimIndent()
         extensionWithSensitiveTrait.shouldContainOnlyOnce(expectedContents)

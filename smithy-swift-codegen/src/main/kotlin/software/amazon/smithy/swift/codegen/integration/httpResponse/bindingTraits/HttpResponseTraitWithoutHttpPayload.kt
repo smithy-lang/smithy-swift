@@ -50,15 +50,18 @@ class HttpResponseTraitWithoutHttpPayload(
             .filter { !it.member.hasTrait(HttpQueryTrait::class.java) }
             .toMutableSet()
         val streamingMember = bodyMembers.firstOrNull { it.member.targetOrSelf(ctx.model).hasTrait(StreamingTrait::class.java) }
-
         if (streamingMember != null) {
-            writeStreamingMember(streamingMember)
+            val initialResponseMembers = bodyMembers.filter {
+                val targetShape = it.member.targetOrSelf(ctx.model)
+                targetShape?.hasTrait(StreamingTrait::class.java) == false
+            }.toSet()
+            writeStreamingMember(streamingMember, initialResponseMembers)
         } else if (bodyMembersWithoutQueryTrait.isNotEmpty()) {
             writeNonStreamingMembers(bodyMembersWithoutQueryTrait)
         }
     }
 
-    fun writeStreamingMember(streamingMember: HttpBindingDescriptor) {
+    fun writeStreamingMember(streamingMember: HttpBindingDescriptor, initialResponseMembers: Set<HttpBindingDescriptor>) {
         val shape = ctx.model.expectShape(streamingMember.member.target)
         val symbol = ctx.symbolProvider.toSymbol(shape)
         val memberName = ctx.symbolProvider.toMemberName(streamingMember.member)
@@ -74,6 +77,9 @@ class HttpResponseTraitWithoutHttpPayload(
                         symbol
                     )
                     writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
+                    if (isRPCService(ctx) && initialResponseMembers.isNotEmpty()) {
+                        writeInitialResponseMembers(initialResponseMembers)
+                    }
                 }
                 writer.indent()
                 writer.write("self.\$L = nil", memberName).closeBlock("}")
@@ -92,7 +98,7 @@ class HttpResponseTraitWithoutHttpPayload(
                     .indent()
                 writer.write("self.\$L = .stream(stream)", memberName)
                 writer.dedent()
-                    .write("case .none:")
+                    .write("case .noStream:")
                     .indent()
                     .write("self.\$L = nil", memberName).closeBlock("}")
             }
@@ -133,4 +139,52 @@ class HttpResponseTraitWithoutHttpPayload(
     }
 
     private val path: String = "properties.".takeIf { outputShape.hasTrait<ErrorTrait>() } ?: ""
+
+    private fun writeInitialResponseMembers(initialResponseMembers: Set<HttpBindingDescriptor>) {
+        writer.apply {
+            write("if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {")
+            indent()
+            write("let decoder = JSONDecoder()")
+            write("do {")
+            indent()
+            write("let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)")
+            initialResponseMembers.forEach { responseMember ->
+                val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
+                write("self.$responseMemberName = response[\"$responseMemberName\"].map { value in KinesisClientTypes.Tag(value: value) }")
+            }
+            dedent()
+            write("} catch {")
+            indent()
+            write("print(\"Error decoding JSON: \\(error)\")")
+            initialResponseMembers.forEach { responseMember ->
+                val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
+                write("self.$responseMemberName = nil")
+            }
+            dedent()
+            write("}")
+            dedent()
+            write("} else {")
+            indent()
+            initialResponseMembers.forEach { responseMember ->
+                val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
+                write("self.$responseMemberName = nil")
+            }
+            dedent()
+            write("}")
+        }
+    }
+
+    private fun isRPCService(ctx: ProtocolGenerator.GenerationContext): Boolean {
+        return rpcBoundProtocols.contains(ctx.protocol.name)
+    }
+
+    /**
+     * A set of RPC-bound Smithy protocols
+     */
+    private val rpcBoundProtocols = setOf(
+        "awsJson1_0",
+        "awsJson1_1",
+        "awsQuery",
+        "ec2Query",
+    )
 }

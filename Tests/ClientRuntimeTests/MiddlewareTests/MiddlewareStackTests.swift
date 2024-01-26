@@ -14,7 +14,7 @@ class MiddlewareStackTests: XCTestCase {
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
             .build()
-        var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
+        var stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")
         stack.serializeStep.intercept(position: .after,
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestHeaderName1", headerValue: "TestHeaderValue1"))
         stack.deserializeStep.intercept(position: .after,
@@ -23,7 +23,7 @@ class MiddlewareStackTests: XCTestCase {
         let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(),
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
-                                                let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
+                                                let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
                                                 let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse,
                                                                                          output: mockOutput)
@@ -40,7 +40,7 @@ class MiddlewareStackTests: XCTestCase {
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
             .build()
-        var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
+        var stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")
         stack.initializeStep.intercept(position: .before, id: "create http request") { (context, input, next) -> OperationOutput<MockOutput> in
 
             return try await next.handle(context: context, input: input)
@@ -57,11 +57,11 @@ class MiddlewareStackTests: XCTestCase {
             return try await next.handle(context: context, input: requestBuilder)
         }
         stack.finalizeStep.intercept(position: .before, middleware: ContentLengthMiddleware())
-        stack.deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware<MockOutput, MockMiddlewareError>())
+        stack.deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware<MockOutput>(responseClosure(decoder: JSONDecoder()), responseErrorClosure(MockMiddlewareError.self, decoder: JSONDecoder())))
         let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(),
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName2") == "TestHeaderValue2")
-                                                let httpResponse = HttpResponse(body: HttpBody.none, statusCode: HttpStatusCode.ok)
+                                                let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
                                                 let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse,
                                                                                          output: mockOutput)
@@ -86,7 +86,7 @@ class MiddlewareStackTests: XCTestCase {
             .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
             .build()
-        var stack = OperationStack<MockInput, MockOutput, MockMiddlewareError>(id: "Test Operation")
+        var stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")
         stack.serializeStep.intercept(position: .after,
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestName", headerValue: "TestValue"))
         stack.deserializeStep.intercept(position: .after,

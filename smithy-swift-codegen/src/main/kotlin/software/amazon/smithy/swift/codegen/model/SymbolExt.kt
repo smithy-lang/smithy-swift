@@ -8,7 +8,6 @@ package software.amazon.smithy.swift.codegen.model
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 /**
@@ -37,18 +36,6 @@ fun Symbol.isBoxed(): Boolean {
             else -> false
         }
     }.orElse(false)
-}
-
-/**
- * Obtains the symbol for a recursive symbol to represent the symbol as Box<T>
- */
-fun Symbol.recursiveSymbol(): Symbol {
-    return Symbol.builder()
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .name("Box<$fullName>")
-        .putProperty(SymbolProperty.BOXED_KEY, isBoxed())
-        .putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue())
-        .build()
 }
 
 /**

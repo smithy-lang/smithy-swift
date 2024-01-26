@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
@@ -20,6 +21,7 @@ import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
 protected constructor(builder: Builder<T>) {
 
+    protected val ctx: ProtocolGenerator.GenerationContext = builder.ctx!!
     protected val symbolProvider: SymbolProvider = builder.symbolProvider!!
     protected var model: Model = builder.model!!
     private val testCases: List<T> = builder.testCases!!
@@ -71,9 +73,11 @@ protected constructor(builder: Builder<T>) {
     )
 
     abstract class Builder<T : HttpMessageTestCase> {
+        var ctx: ProtocolGenerator.GenerationContext? = null
         var symbolProvider: SymbolProvider? = null
         var model: Model? = null
         var testCases: List<T>? = null
+        var service: ServiceShape? = null
         var operation: OperationShape? = null
         var writer: SwiftWriter? = null
         var serviceName: String? = null
@@ -85,6 +89,7 @@ protected constructor(builder: Builder<T>) {
         fun symbolProvider(provider: SymbolProvider): Builder<T> = apply { this.symbolProvider = provider }
         fun model(model: Model): Builder<T> = apply { this.model = model }
         fun testCases(testCases: List<T>): Builder<T> = apply { this.testCases = testCases }
+        fun ctx(ctx: ProtocolGenerator.GenerationContext): Builder<T> = apply { this.ctx = ctx }
         fun operation(operation: OperationShape): Builder<T> = apply { this.operation = operation }
         fun writer(writer: SwiftWriter): Builder<T> = apply { this.writer = writer }
         fun serviceName(serviceName: String): Builder<T> = apply { this.serviceName = serviceName }

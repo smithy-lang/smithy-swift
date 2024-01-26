@@ -9,7 +9,6 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -49,8 +48,14 @@ class HttpUrlPathProvider(
     }
 
     fun renderProvider(writer: SwiftWriter) {
-        writer.openBlock("extension \$N: \$N {", "}", inputSymbol, ClientRuntimeTypes.Middleware.Providers.URLPathProvider) {
-            writer.openBlock("public var urlPath: \$T {", "}", SwiftTypes.String) {
+        writer.openBlock("extension \$N {", "}", inputSymbol) {
+            writer.write("")
+            writer.openBlock(
+                "static func urlPathProvider(_ value: \$N) -> \$T {",
+                "}",
+                inputSymbol,
+                SwiftTypes.String,
+            ) {
                 renderUriPath()
             }
         }
@@ -83,14 +88,14 @@ class HttpUrlPathProvider(
                         )
                     }
                     ShapeType.STRING -> {
-                        val percentEncoded = if (!it.isGreedyLabel) ".urlPercentEncoding()" else ""
+                        val percentEncoded = urlEncoding(it.isGreedyLabel)
                         val enumRawValueSuffix =
                             targetShape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
                         "$labelMemberName$enumRawValueSuffix$percentEncoded"
                     }
                     ShapeType.FLOAT, ShapeType.DOUBLE -> "$labelMemberName.encoded()"
                     ShapeType.ENUM -> {
-                        val percentEncoded = if (!it.isGreedyLabel) ".urlPercentEncoding()" else ""
+                        val percentEncoded = urlEncoding(it.isGreedyLabel)
                         "$labelMemberName.rawValue$percentEncoded"
                     }
                     else -> labelMemberName
@@ -102,7 +107,7 @@ class HttpUrlPathProvider(
 
                 // unwrap the label members if boxed
                 if (symbol.isBoxed()) {
-                    writer.openBlock("guard let $labelMemberName = $labelMemberName else {", "}") {
+                    writer.openBlock("guard let $labelMemberName = value.$labelMemberName else {", "}") {
                         writer.write("return nil")
                     }
                 }
@@ -114,5 +119,21 @@ class HttpUrlPathProvider(
 
         val uri = resolvedURIComponents.joinToString(separator = "/", prefix = "/", postfix = "")
         writer.write("return \"\$L\"", uri)
+    }
+
+    /**
+     * Provides the appropriate Swift method call for URL encoding a String path component.
+     *
+     * For non-greedy labels, forward-slash is encoded because the label must fill in
+     * exactly one path component.
+     *
+     * For greedy labels, forward-slash is not encoded because it is expected that the
+     * label contents will include multiple path components.
+     *
+     * Swift .urlPercentEncoding() method encodes forward slashes by default.
+     */
+    private fun urlEncoding(greedy: Boolean): String {
+        val options = "encodeForwardSlash: false".takeIf { greedy } ?: ""
+        return ".urlPercentEncoding($options)"
     }
 }

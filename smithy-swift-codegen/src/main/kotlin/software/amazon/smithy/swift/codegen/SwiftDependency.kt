@@ -23,7 +23,7 @@ enum class SwiftDependency(
         "ClientRuntime",
         "main",
         "0.1.0",
-        "https://github.com/awslabs/smithy-swift",
+        "https://github.com/smithy-lang/smithy-swift",
         Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
         "smithy-swift"
     ),
@@ -32,7 +32,23 @@ enum class SwiftDependency(
         "SmithyTestUtil",
         "main",
         "0.1.0",
-        "https://github.com/awslabs/smithy-swift",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
+    SMITHY_READ_WRITE(
+        "SmithyReadWrite",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
+    SMITHY_XML(
+        "SmithyXML",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
         Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
         "smithy-swift"
     );

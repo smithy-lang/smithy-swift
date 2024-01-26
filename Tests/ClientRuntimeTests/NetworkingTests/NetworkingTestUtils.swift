@@ -30,7 +30,7 @@ class NetworkingTestUtils: XCTestCase {
         let headers = Headers(["header-item-name": "header-item-value"])
         let endpoint = getMockEndpoint(headers: headers)
 
-        let httpBody = HttpBody.data(expectedMockRequestData)
+        let httpBody = ByteStream.data(expectedMockRequestData)
         mockHttpDataRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
     }
 
@@ -41,17 +41,17 @@ class NetworkingTestUtils: XCTestCase {
         let headers = Headers(["header-item-name": "header-item-value"])
         let endpoint = getMockEndpoint(headers: headers)
 
-        let httpBody = HttpBody(byteStream: ByteStream.from(data: expectedMockRequestData))
+        let httpBody = ByteStream.data(expectedMockRequestData)
         mockHttpStreamRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
     }
 
     func getMockEndpoint(headers: Headers) -> Endpoint {
         let path = "/path/to/endpoint"
         let host = "myapi.host.com"
-        var queryItems: [ClientRuntime.URLQueryItem] = []
+        var queryItems: [SDKURLQueryItem] = []
         let endpoint: Endpoint!
 
-        queryItems.append(URLQueryItem(name: "qualifier", value: "qualifier-value"))
+        queryItems.append(SDKURLQueryItem(name: "qualifier", value: "qualifier-value"))
         endpoint = Endpoint(host: host, path: path, queryItems: queryItems, headers: headers)
         return endpoint
     }

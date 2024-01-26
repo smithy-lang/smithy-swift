@@ -17,16 +17,16 @@ class EnumDecodeXMLGenerationTests {
     @Test
     fun `decode enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutputBody+Decodable.swift")
         val expectedContents = """
-        struct XmlEnumsOutputResponseBody: Swift.Equatable {
+        struct XmlEnumsOutputBody: Swift.Equatable {
             let fooEnum1: RestXmlProtocolClientTypes.FooEnum?
             let fooEnum2: RestXmlProtocolClientTypes.FooEnum?
             let fooEnum3: RestXmlProtocolClientTypes.FooEnum?
             let fooEnumList: [RestXmlProtocolClientTypes.FooEnum]?
         }
         
-        extension XmlEnumsOutputResponseBody: Swift.Decodable {
+        extension XmlEnumsOutputBody: Swift.Decodable {
             enum CodingKeys: Swift.String, Swift.CodingKey {
                 case fooEnum1
                 case fooEnum2
@@ -70,14 +70,14 @@ class EnumDecodeXMLGenerationTests {
     @Test
     fun `decode enum nested`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedOutputResponseBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedOutputBody+Decodable.swift")
         val expectedContents =
             """
-            struct XmlEnumsNestedOutputResponseBody: Swift.Equatable {
+            struct XmlEnumsNestedOutputBody: Swift.Equatable {
                 let nestedEnumsList: [[RestXmlProtocolClientTypes.FooEnum]]?
             }
             
-            extension XmlEnumsNestedOutputResponseBody: Swift.Decodable {
+            extension XmlEnumsNestedOutputBody: Swift.Decodable {
                 enum CodingKeys: Swift.String, Swift.CodingKey {
                     case nestedEnumsList
                 }

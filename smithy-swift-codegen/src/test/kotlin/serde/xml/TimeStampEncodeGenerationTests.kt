@@ -27,20 +27,12 @@ class TimeStampEncodeGenerationTests {
                     case normal
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let dateTime = dateTime {
-                        try container.encodeTimestamp(dateTime, format: .dateTime, forKey: ClientRuntime.Key("dateTime"))
-                    }
-                    if let epochSeconds = epochSeconds {
-                        try container.encodeTimestamp(epochSeconds, format: .epochSeconds, forKey: ClientRuntime.Key("epochSeconds"))
-                    }
-                    if let httpDate = httpDate {
-                        try container.encodeTimestamp(httpDate, format: .httpDate, forKey: ClientRuntime.Key("httpDate"))
-                    }
-                    if let normal = normal {
-                        try container.encodeTimestamp(normal, format: .dateTime, forKey: ClientRuntime.Key("normal"))
-                    }
+                static func writingClosure(_ value: XmlTimestampsInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("dateTime")].writeTimestamp(value.dateTime, format: .dateTime)
+                    try writer[.init("epochSeconds")].writeTimestamp(value.epochSeconds, format: .epochSeconds)
+                    try writer[.init("httpDate")].writeTimestamp(value.httpDate, format: .httpDate)
+                    try writer[.init("normal")].writeTimestamp(value.normal, format: .dateTime)
                 }
             }
             """.trimIndent()
@@ -59,17 +51,9 @@ class TimeStampEncodeGenerationTests {
                     case nestedTimestampList
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let nestedTimestampList = nestedTimestampList {
-                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedTimestampList"))
-                        for nestedtimestamplist0 in nestedTimestampList {
-                            var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
-                            for timestamp1 in nestedtimestamplist0 {
-                                try nestedtimestamplist0Container0.encodeTimestamp(timestamp1, format: .epochSeconds, forKey: ClientRuntime.Key("member"))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlTimestampsNestedInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("nestedTimestampList")].writeList(value.nestedTimestampList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: SmithyXML.timestampWritingClosure(format: .epochSeconds), memberNodeInfo: .init("member"), isFlattened: false), memberNodeInfo: .init("member"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -88,17 +72,9 @@ class TimeStampEncodeGenerationTests {
                     case nestedTimestampList
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let nestedTimestampList = nestedTimestampList {
-                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedTimestampList"))
-                        for nestedhttpdatetimestamplist0 in nestedTimestampList {
-                            var nestedhttpdatetimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("member"))
-                            for timestamp1 in nestedhttpdatetimestamplist0 {
-                                try nestedhttpdatetimestamplist0Container0.encodeTimestamp(timestamp1, format: .httpDate, forKey: ClientRuntime.Key("member"))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlTimestampsNestedHTTPDateInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("nestedTimestampList")].writeList(value.nestedTimestampList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: SmithyXML.timestampWritingClosure(format: .httpDate), memberNodeInfo: .init("member"), isFlattened: false), memberNodeInfo: .init("member"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -117,17 +93,9 @@ class TimeStampEncodeGenerationTests {
                     case nestedTimestampList
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let nestedTimestampList = nestedTimestampList {
-                        var nestedTimestampListContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedTimestampList"))
-                        for nestedtimestamplist0 in nestedTimestampList {
-                            var nestedtimestamplist0Container0 = nestedTimestampListContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: ClientRuntime.Key("nestedTag1"))
-                            for timestamp1 in nestedtimestamplist0 {
-                                try nestedtimestamplist0Container0.encodeTimestamp(timestamp1, format: .epochSeconds, forKey: ClientRuntime.Key("nestedTag2"))
-                            }
-                        }
-                    }
+                static func writingClosure(_ value: XmlTimestampsNestedXmlNameInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("nestedTimestampList")].writeList(value.nestedTimestampList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: SmithyXML.timestampWritingClosure(format: .epochSeconds), memberNodeInfo: .init("nestedTag2"), isFlattened: false), memberNodeInfo: .init("nestedTag1"), isFlattened: false)
                 }
             }
             """.trimIndent()
@@ -147,14 +115,10 @@ class TimeStampEncodeGenerationTests {
                     case normal = "notNormalName"
                 }
             
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: ClientRuntime.Key.self)
-                    if let dateTime = dateTime {
-                        try container.encodeTimestamp(dateTime, format: .dateTime, forKey: ClientRuntime.Key("dateTime"))
-                    }
-                    if let normal = normal {
-                        try container.encodeTimestamp(normal, format: .dateTime, forKey: ClientRuntime.Key("notNormalName"))
-                    }
+                static func writingClosure(_ value: XmlTimestampsXmlNameInput?, to writer: SmithyXML.Writer) throws {
+                    guard let value else { writer.detach(); return }
+                    try writer[.init("dateTime")].writeTimestamp(value.dateTime, format: .dateTime)
+                    try writer[.init("notNormalName")].writeTimestamp(value.normal, format: .dateTime)
                 }
             }
             """.trimIndent()

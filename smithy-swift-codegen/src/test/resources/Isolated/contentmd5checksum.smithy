@@ -15,6 +15,7 @@ service RestXml {
     ]
 }
 
+@documentation("This is a very cool operation.")
 @httpChecksumRequired
 @http(uri: "/IdempotencyTokenWithStructure", method: "PUT")
 operation IdempotencyTokenWithStructure {

@@ -7,11 +7,10 @@ import Foundation
 
 public struct Endpoint: Hashable {
     public let path: String
-    public let queryItems: [URLQueryItem]?
+    public let queryItems: [SDKURLQueryItem]?
     public let protocolType: ProtocolType?
     public let host: String
     public let port: Int16
-
     public let headers: Headers?
     public let properties: [String: AnyHashable]
 
@@ -44,7 +43,7 @@ public struct Endpoint: Hashable {
     public init(host: String,
                 path: String = "/",
                 port: Int16 = 443,
-                queryItems: [URLQueryItem]? = nil,
+                queryItems: [SDKURLQueryItem]? = nil,
                 protocolType: ProtocolType? = .https,
                 headers: Headers? = nil,
                 properties: [String: AnyHashable] = [:]) {
@@ -64,21 +63,16 @@ extension Endpoint {
     public var url: URL? {
         var components = URLComponents()
         components.scheme = protocolType?.rawValue
-        components.host = host
+        components.host = host.isEmpty ? nil : host // If host is empty, URL is invalid
         components.percentEncodedPath = path
         components.percentEncodedQuery = queryItemString
-
-        return components.url
+        return (components.host == nil || components.scheme == nil) ? nil : components.url
     }
 
     var queryItemString: String? {
         guard let queryItems = queryItems else { return nil }
         return queryItems.map { queryItem in
-            if let value = queryItem.value {
-                return "\(queryItem.name)=\(value)"
-            } else {
-                return queryItem.name
-            }
+            return [queryItem.name, queryItem.value].compactMap { $0 }.joined(separator: "=")
         }.joined(separator: "&")
     }
 }

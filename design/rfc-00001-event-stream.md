@@ -8,7 +8,7 @@
 
 This proposal covers the client interface to be generated for request and
 responses with event stream payloads. See the Smithy [event stream
-spec](https://awslabs.github.io/smithy/1.0/spec/core/stream-traits.html#event-streams).
+spec](https://smithy.io/2.0/spec/streaming.html#event-streams)
 
 ## Motivation
 

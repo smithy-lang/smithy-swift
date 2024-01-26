@@ -13,9 +13,11 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.PaginatedTrait
 import software.amazon.smithy.swift.codegen.core.CodegenContext
+import software.amazon.smithy.swift.codegen.customtraits.PaginationTruncationMember
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
+import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
@@ -24,7 +26,7 @@ import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 /**
  * Generate paginators for supporting operations.  See
- * https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#paginated-trait for details.
+ * https://smithy.io/2.0/spec/behavior-traits.html#smithy-api-paginated-trait for details.
  */
 class PaginatorGenerator : SwiftIntegration {
     override fun enabledForService(model: Model, settings: SwiftSettings): Boolean =
@@ -55,7 +57,7 @@ class PaginatorGenerator : SwiftIntegration {
         service: ServiceShape,
         paginatedOperation: OperationShape,
         paginationInfo: PaginationInfo,
-        itemDesc: ItemDescriptor?
+        itemDesc: ItemDescriptor?,
     ) {
         val serviceSymbol = ctx.symbolProvider.toSymbol(service)
         val outputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.output)
@@ -72,7 +74,7 @@ class PaginatorGenerator : SwiftIntegration {
             inputSymbol,
             outputSymbol,
             paginationInfo,
-            cursorSymbol
+            cursorSymbol,
         )
 
         // Optionally generate paginator when nested item is specified on the trait.
@@ -83,7 +85,7 @@ class PaginatorGenerator : SwiftIntegration {
                 paginatedOperation,
                 itemDesc,
                 inputSymbol,
-                outputSymbol
+                outputSymbol,
             )
         }
     }
@@ -98,8 +100,10 @@ class PaginatorGenerator : SwiftIntegration {
         inputSymbol: Symbol,
         outputSymbol: Symbol,
         paginationInfo: PaginationInfo,
-        cursorSymbol: Symbol
+        cursorSymbol: Symbol,
     ) {
+        val outputShape = paginationInfo.output
+
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
         val nextMarkerLiteral = paginationInfo.outputTokenMemberPath.joinToString(separator = "?.") {
             it.toLowerCamelCase()
@@ -122,21 +126,26 @@ class PaginatorGenerator : SwiftIntegration {
                 this.write(docBody)
             }
             writer.openBlock(
-                "public func \$LPaginated(input: \$N) -> \$N<\$N, \$N> {", "}",
+                "public func \$LPaginated(input: \$N) -> \$N<\$N, \$N> {",
+                "}",
                 operationShape.toLowerCamelCase(),
                 inputSymbol,
                 ClientRuntimeTypes.Core.PaginatorSequence,
                 inputSymbol,
-                outputSymbol
+                outputSymbol,
             ) {
+                val isTruncatedFlag = outputShape
+                    .members()
+                    .firstOrNull { it.hasTrait(PaginationTruncationMember.ID) }
+                    ?.defaultName()
+
+                val isTruncatedPart = if (isTruncatedFlag != null) ", isTruncatedKey: \\.$isTruncatedFlag" else ""
                 writer.write(
-                    "return \$N<\$N, \$N>(input: input, inputKey: \\\$N.$markerLiteral, outputKey: \\\$N.$nextMarkerLiteral, paginationFunction: self.\$L(input:))",
+                    "return \$N<\$N, \$N>(input: input, inputKey: \\.$markerLiteral, outputKey: \\.$nextMarkerLiteral$isTruncatedPart, paginationFunction: self.\$L(input:))",
                     ClientRuntimeTypes.Core.PaginatorSequence,
                     inputSymbol,
                     outputSymbol,
-                    inputSymbol,
-                    outputSymbol,
-                    operationShape.toLowerCamelCase()
+                    operationShape.toLowerCamelCase(),
                 )
             }
         }
@@ -182,7 +191,7 @@ class PaginatorGenerator : SwiftIntegration {
         writer.write("")
         val itemSymbolShape = itemDesc.itemSymbol.getProperty("shape").getOrNull() as? Shape
 
-        writer.openBlock("extension PaginatorSequence where Input == \$N, Output == \$N {", "}", inputSymbol, outputSymbol) {
+        writer.openBlock("extension PaginatorSequence where OperationStackInput == \$N, OperationStackOutput == \$N {", "}", inputSymbol, outputSymbol) {
             val docBody = """
         This paginator transforms the `AsyncSequence` returned by `${operationShape.toLowerCamelCase()}Paginated`
         to access the nested member `${itemDesc.collectionLiteral}`
@@ -212,7 +221,7 @@ private data class ItemDescriptor(
     val collectionLiteral: String,
     val itemLiteral: String,
     val itemPathLiteral: String,
-    val itemSymbol: Symbol
+    val itemSymbol: Symbol,
 )
 
 /**
@@ -238,6 +247,6 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
         collectionLiteral,
         itemLiteral,
         itemPathLiteral,
-        ctx.symbolProvider.toSymbol(itemMember)
+        ctx.symbolProvider.toSymbol(itemMember),
     )
 }

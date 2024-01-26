@@ -7,6 +7,12 @@ import XCTest
 import AwsCommonRuntimeKit
 import struct Foundation.URLQueryItem
 @testable import ClientRuntime
+// In Linux, Foundation.URLRequest is moved to FoundationNetworking.
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#else
+import struct Foundation.URLRequest
+#endif
 
 class HttpRequestTests: NetworkingTestUtils {
 
@@ -15,29 +21,64 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testSdkHttpRequestToHttpRequest() throws {
-        var headers = Headers(["header-item-name": "header-item-value"])
+        let headers = Headers(["header-item-name": "header-item-value"])
         let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
 
-        let httpBody = HttpBody.data(expectedMockRequestData)
+        let httpBody = ByteStream.data(expectedMockRequestData)
         let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
+        mockHttpRequest.withHeader(name: "foo", value: "bar")
         let httpRequest = try mockHttpRequest.toHttpRequest()
 
         XCTAssertNotNil(httpRequest)
         let headersFromRequest = httpRequest.getHeaders()
         XCTAssertNotNil(headers)
-        for index in 0...(httpRequest.headerCount - 1) {
 
+        // Check headers
+        var additionalHeaderFound = false
+        for index in 0...(httpRequest.headerCount - 1) {
             let header1 = headersFromRequest[index]
             let header2 = mockHttpRequest.headers.headers[index]
+
+            // Check for additional header
+            if header1.name == "foo" {
+                XCTAssertEqual(header1.value, "bar")
+                additionalHeaderFound = true
+            }
+
             XCTAssertEqual(header1.name, header2.name)
             XCTAssertEqual(header1.value, header2.value.joined(separator: ","))
         }
 
+        XCTAssertTrue(additionalHeaderFound, "Additional header 'foo' not found in httpRequest")
         XCTAssertEqual(httpRequest.method, "GET")
 
         if let bodyLength = try httpRequest.body?.length() {
             XCTAssertEqual(Int(bodyLength), expectedMockRequestData.count)
         }
+    }
+
+    func testSdkHttpRequestToURLRequest() async throws {
+        let headers = Headers(["Testname-1": "testvalue-1", "Testname-2": "testvalue-2"])
+        let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
+
+        let httpBody = ByteStream.data(expectedMockRequestData)
+        let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
+        let urlRequest = try await URLRequest(sdkRequest: mockHttpRequest)
+
+        XCTAssertNotNil(urlRequest)
+        guard let headersFromRequest = urlRequest.allHTTPHeaderFields else {
+            XCTFail("Headers in SdkHttpRequest were not successfully converted to headers in URLRequest.")
+            // Compiler doesn't recognize XCTFail as return / exception thrown
+            return
+        }
+
+        // Check URLRequest fields
+        XCTAssertTrue(headersFromRequest.contains { $0.key == "Testname-1" && $0.value == "testvalue-1" })
+        XCTAssertTrue(headersFromRequest.contains { $0.key == "Testname-2" && $0.value == "testvalue-2" })
+        let expectedBody = try await httpBody.readData()
+        XCTAssertEqual(urlRequest.httpBody, expectedBody)
+        XCTAssertEqual(urlRequest.url, endpoint.url)
+        XCTAssertEqual(urlRequest.httpMethod, mockHttpRequest.method.rawValue)
     }
 
     func testCRTHeadersToSdkHeaders() throws {
@@ -55,8 +96,8 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testSdkPathAndQueryItemsToCRTPathAndQueryItems() throws {
-        let queryItem1 = ClientRuntime.URLQueryItem(name: "foo", value: "bar")
-        let queryItem2 = ClientRuntime.URLQueryItem(name: "quz", value: "baz")
+        let queryItem1 = SDKURLQueryItem(name: "foo", value: "bar")
+        let queryItem2 = SDKURLQueryItem(name: "quz", value: "baz")
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
@@ -68,8 +109,8 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testCRTPathAndQueryItemsToSdkPathAndQueryItems() throws {
-        let queryItem1 = ClientRuntime.URLQueryItem(name: "foo", value: "bar")
-        let queryItem2 = ClientRuntime.URLQueryItem(name: "quz", value: "bar")
+        let queryItem1 = SDKURLQueryItem(name: "foo", value: "bar")
+        let queryItem2 = SDKURLQueryItem(name: "quz", value: "bar")
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
@@ -87,19 +128,10 @@ class HttpRequestTests: NetworkingTestUtils {
         XCTAssert(updatedRequest.queryItems?.count == 3)
         XCTAssert(updatedRequest.queryItems?.contains(queryItem1) ?? false)
         XCTAssert(updatedRequest.queryItems?.contains(queryItem2) ?? false)
-        XCTAssert(updatedRequest.queryItems?.contains(ClientRuntime.URLQueryItem(name: "signedthing", value: "signed")) ?? false)
+        XCTAssert(updatedRequest.queryItems?.contains(SDKURLQueryItem(name: "signedthing", value: "signed")) ?? false)
     }
 
-    func testPathInInHttpRequestIsEscapedPerRFC3986() throws {
-        let builder = SdkHttpRequestBuilder()
-            .withHeader(name: "Host", value: "xctest.amazon.com")
-            .withPath("/space /colon:/dollar$/tilde~/dash-/underscore_/period.")
-        let httpRequest = try builder.build().toHttpRequest(escaping: true)
-        let escapedPath = "/space%20/colon%3A/dollar%24/tilde~/dash-/underscore_/period."
-        XCTAssertEqual(httpRequest.path, escapedPath)
-    }
-
-    func testPathInInHttpRequestIsNotEscapedPerRFC3986WhenNotDesired() throws {
+    func testPathInInHttpRequestIsNotAltered() throws {
         let path = "/space /colon:/dollar$/tilde~/dash-/underscore_/period."
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "xctest.amazon.com")
@@ -109,7 +141,9 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testConversionToUrlRequestFailsWithInvalidEndpoint() {
-        // TODO:: When is the endpoint invalid or endpoint.url nil?
-        _ = Endpoint(host: "", path: "", protocolType: nil)
+        // Testing with an invalid endpoint where host is empty,
+        // path is empty, and protocolType is nil.
+        let endpoint = Endpoint(host: "", path: "", protocolType: nil)
+        XCTAssertNil(endpoint.url, "An invalid endpoint should result in a nil URL.")
     }
 }

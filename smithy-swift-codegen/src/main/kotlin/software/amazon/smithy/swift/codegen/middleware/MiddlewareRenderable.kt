@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 /**
  * Interface that allows middleware to be registered and configured with the generated protocol client
@@ -20,5 +21,5 @@ interface MiddlewareRenderable {
 
     val position: MiddlewarePosition
 
-    fun render(writer: SwiftWriter, op: OperationShape, operationStackName: String)
+    fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String)
 }
