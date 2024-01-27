@@ -12,9 +12,9 @@ public struct ExpectedSdkHttpRequest {
     public var headers: Headers?
     public var forbiddenHeaders: [String]?
     public var requiredHeaders: [String]?
-    public let queryItems: [URLQueryItem]?
-    public let forbiddenQueryItems: [URLQueryItem]?
-    public let requiredQueryItems: [URLQueryItem]?
+    public let queryItems: [SDKURLQueryItem]?
+    public let forbiddenQueryItems: [SDKURLQueryItem]?
+    public let requiredQueryItems: [SDKURLQueryItem]?
     public let endpoint: Endpoint
     public let method: HttpMethodType
 
@@ -23,9 +23,9 @@ public struct ExpectedSdkHttpRequest {
                 headers: Headers? = nil,
                 forbiddenHeaders: [String]? = nil,
                 requiredHeaders: [String]? = nil,
-                queryItems: [URLQueryItem]? = nil,
-                forbiddenQueryItems: [URLQueryItem]? = nil,
-                requiredQueryItems: [URLQueryItem]? = nil,
+                queryItems: [SDKURLQueryItem]? = nil,
+                forbiddenQueryItems: [SDKURLQueryItem]? = nil,
+                requiredQueryItems: [SDKURLQueryItem]? = nil,
                 body: ByteStream = ByteStream.noStream) {
         self.method = method
         self.endpoint = endpoint
@@ -50,9 +50,9 @@ public class ExpectedSdkHttpRequestBuilder {
     var host: String = ""
     var path: String = "/"
     var body: ByteStream = .noStream
-    var queryItems = [URLQueryItem]()
-    var forbiddenQueryItems = [URLQueryItem]()
-    var requiredQueryItems = [URLQueryItem]()
+    var queryItems = [SDKURLQueryItem]()
+    var forbiddenQueryItems = [SDKURLQueryItem]()
+    var requiredQueryItems = [SDKURLQueryItem]()
     var port: Int16 = 443
     var protocolType: ProtocolType = .https
 
@@ -109,19 +109,19 @@ public class ExpectedSdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withQueryItem(_ value: URLQueryItem) -> ExpectedSdkHttpRequestBuilder {
+    public func withQueryItem(_ value: SDKURLQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.queryItems.append(value)
         return self
     }
 
     @discardableResult
-    public func withForbiddenQueryItem(_ value: URLQueryItem) -> ExpectedSdkHttpRequestBuilder {
+    public func withForbiddenQueryItem(_ value: SDKURLQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.forbiddenQueryItems.append(value)
         return self
     }
 
     @discardableResult
-    public func withRequiredQueryItem(_ value: URLQueryItem) -> ExpectedSdkHttpRequestBuilder {
+    public func withRequiredQueryItem(_ value: SDKURLQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.requiredQueryItems.append(value)
         return self
     }

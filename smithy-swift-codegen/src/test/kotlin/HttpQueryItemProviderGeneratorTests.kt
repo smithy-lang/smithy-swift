@@ -15,21 +15,19 @@ class HttpQueryItemProviderGeneratorTests {
         val contents =
             getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension QueryIdempotencyTokenAutoFillInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
-                    get throws {
-                        var items = [ClientRuntime.URLQueryItem]()
-                        if let token = token {
-                            let tokenQueryItem = ClientRuntime.URLQueryItem(name: "token".urlPercentEncoding(), value: Swift.String(token).urlPercentEncoding())
-                            items.append(tokenQueryItem)
-                        }
-                        return items
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension QueryIdempotencyTokenAutoFillInput {
+
+    static func queryItemProvider(_ value: QueryIdempotencyTokenAutoFillInput) throws -> [ClientRuntime.SDKURLQueryItem] {
+        var items = [ClientRuntime.SDKURLQueryItem]()
+        if let token = value.token {
+            let tokenQueryItem = ClientRuntime.SDKURLQueryItem(name: "token".urlPercentEncoding(), value: Swift.String(token).urlPercentEncoding())
+            items.append(tokenQueryItem)
+        }
+        return items
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -38,27 +36,25 @@ class HttpQueryItemProviderGeneratorTests {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
         val contents = getModelFileContents("example", "TimestampInputInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension TimestampInputInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
-                    get throws {
-                        var items = [ClientRuntime.URLQueryItem]()
-                        if let queryTimestamp = queryTimestamp {
-                            let queryTimestampQueryItem = ClientRuntime.URLQueryItem(name: "qtime".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryTimestamp)).urlPercentEncoding())
-                            items.append(queryTimestampQueryItem)
-                        }
-                        if let queryTimestampList = queryTimestampList {
-                            queryTimestampList.forEach { queryItemValue in
-                                let queryItem = ClientRuntime.URLQueryItem(name: "qtimeList".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
-                                items.append(queryItem)
-                            }
-                        }
-                        return items
-                    }
-                }
+        val expectedContents = """
+extension TimestampInputInput {
+
+    static func queryItemProvider(_ value: TimestampInputInput) throws -> [ClientRuntime.SDKURLQueryItem] {
+        var items = [ClientRuntime.SDKURLQueryItem]()
+        if let queryTimestamp = value.queryTimestamp {
+            let queryTimestampQueryItem = ClientRuntime.SDKURLQueryItem(name: "qtime".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryTimestamp)).urlPercentEncoding())
+            items.append(queryTimestampQueryItem)
+        }
+        if let queryTimestampList = value.queryTimestampList {
+            queryTimestampList.forEach { queryItemValue in
+                let queryItem = ClientRuntime.SDKURLQueryItem(name: "qtimeList".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
+                items.append(queryItem)
             }
-            """.trimIndent()
+        }
+        return items
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -67,21 +63,19 @@ class HttpQueryItemProviderGeneratorTests {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
         val contents = getModelFileContents("example", "SmokeTestInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension SmokeTestInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
-                    get throws {
-                        var items = [ClientRuntime.URLQueryItem]()
-                        if let query1 = query1 {
-                            let query1QueryItem = ClientRuntime.URLQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
-                            items.append(query1QueryItem)
-                        }
-                        return items
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension SmokeTestInput {
+
+    static func queryItemProvider(_ value: SmokeTestInput) throws -> [ClientRuntime.SDKURLQueryItem] {
+        var items = [ClientRuntime.SDKURLQueryItem]()
+        if let query1 = value.query1 {
+            let query1QueryItem = ClientRuntime.SDKURLQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
+            items.append(query1QueryItem)
+        }
+        return items
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -99,36 +93,34 @@ class HttpQueryItemProviderGeneratorTests {
         val context = setupTests("http-query-params-stringmap.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/example/models/AllQueryStringTypesInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension AllQueryStringTypesInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
-                    get throws {
-                        var items = [ClientRuntime.URLQueryItem]()
-                        if let queryStringList = queryStringList {
-                            queryStringList.forEach { queryItemValue in
-                                let queryItem = ClientRuntime.URLQueryItem(name: "StringList".urlPercentEncoding(), value: Swift.String(queryItemValue).urlPercentEncoding())
-                                items.append(queryItem)
-                            }
-                        }
-                        if let queryString = queryString {
-                            let queryStringQueryItem = ClientRuntime.URLQueryItem(name: "String".urlPercentEncoding(), value: Swift.String(queryString).urlPercentEncoding())
-                            items.append(queryStringQueryItem)
-                        }
-                        if let queryParamsMapOfStrings = queryParamsMapOfStrings {
-                            let currentQueryItemNames = items.map({${'$'}0.name})
-                            queryParamsMapOfStrings.forEach { key0, value0 in
-                                if !currentQueryItemNames.contains(key0) {
-                                    let queryItem = ClientRuntime.URLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
-                                    items.append(queryItem)
-                                }
-                            }
-                        }
-                        return items
-                    }
+        val expectedContents = """
+extension AllQueryStringTypesInput {
+
+    static func queryItemProvider(_ value: AllQueryStringTypesInput) throws -> [ClientRuntime.SDKURLQueryItem] {
+        var items = [ClientRuntime.SDKURLQueryItem]()
+        if let queryStringList = value.queryStringList {
+            queryStringList.forEach { queryItemValue in
+                let queryItem = ClientRuntime.SDKURLQueryItem(name: "StringList".urlPercentEncoding(), value: Swift.String(queryItemValue).urlPercentEncoding())
+                items.append(queryItem)
+            }
+        }
+        if let queryString = value.queryString {
+            let queryStringQueryItem = ClientRuntime.SDKURLQueryItem(name: "String".urlPercentEncoding(), value: Swift.String(queryString).urlPercentEncoding())
+            items.append(queryStringQueryItem)
+        }
+        if let queryParamsMapOfStrings = value.queryParamsMapOfStrings {
+            let currentQueryItemNames = items.map({$0.name})
+            queryParamsMapOfStrings.forEach { key0, value0 in
+                if !currentQueryItemNames.contains(key0) {
+                    let queryItem = ClientRuntime.SDKURLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
+                    items.append(queryItem)
                 }
             }
-            """.trimIndent()
+        }
+        return items
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -137,32 +129,30 @@ class HttpQueryItemProviderGeneratorTests {
         val context = setupTests("http-query-params-stringlistmap.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/example/models/QueryParamsAsStringListMapInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension QueryParamsAsStringListMapInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
-                    get throws {
-                        var items = [ClientRuntime.URLQueryItem]()
-                        if let qux = qux {
-                            let quxQueryItem = ClientRuntime.URLQueryItem(name: "corge".urlPercentEncoding(), value: Swift.String(qux).urlPercentEncoding())
-                            items.append(quxQueryItem)
-                        }
-                        if let foo = foo {
-                            let currentQueryItemNames = items.map({${'$'}0.name})
-                            foo.forEach { key0, value0 in
-                                if !currentQueryItemNames.contains(key0) {
-                                    value0.forEach { value1 in
-                                        let queryItem = ClientRuntime.URLQueryItem(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())
-                                        items.append(queryItem)
-                                    }
-                                }
-                            }
-                        }
-                        return items
+        val expectedContents = """
+extension QueryParamsAsStringListMapInput {
+
+    static func queryItemProvider(_ value: QueryParamsAsStringListMapInput) throws -> [ClientRuntime.SDKURLQueryItem] {
+        var items = [ClientRuntime.SDKURLQueryItem]()
+        if let qux = value.qux {
+            let quxQueryItem = ClientRuntime.SDKURLQueryItem(name: "corge".urlPercentEncoding(), value: Swift.String(qux).urlPercentEncoding())
+            items.append(quxQueryItem)
+        }
+        if let foo = value.foo {
+            let currentQueryItemNames = items.map({$0.name})
+            foo.forEach { key0, value0 in
+                if !currentQueryItemNames.contains(key0) {
+                    value0.forEach { value1 in
+                        let queryItem = ClientRuntime.SDKURLQueryItem(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())
+                        items.append(queryItem)
                     }
                 }
             }
-            """.trimIndent()
+        }
+        return items
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -171,30 +161,28 @@ class HttpQueryItemProviderGeneratorTests {
         val context = setupTests("http-query-params-precedence.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/example/models/QueryPrecedenceInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension QueryPrecedenceInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
-                    get throws {
-                        var items = [ClientRuntime.URLQueryItem]()
-                        if let foo = foo {
-                            let fooQueryItem = ClientRuntime.URLQueryItem(name: "bar".urlPercentEncoding(), value: Swift.String(foo).urlPercentEncoding())
-                            items.append(fooQueryItem)
-                        }
-                        if let baz = baz {
-                            let currentQueryItemNames = items.map({${'$'}0.name})
-                            baz.forEach { key0, value0 in
-                                if !currentQueryItemNames.contains(key0) {
-                                    let queryItem = ClientRuntime.URLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
-                                    items.append(queryItem)
-                                }
-                            }
-                        }
-                        return items
-                    }
+        val expectedContents = """
+extension QueryPrecedenceInput {
+
+    static func queryItemProvider(_ value: QueryPrecedenceInput) throws -> [ClientRuntime.SDKURLQueryItem] {
+        var items = [ClientRuntime.SDKURLQueryItem]()
+        if let foo = value.foo {
+            let fooQueryItem = ClientRuntime.SDKURLQueryItem(name: "bar".urlPercentEncoding(), value: Swift.String(foo).urlPercentEncoding())
+            items.append(fooQueryItem)
+        }
+        if let baz = value.baz {
+            let currentQueryItemNames = items.map({${'$'}0.name})
+            baz.forEach { key0, value0 in
+                if !currentQueryItemNames.contains(key0) {
+                    let queryItem = ClientRuntime.SDKURLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
+                    items.append(queryItem)
                 }
             }
-            """.trimIndent()
+        }
+        return items
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -203,37 +191,35 @@ class HttpQueryItemProviderGeneratorTests {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
         val contents = getModelFileContents("example", "RequiredHttpFieldsInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension RequiredHttpFieldsInput: ClientRuntime.QueryItemProvider {
-                public var queryItems: [ClientRuntime.URLQueryItem] {
-                    get throws {
-                        var items = [ClientRuntime.URLQueryItem]()
-                        guard let query1 = query1 else {
-                            let message = "Creating a URL Query Item failed. query1 is required and must not be nil."
-                            throw ClientRuntime.ClientError.unknownError(message)
-                        }
-                        let query1QueryItem = ClientRuntime.URLQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
-                        items.append(query1QueryItem)
-                        guard let query2 = query2 else {
-                            let message = "Creating a URL Query Item failed. query2 is required and must not be nil."
-                            throw ClientRuntime.ClientError.unknownError(message)
-                        }
-                        query2.forEach { queryItemValue in
-                            let queryItem = ClientRuntime.URLQueryItem(name: "Query2".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
-                            items.append(queryItem)
-                        }
-                        guard let query3 = query3 else {
-                            let message = "Creating a URL Query Item failed. query3 is required and must not be nil."
-                            throw ClientRuntime.ClientError.unknownError(message)
-                        }
-                        let query3QueryItem = ClientRuntime.URLQueryItem(name: "Query3".urlPercentEncoding(), value: Swift.String(query3).urlPercentEncoding())
-                        items.append(query3QueryItem)
-                        return items
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension RequiredHttpFieldsInput {
+
+    static func queryItemProvider(_ value: RequiredHttpFieldsInput) throws -> [ClientRuntime.SDKURLQueryItem] {
+        var items = [ClientRuntime.SDKURLQueryItem]()
+        guard let query1 = value.query1 else {
+            let message = "Creating a URL Query Item failed. query1 is required and must not be nil."
+            throw ClientRuntime.ClientError.unknownError(message)
+        }
+        let query1QueryItem = ClientRuntime.SDKURLQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
+        items.append(query1QueryItem)
+        guard let query2 = value.query2 else {
+            let message = "Creating a URL Query Item failed. query2 is required and must not be nil."
+            throw ClientRuntime.ClientError.unknownError(message)
+        }
+        query2.forEach { queryItemValue in
+            let queryItem = ClientRuntime.SDKURLQueryItem(name: "Query2".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
+            items.append(queryItem)
+        }
+        guard let query3 = value.query3 else {
+            let message = "Creating a URL Query Item failed. query3 is required and must not be nil."
+            throw ClientRuntime.ClientError.unknownError(message)
+        }
+        let query3QueryItem = ClientRuntime.SDKURLQueryItem(name: "Query3".urlPercentEncoding(), value: Swift.String(query3).urlPercentEncoding())
+        items.append(query3QueryItem)
+        return items
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
