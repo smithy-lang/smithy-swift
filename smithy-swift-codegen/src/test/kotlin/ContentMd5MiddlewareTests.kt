@@ -7,8 +7,7 @@ class ContentMd5MiddlewareTests {
         val context = setupTests("Isolated/contentmd5checksum.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/RestXmlProtocolClient.swift")
         val expectedContents = """
-    public func idempotencyTokenWithStructure(input: IdempotencyTokenWithStructureInput) async throws -> IdempotencyTokenWithStructureOutput
-    {
+    public func idempotencyTokenWithStructure(input: IdempotencyTokenWithStructureInput) async throws -> IdempotencyTokenWithStructureOutput {
         let context = ClientRuntime.HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .withDecoder(value: decoder)

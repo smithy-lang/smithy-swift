@@ -48,16 +48,23 @@ open class HttpProtocolClientGenerator(
         val operations = topDownIndex.getContainedOperations(serviceShape).sortedBy { it.toUpperCamelCase() }
         val operationsIndex = OperationIndex.of(model)
 
-        writer.openBlock("extension ${serviceSymbol.name}: ${serviceSymbol.name}Protocol {", "}") {
+        writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
             operations.forEach {
                 ServiceGenerator.renderOperationDefinition(model, serviceShape, symbolProvider, writer, operationsIndex, it)
-                writer.openBlock("{", "}") {
+                writer.openBlock(" {", "}") {
                     val operationStackName = "operation"
                     val generator = MiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, httpProtocolCustomizable, operationMiddleware, operationStackName)
                     generator.render(serviceShape, it) { writer, labelMemberName ->
-                        writer.write("throw \$N(\"uri component $labelMemberName unexpectedly nil\")", ClientRuntimeTypes.Core.UnknownClientError)
+                        writer.write(
+                            "throw \$N(\"uri component \$L unexpectedly nil\")",
+                            ClientRuntimeTypes.Core.UnknownClientError,
+                            labelMemberName,
+                        )
                     }
-                    writer.write("let result = try await $operationStackName.handleMiddleware(context: context, input: input, next: client.getHandler())")
+                    writer.write(
+                        "let result = try await \$L.handleMiddleware(context: context, input: input, next: client.getHandler())",
+                        operationStackName,
+                    )
                     writer.write("return result")
                 }
                 writer.write("")
