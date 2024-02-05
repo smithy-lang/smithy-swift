@@ -776,10 +776,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 throw serviceError
             })
         }
-<<<<<<< HEAD
     }
-=======
->>>>>>> main
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
