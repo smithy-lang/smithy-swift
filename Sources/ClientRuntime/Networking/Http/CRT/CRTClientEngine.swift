@@ -45,6 +45,9 @@ public class CRTClientEngine: HTTPClient {
             self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
             self.logger = SwiftLogger(label: "SerialExecutor")
             self.connectTimeoutMs = config.connectTimeoutMs
+            if (config.logLevel != .none) {
+                self.sharedDefaultIO.logger = Logger(pipe: stdout, level: config.logLevel)
+            }
         }
 
         func getOrCreateConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {

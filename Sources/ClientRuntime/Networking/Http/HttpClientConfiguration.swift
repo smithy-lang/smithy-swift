@@ -6,6 +6,7 @@
 //
 
 import struct Foundation.TimeInterval
+import enum AwsCommonRuntimeKit.LogLevel
 
 public class HttpClientConfiguration {
 
@@ -18,6 +19,12 @@ public class HttpClientConfiguration {
     ///
     /// If none is provided, defaults to no extra headers.
     public var defaultHeaders: Headers
+
+    /// The log level to use for AWS-provided HTTP client on Linux.
+    /// Only effective if no custom HTTP client has been provided.
+    ///
+    /// If none is provided, defaults to `LogLevel.none` log level.
+    public var customLogLevel: LogLevel
 
     // add any other properties here you want to give the service operations
     // control over to be mapped to the Http Client
@@ -38,10 +45,12 @@ public class HttpClientConfiguration {
     public init(
         connectTimeout: TimeInterval? = nil,
         protocolType: ProtocolType = .https,
-        defaultHeaders: Headers = Headers()
+        defaultHeaders: Headers = Headers(),
+        customLogLevel: LogLevel = .none
     ) {
         self.protocolType = protocolType
         self.defaultHeaders = defaultHeaders
         self.connectTimeout = connectTimeout
+        self.customLogLevel = customLogLevel
     }
 }
