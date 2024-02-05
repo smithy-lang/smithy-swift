@@ -185,10 +185,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     }
 
     override fun serviceShape(shape: ServiceShape): Void? {
-        writers.useShapeWriter(shape) { writer: SwiftWriter ->
-            ServiceGenerator(settings, model, symbolProvider, writer, writers, protocolGenerator, protocolContext).render()
-            ServiceNamespaceGenerator(settings, model, symbolProvider, writer).render()
-        }
+        // This used to generate the client protocol.  No longer used.
         return null
     }
 }
