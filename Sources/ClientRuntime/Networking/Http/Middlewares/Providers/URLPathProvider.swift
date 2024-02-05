@@ -5,6 +5,4 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public protocol URLPathProvider {
-    var urlPath: String? { get }
-}
+public typealias URLPathProvider<T> = (T) -> String?

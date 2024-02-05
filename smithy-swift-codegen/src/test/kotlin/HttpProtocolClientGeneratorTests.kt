@@ -2,12 +2,9 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-
 class HttpProtocolClientGeneratorTests {
-
     @Test
     fun `it renders client initialization block`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
@@ -75,7 +72,6 @@ class HttpProtocolClientGeneratorTests {
             """.trimIndent()
         )
     }
-
     @Test
     fun `it renders host prefix with label in context correctly`() {
         val context = setupTests("host-prefix-operation.smithy", "com.test#Example")
@@ -93,7 +89,6 @@ class HttpProtocolClientGeneratorTests {
         """
         contents.shouldContainOnlyOnce(expectedFragment)
     }
-
     @Test
     fun `it renders operation implementations in extension`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
@@ -101,7 +96,6 @@ class HttpProtocolClientGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce("extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {")
     }
-
     @Test
     fun `it renders an operation body`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
@@ -125,7 +119,7 @@ class HttpProtocolClientGeneratorTests {
                       .build()
         var operation = ClientRuntime.OperationStack<AllocateWidgetInput, AllocateWidgetOutput>(id: "allocateWidget")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.IdempotencyTokenMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(keyPath: \.clientToken))
-        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<AllocateWidgetInput, AllocateWidgetOutput>())
+        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(AllocateWidgetInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutput>())
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<AllocateWidgetOutput, AllocateWidgetOutputError>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(contentType: "application/json"))
@@ -141,7 +135,6 @@ class HttpProtocolClientGeneratorTests {
 """
         contents.shouldContainOnlyOnce(expected)
     }
-
     @Test
     fun `ContentLengthMiddleware generates correctly with requiresLength false and unsignedPayload true`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
@@ -164,7 +157,7 @@ class HttpProtocolClientGeneratorTests {
                       .withUnsignedPayloadTrait(value: true)
                       .build()
         var operation = ClientRuntime.OperationStack<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(id: "unsignedFooBlobStream")
-        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>())
+        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(UnsignedFooBlobStreamInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>())
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<UnsignedFooBlobStreamOutput, UnsignedFooBlobStreamOutputError>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(contentType: "application/json"))
@@ -180,7 +173,6 @@ class HttpProtocolClientGeneratorTests {
 """
         contents.shouldContainOnlyOnce(expected)
     }
-
     @Test
     fun `ContentLengthMiddleware generates correctly with requiresLength true and unsignedPayload false`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
@@ -203,7 +195,7 @@ class HttpProtocolClientGeneratorTests {
                       .withUnsignedPayloadTrait(value: true)
                       .build()
         var operation = ClientRuntime.OperationStack<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(id: "unsignedFooBlobStreamWithLength")
-        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>())
+        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(UnsignedFooBlobStreamWithLengthInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>())
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(contentType: "application/octet-stream"))
@@ -219,7 +211,6 @@ class HttpProtocolClientGeneratorTests {
 """
         contents.shouldContainOnlyOnce(expected)
     }
-
     @Test
     fun `ContentLengthMiddleware generates correctly with requiresLength true and unsignedPayload true`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
@@ -242,7 +233,7 @@ class HttpProtocolClientGeneratorTests {
                       .withUnsignedPayloadTrait(value: true)
                       .build()
         var operation = ClientRuntime.OperationStack<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(id: "unsignedFooBlobStreamWithLength")
-        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>())
+        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(UnsignedFooBlobStreamWithLengthInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>())
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<UnsignedFooBlobStreamWithLengthOutput, UnsignedFooBlobStreamWithLengthOutputError>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(contentType: "application/octet-stream"))
@@ -258,7 +249,6 @@ class HttpProtocolClientGeneratorTests {
 """
         contents.shouldContainOnlyOnce(expected)
     }
-
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol")
