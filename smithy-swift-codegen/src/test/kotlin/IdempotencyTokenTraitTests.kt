@@ -1,6 +1,5 @@
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-
 class IdempotencyTokenTraitTests {
     @Test
     fun `generates idempotent middleware`() {
