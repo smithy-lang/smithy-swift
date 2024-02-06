@@ -5,6 +5,4 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public protocol HeaderProvider {
-    var headers: Headers { get }
-}
+public typealias HeaderProvider<T> = (T) -> Headers

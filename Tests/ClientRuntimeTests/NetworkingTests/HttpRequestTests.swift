@@ -96,8 +96,8 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testSdkPathAndQueryItemsToCRTPathAndQueryItems() throws {
-        let queryItem1 = ClientRuntime.URLQueryItem(name: "foo", value: "bar")
-        let queryItem2 = ClientRuntime.URLQueryItem(name: "quz", value: "baz")
+        let queryItem1 = SDKURLQueryItem(name: "foo", value: "bar")
+        let queryItem2 = SDKURLQueryItem(name: "quz", value: "baz")
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
@@ -109,8 +109,8 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testCRTPathAndQueryItemsToSdkPathAndQueryItems() throws {
-        let queryItem1 = ClientRuntime.URLQueryItem(name: "foo", value: "bar")
-        let queryItem2 = ClientRuntime.URLQueryItem(name: "quz", value: "bar")
+        let queryItem1 = SDKURLQueryItem(name: "foo", value: "bar")
+        let queryItem2 = SDKURLQueryItem(name: "quz", value: "bar")
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
@@ -128,7 +128,7 @@ class HttpRequestTests: NetworkingTestUtils {
         XCTAssert(updatedRequest.queryItems?.count == 3)
         XCTAssert(updatedRequest.queryItems?.contains(queryItem1) ?? false)
         XCTAssert(updatedRequest.queryItems?.contains(queryItem2) ?? false)
-        XCTAssert(updatedRequest.queryItems?.contains(ClientRuntime.URLQueryItem(name: "signedthing", value: "signed")) ?? false)
+        XCTAssert(updatedRequest.queryItems?.contains(SDKURLQueryItem(name: "signedthing", value: "signed")) ?? false)
     }
 
     func testPathInInHttpRequestIsNotAltered() throws {

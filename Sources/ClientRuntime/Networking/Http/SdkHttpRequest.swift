@@ -27,7 +27,7 @@ public class SdkHttpRequest {
     }
     public var path: String { endpoint.path }
     public var host: String { endpoint.host }
-    public var queryItems: [URLQueryItem]? { endpoint.queryItems }
+    public var queryItems: [SDKURLQueryItem]? { endpoint.queryItems }
 
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
@@ -146,8 +146,8 @@ extension SdkHttpRequestBuilder {
         host = originalRequest.host
         if let crtRequest = crtRequest as? HTTPRequest, let components = URLComponents(string: crtRequest.path) {
             path = components.percentEncodedPath
-            queryItems = components.percentEncodedQueryItems?.map { URLQueryItem(name: $0.name, value: $0.value) }
-                ?? [URLQueryItem]()
+            queryItems = components.percentEncodedQueryItems?.map { SDKURLQueryItem(name: $0.name, value: $0.value) }
+                ?? [SDKURLQueryItem]()
         } else if crtRequest as? HTTP2Request != nil {
             assertionFailure("HTTP2Request not supported")
         } else {
@@ -170,11 +170,11 @@ public class SdkHttpRequestBuilder {
     var host: String = ""
     var path: String = "/"
     var body: ByteStream = .noStream
-    var queryItems: [URLQueryItem]?
+    var queryItems: [SDKURLQueryItem]?
     var port: Int16 = 443
     var protocolType: ProtocolType = .https
 
-    public var currentQueryItems: [URLQueryItem]? {
+    public var currentQueryItems: [SDKURLQueryItem]? {
         return queryItems
     }
 
@@ -225,14 +225,14 @@ public class SdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withQueryItems(_ value: [URLQueryItem]) -> SdkHttpRequestBuilder {
+    public func withQueryItems(_ value: [SDKURLQueryItem]) -> SdkHttpRequestBuilder {
         self.queryItems = self.queryItems ?? []
         self.queryItems?.append(contentsOf: value)
         return self
     }
 
     @discardableResult
-    public func withQueryItem(_ value: URLQueryItem) -> SdkHttpRequestBuilder {
+    public func withQueryItem(_ value: SDKURLQueryItem) -> SdkHttpRequestBuilder {
         withQueryItems([value])
     }
 

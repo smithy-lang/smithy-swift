@@ -25,17 +25,12 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider {
             hint = TimeInterval(retryAfterString)
         }
         if let modeledError = error as? ModeledError {
-            switch type(of: modeledError).isThrottling {
-            case true:
-                return .init(errorType: .throttling, retryAfterHint: hint, isTimeout: false)
-            case false:
-                let errorType = type(of: modeledError).fault.retryErrorType
-                return .init(errorType: errorType, retryAfterHint: hint, isTimeout: false)
-            }
-        } else if let httpError = error as? HTTPError {
-            if retryableStatusCodes.contains(httpError.httpResponse.statusCode) {
-                return .init(errorType: .serverError, retryAfterHint: hint, isTimeout: false)
-            }
+            let type = type(of: modeledError)
+            guard type.isRetryable else { return nil }
+            let errorType: RetryErrorType = type.isThrottling ? .throttling : type.fault.retryErrorType
+            return .init(errorType: errorType, retryAfterHint: hint, isTimeout: false)
+        } else if let code = (error as? HTTPError)?.httpResponse.statusCode, retryableStatusCodes.contains(code) {
+            return .init(errorType: .serverError, retryAfterHint: hint, isTimeout: false)
         }
         return nil
     }

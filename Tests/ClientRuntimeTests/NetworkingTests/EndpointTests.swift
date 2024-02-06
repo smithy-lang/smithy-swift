@@ -15,9 +15,9 @@ class EndpointTests: XCTestCase {
     func test_queryItems_setsQueryItemsFromURLInOrder() throws {
         let endpoint = try Endpoint(url: url)
         let expectedQueryItems = [
-            ClientRuntime.URLQueryItem(name: "abc", value: "def"),
-            URLQueryItem(name: "ghi", value: "jkl"),
-            URLQueryItem(name: "mno", value: "pqr")
+            SDKURLQueryItem(name: "abc", value: "def"),
+            SDKURLQueryItem(name: "ghi", value: "jkl"),
+            SDKURLQueryItem(name: "mno", value: "pqr")
         ]
         XCTAssertEqual(endpoint.queryItems, expectedQueryItems)
     }

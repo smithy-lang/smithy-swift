@@ -21,14 +21,14 @@ extension HTTP2Stream {
     func write(body: ByteStream) async throws {
         switch body {
         case .data(let data):
-            try await writeData(data: data ?? .init(), endOfStream: true)
+            try await writeChunk(chunk: data ?? .init(), endOfStream: true)
         case .stream(let stream):
             while let data = try await stream.readAsync(upToCount: manualWriteBufferSize) {
-                try await writeData(data: data, endOfStream: false)
+                try await writeChunk(chunk: data, endOfStream: false)
             }
-            try await writeData(data: .init(), endOfStream: true)
+            try await writeChunk(chunk: .init(), endOfStream: true)
         case .noStream:
-            try await writeData(data: .init(), endOfStream: true)
+            try await writeChunk(chunk: .init(), endOfStream: true)
         }
     }
 }
