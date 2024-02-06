@@ -34,7 +34,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         guard let logger = context.getLogger() else {
             throw ClientError.unknownError("No logger found!")
         }
-        
+
         // Exit if validation should not be performed
         if (!validationMode) {
             logger.info("Checksum validation should not be performed! Skipping workflow...")
@@ -54,11 +54,11 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         }
         
         let fullChecksumHeader = "x-amz-checksum-" + checksumHeader
-        
+
         // let the user know which checksum will be validated
         logger.debug("Validating checksum from \(fullChecksumHeader)")
         context.attributes.set(key: AttributeKey<String>(name: "ChecksumHeaderValidated"), value: fullChecksumHeader)
-        
+
         let checksumString = checksumHeader.removePrefix("x-amz-checksum-")
         guard let responseChecksum = HashFunction.from(string: checksumString) else {
             throw ClientError.dataNotFound("Checksum found in header is not supported!")
