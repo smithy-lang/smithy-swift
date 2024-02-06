@@ -5,10 +5,10 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
 
     public let id: String = "FlexibleChecksumsRequestMiddleware"
 
-    let checksumAlgorithms: [String]
+    let checksumAlgorithm: String?
 
-    public init(checksumAlgorithms: [String]) {
-        self.checksumAlgorithms = checksumAlgorithms
+    public init(checksumAlgorithm: String?) {
+        self.checksumAlgorithm = checksumAlgorithm
     }
 
     public func handle<H>(context: Context,
@@ -24,17 +24,18 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             throw ClientError.unknownError("No logger found!")
         }
 
-        // Get supported list of checksums in priority order
-        let validationList = HashFunction.fromList(checksumAlgorithms).getPriorityOrderValidationList()
+        guard let checksumString = checksumAlgorithm else {
+            logger.info("No checksum provided! Skipping flexible checksums workflow...")
+            return try await next.handle(context: context, input: input)
+        }
         
-        // Skip flexible checksums workflow if no valid checksum algorithms are provided
-        guard let checksumAlgorithm: HashFunction = validationList.first else {
-            logger.error("Found no supported checksums! Skipping flexible checksums workflow...")
+        guard let checksumHashFunction = HashFunction.from(string: checksumString) else {
+            logger.info("Found no supported checksums! Skipping flexible checksums workflow...")
             return try await next.handle(context: context, input: input)
         }
         
         // Determine the header name
-        let headerName = "x-amz-checksum-\(checksumAlgorithm.toString())"
+        let headerName = "x-amz-checksum-\(checksumHashFunction)"
         logger.debug("Resolved checksum header name: \(headerName)")
                 
         // Get the request
@@ -57,7 +58,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
                 logger.debug("Calculating checksum")
             }
             
-            let checksum = try checksumAlgorithm.computeHash(of: data).toBase64String()
+            let checksum = try checksumHashFunction.computeHash(of: data).toBase64String()
             
             request.updateHeader(name: headerName, value: [checksum])
         }
