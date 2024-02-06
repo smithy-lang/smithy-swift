@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middleware {
-    
+
     public let id: String = "FlexibleChecksumsResponseMiddleware"
-    
+
     // The priority to validate response checksums, if multiple are present
     let CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: [String] = [
         HashFunction.crc32c,
@@ -36,7 +36,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         }
 
         // Exit if validation should not be performed
-        if (!validationMode) {
+        if !validationMode {
             logger.info("Checksum validation should not be performed! Skipping workflow...")
             return try await next.handle(context: context, input: input)
         }
@@ -47,12 +47,16 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
         // Determine if any checksum headers are present
         logger.debug("HEADERS: \(httpResponse.headers)")
-        let _checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST.first { httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil }
+        let _checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST.first {
+            httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil
+        }
         guard let checksumHeader = _checksumHeader else {
-            logger.warn("User requested checksum validation, but the response headers did not contain any valid checksums")
+            logger.warn(
+                "User requested checksum validation, but the response headers did not contain any valid checksums"
+            )
             return try await next.handle(context: context, input: input)
         }
-        
+
         let fullChecksumHeader = "x-amz-checksum-" + checksumHeader
 
         // let the user know which checksum will be validated
@@ -77,8 +81,10 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
             
             let actualChecksum = calculatedChecksum.toBase64String()
         
-            if (expectedChecksum != actualChecksum) {
-                throw ChecksumMismatchException.message("Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)")
+            if expectedChecksum != actualChecksum {
+                throw ChecksumMismatchException.message(
+                    "Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)"
+                )
             }
         }
 

@@ -18,7 +18,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context {
-        
+
         // Initialize logger
         guard let logger = context.getLogger() else {
             throw ClientError.unknownError("No logger found!")
@@ -54,7 +54,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
                 throw ClientError.dataNotFound("Cannot calculate checksum of empty body!")
             }
 
-            if (input.builder.headers.value(for: headerName) == nil) {
+            if input.builder.headers.value(for: headerName) == nil {
                 logger.debug("Calculating checksum")
             }
 

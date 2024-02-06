@@ -118,13 +118,15 @@ extension UInt32 {
     func toBase64EncodedString() -> String {
         // Create a Data instance from the UInt32 value
         var value = self
-        let data = Data(bytes: &value, count: MemoryLayout<UInt32>.size)
+        var data = Data(bytes: &value, count: MemoryLayout<UInt32>.size)
 
         // Reverse bytes if on a little-endian architecture
-        let endianAdjustedData = Data(data.reversed())
+        if self == self.littleEndian {
+            data = Data(data.reversed())
+        }
 
         // Base64 encode the data
-        return endianAdjustedData.base64EncodedString()
+        return data.base64EncodedString()
     }
 }
 
