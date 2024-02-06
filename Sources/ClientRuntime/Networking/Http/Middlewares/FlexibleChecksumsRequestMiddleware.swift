@@ -28,38 +28,38 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             logger.info("No checksum provided! Skipping flexible checksums workflow...")
             return try await next.handle(context: context, input: input)
         }
-        
+
         guard let checksumHashFunction = HashFunction.from(string: checksumString) else {
             logger.info("Found no supported checksums! Skipping flexible checksums workflow...")
             return try await next.handle(context: context, input: input)
         }
-        
+
         // Determine the header name
         let headerName = "x-amz-checksum-\(checksumHashFunction)"
         logger.debug("Resolved checksum header name: \(headerName)")
-                
+
         // Get the request
         let request = input.builder
-        
+
         func handleNormalPayload(_ data: Data?) throws {
-            
+
             // Check if any checksum header is already provided by the user
             let checksumHeaderPrefix = "x-amz-checksum-"
             if request.headers.headers.contains(where: { $0.name.lowercased().starts(with: checksumHeaderPrefix) }) {
                 logger.debug("Checksum header already provided by the user. Skipping calculation.")
                 return
             }
-            
+
             guard let data else {
                 throw ClientError.dataNotFound("Cannot calculate checksum of empty body!")
             }
-            
+
             if (input.builder.headers.value(for: headerName) == nil) {
                 logger.debug("Calculating checksum")
             }
-            
+
             let checksum = try checksumHashFunction.computeHash(of: data).toBase64String()
-            
+
             request.updateHeader(name: headerName, value: [checksum])
         }
 
@@ -67,7 +67,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             logger.error("Stream payloads are not yet supported with flexible checksums!")
             return
         }
-        
+
         // Handle body vs handle stream
         switch request.body {
         case .data(let data):
