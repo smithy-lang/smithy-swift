@@ -43,12 +43,12 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
         // Get the response
         let response = try await next.handle(context: context, input: input)
-        
+        let httpResponse = response.httpResponse
+
         // Determine if any checksum headers are present
-        logger.debug("HEADERS: \(response.httpResponse.headers)")
-        guard let checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST.first {
-            response.httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil
-        } else {
+        logger.debug("HEADERS: \(httpResponse.headers)")
+        let _checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST.first { httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil }
+        guard let checksumHeader = _checksumHeader else {
             logger.warn("User requested checksum validation, but the response headers did not contain any valid checksums")
             return try await next.handle(context: context, input: input)
         }
@@ -60,20 +60,20 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         context.attributes.set(key: AttributeKey<String>(name: "ChecksumHeaderValidated"), value: fullChecksumHeader)
         
         let checksumString = checksumHeader.removePrefix("x-amz-checksum-")
-        let responseChecksum = HashFunction.from(string: checksumString)
-        guard let expectedChecksum = response.httpResponse.headers.value(for: fullChecksumHeader) else {
+        guard let responseChecksum = HashFunction.from(string: checksumString) else {
+            throw ClientError.dataNotFound("Checksum found in header is not supported!")
+        }
+        guard let expectedChecksum = httpResponse.headers.value(for: fullChecksumHeader) else {
             throw ClientError.dataNotFound("Could not determine the expected checksum!")
         }
-        
+
         func handleNormalPayload(_ data: Data?) throws {
             
             guard let data else {
                 throw ClientError.dataNotFound("Cannot calculate checksum of empty body!")
             }
             
-            guard let calculatedChecksum = try responseChecksum?.computeHash(of: data) else {
-                throw ClientError.dataNotFound("Could not calculate checksum of the response body!")
-            }
+            let calculatedChecksum = try responseChecksum.computeHash(of: data)
             
             let actualChecksum = calculatedChecksum.toBase64String()
         
