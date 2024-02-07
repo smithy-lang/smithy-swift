@@ -25,7 +25,7 @@ public final class SDKDefaultIO {
 
     private init() {
         CommonRuntimeKit.initialize()
-        self.logger = Logger(pipe: stdout, level: .fatal)
+        self.logger = Logger(pipe: stdout, level: .none)
 
         do {
             self.eventLoopGroup = try EventLoopGroup(threadCount: 0)

@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import enum AwsCommonRuntimeKit.LogLevel
-
 struct CRTClientEngineConfig {
 
     /// Max connections the manager can contain per endpoint
@@ -22,10 +20,6 @@ struct CRTClientEngineConfig {
     /// Timeout in MS for connections
     let connectTimeoutMs: UInt32?
 
-    /// The log level to use for CRT client engine.
-    /// If none is provided, defaults to `LogLevel.none`.
-    let logLevel: LogLevel
-
     public init(
         maxConnectionsPerEndpoint: Int = 50,
         windowSize: Int = 16 * 1024 * 1024,
@@ -37,6 +31,5 @@ struct CRTClientEngineConfig {
         self.windowSize = windowSize
         self.verifyPeer = verifyPeer
         self.connectTimeoutMs = connectTimeoutMs
-        self.logLevel = logLevel
     }
 }
