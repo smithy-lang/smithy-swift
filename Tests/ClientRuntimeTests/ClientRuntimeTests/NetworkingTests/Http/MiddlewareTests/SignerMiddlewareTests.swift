@@ -27,7 +27,7 @@ class SignerMiddlewareTests: XCTestCase {
         } catch ClientError.authError(let message) {
             XCTAssertEqual(message, "Auth scheme needed by signer middleware was not saved properly.")
         } catch {
-            XCTFail("Expected exception was not thrown.")
+            XCTFail("Unexpected error thrown: \(error.localizedDescription)")
         }
     }
     
@@ -45,7 +45,7 @@ class SignerMiddlewareTests: XCTestCase {
         } catch ClientError.authError(let message) {
             XCTAssertEqual(message, "Identity needed by signer middleware was not properly saved into loaded auth scheme.")
         } catch {
-            XCTFail("Expected exception was not thrown.")
+            XCTFail("Unexpected error thrown: \(error.localizedDescription)")
         }
     }
     
@@ -63,7 +63,7 @@ class SignerMiddlewareTests: XCTestCase {
         } catch ClientError.authError(let message) {
             XCTAssertEqual(message, "Signer needed by signer middleware was not properly saved into loaded auth scheme.")
         } catch {
-            XCTFail("Expected exception was not thrown.")
+            XCTFail("Unexpected error thrown: \(error.localizedDescription)")
         }
     }
     
@@ -81,7 +81,7 @@ class SignerMiddlewareTests: XCTestCase {
         } catch ClientError.authError(let message) {
             XCTAssertEqual(message, "Signing properties object needed by signer middleware was not properly saved into loaded auth scheme.")
         } catch {
-            XCTFail("Expected exception was not thrown.")
+            XCTFail("Unexpected error thrown: \(error.localizedDescription)")
         }
     }
     

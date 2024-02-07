@@ -29,9 +29,10 @@ class AuthSchemeMiddlewareTests: XCTestCase {
         do {
             try await AssertSelectedAuthSchemeMatches(builtContext: contextBuilder.build(), expectedAuthScheme: "")
         } catch ClientError.authError(let message) {
-            XCTAssertEqual(message, "No auth scheme resolver has been configured on the service.")
+            let expected = "No auth scheme resolver has been configured on the service."
+            XCTAssertEqual(message, expected)
         } catch {
-            XCTFail("Expected exception was not thrown.")
+            XCTFail("Unexpected error thrown: \(error.localizedDescription)")
         }
     }
 
@@ -41,10 +42,10 @@ class AuthSchemeMiddlewareTests: XCTestCase {
         do {
             try await AssertSelectedAuthSchemeMatches(builtContext: contextBuilder.build(), expectedAuthScheme: "")
         } catch ClientError.authError(let message) {
-            XCTAssertEqual(message, "No identity resolver has been configured on the service.")
-        } catch let error {
-            print(error)
-            XCTFail("Expected exception was not thrown.")
+            let expected = "No identity resolver has been configured on the service."
+            XCTAssertEqual(message, expected)
+        } catch {
+            XCTFail("Unexpected error thrown: \(error.localizedDescription)")
         }
     }
 
@@ -53,9 +54,10 @@ class AuthSchemeMiddlewareTests: XCTestCase {
         do {
             try await AssertSelectedAuthSchemeMatches(builtContext: contextBuilder.build(), expectedAuthScheme: "")
         } catch ClientError.authError(let message) {
-            XCTAssertEqual(message, "Could not resolve auth scheme for the operation call. Log: Auth scheme fillerAuth was not enabled for this request.")
+            let expected = "Could not resolve auth scheme for the operation call. Log: Auth scheme fillerAuth was not enabled for this request."
+            XCTAssertEqual(message, expected)
         } catch {
-            XCTFail("Expected exception was not thrown.")
+            XCTFail("Unexpected error thrown: \(error.localizedDescription)")
         }
     }
 
