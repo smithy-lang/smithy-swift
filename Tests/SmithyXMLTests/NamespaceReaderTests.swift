@@ -30,8 +30,7 @@ class NamespaceReaderTests: XCTestCase {
 
         """.utf8)
         let response = HttpResponse(body: .data(xmlData), statusCode: .ok)
-        let reader = try Reader.from(data: xmlData)
-        let subject = try await SimpleScalarPropertiesOutput.httpBinding(response, reader)
+        let subject = try await SimpleScalarPropertiesOutput.httpBinding(response, responseDocumentBinding)
         XCTAssertEqual(subject.nested?.attrField, "nestedAttrValue")
     }
 }
@@ -81,7 +80,8 @@ public struct SimpleScalarPropertiesOutput: Swift.Equatable {
 extension SimpleScalarPropertiesOutput {
 
     static var httpBinding: ClientRuntime.HTTPResponseOutputBinding<SimpleScalarPropertiesOutput, SmithyXML.Reader> {
-        { httpResponse, responseReader in
+        { httpResponse, responseDocumentBinding in
+            let responseReader = try await responseDocumentBinding(httpResponse)
             let reader = responseReader
             var value = SimpleScalarPropertiesOutput()
             if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
