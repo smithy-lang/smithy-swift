@@ -4,11 +4,13 @@ import software.amazon.smithy.aws.traits.customizations.S3UnwrappedXmlOutputTrai
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SmithyXMLTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitPayload
@@ -19,7 +21,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProto
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
-class XMLHttpResponseBindingOutputGenerator() : HttpResponseBindingOutputGeneratable {
+class XMLHttpResponseBindingOutputGenerator : HttpResponseBindingOutputGeneratable {
 
     override fun render(
         ctx: ProtocolGenerator.GenerationContext,
@@ -32,7 +34,7 @@ class XMLHttpResponseBindingOutputGenerator() : HttpResponseBindingOutputGenerat
         }
         val outputShape = ctx.model.expectShape(op.outputShape)
         val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
-        var responseBindings = httpBindingResolver.responseBindings(op)
+        val responseBindings = httpBindingResolver.responseBindings(op)
         val headerBindings = responseBindings
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
@@ -56,19 +58,31 @@ class XMLHttpResponseBindingOutputGenerator() : HttpResponseBindingOutputGenerat
                     SmithyXMLTypes.Reader,
                 ) {
                     writer.openBlock("{ httpResponse, responseReader in", "}") {
-                        writer.write("let reader = \$L", reader(ctx, op, writer))
-                        writer.write("var value = \$N()", outputSymbol)
-                        XMLHttpResponseHeaders(ctx, false, headerBindings, defaultTimestampFormat, writer).render()
-                        XMLHttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                        XMLHttpResponseTraitPayload(ctx, responseBindings, outputShape, writer).render()
-                        XMLHttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
-                        XMLHttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
-                        writer.write("return value")
+                        if (responseBindings.isEmpty()) {
+                            writer.write("return \$N()", outputSymbol)
+                        } else {
+                            if (needsAReader(ctx, responseBindings)) {
+                                writer.write("let reader = \$L", reader(ctx, op, writer))
+                            }
+                            writer.write("var value = \$N()", outputSymbol)
+                            XMLHttpResponseHeaders(ctx, false, headerBindings, defaultTimestampFormat, writer).render()
+                            XMLHttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
+                            XMLHttpResponseTraitPayload(ctx, responseBindings, outputShape, writer).render()
+                            XMLHttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
+                            XMLHttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
+                            writer.write("return value")
+                        }
                     }
                 }
             }
             writer.write("")
         }
+    }
+
+    private fun needsAReader(ctx: ProtocolGenerator.GenerationContext, responseBindings: List<HttpBindingDescriptor>): Boolean {
+        return responseBindings
+            .filter { !ctx.model.expectShape(it.member.target).hasTrait<StreamingTrait>() }
+            .any { it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT }
     }
 
     private fun reader(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: SwiftWriter): String {

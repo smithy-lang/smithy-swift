@@ -12,7 +12,7 @@ import class Foundation.URLSessionConfiguration
 extension URLSessionConfiguration {
 
     public static func from(httpClientConfiguration: HttpClientConfiguration) -> URLSessionConfiguration {
-        var config = URLSessionConfiguration.default
+        let config = URLSessionConfiguration.default
         if let connectTimeout = httpClientConfiguration.connectTimeout {
             config.timeoutIntervalForRequest = connectTimeout
         }
