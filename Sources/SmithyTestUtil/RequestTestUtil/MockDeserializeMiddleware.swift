@@ -13,10 +13,10 @@ public struct MockDeserializeMiddleware<OperationStackOutput>: Middleware {
         (Context, SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput>?
 
     public var id: String
-    let responseClosure: HTTPResponseClosure<OperationStackOutput>
+    let responseClosure: HTTPResponseOutputClosure<OperationStackOutput>
     let callback: MockDeserializeMiddlewareCallback?
 
-    public init(id: String, responseClosure: @escaping HTTPResponseClosure<OperationStackOutput>, callback: MockDeserializeMiddlewareCallback? = nil) {
+    public init(id: String, responseClosure: @escaping HTTPResponseOutputClosure<OperationStackOutput>, callback: MockDeserializeMiddlewareCallback? = nil) {
         self.id = id
         self.responseClosure = responseClosure
         self.callback = callback

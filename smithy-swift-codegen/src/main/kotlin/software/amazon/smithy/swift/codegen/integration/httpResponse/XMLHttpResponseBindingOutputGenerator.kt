@@ -57,11 +57,12 @@ class XMLHttpResponseBindingOutputGenerator : HttpResponseBindingOutputGeneratab
                     outputSymbol,
                     SmithyXMLTypes.Reader,
                 ) {
-                    writer.openBlock("{ httpResponse, responseReader in", "}") {
+                    writer.openBlock("{ httpResponse, responseDocumentClosure in", "}") {
                         if (responseBindings.isEmpty()) {
                             writer.write("return \$N()", outputSymbol)
                         } else {
                             if (needsAReader(ctx, responseBindings)) {
+                                writer.write("let responseReader = try await responseDocumentClosure(httpResponse)")
                                 writer.write("let reader = \$L", reader(ctx, op, writer))
                             }
                             writer.write("var value = \$N()", outputSymbol)

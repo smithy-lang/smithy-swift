@@ -11,7 +11,7 @@ import class SmithyXML.Reader
 public typealias HTTPResponseErrorClosure = (HttpResponse) async throws -> Error
 
 /// Defines a closure that can be used to convert a HTTP response and `Reader` for that response to a Swift `Error`.
-public typealias HTTPResponseErrorBinding<Reader> = (HttpResponse, Reader) async throws -> Error
+public typealias HTTPResponseErrorBinding<Reader> = (HttpResponse, HTTPResponseDocumentBinding<Reader>) async throws -> Error
 
 /// Provides a `HTTPResponseErrorClosure` for types that have Swift Decodable-based deserialization.
 /// - Parameters:
@@ -37,6 +37,6 @@ public func responseErrorClosure<Reader>(
     _ responseDocumentBinding: @escaping HTTPResponseDocumentBinding<Reader>
 ) -> HTTPResponseErrorClosure {
     return { response in
-        try await responseErrorBinding(response, responseDocumentBinding(response))
+        try await responseErrorBinding(response, responseDocumentBinding)
     }
 }
