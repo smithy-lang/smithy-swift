@@ -250,9 +250,17 @@ public final class URLSessionHTTPClient: HTTPClient {
                 requestStream = nil
             }
 
+            // Determine the proper environment variables to pass to FoundationStreamBridge
+            var bufferSize = 4096
+            var isChunkedTransfer = false
+            if request.isChunked {
+                bufferSize = CHUNK_SIZE_BYTES
+                isChunkedTransfer = true
+            }
+
             // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
             // that URLSession can stream its request body from.
-            let streamBridge = requestStream.map { FoundationStreamBridge(readableStream: $0, bufferSize: 4096) }
+            let streamBridge = requestStream.map { FoundationStreamBridge(readableStream: $0, bufferSize: bufferSize, isChunkedTransfer: isChunkedTransfer) }
 
             // Create the request (with a streaming body when needed.)
             let urlRequest = self.makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
@@ -265,6 +273,21 @@ public final class URLSessionHTTPClient: HTTPClient {
             // Start the HTTP connection and start streaming the request body data
             dataTask.resume()
             Task { await streamBridge?.open() }
+
+            if request.isChunked {
+                Task {
+                    do {
+                        guard let streamBridge else {
+                            throw ClientError.dataNotFound("Could not create Foundation Steam Bridge!") // dont need this
+                        }
+                        try await sendAwsChunkedBody(request: request) { chunk, isFinalChunk in
+                            try await streamBridge.writeChunk(chunk: chunk, endOfStream: isFinalChunk)
+                        }
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                }
+            }
         }
     }
 
@@ -308,6 +331,13 @@ public enum URLSessionHTTPClientError: Error {
     /// A connection was not ended
     /// Please file a bug with aws-sdk-swift if you experience this error.
     case unresumedConnection
+}
+
+extension URLSessionHTTPClient {
+    
+    
+    
+    
 }
 
 #endif

@@ -24,8 +24,32 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
             Self.MInput == H.Input,
             Self.MOutput == H.Output,
             Self.Context == H.Context {
+                
+            
 
+//            let httpResponse: HttpResponse
+//            let response: OperationOutput<OperationStackOutput>
+//            if let existingResponse = context.response {
+//                httpResponse = existingResponse
+//                guard let output = context.attributes.get(key: AttributeKey<OperationStackOutput>(name: "output")) else {
+//                    throw ClientError.dataNotFound("Response was corrupted!")
+//                }
+//                response = OperationOutput(httpResponse: httpResponse, output: output)
+//            } else {
+//                response = try await next.handle(context: context, input: input) // call handler to get http response
+//                httpResponse = response.httpResponse
+//            }
+                
             let response = try await next.handle(context: context, input: input) // call handler to get http response
+//            context.response = response.httpResponse
+                
+            if (context.attributes.contains(key: AttributeKey<ByteStream>(name: "stream"))) {
+                if let validatingStream = context.attributes.get(key: AttributeKey<ByteStream>(name: "stream")) {
+                    response.httpResponse.body = validatingStream
+
+                }
+            }
+                                
             var copiedResponse = response
             if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
                 let output = try await httpResponseClosure(copiedResponse.httpResponse)

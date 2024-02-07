@@ -31,3 +31,20 @@ extension HttpResponse: CustomDebugStringConvertible {
         return "\nStatus Code: \(statusCode.description) \n \(headers)"
     }
 }
+
+extension ByteStream {
+    
+    // Convert the body stream to a ValidatingFileStream to check checksums
+    public static func getChecksumValidatingBody(stream: Stream, expectedChecksum: String, checksumAlgorithm: HashFunction) -> ByteStream {
+        if let bufferedStream = stream as? BufferedStream {
+            return ByteStream.stream(
+                ValidatingBufferedStream(
+                    stream: bufferedStream,
+                    expectedChecksum: expectedChecksum,
+                    checksum: checksumAlgorithm
+                )
+            )
+        }
+        return ByteStream.stream(stream)
+    }
+}

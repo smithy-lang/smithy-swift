@@ -35,7 +35,6 @@ public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
             guard let logger = context.getLogger() else {
                 return try await next.handle(context: context, input: input)
             }
-            logger.error("TODO: Content-MD5 to stream buffer/reader")
         default:
             guard let logger = context.getLogger() else {
                 return try await next.handle(context: context, input: input)

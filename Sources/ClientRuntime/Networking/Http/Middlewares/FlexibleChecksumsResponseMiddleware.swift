@@ -47,9 +47,8 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
         // Determine if any checksum headers are present
         logger.debug("HEADERS: \(httpResponse.headers)")
-        let _checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST.first {
-            httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil
-        }
+        let _checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST.first { httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil }
+
         guard let checksumHeader = _checksumHeader else {
             logger.warn(
                 "User requested checksum validation, but the response headers did not contain any valid checksums"
@@ -89,11 +88,12 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         }
 
         func handleStreamPayload(_ stream: Stream) throws {
-            return
+            let validatingStream = ByteStream.getChecksumValidatingBody(stream: stream, expectedChecksum: expectedChecksum, checksumAlgorithm: responseChecksum)
+            context.attributes.set(key: AttributeKey<ByteStream>(name: "stream"), value: validatingStream)
         }
         
         // Handle body vs handle stream
-        switch response.httpResponse.body {
+        switch httpResponse.body {
         case .data(let data):
             try handleNormalPayload(data)
         case .stream(let stream):

@@ -16,7 +16,7 @@ import struct Foundation.URLRequest
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
 public class SdkHttpRequest {
-    public let body: ByteStream
+    public var body: ByteStream
     public let endpoint: Endpoint
     public let method: HttpMethodType
     private var additionalHeaders: Headers = Headers()
@@ -25,6 +25,7 @@ public class SdkHttpRequest {
         allHeaders.addAll(headers: additionalHeaders)
         return allHeaders
     }
+    public var trailingHeaders: Headers = Headers()
     public var path: String { endpoint.path }
     public var host: String { endpoint.host }
     public var queryItems: [SDKURLQueryItem]? { endpoint.queryItems }
@@ -42,6 +43,7 @@ public class SdkHttpRequest {
             .withBody(self.body)
             .withMethod(self.method)
             .withHeaders(self.headers)
+            .withTrailers(self.trailingHeaders)
             .withPath(self.path)
             .withHost(self.host)
             .withPort(self.endpoint.port)
@@ -59,16 +61,36 @@ public class SdkHttpRequest {
     public func withoutHeader(name: String) {
         self.additionalHeaders.remove(name: name)
     }
+    
+    public func withBody(_ body: ByteStream) {
+        self.body = body
+    }
 }
 
 extension SdkHttpRequest {
+
+    internal var isChunked: Bool {
+        
+        // Check if body is a stream
+        let isStreamBody: Bool
+        switch body {
+        case .stream(_):
+            isStreamBody = true
+        default:
+            isStreamBody = false
+        }
+        
+        let isTransferEncodingChunked = headers.value(for: "Transfer-Encoding")?.lowercased() == "chunked"
+        
+        return isStreamBody && isTransferEncodingChunked
+    }
 
     public func toHttpRequest() throws -> HTTPRequest {
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
         httpRequest.path = [endpoint.path, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
-        httpRequest.body = StreamableHttpBody(body: body)
+        httpRequest.body = isChunked ? nil : StreamableHttpBody(body: body) // body needs to be nil to use writeChunk()
         return httpRequest
     }
 
@@ -173,6 +195,7 @@ public class SdkHttpRequestBuilder {
     var queryItems: [SDKURLQueryItem]?
     var port: Int16 = 443
     var protocolType: ProtocolType = .https
+    var trailingHeaders: Headers = Headers()
 
     public var currentQueryItems: [SDKURLQueryItem]? {
         return queryItems
@@ -197,6 +220,18 @@ public class SdkHttpRequestBuilder {
     @discardableResult
     public func updateHeader(name: String, value: [String]) -> SdkHttpRequestBuilder {
         self.headers.update(name: name, value: value)
+        return self
+    }
+    
+    @discardableResult
+    public func withTrailers(_ value: Headers) -> SdkHttpRequestBuilder {
+        self.trailingHeaders.addAll(headers: value)
+        return self
+    }
+    
+    @discardableResult
+    public func updateTrailer(name: String, value: [String]) -> SdkHttpRequestBuilder {
+        self.trailingHeaders.update(name: name, value: value)
         return self
     }
 
@@ -258,6 +293,13 @@ public class SdkHttpRequestBuilder {
         return SdkHttpRequest(method: methodType,
                               endpoint: endpoint,
                               body: body)
+    }
+}
+
+extension SdkHttpRequestBuilder {
+    
+    public func getBody() -> ByteStream {
+        return self.body
     }
 }
 

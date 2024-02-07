@@ -28,7 +28,7 @@ public enum HashFunction {
         default: return nil
         }
     }
-    
+
     static func fromList(_ stringArray: [String]) -> [HashFunction] {
         var hashFunctions = [HashFunction]()
 
@@ -40,7 +40,7 @@ public enum HashFunction {
 
         return hashFunctions
     }
-    
+
     func toString() -> String {
         switch self {
         case .crc32: return "crc32"
@@ -60,12 +60,12 @@ public enum HashFunction {
         }
     }
 
-    func computeHash(of data: Data) throws -> HashResult {
+    func computeHash(of data: Data, previousHash: UInt32 = 0) throws -> HashResult {
         switch self {
         case .crc32:
-            return .integer(data.computeCRC32())
+            return .integer(data.computeCRC32(previousCrc32: previousHash))
         case .crc32c:
-            return .integer(data.computeCRC32C())
+            return .integer(data.computeCRC32C(previousCrc32c: previousHash))
         case .sha1:
             do {
                 let hashed = try data.computeSHA1()

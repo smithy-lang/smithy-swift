@@ -74,3 +74,37 @@ extension Stream {
         }
     }
 }
+
+/*
+ * Chunk size used by 'aws-chunked' encoding
+ */
+let CHUNK_SIZE_BYTES: Int = 65_536
+
+/*
+ * The minimum size of a streaming body before the SDK will begin using aws-chunked content encoding
+ */
+public let AWS_CHUNKED_THRESHOLD = CHUNK_SIZE_BYTES * 16
+
+extension Stream {
+    /*
+     * Return a Bool representing if the ByteStream (request body) is eligible to send via aws-chunked content encoding
+     */
+    public func isEligibleForAwsChunkedStreaming() -> Bool {
+        if let length = self.length, length >= AWS_CHUNKED_THRESHOLD {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    public func readChunk() async throws -> Data? {
+        // Check if the stream is empty before attempting to read
+        if self.isEmpty {
+            return nil
+        }
+
+        // Attempt to read up to CHUNK_SIZE_BYTES asynchronously
+        let chunk = try await self.readAsync(upToCount: CHUNK_SIZE_BYTES)
+        return chunk
+    }
+}

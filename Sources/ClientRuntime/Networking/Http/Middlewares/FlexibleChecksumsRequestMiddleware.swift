@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import AwsCommonRuntimeKit
+
 public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "FlexibleChecksumsRequestMiddleware"
@@ -57,23 +59,19 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             if input.builder.headers.value(for: headerName) == nil {
                 logger.debug("Calculating checksum")
             }
-
+            
             let checksum = try checksumHashFunction.computeHash(of: data).toBase64String()
-
+            
             request.updateHeader(name: headerName, value: [checksum])
         }
-
-        func handleStreamPayload(_ stream: Stream) throws {
-            logger.error("Stream payloads are not yet supported with flexible checksums!")
-            return
-        }
-
+        
         // Handle body vs handle stream
         switch request.body {
         case .data(let data):
             try handleNormalPayload(data)
-        case .stream(let stream):
-            try handleStreamPayload(stream)
+        case .stream(_):
+            // Will handle calculating checksum and setting header later
+            context.attributes.set(key: AttributeKey<HashFunction>(name: "checksum"), value: checksumHashFunction)
         case .noStream:
             throw ClientError.dataNotFound("Cannot calculate the checksum of an empty body!")
         }
