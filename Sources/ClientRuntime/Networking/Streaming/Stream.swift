@@ -96,15 +96,4 @@ extension Stream {
             return false
         }
     }
-    
-    public func readChunk() async throws -> Data? {
-        // Check if the stream is empty before attempting to read
-        if self.isEmpty {
-            return nil
-        }
-
-        // Attempt to read up to CHUNK_SIZE_BYTES asynchronously
-        let chunk = try await self.readAsync(upToCount: CHUNK_SIZE_BYTES)
-        return chunk
-    }
 }
