@@ -62,11 +62,11 @@ extension ValidatingBufferedStream: Stream {
             } else {
                 throw ClientError.unknownError("Checksum result didnt return an integer!")
             }
-            
-            if (self.position == self.length) {
+
+            if self.position == self.length {
                 // Validate and throw
                 let actualChecksum = currentHash.toBase64EncodedString()
-                if (expectedChecksum != actualChecksum) {
+                if expectedChecksum != actualChecksum {
                     throw ChecksumMismatchException.message("Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)")
                 }
             }
@@ -85,5 +85,5 @@ extension ValidatingBufferedStream: Stream {
     func closeWithError(_ error: Error) {
         self.stream.closeWithError(error)
     }
-    
+
 }

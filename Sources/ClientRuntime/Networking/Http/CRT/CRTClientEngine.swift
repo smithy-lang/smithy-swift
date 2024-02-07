@@ -165,8 +165,8 @@ public class CRTClientEngine: HTTPClient {
                 do {
                     let stream = try connection.makeRequest(requestOptions: requestOptions)
                     try stream.activate()
-                    
-                    if (request.isChunked) {
+
+                    if request.isChunked {
                         Task {
                             do {
                                 guard let http1Stream = stream as? HTTP1Stream else {

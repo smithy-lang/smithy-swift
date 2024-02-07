@@ -18,7 +18,7 @@ public class AwsChunkedReader {
     private var currentHash: UInt32 = 0
     private var emptyChunkSigned = false
     private var checksum: HashFunction?
-    
+
     init(
         stream: Stream,
         signingConfig: SigningConfig,
@@ -32,21 +32,21 @@ public class AwsChunkedReader {
         self.trailingHeaders = trailingHeaders
         self.checksum = checksum
     }
-    
+
     public func processNextChunk() async throws -> Bool {
-        
+
         // Check if there are no more chunks to process
         if hasLastChunkBeenSent {
           return false // No more chunks to process
         }
-        
+
         let nextChunk = try await fetchNextChunk()
-        
+
         if let chunk = nextChunk {
             if let checksum = self.checksum {
                 try self.hashChunk(checksumAlgorithm: checksum)
             }
-            
+
             self.chunk = chunk // Store the current chunk
             return true // Chunk processed successfully
         } else {
@@ -54,33 +54,33 @@ public class AwsChunkedReader {
             return false // End of the stream
         }
     }
-    
+
     public func getFinalChunk() async throws -> Data {
-        
+
         var finalChunk = self.getCurrentChunk() // should be emtpy
-        
+
         // Add a checksum if it is not nil
         if let checksumAlgorithm = self.checksum {
             let headerName = "x-amz-checksum-\(checksumAlgorithm)"
             self.updateTrailingHeader(name: headerName, value: self.currentHash.toBase64EncodedString())
         }
-        
+
         // + any trailers
         if !trailingHeaders.headers.isEmpty {
             let trailingHeaderChunk = try await getTrailingHeadersChunk(trailingHeaders: trailingHeaders)
             finalChunk.append(trailingHeaderChunk)
         }
-        
+
         // Append terminating CRLF to signal end of chunk
         finalChunk.append(Data("\r\n".utf8))
-        
+
         return finalChunk
     }
-    
+
     public func getCurrentHash() -> UInt32 {
         return self.currentHash
     }
-    
+
     private func hashChunk(checksumAlgorithm: HashFunction) throws {
         let hashResult = try checksumAlgorithm.computeHash(of: self.chunkBody, previousHash: self.currentHash)
         if case let .integer(newHash) = hashResult {
@@ -89,7 +89,7 @@ public class AwsChunkedReader {
             throw ClientError.unknownError("Checksum result didnt return an integer!")
         }
     }
-    
+
     private func fetchNextChunk() async throws -> Data? {
         // Fetch a chunk based on signing configuration
         signingConfig.isUnsigned
@@ -112,33 +112,33 @@ public class AwsChunkedReader {
 
     func getSignedChunk(from stream: Stream) async throws -> Data? {
         let chunk = try await stream.readAsync(upToCount: CHUNK_SIZE_BYTES) ?? Data()
-        
+
         // keep track of the chunk body without additional structure like chunk-signature
         self.chunkBody = chunk
-        
+
         // Early exit for empty chunk when already signed
         if chunk.isEmpty && emptyChunkSigned {
             return nil
         }
-        
+
         // Get signed chunk
         let chunkSigningConfig = signingConfig.toChunkSigningConfig()
         let chunkSignature = try await signChunk(chunk: chunk, config: chunkSigningConfig)
         self.previousSignature = chunkSignature
-        
+
         return constructChunk(chunk: chunk, signature: chunkSignature)
     }
-    
+
     private func signChunk(chunk: Data, config: SigningConfig) async throws -> String {
         let chunkSignature = try await Signer.signChunk(chunk: chunk, previousSignature: self.previousSignature, config: config)
         if chunk.isEmpty {
             // Ensure an empty chunk is only signed once
             emptyChunkSigned = true
         }
-        
+
         return chunkSignature
     }
-    
+
     private func constructChunk(chunk: Data, signature: String?) -> Data {
         var signedChunk = Data()
 
@@ -161,24 +161,24 @@ public class AwsChunkedReader {
 
         return signedChunk
     }
-    
+
     private func getTrailingHeadersChunk(trailingHeaders: Headers) async throws -> Data {
-        
+
         var trailerBody = Data()
-        
+
         // Construct the headers string
         let headersString = getTrailingHeadersString(trailingHeaders: trailingHeaders)
         trailerBody.append(contentsOf: headersString.utf8)
-        
+
         // If not unsigned, sign the trailers and append the signature
         if !signingConfig.isUnsigned {
             let trailerSignature = try await signTrailers(trailingHeaders: trailingHeaders)
             trailerBody.append(Data("x-amz-trailer-signature:\(trailerSignature)\r\n".utf8))
         }
-        
+
         return trailerBody
     }
-    
+
     private func signTrailers(trailingHeaders: Headers) async throws -> String {
         let crtTrailerSignerConfig = signingConfig.toTrailingHeadersSigningConfig()
         let trailerSignature = try await Signer.signTrailerHeaders(
@@ -187,10 +187,10 @@ public class AwsChunkedReader {
             config: crtTrailerSignerConfig
         )
         self.previousSignature = trailerSignature
-        
+
         return trailerSignature
     }
-    
+
     private func getTrailingHeadersString(trailingHeaders: Headers) -> String {
         return trailingHeaders.headers.flatMap { header in
             header.value.map { "\(header.name): \($0)\r\n"}
@@ -199,35 +199,35 @@ public class AwsChunkedReader {
 }
 
 extension AwsChunkedReader {
-    
+
     public func updateTrailingHeader(name: String, value: String) {
         self.trailingHeaders.update(name: name, value: value)
     }
-    
+
     public func getTrailingHeaders() -> Headers {
         return self.trailingHeaders
     }
-    
+
     public func getChecksumAlgorithm() -> HashFunction? {
         return self.checksum
     }
-    
+
     public func setChecksumAlgorithm(checksum: HashFunction?) {
         self.checksum = checksum
     }
-    
+
     func getCurrentChunk() -> Data {
         return self.chunk
     }
-    
+
     func setCurrentChunk(chunk: Data) {
         self.chunk = chunk
     }
-    
+
     func getCurrentChunkBody() -> Data {
         return self.chunkBody
     }
-    
+
     func setCurrentChunkBody(chunk: Data) {
         self.chunkBody = chunk
     }

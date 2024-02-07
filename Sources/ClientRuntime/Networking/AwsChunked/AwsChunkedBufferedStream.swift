@@ -19,7 +19,7 @@ class AwsChunkedBufferedStream {
         self.signingConfig = signingConfig
         self.previousSignature = previousSignature
         self.trailingHeaders = trailingHeaders
-        
+
         self.chunkedReader = AwsChunkedReader(
             stream: self.stream,
             signingConfig: self.signingConfig,

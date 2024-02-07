@@ -20,7 +20,7 @@ extension SigningConfig {
 
 extension SdkHttpRequestBuilder {
     public func setAwsChunkedHeaders(checksumAlgorithm: HashFunction? = nil) throws {
-        
+
         let body = self.getBody()
 
         // Check if self.body is of the case ByteStream.stream(let stream)
@@ -68,7 +68,7 @@ extension SdkHttpRequestBuilder {
 }
 
 extension SigningConfig {
-    
+
     func toChunkSigningConfig() -> SigningConfig {
         let modifiedSignatureType = SignatureType.requestChunk
         let modifiedBodyType = SignedBodyValue.empty
@@ -152,4 +152,3 @@ public func sendAwsChunkedBody(request: SdkHttpRequest, writeChunk: @escaping (D
         }
     }
 }
-

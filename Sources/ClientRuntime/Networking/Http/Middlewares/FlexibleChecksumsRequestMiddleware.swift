@@ -59,17 +59,17 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             if input.builder.headers.value(for: headerName) == nil {
                 logger.debug("Calculating checksum")
             }
-            
+
             let checksum = try checksumHashFunction.computeHash(of: data).toBase64String()
-            
+
             request.updateHeader(name: headerName, value: [checksum])
         }
-        
+
         // Handle body vs handle stream
         switch request.body {
         case .data(let data):
             try handleNormalPayload(data)
-        case .stream(_):
+        case .stream:
             // Will handle calculating checksum and setting header later
             context.attributes.set(key: AttributeKey<HashFunction>(name: "checksum"), value: checksumHashFunction)
         case .noStream:

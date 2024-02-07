@@ -34,8 +34,7 @@ public struct ContentLengthMiddleware<OperationStackOutput>: Middleware {
             input.headers.update(name: "Content-Length", value: String(data?.count ?? 0))
         case .stream(let stream):
             if let length = stream.length {
-                //if !(input.headers.exists(name: "Transfer-Encoding")) { // may remove
-                if !stream.isEligibleForAwsChunkedStreaming() { // may remove
+                if !stream.isEligibleForAwsChunkedStreaming() && !(input.headers.value(for: "Transfer-Encoding") == "chunked") {
                     input.headers.update(name: "Content-Length", value: String(length))
                 }
             } else if (requiresLength == false && unsignedPayload == true) ||

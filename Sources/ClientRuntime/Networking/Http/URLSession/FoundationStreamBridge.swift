@@ -38,7 +38,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// A Foundation `OutputStream` that will read from the `ReadableStream`
     private let outputStream: OutputStream
-    
+
     /// A variable indicating that the streaming payload is chunked
     private var isChunkedTransfer: Bool
 
@@ -195,7 +195,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
         result.error = outputStream.streamError
     }
-    
+
     func writeChunk(chunk: Data, endOfStream: Bool = false) async throws {
         // Check if this is the final chunk and handle accordingly
         if endOfStream {
@@ -203,7 +203,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             if !chunk.isEmpty {
                 try await writeToOutputStream(data: chunk)
             }
-            
+
             // Write the final chunk terminator
             try await writeFinalChunkTerminator()
         } else {
@@ -211,7 +211,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             try await writeToOutputStream(data: chunk)
         }
     }
-    
+
     private func writeFinalChunkTerminator() async throws {
         try await writeToOutputStream(data: Data())
         await close()

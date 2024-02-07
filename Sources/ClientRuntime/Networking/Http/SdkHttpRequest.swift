@@ -61,7 +61,7 @@ public class SdkHttpRequest {
     public func withoutHeader(name: String) {
         self.additionalHeaders.remove(name: name)
     }
-    
+
     public func withBody(_ body: ByteStream) {
         self.body = body
     }
@@ -70,18 +70,18 @@ public class SdkHttpRequest {
 extension SdkHttpRequest {
 
     internal var isChunked: Bool {
-        
+
         // Check if body is a stream
         let isStreamBody: Bool
         switch body {
-        case .stream(_):
+        case .stream:
             isStreamBody = true
         default:
             isStreamBody = false
         }
-        
+
         let isTransferEncodingChunked = headers.value(for: "Transfer-Encoding")?.lowercased() == "chunked"
-        
+
         return isStreamBody && isTransferEncodingChunked
     }
 
@@ -222,13 +222,13 @@ public class SdkHttpRequestBuilder {
         self.headers.update(name: name, value: value)
         return self
     }
-    
+
     @discardableResult
     public func withTrailers(_ value: Headers) -> SdkHttpRequestBuilder {
         self.trailingHeaders.addAll(headers: value)
         return self
     }
-    
+
     @discardableResult
     public func updateTrailer(name: String, value: [String]) -> SdkHttpRequestBuilder {
         self.trailingHeaders.update(name: name, value: value)
@@ -297,7 +297,7 @@ public class SdkHttpRequestBuilder {
 }
 
 extension SdkHttpRequestBuilder {
-    
+
     public func getBody() -> ByteStream {
         return self.body
     }
