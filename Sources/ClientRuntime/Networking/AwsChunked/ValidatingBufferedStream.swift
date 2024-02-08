@@ -58,7 +58,6 @@ extension ValidatingBufferedStream: Stream {
             let hashResult = try self.checksum.computeHash(of: data, previousHash: self.currentHash)
             if case let .integer(newHash) = hashResult {
                 self.currentHash = newHash
-                print("CURRENT HASH: \(currentHash.toBase64EncodedString())")
             } else {
                 throw ClientError.unknownError("Checksum result didnt return an integer!")
             }

@@ -230,6 +230,15 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         )
     }
 
+    /*
+     * PUT Request Tests
+     */
+    func testUnsignedNormalPayloadRequest() async throws -> () {
+
+    }
+
+
+
     private func AssertionsWhenStreaming(
         expectedHeader: String = "",
         responseBody: ByteStream = ByteStream.noStream,
@@ -250,7 +259,6 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
                 self.builtContext.attributes.get(key: AttributeKey<HashFunction>(name: "checksum")),
                 expectedChecksumAlgorithm
             )
-            print("isChecksumValidated: \(isChecksumValidated)")
             XCTAssertTrue(output.httpResponse.headers.value(for: expectedHeader) == expectedChecksum)
             return output
         }

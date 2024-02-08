@@ -91,7 +91,10 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
         func handleStreamPayload(_ stream: Stream) throws {
             let validatingStream = ByteStream.getChecksumValidatingBody(stream: stream, expectedChecksum: expectedChecksum, checksumAlgorithm: responseChecksum)
-            context.attributes.set(key: AttributeKey<ByteStream>(name: "stream"), value: validatingStream)
+
+            // Set the response to a validating stream
+            context.response = response.httpResponse
+            context.response?.body = validatingStream
         }
 
         // Handle body vs handle stream
