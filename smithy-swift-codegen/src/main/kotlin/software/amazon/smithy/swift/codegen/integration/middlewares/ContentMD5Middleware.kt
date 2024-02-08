@@ -17,7 +17,7 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class ContentMD5Middleware(
     val model: Model,
-    val symbolProvider: SymbolProvider
+    val symbolProvider: SymbolProvider,
 ) : MiddlewareRenderable {
     override val name = "ContentMD5Middleware"
 
@@ -26,13 +26,17 @@ class ContentMD5Middleware(
     override val position = MiddlewarePosition.BEFORE
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
-        if (op.isChecksumRequired()) {
+        if (op.isMD5ChecksumRequired()) {
             val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
             writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$outputShapeName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
         }
     }
 }
 
-// TODO https://github.com/awslabs/aws-sdk-swift/issues/653
-private fun OperationShape.isChecksumRequired(): Boolean =
+/**
+ * Check if MD5 checksum is required
+ * The Md5 middleware will only be installed if the operation requires a checksum and the user has not opted-in to flexible checksums.
+ */
+private fun OperationShape.isMD5ChecksumRequired(): Boolean =
+    // the checksum requirement can be modeled in either HttpChecksumTrait's `requestChecksumRequired` or the HttpChecksumRequired trait
     getTrait<HttpChecksumTrait>()?.isRequestChecksumRequired == true || hasTrait<HttpChecksumRequiredTrait>()

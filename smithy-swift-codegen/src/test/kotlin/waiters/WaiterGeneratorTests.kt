@@ -26,8 +26,8 @@ class WaiterGeneratorTests {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
-            extension TestClientProtocol {
-        """.trimIndent()
+extension TestClient {
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 

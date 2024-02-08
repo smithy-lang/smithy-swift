@@ -18,6 +18,11 @@ public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
     Self.MOutput == H.Output,
     Self.Context == H.Context {
 
+        // Skip MD5 hash if using checksums
+        if (input.headers.exists(name: "x-amz-sdk-checksum-algorithm")) {
+            return try await next.handle(context: context, input: input)
+        }
+
         switch input.body {
         case .data(let data):
             guard let data = data else {
