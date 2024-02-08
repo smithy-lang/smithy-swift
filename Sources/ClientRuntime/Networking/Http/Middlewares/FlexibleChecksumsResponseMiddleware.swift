@@ -11,12 +11,14 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         .crc32,
         .sha1,
         .sha256
-    ].map { $0.toString() }
+    ].sorted().map { $0.toString() }
 
     let validationMode: Bool
+    let priorityList: [String]
 
-    public init(validationMode: Bool) {
+    public init(validationMode: Bool, priorityList: [String] = []) {
         self.validationMode = validationMode
+        self.priorityList = !priorityList.isEmpty ? withPriority(checksums: priorityList) : CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
     }
 
     public func handle<H>(context: Context,
@@ -47,7 +49,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
         // Determine if any checksum headers are present
         logger.debug("HEADERS: \(httpResponse.headers)")
-        let _checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST.first { httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil }
+        let _checksumHeader = priorityList.first { httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil }
 
         guard let checksumHeader = _checksumHeader else {
             logger.warn(
@@ -112,4 +114,9 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
 enum ChecksumMismatchException: Error {
     case message(String)
+}
+
+private func withPriority(checksums: [String]) -> [String] {
+    let checksumsMap = checksums.compactMap { HashFunction.from(string: $0) }
+    return checksumsMap.sorted().map { $0.toString() }
 }
