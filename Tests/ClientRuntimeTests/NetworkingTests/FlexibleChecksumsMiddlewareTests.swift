@@ -138,31 +138,30 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         }
     }
 
-//    func testFileStreamingPayloadCRC32() async throws {
-//        let filePath = "/Users/dayaffe/Documents/Development/SwiftSDKWorkspace/FlexibleChecksums/put-object-test-1MB.txt"
-//        let checksumAlgorithm = "crc32"
-//
-//        let fileStream = try FileStream(fileHandle: .init(forReadingFrom: URL(fileURLWithPath: filePath)))
-//        let signingConfig = SigningConfig(algorithm: .signingV4, signatureType: .requestHeaders, service: "S3", region: "us-west-2")
-//
-//        let testData = ByteStream.stream(AwsChunkedFileStream(
-//            stream: fileStream,
-//            signingConfig: signingConfig,
-//            previousSignature: "test-signature",
-//            trailingHeaders: Headers()
-//        ))
-//
-//        setStreamingPayload(payload: testData, checksum: checksumAlgorithm)
-//
-//        addFlexibleChecksumsRequestMiddleware(checksumAlgorithm: checksumAlgorithm)
-//        addFlexibleChecksumsResponseMiddleware(validationMode: true)
-//        try await AssertionsWhenStreaming(
-//            expectedHeader: "x-amz-checksum-crc32",
-//            responseBody: testData,
-//            expectedChecksumAlgorithm: .crc32,
-//            expectedChecksum: "6+bG5g=="
-//        )
-//    }
+    func testBufferedStreamingPayloadCRC32() async throws {
+        // Mock data to simulate the file content
+        let mockData = Data(repeating: 0x41, count: 1_048_576) // 1MB of 'A's
+        let checksumAlgorithm = "crc32"
+        let signingConfig = SigningConfig(algorithm: .signingV4, signatureType: .requestHeaders, service: "S3", region: "us-west-2")
+
+        let testData = ByteStream.stream(AwsChunkedBufferedStream(
+            stream: BufferedStream(data: mockData),
+            signingConfig: signingConfig,
+            previousSignature: "test-signature",
+            trailingHeaders: Headers()
+        ))
+
+        setStreamingPayload(payload: testData, checksum: checksumAlgorithm)
+
+        addFlexibleChecksumsRequestMiddleware(checksumAlgorithm: checksumAlgorithm)
+        addFlexibleChecksumsResponseMiddleware(validationMode: true)
+        try await AssertionsWhenStreaming(
+            expectedHeader: "x-amz-checksum-crc32",
+            responseBody: testData,
+            expectedChecksumAlgorithm: .crc32,
+            expectedChecksum: "6+bG5g=="
+        )
+    }
 
     /*
      * Algorithm Selection Tests for Response
