@@ -42,7 +42,14 @@ class MiddlewareExecutionGenerator(
             renderContextAttributes(op, flowType)
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
-        writer.write("var $operationStackName = \$N<$inputShapeName, $outputShapeName>(id: \"${op.toLowerCamelCase()}\")", OperationStack)
+        writer.write(
+            "var \$L = \$N<\$L, \$L>(id: \$S)",
+            operationStackName,
+            OperationStack,
+            inputShapeName,
+            outputShapeName,
+            op.toLowerCamelCase(),
+        )
         renderMiddlewares(ctx, op, operationStackName)
     }
 
