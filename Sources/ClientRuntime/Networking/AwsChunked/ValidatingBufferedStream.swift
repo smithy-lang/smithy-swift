@@ -10,6 +10,7 @@ import AwsCommonRuntimeKit
 class ValidatingBufferedStream {
     private var stream: BufferedStream
     private var checksum: HashFunction
+    private var checksumHash: Hash?
     private var expectedChecksum: String
     private var currentHash: UInt32 = 0
 
@@ -17,6 +18,7 @@ class ValidatingBufferedStream {
         self.stream = stream
         self.expectedChecksum = expectedChecksum
         self.checksum = checksum
+        self.checksumHash = checksum.createHash()
     }
 }
 
@@ -55,16 +57,27 @@ extension ValidatingBufferedStream: Stream {
 
         // This will be invoked when the user executes the readData() method on ByteStream
         if let data = streamData {
-            let hashResult = try self.checksum.computeHash(of: data, previousHash: self.currentHash)
-            if case let .integer(newHash) = hashResult {
-                self.currentHash = newHash
+            if let shaHash = checksumHash {
+                try shaHash.update(data: data)
             } else {
-                throw ClientError.unknownError("Checksum result didnt return an integer!")
+                let hashResult = try self.checksum.computeHash(of: data, previousHash: self.currentHash)
+                if case let .integer(newHash) = hashResult {
+                    self.currentHash = newHash
+                } else {
+                    throw ClientError.unknownError("Checksum result didnt return an integer!")
+                }
             }
 
             if self.position == self.length {
                 // Validate and throw
-                let actualChecksum = currentHash.toBase64EncodedString()
+                let actualChecksum: String
+                if let shaHash = checksumHash {
+                    let hashResult = try HashResult.data(shaHash.finalize())
+                    actualChecksum = hashResult.toBase64String()
+                } else {
+                    actualChecksum = currentHash.toBase64EncodedString()
+                }
+
                 if expectedChecksum != actualChecksum {
                     throw ChecksumMismatchException.message("Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)")
                 }

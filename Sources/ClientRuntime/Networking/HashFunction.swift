@@ -148,3 +148,19 @@ extension HashResult {
         }
     }
 }
+
+extension HashFunction {
+    // Initialize a hashing process
+    func createHash() -> Hash? {
+        switch self {
+        case .sha1:
+            return Hash(algorithm: .SHA1)
+        case .sha256:
+            return Hash(algorithm: .SHA256)
+        case .md5:
+            return Hash(algorithm: .MD5)
+        default:
+            return nil
+        }
+    }
+}

@@ -18,14 +18,13 @@ public final class SDKDefaultIO {
     public let hostResolver: HostResolver
     public let clientBootstrap: ClientBootstrap
     public let tlsContext: TLSContext
-    public let logger: Logger
 
     /// Provide singleton access since we want to share and re-use the instance properties
     public static let shared = SDKDefaultIO()
 
     private init() {
         CommonRuntimeKit.initialize()
-        self.logger = Logger(pipe: stdout, level: .none)
+        Logger.initilize(pipe: stdout, level: .none)
 
         do {
             self.eventLoopGroup = try EventLoopGroup(threadCount: 0)

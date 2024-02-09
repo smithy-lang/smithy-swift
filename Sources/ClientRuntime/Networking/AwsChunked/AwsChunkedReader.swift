@@ -18,6 +18,7 @@ public class AwsChunkedReader {
     private var currentHash: UInt32 = 0
     private var emptyChunkSigned = false
     private var checksum: HashFunction?
+    private var checksumHash: Hash?
 
     init(
         stream: Stream,
@@ -31,6 +32,7 @@ public class AwsChunkedReader {
         self.previousSignature = previousSignature
         self.trailingHeaders = trailingHeaders
         self.checksum = checksum
+        self.checksumHash = checksum?.createHash() // for supporting data-based checksums
     }
 
     public func processNextChunk() async throws -> Bool {
@@ -57,12 +59,18 @@ public class AwsChunkedReader {
 
     public func getFinalChunk() async throws -> Data {
 
-        var finalChunk = self.getCurrentChunk() // should be emtpy
+        var finalChunk = self.getCurrentChunk() // should be empty
 
         // Add a checksum if it is not nil
         if let checksumAlgorithm = self.checksum {
             let headerName = "x-amz-checksum-\(checksumAlgorithm)"
-            self.updateTrailingHeader(name: headerName, value: self.currentHash.toBase64EncodedString())
+            if let shaHash = checksumHash {
+                let hashResult = try HashResult.data(shaHash.finalize())
+                self.updateTrailingHeader(name: headerName, value: hashResult.toBase64String())
+            } else {
+                self.updateTrailingHeader(name: headerName, value: self.currentHash.toBase64EncodedString())
+            }
+
         }
 
         // + any trailers
@@ -77,16 +85,16 @@ public class AwsChunkedReader {
         return finalChunk
     }
 
-    public func getCurrentHash() -> UInt32 {
-        return self.currentHash
-    }
-
     private func hashChunk(checksumAlgorithm: HashFunction) throws {
-        let hashResult = try checksumAlgorithm.computeHash(of: self.chunkBody, previousHash: self.currentHash)
-        if case let .integer(newHash) = hashResult {
-            currentHash = newHash
+        if let shaHash = checksumHash {
+            try shaHash.update(data: self.chunkBody)
         } else {
-            throw ClientError.unknownError("Checksum result didnt return an integer!")
+            let hashResult = try checksumAlgorithm.computeHash(of: self.chunkBody, previousHash: self.currentHash)
+            if case let .integer(newHash) = hashResult {
+                currentHash = newHash
+            } else {
+                throw ClientError.unknownError("Checksum result didnt return an integer!")
+            }
         }
     }
 

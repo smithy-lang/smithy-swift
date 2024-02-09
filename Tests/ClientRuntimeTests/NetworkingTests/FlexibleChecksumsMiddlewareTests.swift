@@ -230,14 +230,18 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         )
     }
 
-    /*
-     * PUT Request Tests
-     */
-    func testUnsignedNormalPayloadRequest() async throws -> () {
-
+    func getChecksumMismatchException() async throws -> () {
+        let validationMode = true
+        var testHeaders = Headers()
+        testHeaders.add(name: "x-amz-checksum-crc32", value: "AAAA==")
+        addFlexibleChecksumsResponseMiddleware(validationMode: validationMode)
+        try await AssertValidationAsExpected(
+            responseHeaders: testHeaders,
+            validationMode: validationMode,
+            expectedValidationHeader: "x-amz-checksum-crc32",
+            expectedChecksumMismatch: true
+        )
     }
-
-
 
     private func AssertionsWhenStreaming(
         expectedHeader: String = "",
@@ -311,7 +315,8 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
     private func AssertValidationAsExpected(
         responseHeaders: Headers,
         validationMode: Bool,
-        expectedValidationHeader: String?
+        expectedValidationHeader: String?,
+        expectedChecksumMismatch: Bool = false
     ) async throws -> Void {
         var isChecksumValidated = false
         var validatedChecksum: String? = nil
@@ -328,12 +333,56 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
             return output
         }
 
-        _ = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: mockHandler)
+        if expectedChecksumMismatch {
+            await XCTAssertThrowsErrorAsync(try await handleMiddleware()) {
+                XCTAssert($0 is ChecksumMismatchException)
+            }
+        } else {
+            try await handleMiddleware()
+            // Assert that the expected checksum was validated or validation was not performed
+            XCTAssert(isChecksumValidated == validationMode)
+            XCTAssert(validatedChecksum == expectedValidationHeader)
+        }
 
-        // Assert that the expected checksum was validated or validation was not performed
-        XCTAssert(isChecksumValidated == validationMode)
-        XCTAssert(validatedChecksum == expectedValidationHeader)
+        func handleMiddleware() async throws {
+            _ = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: mockHandler)
+        }
     }
+
+    func testPutRequestWithCRC32ChecksumAndUnsignedPayload() async throws {
+        let checksumAlgorithm = "crc32"
+        let testData = ByteStream.data(Data("Hello world".utf8))
+        let expectedChecksumSHA256 = "ZOyIygCyaOW6GjVnihtTFtIS9PNmskdyMlNKiuyjfzw="
+        let signingConfig = SigningConfig(algorithm: .signingV4, signatureType: .requestHeaders, service: "S3", region: "us-west-2", signedBodyValue: .unsignedPayload)
+        setPutPayload(payload: testData, checksumSHA256: expectedChecksumSHA256, signingConfig: signingConfig)
+        addFlexibleChecksumsRequestMiddleware(checksumAlgorithm: checksumAlgorithm)
+        try await assertPutRequestHeaders(expectedChecksumSHA256: expectedChecksumSHA256)
+    }
+
+    private func setPutPayload(payload: ByteStream, checksumSHA256: String, signingConfig: SigningConfig) {
+        // Set PUT payload and headers
+        stack.serializeStep.intercept(position: .before, id: "set PUT payload") { (context, input, next) -> OperationOutput<MockOutput> in
+            context.attributes.set(key: AttributeKey<SigningConfig>(name: "SigningConfig"), value: signingConfig)
+            input.builder.withHeader(name: "x-amz-content-sha256", value: "UNSIGNED-PAYLOAD")
+            input.builder.withHeader(name: "x-amz-checksum-sha256", value: checksumSHA256)
+            input.builder.body = payload // Set the payload data here
+            return try await next.handle(context: context, input: input)
+        }
+    }
+
+    private func assertPutRequestHeaders(expectedChecksumSHA256: String) async throws {
+        let mockHandler = MockHandler { (context, input) -> OperationOutput<MockOutput> in
+            // Verify that the request headers are correctly set
+            XCTAssertEqual(input.headers.value(for: "x-amz-content-sha256"), "UNSIGNED-PAYLOAD")
+            XCTAssertEqual(input.headers.value(for: "x-amz-checksum-sha256"), expectedChecksumSHA256)
+            let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
+            let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+            return OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
+        }
+
+        _ = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: mockHandler)
+    }
+
 }
 
 class TestLogger: LogAgent {
