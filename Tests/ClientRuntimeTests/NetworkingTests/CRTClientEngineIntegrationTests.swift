@@ -36,7 +36,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let response = try await httpClient.send(request: request)
 
         XCTAssertNotNil(response)
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        let statusCode = await response.statusCode
+        XCTAssertEqual(statusCode, HttpStatusCode.ok)
     }
 
     func xtestMakeHttpPostRequest() async throws {
@@ -52,7 +53,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      body: ByteStream.data(encodedData))
         let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        let statusCode = await response.statusCode
+        XCTAssertEqual(statusCode, HttpStatusCode.ok)
     }
 
     func xtestMakeHttpStreamRequestDynamicReceive() async throws {
@@ -65,7 +67,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      body: ByteStream.stream(BufferedStream()))
         let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        let statusCode = await response.statusCode
+        XCTAssertEqual(statusCode, HttpStatusCode.ok)
     }
 
     func xtestMakeHttpStreamRequestReceive() async throws {
@@ -79,13 +82,14 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      body: ByteStream.stream(BufferedStream()))
         let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        if case let ByteStream.stream(unwrappedStream) = response.body {
+        if case let ByteStream.stream(unwrappedStream) = await response.body {
             let bodyCount = try await unwrappedStream.readToEndAsync()?.count
             XCTAssertEqual(bodyCount, 1024)
         } else {
             XCTFail("Bytes not received")
         }
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        let statusCode = await response.statusCode
+        XCTAssertEqual(statusCode, HttpStatusCode.ok)
     }
 
     func xtestMakeHttpStreamRequestReceiveOneByte() async throws {
@@ -99,13 +103,14 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      body: ByteStream.stream(BufferedStream()))
         let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        if case let ByteStream.stream(unwrappedStream) = response.body {
+        if case let ByteStream.stream(unwrappedStream) = await response.body {
             let bodyCount = try await unwrappedStream.readToEndAsync()?.count
             XCTAssertEqual(bodyCount, 1)
         } else {
             XCTFail("Bytes not received")
         }
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        let statusCode = await response.statusCode
+        XCTAssertEqual(statusCode, HttpStatusCode.ok)
     }
 
     func xtestMakeHttpStreamRequestReceive3ThousandBytes() async throws {
@@ -119,13 +124,14 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      body: ByteStream.stream(BufferedStream()))
         let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        if case let ByteStream.stream(unwrappedStream) = response.body {
+        if case let ByteStream.stream(unwrappedStream) = await response.body {
             let bodyCount = try await unwrappedStream.readToEndAsync()?.count
             XCTAssertEqual(bodyCount, 3000)
         } else {
             XCTFail("Bytes not received")
         }
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        let statusCode = await response.statusCode
+        XCTAssertEqual(statusCode, HttpStatusCode.ok)
     }
 
     func xtestMakeHttpStreamRequestFromData() async throws {
@@ -142,7 +148,8 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
                                      body: ByteStream.stream(BufferedStream(data: encodedData)))
         let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        let statusCode = await response.statusCode
+        XCTAssertEqual(statusCode, HttpStatusCode.ok)
     }
     
     func xtestMakeHttp2StreamRequest() async throws {
@@ -161,7 +168,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         )
         
         let response = try await crtHttpClient.executeHTTP2Request(request: request)
-        switch response.body {
+        switch await response.body {
         case let .stream(stream):
             var data = Data()
             while let next = try stream.read(upToCount: Int.max) {

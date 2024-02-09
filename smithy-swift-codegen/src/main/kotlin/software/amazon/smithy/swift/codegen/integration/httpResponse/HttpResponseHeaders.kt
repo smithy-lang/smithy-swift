@@ -42,7 +42,7 @@ class HttpResponseHeaders(
             val headerName = hdrBinding.locationName
             val headerDeclaration = "${memberName}HeaderValue"
             val isBoxed = ctx.symbolProvider.toSymbol(hdrBinding.member).isBoxed()
-            writer.write("if let $headerDeclaration = httpResponse.headers.value(for: \$S) {", headerName)
+            writer.write("if let $headerDeclaration = await httpResponse.headers.value(for: \$S) {", headerName)
             writer.indent()
             when (memberTarget) {
                 is NumberShape -> {

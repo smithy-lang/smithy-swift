@@ -68,7 +68,7 @@ class OutputDeserializerTests {
             """
             extension DataStreamingOutput: ClientRuntime.HttpResponseBinding {
                 public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-                    switch httpResponse.body {
+                    switch await httpResponse.body {
                     case .data(let data):
                         self.streamingData = .data(data)
                     case .stream(let stream):
@@ -94,7 +94,7 @@ class OutputDeserializerTests {
             """
             extension EventStreamingOutput: ClientRuntime.HttpResponseBinding {
                 public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-                    if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {
+                    if case let .stream(stream) = await httpResponse.body, let responseDecoder = decoder {
                         let messageDecoder: ClientRuntime.MessageDecoder? = nil
                         let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)
                         self.eventStream = decoderStream.toAsyncStream()

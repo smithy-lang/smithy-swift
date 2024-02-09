@@ -20,5 +20,5 @@ public protocol RetryErrorInfoProvider {
     /// Returns information used to determine how & if to retry an error.
     /// - Parameter error: The error to be triaged for retry info
     /// - Returns: `RetryErrorInfo` for the passed error, or `nil` if the error should not be retried.
-    static func errorInfo(for error: Error) -> RetryErrorInfo?
+    static func errorInfo(for error: Error) async -> RetryErrorInfo?
 }

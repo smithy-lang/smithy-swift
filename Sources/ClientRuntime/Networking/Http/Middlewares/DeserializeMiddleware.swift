@@ -25,9 +25,13 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
             Self.MOutput == H.Output,
             Self.Context == H.Context {
 
-            let response = try await next.handle(context: context, input: input) // call handler to get http response
+            let response = try await next.handle(context: context, input: input)
             var copiedResponse = response
-            if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
+
+            // Wait for status code of http response to be finalized; i.e., not [100, 200).
+            let code = await response.httpResponse.getFinalStatusCode()
+
+            if (200..<300).contains(code) {
                 let output = try await httpResponseClosure(copiedResponse.httpResponse)
                 copiedResponse.output = output
                 return copiedResponse
@@ -37,7 +41,7 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
                 // eg. [RestJSONError](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Core/AWSClientRuntime/Protocols/RestJSON/RestJSONError.swift#L38,
                 // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
                 let bodyData = try await copiedResponse.httpResponse.body.readData()
-                copiedResponse.httpResponse.body = .data(bodyData)
+                await copiedResponse.httpResponse.setBody(newBody: .data(bodyData))
                 throw try await httpResponseErrorClosure(copiedResponse.httpResponse)
           }
     }

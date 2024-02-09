@@ -264,12 +264,16 @@ public class CRTClientEngine: HTTPClient {
 
         var requestOptions = HTTPRequestOptions(request: request) { statusCode, headers in
             self.logger.debug("Interim response received")
-            response.statusCode = makeStatusCode(statusCode)
-            response.headers.addAll(headers: Headers(httpHeaders: headers))
+            Task {
+                await response.setStatusCode(newStatusCode: makeStatusCode(statusCode))
+                await response.addHeaders(additionalHeaders: Headers(httpHeaders: headers))
+            }
         } onResponse: { statusCode, headers in
             self.logger.debug("Main headers received")
-            response.statusCode = makeStatusCode(statusCode)
-            response.headers.addAll(headers: Headers(httpHeaders: headers))
+            Task {
+                await response.setStatusCode(newStatusCode: makeStatusCode(statusCode))
+                await response.addHeaders(additionalHeaders: Headers(httpHeaders: headers))
+            }
 
             // resume the continuation as soon as we have all the initial headers
             // this allows callers to start reading the response as it comes in
@@ -284,12 +288,16 @@ public class CRTClientEngine: HTTPClient {
             }
         } onTrailer: { headers in
             self.logger.debug("Trailer headers received")
-            response.headers.addAll(headers: Headers(httpHeaders: headers))
+            Task {
+                await response.addHeaders(additionalHeaders: Headers(httpHeaders: headers))
+            }
         } onStreamComplete: { result in
             self.logger.debug("Request/response completed")
             switch result {
             case .success(let statusCode):
-                response.statusCode = makeStatusCode(statusCode)
+                Task {
+                    await response.setStatusCode(newStatusCode: makeStatusCode(statusCode))
+                }
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
             }
@@ -301,7 +309,9 @@ public class CRTClientEngine: HTTPClient {
 
         requestOptions.http2ManualDataWrites = http2ManualDataWrites
 
-        response.body = .stream(stream)
+        Task {
+            await response.setBody(newBody: .stream(stream))
+        }
         return requestOptions
     }
 }

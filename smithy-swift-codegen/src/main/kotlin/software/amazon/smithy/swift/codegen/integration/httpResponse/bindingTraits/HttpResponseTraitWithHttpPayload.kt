@@ -64,7 +64,7 @@ class HttpResponseTraitWithHttpPayload(
                 writer.write("self.\$L = nil", memberName).closeBlock("}")
             }
             ShapeType.BLOB -> {
-                writer.write("switch httpResponse.body {")
+                writer.write("switch await httpResponse.body {")
                     .write("case .data(let data):")
                     .indent()
                 if (isBinaryStream) {
@@ -91,7 +91,7 @@ class HttpResponseTraitWithHttpPayload(
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 if (target.hasTrait<StreamingTrait>()) {
-                    writer.openBlock("if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {", "} else {") {
+                    writer.openBlock("if case let .stream(stream) = await httpResponse.body, let responseDecoder = decoder {", "} else {") {
                         writer.declareSection(MessageDecoderSectionId) {
                             writer.write("let messageDecoder: \$D", ClientRuntimeTypes.EventStream.MessageDecoder)
                         }

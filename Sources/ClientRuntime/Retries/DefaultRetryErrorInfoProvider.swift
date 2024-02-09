@@ -19,9 +19,9 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider {
     /// Returns information used to determine how & if to retry an error.
     /// - Parameter error: The error to be triaged for retry info
     /// - Returns: `RetryErrorInfo` for the passed error, or `nil` if the error should not be retried.
-    public static func errorInfo(for error: Error) -> RetryErrorInfo? {
+    public static func errorInfo(for error: Error) async -> RetryErrorInfo? {
         var hint: TimeInterval?
-        if let retryAfterString = (error as? HTTPError)?.httpResponse.headers.value(for: "x-retry-after") {
+        if let retryAfterString = await (error as? HTTPError)?.httpResponse.headers.value(for: "x-retry-after") {
             hint = TimeInterval(retryAfterString)
         }
         if let modeledError = error as? ModeledError {
@@ -29,7 +29,7 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider {
             guard type.isRetryable else { return nil }
             let errorType: RetryErrorType = type.isThrottling ? .throttling : type.fault.retryErrorType
             return .init(errorType: errorType, retryAfterHint: hint, isTimeout: false)
-        } else if let code = (error as? HTTPError)?.httpResponse.statusCode, retryableStatusCodes.contains(code) {
+        } else if let code = await (error as? HTTPError)?.httpResponse.statusCode, retryableStatusCodes.contains(code) {
             return .init(errorType: .serverError, retryAfterHint: hint, isTimeout: false)
         }
         return nil

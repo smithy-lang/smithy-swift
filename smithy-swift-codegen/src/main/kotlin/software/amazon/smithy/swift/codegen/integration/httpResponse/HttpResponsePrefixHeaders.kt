@@ -40,15 +40,15 @@ class HttpResponsePrefixHeaders(
         val keyCollName = "keysFor${memberName.capitalize()}"
         val filter = if (prefix.isNotEmpty()) ".filter({ $0.starts(with: \"$prefix\") })" else ""
 
-        writer.write("let $keyCollName = httpResponse.headers.dictionary.keys\$L", filter)
+        writer.write("let $keyCollName = await httpResponse.headers.dictionary.keys\$L", filter)
         writer.openBlock("if (!$keyCollName.isEmpty) {")
             .write("var mapMember = [\$N: ${targetValueSymbol.name}]()", SwiftTypes.String)
             .openBlock("for headerKey in $keyCollName {")
             .call {
                 val mapMemberValue = when (targetValueShape) {
-                    is StringShape -> "httpResponse.headers.dictionary[headerKey]?[0]"
-                    is ListShape -> "httpResponse.headers.dictionary[headerKey]"
-                    is SetShape -> "Set(httpResponse.headers.dictionary[headerKey])"
+                    is StringShape -> "await httpResponse.headers.dictionary[headerKey]?[0]"
+                    is ListShape -> "await httpResponse.headers.dictionary[headerKey]"
+                    is SetShape -> "Set(await httpResponse.headers.dictionary[headerKey])"
                     else -> throw CodegenException("invalid httpPrefixHeaders usage on ${binding.member}")
                 }
                 writer.write("let mapMemberValue = $mapMemberValue")

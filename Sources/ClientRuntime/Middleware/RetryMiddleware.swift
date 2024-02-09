@@ -38,7 +38,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
             await strategy.recordSuccess(token: token)
             return serviceResponse
         } catch let operationError {
-            guard let errorInfo = ErrorInfoProvider.errorInfo(for: operationError) else { throw operationError }
+            guard let errorInfo = await ErrorInfoProvider.errorInfo(for: operationError) else { throw operationError }
             do {
                 try await strategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
             } catch {

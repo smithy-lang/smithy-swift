@@ -10,7 +10,7 @@ import AwsCommonRuntimeKit
 
 class HttpResponseTestBaseTests: HttpResponseTestBase {
 
-    func testBuildHttpResponse() {
+    func testBuildHttpResponse() async {
         let statusCode = 200
         let headers = ["headerKey1": "headerValue1", "headerKey2": "headerValue2"]
         let bodyData = "{\"greeting\": \"Hello There\"}".data(using: .utf8)!
@@ -21,13 +21,16 @@ class HttpResponseTestBaseTests: HttpResponseTestBase {
             return
         }
 
-        XCTAssertEqual(headers, httpResponse.headers.dictionary.mapValues({ (values) -> String in
+        let actualHeaders = await httpResponse.headers
+        XCTAssertEqual(headers, actualHeaders.dictionary.mapValues({ (values) -> String in
             values.joined(separator: ", ")
         }))
 
-        XCTAssertEqual(HttpStatusCode(rawValue: statusCode), httpResponse.statusCode)
+        let actualStatusCode = await httpResponse.statusCode
+        XCTAssertEqual(HttpStatusCode(rawValue: statusCode), actualStatusCode)
 
-        if case .data(let actualData) = httpResponse.body {
+        let actualBody = await httpResponse.body
+        if case .data(let actualData) = actualBody {
             XCTAssertEqual(bodyData, actualData)
         } else {
             XCTFail("HttpResponse Content unexpectedly found to be nil")

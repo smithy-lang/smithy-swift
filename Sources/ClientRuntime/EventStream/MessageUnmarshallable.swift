@@ -14,5 +14,5 @@ public protocol MessageUnmarshallable {
     ///   - decoder: ResponseDecoder to use to decode the event stream event.
     ///              Note: event type may contain nested types that need to be decoded
     ///              using the same decoder.
-    init(message: EventStream.Message, decoder: ResponseDecoder) throws
+    init(message: EventStream.Message, decoder: ResponseDecoder) async throws
 }

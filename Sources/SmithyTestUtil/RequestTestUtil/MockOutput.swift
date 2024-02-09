@@ -10,8 +10,8 @@ import ClientRuntime
 public struct MockOutput: HttpResponseBinding {
     public let value: Int
     public let headers: Headers
-    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) throws {
-        self.value = httpResponse.statusCode.rawValue
-        self.headers = httpResponse.headers
+    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws {
+        self.value = await httpResponse.statusCode.rawValue
+        self.headers = await httpResponse.headers
     }
 }

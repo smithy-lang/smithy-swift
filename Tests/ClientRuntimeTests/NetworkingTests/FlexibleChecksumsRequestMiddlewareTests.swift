@@ -139,8 +139,10 @@ class FlexibleChecksumsRequestMiddlewareTests: XCTestCase {
                 XCTAssert(input.headers.value(for: expectedHeader) != nil, file: file, line: line)
             }
             let httpResponse = HttpResponse(body: responseBody, statusCode: HttpStatusCode.ok)
-            httpResponse.headers.add(name: expectedHeader, value: expectedChecksum)
-            let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+            await httpResponse.addHeaders(
+                additionalHeaders: Headers([expectedHeader: expectedChecksum])
+            )
+            let mockOutput = try! await MockOutput(httpResponse: httpResponse, decoder: nil)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
             if let validatedChecksum = self.builtContext.attributes.get(key: AttributeKey<String>(name: "ChecksumHeaderValidated")), validatedChecksum == expectedHeader {
                 isChecksumValidated = true

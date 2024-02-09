@@ -24,7 +24,7 @@ class MiddlewareStackTests: XCTestCase {
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
                                                 let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
-                                                let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+                                                let mockOutput = try! await MockOutput(httpResponse: httpResponse, decoder: nil)
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse,
                                                                                          output: mockOutput)
                                                 return output
@@ -62,7 +62,7 @@ class MiddlewareStackTests: XCTestCase {
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName2") == "TestHeaderValue2")
                                                 let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
-                                                let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+                                                let mockOutput = try! await MockOutput(httpResponse: httpResponse, decoder: nil)
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse,
                                                                                          output: mockOutput)
                                                 return output

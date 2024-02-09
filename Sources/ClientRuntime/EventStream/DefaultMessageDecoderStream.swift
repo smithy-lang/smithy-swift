@@ -42,7 +42,7 @@ extension EventStream {
 
                     // if we have a message in the decoder buffer, return it
                     if let message = try messageDecoder.message() {
-                        let event = try Element(message: message, decoder: responseDecoder)
+                        let event = try await Element(message: message, decoder: responseDecoder)
                         return event
                     }
 

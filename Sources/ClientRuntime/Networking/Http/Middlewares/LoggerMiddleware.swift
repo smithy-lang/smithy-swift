@@ -36,9 +36,9 @@ public struct LoggerMiddleware<OperationStackOutput>: Middleware {
         let response = try await next.handle(context: context, input: input)
 
         if clientLogMode == .response || clientLogMode == .requestAndResponse {
-            logger.debug("Response: \(response.httpResponse.debugDescription)")
+            logger.debug("Response: \(await response.httpResponse.debugDescription)")
         } else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .responseWithBody {
-            logger.debug("Response: \(response.httpResponse.debugDescriptionWithBody)")
+            logger.debug("Response: \(await response.httpResponse.debugDescriptionWithBody)")
         }
 
         return response

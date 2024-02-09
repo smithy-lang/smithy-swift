@@ -21,7 +21,7 @@ class HttpResponseTraitResponseCode(
             .toMutableSet()
         if (responseCodeTraitMembers.isNotEmpty()) {
             responseCodeTraitMembers.forEach {
-                writer.write("self.${it.locationName.decapitalize()} = httpResponse.statusCode.rawValue")
+                writer.write("self.${it.locationName.decapitalize()} = await httpResponse.statusCode.rawValue")
             }
         }
     }

@@ -99,7 +99,7 @@ extension ExplicitStructOutput: ClientRuntime.HttpResponseBinding {
             """
 extension HttpResponseCodeOutput: ClientRuntime.HttpResponseBinding {
     public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-        self.status = httpResponse.statusCode.rawValue
+        self.status = await httpResponse.statusCode.rawValue
     }
 }
             """.trimIndent()
@@ -133,16 +133,16 @@ extension InlineDocumentAsPayloadOutput: ClientRuntime.HttpResponseBinding {
             """
             extension HttpPrefixHeadersOutput: ClientRuntime.HttpResponseBinding {
                 public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-                    if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
+                    if let fooHeaderValue = await httpResponse.headers.value(for: "X-Foo") {
                         self.foo = fooHeaderValue
                     } else {
                         self.foo = nil
                     }
-                    let keysForFooMap = httpResponse.headers.dictionary.keys.filter({ ${'$'}0.starts(with: "X-Foo-") })
+                    let keysForFooMap = await httpResponse.headers.dictionary.keys.filter({ ${'$'}0.starts(with: "X-Foo-") })
                     if (!keysForFooMap.isEmpty) {
                         var mapMember = [Swift.String: String]()
                         for headerKey in keysForFooMap {
-                            let mapMemberValue = httpResponse.headers.dictionary[headerKey]?[0]
+                            let mapMemberValue = await httpResponse.headers.dictionary[headerKey]?[0]
                             let mapMemberKey = headerKey.removePrefix("X-Foo-")
                             mapMember[mapMemberKey] = mapMemberValue
                         }

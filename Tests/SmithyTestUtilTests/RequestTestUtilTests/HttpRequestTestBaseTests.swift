@@ -225,7 +225,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             })
 
             let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
-            let mockOutput = try! MockOutput(httpResponse: response, decoder: nil)
+            let mockOutput = try! await MockOutput(httpResponse: response, decoder: nil)
             let output = OperationOutput<MockOutput>(httpResponse: response, output: mockOutput)
             return output
            })

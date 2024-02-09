@@ -24,6 +24,7 @@ class HttpClientTests: NetworkingTestUtils {
     func testExecuteRequest() async throws {
         let resp = try await httpClient.send(request: mockHttpDataRequest)
         XCTAssertNotNil(resp)
-        XCTAssert(resp.statusCode == HttpStatusCode.ok)
+        let statusCode = await resp.statusCode
+        XCTAssertEqual(statusCode, HttpStatusCode.ok)
     }
 }

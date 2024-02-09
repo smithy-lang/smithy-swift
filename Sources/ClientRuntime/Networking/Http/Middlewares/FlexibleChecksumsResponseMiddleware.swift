@@ -46,9 +46,10 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         let httpResponse = response.httpResponse
 
         // Determine if any checksum headers are present
-        logger.debug("HEADERS: \(httpResponse.headers)")
+        logger.debug("HEADERS: \(await httpResponse.headers)")
+        let tempHeaders = await httpResponse.headers
         let _checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST.first {
-            httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil
+            tempHeaders.value(for: "x-amz-checksum-\($0)") != nil
         }
         guard let checksumHeader = _checksumHeader else {
             logger.warn(
@@ -67,7 +68,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         guard let responseChecksum = HashFunction.from(string: checksumString) else {
             throw ClientError.dataNotFound("Checksum found in header is not supported!")
         }
-        guard let expectedChecksum = httpResponse.headers.value(for: fullChecksumHeader) else {
+        guard let expectedChecksum = await httpResponse.headers.value(for: fullChecksumHeader) else {
             throw ClientError.dataNotFound("Could not determine the expected checksum!")
         }
 
@@ -93,7 +94,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         }
         
         // Handle body vs handle stream
-        switch response.httpResponse.body {
+        switch await response.httpResponse.body {
         case .data(let data):
             try handleNormalPayload(data)
         case .stream(let stream):
