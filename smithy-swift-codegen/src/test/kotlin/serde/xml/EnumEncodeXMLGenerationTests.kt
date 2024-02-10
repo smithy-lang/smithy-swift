@@ -17,25 +17,17 @@ class EnumEncodeXMLGenerationTests {
     fun `001 encode enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsInput+Encodable.swift")
-        val expectedContents =
-            """
-            extension XmlEnumsInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case fooEnum1
-                    case fooEnum2
-                    case fooEnum3
-                    case fooEnumList
-                }
-            
-                static func writingClosure(_ value: XmlEnumsInput?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("fooEnum1")].write(value.fooEnum1)
-                    try writer[.init("fooEnum2")].write(value.fooEnum2)
-                    try writer[.init("fooEnum3")].write(value.fooEnum3)
-                    try writer[.init("fooEnumList")].writeList(value.fooEnumList, memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false)
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension XmlEnumsInput {
+    static func writingClosure(_ value: XmlEnumsInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer["fooEnum1"].write(value.fooEnum1)
+        try writer["fooEnum2"].write(value.fooEnum2)
+        try writer["fooEnum3"].write(value.fooEnum3)
+        try writer["fooEnumList"].writeList(value.fooEnumList, memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: false)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -43,19 +35,14 @@ class EnumEncodeXMLGenerationTests {
     fun `002 encode nested enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedInput+Encodable.swift")
-        val expectedContents =
-            """
-            extension XmlEnumsNestedInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case nestedEnumsList
-                }
-            
-                static func writingClosure(_ value: XmlEnumsNestedInput?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("nestedEnumsList")].writeList(value.nestedEnumsList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false), memberNodeInfo: .init("member"), isFlattened: false)
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension XmlEnumsNestedInput {
+    static func writingClosure(_ value: XmlEnumsNestedInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer["nestedEnumsList"].writeList(value.nestedEnumsList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

@@ -55,7 +55,6 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.RetryMiddlew
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
-import software.amazon.smithy.swift.codegen.integration.serde.DynamicNodeDecodingGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionDecodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.integration.serde.UnionEncodeGeneratorStrategy
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddlewareGenerator
@@ -171,7 +170,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
                         if (shouldRenderCodingKeysForEncodable) {
-                            generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
+                            codingKeysGenerator?.generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                             writer.write("")
                         }
                         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: null
@@ -181,7 +180,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             if (shouldRenderDecodableBodyStructForInputShapes || httpBodyMembers.isNotEmpty()) {
                 renderBodyStructAndDecodableExtension(ctx, shape, mapOf())
-                DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
             }
         }
     }
@@ -197,14 +195,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         for ((shape, metadata) in outputShapesWithMetadata) {
             if (shape.members().any { it.isInHttpBody() }) {
                 renderBodyStructAndDecodableExtension(ctx, shape, metadata)
-                DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
             }
         }
 
         val errorShapes = resolveErrorShapes(ctx)
         for (shape in errorShapes) {
             renderBodyStructAndDecodableExtension(ctx, shape, mapOf())
-            DynamicNodeDecodingGeneratorStrategy(ctx, shape, isForBodyStruct = true).renderIfNeeded()
         }
     }
 
@@ -216,7 +212,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
-    private fun renderCodableExtension(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
+    fun renderCodableExtension(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        encodable: Boolean = true,
+        decodable: Boolean = true
+    ) {
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
         val rootNamespace = ctx.settings.moduleName
@@ -224,42 +225,60 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .definitionFile("./$rootNamespace/models/$symbolName+Codable.swift")
             .name(symbolName)
             .build()
+        val extensionProtocol = when (Pair(encodable, decodable)) {
+            Pair(true, true) -> codableProtocol
+            Pair(true, false) -> encodableProtocol
+            Pair(false, true) -> decodableProtocol
+            else -> return
+        }
 
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-            writer.openBlock("extension \$N: \$N {", "}", symbol, codableProtocol) {
+            val extensionOrNot = extensionProtocol?.let { writer.format(": \$N", it) } ?: ""
+            writer.openBlock("extension \$N\$L {", "}", symbol, extensionOrNot) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 val members = shape.members().toList()
                 when (shape) {
                     is StructureShape -> {
                         // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
                         val httpBodyMembers = members.filter { it.isInHttpBody() }
-                        generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
-                        writer.write("")
+                        if (encodable || decodable) {
+                            codingKeysGenerator?.generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
+                        }
                         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
-                        renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer, defaultTimestampFormat, path)
-                        writer.write("")
-                        renderStructDecode(ctx, mapOf(), httpBodyMembers, writer, defaultTimestampFormat, path)
+                        if (encodable) {
+                            writer.write("")
+                            renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer, defaultTimestampFormat, path)
+                        }
+                        if (decodable) {
+                            writer.write("")
+                            renderStructDecode(ctx, shape, mapOf(), httpBodyMembers, writer, defaultTimestampFormat, path)
+                        }
                     }
                     is UnionShape -> {
                         // get all members of the union shape
                         val sdkUnknownMember = MemberShape.builder().id("${shape.id}\$sdkUnknown").target("smithy.api#String").build()
                         val unionMembersForCodingKeys = members.toMutableList()
                         unionMembersForCodingKeys.add(0, sdkUnknownMember)
-                        generateCodingKeysForMembers(ctx, writer, unionMembersForCodingKeys)
-                        writer.write("")
-                        UnionEncodeGeneratorStrategy(ctx, shape, members, writer, defaultTimestampFormat).render()
-                        writer.write("")
-                        UnionDecodeGeneratorStrategy(ctx, members, writer, defaultTimestampFormat).render()
+                        if (encodable || decodable) {
+                            codingKeysGenerator?.generateCodingKeysForMembers(ctx, writer, unionMembersForCodingKeys)
+                        }
+                        if (encodable) {
+                            writer.write("")
+                            UnionEncodeGeneratorStrategy(ctx, shape, members, writer, defaultTimestampFormat).render()
+                        }
+                        if (decodable) {
+                            writer.write("")
+                            UnionDecodeGeneratorStrategy(ctx, shape, members, writer, defaultTimestampFormat).render()
+                        }
                     }
                 }
             }
         }
     }
 
-    private fun renderBodyStructAndDecodableExtension(ctx: ProtocolGenerator.GenerationContext, shape: Shape, metadata: Map<ShapeMetadata, Any>) {
+    open fun renderBodyStructAndDecodableExtension(ctx: ProtocolGenerator.GenerationContext, shape: Shape, metadata: Map<ShapeMetadata, Any>) {
         val bodySymbol: Symbol = ctx.symbolProvider.toSymbol(shape).bodySymbol()
         val rootNamespace = ctx.settings.moduleName
-        val isEventStream = shape.hasEventStreamMember(ctx.model)
         val httpBodyMembers = shape.members().filter { it.isInHttpBody() }.toList()
 
         val decodeSymbol = Symbol.builder()
@@ -275,21 +294,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
             writer.write("")
-            writer.openBlock("extension ${decodeSymbol.name}: \$N {", "}", decodableProtocol) {
+            val extensionOrNot = decodableProtocol?.let { writer.format(": \$N", it) } ?: ""
+            writer.openBlock("extension ${decodeSymbol.name}\$L {", "}", extensionOrNot) {
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
+                codingKeysGenerator?.generateCodingKeysForMembers(ctx, writer, httpBodyMembers)
                 writer.write("")
-                renderStructDecode(ctx, metadata, httpBodyMembers, writer, defaultTimestampFormat, "")
+                renderStructDecode(ctx, shape, metadata, httpBodyMembers, writer, defaultTimestampFormat, "")
             }
         }
-    }
-
-    private fun generateCodingKeysForMembers(
-        ctx: ProtocolGenerator.GenerationContext,
-        writer: SwiftWriter,
-        members: List<MemberShape>,
-    ) {
-        codingKeysGenerator.generateCodingKeysForMembers(ctx, writer, members)
     }
 
     private fun resolveInputShapes(ctx: ProtocolGenerator.GenerationContext): Map<Shape, Map<ShapeMetadata, Any>> {
@@ -319,7 +331,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return shapesInfo
     }
 
-    private fun resolveErrorShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
+    fun resolveErrorShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
         val operationErrorShapes = getHttpBindingOperations(ctx)
             .flatMap { it.errors }
             .map { ctx.model.expectShape(it) }
@@ -473,12 +485,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override val operationMiddleware = OperationMiddlewareGenerator()
 
-    open val codableProtocol = SwiftTypes.Protocols.Codable
+    open val codableProtocol: Symbol? = SwiftTypes.Protocols.Codable
     open val encodableProtocol: Symbol? = SwiftTypes.Protocols.Encodable
-    open val decodableProtocol = SwiftTypes.Protocols.Decodable
+    open val decodableProtocol: Symbol? = SwiftTypes.Protocols.Decodable
 
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
-    protected abstract val codingKeysGenerator: CodingKeysGenerator
+    protected abstract val codingKeysGenerator: CodingKeysGenerator?
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
     protected abstract val httpResponseGenerator: HttpResponseGeneratable
     protected abstract val shouldRenderDecodableBodyStructForInputShapes: Boolean
@@ -495,6 +507,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     )
     protected abstract fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,
+        shapeContainingMembers: Shape,
         shapeMetaData: Map<ShapeMetadata, Any>,
         members: List<MemberShape>,
         writer: SwiftWriter,

@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 class HttpResponseGenerator(
     val unknownServiceErrorSymbol: Symbol,
     val defaultTimestampFormat: TimestampFormatTrait.Format,
+    val httpResponseBindingOutputGenerator: HttpResponseBindingOutputGeneratable,
     val httpResponseBindingErrorGenerator: HttpResponseBindingErrorGeneratable,
     val httpResponseBindingErrorInitGeneratorFactory: HttpResponseBindingErrorInitGeneratorFactory? = null
 ) : HttpResponseGeneratable {
@@ -28,7 +29,7 @@ class HttpResponseGenerator(
                 if (visitedOutputShapes.contains(outputShapeId)) {
                     continue
                 }
-                HttpResponseBindingOutputGenerator(ctx, operation, httpBindingResolver, defaultTimestampFormat).render()
+                httpResponseBindingOutputGenerator.render(ctx, operation, httpBindingResolver, defaultTimestampFormat)
                 visitedOutputShapes.add(outputShapeId)
             }
         }

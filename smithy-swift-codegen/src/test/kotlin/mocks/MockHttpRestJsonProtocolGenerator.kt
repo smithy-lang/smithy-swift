@@ -17,7 +17,6 @@ import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCusto
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpRequestEncoder
@@ -26,6 +25,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysCustomizationJsonName
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.codingKeys.DefaultCodingKeysGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.StructDecodeGenerator
@@ -64,6 +64,7 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
         unknownServiceErrorSymbol,
         defaultTimestampFormat,
+        HttpResponseBindingOutputGenerator(),
         MockHttpResponseBindingErrorGenerator()
     )
     override val shouldRenderDecodableBodyStructForInputShapes = true
@@ -84,6 +85,7 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     }
     override fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,
+        shapeContainingMembers: Shape,
         shapeMetadata: Map<ShapeMetadata, Any>,
         members: List<MemberShape>,
         writer: SwiftWriter,
@@ -119,7 +121,7 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
             httpProtocolCustomizable,
             operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
-            HttpProtocolUnitTestGenerator.SerdeContext("JSONEncoder()", "JSONDecoder()", ".secondsSince1970")
+//            HttpProtocolUnitTestGenerator.SerdeContext("JSONEncoder()", "JSONDecoder()", ".secondsSince1970")
         ).generateProtocolTests()
     }
 }

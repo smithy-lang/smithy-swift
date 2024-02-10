@@ -7,6 +7,8 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseErrorClosureUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
@@ -29,12 +31,8 @@ class DeserializeMiddleware(
         operationStackName: String
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
-        val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
-        val httpResponseClosure = "responseClosure(decoder: decoder)"
-        val httpResponseErrorClosure = writer.format(
-            "responseErrorClosure(\$N.self, decoder: decoder)",
-            outputError
-        )
+        val httpResponseClosure = ResponseClosureUtils(ctx, writer, op).render()
+        val httpResponseErrorClosure = ResponseErrorClosureUtils(ctx, writer, op).render()
         writer.write(
             "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N>(\$L, \$L))",
             operationStackName,

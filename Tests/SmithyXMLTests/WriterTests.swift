@@ -8,7 +8,7 @@
 import XCTest
 @_spi(SmithyXML) import SmithyXML
 
-class XMLEncoderTests: XCTestCase {
+class WriterTests: XCTestCase {
 
     private struct HasNestedElements: Encodable {
 
@@ -28,8 +28,8 @@ class XMLEncoderTests: XCTestCase {
             HasNestedElements(a: "a", b: "b"),
             HasNestedElements.write(_:to:)
         )
-        let xml = "<test><a>a</a><b>b</b></test>"
-        XCTAssertEqual(String(data: data, encoding: .utf8), xml)
+        let expected = "<test><a>a</a><b>b</b></test>"
+        XCTAssertEqual(String(data: data, encoding: .utf8), expected)
     }
 
     private struct HasNestedElementAndAttribute: Encodable {
@@ -50,19 +50,19 @@ class XMLEncoderTests: XCTestCase {
             HasNestedElementAndAttribute(a: "a", b: "b"),
             HasNestedElementAndAttribute.write(_:to:)
         )
-        let xml = "<test b=\"b\"><a>a</a></test>"
-        XCTAssertEqual(String(data: data, encoding: .utf8), xml)
+        let expected = "<test b=\"b\"><a>a</a></test>"
+        XCTAssertEqual(String(data: data, encoding: .utf8), expected)
     }
 
     func test_encodesXMLWithElementAndAttributeAndNamespace() throws {
         let data = try SmithyXML.XMLReadWrite.documentWritingClosure(
-            rootNodeInfo: .init("test", namespace: .init(prefix: "", uri: "https://www.def.com/1.0"))
+            rootNodeInfo: .init("test", namespaceDef: .init(prefix: "", uri: "https://www.def.com/1.0"))
         )(
             HasNestedElementAndAttribute(a: "a", b: "b"),
             HasNestedElementAndAttribute.write(_:to:)
         )
-        let xml = "<test xmlns=\"https://www.def.com/1.0\" b=\"b\"><a>a</a></test>"
-        XCTAssertEqual(String(data: data, encoding: .utf8), xml)
+        let expected = "<test xmlns=\"https://www.def.com/1.0\" b=\"b\"><a>a</a></test>"
+        XCTAssertEqual(String(data: data, encoding: .utf8), expected)
     }
 
     func test_encodesXMLWithElementAndAttributeAndSpecialChars() throws {
@@ -72,7 +72,7 @@ class XMLEncoderTests: XCTestCase {
             HasNestedElementAndAttribute(a: "'<a&z>'", b: "\"b&s\""),
             HasNestedElementAndAttribute.write(_:to:)
         )
-        let xml = "<test b=\"&quot;b&amp;s&quot;\"><a>\'&lt;a&amp;z&gt;\'</a></test>"
-        XCTAssertEqual(String(data: data, encoding: .utf8), xml)
+        let expected = "<test b=\"&quot;b&amp;s&quot;\"><a>\'&lt;a&amp;z&gt;\'</a></test>"
+        XCTAssertEqual(String(data: data, encoding: .utf8), expected)
     }
 }

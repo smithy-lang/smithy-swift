@@ -1,10 +1,5 @@
 package software.amazon.smithy.swift.codegen.integration.serde.readwrite
 
-import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
-import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
-import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
-import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
-import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
@@ -37,15 +32,9 @@ class WritingClosureUtils(
     }
 
     private fun writingClosure(shape: Shape, memberTimestampFormatTrait: TimestampFormatTrait? = null): String {
-        when {
-            ctx.service.hasTrait<AwsJson1_0Trait>() ||
-                ctx.service.hasTrait<AwsJson1_1Trait>() ||
-                ctx.service.hasTrait<RestJson1Trait>() -> {
-                return "JSONReadWrite.writingClosure()"
-            }
-            ctx.service.hasTrait<AwsQueryTrait>() || ctx.service.hasTrait<Ec2QueryTrait>() -> {
-                return "FormURLReadWrite.writingClosure()"
-            }
+        when (ctx.service.requestWireProtocol) {
+            WireProtocol.JSON -> return "JSONReadWrite.writingClosure()"
+            WireProtocol.FORM_URL -> return "FormURLReadWrite.writingClosure()"
         }
         return when (shape) {
             is MapShape -> {

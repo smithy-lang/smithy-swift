@@ -21,36 +21,35 @@ class EventStreamsInitialResponseTests {
             "/InitialMessageEventStreams/models/TestStreamOperationWithInitialRequestResponseOutput+HttpResponseBinding.swift"
         )
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce(
-            """
-            extension TestStreamOperationWithInitialRequestResponseOutput: ClientRuntime.HttpResponseBinding {
-                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-                    if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {
-                        let messageDecoder: ClientRuntime.MessageDecoder? = nil
-                        let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<InitialMessageEventStreamsClientTypes.TestStream>(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)
-                        self.value = decoderStream.toAsyncStream()
-                        if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {
-                            let decoder = JSONDecoder()
-                            do {
-                                let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)
-                                self.initial1 = response["initial1"].map { value in KinesisClientTypes.Tag(value: value) }
-                                self.initial2 = response["initial2"].map { value in KinesisClientTypes.Tag(value: value) }
-                            } catch {
-                                print("Error decoding JSON: \(error)")
-                                self.initial1 = nil
-                                self.initial2 = nil
-                            }
-                        } else {
-                            self.initial1 = nil
-                            self.initial2 = nil
-                        }
-                    } else {
-                        self.value = nil
-                    }
+        val expectedContents = """
+extension TestStreamOperationWithInitialRequestResponseOutput: ClientRuntime.HttpResponseBinding {
+    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
+        if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {
+            let messageDecoder: ClientRuntime.MessageDecoder? = nil
+            let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<InitialMessageEventStreamsClientTypes.TestStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: jsonUnmarshalClosure(responseDecoder: responseDecoder))
+            self.value = decoderStream.toAsyncStream()
+            if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {
+                let decoder = JSONDecoder()
+                do {
+                    let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)
+                    self.initial1 = response["initial1"].map { value in KinesisClientTypes.Tag(value: value) }
+                    self.initial2 = response["initial2"].map { value in KinesisClientTypes.Tag(value: value) }
+                } catch {
+                    print("Error decoding JSON: \(error)")
+                    self.initial1 = nil
+                    self.initial2 = nil
                 }
+            } else {
+                self.initial1 = nil
+                self.initial2 = nil
             }
-            """.trimIndent()
-        )
+        } else {
+            self.value = nil
+        }
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
     }
 
     private fun setupInitialMessageTests(

@@ -14,6 +14,12 @@ import XCTest
  */
 public typealias ValidateCallback = (Data, Data) -> Void
 
+public enum HTTPBodyContentType {
+    case xml
+    case json
+    case formURL
+}
+
 open class HttpRequestTestBase: XCTestCase {
 
     open override func setUp() {
@@ -223,22 +229,13 @@ open class HttpRequestTestBase: XCTestCase {
     public func genericAssertEqualHttpBodyData(
         expected: ByteStream,
         actual: ByteStream,
-        isXML: Bool,
-        isJSON: Bool,
-        _ callback: (Data, Data) -> Void,
+        contentType: HTTPBodyContentType,
         file: StaticString = #filePath,
         line: UInt = #line
     ) async throws {
         let expectedData = try await expected.readData()
         let actualData = try await actual.readData()
-        if shouldCompareData(expectedData, actualData) {
-            if isXML {
-                XCTAssertXMLDataEqual(actualData!, expectedData!, file: file, line: line)
-            } else if isJSON {
-                XCTAssertJSONDataEqual(actualData!, expectedData!, file: file, line: line)
-            }
-            callback(expectedData!, actualData!)
-        }
+        compareData(contentType: contentType, expectedData, actualData, file: file, line: line)
     }
 
     private func extractData(_ httpBody: ByteStream) throws -> Result<Data?, Error> {
@@ -253,17 +250,23 @@ open class HttpRequestTestBase: XCTestCase {
         }
     }
 
-    private func shouldCompareData(_ expected: Data?, _ actual: Data?) -> Bool {
-        if expected == nil && actual == nil {
-            return false
+    private func compareData(contentType: HTTPBodyContentType, _ expected: Data?, _ actual: Data?, file: StaticString, line: UInt) {
+        if let expected, let actual {
+            switch contentType {
+            case .xml:
+                XCTAssertXMLDataEqual(actual, expected, file: file, line: line)
+            case .json:
+                XCTAssertJSONDataEqual(actual, expected, file: file, line: line)
+            case .formURL:
+                XCTAssertFormURLDataEqual(actual, expected, file: file, line: line)
+            }
         } else if expected != nil && actual == nil {
-            XCTFail("actual data in ByteStream is nil but expected is not")
-            return false
+            XCTFail("actual data in ByteStream is nil but expected is not", file: file, line: line)
         } else if expected == nil && actual != nil {
-            XCTFail("expected data in ByteStream is nil but actual is not")
-            return false
+            XCTFail("expected data in ByteStream is nil but actual is not", file: file, line: line)
+        } else {
+            // expected and actual bodies are both nil, no operation
         }
-        return true
     }
 
     /**

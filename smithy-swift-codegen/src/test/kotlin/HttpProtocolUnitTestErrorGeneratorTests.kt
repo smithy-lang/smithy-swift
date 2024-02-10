@@ -12,9 +12,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
     fun `it creates error test for simple error with no payload`() {
         val contents = getTestFileContents("example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
-
-        val expectedContents =
-"""
+        val expectedContents = """
 class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
     /// Serializes a complex error with no message member
     func testRestJsonComplexErrorWithNoMessage() async throws {
@@ -26,14 +24,14 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                     "X-Amzn-Errortype": "ComplexError",
                     "X-Header": "Header"
                 ],
-                content: .data( ""${'"'}
+                content: .data(Data(""${'"'}
                 {
                     "TopLevel": "Top level",
                     "Nested": {
                         "Fooooo": "bar"
                     }
                 }
-                ""${'"'}.data(using: .utf8)!)
+                ""${'"'}.utf8))
             ) else {
                 XCTFail("Something is wrong with the created http response")
                 return
@@ -42,7 +40,7 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
             let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-            let greetingWithErrorsOutputError = try await GreetingWithErrorsOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
+            let greetingWithErrorsOutputError = try await responseErrorClosure(GreetingWithErrorsOutputError.self, decoder: decoder)(httpResponse)
 
             if let actual = greetingWithErrorsOutputError as? ComplexError {
 
@@ -61,8 +59,8 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                 XCTFail("The deserialized error type does not match expected type")
             }
 
-        } catch let err {
-            XCTFail(err.localizedDescription)
+        } catch {
+            XCTFail(error.localizedDescription)
         }
     }
 }
@@ -74,9 +72,7 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
     fun `it creates error test for complex error with payload`() {
         val contents = getTestFileContents("example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
-
-        val expectedContents =
-"""
+        val expectedContents = """
 class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
     /// Serializes a complex error with no message member
     func testRestJsonComplexErrorWithNoMessage() async throws {
@@ -88,14 +84,14 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                     "X-Amzn-Errortype": "ComplexError",
                     "X-Header": "Header"
                 ],
-                content: .data( ""${'"'}
+                content: .data(Data(""${'"'}
                 {
                     "TopLevel": "Top level",
                     "Nested": {
                         "Fooooo": "bar"
                     }
                 }
-                ""${'"'}.data(using: .utf8)!)
+                ""${'"'}.utf8))
             ) else {
                 XCTFail("Something is wrong with the created http response")
                 return
@@ -104,7 +100,7 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
             let decoder = ClientRuntime.JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
             decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-            let greetingWithErrorsOutputError = try await GreetingWithErrorsOutputError.makeError(httpResponse: httpResponse, decoder: decoder)
+            let greetingWithErrorsOutputError = try await responseErrorClosure(GreetingWithErrorsOutputError.self, decoder: decoder)(httpResponse)
 
             if let actual = greetingWithErrorsOutputError as? ComplexError {
 
@@ -123,8 +119,8 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                 XCTFail("The deserialized error type does not match expected type")
             }
 
-        } catch let err {
-            XCTFail(err.localizedDescription)
+        } catch {
+            XCTFail(error.localizedDescription)
         }
     }
 }
