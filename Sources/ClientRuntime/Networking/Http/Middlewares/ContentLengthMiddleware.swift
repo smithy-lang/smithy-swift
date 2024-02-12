@@ -35,8 +35,7 @@ public struct ContentLengthMiddleware<OperationStackOutput>: Middleware {
         case .stream(let stream):
             if let length = stream.length {
                 if !stream.isEligibleForAwsChunkedStreaming()
-                    && !(input.headers.value(for: "Transfer-Encoding") == "chunked") 
-                {
+                    && !(input.headers.value(for: "Transfer-Encoding") == "chunked") {
                     input.headers.update(name: "Content-Length", value: String(length))
                 }
             } else if (requiresLength == false && unsignedPayload == true) ||
