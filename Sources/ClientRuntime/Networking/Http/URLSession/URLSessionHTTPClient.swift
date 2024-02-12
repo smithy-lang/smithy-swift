@@ -260,7 +260,13 @@ public final class URLSessionHTTPClient: HTTPClient {
 
             // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
             // that URLSession can stream its request body from.
-            let streamBridge = requestStream.map { FoundationStreamBridge(readableStream: $0, bufferSize: bufferSize, isChunkedTransfer: isChunkedTransfer) }
+            let streamBridge = requestStream.map {
+                FoundationStreamBridge(
+                    readableStream: $0,
+                    bufferSize: bufferSize,
+                    isChunkedTransfer: isChunkedTransfer
+                )
+            }
 
             // Create the request (with a streaming body when needed.)
             let urlRequest = self.makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
@@ -278,7 +284,9 @@ public final class URLSessionHTTPClient: HTTPClient {
                 Task {
                     do {
                         guard let streamBridge else {
-                            throw ClientError.dataNotFound("Could not create Foundation Steam Bridge!") // dont need this
+                            throw ClientError.dataNotFound(
+                                "Could not create Foundation Steam Bridge!"
+                            )
                         }
                         try await sendAwsChunkedBody(request: request) { chunk, isFinalChunk in
                             try await streamBridge.writeChunk(chunk: chunk, endOfStream: isFinalChunk)

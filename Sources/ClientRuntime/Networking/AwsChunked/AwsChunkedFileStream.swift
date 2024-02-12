@@ -14,7 +14,13 @@ class AwsChunkedFileStream {
     private var trailingHeaders: Headers
     private var chunkedReader: AwsChunkedReader
 
-    init(stream: FileStream, signingConfig: SigningConfig, previousSignature: String, trailingHeaders: Headers, checksumAlgorithm: HashFunction? = nil) {
+    init(
+        stream: FileStream,
+        signingConfig: SigningConfig,
+        previousSignature: String,
+        trailingHeaders: Headers,
+        checksumAlgorithm: HashFunction? = nil
+    ) {
         self.stream = stream
         self.signingConfig = signingConfig
         self.previousSignature = previousSignature

@@ -79,7 +79,9 @@ extension ValidatingBufferedStream: Stream {
                 }
 
                 if expectedChecksum != actualChecksum {
-                    throw ChecksumMismatchException.message("Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)")
+                    throw ChecksumMismatchException.message(
+                        "Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)"
+                    )
                 }
             }
         }

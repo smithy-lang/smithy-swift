@@ -138,7 +138,11 @@ public class AwsChunkedReader {
     }
 
     private func signChunk(chunk: Data, config: SigningConfig) async throws -> String {
-        let chunkSignature = try await Signer.signChunk(chunk: chunk, previousSignature: self.previousSignature, config: config)
+        let chunkSignature = try await Signer.signChunk(
+            chunk: chunk,
+            previousSignature: self.previousSignature,
+            config: config
+        )
         if chunk.isEmpty {
             // Ensure an empty chunk is only signed once
             emptyChunkSigned = true

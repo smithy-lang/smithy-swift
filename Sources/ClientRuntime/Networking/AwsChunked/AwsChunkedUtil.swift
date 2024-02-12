@@ -40,7 +40,12 @@ extension SdkHttpRequestBuilder {
         }
     }
 
-    public func setAwsChunkedBody(signingConfig: SigningConfig, signature: String, trailingHeaders: Headers, checksumAlgorithm: HashFunction? = nil) throws {
+    public func setAwsChunkedBody(
+        signingConfig: SigningConfig,
+        signature: String,
+        trailingHeaders: Headers,
+        checksumAlgorithm: HashFunction? = nil
+    ) throws {
         let body = self.getBody()
         switch body {
         case .stream(let stream):
@@ -122,15 +127,22 @@ extension Int {
     }
 }
 
-public func sendAwsChunkedBody(request: SdkHttpRequest, writeChunk: @escaping (Data, Bool) async throws -> Void) async throws {
+public func sendAwsChunkedBody(
+    request: SdkHttpRequest,
+    writeChunk: @escaping (Data, Bool) async throws -> Void
+) async throws {
     let body = request.body
 
     guard case .stream(let stream) = body, stream.isEligibleForAwsChunkedStreaming() else {
-        throw ByteStreamError.invalidStreamTypeForChunkedBody("The stream is not eligible for AWS chunked streaming or is not a stream type!")
+        throw ByteStreamError.invalidStreamTypeForChunkedBody(
+            "The stream is not eligible for AWS chunked streaming or is not a stream type!"
+        )
     }
 
     guard let awsChunkedStream = stream as? AwsChunkedStream else {
-        throw ByteStreamError.streamDoesNotConformToAwsChunkedStream("Stream does not conform to AwsChunkedStream! Type is \(stream).")
+        throw ByteStreamError.streamDoesNotConformToAwsChunkedStream(
+            "Stream does not conform to AwsChunkedStream! Type is \(stream)."
+        )
     }
 
     let chunkedReader = awsChunkedStream.getChunkedReader()
