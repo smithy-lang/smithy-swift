@@ -27,12 +27,12 @@ public final class SDKDefaultIO {
     /// If any log level other than the default log level of `.none` is desired,
     /// this setter needs to be called as the first thing in the program.
     public func setLogLevel(level: LogLevel) {
-        Logger.initialize(pipe: stdout, level: level)
+        Logger.initilize(pipe: stdout, level: level)
     }
 
     private init() {
         CommonRuntimeKit.initialize()
-        setLogLevel(level: .none)
+        Logger.initilize(pipe: stdout, level: .none)
 
         do {
             self.eventLoopGroup = try EventLoopGroup(threadCount: 0)
