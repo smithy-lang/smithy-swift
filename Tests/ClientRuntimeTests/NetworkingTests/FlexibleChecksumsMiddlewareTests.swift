@@ -254,7 +254,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         let mockHandler = MockHandler { (_, input) in
             let httpResponse = HttpResponse(body: responseBody, statusCode: HttpStatusCode.ok)
             httpResponse.headers.add(name: expectedHeader, value: expectedChecksum)
-            let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+            let mockOutput = try await MockOutput.responseClosure(httpResponse)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
             if let validatedChecksum = self.builtContext.attributes.get(key: AttributeKey<String>(name: "ChecksumHeaderValidated")), validatedChecksum == expectedHeader {
                 isChecksumValidated = true
@@ -290,7 +290,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
             }
             let httpResponse = HttpResponse(body: responseBody, statusCode: HttpStatusCode.ok)
             httpResponse.headers.add(name: expectedHeader, value: expectedChecksum)
-            let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+            let mockOutput = try await MockOutput.responseClosure(httpResponse)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
             if let validatedChecksum = self.builtContext.attributes.get(key: AttributeKey<String>(name: "ChecksumHeaderValidated")), validatedChecksum == expectedHeader {
                 isChecksumValidated = true
@@ -324,7 +324,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
             let responseBody = ByteStream.data(Data("Hello, world!".utf8))
             let httpResponse = HttpResponse(body: responseBody, statusCode: HttpStatusCode.ok)
             httpResponse.headers.addAll(headers: responseHeaders)
-            let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+            let mockOutput = try await MockOutput.responseClosure(httpResponse)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
             validatedChecksum = self.builtContext.attributes.get(key: AttributeKey<String>(name: "ChecksumHeaderValidated"))
             if validatedChecksum != nil && validatedChecksum == expectedValidationHeader {
@@ -376,7 +376,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
             XCTAssertEqual(input.headers.value(for: "x-amz-content-sha256"), "UNSIGNED-PAYLOAD")
             XCTAssertEqual(input.headers.value(for: "x-amz-checksum-sha256"), expectedChecksumSHA256)
             let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
-            let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+            let mockOutput = try await MockOutput.responseClosure(httpResponse)
             return OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
         }
 
