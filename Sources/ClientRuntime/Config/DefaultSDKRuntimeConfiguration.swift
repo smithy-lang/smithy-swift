@@ -90,7 +90,7 @@ public extension DefaultSDKRuntimeConfiguration {
     /// - Parameter httpClientConfiguration: The configuration for the HTTP client.
     /// - Returns: The `CRTClientEngine` client on Mac & Linux platforms, returns `URLSessionHttpClient` on non-Mac Apple platforms.
     static func makeClient(httpClientConfiguration: HttpClientConfiguration) -> HTTPClient {
-        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS) || os(macOS)
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         return URLSessionHTTPClient(httpClientConfiguration: httpClientConfiguration)
         #else
         let connectTimeoutMs = httpClientConfiguration.connectTimeout.map { UInt32($0 * 1_000_000) }
