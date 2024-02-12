@@ -35,7 +35,11 @@ extension HttpResponse: CustomDebugStringConvertible {
 extension ByteStream {
 
     // Convert the body stream to a ValidatingFileStream to check checksums
-    public static func getChecksumValidatingBody(stream: Stream, expectedChecksum: String, checksumAlgorithm: HashFunction) -> ByteStream {
+    public static func getChecksumValidatingBody(
+        stream: Stream,
+        expectedChecksum: String,
+        checksumAlgorithm: HashFunction
+    ) -> ByteStream {
         if let bufferedStream = stream as? BufferedStream {
             return ByteStream.stream(
                 ValidatingBufferedStream(

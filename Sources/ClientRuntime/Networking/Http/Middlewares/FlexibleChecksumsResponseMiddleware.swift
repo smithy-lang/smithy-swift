@@ -18,7 +18,9 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
     public init(validationMode: Bool, priorityList: [String] = []) {
         self.validationMode = validationMode
-        self.priorityList = !priorityList.isEmpty ? withPriority(checksums: priorityList) : CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
+        self.priorityList = !priorityList.isEmpty
+            ? withPriority(checksums: priorityList)
+            : CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
     }
 
     public func handle<H>(context: Context,
@@ -48,10 +50,11 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         let httpResponse = response.httpResponse
 
         // Determine if any checksum headers are present
-        logger.debug("HEADERS: \(httpResponse.headers)")
-        let _checksumHeader = priorityList.first { httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil }
+        let checksumHeaderIsPresent = priorityList.first {
+            httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil
+        }
 
-        guard let checksumHeader = _checksumHeader else {
+        guard let checksumHeader = checksumHeaderIsPresent else {
             logger.warn(
                 "User requested checksum validation, but the response headers did not contain any valid checksums"
             )
@@ -90,7 +93,11 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         }
 
         func handleStreamPayload(_ stream: Stream) throws {
-            let validatingStream = ByteStream.getChecksumValidatingBody(stream: stream, expectedChecksum: expectedChecksum, checksumAlgorithm: responseChecksum)
+            let validatingStream = ByteStream.getChecksumValidatingBody(
+                stream: stream,
+                expectedChecksum: expectedChecksum,
+                checksumAlgorithm: responseChecksum
+            )
 
             // Set the response to a validating stream
             context.response = response.httpResponse
