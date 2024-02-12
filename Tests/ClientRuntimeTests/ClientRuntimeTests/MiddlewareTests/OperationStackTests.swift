@@ -43,8 +43,9 @@ class OperationStackTests: HttpRequestTestBase {
             self.checkOrder(&currExpectCount, 4)
         }))
 
-        stack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(
+        stack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput>(
                                             id: "TestDeserializeMiddleware",
+                                            responseClosure: MockOutput.responseClosure(_:),
                                             callback: {_, _ in
                                                 self.checkOrder(&currExpectCount, 5)
                                                 return nil

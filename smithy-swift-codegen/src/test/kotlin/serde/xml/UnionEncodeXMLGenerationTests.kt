@@ -18,93 +18,52 @@ class UnionEncodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-unions.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape+Codable.swift")
         val expectedContents = """
-extension RestXmlProtocolClientTypes.XmlUnionShape: Swift.Codable {
-    enum CodingKeys: Swift.String, Swift.CodingKey {
-        case datavalue = "dataValue"
-        case doublevalue = "doubleValue"
-        case mapvalue = "mapValue"
-        case sdkUnknown
-        case stringlist = "stringList"
-        case structvalue = "structValue"
-        case timestampvalue = "timeStampValue"
-        case unionvalue = "unionValue"
-    }
+extension RestXmlProtocolClientTypes.XmlUnionShape {
 
     static func writingClosure(_ value: RestXmlProtocolClientTypes.XmlUnionShape?, to writer: SmithyXML.Writer) throws {
         guard let value else { writer.detach(); return }
         switch value {
             case let .datavalue(datavalue):
-                try writer[.init("dataValue")].write(datavalue)
+                try writer["dataValue"].write(datavalue)
             case let .doublevalue(doublevalue):
-                try writer[.init("doubleValue")].write(doublevalue)
+                try writer["doubleValue"].write(doublevalue)
             case let .mapvalue(mapvalue):
-                try writer[.init("mapValue")].writeMap(mapvalue, valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: .init("K"), valueNodeInfo: .init("V"), isFlattened: false)
+                try writer["mapValue"].writeMap(mapvalue, valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false)
             case let .stringlist(stringlist):
-                try writer[.init("stringList")].writeList(stringlist, memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false)
+                try writer["stringList"].writeList(stringlist, memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: false)
             case let .structvalue(structvalue):
-                try writer[.init("structValue")].write(structvalue, writingClosure: RestXmlProtocolClientTypes.XmlNestedUnionStruct.writingClosure(_:to:))
+                try writer["structValue"].write(structvalue, writingClosure: RestXmlProtocolClientTypes.XmlNestedUnionStruct.writingClosure(_:to:))
             case let .timestampvalue(timestampvalue):
-                try writer[.init("timeStampValue")].writeTimestamp(timestampvalue, format: .dateTime)
+                try writer["timeStampValue"].writeTimestamp(timestampvalue, format: .dateTime)
             case let .unionvalue(unionvalue):
-                try writer[.init("unionValue")].write(unionvalue, writingClosure: RestXmlProtocolClientTypes.XmlUnionShape.writingClosure(_:to:))
+                try writer["unionValue"].write(unionvalue, writingClosure: RestXmlProtocolClientTypes.XmlUnionShape.writingClosure(_:to:))
             case let .sdkUnknown(sdkUnknown):
                 try writer[.init("sdkUnknown")].write(sdkUnknown)
         }
     }
 
-    public init(from decoder: Swift.Decoder) throws {
-        let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-        let key = containerValues.allKeys.first
-        switch key {
-            case .doublevalue:
-                let doublevalueDecoded = try containerValues.decode(Swift.Double.self, forKey: .doublevalue)
-                self = .doublevalue(doublevalueDecoded)
-            case .datavalue:
-                let datavalueDecoded = try containerValues.decode(ClientRuntime.Data.self, forKey: .datavalue)
-                self = .datavalue(datavalueDecoded)
-            case .unionvalue:
-                let unionvalueDecoded = try containerValues.decode(RestXmlProtocolClientTypes.XmlUnionShape.self, forKey: .unionvalue)
-                self = .unionvalue(unionvalueDecoded)
-            case .structvalue:
-                let structvalueDecoded = try containerValues.decode(RestXmlProtocolClientTypes.XmlNestedUnionStruct.self, forKey: .structvalue)
-                self = .structvalue(structvalueDecoded)
-            case .mapvalue:
-                struct KeyVal0{struct K{}; struct V{}}
-                let mapvalueWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: ClientRuntime.MapEntry<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>.CodingKeys.self, forKey: .mapvalue)
-                if let mapvalueWrappedContainer = mapvalueWrappedContainer {
-                    let mapvalueContainer = try mapvalueWrappedContainer.decodeIfPresent([ClientRuntime.MapKeyValue<Swift.String, Swift.String, KeyVal0.K, KeyVal0.V>].self, forKey: .entry)
-                    var mapvalueBuffer: [Swift.String:Swift.String]? = nil
-                    if let mapvalueContainer = mapvalueContainer {
-                        mapvalueBuffer = [Swift.String:Swift.String]()
-                        for stringContainer0 in mapvalueContainer {
-                            mapvalueBuffer?[stringContainer0.key] = stringContainer0.value
-                        }
-                    }
-                    self = .mapvalue(mapvalueBuffer)
-                } else {
-                    self = .mapvalue([:])
-                }
-            case .stringlist:
-                struct KeyVal0{struct member{}}
-                let stringlistWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringlist)
-                if let stringlistWrappedContainer = stringlistWrappedContainer {
-                    let stringlistContainer = try stringlistWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
-                    var stringlistBuffer:[Swift.String]? = nil
-                    if let stringlistContainer = stringlistContainer {
-                        stringlistBuffer = [Swift.String]()
-                        for stringContainer0 in stringlistContainer {
-                            stringlistBuffer?.append(stringContainer0)
-                        }
-                    }
-                    self = .stringlist(stringlistBuffer)
-                } else {
-                    self = .stringlist([])
-                }
-            case .timestampvalue:
-                let timestampvalueDecoded = try containerValues.decodeTimestamp(.dateTime, forKey: .timestampvalue)
-                self = .timestampvalue(timestampvalueDecoded)
-            default:
-                self = .sdkUnknown("")
+    static var readingClosure: SmithyReadWrite.ReadingClosure<RestXmlProtocolClientTypes.XmlUnionShape, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            let name = reader.children.first?.nodeInfo.name
+            switch name {
+                case "doubleValue":
+                    return .doublevalue(try reader["doubleValue"].read())
+                case "dataValue":
+                    return .datavalue(try reader["dataValue"].read())
+                case "unionValue":
+                    return .unionvalue(try reader["unionValue"].read(readingClosure: RestXmlProtocolClientTypes.XmlUnionShape.readingClosure))
+                case "structValue":
+                    return .structvalue(try reader["structValue"].read(readingClosure: RestXmlProtocolClientTypes.XmlNestedUnionStruct.readingClosure))
+                case "mapValue":
+                    return .mapvalue(try reader["mapValue"].readMap(valueReadingClosure: Swift.String.readingClosure, keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false))
+                case "stringList":
+                    return .stringlist(try reader["stringList"].readList(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: false))
+                case "timeStampValue":
+                    return .timestampvalue(try reader["timeStampValue"].readTimestamp(format: .dateTime))
+                default:
+                    return .sdkUnknown(name ?? "")
+            }
         }
     }
 }

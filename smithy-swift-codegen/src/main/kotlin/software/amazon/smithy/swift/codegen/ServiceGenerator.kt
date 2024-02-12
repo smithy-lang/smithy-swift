@@ -89,7 +89,7 @@ class ServiceGenerator() {
          * Helper method to grab documentation for operation's member shapes (input, output, error(s)
          */
         private fun retrieveMemberShapeDoc(shapeId: ShapeId, model: Model): String {
-            val docTrait = model.getShape(shapeId).get().getTrait(DocumentationTrait::class.java).getOrNull()
+            val docTrait = model.getShape(shapeId).get().getTrait(DocumentationTrait::class.java).orElse(null)
             return docTrait?.value ?: "[no documentation found]"
         }
     }

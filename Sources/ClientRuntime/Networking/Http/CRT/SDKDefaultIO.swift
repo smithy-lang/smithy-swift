@@ -18,9 +18,17 @@ public final class SDKDefaultIO {
     public let hostResolver: HostResolver
     public let clientBootstrap: ClientBootstrap
     public let tlsContext: TLSContext
+    public var logger: Logger
 
     /// Provide singleton access since we want to share and re-use the instance properties
     public static let shared = SDKDefaultIO()
+
+    /// The setter for changing log level of SDKDefaultIO logger.
+    /// If any log level other than the default log level of `.none` is desired,
+    /// this setter needs to be called as the first thing in the program.
+    public func setLogLevel(level: LogLevel) {
+        SDKDefaultIO.shared.logger = Logger(pipe: stdout, level: level)
+    }
 
     private init() {
         CommonRuntimeKit.initialize()

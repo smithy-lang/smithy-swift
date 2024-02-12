@@ -17,38 +17,19 @@ class SetDecodeXMLGenerationTests {
     fun `XmlEnumSetOutputBody decodable`() {
         val context = setupTests("Isolated/Restxml/xml-sets.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumSetOutputBody+Decodable.swift")
-        val expectedContents =
-            """
-            extension XmlEnumSetOutputBody: Swift.Decodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case fooEnumSet
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    if containerValues.contains(.fooEnumSet) {
-                        struct KeyVal0{struct member{}}
-                        let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumSet)
-                        if let fooEnumSetWrappedContainer = fooEnumSetWrappedContainer {
-                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([RestXmlProtocolClientTypes.FooEnum].self, forKey: .member)
-                            var fooEnumSetBuffer:Swift.Set<RestXmlProtocolClientTypes.FooEnum>? = nil
-                            if let fooEnumSetContainer = fooEnumSetContainer {
-                                fooEnumSetBuffer = Swift.Set<RestXmlProtocolClientTypes.FooEnum>()
-                                for stringContainer0 in fooEnumSetContainer {
-                                    fooEnumSetBuffer?.insert(stringContainer0)
-                                }
-                            }
-                            fooEnumSet = fooEnumSetBuffer
-                        } else {
-                            fooEnumSet = []
-                        }
-                    } else {
-                        fooEnumSet = nil
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension XmlEnumSetOutputBody {
 
+    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlEnumSetOutput, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = XmlEnumSetOutput()
+            value.fooEnumSet = try reader["fooEnumSet"].readListIfPresent(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.readingClosure, memberNodeInfo: "member", isFlattened: false)
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -56,45 +37,19 @@ class SetDecodeXMLGenerationTests {
     fun `XmlEnumNestedSetOutputBody nested decodable`() {
         val context = setupTests("Isolated/Restxml/xml-sets-nested.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumNestedSetOutputBody+Decodable.swift")
-        val expectedContents =
-            """
-            extension XmlEnumNestedSetOutputBody: Swift.Decodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case fooEnumSet
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    if containerValues.contains(.fooEnumSet) {
-                        struct KeyVal0{struct member{}}
-                        let fooEnumSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .fooEnumSet)
-                        if let fooEnumSetWrappedContainer = fooEnumSetWrappedContainer {
-                            let fooEnumSetContainer = try fooEnumSetWrappedContainer.decodeIfPresent([[RestXmlProtocolClientTypes.FooEnum]].self, forKey: .member)
-                            var fooEnumSetBuffer:Swift.Set<Swift.Set<RestXmlProtocolClientTypes.FooEnum>>? = nil
-                            if let fooEnumSetContainer = fooEnumSetContainer {
-                                fooEnumSetBuffer = Swift.Set<Swift.Set<RestXmlProtocolClientTypes.FooEnum>>()
-                                var setBuffer0: Swift.Set<RestXmlProtocolClientTypes.FooEnum>? = nil
-                                for setContainer0 in fooEnumSetContainer {
-                                    setBuffer0 = Swift.Set<RestXmlProtocolClientTypes.FooEnum>()
-                                    for stringContainer1 in setContainer0 {
-                                        setBuffer0?.insert(stringContainer1)
-                                    }
-                                    if let setBuffer0 = setBuffer0 {
-                                        fooEnumSetBuffer?.insert(setBuffer0)
-                                    }
-                                }
-                            }
-                            fooEnumSet = fooEnumSetBuffer
-                        } else {
-                            fooEnumSet = []
-                        }
-                    } else {
-                        fooEnumSet = nil
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension XmlEnumNestedSetOutputBody {
 
+    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlEnumNestedSetOutput, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = XmlEnumNestedSetOutput()
+            value.fooEnumSet = try reader["fooEnumSet"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

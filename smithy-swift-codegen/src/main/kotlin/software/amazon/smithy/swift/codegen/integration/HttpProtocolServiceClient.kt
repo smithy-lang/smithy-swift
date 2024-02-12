@@ -18,13 +18,17 @@ open class HttpProtocolServiceClient(
     private val serviceName: String = ctx.settings.sdkId
 
     fun render(serviceSymbol: Symbol) {
-        writer.openBlock("public class ${serviceSymbol.name} {", "}") {
-            writer.write("public static let clientName = \"${serviceSymbol.name}\"")
+        writer.openBlock("public class \$L {", "}", serviceSymbol.name) {
+            writer.write("public static let clientName = \$S", serviceSymbol.name)
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
             writer.write("let config: \$L", serviceConfig.typeName)
-            writer.write("let serviceName = \"${serviceName}\"")
-            writer.write("let encoder: \$N", ClientRuntimeTypes.Serde.RequestEncoder)
-            writer.write("let decoder: \$N", ClientRuntimeTypes.Serde.ResponseDecoder)
+            writer.write("let serviceName = \$S", serviceName)
+            if (properties.any { it is HttpRequestEncoder }) {
+                writer.write("let encoder: \$N", ClientRuntimeTypes.Serde.RequestEncoder)
+            }
+            if (properties.any { it is HttpResponseDecoder }) {
+                writer.write("let decoder: \$N", ClientRuntimeTypes.Serde.ResponseDecoder)
+            }
             properties.forEach { prop ->
                 prop.addImportsAndDependencies(writer)
             }
@@ -53,14 +57,19 @@ open class HttpProtocolServiceClient(
 
     open fun renderConvenienceInit(serviceSymbol: Symbol) {
         writer.openBlock("public convenience init() throws {", "}") {
-            writer.write("let config = try ${serviceConfig.typeName}()")
+            writer.write("let config = try \$L()", serviceConfig.typeName)
             writer.write("self.init(config: config)")
         }
     }
 
     private fun renderLogHandlerFactory(serviceSymbol: Symbol) {
-        writer.openBlock("public struct ${serviceSymbol.name}LogHandlerFactory: \$N {", "}", ClientRuntimeTypes.Core.SDKLogHandlerFactory) {
-            writer.write("public var label = \"${serviceSymbol.name}\"")
+        writer.openBlock(
+            "public struct \$LLogHandlerFactory: \$N {",
+            "}",
+            serviceSymbol.name,
+            ClientRuntimeTypes.Core.SDKLogHandlerFactory
+        ) {
+            writer.write("public var label = \$S", serviceSymbol.name)
             writer.write("let logLevel: \$N", ClientRuntimeTypes.Core.SDKLogLevel)
 
             writer.openBlock("public func construct(label: String) -> LogHandler {", "}") {

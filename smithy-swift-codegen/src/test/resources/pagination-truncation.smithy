@@ -2,11 +2,12 @@ $version: "1.0"
 
 namespace software.amazon.smithy.swift.codegen.synthetic
 
-use aws.protocols#restJson1
+use aws.protocols#restXml
 
 @trait(selector: "*")
 structure paginationTruncationMember { }
 
+@restXml
 service Lambda {
     operations: [ListFunctionsTruncated]
 }

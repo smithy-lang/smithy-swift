@@ -4,26 +4,19 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
-import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
-import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
-import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.HttpHeaderTrait
-import software.amazon.smithy.model.traits.HttpPayloadTrait
-import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
-import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.hasStreamingMember
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
@@ -56,12 +49,16 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         if (test.body.isPresent && test.body.get().isNotBlank()) {
             operation.input.ifPresent {
                 val inputShape = model.expectShape(it) as StructureShape
+                val data = writer.format(
+                    "Data(\"\"\"\n\$L\n\"\"\".utf8)",
+                    test.body.get().replace("\\\"", "\\\\\"")
+                )
                 // depending on the shape of the input, wrap the expected body in a stream or not
                 if (inputShape.hasStreamingMember(model)) {
                     // wrapping to CachingStream required for test asserts which reads body multiple times
-                    writer.write("body: .stream(BufferedStream(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!, isClosed: true)),", test.body.get().replace("\\\"", "\\\\\""))
+                    writer.write("body: .stream(BufferedStream(data: \$L, isClosed: true)),", data)
                 } else {
-                    writer.write("body: .data( \"\"\"\n\$L\n\"\"\".data(using: .utf8)!),", test.body.get().replace("\\\"", "\\\\\""))
+                    writer.write("body: .data(\$L),", data)
                 }
             }
         } else {
@@ -98,7 +95,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val hasIdempotencyTokenTrait = idempotentMember != null
             val httpMethod = resolveHttpMethod(operation)
             writer.swiftFunctionParameterIndent {
-                writer.write("  .withEncoder(value: encoder)")
+                if (ctx.service.requestWireProtocol != WireProtocol.XML) {
+                    writer.write("  .withEncoder(value: encoder)")
+                }
                 writer.write("  .withMethod(value: .$httpMethod)")
                 if (hasIdempotencyTokenTrait) {
                     writer.write("  .withIdempotencyTokenGenerator(value: QueryIdempotencyTestTokenGenerator())")
@@ -116,11 +115,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
             renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
 
-            writer.openBlock("_ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler(){ (context, request) in ", "})") {
+            writer.openBlock("_ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler() { (context, request) in ", "})") {
                 writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
-                writer.write("let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)")
-                writer.write("let serviceError = try await $outputErrorName.makeError(httpResponse: httpResponse, decoder: decoder)")
-                writer.write("throw serviceError")
+                writer.write("throw SmithyTestUtilError(\"Mock handler unexpectedly failed\")")
             }
         }
     }
@@ -138,15 +135,17 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         outputErrorName: String,
         inputShape: Shape
     ) {
-
-        writer.write("$operationStack.deserializeStep.intercept(position: .after,")
-        writer.write("             middleware: MockDeserializeMiddleware<$outputSymbol, $outputErrorName>(")
-        writer.openBlock("                     id: \"TestDeserializeMiddleware\"){ context, actual in", "})") {
-            renderBodyAssert(test, inputSymbol, inputShape)
-            writer.write("let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)")
-            writer.write("let mockOutput = try await $outputSymbol(httpResponse: response, decoder: nil)")
-            writer.write("let output = OperationOutput<$outputSymbol>(httpResponse: response, output: mockOutput)")
-            writer.write("return output")
+        writer.openBlock("\$L.deserializeStep.intercept(", ")", operationStack) {
+            writer.write("position: .after,")
+            writer.openBlock("middleware: MockDeserializeMiddleware<\$N>(", ")", outputSymbol) {
+                writer.write("id: \"TestDeserializeMiddleware\",")
+                val responseClosure = ResponseClosureUtils(ctx, writer, operation).render()
+                writer.write("responseClosure: \$L,", responseClosure)
+                writer.openBlock("callback: { context, actual in", "}") {
+                    renderBodyAssert(test, inputSymbol, inputShape)
+                    writer.write("return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: \$N())", outputSymbol)
+                }
+            }
         }
     }
 
@@ -158,76 +157,18 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual ByteStream is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected ByteStream is nil\")")
-                val expectedData = "expectedData"
-                val actualData = "actualData"
-                val isXML = ctx.service.hasTrait<RestXmlTrait>()
-                val isJSON = ctx.service.hasTrait<RestJson1Trait>() || ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>()
-                writer.openBlock("try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, isXML: \$L, isJSON: \$L) { $expectedData, $actualData in ", "}", isXML, isJSON) {
-                    val httpPayloadShape = inputShape.members().firstOrNull { it.hasTrait(HttpPayloadTrait::class.java) }
-
-                    httpPayloadShape?.let {
-                        val target = model.expectShape(it.target)
-                        when (target.type) {
-                            ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
-                                val nestedSymbol = symbolProvider.toSymbol(target)
-                                renderBodyForHttpPayload(writer, nestedSymbol, expectedData, actualData)
-                            }
-                            else -> writer.write("XCTAssertEqual($expectedData, $actualData)")
-                        }
-                    } ?: run {
-                        val bodyComparisonStrategy = determineBodyComparisonStrategy(test)
-                        bodyComparisonStrategy(writer, test, inputSymbol, inputShape, expectedData, actualData)
-                    }
+                val contentType = when (ctx.service.requestWireProtocol) {
+                    WireProtocol.XML -> ".xml"
+                    WireProtocol.JSON -> ".json"
+                    WireProtocol.FORM_URL -> ".formURL"
                 }
+                writer.write("try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: \$L)", contentType)
             }
         } else {
             writer.write(
                 "try await self.assertEqual(expected, actual)"
             )
         }
-    }
-
-    private fun determineBodyComparisonStrategy(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, String, String) -> Unit) {
-        httpProtocolCustomizable.customRenderBodyComparison(test)?.let {
-            return it
-        } ?: run {
-            return this::renderBodyComparison
-        }
-    }
-
-    private fun renderBodyForHttpPayload(writer: SwiftWriter, symbol: Symbol, expectedData: String, actualData: String) {
-        writer.openBlock("do {", "} catch let err {") {
-            writer.write("let expectedObj = try decoder.decode($symbol.self, from: $expectedData)")
-            writer.write("let actualObj = try decoder.decode($symbol.self, from: $actualData)")
-            writer.write("XCTAssertEqual(expectedObj, actualObj)")
-        }
-        writer.indent()
-        writer.write("XCTFail(\"Failed to verify body \\(err)\")")
-        writer.dedent()
-        writer.write("}")
-    }
-
-    private fun renderBodyComparison(writer: SwiftWriter, test: HttpRequestTestCase, symbol: Symbol, shape: Shape, expectedData: String, actualData: String) {
-        writer.openBlock("do {", "} catch let err {") {
-            writer.write("let expectedObj = try decoder.decode(${symbol}Body.self, from: $expectedData)")
-            writer.write("let actualObj = try decoder.decode(${symbol}Body.self, from: $actualData)")
-            renderAssertions(test, shape)
-        }
-        writer.indent()
-        writer.write("XCTFail(\"Failed to verify body \\(err)\")")
-        writer.dedent()
-        writer.write("}")
-    }
-
-    private fun renderDataComparison(writer: SwiftWriter, expectedData: String, actualData: String) {
-        val assertionMethod = "XCTAssertJSONDataEqual"
-        writer.write("\$L(\$L, \$L, \"Some error message\")", assertionMethod, actualData, expectedData)
-    }
-
-    protected open fun renderAssertions(test: HttpRequestTestCase, outputShape: Shape) {
-        val members = outputShape.members().filterNot { it.hasTrait(HttpQueryTrait::class.java) }
-            .filterNot { it.hasTrait(HttpHeaderTrait::class.java) }
-        renderMemberAssertions(writer, test, members, model, symbolProvider, "expectedObj", "actualObj")
     }
 
     private fun renderExpectedQueryParams(test: HttpRequestTestCase) {

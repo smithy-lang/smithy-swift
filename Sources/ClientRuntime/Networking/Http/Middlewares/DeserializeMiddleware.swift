@@ -7,11 +7,11 @@
 
 public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
     public var id: String = "Deserialize"
-    let httpResponseClosure: HTTPResponseClosure<OperationStackOutput>
+    let httpResponseClosure: HTTPResponseOutputClosure<OperationStackOutput>
     let httpResponseErrorClosure: HTTPResponseErrorClosure
 
     public init(
-        _ httpResponseClosure: @escaping HTTPResponseClosure<OperationStackOutput>,
+        _ httpResponseClosure: @escaping HTTPResponseOutputClosure<OperationStackOutput>,
         _ httpResponseErrorClosure: @escaping HTTPResponseErrorClosure
     ) {
         self.httpResponseClosure = httpResponseClosure

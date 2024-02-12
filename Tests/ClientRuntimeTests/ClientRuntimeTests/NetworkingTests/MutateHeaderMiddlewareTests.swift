@@ -30,7 +30,7 @@ class MutateHeaderMiddlewareTests: XCTestCase {
         stack.serializeStep.intercept(position: .after,
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestName", headerValue: "TestValue"))
         stack.deserializeStep.intercept(position: .after,
-                                        middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
+                                        middleware: MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
     }
 
     func testOverridesHeaders() async throws {

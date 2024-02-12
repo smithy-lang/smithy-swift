@@ -72,7 +72,7 @@ class HttpResponseTraitWithoutHttpPayload(
                         writer.write("let messageDecoder: \$D", ClientRuntimeTypes.EventStream.MessageDecoder)
                     }
                     writer.write(
-                        "let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)",
+                        "let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: jsonUnmarshalClosure(responseDecoder: responseDecoder))",
                         ClientRuntimeTypes.EventStream.MessageDecoderStream,
                         symbol
                     )

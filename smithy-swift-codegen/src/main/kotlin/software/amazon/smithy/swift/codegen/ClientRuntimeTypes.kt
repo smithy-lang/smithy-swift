@@ -28,27 +28,24 @@ object ClientRuntimeTypes {
         val HttpError = runtimeSymbol("HTTPError")
         val UnknownHttpServiceError = runtimeSymbol("UnknownHttpServiceError")
         val HttpContextBuilder = runtimeSymbol("HttpContextBuilder")
+        val HTTPResponseOutputBinding = runtimeSymbol("HTTPResponseOutputBinding")
+        val HTTPResponseErrorBinding = runtimeSymbol("HTTPResponseErrorBinding")
     }
 
     object Serde {
         val RequestEncoder = runtimeSymbol("RequestEncoder")
         val ResponseDecoder = runtimeSymbol("ResponseDecoder")
         val Key = runtimeSymbol("Key")
-        val DynamicNodeDecoding = runtimeSymbol("DynamicNodeDecoding")
-        val NodeDecoding = runtimeSymbol("NodeDecoding")
-        val MapEntry = runtimeSymbol("MapEntry")
-        val CollectionMember = runtimeSymbol("CollectionMember")
-        val MapKeyValue = runtimeSymbol("MapKeyValue")
         val FormURLEncoder = runtimeSymbol("FormURLEncoder")
         val JSONDecoder = runtimeSymbol("JSONDecoder")
         val JSONEncoder = runtimeSymbol("JSONEncoder")
         val JSONWriter = runtimeSymbol("JSONWriter")
         val FormURLWriter = runtimeSymbol("FormURLWriter")
-        val XMLDecoder = runtimeSymbol("XMLDecoder")
         val MessageMarshallable = runtimeSymbol("MessageMarshallable")
         val MessageUnmarshallable = runtimeSymbol("MessageUnmarshallable")
         val JSONReadWrite = runtimeSymbol("JSONReadWrite")
         val FormURLReadWrite = runtimeSymbol("FormURLReadWrite")
+        val JSONReader = runtimeSymbol("JSONReader")
     }
 
     object EventStream {
@@ -58,6 +55,7 @@ object ClientRuntimeTypes {
         val Message = runtimeSymbol("EventStream.Message")
         val MessageEncoderStream = runtimeSymbol("EventStream.DefaultMessageEncoderStream")
         val MessageDecoderStream = runtimeSymbol("EventStream.DefaultMessageDecoderStream")
+        val UnmarshalClosure = runtimeSymbol("UnmarshalClosure")
     }
 
     object Middleware {

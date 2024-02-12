@@ -18,13 +18,13 @@ class MiddlewareStackTests: XCTestCase {
         stack.serializeStep.intercept(position: .after,
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestHeaderName1", headerValue: "TestHeaderValue1"))
         stack.deserializeStep.intercept(position: .after,
-                                        middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
+                                        middleware: MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
 
         let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(),
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
                                                 let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
-                                                let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+                                                let mockOutput = MockOutput()
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse,
                                                                                          output: mockOutput)
                                                 return output
@@ -57,13 +57,13 @@ class MiddlewareStackTests: XCTestCase {
             return try await next.handle(context: context, input: requestBuilder)
         }
         stack.finalizeStep.intercept(position: .before, middleware: ContentLengthMiddleware())
-        stack.deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware<MockOutput>(responseClosure(decoder: JSONDecoder()), responseErrorClosure(MockMiddlewareError.self, decoder: JSONDecoder())))
+        stack.deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware<MockOutput>(MockOutput.responseClosure(_:), responseErrorClosure(MockMiddlewareError.self, decoder: JSONDecoder())))
         let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(),
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName2") == "TestHeaderValue2")
                                                 let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
-                                                let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
-                                                let output = OperationOutput<MockOutput>(httpResponse: httpResponse,
+                                                let mockOutput = MockOutput()
+                                                let output = OperationOutput(httpResponse: httpResponse,
                                                                                          output: mockOutput)
                                                 return output
                                             }))
@@ -89,8 +89,13 @@ class MiddlewareStackTests: XCTestCase {
         var stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")
         stack.serializeStep.intercept(position: .after,
                                       middleware: MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestName", headerValue: "TestValue"))
-        stack.deserializeStep.intercept(position: .after,
-                                        middleware: MockDeserializeMiddleware<MockOutput, MockMiddlewareError>(id: "TestDeserializeMiddleware"))
+        stack.deserializeStep.intercept(
+            position: .after,
+            middleware: MockDeserializeMiddleware<MockOutput>(
+                id: "TestDeserializeMiddleware",
+                responseClosure: MockOutput.responseClosure(_:)
+            )
+        )
 
         let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
 

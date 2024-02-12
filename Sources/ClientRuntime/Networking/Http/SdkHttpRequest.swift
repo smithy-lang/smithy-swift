@@ -124,7 +124,9 @@ public extension URLRequest {
         self.httpMethod = sdkRequest.method.rawValue
         // Set body, handling any serialization errors
         do {
-            self.httpBody = try await sdkRequest.body.readData()
+            let data = try await sdkRequest.body.readData()
+            sdkRequest.body = .data(data)
+            self.httpBody = data
         } catch {
             throw ClientError.serializationFailed("Failed to construct URLRequest due to HTTP body conversion failure.")
         }

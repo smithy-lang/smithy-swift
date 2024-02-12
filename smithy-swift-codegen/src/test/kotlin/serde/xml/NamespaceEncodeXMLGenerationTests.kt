@@ -18,14 +18,10 @@ class NamespaceEncodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-namespace.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesInput+Encodable.swift")
         val expectedContents = """
-extension XmlNamespacesInput: Swift.Encodable {
-    enum CodingKeys: Swift.String, Swift.CodingKey {
-        case nested
-    }
-
+extension XmlNamespacesInput {
     static func writingClosure(_ value: XmlNamespacesInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { writer.detach(); return }
-        try writer[.init("nested", namespace: .init(prefix: "", uri: "http://boo.com"))].write(value.nested, writingClosure: RestXmlProtocolClientTypes.XmlNamespaceNested.writingClosure(_:to:))
+        try writer[.init("nested", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].write(value.nested, writingClosure: RestXmlProtocolClientTypes.XmlNamespaceNested.writingClosure(_:to:))
     }
 }
 """
@@ -36,46 +32,26 @@ extension XmlNamespacesInput: Swift.Encodable {
     fun `003 xmlnamespace, XmlNamespaceNested`() {
         val context = setupTests("Isolated/Restxml/xml-namespace.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNested+Codable.swift")
-        val expectedContents =
-            """
-            extension RestXmlProtocolClientTypes.XmlNamespaceNested: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case foo
-                    case values
-                }
-            
-                static func writingClosure(_ value: RestXmlProtocolClientTypes.XmlNamespaceNested?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("foo", namespace: .init(prefix: "baz", uri: "http://baz.com"))].write(value.foo)
-                    try writer[.init("values", namespace: .init(prefix: "", uri: "http://qux.com"))].writeList(value.values, memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member", namespace: .init(prefix: "", uri: "http://bux.com")), isFlattened: false)
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let fooDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .foo)
-                    foo = fooDecoded
-                    if containerValues.contains(.values) {
-                        struct KeyVal0{struct member{}}
-                        let valuesWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .values)
-                        if let valuesWrappedContainer = valuesWrappedContainer {
-                            let valuesContainer = try valuesWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
-                            var valuesBuffer:[Swift.String]? = nil
-                            if let valuesContainer = valuesContainer {
-                                valuesBuffer = [Swift.String]()
-                                for stringContainer0 in valuesContainer {
-                                    valuesBuffer?.append(stringContainer0)
-                                }
-                            }
-                            values = valuesBuffer
-                        } else {
-                            values = []
-                        }
-                    } else {
-                        values = nil
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension RestXmlProtocolClientTypes.XmlNamespaceNested {
+
+    static func writingClosure(_ value: RestXmlProtocolClientTypes.XmlNamespaceNested?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer[.init("foo", namespaceDef: .init(prefix: "baz", uri: "http://baz.com"))].write(value.foo)
+        try writer[.init("values", namespaceDef: .init(prefix: "", uri: "http://qux.com"))].writeList(value.values, memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member", namespaceDef: .init(prefix: "", uri: "http://bux.com")), isFlattened: false)
+    }
+
+    static var readingClosure: SmithyReadWrite.ReadingClosure<RestXmlProtocolClientTypes.XmlNamespaceNested, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = RestXmlProtocolClientTypes.XmlNamespaceNested()
+            value.foo = try reader[.init("foo", namespaceDef: .init(prefix: "baz", uri: "http://baz.com"))].readIfPresent()
+            value.values = try reader[.init("values", namespaceDef: .init(prefix: "", uri: "http://qux.com"))].readListIfPresent(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: .init("member", namespaceDef: .init(prefix: "", uri: "http://bux.com")), isFlattened: false)
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -83,19 +59,14 @@ extension XmlNamespacesInput: Swift.Encodable {
     fun `005 xmlnamespace nested list, Encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-nestedlist.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNestedListInput+Encodable.swift")
-        val expectedContents =
-            """
-            extension XmlNamespaceNestedListInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case nested
-                }
-            
-                static func writingClosure(_ value: XmlNamespaceNestedListInput?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("nested", namespace: .init(prefix: "", uri: "http://aux.com"))].writeList(value.nested, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member", namespace: .init(prefix: "bzzzz", uri: "http://bar.com")), isFlattened: false), memberNodeInfo: .init("member", namespace: .init(prefix: "baz", uri: "http://bux.com")), isFlattened: false)
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension XmlNamespaceNestedListInput {
+    static func writingClosure(_ value: XmlNamespaceNestedListInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer[.init("nested", namespaceDef: .init(prefix: "", uri: "http://aux.com"))].writeList(value.nested, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member", namespaceDef: .init(prefix: "bzzzz", uri: "http://bar.com")), isFlattened: false), memberNodeInfo: .init("member", namespaceDef: .init(prefix: "baz", uri: "http://bux.com")), isFlattened: false)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -103,19 +74,14 @@ extension XmlNamespacesInput: Swift.Encodable {
     fun `007 xmlnamespace nested flattened list, encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-flattenedlist.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceFlattenedListInput+Encodable.swift")
-        val expectedContents =
-            """
-            extension XmlNamespaceFlattenedListInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case nested
-                }
-            
-                static func writingClosure(_ value: XmlNamespaceFlattenedListInput?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("nested", namespace: .init(prefix: "baz", uri: "http://aux.com"))].writeList(value.nested, memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: true)
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension XmlNamespaceFlattenedListInput {
+    static func writingClosure(_ value: XmlNamespaceFlattenedListInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer[.init("nested", namespaceDef: .init(prefix: "baz", uri: "http://aux.com"))].writeList(value.nested, memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: true)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -124,16 +90,11 @@ extension XmlNamespacesInput: Swift.Encodable {
         val context = setupTests("Isolated/Restxml/xml-namespace-onservice.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceInput+Encodable.swift")
         val expectedContents = """
-extension XmlNamespacesOnServiceInput: Swift.Encodable {
-    enum CodingKeys: Swift.String, Swift.CodingKey {
-        case foo
-        case nested
-    }
-
+extension XmlNamespacesOnServiceInput {
     static func writingClosure(_ value: XmlNamespacesOnServiceInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { writer.detach(); return }
-        try writer[.init("foo")].write(value.foo)
-        try writer[.init("nested", namespace: .init(prefix: "xsi", uri: "https://example.com"))].write(value.nested, writingClosure: RestXmlProtocolClientTypes.NestedWithNamespace.writingClosure(_:to:))
+        try writer["foo"].write(value.foo)
+        try writer[.init("nested", namespaceDef: .init(prefix: "xsi", uri: "https://example.com"))].write(value.nested, writingClosure: RestXmlProtocolClientTypes.NestedWithNamespace.writingClosure(_:to:))
     }
 }
 """
@@ -145,16 +106,11 @@ extension XmlNamespacesOnServiceInput: Swift.Encodable {
         val context = setupTests("Isolated/Restxml/xml-namespace-onservice-overridable.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceOverridableInput+Encodable.swift")
         val expectedContents = """
-extension XmlNamespacesOnServiceOverridableInput: Swift.Encodable {
-    enum CodingKeys: Swift.String, Swift.CodingKey {
-        case foo
-        case nested
-    }
-
+extension XmlNamespacesOnServiceOverridableInput {
     static func writingClosure(_ value: XmlNamespacesOnServiceOverridableInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { writer.detach(); return }
-        try writer[.init("foo")].write(value.foo)
-        try writer[.init("nested", namespace: .init(prefix: "xsi", uri: "https://example.com"))].write(value.nested, writingClosure: RestXmlProtocolClientTypes.NestedWithNamespace.writingClosure(_:to:))
+        try writer["foo"].write(value.foo)
+        try writer[.init("nested", namespaceDef: .init(prefix: "xsi", uri: "https://example.com"))].write(value.nested, writingClosure: RestXmlProtocolClientTypes.NestedWithNamespace.writingClosure(_:to:))
     }
 }
 """

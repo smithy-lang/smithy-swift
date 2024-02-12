@@ -46,3 +46,20 @@ public func XCTAssertXMLDataEqual(
         XCTFail("Failed to evaluate XML with error: \(error)", file: file, line: line)
     }
 }
+
+public func XCTAssertFormURLDataEqual(
+    _ expression1: @autoclosure () throws -> Data,
+    _ expression2: @autoclosure () throws -> Data,
+    _ message: @autoclosure () -> String = "",
+    file: StaticString = #filePath,
+    line: UInt = #line
+) {
+    do {
+        let data1 = try expression1()
+        let data2 = try expression2()
+        guard data1 != data2 else { return }
+        XCTAssertTrue(FormURLComparator.formURLData(data1, isEqualTo: data2), message(), file: file, line: line)
+    } catch {
+        XCTFail("Failed to evaluate form URL with error: \(error)", file: file, line: line)
+    }
+}

@@ -25,11 +25,9 @@ import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.Trait
-import software.amazon.smithy.swift.codegen.getOrNull
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.StringUtils
-import kotlin.streams.toList
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).toList()
@@ -50,7 +48,7 @@ inline fun <reified T : Trait> Shape.hasTrait(): Boolean = hasTrait(T::class.jav
 
 inline fun <reified T : Trait> Shape.expectTrait(): T = expectTrait(T::class.java)
 
-inline fun <reified T : Trait> Shape.getTrait(): T? = getTrait(T::class.java).getOrNull()
+inline fun <reified T : Trait> Shape.getTrait(): T? = getTrait(T::class.java).orElse(null)
 
 fun StructureShape.hasStreamingMember(model: Model): Boolean =
     this.allMembers.values.any { model.getShape(it.target).get().hasTrait<StreamingTrait>() }

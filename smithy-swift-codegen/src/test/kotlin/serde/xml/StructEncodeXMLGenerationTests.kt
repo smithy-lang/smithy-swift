@@ -17,37 +17,23 @@ class StructEncodeXMLGenerationTests {
     fun `simpleScalar serialization`() {
         val context = setupTests("Isolated/Restxml/xml-scalar.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesInput+Encodable.swift")
-        val expectedContents =
-            """
-            extension SimpleScalarPropertiesInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case byteValue
-                    case doubleValue = "DoubleDribble"
-                    case falseBooleanValue
-                    case floatValue
-                    case integerValue
-                    case longValue
-                    case `protocol` = "protocol"
-                    case shortValue
-                    case stringValue
-                    case trueBooleanValue
-                }
-            
-                static func writingClosure(_ value: SimpleScalarPropertiesInput?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("byteValue")].write(value.byteValue)
-                    try writer[.init("DoubleDribble")].write(value.doubleValue)
-                    try writer[.init("falseBooleanValue")].write(value.falseBooleanValue)
-                    try writer[.init("floatValue")].write(value.floatValue)
-                    try writer[.init("integerValue")].write(value.integerValue)
-                    try writer[.init("longValue")].write(value.longValue)
-                    try writer[.init("protocol")].write(value.`protocol`)
-                    try writer[.init("shortValue")].write(value.shortValue)
-                    try writer[.init("stringValue")].write(value.stringValue)
-                    try writer[.init("trueBooleanValue")].write(value.trueBooleanValue)
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension SimpleScalarPropertiesInput {
+    static func writingClosure(_ value: SimpleScalarPropertiesInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer["byteValue"].write(value.byteValue)
+        try writer["DoubleDribble"].write(value.doubleValue)
+        try writer["falseBooleanValue"].write(value.falseBooleanValue)
+        try writer["floatValue"].write(value.floatValue)
+        try writer["integerValue"].write(value.integerValue)
+        try writer["longValue"].write(value.longValue)
+        try writer["protocol"].write(value.`protocol`)
+        try writer["shortValue"].write(value.shortValue)
+        try writer["stringValue"].write(value.stringValue)
+        try writer["trueBooleanValue"].write(value.trueBooleanValue)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -55,30 +41,26 @@ class StructEncodeXMLGenerationTests {
     fun `008 structure xmlName`() {
         val context = setupTests("Isolated/Restxml/xml-lists-structure.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/StructureListMember+Codable.swift")
-        val expectedContents =
-            """
-            extension RestXmlProtocolClientTypes.StructureListMember: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case a = "value"
-                    case b = "other"
-                }
-            
-                static func writingClosure(_ value: RestXmlProtocolClientTypes.StructureListMember?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("value")].write(value.a)
-                    try writer[.init("other")].write(value.b)
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let aDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .a)
-                    a = aDecoded
-                    let bDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .b)
-                    b = bDecoded
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension RestXmlProtocolClientTypes.StructureListMember {
 
+    static func writingClosure(_ value: RestXmlProtocolClientTypes.StructureListMember?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer["value"].write(value.a)
+        try writer["other"].write(value.b)
+    }
+
+    static var readingClosure: SmithyReadWrite.ReadingClosure<RestXmlProtocolClientTypes.StructureListMember, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = RestXmlProtocolClientTypes.StructureListMember()
+            value.a = try reader["value"].readIfPresent()
+            value.b = try reader["other"].readIfPresent()
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

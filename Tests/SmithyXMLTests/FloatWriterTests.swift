@@ -8,7 +8,7 @@
 import XCTest
 import SmithyXML
 
-class XMLFloatEncoderTests: XCTestCase {
+class FloatWriterTests: XCTestCase {
 
     private struct HasFPElements {
 

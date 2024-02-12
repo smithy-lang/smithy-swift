@@ -7,7 +7,7 @@
 
 import ClientRuntime
 
-public struct MockHandler<Output: HttpResponseBinding>: Handler {
+public struct MockHandler<Output>: Handler {
 
     public typealias Context = HttpContext
     public typealias MockHandlerCallback = (Context, SdkHttpRequest) async throws -> OperationOutput<Output>

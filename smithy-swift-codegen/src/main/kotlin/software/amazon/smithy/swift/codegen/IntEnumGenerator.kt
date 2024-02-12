@@ -10,7 +10,6 @@ import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
-import java.util.Optional
 
 class IntEnumGenerator(
     private val model: Model,
@@ -116,7 +115,7 @@ class IntEnumGenerator(
 
     fun MemberShape.swiftEnumCaseName(shouldBeEscaped: Boolean = true): String {
         return swiftEnumCaseName(
-            Optional.of(memberName),
+            memberName,
             "${swiftEnumCaseValue()}",
             shouldBeEscaped
         )
