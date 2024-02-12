@@ -18,7 +18,6 @@ public final class SDKDefaultIO {
     public let hostResolver: HostResolver
     public let clientBootstrap: ClientBootstrap
     public let tlsContext: TLSContext
-    public var logger: Logger
 
     /// Provide singleton access since we want to share and re-use the instance properties
     public static let shared = SDKDefaultIO()
