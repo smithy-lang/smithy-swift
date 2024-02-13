@@ -254,7 +254,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             var bufferSize = 4096
             var isChunkedTransfer = false
             if request.isChunked {
-                bufferSize = CHUNK_SIZE_BYTES
+                // bufferSize = CHUNK_SIZE_BYTES
                 isChunkedTransfer = true
             }
 
