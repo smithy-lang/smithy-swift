@@ -31,11 +31,12 @@ public struct Endpoint: Hashable {
             throw ClientError.unknownError("invalid host \(String(describing: url.host))")
         }
 
+        let protocolType = ProtocolType(rawValue: url.scheme ?? "") ?? .https
         self.init(host: host,
                   path: url.path,
-                  port: Int16(url.port ?? 443),
+                  port: Int16(url.port ?? protocolType.port),
                   queryItems: url.toQueryItems(),
-                  protocolType: ProtocolType(rawValue: url.scheme ?? ProtocolType.https.rawValue),
+                  protocolType: protocolType,
                   headers: headers,
                   properties: properties)
     }
