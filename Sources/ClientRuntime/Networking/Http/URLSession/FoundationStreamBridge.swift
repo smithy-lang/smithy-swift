@@ -42,6 +42,29 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// A variable indicating that the streaming payload is chunked
     private var isChunkedTransfer: Bool
 
+    private actor StreamReadyStatus {
+        var isReady: Bool = false
+        private var hasWrittenFirstChunk: Bool = false
+
+        func setReadyForMoreData(_ ready: Bool) {
+            self.isReady = ready
+        }
+
+        func isReadyForMoreData() -> Bool {
+            return self.isReady
+        }
+
+        func markFirstChunkWritten() {
+            self.hasWrittenFirstChunk = true
+        }
+
+        func hasFirstChunkBeenWritten() -> Bool {
+            return self.hasWrittenFirstChunk
+        }
+    }
+
+    private let streamReadyStatus = StreamReadyStatus()
+
     /// Actor used to isolate the stream status from multiple concurrent accesses.
     actor ReadableStreamStatus {
 
@@ -197,24 +220,31 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     }
 
     func writeChunk(chunk: Data, endOfStream: Bool = false) async throws {
-        // Check if this is the final chunk and handle accordingly
-        if endOfStream {
-            // Write the final chunk (if any data exists)
-            if !chunk.isEmpty {
-                try await writeToOutputStream(data: chunk)
+        // Check if the first chunk has already been written
+        let firstChunkWritten = await streamReadyStatus.hasFirstChunkBeenWritten()
+
+        if !firstChunkWritten {
+            // Proceed with writing the first chunk immediately
+            try await writeToOutputStream(data: chunk)
+            await streamReadyStatus.markFirstChunkWritten()
+        } else {
+            // For subsequent chunks, wait until the stream is ready for more data
+            while !(await streamReadyStatus.isReadyForMoreData()) {
+                // Optionally, sleep for a bit to prevent a tight loop
+                try await Task.sleep(nanoseconds: 100_000_000) // 100ms
             }
 
-            // Write the final chunk terminator
-            try await writeFinalChunkTerminator()
-        } else {
-            // Write the chunk (non-final)
+            // Proceed with writing the chunk
             try await writeToOutputStream(data: chunk)
         }
-    }
 
-    private func writeFinalChunkTerminator() async throws {
-        try await writeToOutputStream(data: Data())
-        await close()
+        // After writing, optionally reset the ready flag
+        await streamReadyStatus.setReadyForMoreData(false)
+
+        if endOfStream {
+            await self.readableStreamStatus.setIsEmpty()
+            await self.close()
+        }
     }
 
     // MARK: - StreamDelegate protocol
@@ -227,8 +257,11 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             // Since space is available, try and read from the ReadableStream and
             // transfer the data to the Foundation stream pair.
             // Use a `Task` to perform the operation within Swift concurrency.
-            // If chunked transfer, writing to stream will be done manually
-            if !self.isChunkedTransfer {
+            if self.isChunkedTransfer {
+                Task {
+                    await self.streamReadyStatus.setReadyForMoreData(true)
+                }
+            } else {
                 Task { try await writeToOutput() }
             }
         default:
