@@ -16,6 +16,7 @@ import class Foundation.OutputStream
 import class Foundation.Thread
 import class Foundation.RunLoop
 import protocol Foundation.StreamDelegate
+import Foundation
 
 /// Reads data from a smithy-swift native `ReadableStream` and streams the data to a Foundation `InputStream`.
 ///
@@ -189,6 +190,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// Write the passed data to the output stream, using the reserved thread.
     private func writeToOutputStream(data: Data) async throws {
+        print("WRITING: \(String(data: data, encoding: .utf8))")
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             Self.queue.async {
                 let result = WriteToOutputStreamResult()
@@ -206,6 +208,12 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// Append the new data to the buffer, then write to the output stream.  Return any error to the caller using the param object.
     @objc private func writeToOutputStreamOnThread(_ result: WriteToOutputStreamResult) {
+
+        guard outputStream.streamStatus == .open else {
+            result.error = NSError(domain: "FoundationStreamBridgeError", code: 1, userInfo: [NSLocalizedDescriptionKey: "OutputStream is not ready."])
+            return
+        }
+
         guard !buffer.isEmpty || !result.data.isEmpty else { return }
         buffer.append(result.data)
         var writeCount = 0
@@ -242,6 +250,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         await streamReadyStatus.setReadyForMoreData(false)
 
         if endOfStream {
+            try await writeToOutputStream(data: Data())
             await self.readableStreamStatus.setIsEmpty()
             await self.close()
         }
@@ -264,6 +273,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             } else {
                 Task { try await writeToOutput() }
             }
+        case .errorOccurred:
+                print("Stream error occurred: \(String(describing: aStream.streamError))")
         default:
             break
         }
