@@ -210,6 +210,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     @objc private func writeToOutputStreamOnThread(_ result: WriteToOutputStreamResult) {
 
         print("STREAM STATUS: \(outputStream.streamStatus)")
+        if (outputStream.streamStatus == .atEnd) {
+            print("AT END BUT WANTING TO WRITE: \(String(data: result.data, encoding: .utf8))")
+        }
+
         guard !buffer.isEmpty || !result.data.isEmpty else { return }
         buffer.append(result.data)
         var writeCount = 0
