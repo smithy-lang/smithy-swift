@@ -191,11 +191,6 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Write the passed data to the output stream, using the reserved thread.
     private func writeToOutputStream(data: Data) async throws {
         //print("WRITING: \(String(data: data, encoding: .utf8))")
-
-        while outputStream.streamStatus != .open || !outputStream.hasSpaceAvailable {
-            try await Task.sleep(nanoseconds: 100_000_000) // 100ms
-        }
-
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             Self.queue.async {
                 let result = WriteToOutputStreamResult()
@@ -213,6 +208,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// Append the new data to the buffer, then write to the output stream.  Return any error to the caller using the param object.
     @objc private func writeToOutputStreamOnThread(_ result: WriteToOutputStreamResult) {
+
+        print("STREAM STATUS: \(outputStream.streamStatus)")
         guard !buffer.isEmpty || !result.data.isEmpty else { return }
         buffer.append(result.data)
         var writeCount = 0
