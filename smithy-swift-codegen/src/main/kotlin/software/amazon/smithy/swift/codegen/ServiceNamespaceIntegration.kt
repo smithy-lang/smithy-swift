@@ -18,7 +18,7 @@ class ServiceNamespaceIntegration : SwiftIntegration {
     ) {
         val service = ctx.settings.getService(ctx.model)
         val namespaceName = service.nestedNamespaceType(ctx.symbolProvider)
-        val filename = "${ctx.settings.moduleName}/Models/$namespaceName.swift"
+        val filename = "${ctx.settings.moduleName}/models/$namespaceName.swift"
         delegator.useFileWriter(filename) { writer ->
             writer.write("public enum \$L {}", namespaceName)
         }
