@@ -450,27 +450,20 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         for (operation in getHttpBindingOperations(ctx)) {
             operationMiddleware.appendMiddleware(operation, IdempotencyTokenMiddleware(ctx.model, ctx.symbolProvider))
-
             operationMiddleware.appendMiddleware(operation, ContentMD5Middleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, ""))
             operationMiddleware.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, operation))
             operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, AuthSchemeMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)))
             operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider))
-
             operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, shouldRenderEncodableConformance, hasRequiresLengthTrait(ctx, operation), hasUnsignedPayloadTrait(operation)))
-
+            operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
+            operationMiddleware.appendMiddleware(operation, SignerMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, DeserializeMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware(ctx.model, ctx.symbolProvider))
-            operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
-
-            operationMiddleware.appendMiddleware(operation, SignerMiddleware(ctx.model, ctx.symbolProvider))
-
             addProtocolSpecificMiddleware(ctx, operation)
-
-            operationMiddleware.appendMiddleware(operation, AuthSchemeMiddleware(ctx.model, ctx.symbolProvider))
-
             for (integration in ctx.integrations) {
                 integration.customizeMiddleware(ctx, operation, operationMiddleware)
             }
