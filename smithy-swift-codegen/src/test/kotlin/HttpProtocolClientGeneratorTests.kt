@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 
@@ -15,7 +16,7 @@ class HttpProtocolClientGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             """
-            public class RestJsonProtocolClient {
+            public class RestJsonProtocolClient: Client {
                 public static let clientName = "RestJsonProtocolClient"
                 let client: ClientRuntime.SdkHttpClient
                 let config: RestJsonProtocol.RestJsonProtocolConfiguration
@@ -23,39 +24,34 @@ class HttpProtocolClientGeneratorTests {
                 let encoder: ClientRuntime.RequestEncoder
                 let decoder: ClientRuntime.ResponseDecoder
             
-                public init(config: RestJsonProtocol.RestJsonProtocolConfiguration) {
+                public required init(config: RestJsonProtocol.RestJsonProtocolConfiguration) {
                     client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
                     let encoder = ClientRuntime.JSONEncoder()
                     encoder.dateEncodingStrategy = .secondsSince1970
                     encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-                    self.encoder = config.encoder ?? encoder
+                    self.encoder = encoder
                     let decoder = ClientRuntime.JSONDecoder()
                     decoder.dateDecodingStrategy = .secondsSince1970
                     decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-                    self.decoder = config.decoder ?? decoder
+                    self.decoder = decoder
                     self.config = config
                 }
             
-                public convenience init() throws {
-                    let config = try RestJsonProtocol.RestJsonProtocolConfiguration()
+                public convenience required init() throws {
+                    let config = try RestJsonProtocol.RestJsonProtocolConfiguration("Rest Json Protocol", "RestJsonProtocolClient")
                     self.init(config: config)
                 }
+            
             }
             
-            public init(runtimeConfig: ClientRuntime.DefaultSDKRuntimeConfiguration) throws {
-                self.clientLogMode = runtimeConfig.clientLogMode
-                self.decoder = runtimeConfig.decoder
-                self.encoder = runtimeConfig.encoder
-                self.httpClientConfiguration = runtimeConfig.httpClientConfiguration
-                self.httpClientEngine = runtimeConfig.httpClientEngine
-                self.idempotencyTokenGenerator = runtimeConfig.idempotencyTokenGenerator
-                self.logger = runtimeConfig.logger
-                self.retryStrategyOptions = runtimeConfig.retryStrategyOptions
-            }
+            extension RestJsonProtocolClient {
+                public typealias RestJsonProtocolConfiguration = ClientRuntime.DefaultSDKRuntimeConfiguration
             
-            public convenience init() throws {
-                let defaultRuntimeConfig = try ClientRuntime.DefaultSDKRuntimeConfiguration("Rest Json Protocol")
-                try self.init(runtimeConfig: defaultRuntimeConfig)
+                public static func builder() -> ClientBuilder<RestJsonProtocolClient> {
+                    return ClientBuilder<RestJsonProtocolClient>(defaultPlugins: [
+                        ClientRuntime.DefaultClientPlugin()
+                    ])
+                }
             }
             
             public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandlerFactory {
@@ -97,7 +93,7 @@ class HttpProtocolClientGeneratorTests {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce("extension RestJsonProtocolClient {")
+        contents.shouldContain("extension RestJsonProtocolClient {")
     }
 
     @Test

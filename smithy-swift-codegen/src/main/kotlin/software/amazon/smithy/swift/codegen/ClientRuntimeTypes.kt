@@ -15,7 +15,7 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
  */
 object ClientRuntimeTypes {
     object Http {
-        val HttpClientEngine = runtimeSymbol("HttpClientEngine")
+        val HttpClient = runtimeSymbol("HTTPClient")
         val HttpClientConfiguration = runtimeSymbol("HttpClientConfiguration")
         val Headers = runtimeSymbol("Headers")
         val HttpStatusCode = runtimeSymbol("HttpStatusCode")
