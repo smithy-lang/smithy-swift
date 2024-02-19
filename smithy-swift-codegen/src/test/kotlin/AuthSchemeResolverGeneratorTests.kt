@@ -3,15 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.aws.swift.codegen
-
-import MockHttpRestJsonProtocolGenerator
-import TestContext
-import defaultSettings
-import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import shouldSyntacticSanityCheck
 
 class AuthSchemeResolverGeneratorTests {
     @Test
