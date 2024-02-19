@@ -102,6 +102,15 @@ class MiddlewareExecutionGenerator(
         operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.DESERIALIZESTEP)
     }
 
+    /*
+     * The enum in this companion object is used to determine under which codegen flow
+     * the middleware context is being code-generated.
+     *
+     * For PRESIGN_REQUEST & PRESIGN_URL flows:
+     * - The value of expiration is saved to middleware context during codegen.
+     * - The flow type information is saved to middleware context during codegen, for consumption by
+     *   AWS auth schemes during runtime to determine where to put the request signature in the request.
+     */
     companion object {
         enum class ContextAttributeCodegenFlowType {
             NORMAL, PRESIGN_REQUEST, PRESIGN_URL
