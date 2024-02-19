@@ -36,7 +36,7 @@ public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
 
         // Create IdentityResolverConfiguration
         let identityResolvers = context.getIdentityResolvers()
-        guard let identityResolvers, identityResolvers.getSize() > 0 else {
+        guard let identityResolvers, identityResolvers.size > 0 else {
             throw ClientError.authError("No identity resolver has been configured on the service.")
         }
         let identityResolverConfig = DefaultIdentityResolverConfiguration(configuredIdResolvers: identityResolvers)

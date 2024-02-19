@@ -21,6 +21,7 @@ public struct AttributeKey<ValueType> {
 /// Type safe property bag
 public struct Attributes {
     private var attributes = [String: Any]()
+    public var size: Int { attributes.count }
 
     public init() {}
 
@@ -38,9 +39,5 @@ public struct Attributes {
 
     public mutating func remove<T>(key: AttributeKey<T>) {
         attributes.removeValue(forKey: key.name)
-    }
-
-    public func getSize() -> Int {
-        return attributes.count
     }
 }
