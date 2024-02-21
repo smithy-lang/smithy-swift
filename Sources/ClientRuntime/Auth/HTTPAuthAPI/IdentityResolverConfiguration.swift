@@ -6,5 +6,5 @@
 //
 
 protocol IdentityResolverConfiguration {
-    func getIdentityResolver(identityKind: IdentityKind) -> (any IdentityResolver)?
+    func getIdentityResolver(schemeID: String) throws -> (any IdentityResolver)?
 }

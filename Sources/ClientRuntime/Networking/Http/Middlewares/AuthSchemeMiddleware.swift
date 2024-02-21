@@ -68,7 +68,7 @@ public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
             // 2) check if corresponding identity resolver for the auth scheme is configured
             // If both 1 & 2 are satisfied, resolve auth scheme and save to selectedAuthScheme
             if let authScheme = validAuthSchemes.get(key: AttributeKey<AuthScheme>(name: "\(option.schemeID)")) {
-                if let identityResolver = authScheme.identityResolver(config: identityResolverConfig) {
+                if let identityResolver = try authScheme.identityResolver(config: identityResolverConfig) {
                     // Hook for auth scheme to customize signing properties
                     let signingProperties = try authScheme.customizeSigningProperties(
                         signingProperties: option.signingProperties,

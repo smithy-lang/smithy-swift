@@ -213,9 +213,9 @@ public class HttpContextBuilder {
     }
 
     @discardableResult
-    public func withIdentityResolver<T: IdentityResolver>(value: T, type: IdentityKind) -> HttpContextBuilder {
+    public func withIdentityResolver<T: IdentityResolver>(value: T, schemeID: String) -> HttpContextBuilder {
         var identityResolvers: Attributes = self.attributes.get(key: AttributeKeys.identityResolvers) ?? Attributes()
-        identityResolvers.set(key: AttributeKey<any IdentityResolver>(name: "\(type)"), value: value)
+        identityResolvers.set(key: AttributeKey<any IdentityResolver>(name: schemeID), value: value)
         self.attributes.set(key: AttributeKeys.identityResolvers, value: identityResolvers)
         return self
     }
@@ -342,9 +342,6 @@ public enum AttributeKeys {
     public static let hasUnsignedPayloadTrait = AttributeKey<Bool>(name: "HasUnsignedPayloadTrait")
     public static let forceUnsignedBody = AttributeKey<Bool>(name: "ForceUnsignedBody")
     public static let expiration = AttributeKey<TimeInterval>(name: "Expiration")
-
-    // The attribute key used to store a credentials provider configured on service client config onto middleware context.
-    public static let awsIdResolver = AttributeKey<any IdentityResolver>(name: "\(IdentityKind.aws)")
 }
 
 // The type of flow the mdidleware context is being constructed for
