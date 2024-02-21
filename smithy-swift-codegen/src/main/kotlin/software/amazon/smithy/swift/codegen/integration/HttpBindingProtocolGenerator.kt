@@ -449,21 +449,31 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     override fun initializeMiddleware(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         for (operation in getHttpBindingOperations(ctx)) {
+            /*
+             * Note: the order of middlewares here does not reflect the order of execution in the actual client call.
+             * The order here simply means the order in which middleware are added to CODEGEN middleware stack.
+             */
             operationMiddleware.appendMiddleware(operation, IdempotencyTokenMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, ContentMD5Middleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, ""))
             operationMiddleware.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, operation))
             operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware(ctx.model, ctx.symbolProvider))
-            operationMiddleware.appendMiddleware(operation, AuthSchemeMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)))
             operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, shouldRenderEncodableConformance, hasRequiresLengthTrait(ctx, operation), hasUnsignedPayloadTrait(operation)))
-            operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
-            operationMiddleware.appendMiddleware(operation, SignerMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, DeserializeMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
+            operationMiddleware.appendMiddleware(operation, SignerMiddleware(ctx.model, ctx.symbolProvider))
             addProtocolSpecificMiddleware(ctx, operation)
+            /*
+             * Auth scheme middleware must be appended to codegen operation stack AFTER protocol specific middleware is appended.
+             * This is because endpoint middleware must be generated into client operation stack first with position: .before,
+             * AFTER which auth scheme must be generated into client operation stack with position: .before, which ensures
+             * auth scheme middleware is executed FIRST before endpoint middleware is executed, as SRA flow defines.
+             */
+            operationMiddleware.appendMiddleware(operation, AuthSchemeMiddleware(ctx.model, ctx.symbolProvider))
             for (integration in ctx.integrations) {
                 integration.customizeMiddleware(ctx, operation, operationMiddleware)
             }
