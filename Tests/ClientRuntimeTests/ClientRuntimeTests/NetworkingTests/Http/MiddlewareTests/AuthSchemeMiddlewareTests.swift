@@ -18,7 +18,9 @@ class AuthSchemeMiddlewareTests: XCTestCase {
         contextBuilder = HttpContextBuilder()
             .withAuthSchemeResolver(value: DefaultMockAuthSchemeResolver())
             .withAuthScheme(value: MockNoAuth())
-            .withIdentityResolver(value: MockIdentityResolver(), type: .aws)
+            .withIdentityResolver(value: MockIdentityResolver(), schemeID: "MockAuthSchemeA")
+            .withIdentityResolver(value: MockIdentityResolver(), schemeID: "MockAuthSchemeB")
+            .withIdentityResolver(value: MockIdentityResolver(), schemeID: "MockAuthSchemeC")
         operationStack = OperationStack<MockInput, MockOutput>(id: "auth scheme middleware test stack")
     }
 
