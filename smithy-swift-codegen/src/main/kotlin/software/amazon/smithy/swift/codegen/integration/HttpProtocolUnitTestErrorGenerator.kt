@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseErrorClosureUtils
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 
 open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Builder) :
@@ -17,7 +18,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
     override fun renderTestBody(test: HttpResponseTestCase) {
         outputShape?.let {
             val operationErrorType = "${operation.toUpperCamelCase()}OutputError"
-            writer.openBlock("do {", "} catch let err {") {
+            writer.openBlock("do {", "} catch {") {
                 renderBuildHttpResponse(test)
                 writer.write("")
                 renderInitOperationError(test, operationErrorType)
@@ -26,7 +27,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
                 writer.write("")
             }
             writer.indent()
-            writer.write("XCTFail(err.localizedDescription)")
+            writer.write("XCTFail(error.localizedDescription)")
             writer.dedent()
             writer.write("}")
         }
@@ -38,13 +39,12 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         if (needsResponseDecoder) {
             renderResponseDecoder()
         }
-        val decoderParameter = if (needsResponseDecoder) ", decoder: decoder" else ""
 
+        val responseErrorClosure = ResponseErrorClosureUtils(ctx, writer, operation).render()
         writer.write(
-            "let \$L = try await \$L.makeError(httpResponse: httpResponse\$L)",
+            "let \$L = try await \$L(httpResponse)",
             operationErrorVariableName,
-            operationErrorType,
-            decoderParameter
+            responseErrorClosure,
         )
     }
 

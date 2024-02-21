@@ -19,36 +19,18 @@ class StructDecodeXMLGenerationTests {
 
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlWrappedListOutputBody+Decodable.swift")
         val expectedContents = """
-        extension XmlWrappedListOutputBody: Swift.Decodable {
-            enum CodingKeys: Swift.String, Swift.CodingKey {
-                case myGroceryList
-            }
-        
-            public init(from decoder: Swift.Decoder) throws {
-                let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                if containerValues.contains(.myGroceryList) {
-                    struct KeyVal0{struct member{}}
-                    let myGroceryListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .myGroceryList)
-                    if let myGroceryListWrappedContainer = myGroceryListWrappedContainer {
-                        let myGroceryListContainer = try myGroceryListWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
-                        var myGroceryListBuffer:[Swift.String]? = nil
-                        if let myGroceryListContainer = myGroceryListContainer {
-                            myGroceryListBuffer = [Swift.String]()
-                            for stringContainer0 in myGroceryListContainer {
-                                myGroceryListBuffer?.append(stringContainer0)
-                            }
-                        }
-                        myGroceryList = myGroceryListBuffer
-                    } else {
-                        myGroceryList = []
-                    }
-                } else {
-                    myGroceryList = nil
-                }
-            }
-        }
-        """.trimIndent()
+extension XmlWrappedListOutputBody {
 
+    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlWrappedListOutput, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = XmlWrappedListOutput()
+            value.myGroceryList = try reader["myGroceryList"].readListIfPresent(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: false)
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -58,59 +40,40 @@ class StructDecodeXMLGenerationTests {
 
         val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesOutputBody+Decodable.swift")
         val expectedContents = """
-        struct SimpleScalarPropertiesOutputBody: Swift.Equatable {
-            let stringValue: Swift.String?
-            let trueBooleanValue: Swift.Bool?
-            let falseBooleanValue: Swift.Bool?
-            let byteValue: Swift.Int8?
-            let shortValue: Swift.Int16?
-            let integerValue: Swift.Int?
-            let longValue: Swift.Int?
-            let floatValue: Swift.Float?
-            let `protocol`: Swift.String?
-            let doubleValue: Swift.Double?
-        }
-        
-        extension SimpleScalarPropertiesOutputBody: Swift.Decodable {
-            enum CodingKeys: Swift.String, Swift.CodingKey {
-                case byteValue
-                case doubleValue = "DoubleDribble"
-                case falseBooleanValue
-                case floatValue
-                case integerValue
-                case longValue
-                case `protocol` = "protocol"
-                case shortValue
-                case stringValue
-                case trueBooleanValue
-            }
-        
-            public init(from decoder: Swift.Decoder) throws {
-                let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                let stringValueDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .stringValue)
-                stringValue = stringValueDecoded
-                let trueBooleanValueDecoded = try containerValues.decodeIfPresent(Swift.Bool.self, forKey: .trueBooleanValue)
-                trueBooleanValue = trueBooleanValueDecoded
-                let falseBooleanValueDecoded = try containerValues.decodeIfPresent(Swift.Bool.self, forKey: .falseBooleanValue)
-                falseBooleanValue = falseBooleanValueDecoded
-                let byteValueDecoded = try containerValues.decodeIfPresent(Swift.Int8.self, forKey: .byteValue)
-                byteValue = byteValueDecoded
-                let shortValueDecoded = try containerValues.decodeIfPresent(Swift.Int16.self, forKey: .shortValue)
-                shortValue = shortValueDecoded
-                let integerValueDecoded = try containerValues.decodeIfPresent(Swift.Int.self, forKey: .integerValue)
-                integerValue = integerValueDecoded
-                let longValueDecoded = try containerValues.decodeIfPresent(Swift.Int.self, forKey: .longValue)
-                longValue = longValueDecoded
-                let floatValueDecoded = try containerValues.decodeIfPresent(Swift.Float.self, forKey: .floatValue)
-                floatValue = floatValueDecoded
-                let protocolDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .protocol)
-                `protocol` = protocolDecoded
-                let doubleValueDecoded = try containerValues.decodeIfPresent(Swift.Double.self, forKey: .doubleValue)
-                doubleValue = doubleValueDecoded
-            }
-        }
-        """.trimIndent()
+struct SimpleScalarPropertiesOutputBody: Swift.Equatable {
+    let stringValue: Swift.String?
+    let trueBooleanValue: Swift.Bool?
+    let falseBooleanValue: Swift.Bool?
+    let byteValue: Swift.Int8?
+    let shortValue: Swift.Int16?
+    let integerValue: Swift.Int?
+    let longValue: Swift.Int?
+    let floatValue: Swift.Float?
+    let `protocol`: Swift.String?
+    let doubleValue: Swift.Double?
+}
 
+extension SimpleScalarPropertiesOutputBody {
+
+    static var readingClosure: SmithyReadWrite.ReadingClosure<SimpleScalarPropertiesOutput, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = SimpleScalarPropertiesOutput()
+            value.stringValue = try reader["stringValue"].readIfPresent()
+            value.trueBooleanValue = try reader["trueBooleanValue"].readIfPresent()
+            value.falseBooleanValue = try reader["falseBooleanValue"].readIfPresent()
+            value.byteValue = try reader["byteValue"].readIfPresent()
+            value.shortValue = try reader["shortValue"].readIfPresent()
+            value.integerValue = try reader["integerValue"].readIfPresent()
+            value.longValue = try reader["longValue"].readIfPresent()
+            value.floatValue = try reader["floatValue"].readIfPresent()
+            value.`protocol` = try reader["protocol"].readIfPresent()
+            value.doubleValue = try reader["DoubleDribble"].readIfPresent()
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -119,49 +82,18 @@ class StructDecodeXMLGenerationTests {
         val context = setupTests("Isolated/Restxml/xml-lists-nestednested-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedWrappedListOutputBody+Decodable.swift")
         val expectedContents = """
-        extension XmlNestedNestedWrappedListOutputBody: Swift.Decodable {
-            enum CodingKeys: Swift.String, Swift.CodingKey {
-                case nestedNestedStringList
-            }
-        
-            public init(from decoder: Swift.Decoder) throws {
-                let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                if containerValues.contains(.nestedNestedStringList) {
-                    struct KeyVal0{struct member{}}
-                    let nestedNestedStringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedNestedStringList)
-                    if let nestedNestedStringListWrappedContainer = nestedNestedStringListWrappedContainer {
-                        let nestedNestedStringListContainer = try nestedNestedStringListWrappedContainer.decodeIfPresent([[[Swift.String]]].self, forKey: .member)
-                        var nestedNestedStringListBuffer:[[[Swift.String]]]? = nil
-                        if let nestedNestedStringListContainer = nestedNestedStringListContainer {
-                            nestedNestedStringListBuffer = [[[Swift.String]]]()
-                            var listBuffer0: [[Swift.String]]? = nil
-                            for listContainer0 in nestedNestedStringListContainer {
-                                listBuffer0 = [[Swift.String]]()
-                                var listBuffer1: [Swift.String]? = nil
-                                for listContainer1 in listContainer0 {
-                                    listBuffer1 = [Swift.String]()
-                                    for stringContainer2 in listContainer1 {
-                                        listBuffer1?.append(stringContainer2)
-                                    }
-                                    if let listBuffer1 = listBuffer1 {
-                                        listBuffer0?.append(listBuffer1)
-                                    }
-                                }
-                                if let listBuffer0 = listBuffer0 {
-                                    nestedNestedStringListBuffer?.append(listBuffer0)
-                                }
-                            }
-                        }
-                        nestedNestedStringList = nestedNestedStringListBuffer
-                    } else {
-                        nestedNestedStringList = []
-                    }
-                } else {
-                    nestedNestedStringList = nil
-                }
-            }
+extension XmlNestedNestedWrappedListOutputBody {
+
+    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlNestedNestedWrappedListOutput, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = XmlNestedNestedWrappedListOutput()
+            value.nestedNestedStringList = try reader["nestedNestedStringList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+            return value
         }
-        """.trimIndent()
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -169,97 +101,22 @@ class StructDecodeXMLGenerationTests {
     fun `empty lists decode`() {
         val context = setupTests("Isolated/Restxml/xml-lists-empty.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyListsOutputBody+Decodable.swift")
-        val expectedContents =
-            """
-            extension XmlEmptyListsOutputBody: Swift.Decodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case booleanList
-                    case integerList
-                    case stringList
-                    case stringSet
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    if containerValues.contains(.stringList) {
-                        struct KeyVal0{struct member{}}
-                        let stringListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringList)
-                        if let stringListWrappedContainer = stringListWrappedContainer {
-                            let stringListContainer = try stringListWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
-                            var stringListBuffer:[Swift.String]? = nil
-                            if let stringListContainer = stringListContainer {
-                                stringListBuffer = [Swift.String]()
-                                for stringContainer0 in stringListContainer {
-                                    stringListBuffer?.append(stringContainer0)
-                                }
-                            }
-                            stringList = stringListBuffer
-                        } else {
-                            stringList = []
-                        }
-                    } else {
-                        stringList = nil
-                    }
-                    if containerValues.contains(.stringSet) {
-                        struct KeyVal0{struct member{}}
-                        let stringSetWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .stringSet)
-                        if let stringSetWrappedContainer = stringSetWrappedContainer {
-                            let stringSetContainer = try stringSetWrappedContainer.decodeIfPresent([Swift.String].self, forKey: .member)
-                            var stringSetBuffer:Swift.Set<Swift.String>? = nil
-                            if let stringSetContainer = stringSetContainer {
-                                stringSetBuffer = Swift.Set<Swift.String>()
-                                for stringContainer0 in stringSetContainer {
-                                    stringSetBuffer?.insert(stringContainer0)
-                                }
-                            }
-                            stringSet = stringSetBuffer
-                        } else {
-                            stringSet = []
-                        }
-                    } else {
-                        stringSet = nil
-                    }
-                    if containerValues.contains(.integerList) {
-                        struct KeyVal0{struct member{}}
-                        let integerListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .integerList)
-                        if let integerListWrappedContainer = integerListWrappedContainer {
-                            let integerListContainer = try integerListWrappedContainer.decodeIfPresent([Swift.Int].self, forKey: .member)
-                            var integerListBuffer:[Swift.Int]? = nil
-                            if let integerListContainer = integerListContainer {
-                                integerListBuffer = [Swift.Int]()
-                                for integerContainer0 in integerListContainer {
-                                    integerListBuffer?.append(integerContainer0)
-                                }
-                            }
-                            integerList = integerListBuffer
-                        } else {
-                            integerList = []
-                        }
-                    } else {
-                        integerList = nil
-                    }
-                    if containerValues.contains(.booleanList) {
-                        struct KeyVal0{struct member{}}
-                        let booleanListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .booleanList)
-                        if let booleanListWrappedContainer = booleanListWrappedContainer {
-                            let booleanListContainer = try booleanListWrappedContainer.decodeIfPresent([Swift.Bool].self, forKey: .member)
-                            var booleanListBuffer:[Swift.Bool]? = nil
-                            if let booleanListContainer = booleanListContainer {
-                                booleanListBuffer = [Swift.Bool]()
-                                for booleanContainer0 in booleanListContainer {
-                                    booleanListBuffer?.append(booleanContainer0)
-                                }
-                            }
-                            booleanList = booleanListBuffer
-                        } else {
-                            booleanList = []
-                        }
-                    } else {
-                        booleanList = nil
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension XmlEmptyListsOutputBody {
+
+    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlEmptyListsOutput, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = XmlEmptyListsOutput()
+            value.stringList = try reader["stringList"].readListIfPresent(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: false)
+            value.stringSet = try reader["stringSet"].readListIfPresent(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: false)
+            value.integerList = try reader["integerList"].readListIfPresent(memberReadingClosure: Swift.Int.readingClosure, memberNodeInfo: "member", isFlattened: false)
+            value.booleanList = try reader["booleanList"].readListIfPresent(memberReadingClosure: Swift.Bool.readingClosure, memberNodeInfo: "member", isFlattened: false)
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

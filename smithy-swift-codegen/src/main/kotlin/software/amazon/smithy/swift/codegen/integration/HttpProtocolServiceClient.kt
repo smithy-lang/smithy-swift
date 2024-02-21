@@ -5,12 +5,11 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.aws.traits.auth.SigV4ATrait
-import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlugin
+import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
 open class HttpProtocolServiceClient(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -21,57 +20,111 @@ open class HttpProtocolServiceClient(
     private val serviceName: String = ctx.settings.sdkId
 
     fun render(serviceSymbol: Symbol) {
-        writer.openBlock("public class ${serviceSymbol.name} {", "}") {
-            writer.write("public static let clientName = \"${serviceSymbol.name}\"")
+        writer.openBlock("public class \$L: Client {", "}", serviceSymbol.name) {
+            writer.write("public static let clientName = \$S", serviceSymbol.name)
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
             writer.write("let config: \$L", serviceConfig.typeName)
-            writer.write("let serviceName = \"${serviceName}\"")
-            writer.write("let encoder: \$N", ClientRuntimeTypes.Serde.RequestEncoder)
-            writer.write("let decoder: \$N", ClientRuntimeTypes.Serde.ResponseDecoder)
+            writer.write("let serviceName = \$S", serviceName)
+            if (properties.any { it is HttpRequestEncoder }) {
+                writer.write("let encoder: \$N", ClientRuntimeTypes.Serde.RequestEncoder)
+            }
+            if (properties.any { it is HttpResponseDecoder }) {
+                writer.write("let decoder: \$N", ClientRuntimeTypes.Serde.ResponseDecoder)
+            }
+            writer.write("")
             properties.forEach { prop ->
                 prop.addImportsAndDependencies(writer)
             }
+            renderInitFunction(properties)
             writer.write("")
-            writer.openBlock("public init(config: \$L) {", "}", serviceConfig.typeName) {
-                writer.write("client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)", ClientRuntimeTypes.Http.SdkHttpClient)
-                properties.forEach { prop ->
-                    prop.renderInstantiation(writer)
-                    if (prop.needsConfigure) {
-                        prop.renderConfiguration(writer)
-                    }
-                    prop.renderInitialization(writer, "config")
-                }
-                // Render auth schemes
-                writer.write("var modeledAuthSchemes: [ClientRuntime.AuthScheme] = Array()")
-                if (ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service).contains(SigV4Trait.ID)) {
-                    writer.write("modeledAuthSchemes.append(SigV4AuthScheme())")
-                }
-                if (ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service).contains(SigV4ATrait.ID)) {
-                    writer.write("modeledAuthSchemes.append(SigV4AAuthScheme())")
-                }
-                writer.write("config.authSchemes = config.authSchemes ?? modeledAuthSchemes")
-                writer.write("self.config = config")
-            }
-            writer.write("")
-            renderConvenienceInit(serviceSymbol)
+            renderConvenienceInitFunctions(serviceSymbol)
         }
         writer.write("")
-        serviceConfig.renderInitializers(serviceSymbol)
-        writer.write("")
+        renderClientExtension(serviceSymbol)
         renderLogHandlerFactory(serviceSymbol)
+    }
+
+    open fun renderInitFunction(properties: List<ClientProperty>) {
+        writer.openBlock("public required init(config: \$L) {", "}", serviceConfig.typeName) {
+            writer.write(
+                "client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)",
+                ClientRuntimeTypes.Http.SdkHttpClient
+            )
+
+            properties.forEach { prop ->
+                prop.renderInstantiation(writer)
+                if (prop.needsConfigure) {
+                    prop.renderConfiguration(writer)
+                }
+                prop.renderInitialization(writer, "config")
+            }
+
+            writer.write("self.config = config")
+        }
         writer.write("")
     }
 
-    open fun renderConvenienceInit(serviceSymbol: Symbol) {
-        writer.openBlock("public convenience init() throws {", "}") {
-            writer.write("let config = try ${serviceConfig.typeName}()")
+    open fun renderConvenienceInitFunctions(serviceSymbol: Symbol) {
+        writer.openBlock("public convenience required init() throws {", "}") {
+            writer.write("let config = try \$L(\"\$L\", \"\$L\")", serviceConfig.typeName, serviceName, serviceSymbol.name)
             writer.write("self.init(config: config)")
         }
+        writer.write("")
+    }
+
+    fun renderClientExtension(serviceSymbol: Symbol) {
+        writer.openBlock("extension ${serviceSymbol.name} {", "}") {
+            renderClientConfig(serviceSymbol)
+            writer.write("")
+
+            writer.openBlock("public static func builder() -> ClientBuilder<\$L> {", "}", serviceSymbol.name) {
+                writer.openBlock("return ClientBuilder<\$L>(defaultPlugins: [", "])", serviceSymbol.name) {
+
+                    val defaultPlugins: MutableList<Plugin> = mutableListOf(DefaultClientPlugin())
+                    val customPlugins: MutableList<Plugin> = mutableListOf()
+
+                    ctx.integrations
+                        .flatMap { it.plugins() }
+                        .onEach {
+                            if (it.isDefault) {
+                                defaultPlugins.add(it)
+                            } else {
+                                customPlugins.add(it)
+                            }
+                        }
+
+                    val pluginsIterator = (defaultPlugins + customPlugins).iterator()
+
+                    while (pluginsIterator.hasNext()) {
+                        pluginsIterator.next().customInitialization(writer)
+                        if (pluginsIterator.hasNext()) {
+                            writer.write(",")
+                        }
+                    }
+
+                    writer.unwrite(",\n").write("")
+                }
+            }
+        }
+        writer.write("")
+    }
+
+    open fun renderClientConfig(serviceSymbol: Symbol) {
+        writer.write(
+            "public typealias \$LConfiguration = \$N",
+            serviceConfig.clientName.toUpperCamelCase(),
+            ClientRuntimeTypes.Core.DefaultSDKRuntimeConfiguration
+        )
     }
 
     private fun renderLogHandlerFactory(serviceSymbol: Symbol) {
-        writer.openBlock("public struct ${serviceSymbol.name}LogHandlerFactory: \$N {", "}", ClientRuntimeTypes.Core.SDKLogHandlerFactory) {
-            writer.write("public var label = \"${serviceSymbol.name}\"")
+        writer.openBlock(
+            "public struct \$LLogHandlerFactory: \$N {",
+            "}",
+            serviceSymbol.name,
+            ClientRuntimeTypes.Core.SDKLogHandlerFactory
+        ) {
+            writer.write("public var label = \$S", serviceSymbol.name)
             writer.write("let logLevel: \$N", ClientRuntimeTypes.Core.SDKLogLevel)
 
             writer.openBlock("public func construct(label: String) -> LogHandler {", "}") {
@@ -84,5 +137,6 @@ open class HttpProtocolServiceClient(
                 writer.write("self.logLevel = logLevel")
             }
         }
+        writer.write("")
     }
 }

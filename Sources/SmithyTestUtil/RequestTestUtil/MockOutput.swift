@@ -7,11 +7,16 @@
 
 import ClientRuntime
 
-public struct MockOutput: HttpResponseBinding {
-    public let value: Int
-    public let headers: Headers
-    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) throws {
-        self.value = httpResponse.statusCode.rawValue
-        self.headers = httpResponse.headers
+public struct MockOutput {
+    public var value: Int = 0
+    public var headers: Headers = Headers()
+
+    public init() {}
+
+    public static func responseClosure(_ httpResponse: HttpResponse) async throws -> MockOutput {
+        var value = MockOutput()
+        value.value = httpResponse.statusCode.rawValue
+        value.headers = httpResponse.headers
+        return value
     }
 }

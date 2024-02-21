@@ -11,6 +11,9 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
@@ -57,8 +60,13 @@ class MiddlewareExecutionGenerator(
         val httpMethod = resolveHttpMethod(op)
 
         // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
-        writer.write("  .withEncoder(value: encoder)")
-        writer.write("  .withDecoder(value: decoder)")
+
+        if (ctx.service.requestWireProtocol != WireProtocol.XML) {
+            writer.write("  .withEncoder(value: encoder)")
+        }
+        if (ctx.service.responseWireProtocol != WireProtocol.XML) {
+            writer.write("  .withDecoder(value: decoder)")
+        }
         writer.write("  .withMethod(value: .$httpMethod)")
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \"${op.toLowerCamelCase()}\")")

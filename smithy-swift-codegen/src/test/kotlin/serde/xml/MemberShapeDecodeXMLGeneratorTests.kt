@@ -18,47 +18,28 @@ class MemberShapeDecodeXMLGeneratorTests {
     fun `001 set default value for a missing value of a scalar member`() {
         val context = setupTests("Isolated/Restxml/xml-scalarmember-default-value.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesOutputBody+Decodable.swift")
-        val expectedContents =
-            """
-        extension SimpleScalarPropertiesOutputBody: Swift.Decodable {
-            enum CodingKeys: Swift.String, Swift.CodingKey {
-                case byteValue
-                case doubleValue = "DoubleDribble"
-                case falseBooleanValue
-                case floatValue
-                case integerValue
-                case longValue
-                case `protocol` = "protocol"
-                case shortValue
-                case stringValue
-                case trueBooleanValue
-            }
-        
-            public init(from decoder: Swift.Decoder) throws {
-                let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                let stringValueDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .stringValue) ?? "test"
-                stringValue = stringValueDecoded
-                let trueBooleanValueDecoded = try containerValues.decodeIfPresent(Swift.Bool.self, forKey: .trueBooleanValue) ?? false
-                trueBooleanValue = trueBooleanValueDecoded
-                let falseBooleanValueDecoded = try containerValues.decodeIfPresent(Swift.Bool.self, forKey: .falseBooleanValue)
-                falseBooleanValue = falseBooleanValueDecoded
-                let byteValueDecoded = try containerValues.decodeIfPresent(Swift.Int8.self, forKey: .byteValue)
-                byteValue = byteValueDecoded
-                let shortValueDecoded = try containerValues.decodeIfPresent(Swift.Int16.self, forKey: .shortValue)
-                shortValue = shortValueDecoded
-                let integerValueDecoded = try containerValues.decodeIfPresent(Swift.Int.self, forKey: .integerValue) ?? 5
-                integerValue = integerValueDecoded
-                let longValueDecoded = try containerValues.decodeIfPresent(Swift.Int.self, forKey: .longValue)
-                longValue = longValueDecoded
-                let floatValueDecoded = try containerValues.decodeIfPresent(Swift.Float.self, forKey: .floatValue) ?? 2.4
-                floatValue = floatValueDecoded
-                let protocolDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .protocol)
-                `protocol` = protocolDecoded
-                let doubleValueDecoded = try containerValues.decodeIfPresent(Swift.Double.self, forKey: .doubleValue)
-                doubleValue = doubleValueDecoded
-            }
+        val expectedContents = """
+extension SimpleScalarPropertiesOutputBody {
+
+    static var readingClosure: SmithyReadWrite.ReadingClosure<SimpleScalarPropertiesOutput, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = SimpleScalarPropertiesOutput()
+            value.stringValue = try reader["stringValue"].readIfPresent() ?? test
+            value.trueBooleanValue = try reader["trueBooleanValue"].readIfPresent() ?? false
+            value.falseBooleanValue = try reader["falseBooleanValue"].readIfPresent()
+            value.byteValue = try reader["byteValue"].readIfPresent()
+            value.shortValue = try reader["shortValue"].readIfPresent()
+            value.integerValue = try reader["integerValue"].readIfPresent() ?? 5
+            value.longValue = try reader["longValue"].readIfPresent()
+            value.floatValue = try reader["floatValue"].readIfPresent() ?? 2.4
+            value.`protocol` = try reader["protocol"].readIfPresent()
+            value.doubleValue = try reader["DoubleDribble"].readIfPresent()
+            return value
         }
-            """.trimIndent()
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {

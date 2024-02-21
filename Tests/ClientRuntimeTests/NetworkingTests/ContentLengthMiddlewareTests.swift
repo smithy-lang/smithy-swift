@@ -82,7 +82,7 @@ class ContentLengthMiddlewareTests: XCTestCase {
                 XCTAssert(input.headers.value(for: key) == value, file: file, line: line)
             }
             let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
-            let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+            let mockOutput = MockOutput()
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
             return output
         }

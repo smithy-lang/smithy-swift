@@ -8,8 +8,6 @@ class IdempotencyTokenTraitTests {
         val expectedContents = """
     public func idempotencyTokenWithStructure(input: IdempotencyTokenWithStructureInput) async throws -> IdempotencyTokenWithStructureOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .put)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "idempotencyTokenWithStructure")
@@ -26,11 +24,11 @@ class IdempotencyTokenTraitTests {
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>())
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>(contentType: "application/xml"))
-        operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, SmithyXML.Writer>(documentWritingClosure: SmithyXML.XMLReadWrite.documentWritingClosure(rootNodeInfo: .init("IdempotencyToken")), inputWritingClosure: IdempotencyTokenWithStructureInput.writingClosure(_:to:)))
+        operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, SmithyXML.Writer>(documentWritingClosure: SmithyXML.XMLReadWrite.documentWritingClosure(rootNodeInfo: "IdempotencyToken"), inputWritingClosure: IdempotencyTokenWithStructureInput.writingClosure(_:to:)))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, IdempotencyTokenWithStructureOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<IdempotencyTokenWithStructureOutput, IdempotencyTokenWithStructureOutputError>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<IdempotencyTokenWithStructureOutput>(responseClosure(decoder: decoder), responseErrorClosure(IdempotencyTokenWithStructureOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<IdempotencyTokenWithStructureOutput>(responseClosure(IdempotencyTokenWithStructureOutput.httpBinding, responseDocumentBinding), responseErrorClosure(IdempotencyTokenWithStructureOutputError.httpBinding, responseDocumentBinding)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<IdempotencyTokenWithStructureOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result

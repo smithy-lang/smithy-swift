@@ -69,10 +69,10 @@ extension Writer {
                 // Add the child node to its parent
                 xmlAddChild(parentNode, node)
 
-                // Unwrap the namespace if any, then access its prefix & uri as C strings
-                if let namespace = nodeInfo.namespace {
-                    namespace.prefix.utf8CString.withUnsafeBytes { unsafePrefix in
-                        namespace.uri.utf8CString.withUnsafeBytes { unsafeURI in
+                // Unwrap the namespace def if any, then access its prefix & uri as C strings
+                if let namespaceDef = nodeInfo.namespaceDef {
+                    namespaceDef.prefix.utf8CString.withUnsafeBytes { unsafePrefix in
+                        namespaceDef.uri.utf8CString.withUnsafeBytes { unsafeURI in
 
                             // libxml uses C strings with its own xmlChar data type
                             // Recast the C strings to libxml-typed strings

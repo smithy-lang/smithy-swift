@@ -20,13 +20,10 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGener
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysCustomizationXmlName
-import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
-import software.amazon.smithy.swift.codegen.integration.codingKeys.DefaultCodingKeysGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
@@ -72,10 +69,11 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
     override val protocol: ShapeId = Ec2QueryTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val httpProtocolCustomizable = MockEC2QueryHttpProtocolCustomizations()
-    override val codingKeysGenerator: CodingKeysGenerator = DefaultCodingKeysGenerator(CodingKeysCustomizationXmlName())
+    override val codingKeysGenerator = null
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
         unknownServiceErrorSymbol,
         defaultTimestampFormat,
+        HttpResponseBindingOutputGenerator(),
         MockHttpResponseBindingErrorGenerator()
     )
     override val shouldRenderDecodableBodyStructForInputShapes = false
@@ -96,13 +94,14 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
     }
     override fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,
+        shapeContainingMembers: Shape,
         shapeMetadata: Map<ShapeMetadata, Any>,
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
         path: String
     ) {
-        val decodeGenerator = StructDecodeXMLGenerator(ctx, members, mapOf(), writer, defaultTimestampFormat)
+        val decodeGenerator = StructDecodeXMLGenerator(ctx, shapeContainingMembers, members, mapOf(), writer)
         decodeGenerator.render()
     }
 
@@ -134,7 +133,7 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
             httpProtocolCustomizable,
             operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
-            HttpProtocolUnitTestGenerator.SerdeContext("FormURLEncoder()", "XMLDecoder()", ".secondsSince1970")
+//            HttpProtocolUnitTestGenerator.SerdeContext("FormURLEncoder()", null, ".secondsSince1970")
         ).generateProtocolTests()
     }
 }

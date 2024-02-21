@@ -104,7 +104,7 @@ fun renderPackageWithUrl(writer: CodeWriter, dependency: SymbolDependency) {
         val dependencyURL = dependency.expectProperty("url", String::class.java)
         writer.write("url: \"$dependencyURL\",")
         val branch = dependency.getProperty("branch", String::class.java)
-        if (!branch.getOrNull().isNullOrEmpty()) {
+        if (!branch.orElse(null).isNullOrEmpty()) {
             val branchString = "${branch.get()}"
             writer.write(".branch(\"$branchString\")")
         } else {

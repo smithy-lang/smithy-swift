@@ -7,9 +7,9 @@
 
 @propertyWrapper
 public class Indirect<T> {
-    public var wrappedValue: T?
+    public var wrappedValue: Optional<T>
 
-    public init(wrappedValue: T? = nil) {
+    public init(wrappedValue: Optional<T>) {
         self.wrappedValue = wrappedValue
     }
 }

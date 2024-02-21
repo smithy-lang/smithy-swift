@@ -99,3 +99,5 @@ fun SymbolBuilder.namespace(dependency: SwiftDependency, type: String = "") {
 
     dependency(dependency)
 }
+
+fun Symbol.toNullable(): Symbol = this.toBuilder().name("${this.name}?").build()
