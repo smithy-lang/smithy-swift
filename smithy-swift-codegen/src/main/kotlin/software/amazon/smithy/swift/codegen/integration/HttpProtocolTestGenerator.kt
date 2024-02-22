@@ -73,7 +73,7 @@ class HttpProtocolTestGenerator(
             cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "UserAgentMiddleware")
             cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "AuthSchemeMiddleware")
             cloned.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "RetryMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "SigningMiddleware")
+            cloned.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "SignerMiddleware")
             cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "DeserializeMiddleware")
             cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
 
