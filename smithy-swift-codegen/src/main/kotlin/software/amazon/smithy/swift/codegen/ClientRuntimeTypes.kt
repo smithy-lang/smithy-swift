@@ -95,8 +95,8 @@ object ClientRuntimeTypes {
     }
 
     object Auth {
-        val AuthSchemes = runtimeSymbolWithoutNamespace("[ClientRuntime.AuthScheme]?")
-        val AuthSchemeResolver = runtimeSymbolWithoutNamespace("ClientRuntime.AuthSchemeResolver")
+        val AuthSchemes = runtimeSymbolWithoutNamespace("[ClientRuntime.AuthScheme]")
+        val AuthSchemeResolver = runtimeSymbol("AuthSchemeResolver")
         val AuthSchemeResolverParams = runtimeSymbol("AuthSchemeResolverParameters")
     }
 

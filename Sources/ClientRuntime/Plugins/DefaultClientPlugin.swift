@@ -9,10 +9,19 @@ public class DefaultClientPlugin: Plugin {
     public init() {}
     public func configureClient(clientConfiguration: ClientConfiguration) {
         if var config = clientConfiguration as? DefaultClientConfiguration {
-            // Populate default values for configuration here if they are missing
             config.retryStrategyOptions =
                 DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
                     .defaultRetryStrategyOptions
+        }
+
+        if var config = clientConfiguration as? DefaultHttpClientConfiguration {
+            var httpClientConfiguration =
+                DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
+                    .defaultHttpClientConfiguration
+            config.httpClientConfiguration = httpClientConfiguration
+            config.httpClientEngine =
+                DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
+                    .makeClient(httpClientConfiguration: httpClientConfiguration)
         }
     }
 }

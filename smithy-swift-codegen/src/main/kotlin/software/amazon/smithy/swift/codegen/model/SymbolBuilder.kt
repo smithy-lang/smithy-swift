@@ -100,4 +100,30 @@ fun SymbolBuilder.namespace(dependency: SwiftDependency, type: String = "") {
     dependency(dependency)
 }
 
-fun Symbol.toNullable(): Symbol = this.toBuilder().name("${this.name}?").build()
+fun Symbol.isGeneric(): Boolean {
+    return this.getProperty("isGeneric").orElse(false) as Boolean
+}
+
+fun Symbol.isOptional(): Boolean {
+    return this.getProperty("isOptional").orElse(false) as Boolean
+}
+
+fun Symbol.toOptional(): Symbol {
+    return this.toBuilder().putProperty("isOptional", true).name(name).build()
+}
+
+fun Symbol.toGeneric(): Symbol {
+    return this.toBuilder().putProperty("isGeneric", true).name(name).build()
+}
+
+fun Symbol.renderSwiftType(): String {
+    return if (this.isGeneric() && this.isOptional()) {
+        "(any $this)?"
+    } else if (this.isGeneric()) {
+        "any $this"
+    } else if (this.isOptional()) {
+        "$this?"
+    } else {
+        "$this"
+    }
+}
