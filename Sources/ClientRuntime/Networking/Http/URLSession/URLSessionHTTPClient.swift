@@ -314,6 +314,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         var components = URLComponents()
         components.scheme = config.protocolType?.rawValue ?? request.endpoint.protocolType?.rawValue ?? "https"
         components.host = request.endpoint.host
+        components.port = port(for: request)
         components.percentEncodedPath = request.path
         if let queryItems = request.queryItems, !queryItems.isEmpty {
             components.percentEncodedQueryItems = queryItems.map {
@@ -330,6 +331,16 @@ public final class URLSessionHTTPClient: HTTPClient {
             }
         }
         return urlRequest
+    }
+
+    private func port(for request: SdkHttpRequest) -> Int? {
+        switch (request.endpoint.protocolType, request.endpoint.port) {
+        case (.https, 443), (.http, 80):
+            // Don't set port explicitly if it's the default port for the scheme
+            return nil
+        default:
+            return Int(request.endpoint.port)
+        }
     }
 }
 
