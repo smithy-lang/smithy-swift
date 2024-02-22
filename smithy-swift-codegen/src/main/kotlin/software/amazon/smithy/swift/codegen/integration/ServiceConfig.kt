@@ -7,7 +7,6 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
 /**

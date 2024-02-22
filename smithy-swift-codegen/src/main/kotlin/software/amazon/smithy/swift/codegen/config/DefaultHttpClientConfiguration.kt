@@ -9,7 +9,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.config.ClientConfiguration.Companion.runtimeSymbol
-import software.amazon.smithy.swift.codegen.model.toNullable
 
 class DefaultHttpClientConfiguration : ClientConfiguration {
     override val swiftProtocolName: Symbol
