@@ -80,7 +80,7 @@ class AuthSchemeResolverGenerator {
                     val memberName = param.name.toString().toLowerCamelCase()
                     val memberSymbol = param.toSymbol()
                     val optional = if (param.isRequired) "" else "?"
-                    param.documentation.getOrNull()?.let { write("/// $it") }
+                    param.documentation.orElse(null)?.let { write("/// $it") }
                     write("public let \$L: \$L$optional", memberName, memberSymbol)
                 }
             }
