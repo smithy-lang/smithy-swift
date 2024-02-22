@@ -28,10 +28,9 @@ class AuthSchemeMiddleware(
         operationStackName: String
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
-        val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
         writer.write(
-            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N>())",
-            ClientRuntimeTypes.Middleware.AuthSchemeMiddleware, output, outputError
+            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N>())",
+            ClientRuntimeTypes.Middleware.AuthSchemeMiddleware, output
         )
     }
 }

@@ -7,8 +7,7 @@
 
 import Foundation
 
-public struct AuthSchemeMiddleware<OperationStackOutput: HttpResponseBinding,
-                                   OperationStackOutputError: HttpResponseErrorBinding>: Middleware {
+public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
     public let id: String = "AuthSchemeMiddleware"
 
     public init () {}

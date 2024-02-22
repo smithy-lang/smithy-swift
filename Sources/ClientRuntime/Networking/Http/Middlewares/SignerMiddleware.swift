@@ -7,8 +7,7 @@
 
 import Foundation
 
-public struct SignerMiddleware<OperationStackOutput: HttpResponseBinding,
-                               OperationStackError: HttpResponseErrorBinding>: Middleware {
+public struct SignerMiddleware<OperationStackOutput>: Middleware {
     public let id: String = "SignerMiddleware"
 
     public init () {}

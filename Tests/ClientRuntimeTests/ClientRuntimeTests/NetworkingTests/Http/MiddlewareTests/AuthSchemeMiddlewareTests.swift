@@ -124,13 +124,13 @@ class AuthSchemeMiddlewareTests: XCTestCase {
     }
 
     private func AssertSelectedAuthSchemeMatches(builtContext: HttpContext, expectedAuthScheme: String) async throws {
-        operationStack.buildStep.intercept(position: .before, middleware: AuthSchemeMiddleware<MockOutput, MockMiddlewareError>())
+        operationStack.buildStep.intercept(position: .before, middleware: AuthSchemeMiddleware<MockOutput>())
 
-        let mockHandler = MockHandler(handleCallback: { (context, input) in
+        let mockHandler = MockHandler<MockOutput>(handleCallback: { (context, input) in
             let selectedAuthScheme = context.getSelectedAuthScheme()
             XCTAssertEqual(expectedAuthScheme, selectedAuthScheme?.schemeID)
             let httpResponse = HttpResponse(body: .noStream, statusCode: HttpStatusCode.ok)
-            let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+            let mockOutput = MockOutput()
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
             return output
         })

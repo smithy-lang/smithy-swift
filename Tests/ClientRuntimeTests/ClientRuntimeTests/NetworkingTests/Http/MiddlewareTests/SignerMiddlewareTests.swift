@@ -99,12 +99,12 @@ class SignerMiddlewareTests: XCTestCase {
     }
 
     private func AssertRequestWasSigned(builtContext: HttpContext) async throws {
-        operationStack.finalizeStep.intercept(position: .before, middleware: SignerMiddleware<MockOutput, MockMiddlewareError>())
+        operationStack.finalizeStep.intercept(position: .before, middleware: SignerMiddleware<MockOutput>())
 
-        let mockHandler = MockHandler(handleCallback: { (context, input) in
+        let mockHandler = MockHandler<MockOutput>(handleCallback: { (context, input) in
             XCTAssertEqual(input.headers.value(for: "Mock-Authorization"), "Mock-Signed")
             let httpResponse = HttpResponse(body: .noStream, statusCode: HttpStatusCode.ok)
-            let mockOutput = try! MockOutput(httpResponse: httpResponse, decoder: nil)
+            let mockOutput = MockOutput()
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
             return output
         })
