@@ -43,28 +43,29 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// A variable indicating that the streaming payload is chunked
     private var isChunkedTransfer: Bool
 
-    private actor StreamReadyStatus {
-        var isReady: Bool = false
-        private var hasWrittenFirstChunk: Bool = false
+    public actor ChunkStorage {
+        private var chunks: [(data: Data, isEndOfStream: Bool)] = []
 
-        func setReadyForMoreData(_ ready: Bool) {
-            self.isReady = ready
+        func popChunk() -> (data: Data, isEndOfStream: Bool)? {
+            guard !chunks.isEmpty else {
+                return nil
+            }
+
+            return chunks.removeFirst()
         }
 
-        func isReadyForMoreData() -> Bool {
-            return self.isReady
+        func addChunk(chunk: Data, isEndOfStream: Bool) {
+            chunks.append((data: chunk, isEndOfStream: isEndOfStream))
         }
 
-        func markFirstChunkWritten() {
-            self.hasWrittenFirstChunk = true
-        }
-
-        func hasFirstChunkBeenWritten() -> Bool {
-            return self.hasWrittenFirstChunk
+        func chunksAvailable() -> Int {
+            return chunks.count
         }
     }
 
-    private let streamReadyStatus = StreamReadyStatus()
+    public var chunksStorage = ChunkStorage()
+    private var isFirstChunk = true
+
 
     /// Actor used to isolate the stream status from multiple concurrent accesses.
     actor ReadableStreamStatus {
@@ -209,12 +210,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Append the new data to the buffer, then write to the output stream.  Return any error to the caller using the param object.
     @objc private func writeToOutputStreamOnThread(_ result: WriteToOutputStreamResult) {
 
-        print("STREAM STATUS: \(outputStream.streamStatus)")
-        if (outputStream.streamStatus == .atEnd) {
-            print("AT END BUT WANTING TO WRITE: \(String(data: result.data, encoding: .utf8))")
+        guard !buffer.isEmpty || !result.data.isEmpty else {
+            print("RETURNING")
+            return
         }
-
-        guard !buffer.isEmpty || !result.data.isEmpty else { return }
         buffer.append(result.data)
         var writeCount = 0
         buffer.withUnsafeBytes { bufferPtr in
@@ -228,31 +227,29 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     }
 
     func writeChunk(chunk: Data, endOfStream: Bool = false) async throws {
-        // Check if the first chunk has already been written
-        let firstChunkWritten = await streamReadyStatus.hasFirstChunkBeenWritten()
 
-        if !firstChunkWritten {
-            // Proceed with writing the first chunk immediately
-            try await writeToOutputStream(data: chunk)
-            await streamReadyStatus.markFirstChunkWritten()
-        } else {
-            // For subsequent chunks, wait until the stream is ready for more data
-            while !(await streamReadyStatus.isReadyForMoreData()) {
-                // Optionally, sleep for a bit to prevent a tight loop
-                try await Task.sleep(nanoseconds: 100_000_000) // 100ms
-            }
+        if !chunk.isEmpty {
+//            print("CHUNK: \(String(data: chunk, encoding: .utf8)?.prefix(200)), isFinalChunk: \(endOfStream)")
+//            print("CHUNKS LEFT TO SEND: \(await self.chunksStorage.chunksAvailable())")
 
-            // Proceed with writing the chunk
             try await writeToOutputStream(data: chunk)
         }
 
-        // After writing, optionally reset the ready flag
-        await streamReadyStatus.setReadyForMoreData(false)
-
         if endOfStream {
-            try await writeToOutputStream(data: Data())
             await self.readableStreamStatus.setIsEmpty()
             await self.close()
+        }
+
+    }
+
+    func handleChunk(_ chunk: Data, isEndOfStream: Bool) async throws {
+        if isFirstChunk {
+            // If it's the first chunk, write it immediately
+            try await writeChunk(chunk: chunk, endOfStream: isEndOfStream)
+            isFirstChunk = false // Update flag to indicate the first chunk has been handled
+        } else {
+            // For subsequent chunks, add them to the storage for later writing
+            await self.chunksStorage.addChunk(chunk: chunk, isEndOfStream: isEndOfStream)
         }
     }
 
@@ -268,7 +265,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             // Use a `Task` to perform the operation within Swift concurrency.
             if self.isChunkedTransfer {
                 Task {
-                    await self.streamReadyStatus.setReadyForMoreData(true)
+                    guard let (nextChunk, isEndOfStream) = await self.chunksStorage.popChunk() else {
+                        throw ClientError.dataNotFound("No more chunks to send!")
+                    }
+                    try await self.writeChunk(chunk: nextChunk, endOfStream: isEndOfStream)
                 }
             } else {
                 Task { try await writeToOutput() }

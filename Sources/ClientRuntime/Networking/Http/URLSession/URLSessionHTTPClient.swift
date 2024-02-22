@@ -289,7 +289,11 @@ public final class URLSessionHTTPClient: HTTPClient {
                             )
                         }
                         try await sendAwsChunkedBody(request: request) { chunk, isFinalChunk in
-                            try await streamBridge.writeChunk(chunk: chunk, endOfStream: isFinalChunk)
+                            try await streamBridge.handleChunk(chunk, isEndOfStream: isFinalChunk)
+                        }
+                        // Wait for chunkStorage to be empty
+                        while await streamBridge.chunksStorage.chunksAvailable() > 0 {
+                            try await Task.sleep(nanoseconds: 100_000_000) // Sleep for 0.1 second to reduce CPU usage
                         }
                     } catch {
                         continuation.resume(throwing: error)
