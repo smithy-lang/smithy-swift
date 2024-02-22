@@ -19,7 +19,7 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
         get() = setOf(
             ConfigProperty("httpClientEngine", ClientRuntimeTypes.Http.HttpClient, "AWSClientConfigDefaultsProvider.httpClientEngine"),
             ConfigProperty("httpClientConfiguration", ClientRuntimeTypes.Http.HttpClientConfiguration, "AWSClientConfigDefaultsProvider.httpClientConfiguration"),
-            ConfigProperty("authSchemes", ClientRuntimeTypes.Auth.AuthSchemes, "AWSClientConfigDefaultsProvider.authSchemes(serviceName)"),
+            ConfigProperty("authSchemes", ClientRuntimeTypes.Auth.AuthSchemes, "AWSClientConfigDefaultsProvider.authSchemes(clientName)"),
             ConfigProperty("authSchemeResolver", ClientRuntimeTypes.Auth.AuthSchemeResolver, "")
         )
 }

@@ -73,8 +73,8 @@ class MiddlewareExecutionGenerator(
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
         writer.write("  .withLogger(value: config.logger)")
         writer.write("  .withPartitionID(value: config.partitionID)")
-        writer.write("  .withAuthSchemes(value: config.authSchemes!)")
-        writer.write("  .withAuthSchemeResolver(value: config.serviceSpecific.authSchemeResolver)")
+        writer.write("  .withAuthSchemes(value: config.authSchemes ?? [])")
+        writer.write("  .withAuthSchemeResolver(value: config.authSchemeResolver)")
         writer.write("  .withUnsignedPayloadTrait(value: ${op.hasTrait(UnsignedPayloadTrait::class.java)})")
 
         // Add flag for presign / presign-url flows
