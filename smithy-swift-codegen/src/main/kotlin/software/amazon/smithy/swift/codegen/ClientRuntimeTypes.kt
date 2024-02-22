@@ -94,6 +94,12 @@ object ClientRuntimeTypes {
         }
     }
 
+    object Auth {
+        val AuthSchemes = runtimeSymbolWithoutNamespace("[ClientRuntime.AuthScheme]?")
+        val AuthSchemeResolver = runtimeSymbolWithoutNamespace("ClientRuntime.AuthSchemeResolver")
+        val AuthSchemeResolverParams = runtimeSymbol("AuthSchemeResolverParameters")
+    }
+
     object Core {
         val AttributeKey = runtimeSymbol("AttributeKey")
         val Endpoint = runtimeSymbol("Endpoint")
@@ -118,13 +124,16 @@ object ClientRuntimeTypes {
         val DateFormatter = runtimeSymbol("DateFormatter")
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")
-        val AuthSchemeResolver = runtimeSymbol("AuthSchemeResolver")
-        val AuthSchemeResolverParameters = runtimeSymbol("AuthSchemeResolverParameters")
     }
 }
 
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {
     this.name = name
     this.namespace = SwiftDependency.CLIENT_RUNTIME.target
+    dependency(SwiftDependency.CLIENT_RUNTIME)
+}
+
+private fun runtimeSymbolWithoutNamespace(name: String): Symbol = buildSymbol {
+    this.name = name
     dependency(SwiftDependency.CLIENT_RUNTIME)
 }

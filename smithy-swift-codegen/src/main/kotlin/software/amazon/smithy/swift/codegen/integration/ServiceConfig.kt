@@ -24,13 +24,3 @@ abstract class ServiceConfig(val writer: SwiftWriter, val clientName: String, va
 
     open fun serviceSpecificConfigProperties(): List<ConfigField> = listOf()
 }
-
-object ServiceTypes {
-    val AuthSchemes = symbol("[ClientRuntime.AuthScheme]")
-    val AuthSchemeResolver = symbol("ClientRuntime.AuthSchemeResolver")
-    val AuthSchemeResolverParams = symbol("ClientRuntime.AuthSchemeResolverParameters")
-
-    private fun symbol(name: String): Symbol = buildSymbol {
-        this.name = name
-    }
-}

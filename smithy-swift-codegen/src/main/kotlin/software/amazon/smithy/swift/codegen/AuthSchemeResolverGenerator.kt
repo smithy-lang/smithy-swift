@@ -16,7 +16,6 @@ import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.ServiceTypes
 import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.getTrait
@@ -25,11 +24,12 @@ import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import java.util.Locale
 
 class AuthSchemeResolverGenerator {
+    private val AUTH_SCHEME_RESOLVER = "AuthSchemeResolver"
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val rootNamespace = ctx.settings.moduleName
         val serviceIndex = ServiceIndex(ctx.model)
 
-        ctx.delegator.useFileWriter("./$rootNamespace/${ClientRuntimeTypes.Core.AuthSchemeResolver.name}.swift") {
+        ctx.delegator.useFileWriter("./$rootNamespace/$AUTH_SCHEME_RESOLVER.swift") {
             renderServiceSpecificAuthResolverParamsStruct(serviceIndex, ctx, it)
             it.write("")
             renderServiceSpecificAuthResolverProtocol(ctx, it)
@@ -47,9 +47,9 @@ class AuthSchemeResolverGenerator {
     ) {
         writer.apply {
             openBlock(
-                "public struct ${getSdkId(ctx)}${ClientRuntimeTypes.Core.AuthSchemeResolverParameters.name}: \$L {",
+                "public struct ${getSdkId(ctx)}${ClientRuntimeTypes.Auth.AuthSchemeResolverParams.name}: \$L {",
                 "}",
-                ServiceTypes.AuthSchemeResolverParams
+                ClientRuntimeTypes.Auth.AuthSchemeResolverParams
             ) {
                 write("public let operation: String")
 
@@ -90,9 +90,9 @@ class AuthSchemeResolverGenerator {
     private fun renderServiceSpecificAuthResolverProtocol(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {
         writer.apply {
             openBlock(
-                "public protocol ${getSdkId(ctx)}${ClientRuntimeTypes.Core.AuthSchemeResolver.name}: \$L {",
+                "public protocol ${getSdkId(ctx)}$AUTH_SCHEME_RESOLVER: \$L {",
                 "}",
-                ServiceTypes.AuthSchemeResolver
+                ClientRuntimeTypes.Auth.AuthSchemeResolver
             ) {
                 // This is just a parent protocol that all auth scheme resolvers of a given service must conform to.
                 write("// Intentionally empty.")
@@ -113,12 +113,12 @@ class AuthSchemeResolverGenerator {
         //   and is used as fallback only if endpoint resolver returns no valid auth scheme(s).
         val usesRulesBasedResolver = usesRulesBasedAuthResolver(ctx)
         val defaultResolverName =
-            if (usesRulesBasedResolver) "InternalModeled$sdkId${ClientRuntimeTypes.Core.AuthSchemeResolver.name}"
-            else "Default$sdkId${ClientRuntimeTypes.Core.AuthSchemeResolver.name}"
+            if (usesRulesBasedResolver) "InternalModeled$sdkId$AUTH_SCHEME_RESOLVER"
+            else "Default$sdkId$AUTH_SCHEME_RESOLVER"
 
         // Model-based auth scheme resolver should be private internal impl detail if service uses rules-based resolver.
         val accessModifier = if (usesRulesBasedResolver) "private" else "public"
-        val serviceSpecificAuthResolverProtocol = sdkId + ClientRuntimeTypes.Core.AuthSchemeResolver.name
+        val serviceSpecificAuthResolverProtocol = sdkId + AUTH_SCHEME_RESOLVER
 
         writer.apply {
             writer.openBlock(
@@ -145,13 +145,13 @@ class AuthSchemeResolverGenerator {
         writer: SwiftWriter
     ) {
         val sdkId = getSdkId(ctx)
-        val serviceParamsName = sdkId + ClientRuntimeTypes.Core.AuthSchemeResolverParameters.name
+        val serviceParamsName = sdkId + ClientRuntimeTypes.Auth.AuthSchemeResolverParams.name
 
         writer.apply {
             openBlock(
                 "public func resolveAuthScheme(params: \$L) throws -> [AuthOption] {",
                 "}",
-                ServiceTypes.AuthSchemeResolverParams
+                ClientRuntimeTypes.Auth.AuthSchemeResolverParams
             ) {
                 // Return value of array of auth options
                 write("var validAuthOptions = [AuthOption]()")
@@ -238,19 +238,19 @@ class AuthSchemeResolverGenerator {
             openBlock(
                 "public func constructParameters(context: HttpContext) throws -> \$L {",
                 "}",
-                ServiceTypes.AuthSchemeResolverParams
+                ClientRuntimeTypes.Auth.AuthSchemeResolverParams
             ) {
                 if (usesRulesBasedAuthResolver(ctx)) {
-                    write("return try Default${getSdkId(ctx) + ClientRuntimeTypes.Core.AuthSchemeResolver.name}().constructParameters(context: context)")
+                    write("return try Default${getSdkId(ctx) + AUTH_SCHEME_RESOLVER}().constructParameters(context: context)")
                 } else {
                     openBlock("guard let opName = context.getOperation() else {", "}") {
                         write("throw ClientError.dataNotFound(\"Operation name not configured in middleware context for auth scheme resolver params construction.\")")
                     }
                     if (hasSigV4) {
                         write("let opRegion = context.getRegion()")
-                        write("return ${getSdkId(ctx) + ClientRuntimeTypes.Core.AuthSchemeResolverParameters.name}(operation: opName, region: opRegion)")
+                        write("return ${getSdkId(ctx) + ClientRuntimeTypes.Auth.AuthSchemeResolverParams.name}(operation: opName, region: opRegion)")
                     } else {
-                        write("return ${getSdkId(ctx) + ClientRuntimeTypes.Core.AuthSchemeResolverParameters.name}(operation: opName)")
+                        write("return ${getSdkId(ctx) + ClientRuntimeTypes.Auth.AuthSchemeResolverParams.name}(operation: opName)")
                     }
                 }
             }
