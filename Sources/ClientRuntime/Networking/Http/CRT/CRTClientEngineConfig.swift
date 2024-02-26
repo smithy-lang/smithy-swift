@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import AwsCommonRuntimeKit
+
 struct CRTClientEngineConfig {
 
     /// Max connections the manager can contain per endpoint
@@ -20,15 +22,19 @@ struct CRTClientEngineConfig {
     /// Timeout in MS for connections
     let connectTimeoutMs: UInt32?
 
+    let tlsContext: TLSContext?
+
     public init(
         maxConnectionsPerEndpoint: Int = 50,
         windowSize: Int = 16 * 1024 * 1024,
         verifyPeer: Bool = true,
-        connectTimeoutMs: UInt32? = nil
+        connectTimeoutMs: UInt32? = nil,
+        tlsContext: TLSContext? = nil
     ) {
         self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
         self.windowSize = windowSize
         self.verifyPeer = verifyPeer
         self.connectTimeoutMs = connectTimeoutMs
+        self.tlsContext = tlsContext
     }
 }
