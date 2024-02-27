@@ -246,11 +246,12 @@ class AuthSchemeResolverGenerator {
                     openBlock("guard let opName = context.getOperation() else {", "}") {
                         write("throw ClientError.dataNotFound(\"Operation name not configured in middleware context for auth scheme resolver params construction.\")")
                     }
+                    val paramType = getSdkId(ctx) + ClientRuntimeTypes.Auth.AuthSchemeResolverParams.name
                     if (hasSigV4) {
                         write("let opRegion = context.getRegion()")
-                        write("return ${getSdkId(ctx) + ClientRuntimeTypes.Auth.AuthSchemeResolverParams.name}(operation: opName, region: opRegion)")
+                        write("return $paramType(operation: opName, region: opRegion)")
                     } else {
-                        write("return ${getSdkId(ctx) + ClientRuntimeTypes.Auth.AuthSchemeResolverParams.name}(operation: opName)")
+                        write("return $paramType(operation: opName)")
                     }
                 }
             }

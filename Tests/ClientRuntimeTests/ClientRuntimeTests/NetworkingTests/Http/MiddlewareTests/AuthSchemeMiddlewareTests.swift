@@ -116,19 +116,24 @@ class AuthSchemeMiddlewareTests: XCTestCase {
         try await AssertSelectedAuthSchemeMatches(builtContext: context, expectedAuthScheme: "MockAuthSchemeC")
     }
 
-    func testAuthOderABCNoAuthSelectNoAuth() async throws {
+    func testAuthOrderABCNoAuthSelectNoAuth() async throws {
         let context = contextBuilder
             .withOperation(value: "authABCNoAuth")
             .build()
         try await AssertSelectedAuthSchemeMatches(builtContext: context, expectedAuthScheme: "smithy.api#noAuth")
     }
 
-    private func AssertSelectedAuthSchemeMatches(builtContext: HttpContext, expectedAuthScheme: String) async throws {
+    private func AssertSelectedAuthSchemeMatches(
+        builtContext: HttpContext,
+        expectedAuthScheme: String,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) async throws {
         operationStack.buildStep.intercept(position: .before, middleware: AuthSchemeMiddleware<MockOutput>())
 
         let mockHandler = MockHandler<MockOutput>(handleCallback: { (context, input) in
             let selectedAuthScheme = context.getSelectedAuthScheme()
-            XCTAssertEqual(expectedAuthScheme, selectedAuthScheme?.schemeID)
+            XCTAssertEqual(expectedAuthScheme, selectedAuthScheme?.schemeID, file: file, line: line)
             let httpResponse = HttpResponse(body: .noStream, statusCode: HttpStatusCode.ok)
             let mockOutput = MockOutput()
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
