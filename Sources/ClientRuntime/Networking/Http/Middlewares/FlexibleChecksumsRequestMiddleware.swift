@@ -43,14 +43,14 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
         // Get the request
         let request = input.builder
 
-        func handleNormalPayload(_ data: Data?) throws {
+        // Check if any checksum header is already provided by the user
+        let checksumHeaderPrefix = "x-amz-checksum-"
+        if request.headers.headers.contains(where: { $0.name.lowercased().starts(with: checksumHeaderPrefix) }) {
+            logger.debug("Checksum header already provided by the user. Skipping calculation.")
+            return try await next.handle(context: context, input: input)
+        }
 
-            // Check if any checksum header is already provided by the user
-            let checksumHeaderPrefix = "x-amz-checksum-"
-            if request.headers.headers.contains(where: { $0.name.lowercased().starts(with: checksumHeaderPrefix) }) {
-                logger.debug("Checksum header already provided by the user. Skipping calculation.")
-                return
-            }
+        func handleNormalPayload(_ data: Data?) throws {
 
             guard let data else {
                 throw ClientError.dataNotFound("Cannot calculate checksum of empty body!")
@@ -72,6 +72,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
         case .stream:
             // Will handle calculating checksum and setting header later
             context.attributes.set(key: AttributeKey<HashFunction>(name: "checksum"), value: checksumHashFunction)
+            request.updateHeader(name: "x-amz-trailer", value: [headerName])
         case .noStream:
             throw ClientError.dataNotFound("Cannot calculate the checksum of an empty body!")
         }

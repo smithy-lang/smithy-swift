@@ -19,7 +19,7 @@ extension SigningConfig {
 }
 
 extension SdkHttpRequestBuilder {
-    public func setAwsChunkedHeaders(checksumAlgorithm: HashFunction? = nil) throws {
+    public func setAwsChunkedHeaders() throws {
 
         let body = self.getBody()
 
@@ -28,9 +28,6 @@ extension SdkHttpRequestBuilder {
             // Set the common headers for AWS-chunked encoding
             self.withHeader(name: "Content-Encoding", value: "aws-chunked")
             self.withHeader(name: "Transfer-Encoding", value: "chunked")
-            if let checksum = checksumAlgorithm {
-                self.withHeader(name: "x-amz-trailer", value: "x-amz-checksum-\(checksum)")
-            }
             guard let decodedContentLength = stream.length else {
                 throw ClientError.dataNotFound("Cannot use aws-chunked encoding with an unknown stream length!")
             }
