@@ -138,7 +138,7 @@ public class AwsChunkedReader {
     }
 
     private func signChunk(chunk: Data, config: SigningConfig) async throws -> String {
-        let chunkSignature = try await Signer.signChunk(
+        let chunkSignature = try await AwsCommonRuntimeKit.Signer.signChunk(
             chunk: chunk,
             previousSignature: self.previousSignature,
             config: config
@@ -193,7 +193,7 @@ public class AwsChunkedReader {
 
     private func signTrailers(trailingHeaders: Headers) async throws -> String {
         let crtTrailerSignerConfig = signingConfig.toTrailingHeadersSigningConfig()
-        let trailerSignature = try await Signer.signTrailerHeaders(
+        let trailerSignature = try await AwsCommonRuntimeKit.Signer.signTrailerHeaders(
             headers: trailingHeaders.toHttpHeaders(),
             previousSignature: previousSignature,
             config: crtTrailerSignerConfig
