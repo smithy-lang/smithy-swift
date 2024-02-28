@@ -15,3 +15,12 @@ public enum ALPNProtocol: String {
     case http1 = "http/1.1"
     case http2 = "h2"
 }
+
+extension ProtocolType {
+    var port: Int {
+        switch self {
+        case .http: return 80
+        case .https: return 443
+        }
+    }
+}

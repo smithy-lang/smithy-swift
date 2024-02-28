@@ -42,7 +42,7 @@ class PaginatorGenerator : SwiftIntegration {
                 .filter { operationShape -> operationShape.hasTrait(PaginatedTrait.ID) }
 
             paginatedOperations.forEach { paginatedOperation ->
-                val paginationInfo = paginatedIndex.getPaginationInfo(service, paginatedOperation).getOrNull()
+                val paginationInfo = paginatedIndex.getPaginationInfo(service, paginatedOperation).orElse(null)
                     ?: throw CodegenException("Unexpectedly unable to get PaginationInfo from $service $paginatedOperation")
                 val paginationItemInfo = getItemDescriptorOrNull(paginationInfo, ctx)
                 renderPaginatorForOperation(writer, ctx, service, paginatedOperation, paginationInfo, paginationItemInfo)
@@ -189,7 +189,7 @@ class PaginatorGenerator : SwiftIntegration {
         outputSymbol: Symbol,
     ) {
         writer.write("")
-        val itemSymbolShape = itemDesc.itemSymbol.getProperty("shape").getOrNull() as? Shape
+        val itemSymbolShape = itemDesc.itemSymbol.getProperty("shape").orElse(null) as? Shape
 
         writer.openBlock("extension PaginatorSequence where OperationStackInput == \$N, OperationStackOutput == \$N {", "}", inputSymbol, outputSymbol) {
             val docBody = """

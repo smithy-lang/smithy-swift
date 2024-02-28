@@ -17,20 +17,19 @@ class RecursiveShapesDecodeXMLGenerationTests {
     fun `decode recursive shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlRecursiveShapesOutputBody+Decodable.swift")
-        val expectedContents =
-            """
-            extension XmlRecursiveShapesOutputBody: Swift.Decodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case nested
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let nestedDecoded = try containerValues.decodeIfPresent(RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.self, forKey: .nested)
-                    nested = nestedDecoded
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension XmlRecursiveShapesOutputBody {
+
+    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlRecursiveShapesOutput, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = XmlRecursiveShapesOutput()
+            value.nested = try reader["nested"].readIfPresent(readingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.readingClosure)
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -38,45 +37,19 @@ class RecursiveShapesDecodeXMLGenerationTests {
     fun `decode recursive nested shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive-nested.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesOutputBody+Decodable.swift")
-        val expectedContents =
-            """
-            extension XmlNestedRecursiveShapesOutputBody: Swift.Decodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case nestedRecursiveList
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    if containerValues.contains(.nestedRecursiveList) {
-                        struct KeyVal0{struct member{}}
-                        let nestedRecursiveListWrappedContainer = containerValues.nestedContainerNonThrowable(keyedBy: CollectionMemberCodingKey<KeyVal0.member>.CodingKeys.self, forKey: .nestedRecursiveList)
-                        if let nestedRecursiveListWrappedContainer = nestedRecursiveListWrappedContainer {
-                            let nestedRecursiveListContainer = try nestedRecursiveListWrappedContainer.decodeIfPresent([[RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1]].self, forKey: .member)
-                            var nestedRecursiveListBuffer:[[RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1]]? = nil
-                            if let nestedRecursiveListContainer = nestedRecursiveListContainer {
-                                nestedRecursiveListBuffer = [[RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1]]()
-                                var listBuffer0: [RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1]? = nil
-                                for listContainer0 in nestedRecursiveListContainer {
-                                    listBuffer0 = [RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1]()
-                                    for structureContainer1 in listContainer0 {
-                                        listBuffer0?.append(structureContainer1)
-                                    }
-                                    if let listBuffer0 = listBuffer0 {
-                                        nestedRecursiveListBuffer?.append(listBuffer0)
-                                    }
-                                }
-                            }
-                            nestedRecursiveList = nestedRecursiveListBuffer
-                        } else {
-                            nestedRecursiveList = []
-                        }
-                    } else {
-                        nestedRecursiveList = nil
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension XmlNestedRecursiveShapesOutputBody {
 
+    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlNestedRecursiveShapesOutput, SmithyXML.Reader> {
+        return { reader in
+            guard reader.content != nil else { return nil }
+            var value = XmlNestedRecursiveShapesOutput()
+            value.nestedRecursiveList = try reader["nestedRecursiveList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

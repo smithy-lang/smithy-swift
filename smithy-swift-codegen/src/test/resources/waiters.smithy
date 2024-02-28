@@ -1,8 +1,9 @@
 namespace com.test
 
 use smithy.waiters#waitable
-use aws.protocols#restJson1
+use aws.protocols#restXml
 
+@restXml
 service TestHasWaiters {
     operations: [HeadBucket]
 }

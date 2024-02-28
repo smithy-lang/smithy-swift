@@ -15,6 +15,7 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
  */
 object SmithyReadWriteTypes {
     val WritingClosure = runtimeSymbol("WritingClosure")
+    val ReadingClosure = runtimeSymbol("ReadingClosure")
     val DocumentWritingClosure = runtimeSymbol("DocumentWritingClosure")
 }
 

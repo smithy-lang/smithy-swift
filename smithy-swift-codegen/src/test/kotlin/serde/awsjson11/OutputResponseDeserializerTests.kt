@@ -90,20 +90,19 @@ class OutputDeserializerTests {
             newTestContext.manifest
         )
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension EventStreamingOutput: ClientRuntime.HttpResponseBinding {
-                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-                    if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {
-                        let messageDecoder: ClientRuntime.MessageDecoder? = nil
-                        let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)
-                        self.eventStream = decoderStream.toAsyncStream()
-                    } else {
-                        self.eventStream = nil
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension EventStreamingOutput: ClientRuntime.HttpResponseBinding {
+    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
+        if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {
+            let messageDecoder: ClientRuntime.MessageDecoder? = nil
+            let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: jsonUnmarshalClosure(responseDecoder: responseDecoder))
+            self.eventStream = decoderStream.toAsyncStream()
+        } else {
+            self.eventStream = nil
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }

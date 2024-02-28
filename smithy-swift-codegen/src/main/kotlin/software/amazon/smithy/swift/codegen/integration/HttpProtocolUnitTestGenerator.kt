@@ -30,7 +30,6 @@ protected constructor(builder: Builder<T>) {
     protected val httpProtocolCustomizable = builder.httpProtocolCustomizable!!
     protected val operationMiddleware = builder.operationMiddleware!!
     protected val httpBindingResolver = builder.httpBindingResolver!!
-    protected val serdeContext = builder.serdeContext!!
     protected val serviceName: String = builder.serviceName!!
     abstract val baseTestClassName: String
 
@@ -66,12 +65,6 @@ protected constructor(builder: Builder<T>) {
      */
     protected abstract fun renderTestBody(test: T)
 
-    data class SerdeContext(
-        val protocolEncoder: String,
-        val protocolDecoder: String,
-        val defaultTimestampFormat: String? = null
-    )
-
     abstract class Builder<T : HttpMessageTestCase> {
         var ctx: ProtocolGenerator.GenerationContext? = null
         var symbolProvider: SymbolProvider? = null
@@ -84,7 +77,6 @@ protected constructor(builder: Builder<T>) {
         var httpProtocolCustomizable: HttpProtocolCustomizable? = null
         var operationMiddleware: OperationMiddleware? = null
         var httpBindingResolver: HttpBindingResolver? = null
-        var serdeContext: SerdeContext? = null
 
         fun symbolProvider(provider: SymbolProvider): Builder<T> = apply { this.symbolProvider = provider }
         fun model(model: Model): Builder<T> = apply { this.model = model }
@@ -96,7 +88,6 @@ protected constructor(builder: Builder<T>) {
         fun httpProtocolCustomizable(httpProtocolCustomizable: HttpProtocolCustomizable): Builder<T> = apply { this.httpProtocolCustomizable = httpProtocolCustomizable }
         fun operationMiddleware(operationMiddleware: OperationMiddleware): Builder<T> = apply { this.operationMiddleware = operationMiddleware }
         fun httpBindingResolver(httpBindingResolver: HttpBindingResolver): Builder<T> = apply { this.httpBindingResolver = httpBindingResolver }
-        fun serdeContext(serdeContext: SerdeContext): Builder<T> = apply { this.serdeContext = serdeContext }
         abstract fun build(): HttpProtocolUnitTestGenerator<T>
     }
 }

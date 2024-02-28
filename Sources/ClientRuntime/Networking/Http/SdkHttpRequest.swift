@@ -16,7 +16,7 @@ import struct Foundation.URLRequest
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
 public class SdkHttpRequest {
-    public let body: ByteStream
+    public var body: ByteStream
     public let endpoint: Endpoint
     public let method: HttpMethodType
     private var additionalHeaders: Headers = Headers()
@@ -27,7 +27,7 @@ public class SdkHttpRequest {
     }
     public var path: String { endpoint.path }
     public var host: String { endpoint.host }
-    public var queryItems: [URLQueryItem]? { endpoint.queryItems }
+    public var queryItems: [SDKURLQueryItem]? { endpoint.queryItems }
 
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
@@ -102,7 +102,9 @@ public extension URLRequest {
         self.httpMethod = sdkRequest.method.rawValue
         // Set body, handling any serialization errors
         do {
-            self.httpBody = try await sdkRequest.body.readData()
+            let data = try await sdkRequest.body.readData()
+            sdkRequest.body = .data(data)
+            self.httpBody = data
         } catch {
             throw ClientError.serializationFailed("Failed to construct URLRequest due to HTTP body conversion failure.")
         }
@@ -146,8 +148,8 @@ extension SdkHttpRequestBuilder {
         host = originalRequest.host
         if let crtRequest = crtRequest as? HTTPRequest, let components = URLComponents(string: crtRequest.path) {
             path = components.percentEncodedPath
-            queryItems = components.percentEncodedQueryItems?.map { URLQueryItem(name: $0.name, value: $0.value) }
-                ?? [URLQueryItem]()
+            queryItems = components.percentEncodedQueryItems?.map { SDKURLQueryItem(name: $0.name, value: $0.value) }
+                ?? [SDKURLQueryItem]()
         } else if crtRequest as? HTTP2Request != nil {
             assertionFailure("HTTP2Request not supported")
         } else {
@@ -170,11 +172,11 @@ public class SdkHttpRequestBuilder {
     var host: String = ""
     var path: String = "/"
     var body: ByteStream = .noStream
-    var queryItems: [URLQueryItem]?
+    var queryItems: [SDKURLQueryItem]?
     var port: Int16 = 443
     var protocolType: ProtocolType = .https
 
-    public var currentQueryItems: [URLQueryItem]? {
+    public var currentQueryItems: [SDKURLQueryItem]? {
         return queryItems
     }
 
@@ -225,14 +227,14 @@ public class SdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withQueryItems(_ value: [URLQueryItem]) -> SdkHttpRequestBuilder {
+    public func withQueryItems(_ value: [SDKURLQueryItem]) -> SdkHttpRequestBuilder {
         self.queryItems = self.queryItems ?? []
         self.queryItems?.append(contentsOf: value)
         return self
     }
 
     @discardableResult
-    public func withQueryItem(_ value: URLQueryItem) -> SdkHttpRequestBuilder {
+    public func withQueryItem(_ value: SDKURLQueryItem) -> SdkHttpRequestBuilder {
         withQueryItems([value])
     }
 
@@ -264,6 +266,16 @@ public class SdkHttpRequestBuilder {
 extension HTTPRequestBase {
     public var signature: String? {
         let authHeader = getHeaderValue(name: "Authorization")
+        guard let signatureSequence = authHeader?.split(separator: "=").last else {
+            return nil
+        }
+        return String(signatureSequence)
+    }
+}
+
+extension SdkHttpRequestBuilder {
+    public var signature: String? {
+        let authHeader = self.headers.value(for: "Authorization")
         guard let signatureSequence = authHeader?.split(separator: "=").last else {
             return nil
         }

@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-
 class HttpProtocolClientGeneratorTests {
-
     @Test
     fun `it renders client initialization block`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
@@ -15,7 +14,7 @@ class HttpProtocolClientGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             """
-            public class RestJsonProtocolClient {
+            public class RestJsonProtocolClient: Client {
                 public static let clientName = "RestJsonProtocolClient"
                 let client: ClientRuntime.SdkHttpClient
                 let config: RestJsonProtocol.RestJsonProtocolConfiguration
@@ -23,39 +22,34 @@ class HttpProtocolClientGeneratorTests {
                 let encoder: ClientRuntime.RequestEncoder
                 let decoder: ClientRuntime.ResponseDecoder
             
-                public init(config: RestJsonProtocol.RestJsonProtocolConfiguration) {
+                public required init(config: RestJsonProtocol.RestJsonProtocolConfiguration) {
                     client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
                     let encoder = ClientRuntime.JSONEncoder()
                     encoder.dateEncodingStrategy = .secondsSince1970
                     encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-                    self.encoder = config.encoder ?? encoder
+                    self.encoder = encoder
                     let decoder = ClientRuntime.JSONDecoder()
                     decoder.dateDecodingStrategy = .secondsSince1970
                     decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-                    self.decoder = config.decoder ?? decoder
+                    self.decoder = decoder
                     self.config = config
                 }
             
-                public convenience init() throws {
-                    let config = try RestJsonProtocol.RestJsonProtocolConfiguration()
+                public convenience required init() throws {
+                    let config = try RestJsonProtocol.RestJsonProtocolConfiguration("Rest Json Protocol", "RestJsonProtocolClient")
                     self.init(config: config)
                 }
+            
             }
             
-            public init(runtimeConfig: ClientRuntime.DefaultSDKRuntimeConfiguration) throws {
-                self.clientLogMode = runtimeConfig.clientLogMode
-                self.decoder = runtimeConfig.decoder
-                self.encoder = runtimeConfig.encoder
-                self.httpClientConfiguration = runtimeConfig.httpClientConfiguration
-                self.httpClientEngine = runtimeConfig.httpClientEngine
-                self.idempotencyTokenGenerator = runtimeConfig.idempotencyTokenGenerator
-                self.logger = runtimeConfig.logger
-                self.retryStrategyOptions = runtimeConfig.retryStrategyOptions
-            }
+            extension RestJsonProtocolClient {
+                public typealias RestJsonProtocolConfiguration = ClientRuntime.DefaultSDKRuntimeConfiguration
             
-            public convenience init() throws {
-                let defaultRuntimeConfig = try ClientRuntime.DefaultSDKRuntimeConfiguration("Rest Json Protocol")
-                try self.init(runtimeConfig: defaultRuntimeConfig)
+                public static func builder() -> ClientBuilder<RestJsonProtocolClient> {
+                    return ClientBuilder<RestJsonProtocolClient>(defaultPlugins: [
+                        ClientRuntime.DefaultClientPlugin()
+                    ])
+                }
             }
             
             public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandlerFactory {
@@ -73,7 +67,6 @@ class HttpProtocolClientGeneratorTests {
             """.trimIndent()
         )
     }
-
     @Test
     fun `it renders host prefix with label in context correctly`() {
         val context = setupTests("host-prefix-operation.smithy", "com.test#Example")
@@ -91,23 +84,20 @@ class HttpProtocolClientGeneratorTests {
         """
         contents.shouldContainOnlyOnce(expectedFragment)
     }
-
     @Test
     fun `it renders operation implementations in extension`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce("extension RestJsonProtocolClient: RestJsonProtocolClientProtocol {")
+        contents.shouldContain("extension RestJsonProtocolClient {")
     }
-
     @Test
     fun `it renders an operation body`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
-    public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutput
-    {
+    public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutput {
         let context = ClientRuntime.HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .withDecoder(value: decoder)
@@ -117,15 +107,20 @@ class HttpProtocolClientGeneratorTests {
                       .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                       .withLogger(value: config.logger)
                       .withPartitionID(value: config.partitionID)
+                      .withAuthSchemes(value: config.authSchemes ?? [])
+                      .withAuthSchemeResolver(value: config.authSchemeResolver)
+                      .withUnsignedPayloadTrait(value: false)
                       .build()
         var operation = ClientRuntime.OperationStack<AllocateWidgetInput, AllocateWidgetOutput>(id: "allocateWidget")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.IdempotencyTokenMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(keyPath: \.clientToken))
-        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<AllocateWidgetInput, AllocateWidgetOutput>())
+        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(AllocateWidgetInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<AllocateWidgetInput, AllocateWidgetOutput>())
+        operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<AllocateWidgetOutput>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(contentType: "application/json"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<AllocateWidgetInput, AllocateWidgetOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, AllocateWidgetOutput>(options: config.retryStrategyOptions))
+        operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<AllocateWidgetOutput>())
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<AllocateWidgetOutput>(responseClosure(decoder: decoder), responseErrorClosure(AllocateWidgetOutputError.self, decoder: decoder)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<AllocateWidgetOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
@@ -141,8 +136,7 @@ class HttpProtocolClientGeneratorTests {
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
-    public func unsignedFooBlobStream(input: UnsignedFooBlobStreamInput) async throws -> UnsignedFooBlobStreamOutput
-    {
+    public func unsignedFooBlobStream(input: UnsignedFooBlobStreamInput) async throws -> UnsignedFooBlobStreamOutput {
         let context = ClientRuntime.HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .withDecoder(value: decoder)
@@ -152,14 +146,19 @@ class HttpProtocolClientGeneratorTests {
                       .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                       .withLogger(value: config.logger)
                       .withPartitionID(value: config.partitionID)
+                      .withAuthSchemes(value: config.authSchemes ?? [])
+                      .withAuthSchemeResolver(value: config.authSchemeResolver)
+                      .withUnsignedPayloadTrait(value: true)
                       .build()
         var operation = ClientRuntime.OperationStack<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(id: "unsignedFooBlobStream")
-        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>())
+        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(UnsignedFooBlobStreamInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>())
+        operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<UnsignedFooBlobStreamOutput>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(contentType: "application/json"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware(requiresLength: false, unsignedPayload: true))
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, UnsignedFooBlobStreamOutput>(options: config.retryStrategyOptions))
+        operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<UnsignedFooBlobStreamOutput>())
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<UnsignedFooBlobStreamOutput>(responseClosure(decoder: decoder), responseErrorClosure(UnsignedFooBlobStreamOutputError.self, decoder: decoder)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<UnsignedFooBlobStreamOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
@@ -175,8 +174,7 @@ class HttpProtocolClientGeneratorTests {
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
-    public func explicitBlobStreamWithLength(input: ExplicitBlobStreamWithLengthInput) async throws -> ExplicitBlobStreamWithLengthOutput
-    {
+    public func explicitBlobStreamWithLength(input: ExplicitBlobStreamWithLengthInput) async throws -> ExplicitBlobStreamWithLengthOutput {
         let context = ClientRuntime.HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .withDecoder(value: decoder)
@@ -186,14 +184,19 @@ class HttpProtocolClientGeneratorTests {
                       .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                       .withLogger(value: config.logger)
                       .withPartitionID(value: config.partitionID)
+                      .withAuthSchemes(value: config.authSchemes ?? [])
+                      .withAuthSchemeResolver(value: config.authSchemeResolver)
+                      .withUnsignedPayloadTrait(value: false)
                       .build()
         var operation = ClientRuntime.OperationStack<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(id: "explicitBlobStreamWithLength")
-        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>())
+        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(ExplicitBlobStreamWithLengthInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>())
+        operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<ExplicitBlobStreamWithLengthOutput>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(contentType: "application/octet-stream"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BlobStreamBodyMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(keyPath: \.payload1))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware(requiresLength: true, unsignedPayload: false))
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, ExplicitBlobStreamWithLengthOutput>(options: config.retryStrategyOptions))
+        operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<ExplicitBlobStreamWithLengthOutput>())
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<ExplicitBlobStreamWithLengthOutput>(responseClosure(decoder: decoder), responseErrorClosure(ExplicitBlobStreamWithLengthOutputError.self, decoder: decoder)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<ExplicitBlobStreamWithLengthOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
@@ -209,8 +212,7 @@ class HttpProtocolClientGeneratorTests {
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
-    public func unsignedFooBlobStreamWithLength(input: UnsignedFooBlobStreamWithLengthInput) async throws -> UnsignedFooBlobStreamWithLengthOutput
-    {
+    public func unsignedFooBlobStreamWithLength(input: UnsignedFooBlobStreamWithLengthInput) async throws -> UnsignedFooBlobStreamWithLengthOutput {
         let context = ClientRuntime.HttpContextBuilder()
                       .withEncoder(value: encoder)
                       .withDecoder(value: decoder)
@@ -220,14 +222,19 @@ class HttpProtocolClientGeneratorTests {
                       .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
                       .withLogger(value: config.logger)
                       .withPartitionID(value: config.partitionID)
+                      .withAuthSchemes(value: config.authSchemes ?? [])
+                      .withAuthSchemeResolver(value: config.authSchemeResolver)
+                      .withUnsignedPayloadTrait(value: true)
                       .build()
         var operation = ClientRuntime.OperationStack<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(id: "unsignedFooBlobStreamWithLength")
-        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>())
+        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(UnsignedFooBlobStreamWithLengthInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>())
+        operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<UnsignedFooBlobStreamWithLengthOutput>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(contentType: "application/octet-stream"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BlobStreamBodyMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(keyPath: \.payload1))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware(requiresLength: true, unsignedPayload: true))
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, UnsignedFooBlobStreamWithLengthOutput>(options: config.retryStrategyOptions))
+        operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<UnsignedFooBlobStreamWithLengthOutput>())
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<UnsignedFooBlobStreamWithLengthOutput>(responseClosure(decoder: decoder), responseErrorClosure(UnsignedFooBlobStreamWithLengthOutputError.self, decoder: decoder)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<UnsignedFooBlobStreamWithLengthOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
@@ -236,7 +243,6 @@ class HttpProtocolClientGeneratorTests {
 """
         contents.shouldContainOnlyOnce(expected)
     }
-
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol")

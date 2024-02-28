@@ -225,6 +225,6 @@ class EnumGenerator(
      * them to camelCase after removing chars except alphanumeric, space and underscore.
      */
     fun EnumDefinition.swiftEnumCaseName(shouldBeEscaped: Boolean = true): String {
-        return swiftEnumCaseName(name, value, shouldBeEscaped)
+        return swiftEnumCaseName(name.orElse(null), value, shouldBeEscaped)
     }
 }

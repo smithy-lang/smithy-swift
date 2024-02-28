@@ -15,7 +15,7 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
  */
 object ClientRuntimeTypes {
     object Http {
-        val HttpClientEngine = runtimeSymbol("HttpClientEngine")
+        val HttpClient = runtimeSymbol("HTTPClient")
         val HttpClientConfiguration = runtimeSymbol("HttpClientConfiguration")
         val Headers = runtimeSymbol("Headers")
         val HttpStatusCode = runtimeSymbol("HttpStatusCode")
@@ -28,27 +28,24 @@ object ClientRuntimeTypes {
         val HttpError = runtimeSymbol("HTTPError")
         val UnknownHttpServiceError = runtimeSymbol("UnknownHttpServiceError")
         val HttpContextBuilder = runtimeSymbol("HttpContextBuilder")
+        val HTTPResponseOutputBinding = runtimeSymbol("HTTPResponseOutputBinding")
+        val HTTPResponseErrorBinding = runtimeSymbol("HTTPResponseErrorBinding")
     }
 
     object Serde {
         val RequestEncoder = runtimeSymbol("RequestEncoder")
         val ResponseDecoder = runtimeSymbol("ResponseDecoder")
         val Key = runtimeSymbol("Key")
-        val DynamicNodeDecoding = runtimeSymbol("DynamicNodeDecoding")
-        val NodeDecoding = runtimeSymbol("NodeDecoding")
-        val MapEntry = runtimeSymbol("MapEntry")
-        val CollectionMember = runtimeSymbol("CollectionMember")
-        val MapKeyValue = runtimeSymbol("MapKeyValue")
         val FormURLEncoder = runtimeSymbol("FormURLEncoder")
         val JSONDecoder = runtimeSymbol("JSONDecoder")
         val JSONEncoder = runtimeSymbol("JSONEncoder")
         val JSONWriter = runtimeSymbol("JSONWriter")
         val FormURLWriter = runtimeSymbol("FormURLWriter")
-        val XMLDecoder = runtimeSymbol("XMLDecoder")
         val MessageMarshallable = runtimeSymbol("MessageMarshallable")
         val MessageUnmarshallable = runtimeSymbol("MessageUnmarshallable")
         val JSONReadWrite = runtimeSymbol("JSONReadWrite")
         val FormURLReadWrite = runtimeSymbol("FormURLReadWrite")
+        val JSONReader = runtimeSymbol("JSONReader")
     }
 
     object EventStream {
@@ -58,6 +55,7 @@ object ClientRuntimeTypes {
         val Message = runtimeSymbol("EventStream.Message")
         val MessageEncoderStream = runtimeSymbol("EventStream.DefaultMessageEncoderStream")
         val MessageDecoderStream = runtimeSymbol("EventStream.DefaultMessageDecoderStream")
+        val UnmarshalClosure = runtimeSymbol("UnmarshalClosure")
     }
 
     object Middleware {
@@ -66,6 +64,8 @@ object ClientRuntimeTypes {
         val LoggerMiddleware = runtimeSymbol("LoggerMiddleware")
         val ContentLengthMiddleware = runtimeSymbol("ContentLengthMiddleware")
         val ContentMD5Middleware = runtimeSymbol("ContentMD5Middleware")
+        val FlexibleChecksumsRequestMiddleware = runtimeSymbol("FlexibleChecksumsRequestMiddleware")
+        val FlexibleChecksumsResponseMiddleware = runtimeSymbol("FlexibleChecksumsResponseMiddleware")
         val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware")
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware")
         val OperationStack = runtimeSymbol("OperationStack")
@@ -76,6 +76,8 @@ object ClientRuntimeTypes {
         val RetryMiddleware = runtimeSymbol("RetryMiddleware")
         val IdempotencyTokenMiddleware = runtimeSymbol("IdempotencyTokenMiddleware")
         val NoopHandler = runtimeSymbol("NoopHandler")
+        val SignerMiddleware = runtimeSymbol("SignerMiddleware")
+        val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware")
         val BodyMiddleware = runtimeSymbol("BodyMiddleware")
         val PayloadBodyMiddleware = runtimeSymbol("PayloadBodyMiddleware")
         val EventStreamBodyMiddleware = runtimeSymbol("EventStreamBodyMiddleware")
@@ -92,6 +94,12 @@ object ClientRuntimeTypes {
         }
     }
 
+    object Auth {
+        val AuthSchemes = runtimeSymbolWithoutNamespace("[ClientRuntime.AuthScheme]?")
+        val AuthSchemeResolver = runtimeSymbolWithoutNamespace("ClientRuntime.AuthSchemeResolver")
+        val AuthSchemeResolverParams = runtimeSymbol("AuthSchemeResolverParameters")
+    }
+
     object Core {
         val AttributeKey = runtimeSymbol("AttributeKey")
         val Endpoint = runtimeSymbol("Endpoint")
@@ -99,7 +107,7 @@ object ClientRuntimeTypes {
         val Date = runtimeSymbol("Date")
         val Data = runtimeSymbol("Data")
         val Document = runtimeSymbol("Document")
-        val URLQueryItem = runtimeSymbol("URLQueryItem")
+        val SDKURLQueryItem = runtimeSymbol("SDKURLQueryItem")
         val URL = runtimeSymbol("URL")
         val ModeledError = runtimeSymbol("ModeledError")
         val UnknownClientError = runtimeSymbol("ClientError.unknownError")
@@ -122,5 +130,10 @@ object ClientRuntimeTypes {
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {
     this.name = name
     this.namespace = SwiftDependency.CLIENT_RUNTIME.target
+    dependency(SwiftDependency.CLIENT_RUNTIME)
+}
+
+private fun runtimeSymbolWithoutNamespace(name: String): Symbol = buildSymbol {
+    this.name = name
     dependency(SwiftDependency.CLIENT_RUNTIME)
 }

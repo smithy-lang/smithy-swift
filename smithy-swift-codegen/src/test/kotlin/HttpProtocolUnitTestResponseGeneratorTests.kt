@@ -26,9 +26,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
     fun `it creates smoke test response test`() {
         val contents = getTestFileContents("example", "SmokeTestResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
-
-        val expectedContents =
-            """
+        val expectedContents = """
     func testSmokeTest() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
@@ -37,7 +35,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                 "X-Int": "1",
                 "X-String": "Hello"
             ],
-            content: .data( ""${'"'}
+            content: .data(Data(""${'"'}
             {
               "payload1": "explicit string",
               "payload2": 1,
@@ -47,7 +45,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
               }
             }
 
-            ""${'"'}.data(using: .utf8)!)
+            ""${'"'}.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -56,7 +54,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual = try await SmokeTestOutput(httpResponse: httpResponse, decoder: decoder)
+        let actual: SmokeTestOutput = try await responseClosure(decoder: decoder)(httpResponse)
 
         let expected = SmokeTestOutput(
             boolHeader: false,
@@ -86,8 +84,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
     fun `it creates unit test with prefixHeader and empty body`() {
         val contents = getTestFileContents("example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
+        val expectedContents = """
     func testRestJsonHttpPrefixHeadersPresent() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
@@ -102,7 +99,10 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual = try await HttpPrefixHeadersOutput(httpResponse: httpResponse)
+        let decoder = ClientRuntime.JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+        let actual: HttpPrefixHeadersOutput = try await responseClosure(decoder: decoder)(httpResponse)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo",
@@ -124,8 +124,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
     fun `it creates unit test with non-existent prefixHeader`() {
         val contents = getTestFileContents("example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
+        val expectedContents = """
     func testRestJsonHttpPrefixHeadersAreNotPresent() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
@@ -138,7 +137,10 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual = try await HttpPrefixHeadersOutput(httpResponse: httpResponse)
+        let decoder = ClientRuntime.JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+        let actual: HttpPrefixHeadersOutput = try await responseClosure(decoder: decoder)(httpResponse)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo"
@@ -156,21 +158,20 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
     fun `it creates a unit test for union shapes`() {
         val contents = getTestFileContents("example", "JsonUnionsResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
+        val expectedContents = """
     func testRestJsonDeserializeStringUnionValue() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: .data( ""${'"'}
+            content: .data(Data(""${'"'}
             {
                 "contents": {
                     "stringValue": "foo"
                 }
             }
-            ""${'"'}.data(using: .utf8)!)
+            ""${'"'}.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -179,7 +180,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual = try await JsonUnionsOutput(httpResponse: httpResponse, decoder: decoder)
+        let actual: JsonUnionsOutput = try await responseClosure(decoder: decoder)(httpResponse)
 
         let expected = JsonUnionsOutput(
             contents: MyUnion.stringvalue("foo")
@@ -197,16 +198,14 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
     fun `it creates a unit test for recursive shapes`() {
         val contents = getTestFileContents("example", "RecursiveShapesResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
-
-        val expectedContents =
-            """
+        val expectedContents = """
     func testRestJsonRecursiveShapes() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: .data( ""${'"'}
+            content: .data(Data(""${'"'}
             {
                 "nested": {
                     "foo": "Foo1",
@@ -221,7 +220,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                     }
                 }
             }
-            ""${'"'}.data(using: .utf8)!)
+            ""${'"'}.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -230,7 +229,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let decoder = ClientRuntime.JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual = try await RecursiveShapesOutput(httpResponse: httpResponse, decoder: decoder)
+        let actual: RecursiveShapesOutput = try await responseClosure(decoder: decoder)(httpResponse)
 
         let expected = RecursiveShapesOutput(
             nested: RecursiveShapesInputOutputNested1(
@@ -250,7 +249,6 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         XCTAssertEqual(expected.nested, actual.nested)
 
     }
-}
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -259,51 +257,50 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
     fun `it creates a response unit test for inline document`() {
         val contents = getTestFileContents("example", "InlineDocumentResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            class InlineDocumentResponseTest: HttpResponseTestBase {
-                /// Serializes inline documents as part of the JSON response payload with no escaping.
-                func testInlineDocumentOutput() async throws {
-                    guard let httpResponse = buildHttpResponse(
-                        code: 200,
-                        headers: [
-                            "Content-Type": "application/json"
-                        ],
-                        content: .data( ""${'"'}
-                        {
-                            "stringValue": "string",
-                            "documentValue": {
-                                "foo": "bar"
-                            }
-                        }
-                        ""${'"'}.data(using: .utf8)!)
-                    ) else {
-                        XCTFail("Something is wrong with the created http response")
-                        return
-                    }
-            
-                    let decoder = ClientRuntime.JSONDecoder()
-                    decoder.dateDecodingStrategy = .secondsSince1970
-                    decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-                    let actual = try await InlineDocumentOutput(httpResponse: httpResponse, decoder: decoder)
-            
-                    let expected = InlineDocumentOutput(
-                        documentValue: try decoder.decode(Document.self, from:
-                            ""${'"'}
-                            {
-                                "foo": "bar"
-                            }
-                            ""${'"'}.data(using: .utf8)!)
-                            ,
-                            stringValue: "string"
-                        )
-            
-                        XCTAssertEqual(expected.stringValue, actual.stringValue)
-                        XCTAssertEqual(expected.documentValue, actual.documentValue)
-            
-                    }
+        val expectedContents = """
+class InlineDocumentResponseTest: HttpResponseTestBase {
+    /// Serializes inline documents as part of the JSON response payload with no escaping.
+    func testInlineDocumentOutput() async throws {
+        guard let httpResponse = buildHttpResponse(
+            code: 200,
+            headers: [
+                "Content-Type": "application/json"
+            ],
+            content: .data(Data(""${'"'}
+            {
+                "stringValue": "string",
+                "documentValue": {
+                    "foo": "bar"
                 }
-            """.trimIndent()
+            }
+            ""${'"'}.utf8))
+        ) else {
+            XCTFail("Something is wrong with the created http response")
+            return
+        }
+
+        let decoder = ClientRuntime.JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+        let actual: InlineDocumentOutput = try await responseClosure(decoder: decoder)(httpResponse)
+
+        let expected = InlineDocumentOutput(
+            documentValue: try decoder.decode(Document.self, from:
+                ""${'"'}
+                {
+                    "foo": "bar"
+                }
+                ""${'"'}.data(using: .utf8)!)
+                ,
+                stringValue: "string"
+            )
+
+            XCTAssertEqual(expected.stringValue, actual.stringValue)
+            XCTAssertEqual(expected.documentValue, actual.documentValue)
+
+        }
+    }
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -311,46 +308,43 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
     fun `it creates a response unit test for inline document as payload`() {
         val contents = getTestFileContents("example", "InlineDocumentAsPayloadResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            class InlineDocumentAsPayloadResponseTest: HttpResponseTestBase {
-                /// Serializes an inline document as the target of the httpPayload trait.
-                func testInlineDocumentAsPayloadInputOutput() async throws {
-                    guard let httpResponse = buildHttpResponse(
-                        code: 200,
-                        headers: [
-                            "Content-Type": "application/json"
-                        ],
-                        content: .data( ""${'"'}
-                        {
-                            "foo": "bar"
-                        }
-                        ""${'"'}.data(using: .utf8)!)
-                    ) else {
-                        XCTFail("Something is wrong with the created http response")
-                        return
-                    }
-            
-                    let decoder = ClientRuntime.JSONDecoder()
-                    decoder.dateDecodingStrategy = .secondsSince1970
-                    decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-                    let actual = try await InlineDocumentAsPayloadOutput(httpResponse: httpResponse, decoder: decoder)
-            
-                    let expected = InlineDocumentAsPayloadOutput(
-                        documentValue: try decoder.decode(Document.self, from:
-                            ""${'"'}
-                            {
-                                "foo": "bar"
-                            }
-                            ""${'"'}.data(using: .utf8)!)
-            
-                        )
-            
-                        XCTAssertEqual(expected.documentValue, actual.documentValue)
-            
-                    }
+        val expectedContents = """
+    func testInlineDocumentAsPayloadInputOutput() async throws {
+        guard let httpResponse = buildHttpResponse(
+            code: 200,
+            headers: [
+                "Content-Type": "application/json"
+            ],
+            content: .data(Data(""${'"'}
+            {
+                "foo": "bar"
+            }
+            ""${'"'}.utf8))
+        ) else {
+            XCTFail("Something is wrong with the created http response")
+            return
+        }
+
+        let decoder = ClientRuntime.JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
+        let actual: InlineDocumentAsPayloadOutput = try await responseClosure(decoder: decoder)(httpResponse)
+
+        let expected = InlineDocumentAsPayloadOutput(
+            documentValue: try decoder.decode(Document.self, from:
+                ""${'"'}
+                {
+                    "foo": "bar"
                 }
-            """.trimIndent()
+                ""${'"'}.data(using: .utf8)!)
+
+            )
+
+            XCTAssertEqual(expected.documentValue, actual.documentValue)
+
+        }
+    }
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }

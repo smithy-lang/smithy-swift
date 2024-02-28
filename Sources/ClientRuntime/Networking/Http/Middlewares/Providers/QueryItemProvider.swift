@@ -5,6 +5,4 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public protocol QueryItemProvider {
-    var queryItems: [URLQueryItem] { get throws }
-}
+public typealias QueryItemProvider<T> = (T) throws -> [SDKURLQueryItem]

@@ -34,9 +34,8 @@ let package = Package(
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.22.0"),
+        .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.26.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
-        .package(url: "https://github.com/MaxDesiatov/XMLCoder.git", exact: "0.17.0")
     ],
     targets: [
         .target(
@@ -45,7 +44,6 @@ let package = Package(
                 "SmithyXML",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "XMLCoder", package: "XMLCoder")
             ]
         ),
         .target(name: "SmithyReadWrite"),
@@ -71,7 +69,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyXMLTests",
-            dependencies: ["SmithyXML"]
+            dependencies: ["SmithyXML", "ClientRuntime"]
         ),
         .testTarget(
             name: "SmithyTimestampsTests",

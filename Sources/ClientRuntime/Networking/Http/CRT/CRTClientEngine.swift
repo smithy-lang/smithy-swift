@@ -68,10 +68,10 @@ public class CRTClientEngine: HTTPClient {
         }
 
         private func createConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
-            let tlsConnectionOptions = TLSConnectionOptions(
+            let tlsConnectionOptions = endpoint.protocolType == .https ? TLSConnectionOptions(
                 context: sharedDefaultIO.tlsContext,
                 serverName: endpoint.host
-            )
+            ) : nil
 
             var socketOptions = SocketOptions(socketType: .stream)
 #if os(iOS) || os(watchOS)

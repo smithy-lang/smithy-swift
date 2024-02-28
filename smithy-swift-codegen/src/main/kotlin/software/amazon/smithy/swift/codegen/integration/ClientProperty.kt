@@ -79,7 +79,7 @@ abstract class HttpRequestEncoder(private val requestEncoder: Symbol, private va
     }
 
     override fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {
-        writer.write("self.encoder = \$L.encoder ?? \$L", nameOfConfigObject, name)
+        writer.write("self.encoder = \$L", name)
     }
 }
 
@@ -102,7 +102,7 @@ abstract class HttpResponseDecoder(private val requestDecoder: Symbol, private v
     }
 
     override fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {
-        writer.write("self.decoder = \$L.decoder ?? \$L", nameOfConfigObject, name)
+        writer.write("self.decoder = \$L", name)
     }
 }
 

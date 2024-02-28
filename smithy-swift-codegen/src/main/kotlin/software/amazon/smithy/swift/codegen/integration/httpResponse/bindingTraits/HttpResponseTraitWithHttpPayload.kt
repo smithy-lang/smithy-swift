@@ -95,7 +95,7 @@ class HttpResponseTraitWithHttpPayload(
                         writer.declareSection(MessageDecoderSectionId) {
                             writer.write("let messageDecoder: \$D", ClientRuntimeTypes.EventStream.MessageDecoder)
                         }
-                        writer.write("let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, responseDecoder: responseDecoder)", ClientRuntimeTypes.EventStream.MessageDecoderStream, symbol)
+                        writer.write("let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: jsonUnmarshalClosure(responseDecoder: responseDecoder))", ClientRuntimeTypes.EventStream.MessageDecoderStream, symbol)
                         writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
                     }
                 } else {

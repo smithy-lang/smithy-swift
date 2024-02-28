@@ -6,9 +6,6 @@
 package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.swift.codegen.lang.reservedWords
 import software.amazon.smithy.utils.CaseUtils
-import java.util.Optional
-
-fun <T> Optional<T>.getOrNull(): T? = if (isPresent) get() else null
 
 fun String.removeSurroundingBackticks() = removeSurrounding("`", "`")
 
@@ -17,12 +14,9 @@ fun String.removeSurroundingBackticks() = removeSurrounding("`", "`")
  * Uses either name or value attributes of EnumDefinition in that order and formats
  * them to camelCase after removing chars except alphanumeric, space and underscore.
  */
-fun swiftEnumCaseName(name: Optional<String>, value: String, shouldBeEscaped: Boolean = true): String {
-    var enumCaseName = CaseUtils.toCamelCase(
-        name
-            .orElseGet { value }
-            .replace(Regex("[^a-zA-Z0-9_ ]"), "")
-    )
+fun swiftEnumCaseName(name: String?, value: String, shouldBeEscaped: Boolean = true): String {
+    val resolvedName = name ?: value
+    var enumCaseName = CaseUtils.toCamelCase(resolvedName.replace(Regex("[^a-zA-Z0-9_ ]"), ""))
     if (!SymbolVisitor.isValidSwiftIdentifier(enumCaseName)) {
         enumCaseName = "_$enumCaseName"
     }

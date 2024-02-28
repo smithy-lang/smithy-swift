@@ -17,20 +17,14 @@ class BlobEncodeXMLGenerationTests {
     fun `encode blob`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsInput+Encodable.swift")
-        val expectedContents =
-            """
-            extension XmlBlobsInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case data
-                }
-            
-                static func writingClosure(_ value: XmlBlobsInput?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("data")].write(value.data)
-                }
-            }
-            """.trimIndent()
-
+        val expectedContents = """
+extension XmlBlobsInput {
+    static func writingClosure(_ value: XmlBlobsInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer["data"].write(value.data)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -38,20 +32,14 @@ class BlobEncodeXMLGenerationTests {
     fun `encode nested blob`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedInput+Encodable.swift")
-        val expectedContents =
-            """
-            extension XmlBlobsNestedInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case nestedBlobList
-                }
-            
-                static func writingClosure(_ value: XmlBlobsNestedInput?, to writer: SmithyXML.Writer) throws {
-                    guard let value else { writer.detach(); return }
-                    try writer[.init("nestedBlobList")].writeList(value.nestedBlobList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: ClientRuntime.Data.writingClosure(_:to:), memberNodeInfo: .init("member"), isFlattened: false), memberNodeInfo: .init("member"), isFlattened: false)
-                }
-            }
-            """.trimIndent()
-
+        val expectedContents = """
+extension XmlBlobsNestedInput {
+    static func writingClosure(_ value: XmlBlobsNestedInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer["nestedBlobList"].writeList(value.nestedBlobList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: ClientRuntime.Data.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {

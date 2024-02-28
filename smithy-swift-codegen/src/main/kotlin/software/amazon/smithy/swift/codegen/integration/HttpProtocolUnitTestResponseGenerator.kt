@@ -17,7 +17,7 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.getOrNull
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasStreamingMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -68,12 +68,13 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         if (test.body.isPresent && test.body.get().isNotBlank()) {
             operation.output.ifPresent {
                 val outputShape = model.expectShape(it) as StructureShape
+                val data = writer.format("Data(\"\"\"\n\$L\n\"\"\".utf8)", test.body.get().replace("\\\"", "\\\\\""))
                 // depending on the shape of the output, we may need to wrap the body in a stream
                 if (outputShape.hasStreamingMember(model)) {
                     // wrapping to CachingStream required for test asserts which reads body multiple times
-                    writer.write("content: .stream(BufferedStream(data: \"\"\"\n\$L\n\"\"\".data(using: .utf8)!, isClosed: true))", test.body.get().replace("\\\"", "\\\\\""))
+                    writer.write("content: .stream(BufferedStream(data: \$L, isClosed: true))", data)
                 } else {
-                    writer.write("content: .data( \"\"\"\n\$L\n\"\"\".data(using: .utf8)!)", test.body.get().replace("\\\"", "\\\\\""))
+                    writer.write("content: .data(\$L)", data)
                 }
             }
         } else {
@@ -103,7 +104,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     protected fun needsResponseDecoder(test: HttpResponseTestCase): Boolean {
-        var needsDecoder = false
+        var needsDecoder = true
         test.body.ifPresent { body ->
             if (body.isNotBlank() && body.isNotEmpty()) {
                 needsDecoder = true
@@ -117,8 +118,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         if (needsResponseDecoder) {
             renderResponseDecoder()
         }
-        val decoderParameter = if (needsResponseDecoder) ", decoder: decoder" else ""
-        writer.write("let actual = try await \$L(httpResponse: httpResponse\$L)", outputStruct.name, decoderParameter)
+        val responseClosure = ResponseClosureUtils(ctx, writer, operation).render()
+        writer.write("let actual: \$N = try await \$L(httpResponse)", outputStruct, responseClosure)
     }
 
     protected fun renderResponseDecoder() {
@@ -160,7 +161,7 @@ fun renderMemberAssertions(writer: SwiftWriter, test: HttpMessageTestCase, membe
         if (member.isStructureShape) {
             writer.write("XCTAssert(\$L === \$L)", expectedMemberName, actualMemberName)
         } else if ((shape.isDoubleShape || shape.isFloatShape)) {
-            val stringNodes = test.params.stringMap.values.map { it.asStringNode().getOrNull() }
+            val stringNodes = test.params.stringMap.values.map { it.asStringNode().orElse(null) }
             if (stringNodes.isNotEmpty() && stringNodes.mapNotNull { it?.value }.contains("NaN")) {
                 writer.write("XCTAssertEqual(\$L$suffix.isNaN, \$L$suffix.isNaN)", expectedMemberName, actualMemberName)
             } else {

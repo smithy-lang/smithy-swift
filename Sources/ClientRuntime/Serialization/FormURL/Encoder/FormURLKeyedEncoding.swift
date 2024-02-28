@@ -28,11 +28,33 @@ struct FormURLKeyedEncoding<Key: CodingKey>: KeyedEncodingContainerProtocol {
     }
 
     mutating func encode(_ value: Double, forKey key: Key) throws {
-        data.encode(key: codingPath + [key], value: value.description)
+        if value.isNaN {
+            data.encode(key: codingPath + [key], value: "NaN")
+        } else {
+            switch value {
+            case .infinity:
+                data.encode(key: codingPath + [key], value: "Infinity")
+            case -.infinity:
+                data.encode(key: codingPath + [key], value: "-Infinity")
+            default:
+                data.encode(key: codingPath + [key], value: value.description)
+            }
+        }
     }
 
     mutating func encode(_ value: Float, forKey key: Key) throws {
-        data.encode(key: codingPath + [key], value: value.description)
+        if value.isNaN {
+            data.encode(key: codingPath + [key], value: "NaN")
+        } else {
+            switch value {
+            case .infinity:
+                data.encode(key: codingPath + [key], value: "Infinity")
+            case -.infinity:
+                data.encode(key: codingPath + [key], value: "-Infinity")
+            default:
+                data.encode(key: codingPath + [key], value: value.description)
+            }
+        }
     }
 
     mutating func encode(_ value: Int, forKey key: Key) throws {

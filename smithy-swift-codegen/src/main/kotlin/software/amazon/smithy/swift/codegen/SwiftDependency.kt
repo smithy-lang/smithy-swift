@@ -6,17 +6,16 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
-import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.swift.codegen.resources.Resources
 
 enum class SwiftDependency(
-    val target: String,
+    override val target: String,
     private val branch: String? = null,
-    val version: String,
+    private val version: String,
     private val url: String,
     private val localPath: String,
-    var packageName: String
-) : SymbolDependencyContainer {
+    override var packageName: String
+) : Dependency {
     BIG("ComplexModule", null, "0.0.5", "https://github.com/apple/swift-numerics", "", "swift-numerics"),
     SWIFT_LOG("Logging", null, "", "", "", ""),
     CLIENT_RUNTIME(
