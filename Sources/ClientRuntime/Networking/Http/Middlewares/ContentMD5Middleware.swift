@@ -19,7 +19,7 @@ public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
     Self.Context == H.Context {
 
         // Skip MD5 hash if using checksums
-        if (input.headers.exists(name: "x-amz-sdk-checksum-algorithm")) {
+        if input.headers.exists(name: "x-amz-sdk-checksum-algorithm") {
             return try await next.handle(context: context, input: input)
         }
 
