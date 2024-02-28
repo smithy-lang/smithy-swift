@@ -1,5 +1,6 @@
 package software.amazon.smithy.swift.codegen.middleware
 
+import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -14,6 +15,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProt
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
+import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 
 typealias HttpMethodCallback = (OperationShape) -> String
@@ -29,12 +31,18 @@ class MiddlewareExecutionGenerator(
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
 
-    fun render(service: ServiceShape, op: OperationShape, onError: (SwiftWriter, String) -> Unit) {
+    fun render(
+        serviceShape: ServiceShape,
+        op: OperationShape,
+        flowType: ContextAttributeCodegenFlowType = ContextAttributeCodegenFlowType.NORMAL,
+        onError: (SwiftWriter, String) -> Unit,
+    ) {
+        val operationErrorName = "${op.toUpperCamelCase()}OutputError"
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op).name
         writer.write("let context = \$N()", ClientRuntimeTypes.Http.HttpContextBuilder)
         writer.swiftFunctionParameterIndent {
-            renderContextAttributes(op)
+            renderContextAttributes(op, flowType)
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
         writer.write(
@@ -48,7 +56,7 @@ class MiddlewareExecutionGenerator(
         renderMiddlewares(ctx, op, operationStackName)
     }
 
-    private fun renderContextAttributes(op: OperationShape) {
+    private fun renderContextAttributes(op: OperationShape, flowType: ContextAttributeCodegenFlowType) {
         val httpMethod = resolveHttpMethod(op)
 
         // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
@@ -65,6 +73,20 @@ class MiddlewareExecutionGenerator(
         writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
         writer.write("  .withLogger(value: config.logger)")
         writer.write("  .withPartitionID(value: config.partitionID)")
+        writer.write("  .withAuthSchemes(value: config.authSchemes ?? [])")
+        writer.write("  .withAuthSchemeResolver(value: config.authSchemeResolver)")
+        writer.write("  .withUnsignedPayloadTrait(value: ${op.hasTrait(UnsignedPayloadTrait::class.java)})")
+
+        // Add flag for presign / presign-url flows
+        if (flowType == ContextAttributeCodegenFlowType.PRESIGN_REQUEST) {
+            writer.write("  .withFlowType(value: .PRESIGN_REQUEST)")
+        } else if (flowType == ContextAttributeCodegenFlowType.PRESIGN_URL) {
+            writer.write("  .withFlowType(value: .PRESIGN_URL)")
+        }
+        // Add expiration flag for presign / presign-url flows
+        if (flowType != ContextAttributeCodegenFlowType.NORMAL) {
+            writer.write("  .withExpiration(value: expiration)")
+        }
 
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
@@ -86,5 +108,20 @@ class MiddlewareExecutionGenerator(
         operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.SERIALIZESTEP)
         operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.FINALIZESTEP)
         operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.DESERIALIZESTEP)
+    }
+
+    /*
+     * The enum in this companion object is used to determine under which codegen flow
+     * the middleware context is being code-generated.
+     *
+     * For PRESIGN_REQUEST & PRESIGN_URL flows:
+     * - The value of expiration is saved to middleware context during codegen.
+     * - The flow type information is saved to middleware context during codegen, for consumption by
+     *   AWS auth schemes during runtime to determine where to put the request signature in the request.
+     */
+    companion object {
+        enum class ContextAttributeCodegenFlowType {
+            NORMAL, PRESIGN_REQUEST, PRESIGN_URL
+        }
     }
 }

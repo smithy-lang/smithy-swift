@@ -21,6 +21,7 @@ public struct AttributeKey<ValueType> {
 /// Type safe property bag
 public struct Attributes {
     private var attributes = [String: Any]()
+    public var size: Int { attributes.count }
 
     public init() {}
 

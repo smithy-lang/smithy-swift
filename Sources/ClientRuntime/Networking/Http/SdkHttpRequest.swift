@@ -272,3 +272,13 @@ extension HTTPRequestBase {
         return String(signatureSequence)
     }
 }
+
+extension SdkHttpRequestBuilder {
+    public var signature: String? {
+        let authHeader = self.headers.value(for: "Authorization")
+        guard let signatureSequence = authHeader?.split(separator: "=").last else {
+            return nil
+        }
+        return String(signatureSequence)
+    }
+}
