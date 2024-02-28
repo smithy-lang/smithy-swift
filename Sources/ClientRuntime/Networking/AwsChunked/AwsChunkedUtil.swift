@@ -20,7 +20,6 @@ extension SigningConfig {
 
 extension SdkHttpRequestBuilder {
     public func setAwsChunkedHeaders() throws {
-
         let body = self.getBody()
 
         // Check if self.body is of the case ByteStream.stream(let stream)
