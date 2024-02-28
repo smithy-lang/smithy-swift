@@ -6,6 +6,7 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.swift.codegen.AuthSchemeResolverGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
@@ -24,5 +25,9 @@ abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
         op: OperationShape
     ) {
         // Default implementation is no-op
+    }
+
+    override fun renderInternals(ctx: ProtocolGenerator.GenerationContext) {
+        AuthSchemeResolverGenerator().render(ctx)
     }
 }

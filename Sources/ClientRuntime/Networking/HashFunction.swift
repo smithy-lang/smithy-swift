@@ -31,7 +31,6 @@ public enum HashFunction {
 
     static func fromList(_ stringArray: [String]) -> [HashFunction] {
         var hashFunctions = [HashFunction]()
-
         for string in stringArray {
             if let hashFunction = HashFunction.from(string: string) {
                 hashFunctions.append(hashFunction)

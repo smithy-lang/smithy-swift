@@ -76,6 +76,8 @@ object ClientRuntimeTypes {
         val RetryMiddleware = runtimeSymbol("RetryMiddleware")
         val IdempotencyTokenMiddleware = runtimeSymbol("IdempotencyTokenMiddleware")
         val NoopHandler = runtimeSymbol("NoopHandler")
+        val SignerMiddleware = runtimeSymbol("SignerMiddleware")
+        val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware")
         val BodyMiddleware = runtimeSymbol("BodyMiddleware")
         val PayloadBodyMiddleware = runtimeSymbol("PayloadBodyMiddleware")
         val EventStreamBodyMiddleware = runtimeSymbol("EventStreamBodyMiddleware")
@@ -90,6 +92,12 @@ object ClientRuntimeTypes {
             val QueryItemProvider = runtimeSymbol("QueryItemProvider")
             val HeaderProvider = runtimeSymbol("HeaderProvider")
         }
+    }
+
+    object Auth {
+        val AuthSchemes = runtimeSymbolWithoutNamespace("[ClientRuntime.AuthScheme]?")
+        val AuthSchemeResolver = runtimeSymbolWithoutNamespace("ClientRuntime.AuthSchemeResolver")
+        val AuthSchemeResolverParams = runtimeSymbol("AuthSchemeResolverParameters")
     }
 
     object Core {
@@ -122,5 +130,10 @@ object ClientRuntimeTypes {
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {
     this.name = name
     this.namespace = SwiftDependency.CLIENT_RUNTIME.target
+    dependency(SwiftDependency.CLIENT_RUNTIME)
+}
+
+private fun runtimeSymbolWithoutNamespace(name: String): Symbol = buildSymbol {
+    this.name = name
     dependency(SwiftDependency.CLIENT_RUNTIME)
 }

@@ -25,7 +25,7 @@ public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
 
         switch input.body {
         case .data(let data):
-            guard let data = data else {
+            guard let data else {
                 return try await next.handle(context: context, input: input)
             }
             let md5Hash = try data.computeMD5()
