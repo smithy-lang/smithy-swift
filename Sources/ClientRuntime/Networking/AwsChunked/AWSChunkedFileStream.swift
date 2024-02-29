@@ -7,15 +7,15 @@
 
 import AwsCommonRuntimeKit
 
-class AwsChunkedBufferedStream {
-    private var stream: BufferedStream
+class AWSChunkedFileStream {
+    private var stream: FileStream
     private var signingConfig: SigningConfig
     private var previousSignature: String
     private var trailingHeaders: Headers
-    private var chunkedReader: AwsChunkedReader
+    private var chunkedReader: AWSChunkedReader
 
     init(
-        stream: BufferedStream,
+        stream: FileStream,
         signingConfig: SigningConfig,
         previousSignature: String,
         trailingHeaders: Headers,
@@ -26,7 +26,7 @@ class AwsChunkedBufferedStream {
         self.previousSignature = previousSignature
         self.trailingHeaders = trailingHeaders
 
-        self.chunkedReader = AwsChunkedReader(
+        self.chunkedReader = AWSChunkedReader(
             stream: self.stream,
             signingConfig: self.signingConfig,
             previousSignature: self.previousSignature,
@@ -36,7 +36,7 @@ class AwsChunkedBufferedStream {
     }
 }
 
-extension AwsChunkedBufferedStream: Stream {
+extension AWSChunkedFileStream: Stream {
 
     var position: Data.Index {
         self.stream.position
@@ -84,9 +84,9 @@ extension AwsChunkedBufferedStream: Stream {
 
 }
 
-extension AwsChunkedBufferedStream: AwsChunkedStream {
+extension AWSChunkedFileStream: AWSChunkedStream {
 
-    func getChunkedReader() -> AwsChunkedReader {
+    func getChunkedReader() -> AWSChunkedReader {
         return self.chunkedReader
     }
 

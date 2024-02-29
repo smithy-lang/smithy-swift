@@ -1,5 +1,9 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0.
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
 import XCTest
 import AwsCommonRuntimeKit
@@ -144,7 +148,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         let checksumAlgorithm = "crc32"
         let signingConfig = SigningConfig(algorithm: .signingV4, signatureType: .requestHeaders, service: "S3", region: "us-west-2")
 
-        let testData = ByteStream.stream(AwsChunkedBufferedStream(
+        let testData = ByteStream.stream(AWSChunkedBufferedStream(
             stream: BufferedStream(data: mockData, isClosed: true),
             signingConfig: signingConfig,
             previousSignature: "test-signature",

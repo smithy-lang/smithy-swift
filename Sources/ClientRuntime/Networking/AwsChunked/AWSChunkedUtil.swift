@@ -1,8 +1,8 @@
 //
-//  File.swift
-//  
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
 //
-//  Created by Yaffe, David on 1/23/24.
+// SPDX-License-Identifier: Apache-2.0
 //
 
 import AwsCommonRuntimeKit
@@ -20,10 +20,9 @@ extension SigningConfig {
 
 extension SdkHttpRequestBuilder {
     public func setAwsChunkedHeaders() throws {
-        let body = self.getBody()
 
         // Check if self.body is of the case ByteStream.stream(let stream)
-        if case .stream(let stream) = body {
+        if case .stream(let stream) = self.body {
             // Set the common headers for AWS-chunked encoding
             self.withHeader(name: "Content-Encoding", value: "aws-chunked")
             self.withHeader(name: "Transfer-Encoding", value: "chunked")
@@ -42,11 +41,10 @@ extension SdkHttpRequestBuilder {
         trailingHeaders: Headers,
         checksumAlgorithm: ChecksumAlgorithm? = nil
     ) throws {
-        let body = self.getBody()
-        switch body {
+        switch self.body {
         case .stream(let stream):
             if let bufferedStream = stream as? BufferedStream {
-                self.withBody(ByteStream.stream(AwsChunkedBufferedStream(
+                self.withBody(ByteStream.stream(AWSChunkedBufferedStream(
                     stream: bufferedStream,
                     signingConfig: signingConfig,
                     previousSignature: signature,
@@ -54,7 +52,7 @@ extension SdkHttpRequestBuilder {
                     checksumAlgorithm: checksumAlgorithm
                 )))
             } else if let fileStream = stream as? FileStream {
-                self.withBody(ByteStream.stream(AwsChunkedFileStream(
+                self.withBody(ByteStream.stream(AWSChunkedFileStream(
                     stream: fileStream,
                     signingConfig: signingConfig,
                     previousSignature: signature,
@@ -135,7 +133,7 @@ public func sendAwsChunkedBody(
         )
     }
 
-    guard let awsChunkedStream = stream as? AwsChunkedStream else {
+    guard let awsChunkedStream = stream as? AWSChunkedStream else {
         throw ByteStreamError.streamDoesNotConformToAwsChunkedStream(
             "Stream does not conform to AwsChunkedStream! Type is \(stream)."
         )

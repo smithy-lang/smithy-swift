@@ -7,7 +7,7 @@
 
 import AwsCommonRuntimeKit
 
-public class AwsChunkedReader {
+public class AWSChunkedReader {
     private var stream: Stream
     private var signingConfig: SigningConfig
     private var previousSignature: String
@@ -38,7 +38,7 @@ public class AwsChunkedReader {
     public func processNextChunk() async throws -> Bool {
 
         // Check if there are no more chunks to process
-        if hasLastChunkBeenSent {
+        guard hasLastChunkBeenSent else {
           return false // No more chunks to process
         }
 
@@ -205,12 +205,12 @@ public class AwsChunkedReader {
 
     private func getTrailingHeadersString(trailingHeaders: Headers) -> String {
         return trailingHeaders.headers.flatMap { header in
-            header.value.map { "\(header.name): \($0)\r\n"}
+            header.value.map { "\(header.name): \($0)\r\n" }
         }.joined()
     }
 }
 
-extension AwsChunkedReader {
+extension AWSChunkedReader {
 
     public func updateTrailingHeader(name: String, value: String) {
         self.trailingHeaders.update(name: name, value: value)

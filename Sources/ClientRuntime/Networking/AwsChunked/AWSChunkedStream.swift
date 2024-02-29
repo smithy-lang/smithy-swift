@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public protocol AwsChunkedStream {
-    func getChunkedReader() -> AwsChunkedReader
+public protocol AWSChunkedStream {
+    func getChunkedReader() -> AWSChunkedReader
     var checksumAlgorithm: ChecksumAlgorithm? { get set }
 }
