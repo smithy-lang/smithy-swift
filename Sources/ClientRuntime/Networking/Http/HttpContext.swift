@@ -29,6 +29,14 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.authSchemes)
     }
 
+    public func getChecksum() -> HashFunction? {
+        return attributes.get(key: AttributeKeys.checksum)
+    }
+
+    public func getIsChunkedEligibleStream() -> Bool? {
+        return attributes.get(key: AttributeKeys.isChunkedEligibleStream)
+    }
+
     public func getDecoder() -> ResponseDecoder {
         return attributes.get(key: AttributeKeys.decoder)!
     }
@@ -342,6 +350,12 @@ public enum AttributeKeys {
     public static let hasUnsignedPayloadTrait = AttributeKey<Bool>(name: "HasUnsignedPayloadTrait")
     public static let forceUnsignedBody = AttributeKey<Bool>(name: "ForceUnsignedBody")
     public static let expiration = AttributeKey<TimeInterval>(name: "Expiration")
+
+    // Checksums
+    public static let checksum = AttributeKey<HashFunction>(name: "checksum")
+
+    // Streams
+    public static let isChunkedEligibleStream = AttributeKey<Bool>(name: "isChunkedEligibleStream")
 }
 
 // The type of flow the mdidleware context is being constructed for

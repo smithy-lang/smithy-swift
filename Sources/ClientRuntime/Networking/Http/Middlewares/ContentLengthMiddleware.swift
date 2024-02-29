@@ -37,8 +37,6 @@ public struct ContentLengthMiddleware<OperationStackOutput>: Middleware {
                 if !stream.isEligibleForAwsChunkedStreaming()
                     && !(input.headers.value(for: "Transfer-Encoding") == "chunked") {
                     input.headers.update(name: "Content-Length", value: String(length))
-                } else {
-                    try input.setAwsChunkedHeaders()
                 }
             } else if (requiresLength == false && unsignedPayload == true) ||
                         (requiresLength == nil && unsignedPayload == nil) {

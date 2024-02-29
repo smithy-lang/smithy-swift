@@ -21,6 +21,16 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
     Self.MOutput == H.Output,
     Self.Context == H.Context {
 
+        if case(.stream(let stream)) = input.builder.body {
+            context.attributes.set(
+                key: AttributeKeys.isChunkedEligibleStream,
+                value: stream.isEligibleForAwsChunkedStreaming()
+            )
+            if stream.isEligibleForAwsChunkedStreaming() {
+                try input.builder.setAwsChunkedHeaders() // x-amz-decoded-content-length
+            }
+        }
+
         // Initialize logger
         guard let logger = context.getLogger() else {
             throw ClientError.unknownError("No logger found!")
@@ -69,9 +79,9 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
         switch request.body {
         case .data(let data):
             try handleNormalPayload(data)
-        case .stream:
+        case .stream(let stream):
             // Will handle calculating checksum and setting header later
-            context.attributes.set(key: AttributeKey<HashFunction>(name: "checksum"), value: checksumHashFunction)
+            context.attributes.set(key: AttributeKeys.checksum, value: checksumHashFunction)
             request.updateHeader(name: "x-amz-trailer", value: [headerName])
         case .noStream:
             throw ClientError.dataNotFound("Cannot calculate the checksum of an empty body!")

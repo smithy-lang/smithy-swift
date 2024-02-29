@@ -191,7 +191,6 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// Write the passed data to the output stream, using the reserved thread.
     private func writeToOutputStream(data: Data) async throws {
-        //print("WRITING: \(String(data: data, encoding: .utf8))")
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             Self.queue.async {
                 let result = WriteToOutputStreamResult()
@@ -211,7 +210,6 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     @objc private func writeToOutputStreamOnThread(_ result: WriteToOutputStreamResult) {
 
         guard !buffer.isEmpty || !result.data.isEmpty else {
-            print("RETURNING")
             return
         }
         buffer.append(result.data)
@@ -229,9 +227,6 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     func writeChunk(chunk: Data, endOfStream: Bool = false) async throws {
 
         if !chunk.isEmpty {
-//            print("CHUNK: \(String(data: chunk, encoding: .utf8)?.prefix(200)), isFinalChunk: \(endOfStream)")
-//            print("CHUNKS LEFT TO SEND: \(await self.chunksStorage.chunksAvailable())")
-
             try await writeToOutputStream(data: chunk)
         }
 
