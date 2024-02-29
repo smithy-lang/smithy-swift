@@ -140,12 +140,12 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
 
     func testBufferedStreamingPayloadCRC32() async throws {
         // Mock data to simulate the file content
-        let mockData = Data(repeating: 0x41, count: 1_048_576) // 1MB of 'A's
+        let mockData = Data(repeating: 0, count: 1_024 * 1_024) // 1MB of 0s
         let checksumAlgorithm = "crc32"
         let signingConfig = SigningConfig(algorithm: .signingV4, signatureType: .requestHeaders, service: "S3", region: "us-west-2")
 
         let testData = ByteStream.stream(AwsChunkedBufferedStream(
-            stream: BufferedStream(data: mockData),
+            stream: BufferedStream(data: mockData, isClosed: true),
             signingConfig: signingConfig,
             previousSignature: "test-signature",
             trailingHeaders: Headers()
@@ -260,8 +260,12 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
                 isChecksumValidated = true
             }
             XCTAssertEqual(
-                self.builtContext.attributes.get(key: AttributeKey<HashFunction>(name: "checksum")),
+                self.builtContext.attributes.get(key: AttributeKeys.checksum),
                 expectedChecksumAlgorithm
+            )
+            XCTAssertEqual(
+                self.builtContext.attributes.get(key: AttributeKeys.isChunkedEligibleStream),
+                true
             )
             XCTAssertTrue(output.httpResponse.headers.value(for: expectedHeader) == expectedChecksum)
             return output

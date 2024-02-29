@@ -55,7 +55,10 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
 
         // Check if any checksum header is already provided by the user
         let checksumHeaderPrefix = "x-amz-checksum-"
-        if request.headers.headers.contains(where: { $0.name.lowercased().starts(with: checksumHeaderPrefix) }) {
+        if request.headers.headers.contains(where: {
+            $0.name.lowercased().starts(with: checksumHeaderPrefix) &&
+            $0.name.lowercased() != "x-amz-checksum-algorithm"
+        }) {
             logger.debug("Checksum header already provided by the user. Skipping calculation.")
             return try await next.handle(context: context, input: input)
         }
@@ -79,7 +82,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
         switch request.body {
         case .data(let data):
             try handleNormalPayload(data)
-        case .stream(let stream):
+        case .stream(_):
             // Will handle calculating checksum and setting header later
             context.attributes.set(key: AttributeKeys.checksum, value: checksumHashFunction)
             request.updateHeader(name: "x-amz-trailer", value: [headerName])
