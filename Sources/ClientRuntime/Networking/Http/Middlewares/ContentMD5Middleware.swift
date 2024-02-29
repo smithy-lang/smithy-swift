@@ -32,7 +32,7 @@ public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
             let base64Encoded = md5Hash.base64EncodedString()
             input.headers.update(name: "Content-MD5", value: base64Encoded)
         case .stream(let stream):
-            let checksum: HashFunction = .md5
+            let checksum: ChecksumAlgorithm = .md5
             do {
                 if let md5Hasher = checksum.createHash() {
                     // read chunks and update hasher

@@ -15,10 +15,10 @@ public enum HashError: Error {
     case hashingFailed(reason: String)
 }
 
-public enum HashFunction {
+public enum ChecksumAlgorithm {
     case crc32, crc32c, sha1, sha256, md5
 
-    static func from(string: String) -> HashFunction? {
+    static func from(string: String) -> ChecksumAlgorithm? {
         switch string.lowercased() {
         case "crc32": return .crc32
         case "crc32c": return .crc32c
@@ -29,10 +29,10 @@ public enum HashFunction {
         }
     }
 
-    static func fromList(_ stringArray: [String]) -> [HashFunction] {
-        var hashFunctions = [HashFunction]()
+    static func fromList(_ stringArray: [String]) -> [ChecksumAlgorithm] {
+        var hashFunctions = [ChecksumAlgorithm]()
         for string in stringArray {
-            if let hashFunction = HashFunction.from(string: string) {
+            if let hashFunction = ChecksumAlgorithm.from(string: string) {
                 hashFunctions.append(hashFunction)
             }
         }
@@ -90,14 +90,14 @@ public enum HashFunction {
     }
 }
 
-extension HashFunction: Comparable {
+extension ChecksumAlgorithm: Comparable {
     /*
      * Priority-order for validating checksum = [ CRC32C, CRC32, SHA1, SHA256 ]
      * Order is determined by speed of the algorithm's implementation
      * MD5 is not supported by list ordering
      */
-    public static func < (lhs: HashFunction, rhs: HashFunction) -> Bool {
-        let order: [HashFunction] = [.crc32c, .crc32, .sha1, .sha256]
+    public static func < (lhs: ChecksumAlgorithm, rhs: ChecksumAlgorithm) -> Bool {
+        let order: [ChecksumAlgorithm] = [.crc32c, .crc32, .sha1, .sha256]
 
         let lhsIndex = order.firstIndex(of: lhs) ?? Int.max
         let rhsIndex = order.firstIndex(of: rhs) ?? Int.max
@@ -106,8 +106,8 @@ extension HashFunction: Comparable {
     }
 }
 
-extension [HashFunction] {
-    func getPriorityOrderValidationList() -> [HashFunction] {
+extension [ChecksumAlgorithm] {
+    func getPriorityOrderValidationList() -> [ChecksumAlgorithm] {
         // Filter out .md5 if present and then sort the remaining hash functions
         return self.filter { $0 != .md5 }.sorted()
     }
@@ -148,7 +148,7 @@ extension HashResult {
     }
 }
 
-extension HashFunction {
+extension ChecksumAlgorithm {
     // Initialize a hashing process
     func createHash() -> Hash? {
         switch self {

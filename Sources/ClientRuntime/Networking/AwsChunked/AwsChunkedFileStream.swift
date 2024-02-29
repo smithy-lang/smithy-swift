@@ -19,7 +19,7 @@ class AwsChunkedFileStream {
         signingConfig: SigningConfig,
         previousSignature: String,
         trailingHeaders: Headers,
-        checksumAlgorithm: HashFunction? = nil
+        checksumAlgorithm: ChecksumAlgorithm? = nil
     ) {
         self.stream = stream
         self.signingConfig = signingConfig
@@ -90,7 +90,7 @@ extension AwsChunkedFileStream: AwsChunkedStream {
         return self.chunkedReader
     }
 
-    var checksumAlgorithm: HashFunction? {
+    var checksumAlgorithm: ChecksumAlgorithm? {
         get {
             return self.chunkedReader.getChecksumAlgorithm()
         }

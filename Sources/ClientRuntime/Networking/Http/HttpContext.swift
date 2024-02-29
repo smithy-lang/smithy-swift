@@ -29,7 +29,7 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.authSchemes)
     }
 
-    public func getChecksum() -> HashFunction? {
+    public func getChecksum() -> ChecksumAlgorithm? {
         return attributes.get(key: AttributeKeys.checksum)
     }
 
@@ -352,7 +352,7 @@ public enum AttributeKeys {
     public static let expiration = AttributeKey<TimeInterval>(name: "Expiration")
 
     // Checksums
-    public static let checksum = AttributeKey<HashFunction>(name: "checksum")
+    public static let checksum = AttributeKey<ChecksumAlgorithm>(name: "checksum")
 
     // Streams
     public static let isChunkedEligibleStream = AttributeKey<Bool>(name: "isChunkedEligibleStream")

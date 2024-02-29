@@ -17,7 +17,7 @@ public class AwsChunkedReader {
     private var chunkBody = Data()
     private var currentHash: UInt32 = 0
     private var emptyChunkSigned = false
-    private var checksum: HashFunction?
+    private var checksum: ChecksumAlgorithm?
     private var checksumHash: Hash?
 
     init(
@@ -25,7 +25,7 @@ public class AwsChunkedReader {
         signingConfig: SigningConfig,
         previousSignature: String,
         trailingHeaders: Headers,
-        checksum: HashFunction? = nil // if nil, chunked encoding without checksum
+        checksum: ChecksumAlgorithm? = nil // if nil, chunked encoding without checksum
     ) {
         self.stream = stream
         self.signingConfig = signingConfig
@@ -85,7 +85,7 @@ public class AwsChunkedReader {
         return finalChunk
     }
 
-    private func hashChunk(checksumAlgorithm: HashFunction) throws {
+    private func hashChunk(checksumAlgorithm: ChecksumAlgorithm) throws {
         if let shaHash = checksumHash {
             try shaHash.update(data: self.chunkBody)
         } else {
@@ -220,11 +220,11 @@ extension AwsChunkedReader {
         return self.trailingHeaders
     }
 
-    public func getChecksumAlgorithm() -> HashFunction? {
+    public func getChecksumAlgorithm() -> ChecksumAlgorithm? {
         return self.checksum
     }
 
-    public func setChecksumAlgorithm(checksum: HashFunction?) {
+    public func setChecksumAlgorithm(checksum: ChecksumAlgorithm?) {
         self.checksum = checksum
     }
 

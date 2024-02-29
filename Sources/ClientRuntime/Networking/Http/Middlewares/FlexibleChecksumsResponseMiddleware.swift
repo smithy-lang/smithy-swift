@@ -7,7 +7,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
     // The priority to validate response checksums, if multiple are present
     let CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: [String] = [
-        HashFunction.crc32c,
+        ChecksumAlgorithm.crc32c,
         .crc32,
         .sha1,
         .sha256
@@ -68,7 +68,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         context.attributes.set(key: AttributeKey<String>(name: "ChecksumHeaderValidated"), value: fullChecksumHeader)
 
         let checksumString = checksumHeader.removePrefix("x-amz-checksum-")
-        guard let responseChecksum = HashFunction.from(string: checksumString) else {
+        guard let responseChecksum = ChecksumAlgorithm.from(string: checksumString) else {
             throw ClientError.dataNotFound("Checksum found in header is not supported!")
         }
         guard let expectedChecksum = httpResponse.headers.value(for: fullChecksumHeader) else {
@@ -127,6 +127,6 @@ enum ChecksumMismatchException: Error {
 }
 
 private func withPriority(checksums: [String]) -> [String] {
-    let checksumsMap = checksums.compactMap { HashFunction.from(string: $0) }
+    let checksumsMap = checksums.compactMap { ChecksumAlgorithm.from(string: $0) }
     return checksumsMap.sorted().map { $0.toString() }
 }

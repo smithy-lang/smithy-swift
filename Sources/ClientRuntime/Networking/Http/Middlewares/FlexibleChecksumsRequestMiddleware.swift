@@ -41,7 +41,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             return try await next.handle(context: context, input: input)
         }
 
-        guard let checksumHashFunction = HashFunction.from(string: checksumString) else {
+        guard let checksumHashFunction = ChecksumAlgorithm.from(string: checksumString) else {
             logger.info("Found no supported checksums! Skipping flexible checksums workflow...")
             return try await next.handle(context: context, input: input)
         }

@@ -246,7 +246,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
     private func AssertionsWhenStreaming(
         expectedHeader: String = "",
         responseBody: ByteStream = ByteStream.noStream,
-        expectedChecksumAlgorithm: HashFunction? = nil,
+        expectedChecksumAlgorithm: ChecksumAlgorithm? = nil,
         expectedChecksum: String = "",
         expectValidation: Bool = true
     ) async throws -> () {

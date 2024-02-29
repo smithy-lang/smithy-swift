@@ -40,7 +40,7 @@ extension SdkHttpRequestBuilder {
         signingConfig: SigningConfig,
         signature: String,
         trailingHeaders: Headers,
-        checksumAlgorithm: HashFunction? = nil
+        checksumAlgorithm: ChecksumAlgorithm? = nil
     ) throws {
         let body = self.getBody()
         switch body {

@@ -9,12 +9,12 @@ import AwsCommonRuntimeKit
 
 class ValidatingBufferedStream {
     private var stream: BufferedStream
-    private var checksum: HashFunction
+    private var checksum: ChecksumAlgorithm
     private var checksumHash: Hash?
     private var expectedChecksum: String
     private var currentHash: UInt32 = 0
 
-    init(stream: BufferedStream, expectedChecksum: String, checksum: HashFunction) {
+    init(stream: BufferedStream, expectedChecksum: String, checksum: ChecksumAlgorithm) {
         self.stream = stream
         self.expectedChecksum = expectedChecksum
         self.checksum = checksum

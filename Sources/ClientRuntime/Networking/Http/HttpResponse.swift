@@ -38,7 +38,7 @@ extension ByteStream {
     public static func getChecksumValidatingBody(
         stream: Stream,
         expectedChecksum: String,
-        checksumAlgorithm: HashFunction
+        checksumAlgorithm: ChecksumAlgorithm
     ) -> ByteStream {
         if let bufferedStream = stream as? BufferedStream {
             return ByteStream.stream(

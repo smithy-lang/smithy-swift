@@ -17,7 +17,7 @@ class HashFunctionTests: XCTestCase {
     }
 
     func testCRC32NonUTF8Bytes() {
-        guard let hashFunction = HashFunction.from(string: "crc32") else {
+        guard let hashFunction = ChecksumAlgorithm.from(string: "crc32") else {
             XCTFail("CRC32 not found")
             return
         }
@@ -36,7 +36,7 @@ class HashFunctionTests: XCTestCase {
     }
 
     func testCRC32CNonUTF8Bytes() {
-        guard let hashFunction = HashFunction.from(string: "crc32c") else {
+        guard let hashFunction = ChecksumAlgorithm.from(string: "crc32c") else {
             XCTFail("CRC32C not found")
             return
         }
@@ -55,7 +55,7 @@ class HashFunctionTests: XCTestCase {
     }
 
     func testSHA1NonUTF8Bytes() {
-        guard let hashFunction = HashFunction.from(string: "sha1") else {
+        guard let hashFunction = ChecksumAlgorithm.from(string: "sha1") else {
             XCTFail("SHA1 not found")
             return
         }
@@ -74,7 +74,7 @@ class HashFunctionTests: XCTestCase {
     }
 
     func testSHA256NonUTF8Bytes() {
-        guard let hashFunction = HashFunction.from(string: "sha256") else {
+        guard let hashFunction = ChecksumAlgorithm.from(string: "sha256") else {
             XCTFail("SHA256 not found")
             return
         }
@@ -93,7 +93,7 @@ class HashFunctionTests: XCTestCase {
     }
 
     func testMD5NonUTF8Bytes() {
-        guard let hashFunction = HashFunction.from(string: "md5") else {
+        guard let hashFunction = ChecksumAlgorithm.from(string: "md5") else {
             XCTFail("MD5 not found")
             return
         }
@@ -112,7 +112,7 @@ class HashFunctionTests: XCTestCase {
     }
 
     func testInvalidHashFunction() {
-        let invalidHashFunction = HashFunction.from(string: "invalid")
+        let invalidHashFunction = ChecksumAlgorithm.from(string: "invalid")
         XCTAssertNil(invalidHashFunction, "Invalid hash function should return nil")
     }
 
@@ -120,7 +120,7 @@ class HashFunctionTests: XCTestCase {
         let testData = Data("Hello, world!".utf8)
 
         // CRC32
-        if let crc32Function = HashFunction.from(string: "crc32"),
+        if let crc32Function = ChecksumAlgorithm.from(string: "crc32"),
            let crc32Result = try? crc32Function.computeHash(of: testData).toHexString() {
             XCTAssertEqual(crc32Result, "ebe6c6e6", "CRC32 hexadecimal representation does not match expected value")
         } else {
@@ -128,7 +128,7 @@ class HashFunctionTests: XCTestCase {
         }
 
         // CRC32C
-        if let crc32cFunction = HashFunction.from(string: "crc32c"),
+        if let crc32cFunction = ChecksumAlgorithm.from(string: "crc32c"),
            let crc32cResult = try? crc32cFunction.computeHash(of: testData).toHexString() {
             XCTAssertEqual(crc32cResult, "c8a106e5", "CRC32C hexadecimal representation does not match expected value")
         } else {
@@ -136,7 +136,7 @@ class HashFunctionTests: XCTestCase {
         }
 
         // SHA1
-        if let sha1Function = HashFunction.from(string: "sha1"),
+        if let sha1Function = ChecksumAlgorithm.from(string: "sha1"),
            let sha1Result = try? sha1Function.computeHash(of: testData).toHexString() {
             XCTAssertEqual(sha1Result, "943a702d06f34599aee1f8da8ef9f7296031d699", "SHA1 hexadecimal representation does not match expected value")
         } else {
@@ -144,7 +144,7 @@ class HashFunctionTests: XCTestCase {
         }
 
         // SHA256
-        if let sha256Function = HashFunction.from(string: "sha256"),
+        if let sha256Function = ChecksumAlgorithm.from(string: "sha256"),
            let sha256Result = try? sha256Function.computeHash(of: testData).toHexString() {
             XCTAssertEqual(sha256Result, "315f5bdb76d078c43b8ac0064e4a0164612b1fce77c869345bfc94c75894edd3", "SHA256 hexadecimal representation does not match expected value")
         } else {
@@ -152,7 +152,7 @@ class HashFunctionTests: XCTestCase {
         }
 
         // MD5
-        if let md5Function = HashFunction.from(string: "md5"),
+        if let md5Function = ChecksumAlgorithm.from(string: "md5"),
            let md5Result = try? md5Function.computeHash(of: testData).toHexString() {
             XCTAssertEqual(md5Result, "6cd3556deb0da54bca060b4c39479839", "MD5 hexadecimal representation does not match expected value")
         } else {

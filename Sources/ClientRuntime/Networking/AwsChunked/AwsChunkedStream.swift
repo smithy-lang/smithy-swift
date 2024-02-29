@@ -7,5 +7,5 @@
 
 public protocol AwsChunkedStream {
     func getChunkedReader() -> AwsChunkedReader
-    var checksumAlgorithm: HashFunction? { get set }
+    var checksumAlgorithm: ChecksumAlgorithm? { get set }
 }
