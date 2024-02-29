@@ -82,7 +82,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
         switch request.body {
         case .data(let data):
             try handleNormalPayload(data)
-        case .stream(_):
+        case .stream:
             // Will handle calculating checksum and setting header later
             context.attributes.set(key: AttributeKeys.checksum, value: checksumHashFunction)
             request.updateHeader(name: "x-amz-trailer", value: [headerName])

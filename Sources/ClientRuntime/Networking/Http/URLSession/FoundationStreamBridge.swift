@@ -66,7 +66,6 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     public var chunksStorage = ChunkStorage()
     private var isFirstChunk = true
 
-
     /// Actor used to isolate the stream status from multiple concurrent accesses.
     actor ReadableStreamStatus {
 
