@@ -302,13 +302,6 @@ public class SdkHttpRequestBuilder {
     }
 }
 
-extension SdkHttpRequestBuilder {
-
-    public func getBody() -> ByteStream {
-        return self.body
-    }
-}
-
 extension HTTPRequestBase {
     public var signature: String? {
         let authHeader = getHeaderValue(name: "Authorization")
