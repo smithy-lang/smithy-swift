@@ -38,7 +38,7 @@ public class AWSChunkedReader {
     public func processNextChunk() async throws -> Bool {
 
         // Check if there are no more chunks to process
-        guard hasLastChunkBeenSent else {
+        guard !hasLastChunkBeenSent else {
           return false // No more chunks to process
         }
 
