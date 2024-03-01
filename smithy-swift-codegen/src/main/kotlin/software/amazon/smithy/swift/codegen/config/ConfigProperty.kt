@@ -6,6 +6,8 @@
 package software.amazon.smithy.swift.codegen.config
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.swift.codegen.model.isOptional
+
 data class ConfigProperty(
     val name: String,
     val type: Symbol,
@@ -19,14 +21,8 @@ data class ConfigProperty(
         isAsync: Boolean = false
     ) : this(name, type, DefaultProvider(default, isThrowable, isAsync))
 
-    val isOptional: Boolean = type.name.endsWith('?')
-
-    fun toOptionalType(): String {
-        return if (isOptional) type.name else "${type.name}?"
-    }
-
     init {
-        if (!this.isOptional && default == null)
+        if (!type.isOptional() && default == null)
             throw RuntimeException("Non-optional client config property must have a default value")
     }
 }

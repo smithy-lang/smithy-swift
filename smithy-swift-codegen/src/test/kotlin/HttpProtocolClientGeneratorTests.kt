@@ -6,6 +6,8 @@
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.swift.codegen.DefaultClientConfigurationIntegration
+
 class HttpProtocolClientGeneratorTests {
     @Test
     fun `it renders client initialization block`() {
@@ -36,14 +38,49 @@ class HttpProtocolClientGeneratorTests {
                 }
             
                 public convenience required init() throws {
-                    let config = try RestJsonProtocol.RestJsonProtocolConfiguration("Rest Json Protocol", "RestJsonProtocolClient")
+                    let config = try RestJsonProtocol.RestJsonProtocolConfiguration()
                     self.init(config: config)
                 }
             
             }
             
             extension RestJsonProtocolClient {
-                public typealias RestJsonProtocolConfiguration = ClientRuntime.DefaultSDKRuntimeConfiguration
+                public class RestJsonProtocolConfiguration: DefaultClientConfiguration & DefaultHttpClientConfiguration {
+                    public var logger: ClientRuntime.LogAgent
+            
+                    public var retryStrategyOptions: ClientRuntime.RetryStrategyOptions
+            
+                    public var clientLogMode: ClientRuntime.ClientLogMode
+            
+                    public var endpoint: Swift.String?
+            
+                    public var idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
+            
+                    public var httpClientEngine: ClientRuntime.HTTPClient
+            
+                    public var httpClientConfiguration: ClientRuntime.HttpClientConfiguration
+            
+                    public var authSchemes: [ClientRuntime.AuthScheme]?
+            
+                    public var authSchemeResolver: ClientRuntime.AuthSchemeResolver?
+            
+                    private init(_ logger: ClientRuntime.LogAgent, _ retryStrategyOptions: ClientRuntime.RetryStrategyOptions, _ clientLogMode: ClientRuntime.ClientLogMode, _ endpoint: Swift.String?, _ idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator, _ httpClientEngine: ClientRuntime.HTTPClient, _ httpClientConfiguration: ClientRuntime.HttpClientConfiguration, _ authSchemes: [ClientRuntime.AuthScheme]?, _ authSchemeResolver: ClientRuntime.AuthSchemeResolver?) {
+                        self.logger = logger
+                        self.retryStrategyOptions = retryStrategyOptions
+                        self.clientLogMode = clientLogMode
+                        self.endpoint = endpoint
+                        self.idempotencyTokenGenerator = idempotencyTokenGenerator
+                        self.httpClientEngine = httpClientEngine
+                        self.httpClientConfiguration = httpClientConfiguration
+                        self.authSchemes = authSchemes
+                        self.authSchemeResolver = authSchemeResolver
+                    }
+            
+                    public convenience init(logger: ClientRuntime.LogAgent? = nil, retryStrategyOptions: ClientRuntime.RetryStrategyOptions? = nil, clientLogMode: ClientRuntime.ClientLogMode? = nil, endpoint: Swift.String? = nil, idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator? = nil, httpClientEngine: ClientRuntime.HTTPClient? = nil, httpClientConfiguration: ClientRuntime.HttpClientConfiguration? = nil, authSchemes: [ClientRuntime.AuthScheme]? = nil, authSchemeResolver: ClientRuntime.AuthSchemeResolver? = nil) throws {
+                        self.init(logger ?? AWSClientConfigDefaultsProvider.logger(clientName), try retryStrategyOptions ?? AWSClientConfigDefaultsProvider.retryStrategyOptions(), clientLogMode ?? AWSClientConfigDefaultsProvider.clientLogMode, endpoint, idempotencyTokenGenerator ?? AWSClientConfigDefaultsProvider.idempotencyTokenGenerator, httpClientEngine ?? AWSClientConfigDefaultsProvider.httpClientEngine, httpClientConfiguration ?? AWSClientConfigDefaultsProvider.httpClientConfiguration, authSchemes, authSchemeResolver)
+                    }
+            
+                }
             
                 public static func builder() -> ClientBuilder<RestJsonProtocolClient> {
                     return ClientBuilder<RestJsonProtocolClient>(defaultPlugins: [
@@ -244,9 +281,14 @@ class HttpProtocolClientGeneratorTests {
         contents.shouldContainOnlyOnce(expected)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
-            model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol")
-        }
+        val context = TestContext.initContextFrom(
+            listOf(smithyFile),
+            serviceShapeId,
+            MockHttpRestJsonProtocolGenerator(),
+            { model -> model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol") },
+            listOf(DefaultClientConfigurationIntegration())
+        )
+
         context.generator.initializeMiddleware(context.generationCtx)
         context.generator.generateProtocolClient(context.generationCtx)
         context.generator.generateSerializers(context.generationCtx)

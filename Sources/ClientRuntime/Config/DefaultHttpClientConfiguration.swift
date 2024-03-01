@@ -14,7 +14,7 @@ public protocol DefaultHttpClientConfiguration: ClientConfiguration {
     var httpClientEngine: HTTPClient { get set }
 
     /// Configuration for the HTTP client.
-    var httpClientConfiguration: HttpClientConfiguration { get }
+    var httpClientConfiguration: HttpClientConfiguration { get set }
 
     /// List of auth schemes to use for client calls.
     ///

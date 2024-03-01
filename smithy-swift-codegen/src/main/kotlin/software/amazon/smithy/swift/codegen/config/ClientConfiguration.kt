@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.config
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.Dependency
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 
 /**
@@ -18,7 +19,7 @@ interface ClientConfiguration {
      */
     val swiftProtocolName: Symbol?
 
-    val properties: Set<ConfigProperty>
+    fun getProperties(ctx: ProtocolGenerator.GenerationContext): Set<ConfigProperty>
 
     companion object {
         fun runtimeSymbol(
