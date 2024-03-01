@@ -27,6 +27,7 @@ import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
@@ -269,7 +270,8 @@ class TestContext(
             smithyFiles: List<String>,
             serviceShapeId: String,
             httpBindingProtocolGenerator: HttpBindingProtocolGenerator? = null,
-            swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null
+            swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null,
+            integrations: List<SwiftIntegration> = emptyList()
         ): TestContext {
 
             var modelAssembler = Model.assembler()
@@ -291,7 +293,7 @@ class TestContext(
             model = RecursiveShapeBoxer.transform(model)
             model = NestedShapeTransformer.transform(model, swiftSettings.getService(model))
             val protocolGenerator = httpBindingProtocolGenerator ?: MockHttpRestJsonProtocolGenerator()
-            return model.newTestContext(manifest, serviceShapeId, swiftSettings, protocolGenerator)
+            return model.newTestContext(manifest, serviceShapeId, swiftSettings, protocolGenerator, integrations)
         }
     }
 }
@@ -312,7 +314,8 @@ fun Model.newTestContext(
     manifest: MockManifest,
     serviceShapeId: String,
     settings: SwiftSettings,
-    generator: ProtocolGenerator
+    generator: ProtocolGenerator,
+    integrations: List<SwiftIntegration> = emptyList()
 ): TestContext {
     val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(this, settings)
     val service = this.getShape(ShapeId.from(serviceShapeId)).get().asServiceShape().get()
@@ -323,7 +326,7 @@ fun Model.newTestContext(
         this,
         service,
         provider,
-        listOf(),
+        integrations,
         generator.protocol,
         delegator
     )

@@ -10,18 +10,31 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.config.ClientConfiguration.Companion.runtimeSymbol
-import software.amazon.smithy.swift.codegen.model.toNullable
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.model.toOptional
 
 class DefaultClientConfiguration : ClientConfiguration {
     override val swiftProtocolName: Symbol
         get() = runtimeSymbol("DefaultClientConfiguration", SwiftDependency.CLIENT_RUNTIME)
 
-    override val properties: Set<ConfigProperty>
-        get() = setOf(
-            ConfigProperty("logger", ClientRuntimeTypes.Core.Logger, "AWSClientConfigDefaultsProvider.logger(clientName)"),
-            ConfigProperty("retryStrategyOptions", ClientRuntimeTypes.Core.RetryStrategyOptions, "AWSClientConfigDefaultsProvider.retryStrategyOptions()", true),
-            ConfigProperty("clientLogMode", ClientRuntimeTypes.Core.ClientLogMode, "AWSClientConfigDefaultsProvider.clientLogMode"),
-            ConfigProperty("endpoint", SwiftTypes.String.toNullable()),
-            ConfigProperty("idempotencyTokenGenerator", ClientRuntimeTypes.Core.IdempotencyTokenGenerator, "AWSClientConfigDefaultsProvider.idempotencyTokenGenerator"),
-        )
+    override fun getProperties(ctx: ProtocolGenerator.GenerationContext): Set<ConfigProperty> = setOf(
+        ConfigProperty("logger", ClientRuntimeTypes.Core.Logger, "AWSClientConfigDefaultsProvider.logger(clientName)"),
+        ConfigProperty(
+            "retryStrategyOptions",
+            ClientRuntimeTypes.Core.RetryStrategyOptions,
+            "AWSClientConfigDefaultsProvider.retryStrategyOptions()",
+            true
+        ),
+        ConfigProperty(
+            "clientLogMode",
+            ClientRuntimeTypes.Core.ClientLogMode,
+            "AWSClientConfigDefaultsProvider.clientLogMode"
+        ),
+        ConfigProperty("endpoint", SwiftTypes.String.toOptional()),
+        ConfigProperty(
+            "idempotencyTokenGenerator",
+            ClientRuntimeTypes.Core.IdempotencyTokenGenerator,
+            "AWSClientConfigDefaultsProvider.idempotencyTokenGenerator"
+        ),
+    )
 }

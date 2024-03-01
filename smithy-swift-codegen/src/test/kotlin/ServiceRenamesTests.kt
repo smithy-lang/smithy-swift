@@ -164,9 +164,13 @@ class ServiceRenamesTests {
     }
 
     private fun setupTests(smithyFiles: List<String>, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFiles, serviceShapeId) { model ->
-            model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol")
-        }
+        val context = TestContext.initContextFrom(
+            smithyFiles,
+            serviceShapeId,
+            null,
+            { model -> model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol") },
+            emptyList()
+        )
         context.generator.generateProtocolClient(context.generationCtx)
         context.generator.generateSerializers(context.generationCtx)
         context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)
