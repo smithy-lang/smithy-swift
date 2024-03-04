@@ -62,10 +62,11 @@ extension EventStream {
                 if (sendInitialRequest && !sentInitialRequest) {
                     sentInitialRequest = true
                     let initialRequestMessage = EventStream.Message(
-                        headers: [EventStream.Header(
-                            name: ":event-type",
-                            value: .string("initial-request")
-                        )],
+                        headers: [
+                            EventStream.Header(name: ":message-type", value: .string("event")),
+                            EventStream.Header(name: ":event-type", value: .string("initial-request")),
+                            EventStream.Header(name: ":content-type", value: .string("application/json"))
+                        ],
                         // Empty data
                         payload: Data()
                     )
