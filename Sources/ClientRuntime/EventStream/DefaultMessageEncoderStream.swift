@@ -59,7 +59,7 @@ extension EventStream {
             }
 
             mutating public func next() async throws -> Data? {
-                if (sendInitialRequest && !sentInitialRequest) {
+                if sendInitialRequest && !sentInitialRequest {
                     sentInitialRequest = true
                     let initialRequestMessage = EventStream.Message(
                         headers: [
