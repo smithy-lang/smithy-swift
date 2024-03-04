@@ -26,6 +26,7 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
 class OperationInputBodyMiddleware(
     val model: Model,
@@ -58,7 +59,16 @@ class OperationInputBodyMiddleware(
         var documentWritingClosure = documentWritingClosureUtils.closure(payloadShape)
         var isPayloadMember = false
         val defaultBody = "\"{}\"".takeIf { ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>() || ctx.service.hasTrait<RestJson1Trait>() } ?: "nil"
-        val payloadMember = inputShape.members().find { it.hasTrait<HttpPayloadTrait>() }
+        var payloadMember = inputShape.members().find { it.hasTrait<HttpPayloadTrait>() }
+        var sendInitialRequest = "false"
+        // RPC-based protocols do not support HTTP traits.
+        // AWSQuery & EC2Query are ignored because they don't support streaming at all.
+        if (arrayOf("awsJson1_0", "awsJson1_1").contains(ctx.protocol.name)) {
+            sendInitialRequest = "true"
+            // Get "implicit payload" for input shape in RPC based protocols
+            // ...given only one member can have @streaming trait.
+            payloadMember = inputShape.members().find { it.targetOrSelf(ctx.model).hasTrait<StreamingTrait>() }
+        }
         payloadMember?.let {
             payloadShape = ctx.model.expectShape(it.target)
             val memberName = ctx.symbolProvider.toMemberName(it)
@@ -73,7 +83,7 @@ class OperationInputBodyMiddleware(
         when (payloadShape) {
             is UnionShape -> {
                 if (isStreaming) {
-                    addEventStreamMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, keyPath, defaultBody)
+                    addEventStreamMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, keyPath, defaultBody, sendInitialRequest)
                 } else {
                     addAggregateMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
                 }
@@ -137,9 +147,9 @@ class OperationInputBodyMiddleware(
         )
     }
 
-    private fun addEventStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String) {
+    private fun addEventStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String, sendInitialRequest: String) {
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L))",
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L, sendInitialRequest: \$L))",
             operationStackName,
             middlewareStep.stringValue(),
             position.stringValue(),
@@ -148,7 +158,8 @@ class OperationInputBodyMiddleware(
             outputSymbol,
             payloadSymbol,
             keyPath,
-            defaultBody
+            defaultBody,
+            sendInitialRequest
         )
     }
 
