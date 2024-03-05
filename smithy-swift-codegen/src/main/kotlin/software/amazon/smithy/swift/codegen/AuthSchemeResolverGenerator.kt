@@ -17,6 +17,7 @@ import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterTy
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.boxed
+import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.utils.clientName
@@ -24,7 +25,6 @@ import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import java.util.Locale
 
 class AuthSchemeResolverGenerator {
-    private val AUTH_SCHEME_RESOLVER = "AuthSchemeResolver"
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val rootNamespace = ctx.settings.moduleName
         val serviceIndex = ServiceIndex(ctx.model)
@@ -90,7 +90,7 @@ class AuthSchemeResolverGenerator {
     private fun renderServiceSpecificAuthResolverProtocol(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {
         writer.apply {
             openBlock(
-                "public protocol ${getSdkId(ctx)}$AUTH_SCHEME_RESOLVER: \$L {",
+                "public protocol ${getServiceSpecificAuthSchemeResolverName(ctx)}: \$L {",
                 "}",
                 ClientRuntimeTypes.Auth.AuthSchemeResolver
             ) {
@@ -259,6 +259,8 @@ class AuthSchemeResolverGenerator {
     }
 
     companion object {
+        private val AUTH_SCHEME_RESOLVER = "AuthSchemeResolver"
+
         // Utility function for checking if a service relies on endpoint resolver for auth scheme resolution
         fun usesRulesBasedAuthResolver(ctx: ProtocolGenerator.GenerationContext): Boolean {
             return listOf("s3", "eventbridge", "cloudfront keyvaluestore").contains(ctx.settings.sdkId.lowercase(Locale.US))
@@ -269,6 +271,12 @@ class AuthSchemeResolverGenerator {
             return if (ctx.service.hasTrait(ServiceTrait::class.java))
                 ctx.service.getTrait(ServiceTrait::class.java).get().sdkId.clientName()
             else ctx.settings.sdkId.clientName()
+        }
+
+        fun getServiceSpecificAuthSchemeResolverName(ctx: ProtocolGenerator.GenerationContext): Symbol {
+            return buildSymbol {
+                name = "${getSdkId(ctx)}$AUTH_SCHEME_RESOLVER"
+            }
         }
     }
 }
