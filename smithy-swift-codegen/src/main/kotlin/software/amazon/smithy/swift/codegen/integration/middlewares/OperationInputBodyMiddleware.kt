@@ -60,11 +60,11 @@ class OperationInputBodyMiddleware(
         var isPayloadMember = false
         val defaultBody = "\"{}\"".takeIf { ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>() || ctx.service.hasTrait<RestJson1Trait>() } ?: "nil"
         var payloadMember = inputShape.members().find { it.hasTrait<HttpPayloadTrait>() }
-        var sendInitialRequest = "false"
+        var sendInitialRequest = false
         // RPC-based protocols do not support HTTP traits.
         // AWSQuery & EC2Query are ignored because they don't support streaming at all.
         if (arrayOf("awsJson1_0", "awsJson1_1").contains(ctx.protocol.name)) {
-            sendInitialRequest = "true"
+            sendInitialRequest = true
             // Get "implicit payload" for input shape in RPC based protocols
             // ...given only one member can have @streaming trait.
             payloadMember = inputShape.members().find { it.targetOrSelf(ctx.model).hasTrait<StreamingTrait>() }
@@ -147,9 +147,9 @@ class OperationInputBodyMiddleware(
         )
     }
 
-    private fun addEventStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String, sendInitialRequest: String) {
+    private fun addEventStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String, sendInitialRequest: Boolean) {
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L, sendInitialRequest: \$L))",
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L\$L))",
             operationStackName,
             middlewareStep.stringValue(),
             position.stringValue(),
@@ -159,7 +159,7 @@ class OperationInputBodyMiddleware(
             payloadSymbol,
             keyPath,
             defaultBody,
-            sendInitialRequest
+            if (sendInitialRequest) ", initialRequestMessage: initialRequestMessage" else ""
         )
     }
 
