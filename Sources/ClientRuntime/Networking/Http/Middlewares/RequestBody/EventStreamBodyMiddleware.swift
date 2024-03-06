@@ -17,16 +17,16 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
 
     let keyPath: KeyPath<OperationStackInput, AsyncThrowingStream<OperationStackInputPayload, Swift.Error>?>
     let defaultBody: String?
-    let sendInitialRequest: Bool?
+    let initialRequestMessage: EventStream.Message?
 
     public init(
         keyPath: KeyPath<OperationStackInput, AsyncThrowingStream<OperationStackInputPayload, Swift.Error>?>,
         defaultBody: String? = nil,
-        sendInitialRequest: Bool? = nil
+        initialRequestMessage: EventStream.Message? = nil
     ) {
         self.keyPath = keyPath
         self.defaultBody = defaultBody
-        self.sendInitialRequest = sendInitialRequest
+        self.initialRequestMessage = initialRequestMessage
     }
 
     public func handle<H>(context: Context,
@@ -49,7 +49,7 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
                     messageEncoder: messageEncoder,
                     requestEncoder: encoder,
                     messageSigner: messageSigner,
-                    sendInitialRequest: sendInitialRequest ?? false
+                    initialRequestMessage: initialRequestMessage
                   )
                   input.builder.withBody(.stream(encoderStream))
               } else if let defaultBody {

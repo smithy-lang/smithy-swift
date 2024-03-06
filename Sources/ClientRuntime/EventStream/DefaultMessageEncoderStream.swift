@@ -15,20 +15,20 @@ extension EventStream {
         let messageSigner: MessageSigner
         let requestEncoder: RequestEncoder
         var readAsyncIterator: AsyncIterator?
-        let sendInitialRequest: Bool
+        let initialRequestMessage: EventStream.Message?
 
         public init(
             stream: AsyncThrowingStream<Event, Error>,
             messageEncoder: MessageEncoder,
             requestEncoder: RequestEncoder,
             messageSigner: MessageSigner,
-            sendInitialRequest: Bool
+            initialRequestMessage: EventStream.Message? = nil
         ) {
             self.stream = stream
             self.messageEncoder = messageEncoder
             self.messageSigner = messageSigner
             self.requestEncoder = requestEncoder
-            self.sendInitialRequest = sendInitialRequest
+            self.initialRequestMessage = initialRequestMessage
             self.readAsyncIterator = makeAsyncIterator()
         }
 
@@ -37,7 +37,7 @@ extension EventStream {
             let messageEncoder: MessageEncoder
             var messageSigner: MessageSigner
             let requestEncoder: RequestEncoder
-            let sendInitialRequest: Bool
+            let initialRequestMessage: EventStream.Message?
 
             private var lastMessageSent: Bool = false
             private var streamIterator: AsyncThrowingStream<Event, Error>.Iterator
@@ -48,55 +48,45 @@ extension EventStream {
                 messageEncoder: MessageEncoder,
                 requestEncoder: RequestEncoder,
                 messageSigner: MessageSigner,
-                sendInitialRequest: Bool
+                initialRequestMessage: EventStream.Message? = nil
             ) {
                 self.stream = stream
                 self.streamIterator = stream.makeAsyncIterator()
                 self.messageEncoder = messageEncoder
                 self.messageSigner = messageSigner
                 self.requestEncoder = requestEncoder
-                self.sendInitialRequest = sendInitialRequest
+                self.initialRequestMessage = initialRequestMessage
             }
 
             mutating public func next() async throws -> Data? {
-                if sendInitialRequest && !sentInitialRequest {
+                if let initialRequestMessage, !sentInitialRequest {
                     sentInitialRequest = true
-                    let initialRequestMessage = EventStream.Message(
-                        headers: [
-                            EventStream.Header(name: ":message-type", value: .string("event")),
-                            EventStream.Header(name: ":event-type", value: .string("initial-request")),
-                            EventStream.Header(name: ":content-type", value: .string("application/json"))
-                        ],
-                        // Empty data
-                        payload: Data()
-                    )
-                    return try messageEncoder.encode(
-                        message: try await messageSigner.sign(message: initialRequestMessage)
-                    )
-                }
-                guard let event = try await streamIterator.next() else {
-                    // There are no more messages in the base stream
-                    // if we have not sent the last message, send it now
-                    guard lastMessageSent else {
-                        let emptySignedMessage = try await messageSigner.signEmpty()
-                        let data = try messageEncoder.encode(message: emptySignedMessage)
-                        lastMessageSent = true
-                        return data
+                    let signedMessage = try await messageSigner.sign(message: initialRequestMessage)
+                    return try messageEncoder.encode(message: signedMessage)
+                } else {
+                    guard let event = try await streamIterator.next() else {
+                        // There are no more messages in the base stream
+                        // if we have not sent the last message, send it now
+                        guard lastMessageSent else {
+                            let emptySignedMessage = try await messageSigner.signEmpty()
+                            let data = try messageEncoder.encode(message: emptySignedMessage)
+                            lastMessageSent = true
+                            return data
+                        }
+                        // mark the stream as complete
+                        return nil
                     }
-
-                    // mark the stream as complete
-                    return nil
+                    return try await processEventToData(event: event)
                 }
+            }
 
+            mutating func processEventToData(event: Event) async throws -> Data {
                 // marshall event to message
-                let message = try event.marshall(encoder: requestEncoder)
-
+                let  message = try event.marshall(encoder: requestEncoder)
                 // sign the message
                 let signedMessage = try await messageSigner.sign(message: message)
-
-                // encode again the signed message
-                let data = try messageEncoder.encode(message: signedMessage)
-                return data
+                // encode again the signed message then return
+                return try messageEncoder.encode(message: signedMessage)
             }
         }
 
@@ -106,7 +96,7 @@ extension EventStream {
                 messageEncoder: messageEncoder,
                 requestEncoder: requestEncoder,
                 messageSigner: messageSigner,
-                sendInitialRequest: sendInitialRequest
+                initialRequestMessage: initialRequestMessage
             )
         }
 
