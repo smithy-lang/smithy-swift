@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.config.ConfigProperty
 import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlugin
@@ -45,7 +46,7 @@ open class HttpProtocolServiceClient(
         writer.write("")
         renderClientExtension(serviceSymbol)
         renderLogHandlerFactory(serviceSymbol)
-        renderServiceSpecificPlugins(serviceSymbol)
+        renderServiceSpecificPlugins()
     }
 
     open fun renderInitFunction(properties: List<ClientProperty>) {
@@ -172,7 +173,7 @@ open class HttpProtocolServiceClient(
     private fun renderConfigClassVariables(properties: List<ConfigProperty>) {
         properties
             .forEach {
-                writer.write("public var \$L: \$L", it.name, it.type.renderSwiftType())
+                writer.write("public var \$L: \$N", it.name, it.type)
                 writer.write("")
             }
         writer.write("")
@@ -229,10 +230,12 @@ open class HttpProtocolServiceClient(
         }
         writer.write("")
     }
-
-    private fun renderServiceSpecificPlugins(serviceSymbol: Symbol) {
-        ctx.integrations
-            .flatMap { it.plugins(serviceConfig) }
-            .onEach { it.render(writer) }
+    private fun renderServiceSpecificPlugins() {
+        ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/Plugins.swift") { writer ->
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            ctx.integrations
+                .flatMap { it.plugins(serviceConfig) }
+                .onEach { it.render(ctx, writer) }
+        }
     }
 }
