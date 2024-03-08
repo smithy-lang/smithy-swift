@@ -27,6 +27,7 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
+import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 
 class OperationInputBodyMiddleware(
     val model: Model,
@@ -63,7 +64,7 @@ class OperationInputBodyMiddleware(
         var sendInitialRequest = false
         // RPC-based protocols do not support HTTP traits.
         // AWSQuery & EC2Query are ignored because they don't support streaming at all.
-        if (arrayOf("awsJson1_0", "awsJson1_1").contains(ctx.protocol.name)) {
+        if (supportsStreamingAndIsRPC(ctx.protocol)) {
             sendInitialRequest = true
             // Get "implicit payload" for input shape in RPC based protocols
             // ...given only one member can have @streaming trait.
@@ -148,6 +149,9 @@ class OperationInputBodyMiddleware(
     }
 
     private fun addEventStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String, sendInitialRequest: Boolean) {
+        if (sendInitialRequest) {
+            writer.write("let initialRequestMessage = try input.makeInitialRequestMessage(encoder: encoder)")
+        }
         writer.write(
             "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L\$L))",
             operationStackName,
