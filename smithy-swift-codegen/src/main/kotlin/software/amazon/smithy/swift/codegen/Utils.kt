@@ -4,6 +4,9 @@
  */
 
 package software.amazon.smithy.swift.codegen
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.lang.reservedWords
 import software.amazon.smithy.utils.CaseUtils
 
@@ -26,4 +29,8 @@ fun swiftEnumCaseName(name: String?, value: String, shouldBeEscaped: Boolean = t
     }
 
     return enumCaseName
+}
+
+fun supportsStreamingAndIsRPC(protocolID: ShapeId): Boolean {
+    return arrayOf(AwsJson1_0Trait.ID, AwsJson1_1Trait.ID).contains(protocolID)
 }
