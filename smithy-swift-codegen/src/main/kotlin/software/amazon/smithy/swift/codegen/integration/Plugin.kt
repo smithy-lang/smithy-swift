@@ -12,6 +12,6 @@ interface Plugin {
         writer.writeInline("\$L()", className)
     }
 
-    fun render(writer: SwiftWriter) {
+    fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {
     }
 }
