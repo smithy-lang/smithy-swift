@@ -90,9 +90,14 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// All stream operations should be performed on the same thread as the delegate callbacks.
     /// A single shared `Thread` is started and is used to host the RunLoop for all Foundation Stream callbacks.
     private static let thread: Thread = {
-        let thread = Thread { autoreleasepool { RunLoop.current.run() } }
+//        print("Begin start thread")
+        let thread = Thread { autoreleasepool {
+            let timer = Timer(timeInterval: TimeInterval.greatestFiniteMagnitude, repeats: true, block: { _ in })
+            RunLoop.current.add(timer, forMode: .default)
+            RunLoop.current.run(until: Date.distantFuture) } }
         thread.name = "AWSFoundationStreamBridge"
         thread.start()
+//        print("End start thread")
         return thread
     }()
 
