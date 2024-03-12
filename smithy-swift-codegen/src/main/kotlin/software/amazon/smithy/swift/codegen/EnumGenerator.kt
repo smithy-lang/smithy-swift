@@ -8,7 +8,7 @@ package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.StringShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
@@ -107,7 +107,7 @@ class EnumGenerator(
     private val model: Model,
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
-    private val shape: StringShape,
+    private val shape: Shape,
     private val settings: SwiftSettings
 ) {
 
