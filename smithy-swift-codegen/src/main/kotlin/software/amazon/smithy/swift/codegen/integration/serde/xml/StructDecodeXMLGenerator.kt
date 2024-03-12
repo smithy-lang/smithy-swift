@@ -38,7 +38,7 @@ open class StructDecodeXMLGenerator(
             SmithyXMLTypes.Reader
         ) {
             writer.openBlock("return { reader in", "}") {
-                writer.write("guard reader.content != nil else { return nil }")
+                writer.write("guard reader.content != nil || Mirror(reflecting: self).children.isEmpty else { return nil }")
                 if (members.isEmpty()) {
                     writer.write("return \$N()", symbol)
                 } else {
