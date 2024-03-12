@@ -13,19 +13,19 @@ extension EventStream {
         let stream: AsyncThrowingStream<Event, Error>
         let messageEncoder: MessageEncoder
         let messageSigner: MessageSigner
-        let requestEncoder: RequestEncoder
+        let marshalClosure: MarshalClosure<Event>
         var readAsyncIterator: AsyncIterator?
 
         public init(
             stream: AsyncThrowingStream<Event, Error>,
             messageEncoder: MessageEncoder,
-            requestEncoder: RequestEncoder,
+            marshalClosure: @escaping MarshalClosure<Event>,
             messageSigner: MessageSigner
         ) {
             self.stream = stream
             self.messageEncoder = messageEncoder
             self.messageSigner = messageSigner
-            self.requestEncoder = requestEncoder
+            self.marshalClosure = marshalClosure
             self.readAsyncIterator = makeAsyncIterator()
         }
 
@@ -33,7 +33,7 @@ extension EventStream {
             let stream: AsyncThrowingStream<Event, Error>
             let messageEncoder: MessageEncoder
             var messageSigner: MessageSigner
-            let requestEncoder: RequestEncoder
+            let marshalClosure: MarshalClosure<Event>
 
             private var lastMessageSent: Bool = false
             private var streamIterator: AsyncThrowingStream<Event, Error>.Iterator
@@ -41,14 +41,14 @@ extension EventStream {
             init(
                 stream: AsyncThrowingStream<Event, Error>,
                 messageEncoder: MessageEncoder,
-                requestEncoder: RequestEncoder,
+                marshalClosure: @escaping MarshalClosure<Event>,
                 messageSigner: MessageSigner
             ) {
                 self.stream = stream
                 self.streamIterator = stream.makeAsyncIterator()
                 self.messageEncoder = messageEncoder
                 self.messageSigner = messageSigner
-                self.requestEncoder = requestEncoder
+                self.marshalClosure = marshalClosure
             }
 
             mutating public func next() async throws -> Data? {
@@ -67,7 +67,7 @@ extension EventStream {
                 }
 
                 // marshall event to message
-                let message = try event.marshall(encoder: requestEncoder)
+                let message = try marshalClosure(event)
 
                 // sign the message
                 let signedMessage = try await messageSigner.sign(message: message)
@@ -82,7 +82,7 @@ extension EventStream {
             AsyncIterator(
                 stream: stream,
                 messageEncoder: messageEncoder,
-                requestEncoder: requestEncoder,
+                marshalClosure: marshalClosure,
                 messageSigner: messageSigner
             )
         }
