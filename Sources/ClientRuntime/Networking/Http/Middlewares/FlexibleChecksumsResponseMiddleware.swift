@@ -35,9 +35,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         context.attributes.set(key: AttributeKey<String>(name: "ChecksumHeaderValidated"), value: nil)
 
         // Initialize logger
-        guard let logger = context.getLogger() else {
-            throw ClientError.unknownError("No logger found!")
-        }
+        guard let logger = context.getLogger() else { throw ClientError.unknownError("No logger found!") }
 
         // Exit if validation should not be performed
         if !validationMode {
