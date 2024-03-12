@@ -20,12 +20,12 @@ fun String.removeSurroundingBackticks() = removeSurrounding("`", "`")
 fun swiftEnumCaseName(name: String?, value: String, shouldBeEscaped: Boolean = true): String {
     val resolvedName = name ?: value
     var enumCaseName = CaseUtils.toCamelCase(resolvedName.replace(Regex("[^a-zA-Z0-9_ ]"), ""))
-    if (!SymbolVisitor.isValidSwiftIdentifier(enumCaseName)) {
+    if (!SwiftSymbolProvider.isValidSwiftIdentifier(enumCaseName)) {
         enumCaseName = "_$enumCaseName"
     }
 
     if (shouldBeEscaped && reservedWords.contains(enumCaseName)) {
-        enumCaseName = SymbolVisitor.escapeReservedWords(enumCaseName)
+        enumCaseName = SwiftSymbolProvider.escapeReservedWords(enumCaseName)
     }
 
     return enumCaseName

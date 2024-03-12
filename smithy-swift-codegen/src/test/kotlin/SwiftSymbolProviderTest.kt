@@ -8,7 +8,7 @@ package software.amazon.smithy.swift.codegen.utils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class SymbolVisitorTest {
+class SwiftSymbolProviderTest {
 
     // See https://smithy.io/2.0/aws/aws-core.html#using-sdk-service-id-for-client-naming
     @Test

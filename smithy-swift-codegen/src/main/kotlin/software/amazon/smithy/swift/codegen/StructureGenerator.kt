@@ -60,6 +60,12 @@ class StructureGenerator(
         writer.removeContext("struct.name")
     }
 
+    fun renderErrors() {
+        writer.putContext("struct.name", structSymbol.name.toUpperCamelCase())
+        renderErrorStructure()
+        writer.removeContext("struct.name")
+    }
+
     /**
      * Generates an appropriate Swift type for a Smithy Structure shape without error trait.
      * If the structure is a recursive nested type it will generate a boxed member Box<T>.
