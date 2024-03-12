@@ -46,8 +46,8 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         }
 
         // Get the response
-        let response = try await next.handle(context: context, input: input)
-        let httpResponse = response.httpResponse
+        let output = try await next.handle(context: context, input: input)
+        let httpResponse = output.httpResponse
 
         // Determine if any checksum headers are present
         let checksumHeaderIsPresent = priorityList.first {
@@ -55,10 +55,10 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         }
 
         guard let checksumHeader = checksumHeaderIsPresent else {
-            logger.warn(
+            let message =
                 "User requested checksum validation, but the response headers did not contain any valid checksums"
-            )
-            return try await next.handle(context: context, input: input)
+            logger.warn(message)
+            return output
         }
 
         let fullChecksumHeader = "x-amz-checksum-" + checksumHeader
@@ -85,10 +85,9 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
             let actualChecksum = calculatedChecksum.toBase64String()
 
-            if expectedChecksum != actualChecksum {
-                throw ChecksumMismatchException.message(
-                    "Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)"
-                )
+            guard expectedChecksum == actualChecksum else {
+                let message = "Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)"
+                throw ChecksumMismatchException.message(message)
             }
         }
 
@@ -100,7 +99,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
             )
 
             // Set the response to a validating stream
-            context.response = response.httpResponse
+            context.response = output.httpResponse
             context.response?.body = validatingStream
         }
 
@@ -114,7 +113,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
             throw ClientError.dataNotFound("Cannot calculate the checksum of an empty body!")
         }
 
-        return try await next.handle(context: context, input: input)
+        return output
     }
 
     public typealias MInput = SdkHttpRequest
