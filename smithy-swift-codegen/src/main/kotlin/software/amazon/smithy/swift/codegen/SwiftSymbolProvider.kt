@@ -21,6 +21,7 @@ import software.amazon.smithy.model.shapes.ByteShape
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.DocumentShape
 import software.amazon.smithy.model.shapes.DoubleShape
+import software.amazon.smithy.model.shapes.EnumShape
 import software.amazon.smithy.model.shapes.FloatShape
 import software.amazon.smithy.model.shapes.IntegerShape
 import software.amazon.smithy.model.shapes.ListShape
@@ -47,6 +48,7 @@ import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.lang.swiftReservedWords
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.boxed
+import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
@@ -60,7 +62,7 @@ private val Shape.isStreaming: Boolean
         return this.hasTrait<StreamingTrait>()
     }
 
-class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
+class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings) :
     SymbolProvider,
     ShapeVisitor<Symbol> {
 
@@ -131,6 +133,10 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
             return createEnumSymbol(shape)
         }
         return createSymbolBuilder(shape, "String", namespace = "Swift", boxed = true).build()
+    }
+
+    override fun enumShape(shape: EnumShape): Symbol {
+        return createEnumSymbol(shape)
     }
 
     private fun createEnumSymbol(shape: Shape): Symbol {
@@ -223,8 +229,8 @@ class SymbolVisitor(private val model: Model, swiftSettings: SwiftSettings) :
     }
 
     override fun operationShape(shape: OperationShape): Symbol {
-        // The Swift SDK does not produce code explicitly based on Operations
-        error { "Unexpected codegen code path" }
+        // The Swift SDK does not produce code explicitly based on Operations, returning an empty symbol
+        return buildSymbol { }
     }
 
     override fun blobShape(shape: BlobShape): Symbol {
