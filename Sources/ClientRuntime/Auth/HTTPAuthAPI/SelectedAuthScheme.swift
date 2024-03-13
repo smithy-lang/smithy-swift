@@ -18,3 +18,16 @@ public struct SelectedAuthScheme {
         self.signer = signer
     }
 }
+
+extension SelectedAuthScheme {
+    public func getCopyWithUpdatedSigningProperty<T>(key: AttributeKey<T>, value: T) -> SelectedAuthScheme {
+        var updatedSigningProperties = self.signingProperties
+        updatedSigningProperties?.set(key: key, value: value)
+        return SelectedAuthScheme(
+            schemeID: self.schemeID,
+            identity: self.identity,
+            signingProperties: updatedSigningProperties,
+            signer: self.signer
+        )
+    }
+}
