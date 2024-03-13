@@ -142,7 +142,7 @@ class OperationInputBodyMiddleware(
 
     private fun addEventStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String, requestWireProtocol: WireProtocol) {
         val marshalClosure = when (requestWireProtocol) {
-            WireProtocol.XML -> ", marshalClosure: ${payloadSymbol}.marshal"
+            WireProtocol.XML -> ", marshalClosure: $payloadSymbol.marshal"
             WireProtocol.JSON -> ", marshalClosure: jsonMarshalClosure(requestEncoder: encoder)"
             else -> ""
         }
