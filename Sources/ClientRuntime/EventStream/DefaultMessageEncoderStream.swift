@@ -82,7 +82,7 @@ extension EventStream {
 
             mutating func processEventToData(event: Event) async throws -> Data {
                 // marshall event to message
-                let  message = try event.marshall(encoder: requestEncoder)
+                let message = try event.marshall(encoder: requestEncoder)
                 // sign the message
                 let signedMessage = try await messageSigner.sign(message: message)
                 // encode again the signed message then return
