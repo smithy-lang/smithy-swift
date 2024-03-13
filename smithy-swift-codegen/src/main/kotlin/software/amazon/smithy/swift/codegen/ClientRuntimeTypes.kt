@@ -56,6 +56,7 @@ object ClientRuntimeTypes {
         val MessageEncoderStream = runtimeSymbol("EventStream.DefaultMessageEncoderStream")
         val MessageDecoderStream = runtimeSymbol("EventStream.DefaultMessageDecoderStream")
         val UnmarshalClosure = runtimeSymbol("UnmarshalClosure")
+        val MarshalClosure = runtimeSymbol("MarshalClosure")
     }
 
     object Middleware {
