@@ -5,62 +5,159 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@testable import ClientRuntime
 import XCTest
+@testable import ClientRuntime
+import AwsCommonRuntimeKit
 
 class ChecksumAlgorithmTests: XCTestCase {
-    let chunk1 = Data("Hello, world!".utf8)
-    let chunk2 = Data("Hello again, world!".utf8)
-    
-    func test_crc32_computeHash() throws {
-        let hashResult = try ChecksumAlgorithm.crc32.computeHash(of: chunk1)
-        XCTAssertEqual(hashResult.toHexString(), "ebe6c6e6")
-        XCTAssertEqual(hashResult.toBase64String(), "6+bG5g==")
+
+    override func setUp() {
+        // Initialize function needs to be called before interacting with CRT
+        CommonRuntimeKit.initialize()
     }
-    
-    func test_crc32c_computeHash() throws {
-        let hashResult = try ChecksumAlgorithm.crc32c.computeHash(of: chunk1)
-        XCTAssertEqual(hashResult.toHexString(), "c8a106e5")
-        XCTAssertEqual(hashResult.toBase64String(), "yKEG5Q==")
-    }
-    
-    func test_sha1_computeHash() throws {
-        let hashResult = try ChecksumAlgorithm.sha1.computeHash(of: chunk1)
-        XCTAssertEqual(hashResult.toHexString(), "943a702d06f34599aee1f8da8ef9f7296031d699")
-        XCTAssertEqual(hashResult.toBase64String(), "lDpwLQbzRZmu4fjajvn3KWAx1pk=")
-    }
-    
-    func test_sha256_computeHash() throws {
-        let hashResult = try ChecksumAlgorithm.sha256.computeHash(of: chunk1)
-        XCTAssertEqual(hashResult.toHexString(), "315f5bdb76d078c43b8ac0064e4a0164612b1fce77c869345bfc94c75894edd3")
-        XCTAssertEqual(hashResult.toBase64String(), "MV9b23bQeMQ7isAGTkoBZGErH853yGk0W/yUx1iU7dM=")
-    }
-    
-    func test_md5_computeHash() throws {
-        let hashResult = try ChecksumAlgorithm.md5.computeHash(of: chunk1)
-        XCTAssertEqual(hashResult.toHexString(), "6cd3556deb0da54bca060b4c39479839")
-        XCTAssertEqual(hashResult.toBase64String(), "bNNVbesNpUvKBgtMOUeYOQ==")
-    }
-    
-    func test_crc32_chunkedComputeHash() throws {
-        let hashResult1 = try ChecksumAlgorithm.crc32.computeHash(of: chunk1)
-        guard case .integer(let uintHash) = hashResult1 else {
-            XCTFail("Hash result was not integer")
+
+    func testCRC32NonUTF8Bytes() {
+        guard let hashFunction = ChecksumAlgorithm.from(string: "crc32") else {
+            XCTFail("CRC32 not found")
             return
         }
-        let hashResult2 = try ChecksumAlgorithm.crc32.computeHash(of: chunk2, previousHash: uintHash)
-        XCTAssertEqual(hashResult2.toHexString(), "1fb9c01e")
-        XCTAssertEqual(hashResult2.toBase64String(), "H7nAHg==")
-    }
-    
-    func test_crc32c_chunkedComputeHash() throws {
-        let hashResult1 = try ChecksumAlgorithm.crc32c.computeHash(of: chunk1)
-        guard case .integer(let uintHash) = hashResult1 else {
-            XCTFail("Hash result was not integer")
+
+        // Create test data
+        let testBytes: [UInt8] = [0xFF, 0xFE, 0xFD, 0xFC] // Bytes not valid in UTF-8
+        let testData = Data(testBytes)
+
+        let computedHash = try? hashFunction.computeHash(of: testData)
+        guard case let .integer(result)? = computedHash else {
+            XCTFail("CRC32 computed hash is not an integer or is nil")
             return
         }
-        let hashResult2 = try ChecksumAlgorithm.crc32c.computeHash(of: chunk2, previousHash: uintHash)
-        XCTAssertEqual(hashResult2.toHexString(), "947eaa39")
-        XCTAssertEqual(hashResult2.toBase64String(), "lH6qOQ==")
+        let expected = UInt32(1426237168)
+        XCTAssertEqual(result, expected, "CRC32 hash does not match expected value")
     }
+
+    func testCRC32CNonUTF8Bytes() {
+        guard let hashFunction = ChecksumAlgorithm.from(string: "crc32c") else {
+            XCTFail("CRC32C not found")
+            return
+        }
+
+        // Create test data
+        let testBytes: [UInt8] = [0xFF, 0xFE, 0xFD, 0xFC] // Bytes not valid in UTF-8
+        let testData = Data(testBytes)
+
+        let computedHash = try? hashFunction.computeHash(of: testData)
+        guard case let .integer(result)? = computedHash else {
+            XCTFail("CRC32C computed hash is not an integer or is nil")
+            return
+        }
+        let expected = UInt32(1856745115)
+        XCTAssertEqual(result, expected, "CRC32C hash does not match expected value")
+    }
+
+    func testSHA1NonUTF8Bytes() {
+        guard let hashFunction = ChecksumAlgorithm.from(string: "sha1") else {
+            XCTFail("SHA1 not found")
+            return
+        }
+
+        // Create test data
+        let testBytes: [UInt8] = [0xFF, 0xFE, 0xFD, 0xFC] // Bytes not valid in UTF-8
+        let testData = Data(testBytes)
+
+        let computedHash = try? hashFunction.computeHash(of: testData)
+        guard case let .data(result)? = computedHash else {
+            XCTFail("SHA1 computed hash is not a data type or is nil")
+            return
+        }
+        let expected = "ADfJtWg8Do2MpnFNsvFRmyMuEOI="
+        XCTAssertEqual(result.base64EncodedString(), expected, "SHA1 hash does not match expected value")
+    }
+
+    func testSHA256NonUTF8Bytes() {
+        guard let hashFunction = ChecksumAlgorithm.from(string: "sha256") else {
+            XCTFail("SHA256 not found")
+            return
+        }
+
+        // Create test data
+        let testBytes: [UInt8] = [0xFF, 0xFE, 0xFD, 0xFC] // Bytes not valid in UTF-8
+        let testData = Data(testBytes)
+
+        let computedHash = try? hashFunction.computeHash(of: testData)
+        guard case let .data(result)? = computedHash else {
+            XCTFail("SHA256 computed hash is not a data type or is nil")
+            return
+        }
+        let expected = "jCosV0rEcc6HWQwT8O/bQr0ssZuxhJM3nUW/zJBgtlc="
+        XCTAssertEqual(result.base64EncodedString(), expected, "SHA256 hash does not match expected value")
+    }
+
+    func testMD5NonUTF8Bytes() {
+        guard let hashFunction = ChecksumAlgorithm.from(string: "md5") else {
+            XCTFail("MD5 not found")
+            return
+        }
+
+        // Create test data
+        let testBytes: [UInt8] = [0xFF, 0xFE, 0xFD, 0xFC] // Bytes not valid in UTF-8
+        let testData = Data(testBytes)
+
+        let computedHash = try? hashFunction.computeHash(of: testData)
+        guard case let .data(result)? = computedHash else {
+            XCTFail("MD5 computed hash is not a data type or is nil")
+            return
+        }
+        let expected = "ilWq/WLcPzYHQ8fAzwCCLg=="
+        XCTAssertEqual(result.base64EncodedString(), expected, "MD5 hash does not match expected value")
+    }
+
+    func testInvalidChecksumAlgorithm() {
+        let invalidHashFunction = ChecksumAlgorithm.from(string: "invalid")
+        XCTAssertNil(invalidHashFunction, "Invalid hash function should return nil")
+    }
+
+    func testHashFunctionToHexString() {
+        let testData = Data("Hello, world!".utf8)
+
+        // CRC32
+        if let crc32Function = ChecksumAlgorithm.from(string: "crc32"),
+           let crc32Result = try? crc32Function.computeHash(of: testData).toHexString() {
+            XCTAssertEqual(crc32Result, "ebe6c6e6", "CRC32 hexadecimal representation does not match expected value")
+        } else {
+            XCTFail("CRC32 hash function not found or computation failed")
+        }
+
+        // CRC32C
+        if let crc32cFunction = ChecksumAlgorithm.from(string: "crc32c"),
+           let crc32cResult = try? crc32cFunction.computeHash(of: testData).toHexString() {
+            XCTAssertEqual(crc32cResult, "c8a106e5", "CRC32C hexadecimal representation does not match expected value")
+        } else {
+            XCTFail("CRC32C hash function not found or computation failed")
+        }
+
+        // SHA1
+        if let sha1Function = ChecksumAlgorithm.from(string: "sha1"),
+           let sha1Result = try? sha1Function.computeHash(of: testData).toHexString() {
+            XCTAssertEqual(sha1Result, "943a702d06f34599aee1f8da8ef9f7296031d699", "SHA1 hexadecimal representation does not match expected value")
+        } else {
+            XCTFail("SHA1 hash function not found or computation failed")
+        }
+
+        // SHA256
+        if let sha256Function = ChecksumAlgorithm.from(string: "sha256"),
+           let sha256Result = try? sha256Function.computeHash(of: testData).toHexString() {
+            XCTAssertEqual(sha256Result, "315f5bdb76d078c43b8ac0064e4a0164612b1fce77c869345bfc94c75894edd3", "SHA256 hexadecimal representation does not match expected value")
+        } else {
+            XCTFail("SHA256 hash function not found or computation failed")
+        }
+
+        // MD5
+        if let md5Function = ChecksumAlgorithm.from(string: "md5"),
+           let md5Result = try? md5Function.computeHash(of: testData).toHexString() {
+            XCTAssertEqual(md5Result, "6cd3556deb0da54bca060b4c39479839", "MD5 hexadecimal representation does not match expected value")
+        } else {
+            XCTFail("MD5 hash function not found or computation failed")
+        }
+    }
+
 }
