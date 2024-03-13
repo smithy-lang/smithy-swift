@@ -38,7 +38,13 @@ open class StructDecodeXMLGenerator(
             SmithyXMLTypes.Reader
         ) {
             writer.openBlock("return { reader in", "}") {
-                writer.write("guard reader.content != nil || Mirror(reflecting: self).children.isEmpty else { return nil }")
+                // S3:SelectObjectContent's event stream output contains EndEvent, which has empty payload.
+                // The additional condition here allows returning new instance of a struct even if value isn't found in reader
+                //   as long as the struct has no properties.
+                val additionalCondition = "|| Mirror(reflecting: self).children.isEmpty ".takeIf {
+                    ctx.settings.sdkId == "S3" && members.isEmpty()
+                } ?: ""
+                writer.write("guard reader.content != nil \$Lelse { return nil }", additionalCondition)
                 if (members.isEmpty()) {
                     writer.write("return \$N()", symbol)
                 } else {
