@@ -92,6 +92,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// All stream operations should be performed on the same thread as the delegate callbacks.
     /// A single shared `Thread` is started and is used to host the RunLoop for all Foundation Stream callbacks.
     private static let thread: Thread = {
+        print("Starting thread configuration")
         let thread = Thread {
             autoreleasepool {
                 let timer = Timer(timeInterval: TimeInterval.greatestFiniteMagnitude, repeats: true, block: { _ in })
@@ -101,6 +102,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
         thread.name = "AWSFoundationStreamBridge"
         thread.start()
+        print("Thread start() called")
         return thread
     }()
 
@@ -152,9 +154,11 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Configure the output stream to make StreamDelegate callback to this bridge using the special thread / run loop, and open the output stream.
     /// The input stream is not included here.  It will be configured by `URLSession` when the HTTP request is initiated.
     @objc private func openOnThread() {
+        print("openOnThread() started")
         outputStream.delegate = self
         outputStream.schedule(in: RunLoop.current, forMode: .default)
         outputStream.open()
+        print("openOnThread() complete")
     }
 
     /// Unschedule the output stream on the special stream callback thread.
@@ -215,7 +219,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// Append the new data to the buffer, then write to the output stream.  Return any error to the caller using the param object.
     @objc private func writeToOutputStreamOnThread(_ result: WriteToOutputStreamResult) {
-
+        print("writeToOutputStreamOnThread() started")
         guard !buffer.isEmpty || !result.data.isEmpty else {
             return
         }
@@ -229,6 +233,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             buffer.removeFirst(writeCount)
         }
         result.error = outputStream.streamError
+        print("writeToOutputStreamOnThread() complete")
     }
 
     func writeChunk(chunk: Data, endOfStream: Bool = false) async throws {
@@ -241,7 +246,6 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             await self.readableStreamStatus.setIsEmpty()
             await self.close()
         }
-
     }
 
     func handleChunk(_ chunk: Data, isEndOfStream: Bool) async throws {
