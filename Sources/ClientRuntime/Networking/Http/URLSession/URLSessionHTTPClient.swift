@@ -283,8 +283,8 @@ public final class URLSessionHTTPClient: HTTPClient {
                 await streamBridge?.open()
                 if request.isChunked {
                     do {
-                        try await sendAwsChunkedBody(request: request) { chunk, isFinalChunk in
-                            try await streamBridge?.handleChunk(chunk, isEndOfStream: isFinalChunk)
+                        try await sendAwsChunkedBody(request: request) { chunk, isFinalChunk, chunkNo in
+                            try await streamBridge?.handleChunk(chunk, isEndOfStream: isFinalChunk, chunkNo: chunkNo)
                         }
                     } catch {
                         continuation.resume(throwing: error)
