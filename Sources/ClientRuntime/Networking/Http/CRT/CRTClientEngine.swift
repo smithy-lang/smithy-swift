@@ -39,12 +39,14 @@ public class CRTClientEngine: HTTPClient {
         private var http2ConnectionPools: [ConnectionPoolID: HTTP2StreamManager] = [:]
         private let sharedDefaultIO = SDKDefaultIO.shared
         private let connectTimeoutMs: UInt32?
+        private let socketTimeout: UInt32?
 
         init(config: CRTClientEngineConfig) {
             self.windowSize = config.windowSize
             self.maxConnectionsPerEndpoint = config.maxConnectionsPerEndpoint
             self.logger = SwiftLogger(label: "SerialExecutor")
             self.connectTimeoutMs = config.connectTimeoutMs
+            self.socketTimeout = config.socketTimeout
         }
 
         func getOrCreateConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
@@ -81,6 +83,11 @@ public class CRTClientEngine: HTTPClient {
                 socketOptions.connectTimeoutMs = timeout
             }
 #endif
+            let httpMonitoringOptions = HTTPMonitoringOptions(
+                minThroughputBytesPerSecond: 1,
+                allowableThroughputFailureInterval: socketTimeout ?? 2
+            )
+
             let options = HTTPClientConnectionOptions(
                 clientBootstrap: sharedDefaultIO.clientBootstrap,
                 hostName: endpoint.host,
@@ -89,7 +96,7 @@ public class CRTClientEngine: HTTPClient {
                 proxyOptions: nil,
                 socketOptions: socketOptions,
                 tlsOptions: tlsConnectionOptions,
-                monitoringOptions: nil,
+                monitoringOptions: httpMonitoringOptions,
                 maxConnections: maxConnectionsPerEndpoint,
                 enableManualWindowManagement: false
             ) // not using backpressure yet
@@ -292,6 +299,7 @@ public class CRTClientEngine: HTTPClient {
                 response.statusCode = makeStatusCode(statusCode)
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
+                continuation.resume(throwing: error)
             }
 
             // closing the stream is required to signal to the caller that the response is complete
