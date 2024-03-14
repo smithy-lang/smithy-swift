@@ -270,7 +270,6 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// The stream places this callback when appropriate.  Call will be delivered on the special thread / run loop for stream callbacks.
     /// `.hasSpaceAvailable` prompts this type to query the readable stream for more data.
     @objc func stream(_ aStream: Foundation.Stream, handle eventCode: Foundation.Stream.Event) {
-        print("stream event received")
         switch eventCode {
         case .hasSpaceAvailable:
             // Since space is available, try and read from the ReadableStream and
@@ -289,11 +288,12 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                 }
             }
         case .errorOccurred:
+            print(".errorOccurred event")
             print("Stream error occurred: \(String(describing: aStream.streamError))")
         default:
+            print("Other stream event occurred: \(eventCode) (\(eventCode.rawValue)")
             break
         }
-        print("stream event handling complete")
     }
 }
 
