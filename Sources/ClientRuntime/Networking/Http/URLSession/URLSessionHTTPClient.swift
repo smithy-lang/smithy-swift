@@ -278,22 +278,15 @@ public final class URLSessionHTTPClient: HTTPClient {
 
             // Start the HTTP connection and start streaming the request body data
             dataTask.resume()
-            Task { await streamBridge?.open() }
-
-            if request.isChunked {
-                Task {
+            Task {
+                await streamBridge?.open()
+                if request.isChunked {
                     do {
                         guard let streamBridge else {
-                            throw ClientError.dataNotFound(
-                                "Could not create Foundation Steam Bridge!"
-                            )
+                            throw ClientError.dataNotFound("Could not create Foundation Stream Bridge!")
                         }
                         try await sendAwsChunkedBody(request: request) { chunk, isFinalChunk in
                             try await streamBridge.handleChunk(chunk, isEndOfStream: isFinalChunk)
-                        }
-                        // Wait for chunkStorage to be empty
-                        while await streamBridge.chunksStorage.chunksAvailable() > 0 {
-                            try await Task.sleep(nanoseconds: 100_000_000) // Sleep for 0.1 second to reduce CPU usage
                         }
                     } catch {
                         continuation.resume(throwing: error)
@@ -354,10 +347,6 @@ public enum URLSessionHTTPClientError: Error {
     /// A connection was not ended
     /// Please file a bug with aws-sdk-swift if you experience this error.
     case unresumedConnection
-}
-
-extension URLSessionHTTPClient {
-
 }
 
 #endif
