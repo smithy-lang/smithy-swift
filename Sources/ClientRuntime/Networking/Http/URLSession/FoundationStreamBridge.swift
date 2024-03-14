@@ -253,10 +253,12 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         print("handleChunk() started")
         if isFirstChunk {
             // If it's the first chunk, write it immediately
+            print("Writing first chunk")
             try await writeChunk(chunk: chunk, endOfStream: isEndOfStream)
             isFirstChunk = false // Update flag to indicate the first chunk has been handled
         } else {
             // For subsequent chunks, add them to the storage for later writing
+            print("Writing subsequent chunk")
             await self.chunksStorage.addChunk(chunk: chunk, isEndOfStream: isEndOfStream)
         }
         print("handleChunk() complete")
@@ -272,9 +274,11 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             // Since space is available, try and read from the ReadableStream and
             // transfer the data to the Foundation stream pair.
             // Use a `Task` to perform the operation within Swift concurrency.
+            print(".hasSpaceAvailable event")
             Task {
                 if self.isChunkedTransfer {
                     guard let (nextChunk, isEndOfStream) = await self.chunksStorage.popChunk() else {
+                        print("No more chunks to send!")
                         throw ClientError.dataNotFound("No more chunks to send!")
                     }
                     try await self.writeChunk(chunk: nextChunk, endOfStream: isEndOfStream)
