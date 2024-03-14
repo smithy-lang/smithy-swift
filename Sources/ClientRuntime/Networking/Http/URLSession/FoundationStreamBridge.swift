@@ -237,7 +237,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     }
 
     func writeChunk(chunk: Data, endOfStream: Bool = false) async throws {
-
+        print("writeChunk() started")
         if !chunk.isEmpty {
             try await writeToOutputStream(data: chunk)
         }
@@ -246,9 +246,11 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             await self.readableStreamStatus.setIsEmpty()
             await self.close()
         }
+        print("writeChunk() complete")
     }
 
     func handleChunk(_ chunk: Data, isEndOfStream: Bool) async throws {
+        print("handleChunk() started")
         if isFirstChunk {
             // If it's the first chunk, write it immediately
             try await writeChunk(chunk: chunk, endOfStream: isEndOfStream)
@@ -257,6 +259,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             // For subsequent chunks, add them to the storage for later writing
             await self.chunksStorage.addChunk(chunk: chunk, isEndOfStream: isEndOfStream)
         }
+        print("handleChunk() complete")
     }
 
     // MARK: - StreamDelegate protocol
