@@ -43,7 +43,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     private let outputStream: OutputStream
 
     /// A variable indicating that the streaming payload is chunked
-    private var isChunkedTransfer: Bool
+    private let isChunkedTransfer: Bool
 
     public actor ChunkStorage {
         private var chunks: [(data: Data, isEndOfStream: Bool)] = []
@@ -174,9 +174,11 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// Close the output stream and remove it from the thread / run loop.
     @objc private func closeOnThread() {
+        print("closeOnThread() started")
         outputStream.close()
         outputStream.remove(from: RunLoop.current, forMode: .default)
         outputStream.delegate = nil
+        print("closeOnThread() complete")
     }
 
     // MARK: - Writing to bridge
@@ -220,9 +222,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Append the new data to the buffer, then write to the output stream.  Return any error to the caller using the param object.
     @objc private func writeToOutputStreamOnThread(_ result: WriteToOutputStreamResult) {
         print("writeToOutputStreamOnThread() started")
-        guard !buffer.isEmpty || !result.data.isEmpty else {
-            return
-        }
+        guard !buffer.isEmpty || !result.data.isEmpty else { return }
         buffer.append(result.data)
         var writeCount = 0
         buffer.withUnsafeBytes { bufferPtr in
@@ -230,6 +230,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             writeCount = outputStream.write(bytePtr, maxLength: buffer.count)
         }
         if writeCount > 0 {
+            print("Wrote \(writeCount) bytes to Foundation stream")
             buffer.removeFirst(writeCount)
         }
         result.error = outputStream.streamError
@@ -269,6 +270,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// The stream places this callback when appropriate.  Call will be delivered on the special thread / run loop for stream callbacks.
     /// `.hasSpaceAvailable` prompts this type to query the readable stream for more data.
     @objc func stream(_ aStream: Foundation.Stream, handle eventCode: Foundation.Stream.Event) {
+        print("stream event received")
         switch eventCode {
         case .hasSpaceAvailable:
             // Since space is available, try and read from the ReadableStream and
@@ -291,6 +293,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         default:
             break
         }
+        print("stream event handling complete")
     }
 }
 
