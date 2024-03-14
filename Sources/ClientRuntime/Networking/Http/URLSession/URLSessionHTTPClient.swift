@@ -282,11 +282,8 @@ public final class URLSessionHTTPClient: HTTPClient {
                 await streamBridge?.open()
                 if request.isChunked {
                     do {
-                        guard let streamBridge else {
-                            throw ClientError.dataNotFound("Could not create Foundation Stream Bridge!")
-                        }
                         try await sendAwsChunkedBody(request: request) { chunk, isFinalChunk in
-                            try await streamBridge.handleChunk(chunk, isEndOfStream: isFinalChunk)
+                            try await streamBridge?.handleChunk(chunk, isEndOfStream: isFinalChunk)
                         }
                     } catch {
                         continuation.resume(throwing: error)

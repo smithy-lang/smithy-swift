@@ -269,18 +269,18 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             // Since space is available, try and read from the ReadableStream and
             // transfer the data to the Foundation stream pair.
             // Use a `Task` to perform the operation within Swift concurrency.
-            if self.isChunkedTransfer {
-                Task {
+            Task {
+                if self.isChunkedTransfer {
                     guard let (nextChunk, isEndOfStream) = await self.chunksStorage.popChunk() else {
                         throw ClientError.dataNotFound("No more chunks to send!")
                     }
                     try await self.writeChunk(chunk: nextChunk, endOfStream: isEndOfStream)
+                } else {
+                    try await writeToOutput()
                 }
-            } else {
-                Task { try await writeToOutput() }
             }
         case .errorOccurred:
-                print("Stream error occurred: \(String(describing: aStream.streamError))")
+            print("Stream error occurred: \(String(describing: aStream.streamError))")
         default:
             break
         }
