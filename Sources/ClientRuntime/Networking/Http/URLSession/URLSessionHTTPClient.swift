@@ -264,7 +264,8 @@ public final class URLSessionHTTPClient: HTTPClient {
                 FoundationStreamBridge(
                     readableStream: $0,
                     bufferSize: bufferSize,
-                    isChunkedTransfer: isChunkedTransfer
+                    isChunkedTransfer: isChunkedTransfer,
+                    logger: logger
                 )
             }
 

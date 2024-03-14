@@ -45,6 +45,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// A variable indicating that the streaming payload is chunked
     private let isChunkedTransfer: Bool
 
+    private let logger: LogAgent
+
     public actor ChunkStorage {
         private var chunks: [(data: Data, isEndOfStream: Bool)] = []
 
@@ -92,7 +94,6 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// All stream operations should be performed on the same thread as the delegate callbacks.
     /// A single shared `Thread` is started and is used to host the RunLoop for all Foundation Stream callbacks.
     private static let thread: Thread = {
-        print("Starting thread configuration")
         let thread = Thread {
             autoreleasepool {
                 let timer = Timer(timeInterval: TimeInterval.greatestFiniteMagnitude, repeats: true, block: { _ in })
@@ -102,7 +103,6 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
         thread.name = "AWSFoundationStreamBridge"
         thread.start()
-        print("Thread start() called")
         return thread
     }()
 
@@ -116,7 +116,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     ///   - readableStream: The `ReadableStream` that serves as the input to the bridge.
     ///   - bufferSize: The number of bytes in the in-memory buffer.  The buffer is allocated for this size no matter if in use or not.
     ///   Defaults to 4096 bytes.
-    init(readableStream: ReadableStream, bufferSize: Int = 4096, isChunkedTransfer: Bool = false) {
+    init(readableStream: ReadableStream, bufferSize: Int = 4096, isChunkedTransfer: Bool, logger: LogAgent) {
         var inputStream: InputStream?
         var outputStream: OutputStream?
 
@@ -136,6 +136,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         self.inputStream = inputStream
         self.outputStream = outputStream
         self.isChunkedTransfer = isChunkedTransfer
+        self.logger = logger
     }
 
     // MARK: - Opening & closing
@@ -154,11 +155,11 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Configure the output stream to make StreamDelegate callback to this bridge using the special thread / run loop, and open the output stream.
     /// The input stream is not included here.  It will be configured by `URLSession` when the HTTP request is initiated.
     @objc private func openOnThread() {
-        print("openOnThread() started")
+        logger.info("openOnThread() started")
         outputStream.delegate = self
         outputStream.schedule(in: RunLoop.current, forMode: .default)
         outputStream.open()
-        print("openOnThread() complete")
+        logger.info("openOnThread() complete")
     }
 
     /// Unschedule the output stream on the special stream callback thread.
@@ -174,11 +175,11 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// Close the output stream and remove it from the thread / run loop.
     @objc private func closeOnThread() {
-        print("closeOnThread() started")
+        logger.info("closeOnThread() started")
         outputStream.close()
         outputStream.remove(from: RunLoop.current, forMode: .default)
         outputStream.delegate = nil
-        print("closeOnThread() complete")
+        logger.info("closeOnThread() complete")
     }
 
     // MARK: - Writing to bridge
@@ -221,7 +222,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// Append the new data to the buffer, then write to the output stream.  Return any error to the caller using the param object.
     @objc private func writeToOutputStreamOnThread(_ result: WriteToOutputStreamResult) {
-        print("writeToOutputStreamOnThread() started")
+        logger.info("writeToOutputStreamOnThread() started")
         guard !buffer.isEmpty || !result.data.isEmpty else { return }
         buffer.append(result.data)
         var writeCount = 0
@@ -230,15 +231,15 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             writeCount = outputStream.write(bytePtr, maxLength: buffer.count)
         }
         if writeCount > 0 {
-            print("Wrote \(writeCount) bytes to Foundation stream")
+            logger.info("Wrote \(writeCount) bytes to Foundation stream")
             buffer.removeFirst(writeCount)
         }
         result.error = outputStream.streamError
-        print("writeToOutputStreamOnThread() complete")
+        logger.info("writeToOutputStreamOnThread() complete")
     }
 
     func writeChunk(chunk: Data, endOfStream: Bool = false) async throws {
-        print("writeChunk() started")
+        logger.info("writeChunk() started")
         if !chunk.isEmpty {
             try await writeToOutputStream(data: chunk)
         }
@@ -247,22 +248,22 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             await self.readableStreamStatus.setIsEmpty()
             await self.close()
         }
-        print("writeChunk() complete")
+        logger.info("writeChunk() complete")
     }
 
     func handleChunk(_ chunk: Data, isEndOfStream: Bool) async throws {
-        print("handleChunk() started")
+        logger.info("handleChunk() started")
         if isFirstChunk {
             // If it's the first chunk, write it immediately
-            print("Writing first chunk")
+            logger.info("Writing first chunk")
             try await writeChunk(chunk: chunk, endOfStream: isEndOfStream)
             isFirstChunk = false // Update flag to indicate the first chunk has been handled
         } else {
             // For subsequent chunks, add them to the storage for later writing
-            print("Writing subsequent chunk")
+            logger.info("Writing subsequent chunk")
             await self.chunksStorage.addChunk(chunk: chunk, isEndOfStream: isEndOfStream)
         }
-        print("handleChunk() complete")
+        logger.info("handleChunk() complete")
     }
 
     // MARK: - StreamDelegate protocol
@@ -271,15 +272,19 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// `.hasSpaceAvailable` prompts this type to query the readable stream for more data.
     @objc func stream(_ aStream: Foundation.Stream, handle eventCode: Foundation.Stream.Event) {
         switch eventCode {
+        case .openCompleted:
+            logger.info(".openCompleted event")
+        case .hasBytesAvailable:
+            logger.info(".hasBytesAvailable event")
         case .hasSpaceAvailable:
             // Since space is available, try and read from the ReadableStream and
             // transfer the data to the Foundation stream pair.
             // Use a `Task` to perform the operation within Swift concurrency.
-            print(".hasSpaceAvailable event")
+            logger.info(".hasSpaceAvailable event")
             Task {
                 if self.isChunkedTransfer {
                     guard let (nextChunk, isEndOfStream) = await self.chunksStorage.popChunk() else {
-                        print("No more chunks to send!")
+                        logger.info("No more chunks to send!")
                         throw ClientError.dataNotFound("No more chunks to send!")
                     }
                     try await self.writeChunk(chunk: nextChunk, endOfStream: isEndOfStream)
@@ -288,10 +293,12 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                 }
             }
         case .errorOccurred:
-            print(".errorOccurred event")
-            print("Stream error occurred: \(String(describing: aStream.streamError))")
+            logger.info(".errorOccurred event")
+            logger.info("Stream error: \(String(describing: aStream.streamError))")
+        case .endEncountered:
+            logger.info(".endEncountered event")
         default:
-            print("Other stream event occurred: \(eventCode) (\(eventCode.rawValue)")
+            logger.info("Other stream event occurred: \(eventCode)")
             break
         }
     }
