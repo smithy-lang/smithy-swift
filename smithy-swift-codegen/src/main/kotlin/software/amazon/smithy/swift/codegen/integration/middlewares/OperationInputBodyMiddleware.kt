@@ -21,11 +21,15 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.DocumentWritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.targetOrSelf
+import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 
 class OperationInputBodyMiddleware(
     val model: Model,
@@ -58,7 +62,16 @@ class OperationInputBodyMiddleware(
         var documentWritingClosure = documentWritingClosureUtils.closure(payloadShape)
         var isPayloadMember = false
         val defaultBody = "\"{}\"".takeIf { ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>() || ctx.service.hasTrait<RestJson1Trait>() } ?: "nil"
-        val payloadMember = inputShape.members().find { it.hasTrait<HttpPayloadTrait>() }
+        var payloadMember = inputShape.members().find { it.hasTrait<HttpPayloadTrait>() }
+        var sendInitialRequest = false
+        // RPC-based protocols do not support HTTP traits.
+        // AWSQuery & EC2Query are ignored because they don't support streaming at all.
+        if (supportsStreamingAndIsRPC(ctx.protocol)) {
+            sendInitialRequest = true
+            // Get "implicit payload" for input shape in RPC based protocols
+            // ...given only one member can have @streaming trait.
+            payloadMember = inputShape.members().find { it.targetOrSelf(ctx.model).hasTrait<StreamingTrait>() }
+        }
         payloadMember?.let {
             payloadShape = ctx.model.expectShape(it.target)
             val memberName = ctx.symbolProvider.toMemberName(it)
@@ -69,11 +82,12 @@ class OperationInputBodyMiddleware(
         }
         val isStreaming = payloadShape.hasTrait<StreamingTrait>()
         val payloadSymbol = ctx.symbolProvider.toSymbol(payloadShape)
+        val requestWireProtocol = ctx.service.requestWireProtocol
 
         when (payloadShape) {
             is UnionShape -> {
                 if (isStreaming) {
-                    addEventStreamMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, keyPath, defaultBody)
+                    addEventStreamMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, keyPath, defaultBody, requestWireProtocol, sendInitialRequest)
                 } else {
                     addAggregateMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
                 }
@@ -137,9 +151,17 @@ class OperationInputBodyMiddleware(
         )
     }
 
-    private fun addEventStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String) {
+    private fun addEventStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String, requestWireProtocol: WireProtocol, sendInitialRequest: Boolean) {
+        if (sendInitialRequest) {
+            writer.write("let initialRequestMessage = try input.makeInitialRequestMessage(encoder: encoder)")
+        }
+        val marshalClosure = when (requestWireProtocol) {
+            WireProtocol.XML -> ", marshalClosure: $payloadSymbol.marshal"
+            WireProtocol.JSON -> ", marshalClosure: jsonMarshalClosure(requestEncoder: encoder)"
+            else -> ""
+        }
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L))",
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L\$L\$L))",
             operationStackName,
             middlewareStep.stringValue(),
             position.stringValue(),
@@ -148,7 +170,9 @@ class OperationInputBodyMiddleware(
             outputSymbol,
             payloadSymbol,
             keyPath,
-            defaultBody
+            defaultBody,
+            marshalClosure,
+            if (sendInitialRequest) ", initialRequestMessage: initialRequestMessage" else ""
         )
     }
 
