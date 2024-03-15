@@ -65,6 +65,8 @@ import software.amazon.smithy.swift.codegen.model.bodySymbol
 import software.amazon.smithy.swift.codegen.model.findStreamingMember
 import software.amazon.smithy.swift.codegen.model.hasEventStreamMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.targetOrSelf
+import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
@@ -148,8 +150,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
         }
 
-        val inputShapesWithMetadata = resolveInputShapes(ctx)
-            .filter { !it.key.hasEventStreamMember(ctx.model) }
+        var inputShapesWithMetadata = resolveInputShapes(ctx)
+        if (!supportsStreamingAndIsRPC(ctx.protocol)) {
+            inputShapesWithMetadata = inputShapesWithMetadata.filter { !it.key.hasEventStreamMember(ctx.model) }
+        }
         for ((shape, shapeMetadata) in inputShapesWithMetadata) {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
@@ -158,9 +162,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .definitionFile("./$rootNamespace/models/$symbolName+Encodable.swift")
                 .name(symbolName)
                 .build()
-            val httpBodyMembers = shape.members()
+            var httpBodyMembers = shape.members()
                 .filter { it.isInHttpBody() }
                 .toList()
+            if (supportsStreamingAndIsRPC(ctx.protocol)) {
+                // For RPC protocols that support event streaming, we need to send initial request
+                // with streaming member excluded during encoding the input struct.
+                httpBodyMembers = httpBodyMembers.filter {
+                    !it.targetOrSelf(ctx.model).isStreaming
+                }
+            }
             if (httpBodyMembers.isNotEmpty() || shouldRenderEncodableConformance) {
                 ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                     val encodableOrNot = encodableProtocol?.let { writer.format(": \$N", it) } ?: ""
