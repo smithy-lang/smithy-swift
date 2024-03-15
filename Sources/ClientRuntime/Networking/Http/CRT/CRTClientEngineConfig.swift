@@ -28,7 +28,7 @@ struct CRTClientEngineConfig {
         windowSize: Int = 16 * 1024 * 1024,
         verifyPeer: Bool = true,
         connectTimeoutMs: UInt32? = nil,
-        socketTimeout: UInt32? = 2
+        socketTimeout: UInt32? = nil
     ) {
         self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
         self.windowSize = windowSize
