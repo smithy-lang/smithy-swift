@@ -200,7 +200,6 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             writeCount = outputStream.write(bytePtr, maxLength: buffer.count)
         }
         if writeCount > 0 {
-            logger.info("Wrote \(writeCount) bytes to Foundation stream")
             buffer.removeFirst(writeCount)
         }
         result.error = outputStream.streamError
@@ -213,22 +212,21 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     @objc func stream(_ aStream: Foundation.Stream, handle eventCode: Foundation.Stream.Event) {
         switch eventCode {
         case .openCompleted:
-            logger.info(".openCompleted event")
+            break
         case .hasBytesAvailable:
-            logger.info(".hasBytesAvailable event")
+            break
         case .hasSpaceAvailable:
-            logger.info(".hasSpaceAvailable event")
             // Since space is available, try and read from the ReadableStream and
             // transfer the data to the Foundation stream pair.
             // Use a `Task` to perform the operation within Swift concurrency.
             Task { try await writeToOutput() }
         case .errorOccurred:
-            logger.info(".errorOccurred event")
-            logger.info("Stream error: \(String(describing: aStream.streamError))")
+            logger.info("FoundationStreamBridge: .errorOccurred event")
+            logger.info("FoundationStreamBridge: Stream error: \(String(describing: aStream.streamError))")
         case .endEncountered:
-            logger.info(".endEncountered event")
+            break
         default:
-            logger.info("Other stream event occurred: \(eventCode)")
+            logger.info("FoundationStreamBridge: Other stream event occurred: \(eventCode)")
         }
     }
 }
