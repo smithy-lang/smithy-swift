@@ -15,17 +15,20 @@ extension EventStream {
         let messageSigner: MessageSigner
         let marshalClosure: MarshalClosure<Event>
         var readAsyncIterator: AsyncIterator?
+        let initialRequestMessage: EventStream.Message?
 
         public init(
             stream: AsyncThrowingStream<Event, Error>,
             messageEncoder: MessageEncoder,
             marshalClosure: @escaping MarshalClosure<Event>,
-            messageSigner: MessageSigner
+            messageSigner: MessageSigner,
+            initialRequestMessage: EventStream.Message? = nil
         ) {
             self.stream = stream
             self.messageEncoder = messageEncoder
             self.messageSigner = messageSigner
             self.marshalClosure = marshalClosure
+            self.initialRequestMessage = initialRequestMessage
             self.readAsyncIterator = makeAsyncIterator()
         }
 
@@ -34,47 +37,56 @@ extension EventStream {
             let messageEncoder: MessageEncoder
             var messageSigner: MessageSigner
             let marshalClosure: MarshalClosure<Event>
+            let initialRequestMessage: EventStream.Message?
 
             private var lastMessageSent: Bool = false
             private var streamIterator: AsyncThrowingStream<Event, Error>.Iterator
+            private var sentInitialRequest: Bool = false
 
             init(
                 stream: AsyncThrowingStream<Event, Error>,
                 messageEncoder: MessageEncoder,
                 marshalClosure: @escaping MarshalClosure<Event>,
-                messageSigner: MessageSigner
+                messageSigner: MessageSigner,
+                initialRequestMessage: EventStream.Message? = nil
             ) {
                 self.stream = stream
                 self.streamIterator = stream.makeAsyncIterator()
                 self.messageEncoder = messageEncoder
                 self.messageSigner = messageSigner
                 self.marshalClosure = marshalClosure
+                self.initialRequestMessage = initialRequestMessage
             }
 
             mutating public func next() async throws -> Data? {
-                guard let event = try await streamIterator.next() else {
-                    // There are no more messages in the base stream
-                    // if we have not sent the last message, send it now
-                    guard lastMessageSent else {
-                        let emptySignedMessage = try await messageSigner.signEmpty()
-                        let data = try messageEncoder.encode(message: emptySignedMessage)
-                        lastMessageSent = true
-                        return data
+                if let initialRequestMessage, !sentInitialRequest {
+                    sentInitialRequest = true
+                    let signedMessage = try await messageSigner.sign(message: initialRequestMessage)
+                    return try messageEncoder.encode(message: signedMessage)
+                } else {
+                    guard let event = try await streamIterator.next() else {
+                        // There are no more messages in the base stream
+                        // if we have not sent the last message, send it now
+                        guard lastMessageSent else {
+                            let emptySignedMessage = try await messageSigner.signEmpty()
+                            let data = try messageEncoder.encode(message: emptySignedMessage)
+                            lastMessageSent = true
+                            return data
+                        }
+                        // mark the stream as complete
+                        return nil
                     }
-
-                    // mark the stream as complete
-                    return nil
+                    return try await processEventToData(event: event)
                 }
+            }
 
+            mutating func processEventToData(event: Event) async throws -> Data {
                 // marshall event to message
                 let message = try marshalClosure(event)
-
                 // sign the message
                 let signedMessage = try await messageSigner.sign(message: message)
-
-                // encode again the signed message
-                let data = try messageEncoder.encode(message: signedMessage)
-                return data
+                // encode again the signed message then return
+                return try messageEncoder.encode(message: signedMessage)
             }
         }
 
@@ -83,7 +95,8 @@ extension EventStream {
                 stream: stream,
                 messageEncoder: messageEncoder,
                 marshalClosure: marshalClosure,
-                messageSigner: messageSigner
+                messageSigner: messageSigner,
+                initialRequestMessage: initialRequestMessage
             )
         }
 
