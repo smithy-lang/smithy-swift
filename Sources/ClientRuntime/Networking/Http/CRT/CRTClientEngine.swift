@@ -174,8 +174,8 @@ public class CRTClientEngine: HTTPClient {
                                         "HTTP1Stream should be used with an HTTP/1.1 connection!"
                                     )
                                 }
-                                try await sendAwsChunkedBody(request: request) { chunk, isFinalChunk, _ in
-                                    try await http1Stream.writeChunk(chunk: chunk, endOfStream: isFinalChunk)
+                                try await sendAwsChunkedBody(request: request) { chunk, endOfStream in
+                                    try await http1Stream.writeChunk(chunk: chunk, endOfStream: endOfStream)
                                 }
                             } catch {
                                 continuation.resume(throwing: error)

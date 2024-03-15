@@ -123,7 +123,7 @@ extension Int {
 
 public func sendAwsChunkedBody(
     request: SdkHttpRequest,
-    writeChunk: @escaping (Data, Bool, Int) async throws -> Void
+    writeChunk: @escaping (Data, Bool) async throws -> Void
 ) async throws {
     let body = request.body
 
@@ -142,7 +142,6 @@ public func sendAwsChunkedBody(
     let chunkedReader = awsChunkedStream.getChunkedReader()
 
     var hasMoreChunks = true
-    var chunkNo = 1
     while hasMoreChunks {
         // Process the first chunk and determine if there are more to send
         hasMoreChunks = try await chunkedReader.processNextChunk()
@@ -150,13 +149,11 @@ public func sendAwsChunkedBody(
         if !hasMoreChunks {
             // Send the final chunk
             let finalChunk = try await chunkedReader.getFinalChunk()
-            try await writeChunk(finalChunk, true, chunkNo)
-            chunkNo += 1
+            try await writeChunk(finalChunk, true)
         } else {
             let currentChunkBody = chunkedReader.getCurrentChunkBody()
             if !currentChunkBody.isEmpty {
-                try await writeChunk(chunkedReader.getCurrentChunk(), false, chunkNo)
-                chunkNo += 1
+                try await writeChunk(chunkedReader.getCurrentChunk(), false)
             }
         }
     }

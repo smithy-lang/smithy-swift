@@ -251,21 +251,19 @@ public final class URLSessionHTTPClient: HTTPClient {
             }
 
             // Determine the proper environment variables to pass to FoundationStreamBridge
-            var bufferSize = 4096
-            var isChunkedTransfer = false
-            if request.isChunked {
-                bufferSize = CHUNK_SIZE_BYTES
-                isChunkedTransfer = true
-            }
+            let bufferSize = 65_536
+
+            // If the request is chunked, use this stream to receive the chunks
+            let chunkStream = request.isChunked ? BufferedStream() : nil
 
             // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
             // that URLSession can stream its request body from.
-            let streamBridge = requestStream.map {
+            let readableStream: ReadableStream? = request.isChunked ? chunkStream : requestStream
+            let streamBridge = readableStream.map {
                 FoundationStreamBridge(
                     readableStream: $0,
                     bufferSize: bufferSize,
-                    isChunkedTransfer: isChunkedTransfer,
-                    logger: logger
+                    logger: self.logger
                 )
             }
 
@@ -283,9 +281,10 @@ public final class URLSessionHTTPClient: HTTPClient {
                 await streamBridge?.open()
                 if request.isChunked {
                     do {
-                        try await sendAwsChunkedBody(request: request) { chunk, isFinalChunk, chunkNo in
-                            try await streamBridge?.handleChunk(chunk, isEndOfStream: isFinalChunk, chunkNo: chunkNo)
+                        try await sendAwsChunkedBody(request: request) { chunk, _ in
+                            try chunkStream?.write(contentsOf: chunk)
                         }
+                        chunkStream?.close()
                     } catch {
                         continuation.resume(throwing: error)
                     }
