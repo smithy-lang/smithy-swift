@@ -130,7 +130,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         func urlSession(
             _ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse
         ) async -> URLSession.ResponseDisposition {
-            logger.debug("urlSession(_:dataTask:didReceive:) called")
+            logger.debug("urlSession(_:dataTask:didReceive response:) called")
             storage.modify(dataTask) { connection in
                 guard let httpResponse = response as? HTTPURLResponse else {
                     logger.error("Received non-HTTP urlResponse")
@@ -155,7 +155,7 @@ public final class URLSessionHTTPClient: HTTPClient {
 
         /// Called when response data is received.
         func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-            logger.debug("urlSession(_:dataTask:didReceive:) called with \(data.count) bytes")
+            logger.debug("urlSession(_:dataTask:didReceive data:) called (\(data.count) bytes)")
             storage.modify(dataTask) { connection in
                 do {
                     try connection.responseStream.write(contentsOf: data)
@@ -277,6 +277,7 @@ public final class URLSessionHTTPClient: HTTPClient {
 
             // Start the HTTP connection and start streaming the request body data
             dataTask.resume()
+            logger.info("start URLRequest(\(urlRequest.url?.absoluteString ?? "")) called")
             Task {
                 await streamBridge?.open()
                 if request.isChunked {
