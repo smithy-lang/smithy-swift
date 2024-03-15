@@ -17,15 +17,18 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
 
     let keyPath: KeyPath<OperationStackInput, AsyncThrowingStream<OperationStackInputPayload, Swift.Error>?>
     let defaultBody: String?
+    let marshalClosure: MarshalClosure<OperationStackInputPayload>
     let initialRequestMessage: EventStream.Message?
 
     public init(
         keyPath: KeyPath<OperationStackInput, AsyncThrowingStream<OperationStackInputPayload, Swift.Error>?>,
         defaultBody: String? = nil,
+        marshalClosure: @escaping MarshalClosure<OperationStackInputPayload>,
         initialRequestMessage: EventStream.Message? = nil
     ) {
         self.keyPath = keyPath
         self.defaultBody = defaultBody
+        self.marshalClosure = marshalClosure
         self.initialRequestMessage = initialRequestMessage
     }
 
@@ -36,7 +39,6 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              let encoder = context.getEncoder()
               if let eventStream = input.operationInput[keyPath: keyPath] {
                   guard let messageEncoder = context.getMessageEncoder() else {
                       fatalError("Message encoder is required for streaming payload")
@@ -47,7 +49,7 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
                   let encoderStream = EventStream.DefaultMessageEncoderStream(
                     stream: eventStream,
                     messageEncoder: messageEncoder,
-                    requestEncoder: encoder,
+                    marshalClosure: marshalClosure,
                     messageSigner: messageSigner,
                     initialRequestMessage: initialRequestMessage
                   )

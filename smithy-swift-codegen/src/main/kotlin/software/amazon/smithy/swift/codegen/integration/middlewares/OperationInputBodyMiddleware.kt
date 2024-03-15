@@ -21,7 +21,9 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.DocumentWritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
@@ -80,11 +82,12 @@ class OperationInputBodyMiddleware(
         }
         val isStreaming = payloadShape.hasTrait<StreamingTrait>()
         val payloadSymbol = ctx.symbolProvider.toSymbol(payloadShape)
+        val requestWireProtocol = ctx.service.requestWireProtocol
 
         when (payloadShape) {
             is UnionShape -> {
                 if (isStreaming) {
-                    addEventStreamMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, keyPath, defaultBody, sendInitialRequest)
+                    addEventStreamMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, keyPath, defaultBody, requestWireProtocol, sendInitialRequest)
                 } else {
                     addAggregateMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
                 }
@@ -148,12 +151,17 @@ class OperationInputBodyMiddleware(
         )
     }
 
-    private fun addEventStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String, sendInitialRequest: Boolean) {
+    private fun addEventStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String, requestWireProtocol: WireProtocol, sendInitialRequest: Boolean) {
         if (sendInitialRequest) {
             writer.write("let initialRequestMessage = try input.makeInitialRequestMessage(encoder: encoder)")
         }
+        val marshalClosure = when (requestWireProtocol) {
+            WireProtocol.XML -> ", marshalClosure: $payloadSymbol.marshal"
+            WireProtocol.JSON -> ", marshalClosure: jsonMarshalClosure(requestEncoder: encoder)"
+            else -> ""
+        }
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L\$L))",
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L\$L\$L))",
             operationStackName,
             middlewareStep.stringValue(),
             position.stringValue(),
@@ -163,6 +171,7 @@ class OperationInputBodyMiddleware(
             payloadSymbol,
             keyPath,
             defaultBody,
+            marshalClosure,
             if (sendInitialRequest) ", initialRequestMessage: initialRequestMessage" else ""
         )
     }
