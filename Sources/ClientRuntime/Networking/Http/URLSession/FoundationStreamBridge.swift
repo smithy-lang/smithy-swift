@@ -18,7 +18,6 @@ import class Foundation.RunLoop
 import class Foundation.Timer
 import struct Foundation.TimeInterval
 import protocol Foundation.StreamDelegate
-import Foundation
 
 /// Reads data from a smithy-swift native `ReadableStream` and streams the data to a Foundation `InputStream`.
 ///
