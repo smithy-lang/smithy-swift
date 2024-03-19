@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
-
 public struct URLSessionTLSOptions {
     /// Path to the folder containing the trust store certificate file.
     public var trustStorePath: String?
@@ -41,5 +39,3 @@ public struct URLSessionTLSOptions {
         self.useClientCertificate = keyStorePath != nil && keyStorePassword != nil
     }
 }
-
-#endif
