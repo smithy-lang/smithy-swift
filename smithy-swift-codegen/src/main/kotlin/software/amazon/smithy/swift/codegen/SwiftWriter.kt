@@ -24,6 +24,8 @@ import software.amazon.smithy.swift.codegen.integration.SectionWriter
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.isBuiltIn
+import software.amazon.smithy.swift.codegen.model.isGeneric
+import software.amazon.smithy.swift.codegen.model.isOptional
 import software.amazon.smithy.swift.codegen.model.isServiceNestedNamespace
 import software.amazon.smithy.utils.CodeWriter
 import java.util.function.BiFunction
@@ -159,6 +161,14 @@ class SwiftWriter(private val fullPackageName: String) : CodeWriter() {
                     var formatted = type.fullName
                     if (type.isBoxed() && shouldRenderOptional) {
                         formatted += "?"
+                    }
+
+                    if (type.isGeneric() && type.isOptional()) {
+                        formatted = "(any $formatted)?"
+                    } else if (type.isGeneric()) {
+                        formatted = "any $formatted"
+                    } else if (type.isOptional()) {
+                        formatted = "$formatted?"
                     }
 
                     if (shouldSetDefault) {

@@ -72,15 +72,15 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         }
 
         func handleNormalPayload(_ data: Data?) throws {
-            
+
             guard let data else {
                 throw ClientError.dataNotFound("Cannot calculate checksum of empty body!")
             }
-            
+
             let calculatedChecksum = try responseChecksum.computeHash(of: data)
-            
+
             let actualChecksum = calculatedChecksum.toBase64String()
-        
+
             if expectedChecksum != actualChecksum {
                 throw ChecksumMismatchException.message(
                     "Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)"
@@ -91,7 +91,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         func handleStreamPayload(_ stream: Stream) throws {
             return
         }
-        
+
         // Handle body vs handle stream
         switch response.httpResponse.body {
         case .data(let data):
@@ -101,7 +101,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         case .noStream:
             throw ClientError.dataNotFound("Cannot calculate the checksum of an empty body!")
         }
-        
+
         return try await next.handle(context: context, input: input)
     }
 

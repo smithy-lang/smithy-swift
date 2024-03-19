@@ -28,10 +28,9 @@ public enum HashFunction {
         default: return nil
         }
     }
-    
+
     static func fromList(_ stringArray: [String]) -> [HashFunction] {
         var hashFunctions = [HashFunction]()
-
         for string in stringArray {
             if let hashFunction = HashFunction.from(string: string) {
                 hashFunctions.append(hashFunction)
@@ -40,7 +39,7 @@ public enum HashFunction {
 
         return hashFunctions
     }
-    
+
     func toString() -> String {
         switch self {
         case .crc32: return "crc32"

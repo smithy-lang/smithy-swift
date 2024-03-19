@@ -174,7 +174,7 @@ interface SwiftIntegration {
     /**
      * Returns a list of default Plugins for configuring client configuration's default properties
      */
-    fun plugins(): List<Plugin> = emptyList()
+    fun plugins(serviceConfig: ServiceConfig): List<Plugin> = emptyList()
 
     /**
      * Returns a list of ClientConfiguration protocols to be implemented by the client configuration

@@ -40,6 +40,7 @@ import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
+import software.amazon.smithy.swift.codegen.integration.middlewares.AuthSchemeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
@@ -52,6 +53,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInp
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlHostMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.RetryMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.SignerMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
@@ -63,6 +65,8 @@ import software.amazon.smithy.swift.codegen.model.bodySymbol
 import software.amazon.smithy.swift.codegen.model.findStreamingMember
 import software.amazon.smithy.swift.codegen.model.hasEventStreamMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.targetOrSelf
+import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
@@ -146,8 +150,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
         }
 
-        val inputShapesWithMetadata = resolveInputShapes(ctx)
-            .filter { !it.key.hasEventStreamMember(ctx.model) }
+        var inputShapesWithMetadata = resolveInputShapes(ctx)
+        if (!supportsStreamingAndIsRPC(ctx.protocol)) {
+            inputShapesWithMetadata = inputShapesWithMetadata.filter { !it.key.hasEventStreamMember(ctx.model) }
+        }
         for ((shape, shapeMetadata) in inputShapesWithMetadata) {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
@@ -156,9 +162,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .definitionFile("./$rootNamespace/models/$symbolName+Encodable.swift")
                 .name(symbolName)
                 .build()
-            val httpBodyMembers = shape.members()
+            var httpBodyMembers = shape.members()
                 .filter { it.isInHttpBody() }
                 .toList()
+            if (supportsStreamingAndIsRPC(ctx.protocol)) {
+                // For RPC protocols that support event streaming, we need to send initial request
+                // with streaming member excluded during encoding the input struct.
+                httpBodyMembers = httpBodyMembers.filter {
+                    !it.targetOrSelf(ctx.model).isStreaming
+                }
+            }
             if (httpBodyMembers.isNotEmpty() || shouldRenderEncodableConformance) {
                 ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                     val encodableOrNot = encodableProtocol?.let { writer.format(": \$N", it) } ?: ""
@@ -459,8 +472,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     override fun initializeMiddleware(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         for (operation in getHttpBindingOperations(ctx)) {
+            /*
+             * Note: the order of middlewares here does not reflect the order of execution in the actual client call.
+             * The order here simply means the order in which middleware are added to CODEGEN middleware stack.
+             */
             operationMiddleware.appendMiddleware(operation, IdempotencyTokenMiddleware(ctx.model, ctx.symbolProvider))
-
             operationMiddleware.appendMiddleware(operation, ContentMD5Middleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, ""))
             operationMiddleware.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, operation))
@@ -468,15 +484,19 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)))
             operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider))
-
             operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, shouldRenderEncodableConformance, hasRequiresLengthTrait(ctx, operation), hasUnsignedPayloadTrait(operation)))
-
             operationMiddleware.appendMiddleware(operation, DeserializeMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
-
+            operationMiddleware.appendMiddleware(operation, SignerMiddleware(ctx.model, ctx.symbolProvider))
             addProtocolSpecificMiddleware(ctx, operation)
-
+            /*
+             * Auth scheme middleware must be appended to codegen operation stack AFTER protocol specific middleware is appended.
+             * This is because endpoint middleware must be generated into client operation stack first with position: .before,
+             * AFTER which auth scheme must be generated into client operation stack with position: .before, which ensures
+             * auth scheme middleware is executed FIRST before endpoint middleware is executed, as SRA flow defines.
+             */
+            operationMiddleware.appendMiddleware(operation, AuthSchemeMiddleware(ctx.model, ctx.symbolProvider))
             for (integration in ctx.integrations) {
                 integration.customizeMiddleware(ctx, operation, operationMiddleware)
             }

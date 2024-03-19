@@ -14,7 +14,15 @@ public protocol DefaultHttpClientConfiguration: ClientConfiguration {
     var httpClientEngine: HTTPClient { get set }
 
     /// Configuration for the HTTP client.
-    var httpClientConfiguration: HttpClientConfiguration { get }
+    var httpClientConfiguration: HttpClientConfiguration { get set }
 
-    /// TODO: Add auth scheme
+    /// List of auth schemes to use for client calls.
+    ///
+    /// Defaults to auth schemes defined on the Smithy service model.
+    var authSchemes: [ClientRuntime.AuthScheme]? { get set }
+
+    /// The auth scheme resolver to use for resolving auth scheme.
+    ///
+    /// Defaults to a auth scheme resolver generated based on Smithy service model.
+    var authSchemeResolver: ClientRuntime.AuthSchemeResolver { get set }
 }
