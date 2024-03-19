@@ -32,8 +32,8 @@ extension TestStreamOperationWithInitialRequestResponseOutput: ClientRuntime.Htt
                 let decoder = JSONDecoder()
                 do {
                     let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)
-                    self.initial1 = response["initial1"].map { value in KinesisClientTypes.Tag(value: value) }
-                    self.initial2 = response["initial2"].map { value in KinesisClientTypes.Tag(value: value) }
+                    self.initial1 = response["initial1"]
+                    self.initial2 = response["initial2"]
                 } catch {
                     print("Error decoding JSON: \(error)")
                     self.initial1 = nil
