@@ -8,7 +8,7 @@
 import AwsCommonRuntimeKit
 
 public class AWSChunkedReader {
-    private var stream: Stream
+    private var stream: ReadableStream
     private var signingConfig: SigningConfig
     private var previousSignature: String
     private var trailingHeaders: Headers
@@ -21,7 +21,7 @@ public class AWSChunkedReader {
     private var checksumHash: Hash?
 
     init(
-        stream: Stream,
+        stream: ReadableStream,
         signingConfig: SigningConfig,
         previousSignature: String,
         trailingHeaders: Headers,
@@ -105,7 +105,7 @@ public class AWSChunkedReader {
             : try await getSignedChunk(from: stream)
     }
 
-    private func getUnsignedChunk(from stream: Stream) async throws -> Data? {
+    private func getUnsignedChunk(from stream: ReadableStream) async throws -> Data? {
         let chunk = try await stream.readAsync(upToCount: CHUNK_SIZE_BYTES) ?? Data()
 
         self.chunkBody = chunk
@@ -118,7 +118,7 @@ public class AWSChunkedReader {
         return constructChunk(chunk: chunk, signature: nil)
     }
 
-    func getSignedChunk(from stream: Stream) async throws -> Data? {
+    func getSignedChunk(from stream: ReadableStream) async throws -> Data? {
         let chunk = try await stream.readAsync(upToCount: CHUNK_SIZE_BYTES) ?? Data()
 
         // keep track of the chunk body without additional structure like chunk-signature

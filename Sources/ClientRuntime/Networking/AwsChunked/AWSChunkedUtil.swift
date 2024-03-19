@@ -43,23 +43,14 @@ extension SdkHttpRequestBuilder {
     ) throws {
         switch self.body {
         case .stream(let stream):
-            if let bufferedStream = stream as? BufferedStream {
-                self.withBody(ByteStream.stream(AWSChunkedBufferedStream(
-                    stream: bufferedStream,
-                    signingConfig: signingConfig,
-                    previousSignature: signature,
-                    trailingHeaders: trailingHeaders,
-                    checksumAlgorithm: checksumAlgorithm
-                )))
-            } else if let fileStream = stream as? FileStream {
-                self.withBody(ByteStream.stream(AWSChunkedFileStream(
-                    stream: fileStream,
-                    signingConfig: signingConfig,
-                    previousSignature: signature,
-                    trailingHeaders: trailingHeaders,
-                    checksumAlgorithm: checksumAlgorithm
-                )))
-            }
+            let chunkedStream = AWSChunkedStream(
+                inputStream: stream,
+                signingConfig: signingConfig,
+                previousSignature: signature,
+                trailingHeaders: trailingHeaders,
+                checksumAlgorithm: checksumAlgorithm
+            )
+            self.withBody(ByteStream.stream(chunkedStream))
         default:
             throw ClientError.dataNotFound("Cannot set a non-stream body as an aws-chunked body!")
         }
@@ -118,43 +109,5 @@ extension SigningConfig {
 extension Int {
     var hexString: String {
         return String(self, radix: 16)
-    }
-}
-
-public func sendAwsChunkedBody(
-    request: SdkHttpRequest,
-    writeChunk: @escaping (Data, Bool) async throws -> Void
-) async throws {
-    let body = request.body
-
-    guard case .stream(let stream) = body, stream.isEligibleForAwsChunkedStreaming() else {
-        throw ByteStreamError.invalidStreamTypeForChunkedBody(
-            "The stream is not eligible for AWS chunked streaming or is not a stream type!"
-        )
-    }
-
-    guard let awsChunkedStream = stream as? AWSChunkedStream else {
-        throw ByteStreamError.streamDoesNotConformToAwsChunkedStream(
-            "Stream does not conform to AwsChunkedStream! Type is \(stream)."
-        )
-    }
-
-    let chunkedReader = awsChunkedStream.getChunkedReader()
-
-    var hasMoreChunks = true
-    while hasMoreChunks {
-        // Process the first chunk and determine if there are more to send
-        hasMoreChunks = try await chunkedReader.processNextChunk()
-
-        if !hasMoreChunks {
-            // Send the final chunk
-            let finalChunk = try await chunkedReader.getFinalChunk()
-            try await writeChunk(finalChunk, true)
-        } else {
-            let currentChunkBody = chunkedReader.getCurrentChunkBody()
-            if !currentChunkBody.isEmpty {
-                try await writeChunk(chunkedReader.getCurrentChunk(), false)
-            }
-        }
     }
 }

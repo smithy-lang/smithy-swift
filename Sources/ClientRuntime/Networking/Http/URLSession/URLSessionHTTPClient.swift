@@ -278,19 +278,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             // Start the HTTP connection and start streaming the request body data
             dataTask.resume()
             logger.info("start URLRequest(\(urlRequest.url?.absoluteString ?? "")) called")
-            Task {
-                await streamBridge?.open()
-                if request.isChunked {
-                    do {
-                        try await sendAwsChunkedBody(request: request) { chunk, _ in
-                            try chunkStream?.write(contentsOf: chunk)
-                        }
-                        chunkStream?.close()
-                    } catch {
-                        continuation.resume(throwing: error)
-                    }
-                }
-            }
+            Task { await streamBridge?.open() }
         }
     }
 
