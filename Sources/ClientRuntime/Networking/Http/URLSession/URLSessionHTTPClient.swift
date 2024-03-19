@@ -7,10 +7,15 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
+import class Foundation.Bundle
 import class Foundation.InputStream
 import class Foundation.NSObject
 import class Foundation.NSRecursiveLock
+import var Foundation.NSURLAuthenticationMethodClientCertificate
+import var Foundation.NSURLAuthenticationMethodServerTrust
+import class Foundation.URLAuthenticationChallenge
 import struct Foundation.URLComponents
+import class Foundation.URLCredential
 import struct Foundation.URLQueryItem
 import struct Foundation.URLRequest
 import class Foundation.URLResponse
@@ -22,7 +27,6 @@ import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
 import Security
 import AwsCommonRuntimeKit
-import Foundation
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
 ///
