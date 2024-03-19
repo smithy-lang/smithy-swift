@@ -138,8 +138,8 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         let checksumAlgorithm = "crc32"
         let signingConfig = SigningConfig(algorithm: .signingV4, signatureType: .requestHeaders, service: "S3", region: "us-west-2")
 
-        let testData = ByteStream.stream(AWSChunkedBufferedStream(
-            stream: BufferedStream(data: mockData, isClosed: true),
+        let testData = ByteStream.stream(AWSChunkedStream(
+            inputStream: BufferedStream(data: mockData, isClosed: true),
             signingConfig: signingConfig,
             previousSignature: "test-signature",
             trailingHeaders: Headers()
@@ -251,7 +251,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
             httpResponse.headers.add(name: expectedHeader, value: expectedChecksum)
             let mockOutput = try await MockOutput.responseClosure(httpResponse)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
-            XCTAssertTrue(output.httpResponse.headers.value(for: expectedHeader) == expectedChecksum)
+            XCTAssertEqual(output.httpResponse.headers.value(for: expectedHeader), expectedChecksum)
             return output
         }
 
@@ -263,6 +263,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         )
         XCTAssertTrue(
             self.builtContext.attributes.get(key: AttributeKeys.isChunkedEligibleStream) ?? false,
+            "Stream is not 'chunked eligible'",
             file: file, line: line
         )
         if let validatedChecksum = self.builtContext.attributes.get(key: AttributeKey<String>(name: "ChecksumHeaderValidated")), validatedChecksum == expectedHeader {

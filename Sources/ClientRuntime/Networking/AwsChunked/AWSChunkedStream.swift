@@ -39,28 +39,36 @@ class AWSChunkedStream {
 }
 
 extension AWSChunkedStream: Stream {
+
+    /// Writes data to the input stream.
+    /// - Parameter data: The data to be written.
     func write(contentsOf data: Data) throws {
         try inputStream.write(contentsOf: data)
     }
-    
+
+    /// Closes the input stream.
+    ///
+    /// The output stream will close once the input stream closes, and all data from the
+    /// input stream has been chunked.
     func close() {
         inputStream.close()
     }
-    
+
     func closeWithError(_ error: any Error) {
         inputStream.closeWithError(error)
     }
 
     var position: Data.Index {
-        self.outputStream.position
+        self.inputStream.position
     }
 
+    /// Returns the length of the _input_ stream.
     var length: Int? {
-        self.outputStream.length
+        self.inputStream.length
     }
 
     var isEmpty: Bool {
-        self.outputStream.isEmpty
+        self.inputStream.isEmpty
     }
 
     var isSeekable: Bool {

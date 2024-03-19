@@ -60,7 +60,7 @@ public class BufferedStream: Stream {
     ///
     /// Access this value only while `lock` is locked, to prevent simultaneous access.
     private var _buffer: Data
-    
+
     /// The number of bytes currently in the buffer, awaiting read.
     public var bufferCount: Int {
         lock.withLockingClosure {
