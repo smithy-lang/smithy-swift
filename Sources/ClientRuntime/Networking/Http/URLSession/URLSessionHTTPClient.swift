@@ -20,7 +20,9 @@ import class Foundation.URLSessionConfiguration
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
+import Security
 import AwsCommonRuntimeKit
+import Foundation
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
 ///
@@ -120,8 +122,76 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// Logger for HTTP-related events.
         let logger: LogAgent
 
-        init(logger: LogAgent) {
+        /// TLS options
+        let tlsOptions: URLSessionTLSOptions?
+
+        init(logger: LogAgent, tlsOptions: URLSessionTLSOptions?) {
             self.logger = logger
+            self.tlsOptions = tlsOptions
+        }
+
+        /// Handles server trust challenges by validating against a custom certificate.
+        private func didReceive(
+            serverTrustChallenge challenge: URLAuthenticationChallenge
+        ) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
+            guard let tlsOptions,
+                tlsOptions.useCustomTrustStore == true,
+                let serverTrust = challenge.protectionSpace.serverTrust,
+                let customRoot = loadTrustStoreCertificate(
+                    fromPath: tlsOptions.trustStorePath! + "/" + tlsOptions.trustStoreFile!
+                ) else {
+                // Configuration does not specify custom handling, so proceed with default handling.
+                return (.performDefaultHandling, nil)
+            }
+
+            do {
+                let isTrusted = try serverTrust.evaluateAllowing(rootCertificates: [customRoot])
+                if isTrusted {
+                    return (.useCredential, URLCredential(trust: serverTrust))
+                } else {
+                    return (.cancelAuthenticationChallenge, nil)
+                }
+            } catch {
+                return (.cancelAuthenticationChallenge, nil)
+            }
+        }
+
+        /// Handles client identity challenges by presenting a client certificate.
+        private func didReceive(
+            clientIdentityChallenge challenge: URLAuthenticationChallenge
+        ) -> (URLSession.AuthChallengeDisposition, URLCredential?) {
+            guard let tlsOptions,
+                tlsOptions.useClientCertificate == true,
+                let keyStorePath = tlsOptions.keyStorePath,
+                let keyStorePassword = tlsOptions.keyStorePassword,
+                let identity = loadIdentity(fromPath: keyStorePath, password: keyStorePassword) else {
+                // Configuration does not specify custom handling, so proceed with default handling.
+                return (.performDefaultHandling, nil)
+            }
+
+            let urlCredential = URLCredential(identity: identity, certificates: nil, persistence: .forSession)
+            return (.useCredential, urlCredential)
+        }
+
+        /// The URLSession delegate method where authentication challenges are handled.
+        func urlSession(
+            _ session: URLSession,
+            task: URLSessionTask,
+            didReceive challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            switch challenge.protectionSpace.authenticationMethod {
+            case NSURLAuthenticationMethodServerTrust:
+                Task {
+                    let (disposition, credential) = await self.didReceive(serverTrustChallenge: challenge)
+                    completionHandler(disposition, credential)
+                }
+            case NSURLAuthenticationMethodClientCertificate:
+                let (disposition, credential) = self.didReceive(clientIdentityChallenge: challenge)
+                completionHandler(disposition, credential)
+            default:
+                completionHandler(.performDefaultHandling, nil)
+            }
         }
 
         /// Called when the initial response to a HTTP request is received.
@@ -206,6 +276,9 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// The logger for this HTTP client.
     private var logger: LogAgent
 
+    /// The TLS options for this HTTP client.
+    private let tlsOptions: URLSessionTLSOptions?
+
     // MARK: - init & deinit
 
     /// Creates a new `URLSessionHTTPClient`.
@@ -216,7 +289,8 @@ public final class URLSessionHTTPClient: HTTPClient {
     public init(httpClientConfiguration: HttpClientConfiguration) {
         self.config = httpClientConfiguration
         self.logger = SwiftLogger(label: "URLSessionHTTPClient")
-        self.delegate = SessionDelegate(logger: logger)
+        self.tlsOptions = config.urlSessionTLSOptions
+        self.delegate = SessionDelegate(logger: logger, tlsOptions: tlsOptions)
         var urlsessionConfiguration = URLSessionConfiguration.default
         urlsessionConfiguration = URLSessionConfiguration.from(httpClientConfiguration: httpClientConfiguration)
         self.session = URLSession(configuration: urlsessionConfiguration, delegate: delegate, delegateQueue: nil)
@@ -319,6 +393,100 @@ public enum URLSessionHTTPClientError: Error {
     /// A connection was not ended
     /// Please file a bug with aws-sdk-swift if you experience this error.
     case unresumedConnection
+}
+
+extension Bundle {
+    func certificate(named name: String) -> SecCertificate? {
+        guard let cerURL = self.url(forResource: name, withExtension: "cer"),
+              let cerData = try? Data(contentsOf: cerURL) else {
+            return nil
+        }
+        return SecCertificateCreateWithData(nil, cerData as CFData)
+    }
+
+    func identity(named name: String, password: String) -> SecIdentity? {
+        guard let p12URL = self.url(forResource: name, withExtension: "p12"),
+              let p12Data = try? Data(contentsOf: p12URL) else {
+            return nil
+        }
+
+        let options = [kSecImportExportPassphrase as String: password] as CFDictionary
+        var items: CFArray?
+        let status = SecPKCS12Import(p12Data as CFData, options, &items)
+
+        guard status == errSecSuccess, let itemsArray = items as? [[String: AnyObject]],
+              let firstItem = itemsArray.first,
+              let identity = firstItem[kSecImportItemIdentity as String] else {
+            return nil
+        }
+
+        // Directly return the cast identity as SecIdentity
+        return (identity as! SecIdentity)
+    }
+}
+
+extension SecTrust {
+    enum TrustEvaluationError: Error {
+        case evaluationFailed(error: CFError?)
+    }
+
+    /// Evaluates the trust object synchronously and returns a Boolean value indicating whether the trust evaluation succeeded.
+    func evaluate() throws -> Bool {
+        var error: CFError?
+        let evaluationSucceeded = SecTrustEvaluateWithError(self, &error)
+        guard evaluationSucceeded else {
+            throw TrustEvaluationError.evaluationFailed(error: error)
+        }
+        return evaluationSucceeded
+    }
+
+    /// Evaluates the trust object allowing custom root certificates, and returns a Boolean value indicating whether the evaluation succeeded.
+    func evaluateAllowing(rootCertificates: [SecCertificate]) throws -> Bool {
+        // Set the custom root certificates as trusted anchors.
+        let status = SecTrustSetAnchorCertificates(self, rootCertificates as CFArray)
+        guard status == errSecSuccess else {
+            throw TrustEvaluationError.evaluationFailed(error: nil)
+        }
+
+        // Consider any built-in anchors in the evaluation.
+        SecTrustSetAnchorCertificatesOnly(self, false)
+
+        // Evaluate the trust object.
+        return try evaluate()
+    }
+}
+
+extension URLSessionDataDelegate {
+    // Load a trust store certificate from a specified file path
+    func loadTrustStoreCertificate(fromPath path: String) -> SecCertificate? {
+        guard let cerData = try? Data(contentsOf: URL(fileURLWithPath: path)) else {
+            return nil
+        }
+        return SecCertificateCreateWithData(nil, cerData as CFData)
+    }
+
+    // Load a client identity (key store) from a specified file path using a password
+    func loadIdentity(fromPath path: String, password: String) -> SecIdentity? {
+        guard let p12Data = try? Data(contentsOf: URL(fileURLWithPath: path)),
+              let options = [kSecImportExportPassphrase as String: password] as? CFDictionary else {
+            return nil
+        }
+
+        var items: CFArray?
+        let status = SecPKCS12Import(p12Data as CFData, options, &items)
+        guard status == errSecSuccess, let itemsArray = items as? [[String: AnyObject]],
+              !itemsArray.isEmpty else {
+            return nil
+        }
+
+        // Extract the identity from the first item, if available
+        if let identityDict = itemsArray.first,
+           let identityRef = identityDict[kSecImportItemIdentity as String] {
+            return (identityRef as! SecIdentity)
+        }
+
+        return nil
+    }
 }
 
 #endif
