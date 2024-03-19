@@ -250,21 +250,11 @@ public final class URLSessionHTTPClient: HTTPClient {
                 requestStream = nil
             }
 
-            // Determine the proper environment variables to pass to FoundationStreamBridge
-            let bufferSize = 65_536
-
-            // If the request is chunked, use this stream to receive the chunks
-            let chunkStream = request.isChunked ? BufferedStream() : nil
-
             // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
             // that URLSession can stream its request body from.
-            let readableStream: ReadableStream? = request.isChunked ? chunkStream : requestStream
-            let streamBridge = readableStream.map {
-                FoundationStreamBridge(
-                    readableStream: $0,
-                    bufferSize: bufferSize,
-                    logger: self.logger
-                )
+            // Allow 16kb of in-memory buffer for request body streaming
+            let streamBridge = requestStream.map {
+                FoundationStreamBridge(readableStream: $0, bufferSize: 16_384, logger: logger)
             }
 
             // Create the request (with a streaming body when needed.)
