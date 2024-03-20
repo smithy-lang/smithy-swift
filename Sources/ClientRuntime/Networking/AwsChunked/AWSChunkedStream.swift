@@ -13,9 +13,28 @@ class AWSChunkedStream {
     private var signingConfig: SigningConfig
     private var previousSignature: String
     private var trailingHeaders: Headers
-    private var chunkedReader: AWSChunkedReader
+    var chunkedReader: AWSChunkedReader
     private var outputStream = BufferedStream()
-    private var hasMoreChunks = true
+
+    /// Actor used for ensuring stream reads are performed in order and one at a time.
+    private actor ReadCoordinator {
+        /// The most recent task performed by this actor.
+        private var task: Task<Data?, Error>?
+
+        /// Perform a new unit of work, after previously scheduled work has completed.
+        func add(_ block: @escaping () async throws -> Data?) async throws -> Data? {
+            let prevTask = self.task
+            let task = Task {
+                _ = await prevTask?.result
+                return try await block()
+            }
+            self.task = task
+            return try await task.value
+        }
+    }
+
+    /// The actor instance used by this AWSChunkedStream to enforce reading in series.
+    private let readCoordinator = ReadCoordinator()
 
     init(
         inputStream: Stream,
@@ -76,27 +95,54 @@ extension AWSChunkedStream: Stream {
     }
 
     func read(upToCount count: Int) throws -> Data? {
-        try outputStream.read(upToCount: count)
-    }
-
-    func readAsync(upToCount count: Int) async throws -> Data? {
-        while hasMoreChunks {
-            // Process the first chunk and determine if there are more to send
-            hasMoreChunks = try await chunkedReader.processNextChunk()
-
-            if !hasMoreChunks {
-                // Send the final chunk
-                let finalChunk = try await chunkedReader.getFinalChunk()
-                try outputStream.write(contentsOf: finalChunk)
-                outputStream.close()
-            } else {
-                let currentChunkBody = chunkedReader.getCurrentChunkBody()
-                if !currentChunkBody.isEmpty {
-                    try outputStream.write(contentsOf: chunkedReader.getCurrentChunk())
+        let bytes = try outputStream.read(upToCount: count)
+        if bytes == nil {
+            Task {
+                try await readCoordinator.add { [self] () -> Data? in
+                    guard outputStream.bufferCount == 0 else { return nil }
+                    try await getNextChunk()
+                    return nil
                 }
             }
         }
-        return try await self.outputStream.readAsync(upToCount: count)
+        return bytes
+    }
+
+    func readAsync(upToCount count: Int) async throws -> Data? {
+        return try await readCoordinator.add { [self] in
+            let bytes = try outputStream.read(upToCount: count)
+            if let bytes, bytes.isEmpty {
+                // The output stream is empty.  Process the next chunk and add it to the
+                // output stream before reading & returning.
+                try await getNextChunk()
+                return try await outputStream.readAsync(upToCount: count)
+            } else {
+                return bytes
+            }
+        }
+    }
+
+    private func getNextChunk() async throws {
+        // If the stream is closed or some other Task has already replenished the stream,
+        // then this operation is not needed.  Exit.
+        guard !outputStream.isClosed, outputStream.bufferCount == 0 else { return }
+        // Process the first chunk and determine if there are more to send
+        let hasMoreChunks = try await chunkedReader.processNextChunk()
+        if hasMoreChunks {
+            // Send the next, non-final chunk
+            let currentChunkBody = chunkedReader.getCurrentChunkBody()
+            if !currentChunkBody.isEmpty {
+                let chunk = chunkedReader.getCurrentChunk()
+                try outputStream.write(contentsOf: chunk)
+            } else {
+                try await getNextChunk()
+            }
+        } else {
+            // Send the final chunk
+            let finalChunk = try await chunkedReader.getFinalChunk()
+            try outputStream.write(contentsOf: finalChunk)
+            outputStream.close()
+        }
     }
 
     func readToEnd() throws -> Data? {

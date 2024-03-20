@@ -44,21 +44,34 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// A Logger for logging events.
     private let logger: LogAgent
 
-    /// Actor used to isolate the stream status from multiple concurrent accesses.
-    actor ReadableStreamStatus {
+    /// Actor used to ensure writes are performed in series.
+    actor WriteCoordinator {
+        var task: Task<Void, Error>?
 
         /// `true` if the readable stream has been found to be empty, `false` otherwise.  Will flip to `true` if the readable stream is read,
         /// and `nil` is returned.
-        var isEmpty = false
+        var readableStreamIsEmpty = false
 
         /// Sets stream status to indicate the stream is empty.
-        func setIsEmpty() async {
-            isEmpty = true
+        func setReadableStreamIsEmpty() async {
+            readableStreamIsEmpty = true
+        }
+
+        /// Creates a new concurrent Task that executes the passed block, ensuring that the previous Task
+        /// finishes before this task starts.
+        ///
+        /// Acts as a sort of "serial queue" of Swift concurrency tasks.
+        /// - Parameter block: The code to be performed in this task.
+        func perform(_ block: @escaping @Sendable (WriteCoordinator) async throws -> Void) {
+            self.task = Task { [task] in
+                _ = await task?.result
+                try await block(self)
+            }
         }
     }
 
-    /// Actor used to isolate the stream status from multiple concurrent accesses.
-    private var readableStreamStatus = ReadableStreamStatus()
+    /// Actor used to enforce the order of multiple concurrent stream writes.
+    private let writeCoordinator = WriteCoordinator()
 
     /// A shared serial DispatchQueue to run the `perform`-on-thread operations.
     /// Performing thread operations on an async queue allows Swift concurrency tasks to not block.
@@ -155,16 +168,18 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// Tries to read from the readable stream if possible, then transfer the data to the output stream.
     private func writeToOutput() async throws {
-        var data = Data()
-        if await !readableStreamStatus.isEmpty {
-            if let newData = try await readableStream.readAsync(upToCount: bufferSize) {
-                data = newData
-            } else {
-                await readableStreamStatus.setIsEmpty()
-                await close()
+        await writeCoordinator.perform { [self] writeCoordinator in
+            var data = Data()
+            if await !writeCoordinator.readableStreamIsEmpty {
+                if let newData = try await readableStream.readAsync(upToCount: bufferSize) {
+                    data = newData
+                } else {
+                    await writeCoordinator.setReadableStreamIsEmpty()
+                    await close()
+                }
             }
+            try await writeToOutputStream(data: data)
         }
-        try await writeToOutputStream(data: data)
     }
 
     private class WriteToOutputStreamResult: NSObject {
@@ -199,6 +214,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             writeCount = outputStream.write(bytePtr, maxLength: buffer.count)
         }
         if writeCount > 0 {
+            logger.info("FoundationStreamBridge: wrote \(writeCount) bytes to request body")
             buffer.removeFirst(writeCount)
         }
         result.error = outputStream.streamError

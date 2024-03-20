@@ -165,6 +165,22 @@ public class CRTClientEngine: HTTPClient {
                 do {
                     let stream = try connection.makeRequest(requestOptions: requestOptions)
                     try stream.activate()
+                    if request.isChunked {
+                        Task {
+                            do {
+                                guard let http1Stream = stream as? HTTP1Stream else {
+                                    throw StreamError.notSupported(
+                                        "HTTP1Stream should be used with an HTTP/1.1 connection!"
+                                    )
+                                }
+                                try await sendAwsChunkedBody(request: request) { chunk, endOfStream in
+                                    try await http1Stream.writeChunk(chunk: chunk, endOfStream: endOfStream)
+                                }
+                            } catch {
+                                continuation.resume(throwing: error)
+                            }
+                        }
+                    }
                 } catch {
                     continuation.resume(throwing: error)
                 }
