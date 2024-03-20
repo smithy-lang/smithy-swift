@@ -111,39 +111,3 @@ extension Int {
         return String(self, radix: 16)
     }
 }
-
-public func sendAwsChunkedBody(
-    request: SdkHttpRequest,
-    writeChunk: @escaping (Data, Bool) async throws -> Void
-) async throws {
-    let body = request.body
-
-    guard case .stream(let stream) = body, stream.isEligibleForAwsChunkedStreaming() else {
-        throw ByteStreamError.invalidStreamTypeForChunkedBody(
-            "The stream is not eligible for AWS chunked streaming or is not a stream type!"
-        )
-    }
-
-    guard let awsChunkedStream = stream as? AWSChunkedStream else {
-        throw ByteStreamError.streamDoesNotConformToAwsChunkedStream(
-            "Stream does not conform to AwsChunkedStream! Type is \(stream)."
-        )
-    }
-
-    var hasMoreChunks = true
-    while hasMoreChunks {
-        // Process the first chunk and determine if there are more to send
-        hasMoreChunks = try await awsChunkedStream.chunkedReader.processNextChunk()
-
-        if !hasMoreChunks {
-            // Send the final chunk
-            let finalChunk = try await awsChunkedStream.chunkedReader.getFinalChunk()
-            try await writeChunk(finalChunk, true)
-        } else {
-            let currentChunkBody = awsChunkedStream.chunkedReader.getCurrentChunkBody()
-            if !currentChunkBody.isEmpty {
-                try await writeChunk(awsChunkedStream.chunkedReader.getCurrentChunk(), false)
-            }
-        }
-    }
-}

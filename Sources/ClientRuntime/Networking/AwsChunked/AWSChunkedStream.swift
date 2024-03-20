@@ -8,6 +8,10 @@
 import AwsCommonRuntimeKit
 
 /// Reads data from the input stream, chunks it, and passes it out through its output stream.
+///
+/// URLSessionHTTPClient streams chunked payloads using this stream type.
+/// CRTClientEngine uses only the reader provided by this type to create chunks, then it
+/// streams them itself.
 class AWSChunkedStream {
     private var inputStream: Stream
     private var signingConfig: SigningConfig
@@ -128,17 +132,14 @@ extension AWSChunkedStream: Stream {
         guard !outputStream.isClosed, outputStream.bufferCount == 0 else { return }
         // Process the first chunk and determine if there are more to send
         let hasMoreChunks = try await chunkedReader.processNextChunk()
-        if hasMoreChunks {
+        let currentChunkBodyIsEmpty = chunkedReader.getCurrentChunkBody().isEmpty
+//        try await Task.sleep(nanoseconds: UInt64(Double.random(in: 0.1...1.0) * 1_000_000_000.0))
+        if hasMoreChunks && !currentChunkBodyIsEmpty {
             // Send the next, non-final chunk
-            let currentChunkBody = chunkedReader.getCurrentChunkBody()
-            if !currentChunkBody.isEmpty {
-                let chunk = chunkedReader.getCurrentChunk()
-                try outputStream.write(contentsOf: chunk)
-            } else {
-                try await getNextChunk()
-            }
+            let chunk = chunkedReader.getCurrentChunk()
+            try outputStream.write(contentsOf: chunk)
         } else {
-            // Send the final chunk
+            // Send the final chunk & close the stream
             let finalChunk = try await chunkedReader.getFinalChunk()
             try outputStream.write(contentsOf: finalChunk)
             outputStream.close()
