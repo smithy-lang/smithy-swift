@@ -199,7 +199,10 @@ public class CRTClientEngine: HTTPClient {
                                     } else {
                                         let currentChunkBody = awsChunkedStream.chunkedReader.getCurrentChunkBody()
                                         if !currentChunkBody.isEmpty {
-                                            try await http1Stream.writeChunk(chunk: awsChunkedStream.chunkedReader.getCurrentChunk(), endOfStream: false)
+                                            try await http1Stream.writeChunk(
+                                                chunk: awsChunkedStream.chunkedReader.getCurrentChunk(),
+                                                endOfStream: false
+                                            )
                                         }
                                     }
                                 }
