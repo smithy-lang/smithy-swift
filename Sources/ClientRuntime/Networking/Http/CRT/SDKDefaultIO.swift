@@ -31,7 +31,7 @@ public final class SDKDefaultIO {
 
     private init() {
         CommonRuntimeKit.initialize()
-        Logger.initialize(pipe: stdout, level: LogLevel.none)
+        Logger.initialize(pipe: stdout, level: .none)
 
         do {
             self.eventLoopGroup = try EventLoopGroup(threadCount: 0)

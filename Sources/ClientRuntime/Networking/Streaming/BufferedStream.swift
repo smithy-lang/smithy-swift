@@ -61,6 +61,13 @@ public class BufferedStream: Stream {
     /// Access this value only while `lock` is locked, to prevent simultaneous access.
     private var _buffer: Data
 
+    /// The number of bytes currently in the buffer, awaiting read.
+    public var bufferCount: Int {
+        lock.withLockingClosure {
+            _buffer.count
+        }
+    }
+
     /// The number of bytes that have been written to this stream, including the initial data at creation.
     ///
     /// Access this value only while `lock` is locked, to prevent simultaneous access.
@@ -206,21 +213,20 @@ public class BufferedStream: Stream {
 
     /// Closes the stream.
     public func close() {
-        lock.withLockingClosure {
-            guard !_isClosed else { return }
-            _isClosed = true
-            _length = _dataCount
-            _serviceReadersIfPossible()
-        }
+        close(error: nil)
     }
 
     /// Closes the stream.
     public func closeWithError(_ error: Error) {
+        close(error: error)
+    }
+
+    private func close(error: Error?) {
         lock.withLockingClosure {
             guard !_isClosed else { return }
             _isClosed = true
             _length = _dataCount
-            _error = error
+            if let error { _error = error }
             _serviceReadersIfPossible()
         }
     }
@@ -241,7 +247,7 @@ public class BufferedStream: Stream {
                     _ = _readers.removeFirst()
                 } else {
                     data = try _read(upToCount: suspendedReader.byteCount)
-                    if data == Data() { return }  // this means stream is still open but has no data
+                    if let data, data.isEmpty { return }  // this means stream is still open but has no data
                     _ = _readers.removeFirst()
                 }
                 suspendedReader.continuation.resume(returning: data)

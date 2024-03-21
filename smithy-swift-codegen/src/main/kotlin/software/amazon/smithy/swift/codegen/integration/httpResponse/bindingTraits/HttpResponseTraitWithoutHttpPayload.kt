@@ -150,7 +150,7 @@ class HttpResponseTraitWithoutHttpPayload(
             write("let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)")
             initialResponseMembers.forEach { responseMember ->
                 val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
-                write("self.$responseMemberName = response[\"$responseMemberName\"].map { value in KinesisClientTypes.Tag(value: value) }")
+                write("self.$responseMemberName = response[\"$responseMemberName\"]")
             }
             dedent()
             write("} catch {")
