@@ -165,6 +165,52 @@ public class CRTClientEngine: HTTPClient {
                 do {
                     let stream = try connection.makeRequest(requestOptions: requestOptions)
                     try stream.activate()
+                    if request.isChunked {
+                        Task {
+                            do {
+                                guard let http1Stream = stream as? HTTP1Stream else {
+                                    throw StreamError.notSupported(
+                                        "HTTP1Stream should be used with an HTTP/1.1 connection!"
+                                    )
+                                }
+                                let body = request.body
+
+                                guard case .stream(let stream) = body, stream.isEligibleForAwsChunkedStreaming() else {
+                                    throw ByteStreamError.invalidStreamTypeForChunkedBody(
+                                        "The stream is not eligible for AWS chunked streaming or is not a stream type!"
+                                    )
+                                }
+
+                                guard let awsChunkedStream = stream as? AWSChunkedStream else {
+                                    throw ByteStreamError.streamDoesNotConformToAwsChunkedStream(
+                                        "Stream does not conform to AwsChunkedStream! Type is \(stream)."
+                                    )
+                                }
+
+                                var hasMoreChunks = true
+                                while hasMoreChunks {
+                                    // Process the first chunk and determine if there are more to send
+                                    hasMoreChunks = try await awsChunkedStream.chunkedReader.processNextChunk()
+
+                                    if !hasMoreChunks {
+                                        // Send the final chunk
+                                        let finalChunk = try await awsChunkedStream.chunkedReader.getFinalChunk()
+                                        try await http1Stream.writeChunk(chunk: finalChunk, endOfStream: true)
+                                    } else {
+                                        let currentChunkBody = awsChunkedStream.chunkedReader.getCurrentChunkBody()
+                                        if !currentChunkBody.isEmpty {
+                                            try await http1Stream.writeChunk(
+                                                chunk: awsChunkedStream.chunkedReader.getCurrentChunk(),
+                                                endOfStream: false
+                                            )
+                                        }
+                                    }
+                                }
+                            } catch {
+                                continuation.resume(throwing: error)
+                            }
+                        }
+                    }
                 } catch {
                     continuation.resume(throwing: error)
                 }

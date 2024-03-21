@@ -11,10 +11,10 @@ import class Foundation.NSRecursiveLock
 /// A `Stream` that wraps a `FileHandle` for reading the file.
 ///
 /// - Note: This class is thread-safe.
-final class FileStream: Stream {
+public final class FileStream: Stream {
 
     /// Returns the length of the stream, if known
-    var length: Int? {
+    public var length: Int? {
         guard let len = try? fileHandle.length() else {
             return nil
         }
@@ -24,15 +24,15 @@ final class FileStream: Stream {
     let fileHandle: FileHandle
 
     /// Returns the current position of the stream.
-    var position: Data.Index
+    public var position: Data.Index
 
     /// Returns true if length is zero, false otherwise.
-    var isEmpty: Bool {
+    public var isEmpty: Bool {
         return length == 0
     }
 
     /// Returns true if the stream is seekable, false otherwise
-    let isSeekable: Bool = true
+    public let isSeekable: Bool = true
 
     private let lock = NSRecursiveLock()
 
@@ -45,10 +45,11 @@ final class FileStream: Stream {
     /// Reads up to `count` bytes from the stream.
     /// - Parameter count: The maximum number of bytes to read.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
-    func read(upToCount count: Int) throws -> Data? {
+    public func read(upToCount count: Int) throws -> Data? {
         try lock.withLockingClosure {
             let data: Data?
             if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
+                try fileHandle.seek(toOffset: UInt64(position)) // some bug in fileHandle
                 data = try fileHandle.read(upToCount: count)
             } else {
                 data = fileHandle.readData(ofLength: count)
@@ -58,7 +59,7 @@ final class FileStream: Stream {
         }
     }
 
-    func readAsync(upToCount count: Int) async throws -> Data? {
+    public func readAsync(upToCount count: Int) async throws -> Data? {
         try await withCheckedThrowingContinuation { continuation in
             do {
                 let data = try read(upToCount: count)
@@ -71,7 +72,7 @@ final class FileStream: Stream {
 
     /// Reads all remaining bytes from the stream.
     /// - Returns: Data read from the stream, or nil if the stream is closed and no data is available.
-    func readToEnd() throws -> Data? {
+    public func readToEnd() throws -> Data? {
         try lock.withLockingClosure {
             let data: Data?
             if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
@@ -84,7 +85,7 @@ final class FileStream: Stream {
         }
     }
 
-    func readToEndAsync() async throws -> Data? {
+    public func readToEndAsync() async throws -> Data? {
         try await withCheckedThrowingContinuation { continuation in
             do {
                 let data = try readToEnd()
@@ -97,7 +98,7 @@ final class FileStream: Stream {
 
     /// Seeks to the specified offset in the stream.
     /// - Parameter offset: The offset to seek to.
-    func seek(toOffset offset: Int) throws {
+    public func seek(toOffset offset: Int) throws {
         try lock.withLockingClosure {
             if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
                 try fileHandle.seek(toOffset: UInt64(offset))
@@ -110,7 +111,7 @@ final class FileStream: Stream {
 
     /// Writes the specified data to the stream.
     /// - Parameter data: The data to write.
-    func write(contentsOf data: Data) throws {
+    public func write(contentsOf data: Data) throws {
         try lock.withLockingClosure {
             if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
                 try fileHandle.write(contentsOf: data)
@@ -121,7 +122,7 @@ final class FileStream: Stream {
     }
 
     /// Closes the stream.
-    func close() {
+    public func close() {
        lock.withLockingClosure {
            if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
                try? fileHandle.close()
@@ -131,7 +132,7 @@ final class FileStream: Stream {
         }
     }
 
-    func closeWithError(_ error: Error) {
+    public func closeWithError(_ error: Error) {
         // The error is only relevant when streaming to a programmatic consumer, not to disk.
         // So close the file handle in this case, and the error is dropped.
         close()

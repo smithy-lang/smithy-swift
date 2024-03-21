@@ -234,7 +234,7 @@ extension Header: Comparable {
 }
 
 extension Headers {
-    func toHttpHeaders() -> [HTTPHeader] {
+    public func toHttpHeaders() -> [HTTPHeader] {
         headers.map {
             HTTPHeader(name: $0.name, value: $0.value.joined(separator: ","))
         }
