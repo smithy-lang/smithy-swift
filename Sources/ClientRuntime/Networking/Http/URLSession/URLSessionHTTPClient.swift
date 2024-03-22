@@ -15,6 +15,7 @@ import struct Foundation.URLQueryItem
 import struct Foundation.URLRequest
 import class Foundation.URLResponse
 import class Foundation.HTTPURLResponse
+import struct Foundation.TimeInterval
 import class Foundation.URLSession
 import class Foundation.URLSessionConfiguration
 import class Foundation.URLSessionTask
@@ -206,6 +207,9 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// The logger for this HTTP client.
     private var logger: LogAgent
 
+    /// The initial connection timeout for this HTTP client.
+    let connectionTimeout: TimeInterval
+
     // MARK: - init & deinit
 
     /// Creates a new `URLSessionHTTPClient`.
@@ -217,6 +221,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         self.config = httpClientConfiguration
         self.logger = SwiftLogger(label: "URLSessionHTTPClient")
         self.delegate = SessionDelegate(logger: logger)
+        self.connectionTimeout = httpClientConfiguration.connectTimeout ?? 60.0
         var urlsessionConfiguration = URLSessionConfiguration.default
         urlsessionConfiguration = URLSessionConfiguration.from(httpClientConfiguration: httpClientConfiguration)
         self.session = URLSession(configuration: urlsessionConfiguration, delegate: delegate, delegateQueue: nil)
@@ -291,7 +296,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             }
         }
         guard let url = components.url else { fatalError("Invalid HTTP request.  Please file a bug to report this.") }
-        var urlRequest = URLRequest(url: url)
+        var urlRequest = URLRequest(url: url, timeoutInterval: self.connectionTimeout)
         urlRequest.httpMethod = request.method.rawValue
         urlRequest.httpBodyStream = httpBodyStream
         for header in request.headers.headers + config.defaultHeaders.headers {
