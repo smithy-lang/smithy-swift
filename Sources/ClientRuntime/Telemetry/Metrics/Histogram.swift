@@ -9,6 +9,7 @@
 ///
 /// Examples include: request latency, HTTP response times
 public protocol Histogram {
+
     /// Records a value for a metric.
     ///
     /// - Parameter value: value to record

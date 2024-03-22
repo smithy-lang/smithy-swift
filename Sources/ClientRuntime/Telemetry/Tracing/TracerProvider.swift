@@ -7,6 +7,7 @@
 
 /// A Tracer Provider provides implementations of Tracers.
 public protocol TracerProvider {
+
     /// Gets a scoped Tracer.
     ///
     /// - Parameter scope: the unique scope of the Tracer

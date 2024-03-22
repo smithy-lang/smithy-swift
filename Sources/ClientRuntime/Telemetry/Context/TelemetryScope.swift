@@ -7,6 +7,7 @@
 
 /// Delineates a Telemetry Scope that has a beginning and end, particularly for Telemetry Contexts.
 public protocol TelemetryScope {
+
     /// Ends the scope.
     func end()
 }

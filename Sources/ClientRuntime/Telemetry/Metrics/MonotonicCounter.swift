@@ -9,6 +9,7 @@
 ///
 /// Examples include: total requests received
 public protocol MonotonicCounter {
+
     /// Records a value for a metric.
     ///
     /// - Parameter value: value to record

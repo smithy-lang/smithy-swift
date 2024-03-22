@@ -13,28 +13,30 @@ public enum DefaultTelemetry {
     /// - loggerProvider: provides SwiftLoggers
     /// - meterProvider: no-op
     /// - tracerProvider: no-op
-    public static let Provider: TelemetryProvider = _DefaultTelemetryProvider()
+    public static let provider: TelemetryProvider = _DefaultTelemetryProvider()
 
     fileprivate class _DefaultTelemetryProvider: TelemetryProvider {
-        let contextManager: TelemetryContextManager = DefaultTelemetryContextManager
-        let loggerProvider: LoggerProvider = DefaultLoggerProvider
-        let meterProvider: MeterProvider = DefaultMeterProvider
-        let tracerProvider: TracerProvider = DefaultTracerProvider
+        var contextManager: TelemetryContextManager { defaultTelemetryContextManager }
+        var loggerProvider: LoggerProvider { defaultLoggerProvider }
+        var meterProvider: MeterProvider { defaultMeterProvider }
+        var tracerProvider: TracerProvider { defaultTracerProvider }
     }
 }
 
 // Context
 extension DefaultTelemetry {
-    fileprivate static let DefaultTelemetryContextManager: TelemetryContextManager = NoOpTelemetryContextManager()
-    fileprivate static let DefaultTelemetryContext: TelemetryContext = NoOpTelemetryContext()
-    fileprivate static let DefaultTelemetryScope: TelemetryScope = NoOpTelemetryScope()
+    fileprivate static let defaultTelemetryContextManager: TelemetryContextManager = NoOpTelemetryContextManager()
+    fileprivate static let defaultTelemetryContext: TelemetryContext = NoOpTelemetryContext()
+    fileprivate static let defaultTelemetryScope: TelemetryScope = NoOpTelemetryScope()
 
     fileprivate class NoOpTelemetryContextManager: TelemetryContextManager {
-        func current() -> TelemetryContext { DefaultTelemetryContext }
+        func current() -> TelemetryContext { defaultTelemetryContext }
     }
+
     fileprivate class NoOpTelemetryContext: TelemetryContext {
-        func makeCurrent() -> TelemetryScope { DefaultTelemetryScope }
+        func makeCurrent() -> TelemetryScope { defaultTelemetryScope }
     }
+
     fileprivate class NoOpTelemetryScope: TelemetryScope {
         func end() {}
     }
@@ -42,7 +44,7 @@ extension DefaultTelemetry {
 
 // Logging
 extension DefaultTelemetry {
-    fileprivate static let DefaultLoggerProvider: LoggerProvider = _DefaultLoggerProvider()
+    fileprivate static let defaultLoggerProvider: LoggerProvider = _DefaultLoggerProvider()
 
     fileprivate class _DefaultLoggerProvider: LoggerProvider {
         func getLogger(name: String) -> LogAgent { SwiftLogger(label: name) }
@@ -51,16 +53,17 @@ extension DefaultTelemetry {
 
 // Metrics
 extension DefaultTelemetry {
-    fileprivate static let DefaultMeterProvider: MeterProvider = NoOpMeterProvider()
-    fileprivate static let DefaultMeter: Meter = NoOpMeter()
-    fileprivate static let DefaultAsyncMeasurementHandle: AsyncMeasurementHandle = NoOpAsyncMeasurementHandle()
-    fileprivate static let DefaultUpDownCounter: UpDownCounter = NoOpUpDownCounter()
-    fileprivate static let DefaultMonotonicCounter: MonotonicCounter = NoOpMonotonicCounter()
-    fileprivate static let DefaultHistogram: Histogram = NoOpHistogram()
+    fileprivate static let defaultMeterProvider: MeterProvider = NoOpMeterProvider()
+    fileprivate static let defaultMeter: Meter = NoOpMeter()
+    fileprivate static let defaultAsyncMeasurementHandle: AsyncMeasurementHandle = NoOpAsyncMeasurementHandle()
+    fileprivate static let defaultUpDownCounter: UpDownCounter = NoOpUpDownCounter()
+    fileprivate static let defaultMonotonicCounter: MonotonicCounter = NoOpMonotonicCounter()
+    fileprivate static let defaultHistogram: Histogram = NoOpHistogram()
 
     fileprivate class NoOpMeterProvider: MeterProvider {
-        func getMeter(scope: String, attributes: Attributes?) -> Meter { DefaultMeter }
+        func getMeter(scope: String, attributes: Attributes?) -> Meter { defaultMeter }
     }
+
     fileprivate class NoOpMeter: Meter {
         func createGauge(
             name: String,
@@ -68,55 +71,64 @@ extension DefaultTelemetry {
             units: String?,
             description: String?
         ) -> AsyncMeasurementHandle {
-            DefaultAsyncMeasurementHandle
+            defaultAsyncMeasurementHandle
         }
+
         func createUpDownCounter(
             name: String,
             units: String?,
             description: String?
         ) -> UpDownCounter {
-            DefaultUpDownCounter
+            defaultUpDownCounter
         }
+
         func createAsyncUpDownCounter(
             name: String,
             callback: @escaping (any LongAsyncMeasurement) -> Void,
             units: String?,
             description: String?
         ) -> AsyncMeasurementHandle {
-            DefaultAsyncMeasurementHandle
+            defaultAsyncMeasurementHandle
         }
+
         func createCounter(
             name: String,
             units: String?,
             description: String?
         ) -> MonotonicCounter {
-            DefaultMonotonicCounter
+            defaultMonotonicCounter
         }
+
         func createAsyncMonotonicCounter(
             name: String,
             callback: @escaping (any LongAsyncMeasurement) -> Void,
             units: String?,
             description: String?
         ) -> AsyncMeasurementHandle {
-            DefaultAsyncMeasurementHandle
+            defaultAsyncMeasurementHandle
         }
+
         func createHistogram(
             name: String,
             units: String?,
             description: String?
         ) -> Histogram {
-            DefaultHistogram
+            defaultHistogram
         }
     }
+
     fileprivate class NoOpAsyncMeasurementHandle: AsyncMeasurementHandle {
         func stop() {}
     }
+
     fileprivate class NoOpUpDownCounter: UpDownCounter {
         func add(value: Int64, attributes: Attributes?, context: TelemetryContext?) {}
     }
+
     fileprivate class NoOpMonotonicCounter: MonotonicCounter {
         func add(value: Int64, attributes: Attributes?, context: TelemetryContext?) {}
     }
+
     fileprivate class NoOpHistogram: Histogram {
         func record(value: Double, attributes: Attributes?, context: TelemetryContext?) {}
     }
@@ -124,13 +136,14 @@ extension DefaultTelemetry {
 
 // Trace
 extension DefaultTelemetry {
-    fileprivate static let DefaultTracerProvider: TracerProvider = NoOpTracerProvider()
-    fileprivate static let DefaultTracer: Tracer = NoOpTracer()
-    fileprivate static let DefaultTraceSpan: TraceSpan = NoOpTraceSpan()
+    fileprivate static let defaultTracerProvider: TracerProvider = NoOpTracerProvider()
+    fileprivate static let defaultTracer: Tracer = NoOpTracer()
+    fileprivate static let defaultTraceSpan: TraceSpan = NoOpTraceSpan()
 
     fileprivate class NoOpTracerProvider: TracerProvider {
-        func getTracer(scope: String, attributes: Attributes?) -> Tracer { DefaultTracer }
+        func getTracer(scope: String, attributes: Attributes?) -> Tracer { defaultTracer }
     }
+
     fileprivate class NoOpTracer: Tracer {
         func createSpan(
             name: String,
@@ -138,11 +151,12 @@ extension DefaultTelemetry {
             spanKind: SpanKind,
             parentContext: TelemetryContext?
         ) -> TraceSpan {
-            DefaultTraceSpan
+            defaultTraceSpan
         }
     }
+
     fileprivate class NoOpTraceSpan: TraceSpan {
-        let name: String = ""
+        var name: String { "" }
         func emitEvent(name: String, attributes: Attributes?) {}
         func setAttribute<T>(key: AttributeKey<T>, value: T) {}
         func setStatus(status: TraceSpanStatus) {}

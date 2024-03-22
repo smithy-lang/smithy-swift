@@ -10,6 +10,7 @@
 ///
 /// A span with no parent is considered a root span.
 public protocol TraceSpan: TelemetryScope {
+
     /// The name of the span.
     var name: String { get }
 

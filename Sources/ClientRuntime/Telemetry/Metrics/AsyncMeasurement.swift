@@ -7,6 +7,7 @@
 
 /// Handle to stop recording values of an AsyncMeasurement.
 public protocol AsyncMeasurementHandle {
+
     /// Stop recording values of an AsyncMeasurement.
     ///
     /// Implementations probably will unregister an AsyncMeasurement callback.
@@ -14,6 +15,7 @@ public protocol AsyncMeasurementHandle {
 }
 
 public typealias LongAsyncMeasurement = AsyncMeasurement<Int64>
+
 public typealias DoubleAsyncMeasurement = AsyncMeasurement<Double>
 
 /// Async measurement of a specific numeric type.

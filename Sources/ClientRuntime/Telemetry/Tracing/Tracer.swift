@@ -10,6 +10,7 @@
 /// Implementations MAY provide convenient builder APIs or other extensions to create spans, but ultimately new spans
 /// should be created using the tracer interface.
 public protocol Tracer {
+
     /// Create a new Trace Span.
     ///
     /// - Parameter name: name of the span

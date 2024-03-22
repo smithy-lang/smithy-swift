@@ -9,6 +9,7 @@
 ///
 /// Implementations should be able to manage contexts in a thread-safe way.
 public protocol TelemetryContextManager {
+
     /// - Returns: the current Telemetry Context
     func current() -> TelemetryContext
 }

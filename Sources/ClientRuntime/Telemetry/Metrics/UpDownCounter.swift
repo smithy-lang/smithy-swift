@@ -9,6 +9,7 @@
 ///
 /// Examples include: queue length
 public protocol UpDownCounter {
+
     /// Records a value for a metric.
     ///
     /// - Parameter value: value to record

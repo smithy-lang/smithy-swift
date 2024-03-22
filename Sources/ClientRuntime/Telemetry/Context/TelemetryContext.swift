@@ -10,6 +10,7 @@
 /// Context implementations may be containers for execution-scoped values across API boundaries (both in-process and
 /// distributed).
 public protocol TelemetryContext {
+
     /// Make this context the currently active context.
     ///
     /// - Returns: the scope of the current context

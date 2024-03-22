@@ -16,6 +16,7 @@
 /// - Asynchronous MonotonicCounter
 /// - Histogram
 public protocol Meter {
+
     /// Creates a Gauge, used to measure the current instantaneous value of something.
     ///
     /// Examples include: the current memory used by a process

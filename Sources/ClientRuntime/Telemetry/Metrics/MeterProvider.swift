@@ -7,6 +7,7 @@
 
 /// A Meter Provider provides implementations of Meters.
 public protocol MeterProvider {
+
     /// Provides a Meter.
     ///
     /// - Parameter scope: the name of the instrumentation scope that uniquely identifies this meter
