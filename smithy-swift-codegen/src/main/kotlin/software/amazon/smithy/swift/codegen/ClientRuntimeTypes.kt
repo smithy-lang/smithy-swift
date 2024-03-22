@@ -101,6 +101,10 @@ object ClientRuntimeTypes {
         val AuthSchemeResolverParams = runtimeSymbol("AuthSchemeResolverParameters")
     }
 
+    object Checksum {
+        val ChecksumAlgorithm = runtimeSymbol("ChecksumAlgorithm")
+    }
+
     object Core {
         val AttributeKey = runtimeSymbol("AttributeKey")
         val Endpoint = runtimeSymbol("Endpoint")

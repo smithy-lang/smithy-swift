@@ -49,6 +49,11 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             logger.info("Found no supported checksums! Skipping flexible checksums workflow...")
             return try await next.handle(context: context, input: input)
         }
+        
+        if (!checksumHashFunction.isFlexibleChecksum) {
+            logger.info("\(checksumHashFunction) is not a flexible checksum! Skipping flexible checksums workflow...")
+            return try await next.handle(context: context, input: input)
+        }
 
         // Determine the header name
         let headerName = "x-amz-checksum-\(checksumHashFunction)"

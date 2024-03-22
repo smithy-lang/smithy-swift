@@ -36,5 +36,6 @@ class DefaultClientConfiguration : ClientConfiguration {
             ClientRuntimeTypes.Core.IdempotencyTokenGenerator,
             "AWSClientConfigDefaultsProvider.idempotencyTokenGenerator"
         ),
+        ConfigProperty("checksumAlgorithm", ClientRuntimeTypes.Checksum.ChecksumAlgorithm.toOptional())
     )
 }

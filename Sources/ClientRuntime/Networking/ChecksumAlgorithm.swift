@@ -40,7 +40,7 @@ public enum ChecksumAlgorithm {
         return hashFunctions
     }
 
-    func toString() -> String {
+    public func toString() -> String {
         switch self {
         case .crc32: return "crc32"
         case .crc32c: return "crc32c"
