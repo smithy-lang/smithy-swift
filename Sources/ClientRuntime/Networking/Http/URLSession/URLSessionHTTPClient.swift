@@ -20,6 +20,7 @@ import struct Foundation.URLQueryItem
 import struct Foundation.URLRequest
 import class Foundation.URLResponse
 import class Foundation.HTTPURLResponse
+import struct Foundation.TimeInterval
 import class Foundation.URLSession
 import class Foundation.URLSessionConfiguration
 import class Foundation.URLSessionTask
@@ -194,7 +195,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         func urlSession(
             _ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse
         ) async -> URLSession.ResponseDisposition {
-            logger.debug("urlSession(_:dataTask:didReceive:) called")
+            logger.debug("urlSession(_:dataTask:didReceive response:) called")
             storage.modify(dataTask) { connection in
                 guard let httpResponse = response as? HTTPURLResponse else {
                     logger.error("Received non-HTTP urlResponse")
@@ -219,7 +220,7 @@ public final class URLSessionHTTPClient: HTTPClient {
 
         /// Called when response data is received.
         func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-            logger.debug("urlSession(_:dataTask:didReceive:) called with \(data.count) bytes")
+            logger.debug("urlSession(_:dataTask:didReceive data:) called (\(data.count) bytes)")
             storage.modify(dataTask) { connection in
                 do {
                     try connection.responseStream.write(contentsOf: data)
@@ -272,6 +273,9 @@ public final class URLSessionHTTPClient: HTTPClient {
 
     /// The TLS options for this HTTP client.
     private let tlsOptions: URLSessionTLSOptions?
+  
+    /// The initial connection timeout for this HTTP client.
+    let connectionTimeout: TimeInterval
 
     // MARK: - init & deinit
 
@@ -285,6 +289,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         self.logger = SwiftLogger(label: "URLSessionHTTPClient")
         self.tlsOptions = config.urlSessionTLSOptions
         self.delegate = SessionDelegate(logger: logger, tlsOptions: tlsOptions)
+        self.connectionTimeout = httpClientConfiguration.connectTimeout ?? 60.0
         var urlsessionConfiguration = URLSessionConfiguration.default
         urlsessionConfiguration = URLSessionConfiguration.from(httpClientConfiguration: httpClientConfiguration)
         self.session = URLSession(configuration: urlsessionConfiguration, delegate: delegate, delegateQueue: nil)
@@ -320,7 +325,10 @@ public final class URLSessionHTTPClient: HTTPClient {
 
             // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
             // that URLSession can stream its request body from.
-            let streamBridge = requestStream.map { FoundationStreamBridge(readableStream: $0, bufferSize: 4096) }
+            // Allow 16kb of in-memory buffer for request body streaming
+            let streamBridge = requestStream.map {
+                FoundationStreamBridge(readableStream: $0, bufferSize: 16_384, logger: logger)
+            }
 
             // Create the request (with a streaming body when needed.)
             let urlRequest = self.makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
@@ -332,6 +340,7 @@ public final class URLSessionHTTPClient: HTTPClient {
 
             // Start the HTTP connection and start streaming the request body data
             dataTask.resume()
+            logger.info("start URLRequest(\(urlRequest.url?.absoluteString ?? "")) called")
             Task { await streamBridge?.open() }
         }
     }
@@ -355,7 +364,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             }
         }
         guard let url = components.url else { fatalError("Invalid HTTP request.  Please file a bug to report this.") }
-        var urlRequest = URLRequest(url: url)
+        var urlRequest = URLRequest(url: url, timeoutInterval: self.connectionTimeout)
         urlRequest.httpMethod = request.method.rawValue
         urlRequest.httpBodyStream = httpBodyStream
         for header in request.headers.headers + config.defaultHeaders.headers {

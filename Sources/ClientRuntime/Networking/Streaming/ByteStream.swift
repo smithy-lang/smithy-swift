@@ -126,3 +126,10 @@ extension ByteStream {
         return .stream(FileStream(fileHandle: fileHandle))
     }
 }
+
+enum ByteStreamError: Error {
+    case streamNotSeeakble
+    case invalidStreamTypeForChunkedBody(String)
+    case streamClosedOrEmpty
+    case streamDoesNotConformToAwsChunkedStream(String)
+}

@@ -7,16 +7,20 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
     // The priority to validate response checksums, if multiple are present
     let CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: [String] = [
-        HashFunction.crc32c,
+        ChecksumAlgorithm.crc32c,
         .crc32,
         .sha1,
         .sha256
-    ].map { $0.toString() }
+    ].sorted().map { $0.toString() }
 
     let validationMode: Bool
+    let priorityList: [String]
 
-    public init(validationMode: Bool) {
+    public init(validationMode: Bool, priorityList: [String] = []) {
         self.validationMode = validationMode
+        self.priorityList = !priorityList.isEmpty
+            ? withPriority(checksums: priorityList)
+            : CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
     }
 
     public func handle<H>(context: Context,
@@ -31,9 +35,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         context.attributes.set(key: AttributeKey<String>(name: "ChecksumHeaderValidated"), value: nil)
 
         // Initialize logger
-        guard let logger = context.getLogger() else {
-            throw ClientError.unknownError("No logger found!")
-        }
+        guard let logger = context.getLogger() else { throw ClientError.unknownError("No logger found!") }
 
         // Exit if validation should not be performed
         if !validationMode {
@@ -42,19 +44,19 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         }
 
         // Get the response
-        let response = try await next.handle(context: context, input: input)
-        let httpResponse = response.httpResponse
+        let output = try await next.handle(context: context, input: input)
+        let httpResponse = output.httpResponse
 
         // Determine if any checksum headers are present
-        logger.debug("HEADERS: \(httpResponse.headers)")
-        let _checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST.first {
+        let checksumHeaderIsPresent = priorityList.first {
             httpResponse.headers.value(for: "x-amz-checksum-\($0)") != nil
         }
-        guard let checksumHeader = _checksumHeader else {
-            logger.warn(
+
+        guard let checksumHeader = checksumHeaderIsPresent else {
+            let message =
                 "User requested checksum validation, but the response headers did not contain any valid checksums"
-            )
-            return try await next.handle(context: context, input: input)
+            logger.warn(message)
+            return output
         }
 
         let fullChecksumHeader = "x-amz-checksum-" + checksumHeader
@@ -64,7 +66,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
         context.attributes.set(key: AttributeKey<String>(name: "ChecksumHeaderValidated"), value: fullChecksumHeader)
 
         let checksumString = checksumHeader.removePrefix("x-amz-checksum-")
-        guard let responseChecksum = HashFunction.from(string: checksumString) else {
+        guard let responseChecksum = ChecksumAlgorithm.from(string: checksumString) else {
             throw ClientError.dataNotFound("Checksum found in header is not supported!")
         }
         guard let expectedChecksum = httpResponse.headers.value(for: fullChecksumHeader) else {
@@ -81,19 +83,26 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
             let actualChecksum = calculatedChecksum.toBase64String()
 
-            if expectedChecksum != actualChecksum {
-                throw ChecksumMismatchException.message(
-                    "Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)"
-                )
+            guard expectedChecksum == actualChecksum else {
+                let message = "Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)"
+                throw ChecksumMismatchException.message(message)
             }
         }
 
         func handleStreamPayload(_ stream: Stream) throws {
-            return
+            let validatingStream = ByteStream.getChecksumValidatingBody(
+                stream: stream,
+                expectedChecksum: expectedChecksum,
+                checksumAlgorithm: responseChecksum
+            )
+
+            // Set the response to a validating stream
+            context.response = output.httpResponse
+            context.response?.body = validatingStream
         }
 
         // Handle body vs handle stream
-        switch response.httpResponse.body {
+        switch httpResponse.body {
         case .data(let data):
             try handleNormalPayload(data)
         case .stream(let stream):
@@ -102,7 +111,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
             throw ClientError.dataNotFound("Cannot calculate the checksum of an empty body!")
         }
 
-        return try await next.handle(context: context, input: input)
+        return output
     }
 
     public typealias MInput = SdkHttpRequest
@@ -112,4 +121,9 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 
 enum ChecksumMismatchException: Error {
     case message(String)
+}
+
+private func withPriority(checksums: [String]) -> [String] {
+    let checksumsMap = checksums.compactMap { ChecksumAlgorithm.from(string: $0) }
+    return checksumsMap.sorted().map { $0.toString() }
 }

@@ -40,6 +40,7 @@ public class CRTClientEngine: HTTPClient {
         private let sharedDefaultIO = SDKDefaultIO.shared
         private let connectTimeoutMs: UInt32?
         private let tlsContext: TLSContext?
+        private let socketTimeout: UInt32?
 
         init(config: CRTClientEngineConfig) {
             self.windowSize = config.windowSize
@@ -47,6 +48,7 @@ public class CRTClientEngine: HTTPClient {
             self.logger = SwiftLogger(label: "SerialExecutor")
             self.connectTimeoutMs = config.connectTimeoutMs
             self.tlsContext = config.tlsContext
+            self.socketTimeout = config.socketTimeout
         }
 
         func getOrCreateConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
@@ -83,6 +85,12 @@ public class CRTClientEngine: HTTPClient {
                 socketOptions.connectTimeoutMs = timeout
             }
 #endif
+            let httpMonitoringOptions = HTTPMonitoringOptions(
+                minThroughputBytesPerSecond: 1,
+                // 0 means infinite; sockets won't timeout if no value was provided in config.
+                allowableThroughputFailureInterval: socketTimeout ?? 0
+            )
+
             let options = HTTPClientConnectionOptions(
                 clientBootstrap: sharedDefaultIO.clientBootstrap,
                 hostName: endpoint.host,
@@ -91,7 +99,7 @@ public class CRTClientEngine: HTTPClient {
                 proxyOptions: nil,
                 socketOptions: socketOptions,
                 tlsOptions: tlsConnectionOptions,
-                monitoringOptions: nil,
+                monitoringOptions: httpMonitoringOptions,
                 maxConnections: maxConnectionsPerEndpoint,
                 enableManualWindowManagement: false
             ) // not using backpressure yet
@@ -167,6 +175,52 @@ public class CRTClientEngine: HTTPClient {
                 do {
                     let stream = try connection.makeRequest(requestOptions: requestOptions)
                     try stream.activate()
+                    if request.isChunked {
+                        Task {
+                            do {
+                                guard let http1Stream = stream as? HTTP1Stream else {
+                                    throw StreamError.notSupported(
+                                        "HTTP1Stream should be used with an HTTP/1.1 connection!"
+                                    )
+                                }
+                                let body = request.body
+
+                                guard case .stream(let stream) = body, stream.isEligibleForAwsChunkedStreaming() else {
+                                    throw ByteStreamError.invalidStreamTypeForChunkedBody(
+                                        "The stream is not eligible for AWS chunked streaming or is not a stream type!"
+                                    )
+                                }
+
+                                guard let awsChunkedStream = stream as? AWSChunkedStream else {
+                                    throw ByteStreamError.streamDoesNotConformToAwsChunkedStream(
+                                        "Stream does not conform to AwsChunkedStream! Type is \(stream)."
+                                    )
+                                }
+
+                                var hasMoreChunks = true
+                                while hasMoreChunks {
+                                    // Process the first chunk and determine if there are more to send
+                                    hasMoreChunks = try await awsChunkedStream.chunkedReader.processNextChunk()
+
+                                    if !hasMoreChunks {
+                                        // Send the final chunk
+                                        let finalChunk = try await awsChunkedStream.chunkedReader.getFinalChunk()
+                                        try await http1Stream.writeChunk(chunk: finalChunk, endOfStream: true)
+                                    } else {
+                                        let currentChunkBody = awsChunkedStream.chunkedReader.getCurrentChunkBody()
+                                        if !currentChunkBody.isEmpty {
+                                            try await http1Stream.writeChunk(
+                                                chunk: awsChunkedStream.chunkedReader.getCurrentChunk(),
+                                                endOfStream: false
+                                            )
+                                        }
+                                    }
+                                }
+                            } catch {
+                                continuation.resume(throwing: error)
+                            }
+                        }
+                    }
                 } catch {
                     continuation.resume(throwing: error)
                 }
@@ -294,6 +348,7 @@ public class CRTClientEngine: HTTPClient {
                 response.statusCode = makeStatusCode(statusCode)
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
+                continuation.resume(throwing: error)
             }
 
             // closing the stream is required to signal to the caller that the response is complete

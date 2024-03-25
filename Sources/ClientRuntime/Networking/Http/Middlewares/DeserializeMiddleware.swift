@@ -26,6 +26,12 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
             Self.Context == H.Context {
 
             let response = try await next.handle(context: context, input: input) // call handler to get http response
+
+            // check if the response body was effected by a previous middleware
+            if let contextBody = context.response?.body {
+                response.httpResponse.body = contextBody
+            }
+
             var copiedResponse = response
             if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
                 let output = try await httpResponseClosure(copiedResponse.httpResponse)

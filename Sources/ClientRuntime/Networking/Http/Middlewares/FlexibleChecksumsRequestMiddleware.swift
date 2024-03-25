@@ -1,5 +1,11 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0.
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+import AwsCommonRuntimeKit
 
 public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
@@ -19,6 +25,16 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
     Self.MOutput == H.Output,
     Self.Context == H.Context {
 
+        if case(.stream(let stream)) = input.builder.body {
+            context.attributes.set(
+                key: AttributeKeys.isChunkedEligibleStream,
+                value: stream.isEligibleForAwsChunkedStreaming()
+            )
+            if stream.isEligibleForAwsChunkedStreaming() {
+                try input.builder.setAwsChunkedHeaders() // x-amz-decoded-content-length
+            }
+        }
+
         // Initialize logger
         guard let logger = context.getLogger() else {
             throw ClientError.unknownError("No logger found!")
@@ -29,7 +45,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             return try await next.handle(context: context, input: input)
         }
 
-        guard let checksumHashFunction = HashFunction.from(string: checksumString) else {
+        guard let checksumHashFunction = ChecksumAlgorithm.from(string: checksumString) else {
             logger.info("Found no supported checksums! Skipping flexible checksums workflow...")
             return try await next.handle(context: context, input: input)
         }
@@ -41,14 +57,17 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
         // Get the request
         let request = input.builder
 
-        func handleNormalPayload(_ data: Data?) throws {
+        // Check if any checksum header is already provided by the user
+        let checksumHeaderPrefix = "x-amz-checksum-"
+        if request.headers.headers.contains(where: {
+            $0.name.lowercased().starts(with: checksumHeaderPrefix) &&
+            $0.name.lowercased() != "x-amz-checksum-algorithm"
+        }) {
+            logger.debug("Checksum header already provided by the user. Skipping calculation.")
+            return try await next.handle(context: context, input: input)
+        }
 
-            // Check if any checksum header is already provided by the user
-            let checksumHeaderPrefix = "x-amz-checksum-"
-            if request.headers.headers.contains(where: { $0.name.lowercased().starts(with: checksumHeaderPrefix) }) {
-                logger.debug("Checksum header already provided by the user. Skipping calculation.")
-                return
-            }
+        func handleNormalPayload(_ data: Data?) throws {
 
             guard let data else {
                 throw ClientError.dataNotFound("Cannot calculate checksum of empty body!")
@@ -63,17 +82,14 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             request.updateHeader(name: headerName, value: [checksum])
         }
 
-        func handleStreamPayload(_ stream: Stream) throws {
-            logger.error("Stream payloads are not yet supported with flexible checksums!")
-            return
-        }
-
         // Handle body vs handle stream
         switch request.body {
         case .data(let data):
             try handleNormalPayload(data)
-        case .stream(let stream):
-            try handleStreamPayload(stream)
+        case .stream:
+            // Will handle calculating checksum and setting header later
+            context.attributes.set(key: AttributeKeys.checksum, value: checksumHashFunction)
+            request.updateHeader(name: "x-amz-trailer", value: [headerName])
         case .noStream:
             throw ClientError.dataNotFound("Cannot calculate the checksum of an empty body!")
         }

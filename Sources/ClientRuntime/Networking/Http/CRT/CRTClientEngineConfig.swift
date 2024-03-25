@@ -19,10 +19,14 @@ struct CRTClientEngineConfig {
     /// If you set this in server mode, it enforces client authentication.
     let verifyPeer: Bool
 
-    /// Timeout in MS for connections
+    /// Timeout in MS for connections.
     let connectTimeoutMs: UInt32?
 
+    /// Context for configuring TLS Options
     let tlsContext: TLSContext?
+
+    /// Timeout in seconds for sockets.
+    let socketTimeout: UInt32?
 
     public init(
         maxConnectionsPerEndpoint: Int = 50,
@@ -30,11 +34,13 @@ struct CRTClientEngineConfig {
         verifyPeer: Bool = true,
         connectTimeoutMs: UInt32? = nil,
         tlsContext: TLSContext? = nil
+        socketTimeout: UInt32? = nil
     ) {
         self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
         self.windowSize = windowSize
         self.verifyPeer = verifyPeer
         self.connectTimeoutMs = connectTimeoutMs
         self.tlsContext = tlsContext
+        self.socketTimeout = socketTimeout
     }
 }
