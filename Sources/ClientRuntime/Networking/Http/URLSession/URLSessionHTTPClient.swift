@@ -135,46 +135,40 @@ public final class URLSessionHTTPClient: HTTPClient {
         }
 
         /// Handles server trust challenges by validating against a custom certificate.
-        private func didReceive(
-            serverTrustChallenge challenge: URLAuthenticationChallenge
-        ) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
-            guard let tlsOptions,
-                tlsOptions.useCustomTrustStore == true,
-                let serverTrust = challenge.protectionSpace.serverTrust,
-                let customRoot = loadTrustStoreCertificate(
-                    fromPath: tlsOptions.trustStorePath! + "/" + tlsOptions.trustStoreFile!
-                ) else {
-                // Configuration does not specify custom handling, so proceed with default handling.
-                return (.performDefaultHandling, nil)
+        func didReceive(serverTrustChallenge challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+            guard let tlsOptions = tlsOptions, tlsOptions.useSelfSignedCertificate,
+                  let certFile = tlsOptions.certificateFile,
+                  let serverTrust = challenge.protectionSpace.serverTrust,
+                  let customRoot = Bundle.main.certificate(named: certFile) else {
+                logger.debug("Either TLSOptions not set or missing values or certificate is not found! Using default trust store.")
+                completionHandler(.performDefaultHandling, nil)
+                return
             }
 
             do {
-                let isTrusted = try serverTrust.evaluateAllowing(rootCertificates: [customRoot])
-                if isTrusted {
-                    return (.useCredential, URLCredential(trust: serverTrust))
+                if try serverTrust.evaluateAllowing(rootCertificates: [customRoot]) {
+                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
                 } else {
-                    return (.cancelAuthenticationChallenge, nil)
+                    logger.debug("Trust evaluation failed, cancelling authentication challenge.")
+                    completionHandler(.cancelAuthenticationChallenge, nil)
                 }
             } catch {
-                return (.cancelAuthenticationChallenge, nil)
+                logger.error("Trust evaluation threw an error: \(error.localizedDescription)")
+                completionHandler(.cancelAuthenticationChallenge, nil)
             }
         }
 
         /// Handles client identity challenges by presenting a client certificate.
-        private func didReceive(
-            clientIdentityChallenge challenge: URLAuthenticationChallenge
-        ) -> (URLSession.AuthChallengeDisposition, URLCredential?) {
-            guard let tlsOptions,
-                tlsOptions.useClientCertificate == true,
-                let keyStorePath = tlsOptions.keyStorePath,
-                let keyStorePassword = tlsOptions.keyStorePassword,
-                let identity = loadIdentity(fromPath: keyStorePath, password: keyStorePassword) else {
-                // Configuration does not specify custom handling, so proceed with default handling.
-                return (.performDefaultHandling, nil)
+        func didReceive(clientIdentityChallenge challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+            guard let tlsOptions, tlsOptions.useProvidedKeystore,
+                  let keystoreName = tlsOptions.keyStoreName,
+                  let keystorePasword = tlsOptions.keyStorePassword,
+                  let identity = Bundle.main.identity(named: keystoreName, password: keystorePasword) else {
+                logger.debug("Either TLSOptions not set or missing values or certificate is not found! Using default key store.")
+                completionHandler(.performDefaultHandling, nil)
+                return
             }
-
-            let urlCredential = URLCredential(identity: identity, certificates: nil, persistence: .forSession)
-            return (.useCredential, urlCredential)
+            completionHandler(.useCredential, URLCredential(identity: identity, certificates: nil, persistence: .forSession))
         }
 
         /// The URLSession delegate method where authentication challenges are handled.
@@ -186,13 +180,9 @@ public final class URLSessionHTTPClient: HTTPClient {
         ) {
             switch challenge.protectionSpace.authenticationMethod {
             case NSURLAuthenticationMethodServerTrust:
-                Task {
-                    let (disposition, credential) = await self.didReceive(serverTrustChallenge: challenge)
-                    completionHandler(disposition, credential)
-                }
+                self.didReceive(clientIdentityChallenge: challenge, completionHandler: completionHandler)
             case NSURLAuthenticationMethodClientCertificate:
-                let (disposition, credential) = self.didReceive(clientIdentityChallenge: challenge)
-                completionHandler(disposition, credential)
+                self.didReceive(clientIdentityChallenge: challenge, completionHandler: completionHandler)
             default:
                 completionHandler(.performDefaultHandling, nil)
             }
@@ -439,6 +429,7 @@ extension SecTrust {
         var error: CFError?
         let evaluationSucceeded = SecTrustEvaluateWithError(self, &error)
         guard evaluationSucceeded else {
+            print(error.debugDescription)
             throw TrustEvaluationError.evaluationFailed(error: error)
         }
         return evaluationSucceeded
@@ -457,39 +448,6 @@ extension SecTrust {
 
         // Evaluate the trust object.
         return try evaluate()
-    }
-}
-
-extension URLSessionDataDelegate {
-    // Load a trust store certificate from a specified file path
-    func loadTrustStoreCertificate(fromPath path: String) -> SecCertificate? {
-        guard let cerData = try? Data(contentsOf: URL(fileURLWithPath: path)) else {
-            return nil
-        }
-        return SecCertificateCreateWithData(nil, cerData as CFData)
-    }
-
-    // Load a client identity (key store) from a specified file path using a password
-    func loadIdentity(fromPath path: String, password: String) -> SecIdentity? {
-        guard let p12Data = try? Data(contentsOf: URL(fileURLWithPath: path)),
-              let options = [kSecImportExportPassphrase as String: password] as? CFDictionary else {
-            return nil
-        }
-
-        var items: CFArray?
-        let status = SecPKCS12Import(p12Data as CFData, options, &items)
-        guard status == errSecSuccess, let itemsArray = items as? [[String: AnyObject]],
-              !itemsArray.isEmpty else {
-            return nil
-        }
-
-        // Extract the identity from the first item, if available
-        if let identityDict = itemsArray.first,
-           let identityRef = identityDict[kSecImportItemIdentity as String] {
-            return (identityRef as! SecIdentity)
-        }
-
-        return nil
     }
 }
 
