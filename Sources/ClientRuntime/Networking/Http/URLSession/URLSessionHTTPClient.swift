@@ -273,7 +273,7 @@ public final class URLSessionHTTPClient: HTTPClient {
 
     /// The TLS options for this HTTP client.
     private let tlsOptions: URLSessionTLSOptions?
-  
+
     /// The initial connection timeout for this HTTP client.
     let connectionTimeout: TimeInterval
 
