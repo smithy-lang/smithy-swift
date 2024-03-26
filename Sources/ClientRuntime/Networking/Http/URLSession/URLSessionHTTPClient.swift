@@ -438,8 +438,13 @@ extension Bundle {
             return nil
         }
 
-        // Directly return the cast identity as SecIdentity
-        return identity
+        // Explanation of cross-platform behavior differences:
+        // - Linux and macOS treat Core Foundation types differently.
+        // - The `as? SecIdentity` casting causes a compiler error on Apple platforms as the cast is guaranteed.
+        // - Directly returning `identity` works on Linux but not on macOS due to strict type expectations.
+        // SwiftLint is temporarily disabled for the next line to allow a force cast, acknowledging the platform-specific behavior.
+        // swiftlint:disable:next force_cast
+        return (identity as! SecIdentity)
     }
 }
 
