@@ -22,11 +22,7 @@ struct CRTClientEngineConfig {
     /// Timeout in MS for connections.
     let connectTimeoutMs: UInt32?
 
-<<<<<<< HEAD
-    /// Context for configuring TLS Options
-=======
     /// Context for configuring TLS options
->>>>>>> 2390550f (add comment and comma)
     let tlsContext: TLSContext?
 
     /// Timeout in seconds for sockets.
@@ -37,12 +33,8 @@ struct CRTClientEngineConfig {
         windowSize: Int = 16 * 1024 * 1024,
         verifyPeer: Bool = true,
         connectTimeoutMs: UInt32? = nil,
-<<<<<<< HEAD
-        tlsContext: TLSContext? = nil
-        socketTimeout: UInt32? = nil
-=======
         tlsContext: TLSContext? = nil,
->>>>>>> 2390550f (add comment and comma)
+        socketTimeout: UInt32? = nil
     ) {
         self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
         self.windowSize = windowSize
