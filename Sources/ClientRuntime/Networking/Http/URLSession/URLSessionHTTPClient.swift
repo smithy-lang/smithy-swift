@@ -439,7 +439,7 @@ extension Bundle {
         }
 
         // Directly return the cast identity as SecIdentity
-        return (identity as! SecIdentity)
+        return (identity as? SecIdentity)
     }
 }
 
