@@ -136,12 +136,18 @@ public final class URLSessionHTTPClient: HTTPClient {
         }
 
         /// Handles server trust challenges by validating against a custom certificate.
-        func didReceive(serverTrustChallenge challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        func didReceive(
+            serverTrustChallenge challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
             guard let tlsOptions = tlsOptions, tlsOptions.useSelfSignedCertificate,
                   let certFile = tlsOptions.certificateFile,
                   let serverTrust = challenge.protectionSpace.serverTrust,
                   let customRoot = Bundle.main.certificate(named: certFile) else {
-                logger.debug("Either TLSOptions not set or missing values or certificate is not found! Using default trust store.")
+                logger.debug(
+                    "Either TLSOptions not set or missing values or certificate is not found! " +
+                    "Using default trust store."
+                )
                 completionHandler(.performDefaultHandling, nil)
                 return
             }
@@ -160,16 +166,25 @@ public final class URLSessionHTTPClient: HTTPClient {
         }
 
         /// Handles client identity challenges by presenting a client certificate.
-        func didReceive(clientIdentityChallenge challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        func didReceive(
+            clientIdentityChallenge challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
             guard let tlsOptions, tlsOptions.useProvidedKeystore,
                   let keystoreName = tlsOptions.keyStoreName,
                   let keystorePasword = tlsOptions.keyStorePassword,
                   let identity = Bundle.main.identity(named: keystoreName, password: keystorePasword) else {
-                logger.debug("Either TLSOptions not set or missing values or certificate is not found! Using default key store.")
+                logger.debug(
+                    "Either TLSOptions not set or missing values or certificate is not found! " +
+                    "Using default key store."
+                )
                 completionHandler(.performDefaultHandling, nil)
                 return
             }
-            completionHandler(.useCredential, URLCredential(identity: identity, certificates: nil, persistence: .forSession))
+            completionHandler(
+                .useCredential,
+                URLCredential(identity: identity, certificates: nil, persistence: .forSession)
+            )
         }
 
         /// The URLSession delegate method where authentication challenges are handled.
