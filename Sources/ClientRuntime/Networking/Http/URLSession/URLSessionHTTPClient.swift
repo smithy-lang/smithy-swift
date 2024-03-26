@@ -434,12 +434,12 @@ extension Bundle {
 
         guard status == errSecSuccess, let itemsArray = items as? [[String: AnyObject]],
               let firstItem = itemsArray.first,
-              let identity = firstItem[kSecImportItemIdentity as String] else {
+              let identity = firstItem[kSecImportItemIdentity as String] as? SecIdentity else {
             return nil
         }
 
         // Directly return the cast identity as SecIdentity
-        return (identity as? SecIdentity)
+        return identity
     }
 }
 
