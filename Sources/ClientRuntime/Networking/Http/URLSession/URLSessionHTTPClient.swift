@@ -7,10 +7,15 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
+import class Foundation.Bundle
 import class Foundation.InputStream
 import class Foundation.NSObject
 import class Foundation.NSRecursiveLock
+import var Foundation.NSURLAuthenticationMethodClientCertificate
+import var Foundation.NSURLAuthenticationMethodServerTrust
+import class Foundation.URLAuthenticationChallenge
 import struct Foundation.URLComponents
+import class Foundation.URLCredential
 import struct Foundation.URLQueryItem
 import struct Foundation.URLRequest
 import class Foundation.URLResponse
@@ -21,6 +26,7 @@ import class Foundation.URLSessionConfiguration
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
+import Security
 import AwsCommonRuntimeKit
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
@@ -121,8 +127,81 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// Logger for HTTP-related events.
         let logger: LogAgent
 
-        init(logger: LogAgent) {
+        /// TLS options
+        let tlsOptions: URLSessionTLSOptions?
+
+        init(logger: LogAgent, tlsOptions: URLSessionTLSOptions?) {
             self.logger = logger
+            self.tlsOptions = tlsOptions
+        }
+
+        /// Handles server trust challenges by validating against a custom certificate.
+        func didReceive(
+            serverTrustChallenge challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            guard let tlsOptions = tlsOptions, tlsOptions.useSelfSignedCertificate,
+                  let certFile = tlsOptions.certificateFile,
+                  let serverTrust = challenge.protectionSpace.serverTrust,
+                  let customRoot = Bundle.main.certificate(named: certFile) else {
+                logger.debug(
+                    "Either TLSOptions not set or missing values or certificate is not found! " +
+                    "Using default trust store."
+                )
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            do {
+                if try serverTrust.evaluateAllowing(rootCertificates: [customRoot]) {
+                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                } else {
+                    logger.debug("Trust evaluation failed, cancelling authentication challenge.")
+                    completionHandler(.cancelAuthenticationChallenge, nil)
+                }
+            } catch {
+                logger.error("Trust evaluation threw an error: \(error.localizedDescription)")
+                completionHandler(.cancelAuthenticationChallenge, nil)
+            }
+        }
+
+        /// Handles client identity challenges by presenting a client certificate.
+        func didReceive(
+            clientIdentityChallenge challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            guard let tlsOptions, tlsOptions.useProvidedKeystore,
+                  let keystoreName = tlsOptions.keyStoreName,
+                  let keystorePasword = tlsOptions.keyStorePassword,
+                  let identity = Bundle.main.identity(named: keystoreName, password: keystorePasword) else {
+                logger.debug(
+                    "Either TLSOptions not set or missing values or certificate is not found! " +
+                    "Using default key store."
+                )
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+            completionHandler(
+                .useCredential,
+                URLCredential(identity: identity, certificates: nil, persistence: .forSession)
+            )
+        }
+
+        /// The URLSession delegate method where authentication challenges are handled.
+        func urlSession(
+            _ session: URLSession,
+            task: URLSessionTask,
+            didReceive challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            switch challenge.protectionSpace.authenticationMethod {
+            case NSURLAuthenticationMethodServerTrust:
+                self.didReceive(clientIdentityChallenge: challenge, completionHandler: completionHandler)
+            case NSURLAuthenticationMethodClientCertificate:
+                self.didReceive(clientIdentityChallenge: challenge, completionHandler: completionHandler)
+            default:
+                completionHandler(.performDefaultHandling, nil)
+            }
         }
 
         /// Called when the initial response to a HTTP request is received.
@@ -207,6 +286,9 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// The logger for this HTTP client.
     private var logger: LogAgent
 
+    /// The TLS options for this HTTP client.
+    private let tlsOptions: URLSessionTLSOptions?
+
     /// The initial connection timeout for this HTTP client.
     let connectionTimeout: TimeInterval
 
@@ -220,7 +302,8 @@ public final class URLSessionHTTPClient: HTTPClient {
     public init(httpClientConfiguration: HttpClientConfiguration) {
         self.config = httpClientConfiguration
         self.logger = SwiftLogger(label: "URLSessionHTTPClient")
-        self.delegate = SessionDelegate(logger: logger)
+        self.tlsOptions = config.urlSessionTLSOptions
+        self.delegate = SessionDelegate(logger: logger, tlsOptions: tlsOptions)
         self.connectionTimeout = httpClientConfiguration.connectTimeout ?? 60.0
         var urlsessionConfiguration = URLSessionConfiguration.default
         urlsessionConfiguration = URLSessionConfiguration.from(httpClientConfiguration: httpClientConfiguration)
@@ -328,6 +411,73 @@ public enum URLSessionHTTPClientError: Error {
     /// A connection was not ended
     /// Please file a bug with aws-sdk-swift if you experience this error.
     case unresumedConnection
+}
+
+extension Bundle {
+    func certificate(named name: String) -> SecCertificate? {
+        guard let cerURL = self.url(forResource: name, withExtension: "cer"),
+              let cerData = try? Data(contentsOf: cerURL) else {
+            return nil
+        }
+        return SecCertificateCreateWithData(nil, cerData as CFData)
+    }
+
+    func identity(named name: String, password: String) -> SecIdentity? {
+        guard let p12URL = self.url(forResource: name, withExtension: "p12"),
+              let p12Data = try? Data(contentsOf: p12URL) else {
+            return nil
+        }
+
+        let options = [kSecImportExportPassphrase as String: password] as CFDictionary
+        var items: CFArray?
+        let status = SecPKCS12Import(p12Data as CFData, options, &items)
+
+        guard status == errSecSuccess, let itemsArray = items as? [[String: AnyObject]],
+              let firstItem = itemsArray.first,
+              let identity = firstItem[kSecImportItemIdentity as String] else {
+            return nil
+        }
+
+        // Explanation of cross-platform behavior differences:
+        // - Linux and macOS treat Core Foundation types differently.
+        // - The `as? SecIdentity` casting causes a compiler error on Apple platforms as the cast is guaranteed.
+        // - Directly returning `identity` works on Linux but not on macOS due to strict type expectations.
+        // SwiftLint is temporarily disabled for the next line to allow a force cast, acknowledging the platform-specific behavior.
+        // swiftlint:disable:next force_cast
+        return (identity as! SecIdentity)
+    }
+}
+
+extension SecTrust {
+    enum TrustEvaluationError: Error {
+        case evaluationFailed(error: CFError?)
+    }
+
+    /// Evaluates the trust object synchronously and returns a Boolean value indicating whether the trust evaluation succeeded.
+    func evaluate() throws -> Bool {
+        var error: CFError?
+        let evaluationSucceeded = SecTrustEvaluateWithError(self, &error)
+        guard evaluationSucceeded else {
+            print(error.debugDescription)
+            throw TrustEvaluationError.evaluationFailed(error: error)
+        }
+        return evaluationSucceeded
+    }
+
+    /// Evaluates the trust object allowing custom root certificates, and returns a Boolean value indicating whether the evaluation succeeded.
+    func evaluateAllowing(rootCertificates: [SecCertificate]) throws -> Bool {
+        // Set the custom root certificates as trusted anchors.
+        let status = SecTrustSetAnchorCertificates(self, rootCertificates as CFArray)
+        guard status == errSecSuccess else {
+            throw TrustEvaluationError.evaluationFailed(error: nil)
+        }
+
+        // Consider any built-in anchors in the evaluation.
+        SecTrustSetAnchorCertificatesOnly(self, false)
+
+        // Evaluate the trust object.
+        return try evaluate()
+    }
 }
 
 #endif
