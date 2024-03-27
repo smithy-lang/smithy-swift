@@ -18,7 +18,11 @@ class DefaultClientConfiguration : ClientConfiguration {
         get() = runtimeSymbol("DefaultClientConfiguration", SwiftDependency.CLIENT_RUNTIME)
 
     override fun getProperties(ctx: ProtocolGenerator.GenerationContext): Set<ConfigProperty> = setOf(
-        ConfigProperty("logger", ClientRuntimeTypes.Core.Logger, "AWSClientConfigDefaultsProvider.logger(clientName)"),
+        ConfigProperty(
+            "telemetryProvider",
+            ClientRuntimeTypes.Core.TelemetryProvider,
+            "ClientRuntime.DefaultTelemetry.provider"
+        ),
         ConfigProperty(
             "retryStrategyOptions",
             ClientRuntimeTypes.Core.RetryStrategyOptions,
