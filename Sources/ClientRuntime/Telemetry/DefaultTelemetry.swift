@@ -16,7 +16,7 @@ public enum DefaultTelemetry {
     public static let provider: TelemetryProvider = _DefaultTelemetryProvider()
 
     fileprivate class _DefaultTelemetryProvider: TelemetryProvider {
-        var contextManager: TelemetryContextManager { defaultTelemetryContextManager }
+        var contextManager: TelemetryContextManager { defaultContextManager }
         var loggerProvider: LoggerProvider { defaultLoggerProvider }
         var meterProvider: MeterProvider { defaultMeterProvider }
         var tracerProvider: TracerProvider { defaultTracerProvider }
@@ -25,7 +25,7 @@ public enum DefaultTelemetry {
 
 // Context
 extension DefaultTelemetry {
-    fileprivate static let defaultTelemetryContextManager: TelemetryContextManager = NoOpTelemetryContextManager()
+    public static let defaultContextManager: TelemetryContextManager = NoOpTelemetryContextManager()
     fileprivate static let defaultTelemetryContext: TelemetryContext = NoOpTelemetryContext()
     fileprivate static let defaultTelemetryScope: TelemetryScope = NoOpTelemetryScope()
 
@@ -44,7 +44,7 @@ extension DefaultTelemetry {
 
 // Logging
 extension DefaultTelemetry {
-    fileprivate static let defaultLoggerProvider: LoggerProvider = _DefaultLoggerProvider()
+    public static let defaultLoggerProvider: LoggerProvider = _DefaultLoggerProvider()
 
     fileprivate class _DefaultLoggerProvider: LoggerProvider {
         func getLogger(name: String) -> LogAgent { SwiftLogger(label: name) }
@@ -53,7 +53,7 @@ extension DefaultTelemetry {
 
 // Metrics
 extension DefaultTelemetry {
-    fileprivate static let defaultMeterProvider: MeterProvider = NoOpMeterProvider()
+    public static let defaultMeterProvider: MeterProvider = NoOpMeterProvider()
     fileprivate static let defaultMeter: Meter = NoOpMeter()
     fileprivate static let defaultAsyncMeasurementHandle: AsyncMeasurementHandle = NoOpAsyncMeasurementHandle()
     fileprivate static let defaultUpDownCounter: UpDownCounter = NoOpUpDownCounter()
@@ -136,7 +136,7 @@ extension DefaultTelemetry {
 
 // Trace
 extension DefaultTelemetry {
-    fileprivate static let defaultTracerProvider: TracerProvider = NoOpTracerProvider()
+    public static let defaultTracerProvider: TracerProvider = NoOpTracerProvider()
     fileprivate static let defaultTracer: Tracer = NoOpTracer()
     fileprivate static let defaultTraceSpan: TraceSpan = NoOpTraceSpan()
 
