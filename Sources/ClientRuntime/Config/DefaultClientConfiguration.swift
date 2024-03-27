@@ -6,11 +6,6 @@
 //
 
 public protocol DefaultClientConfiguration: ClientConfiguration {
-    /// The logger to be used for client activity.
-    ///
-    /// If none is provided, the SDK's logger will be used.
-    var logger: LogAgent { get set }
-
     /// The configuration for retry of failed network requests.
     ///
     /// Default options are provided if none are set.
@@ -29,5 +24,10 @@ public protocol DefaultClientConfiguration: ClientConfiguration {
     /// A token generator to ensure idempotency of requests.
     var idempotencyTokenGenerator: IdempotencyTokenGenerator { get set }
 
-    /// TODO(plugins): Add Checksum, Traceprobes, etc.
+    /// Configuration for telemetry, including tracing, metrics, and logging.
+    ///
+    /// If none is provided, only a default logger provider will be used.
+    var telemetryProvider: TelemetryProvider { get set }
+
+    /// TODO(plugins): Add Checksum, etc.
 }
