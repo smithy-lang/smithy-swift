@@ -29,5 +29,8 @@ public protocol DefaultClientConfiguration: ClientConfiguration {
     /// A token generator to ensure idempotency of requests.
     var idempotencyTokenGenerator: IdempotencyTokenGenerator { get set }
 
-    /// TODO(plugins): Add Checksum, Traceprobes, etc.
+    /// A checksum algorithm used for requests.
+    var checksumAlgorithm: ChecksumAlgorithm? { get set }
+
+    /// TODO(plugins): Add Traceprobes, etc.
 }
