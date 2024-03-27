@@ -9,6 +9,8 @@ public struct UnknownHTTPServiceError: ServiceError, HTTPError, Error {
 
     public var message: String?
 
+    public var resourceType: String?
+
     public var httpResponse: HttpResponse
 }
 

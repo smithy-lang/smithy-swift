@@ -53,7 +53,7 @@ class StructureGenerator(
     fun render() {
         writer.putContext("struct.name", structSymbol.name.toUpperCamelCase())
         if (shape.isError) {
-            renderErrorStructure()
+//            renderErrorStructure()
         } else {
             renderNonErrorStructure()
         }
@@ -200,10 +200,12 @@ class StructureGenerator(
         writer.writeShapeDocs(shape)
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
-        serviceErrorProtocolSymbol?.let {
-            writer.addImport(it)
-            writer.putContext("error.protocol", it)
-        } ?: run {
+        if (serviceErrorProtocolSymbol != null &&
+            serviceErrorProtocolSymbol != ClientRuntimeTypes.Http.HttpError
+        ) {
+            writer.addImport(serviceErrorProtocolSymbol)
+            writer.putContext("error.protocol", serviceErrorProtocolSymbol)
+        } else {
             writer.putContext("error.protocol", ProtocolGenerator.DefaultServiceErrorProtocolSymbol)
         }
 

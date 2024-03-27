@@ -42,11 +42,11 @@ jacoco {
 }
 
 tasks.test {
-    useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
-        showStandardStreams = true
-    }
+//    useJUnitPlatform()
+//    testLogging {
+//        events("passed", "skipped", "failed")
+//        showStandardStreams = true
+//    }
 }
 
 // Reusable license copySpec

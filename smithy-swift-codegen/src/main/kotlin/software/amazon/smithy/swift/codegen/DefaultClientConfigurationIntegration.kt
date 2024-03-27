@@ -12,6 +12,12 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 
 class DefaultClientConfigurationIntegration : SwiftIntegration {
+
+    override val protocolGenerators: List<ProtocolGenerator>
+        get() {
+            return listOf(HttpRestJsonProtocolGenerator())
+        }
+
     override fun clientConfigurations(ctx: ProtocolGenerator.GenerationContext): List<ClientConfiguration> {
         return listOf(DefaultClientConfiguration(), DefaultHttpClientConfiguration())
     }

@@ -14,8 +14,11 @@ public struct UnknownServiceError: ServiceError, Error {
     /// The message for this error, if one was received.
     public var message: String?
 
-    public init(typeName: String?, message: String?) {
+    public var resourceType: String?
+
+    public init(typeName: String?, message: String?, resourceType: String? = nil) {
         self.typeName = typeName
         self.message = message
+        self.resourceType = resourceType
     }
 }
