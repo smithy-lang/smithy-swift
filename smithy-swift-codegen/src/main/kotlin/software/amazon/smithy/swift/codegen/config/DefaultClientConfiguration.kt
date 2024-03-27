@@ -18,23 +18,26 @@ class DefaultClientConfiguration : ClientConfiguration {
         get() = runtimeSymbol("DefaultClientConfiguration", SwiftDependency.CLIENT_RUNTIME)
 
     override fun getProperties(ctx: ProtocolGenerator.GenerationContext): Set<ConfigProperty> = setOf(
-        ConfigProperty("logger", ClientRuntimeTypes.Core.Logger, "AWSClientConfigDefaultsProvider.logger(clientName)"),
+        ConfigProperty(
+            "logger", ClientRuntimeTypes.Core.Logger,
+            "DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultLogger(clientName: clientName)"
+        ),
         ConfigProperty(
             "retryStrategyOptions",
             ClientRuntimeTypes.Core.RetryStrategyOptions,
-            "AWSClientConfigDefaultsProvider.retryStrategyOptions()",
+            "DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultRetryStrategyOptions",
             true
         ),
         ConfigProperty(
             "clientLogMode",
             ClientRuntimeTypes.Core.ClientLogMode,
-            "AWSClientConfigDefaultsProvider.clientLogMode"
+            "DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultClientLogMode"
         ),
         ConfigProperty("endpoint", SwiftTypes.String.toOptional()),
         ConfigProperty(
             "idempotencyTokenGenerator",
             ClientRuntimeTypes.Core.IdempotencyTokenGenerator,
-            "AWSClientConfigDefaultsProvider.idempotencyTokenGenerator"
+            "DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultIdempotencyTokenGenerator"
         ),
     )
 }

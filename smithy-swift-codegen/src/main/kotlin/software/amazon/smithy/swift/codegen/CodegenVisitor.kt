@@ -80,7 +80,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
             }
         }
 
-        baseGenerationContext = GenerationContext(model, symbolProvider, settings, protocolGenerator, integrations)
+        baseGenerationContext = GenerationContext(
+            model, symbolProvider, settings, fileManifest, protocolGenerator, integrations
+        )
 
         protocolContext = protocolGenerator?.let { ProtocolGenerator.GenerationContext(settings, model, service, symbolProvider, integrations, it.protocol, writers) }
     }

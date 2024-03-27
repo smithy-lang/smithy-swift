@@ -11,11 +11,15 @@ import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.codegen.core.WriterDelegator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
+import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
@@ -65,8 +69,33 @@ class WaiterConfigGeneratorTests {
             override val model: Model = context.generationCtx.model
             override val symbolProvider: SymbolProvider = context.generationCtx.symbolProvider
             override val settings: SwiftSettings = context.generationCtx.settings
-            override val protocolGenerator: ProtocolGenerator? = context.generator
+            override val fileManifest: FileManifest = context.manifest
+            override val protocolGenerator: ProtocolGenerator = context.generator
             override val integrations: List<SwiftIntegration> = context.generationCtx.integrations
+
+            override fun model(): Model {
+                return model
+            }
+
+            override fun settings(): SwiftSettings {
+                return settings
+            }
+
+            override fun symbolProvider(): SymbolProvider {
+                return symbolProvider
+            }
+
+            override fun fileManifest(): FileManifest {
+                return fileManifest
+            }
+
+            override fun writerDelegator(): WriterDelegator<SwiftWriter> {
+                return SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations)
+            }
+
+            override fun integrations(): MutableList<SwiftIntegration> {
+                return integrations.toMutableList()
+            }
         }
         val path = "Test/Waiters.swift"
         context.generationCtx.delegator.useFileWriter(path) { writer ->

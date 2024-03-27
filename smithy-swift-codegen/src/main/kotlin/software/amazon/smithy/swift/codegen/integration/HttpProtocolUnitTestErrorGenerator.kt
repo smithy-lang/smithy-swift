@@ -72,6 +72,15 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         super.renderAssertions(test, outputShape)
     }
 
+    override fun renderExpectedBody(test: HttpResponseTestCase) {
+        if (test.body.isPresent && test.body.get().isNotBlank()) {
+            val data = writer.format("Data(\"\"\"\n\$L\n\"\"\".utf8)", test.body.get().replace("\\\"", "\\\\\""))
+            writer.write("content: .data(\$L)", data)
+        } else {
+            writer.write("content: nil")
+        }
+    }
+
     class Builder : HttpProtocolUnitTestResponseGenerator.Builder() {
         var error: Shape? = null
 

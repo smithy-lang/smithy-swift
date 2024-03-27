@@ -11,7 +11,7 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 
 // An enum expressing the six defined AWS protocols used with Smithy.
 enum class AWSProtocol {
-    REST_XML, AWS_QUERY, EC2_QUERY, REST_JSON_1, AWS_JSON_1_0, AWS_JSON_1_1
+    REST_XML, AWS_QUERY, EC2_QUERY, REST_JSON_1, AWS_JSON_1_0, AWS_JSON_1_1, FakeProtocol
 }
 
 // The AWS protocols that may be used with Smithy.
@@ -23,7 +23,7 @@ val ServiceShape.awsProtocol: AWSProtocol
         hasTrait<RestJson1Trait>() -> AWSProtocol.REST_JSON_1
         hasTrait<AwsJson1_0Trait>() -> AWSProtocol.AWS_JSON_1_0
         hasTrait<AwsJson1_1Trait>() -> AWSProtocol.AWS_JSON_1_1
-        else -> throw Exception("Service does not use a supported protocol")
+        else -> AWSProtocol.FakeProtocol
     }
 
 // The wire protocols that an AWS protocol may use over the wire for its requests or responses.
@@ -36,19 +36,19 @@ val ServiceShape.requestWireProtocol: WireProtocol
     get() = when (awsProtocol) {
         AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY -> WireProtocol.FORM_URL
         AWSProtocol.REST_XML -> WireProtocol.XML
-        AWSProtocol.REST_JSON_1, AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1 -> WireProtocol.JSON
+        AWSProtocol.REST_JSON_1, AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1, AWSProtocol.FakeProtocol -> WireProtocol.JSON
     }
 
 // The wire protocol used for this service's responses.
 val ServiceShape.responseWireProtocol: WireProtocol
     get() = when (awsProtocol) {
         AWSProtocol.REST_XML, AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY -> WireProtocol.XML
-        AWSProtocol.REST_JSON_1, AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1 -> WireProtocol.JSON
+        AWSProtocol.REST_JSON_1, AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1, AWSProtocol.FakeProtocol -> WireProtocol.JSON
     }
 
 // Whether this AWS protocol is RPC.
 val ServiceShape.isRPCBound: Boolean
     get() = when (awsProtocol) {
-        AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1, AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY -> true
+        AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1, AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY, AWSProtocol.FakeProtocol -> true
         else -> false
     }

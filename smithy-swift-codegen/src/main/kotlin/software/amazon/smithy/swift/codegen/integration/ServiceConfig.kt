@@ -19,7 +19,7 @@ data class ConfigField(val memberName: String?, val type: Symbol, val propFormat
  */
 abstract class ServiceConfig(val writer: SwiftWriter, val clientName: String, val serviceName: String) {
 
-    open val typeName: String = "${clientName.toUpperCamelCase()}.${clientName.toUpperCamelCase()}Configuration"
+    open val typeName: String = "$serviceName.${clientName.toUpperCamelCase()}Configuration"
 
     open fun serviceSpecificConfigProperties(): List<ConfigField> = listOf()
 }

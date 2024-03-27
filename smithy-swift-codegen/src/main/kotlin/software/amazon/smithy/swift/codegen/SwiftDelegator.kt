@@ -7,16 +7,15 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.codegen.core.WriterDelegator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
-import java.nio.file.Paths
 
 /**
  * Manages writers for Swift files.
@@ -27,29 +26,7 @@ class SwiftDelegator(
     private val fileManifest: FileManifest,
     private val symbolProvider: SymbolProvider,
     private val integrations: List<SwiftIntegration> = listOf()
-) {
-
-    private val writers: MutableMap<String, SwiftWriter> = mutableMapOf()
-
-    /**
-     * Writes all pending writers to disk and then clears them out.
-     */
-    fun flushWriters() {
-        writers.forEach() { (filename, writer) ->
-            fileManifest.writeFile(filename, writer.toString())
-        }
-        writers.clear()
-    }
-
-    /**
-     * Gets all of the dependencies that have been registered in writers owned by the delegator.
-     *
-     * @return Returns all the dependencies.
-     */
-    val dependencies: List<SymbolDependency>
-        get() {
-            return writers.values.flatMap(SwiftWriter::dependencies)
-        }
+) : WriterDelegator<SwiftWriter>(fileManifest, symbolProvider, SwiftWriter.SwiftWriterFactory(integrations)) {
 
     /**
      * Gets a previously created writer or creates a new one if needed.
@@ -75,24 +52,25 @@ class SwiftDelegator(
         symbol: Symbol,
         block: (SwiftWriter) -> Unit
     ) {
-        val writer: SwiftWriter = checkoutWriter(symbol.definitionFile)
+        useFileWriter(symbol.definitionFile) { writer ->
 
-        // Add any needed DECLARE symbols.
-        writer.addImportReferences(symbol, SymbolReference.ContextOption.DECLARE)
-        writer.dependencies.addAll(symbol.dependencies)
-        writer.pushState()
+            // Add any needed DECLARE symbols.
+            writer.addImportReferences(symbol, SymbolReference.ContextOption.DECLARE)
+            writer.dependencies.addAll(symbol.dependencies)
+            writer.pushState()
 
-        // shape is stored in the property bag when generated, if it's there pull it back out
-        val shape = symbol.getProperty("shape", Shape::class.java)
-        if (shape.isPresent) {
-            // Allow integrations to do things like add onSection callbacks.
-            // these onSection callbacks are removed when popState is called.
-            for (integration in integrations) {
-                integration.onShapeWriterUse(settings, model, symbolProvider, writer, shape.get())
+            // shape is stored in the property bag when generated, if it's there pull it back out
+            val shape = symbol.getProperty("shape", Shape::class.java)
+            if (shape.isPresent) {
+                // Allow integrations to do things like add onSection callbacks.
+                // these onSection callbacks are removed when popState is called.
+                for (integration in integrations) {
+                    integration.onShapeWriterUse(settings, model, symbolProvider, writer, shape.get())
+                }
             }
+            block(writer)
+            writer.popState()
         }
-        block(writer)
-        writer.popState()
     }
 
     fun useShapeExtensionWriter(shape: Shape, extensionName: String, block: (SwiftWriter) -> Unit) {
@@ -108,18 +86,6 @@ class SwiftDelegator(
     }
 
     /**
-     * Gets a previously created writer or creates a new one if needed
-     * and adds a new line if the writer already exists.
-     *
-     * @param filename Name of the file to create.
-     * @param writerConsumer Lambda that accepts and works with the file.
-     */
-    fun useFileWriter(filename: String, writerConsumer: (SwiftWriter) -> Unit) {
-        val writer: SwiftWriter = checkoutWriter(filename)
-        writerConsumer(writer)
-    }
-
-    /**
      * Gets a previously created test file writer or creates a new one if needed
      * and adds a new line if the writer already exists.
      *
@@ -127,27 +93,6 @@ class SwiftDelegator(
      * @param block Lambda that accepts and works with the file.
      */
     fun useTestFileWriter(filename: String, namespace: String, block: (SwiftWriter) -> Unit) {
-        val writer: SwiftWriter = checkoutWriter(filename)
-        block(writer)
-    }
-
-    private fun checkoutWriter(filename: String): SwiftWriter {
-        val formattedFilename = Paths.get(filename).normalize().toString()
-        val needsNewline = writers.containsKey(formattedFilename)
-        val writer = writers.getOrPut(formattedFilename) {
-            val swiftWriter = SwiftWriter(settings.moduleName)
-            integrations.forEach { integration ->
-                integration.sectionWriters.forEach { (sectionId, sectionWriter) ->
-                    swiftWriter.customizeSection(sectionId) { codeWriter, previousValue ->
-                        sectionWriter.write(codeWriter, previousValue)
-                    }
-                }
-            }
-            swiftWriter
-        }
-        if (needsNewline) {
-            writer.write("\n")
-        }
-        return writer
+        useFileWriter(filename, namespace, block)
     }
 }

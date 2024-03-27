@@ -22,7 +22,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
-import software.amazon.smithy.swift.codegen.SymbolVisitor
+import software.amazon.smithy.swift.codegen.SwiftSymbolProvider
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.expectShape
@@ -262,12 +262,12 @@ class SymbolProviderTest {
         val invalidNames = mutableListOf<String>("0", "0.0", "a@")
 
         for (validName in validNames) {
-            val isSwiftIdentifierValid = SymbolVisitor.isValidSwiftIdentifier(validName)
+            val isSwiftIdentifierValid = SwiftSymbolProvider.isValidSwiftIdentifier(validName)
             assertTrue(isSwiftIdentifierValid, "$validName is wrongly interpreted as invalid swift identifier")
         }
 
         for (invalidName in invalidNames) {
-            val isSwiftIdentifierValid = SymbolVisitor.isValidSwiftIdentifier(invalidName)
+            val isSwiftIdentifierValid = SwiftSymbolProvider.isValidSwiftIdentifier(invalidName)
             assertFalse(isSwiftIdentifierValid, "$invalidName is wrongly interpreted as valid swift identifier")
         }
     }

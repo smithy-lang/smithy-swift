@@ -5,7 +5,10 @@
 
 package software.amazon.smithy.swift.codegen
 
-class ImportDeclarations {
+import software.amazon.smithy.codegen.core.ImportContainer
+import software.amazon.smithy.codegen.core.Symbol
+
+class ImportDeclarations : ImportContainer {
     private val imports = mutableSetOf<ImportStatement>()
 
     fun addImport(
@@ -40,6 +43,10 @@ class ImportDeclarations {
             .sortedBy { it.packageName }
             .map(ImportStatement::statement)
             .joinToString(separator = "\n")
+    }
+
+    override fun importSymbol(symbol: Symbol?, alias: String?) {
+        TODO("Not yet implemented")
     }
 }
 
