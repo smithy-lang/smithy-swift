@@ -1,7 +1,7 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.swift.codegen.core.CodegenContext
+import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
@@ -12,7 +12,7 @@ class ServiceNamespaceIntegration : SwiftIntegration {
     }
 
     override fun writeAdditionalFiles(
-        ctx: CodegenContext,
+        ctx: SwiftCodegenContext,
         protoCtx: ProtocolGenerator.GenerationContext,
         delegator: SwiftDelegator
     ) {

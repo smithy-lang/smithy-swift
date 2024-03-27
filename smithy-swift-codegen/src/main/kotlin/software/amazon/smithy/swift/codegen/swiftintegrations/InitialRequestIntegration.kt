@@ -10,7 +10,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftSettings
-import software.amazon.smithy.swift.codegen.core.CodegenContext
+import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.DocumentWritingClosureUtils
@@ -24,7 +24,7 @@ class InitialRequestIntegration : SwiftIntegration {
     }
 
     override fun writeAdditionalFiles(
-        ctx: CodegenContext,
+        ctx: SwiftCodegenContext,
         protocolGenerationContext: ProtocolGenerator.GenerationContext,
         delegator: SwiftDelegator
     ) {

@@ -8,7 +8,7 @@ package software.amazon.smithy.swift.codegen.waiters
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.core.CodegenContext
+import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.waiters.Matcher.ErrorTypeMember
@@ -16,7 +16,7 @@ import software.amazon.smithy.waiters.Waiter
 
 class WaiterConfigGenerator(
     val writer: SwiftWriter,
-    val ctx: CodegenContext,
+    val ctx: SwiftCodegenContext,
     val service: ServiceShape,
     val waitedOperation: OperationShape,
     val waiterName: String,

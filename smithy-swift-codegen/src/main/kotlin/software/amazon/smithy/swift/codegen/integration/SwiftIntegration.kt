@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.SmithyIntegration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -14,7 +15,8 @@ import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.config.ClientConfiguration
-import software.amazon.smithy.swift.codegen.core.CodegenContext
+import software.amazon.smithy.swift.codegen.core.GenerationContext
+import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 
 /**
@@ -22,7 +24,7 @@ import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
  * new protocol code generators, renaming shapes, modifying the model,
  * adding custom code, etc.
  */
-interface SwiftIntegration {
+interface SwiftIntegration : SmithyIntegration<SwiftSettings, SwiftWriter, GenerationContext> {
     /**
      * Gets the sort order of the customization from -128 to 127.
      *
@@ -38,19 +40,6 @@ interface SwiftIntegration {
      */
     val order: Byte
         get() = 0
-
-    /**
-     * Preprocess the model before code generation.
-     *
-     *
-     * This can be used to remove unsupported features, remove traits
-     * from shapes (e.g., make members optional), etc.
-     *
-     * @param model model definition.
-     * @param settings Setting used to generate.
-     * @return Returns the updated model.
-     */
-    fun preprocessModel(model: Model, settings: SwiftSettings): Model = model
 
     /**
      * Updates the [SymbolProvider] used when generating code.
@@ -157,7 +146,7 @@ interface SwiftIntegration {
      * @param delegator File writer(s)
      */
     fun writeAdditionalFiles(
-        ctx: CodegenContext,
+        ctx: SwiftCodegenContext,
         protocolGenerationContext: ProtocolGenerator.GenerationContext,
         delegator: SwiftDelegator
     ) {

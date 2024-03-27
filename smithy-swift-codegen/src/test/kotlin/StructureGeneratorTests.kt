@@ -31,7 +31,7 @@ class StructureGeneratorTests {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.staticHeader)
+        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
         val expectedGeneratedStructure =
             """
             /// This is documentation about the shape.
@@ -253,7 +253,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.staticHeader)
+        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
         val expectedGeneratedStructure =
             """
                 import ClientRuntime

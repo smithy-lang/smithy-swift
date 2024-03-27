@@ -12,7 +12,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.PaginatedTrait
-import software.amazon.smithy.swift.codegen.core.CodegenContext
+import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.customtraits.PaginationTruncationMember
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
@@ -32,7 +32,7 @@ class PaginatorGenerator : SwiftIntegration {
     override fun enabledForService(model: Model, settings: SwiftSettings): Boolean =
         model.operationShapes.any { it.hasTrait<PaginatedTrait>() }
 
-    override fun writeAdditionalFiles(ctx: CodegenContext, protoCtx: ProtocolGenerator.GenerationContext, delegator: SwiftDelegator) {
+    override fun writeAdditionalFiles(ctx: SwiftCodegenContext, protoCtx: ProtocolGenerator.GenerationContext, delegator: SwiftDelegator) {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
         val paginatedIndex = PaginatedIndex.of(ctx.model)
 
@@ -53,7 +53,7 @@ class PaginatorGenerator : SwiftIntegration {
     // Render paginator(s) for operation
     private fun renderPaginatorForOperation(
         writer: SwiftWriter,
-        ctx: CodegenContext,
+        ctx: SwiftCodegenContext,
         service: ServiceShape,
         paginatedOperation: OperationShape,
         paginationInfo: PaginationInfo,
@@ -227,7 +227,7 @@ private data class ItemDescriptor(
 /**
  * Return an [ItemDescriptor] if model supplies, otherwise null
  */
-private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: CodegenContext): ItemDescriptor? {
+private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: SwiftCodegenContext): ItemDescriptor? {
     val itemMemberId = paginationInfo.itemsMemberPath?.lastOrNull()?.target ?: return null
     val itemLiteral = paginationInfo.itemsMemberPath!!.last()!!.toLowerCamelCase()
     val itemPathLiteral = paginationInfo.itemsMemberPath.joinToString(separator = "?.") { it.toLowerCamelCase() }
