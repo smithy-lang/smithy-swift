@@ -13,7 +13,7 @@ import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 /**
  * Common codegen properties required across different codegen contexts
  */
-interface CodegenContext : software.amazon.smithy.codegen.core.CodegenContext<SwiftSettings, SwiftWriter, SwiftIntegration> {
+interface SwiftCodegenContext : software.amazon.smithy.codegen.core.CodegenContext<SwiftSettings, SwiftWriter, SwiftIntegration> {
     val model: Model
     val symbolProvider: SymbolProvider
     val settings: SwiftSettings
@@ -33,7 +33,7 @@ data class GenerationContext(
     override val protocolGenerator: ProtocolGenerator? = null,
     override val integrations: List<SwiftIntegration> = listOf(),
     private val writerDelegator: SwiftDelegator = SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations)
-) : CodegenContext {
+) : SwiftCodegenContext {
     override fun model(): Model {
         return model
     }
@@ -59,7 +59,7 @@ data class GenerationContext(
     }
 }
 
-fun CodegenContext.toProtocolGenerationContext(serviceShape: ServiceShape, swiftDelegator: SwiftDelegator): ProtocolGenerator.GenerationContext? {
+fun SwiftCodegenContext.toProtocolGenerationContext(serviceShape: ServiceShape, swiftDelegator: SwiftDelegator): ProtocolGenerator.GenerationContext? {
     val protocol = protocolGenerator?.let { it.protocol } ?: run {
         return null
     }

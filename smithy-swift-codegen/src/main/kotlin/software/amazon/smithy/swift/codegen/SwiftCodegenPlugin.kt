@@ -25,6 +25,8 @@ import java.util.logging.Logger
  */
 class SwiftCodegenPlugin : SmithyBuildPlugin {
 
+    private var resolvedModel: Model? = null
+
     companion object {
 
         private val LOGGER = Logger.getLogger(SwiftCodegenPlugin::class.java.getName())
@@ -38,6 +40,30 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
          * @return Returns the created provider
          */
         fun createSymbolProvider(model: Model, swiftSettings: SwiftSettings): SymbolProvider = SwiftSymbolProvider(model, swiftSettings)
+
+        fun preprocessModel(model: Model, settings: SwiftSettings, integrations: List<SwiftIntegration>): Model {
+            var resolvedModel = model
+
+            for (integration in integrations) {
+                resolvedModel = integration.preprocessModel(resolvedModel, settings)
+            }
+
+            resolvedModel = ModelTransformer.create().flattenAndRemoveMixins(resolvedModel)
+            resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
+            resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
+            resolvedModel = NestedShapeTransformer.transform(resolvedModel, settings.getService(resolvedModel))
+            resolvedModel = UnionIndirectivizer.transform(resolvedModel)
+            return resolvedModel
+        }
+
+        fun getEnabledIntegrations(model: Model, settings: SwiftSettings): List<SwiftIntegration> {
+            return ServiceLoader.load(SwiftIntegration::class.java, CodegenDirector::class.java.getClassLoader())
+                .also { integration -> LOGGER.info("Loaded SwiftIntegration: ${integration.javaClass.name}") }
+                .filter { integration -> integration.enabledForService(model, settings) }
+                .also { integration -> LOGGER.info("Enabled SwiftIntegration: ${integration.javaClass.name}") }
+                .sortedBy(SwiftIntegration::order)
+                .toList()
+        }
     }
 
     override fun getName(): String = "swift-codegen"
@@ -57,12 +83,7 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
 
         codegenDirector.fileManifest(context.fileManifest)
 
-        val enabledIntegrations = ServiceLoader.load(SwiftIntegration::class.java, CodegenDirector::class.java.getClassLoader())
-            .also { integration -> LOGGER.info("Loaded SwiftIntegration: ${integration.javaClass.name}") }
-            .filter { integration -> integration.enabledForService(context.model, swiftSettings) }
-            .also { integration -> LOGGER.info("Enabled SwiftIntegration: ${integration.javaClass.name}") }
-            .sortedBy(SwiftIntegration::order)
-            .toList()
+        val enabledIntegrations = getEnabledIntegrations(context.model, swiftSettings)
 
         val resolvedModel = preprocessModel(context.model, swiftSettings, enabledIntegrations)
 
@@ -73,20 +94,11 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
         codegenDirector.service(swiftSettings.getService(resolvedModel).id)
 
         codegenDirector.run()
+
+        this.resolvedModel = resolvedModel
     }
 
-    private fun preprocessModel(model: Model, settings: SwiftSettings, integrations: List<SwiftIntegration>): Model {
-        var resolvedModel = model
-
-        for (integration in integrations) {
-            resolvedModel = integration.preprocessModel(resolvedModel, settings)
-        }
-
-        resolvedModel = ModelTransformer.create().flattenAndRemoveMixins(resolvedModel)
-        resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
-        resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
-        resolvedModel = NestedShapeTransformer.transform(resolvedModel, settings.getService(resolvedModel))
-        resolvedModel = UnionIndirectivizer.transform(resolvedModel)
+    fun getResolvedModel(): Model? {
         return resolvedModel
     }
 }

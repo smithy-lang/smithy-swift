@@ -56,7 +56,7 @@ class SwiftDelegator(
 
             // Add any needed DECLARE symbols.
             writer.addImportReferences(symbol, SymbolReference.ContextOption.DECLARE)
-            writer.dependencies.addAll(symbol.dependencies)
+            symbol.dependencies.forEach { writer.addDependency(it) }
             writer.pushState()
 
             // shape is stored in the property bag when generated, if it's there pull it back out

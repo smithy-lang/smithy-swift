@@ -15,8 +15,8 @@ import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.config.ClientConfiguration
-import software.amazon.smithy.swift.codegen.core.CodegenContext
 import software.amazon.smithy.swift.codegen.core.GenerationContext
+import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 
 /**
@@ -146,7 +146,7 @@ interface SwiftIntegration : SmithyIntegration<SwiftSettings, SwiftWriter, Gener
      * @param delegator File writer(s)
      */
     fun writeAdditionalFiles(
-        ctx: CodegenContext,
+        ctx: SwiftCodegenContext,
         protocolGenerationContext: ProtocolGenerator.GenerationContext,
         delegator: SwiftDelegator
     ) {

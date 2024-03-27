@@ -9,7 +9,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.core.CodegenContext
+import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.waiters.WaitableTrait
@@ -19,7 +19,7 @@ import software.amazon.smithy.waiters.WaitableTrait
  * https://smithy.io/2.0/additional-specs/waiters.html for details.
  */
 class WaiterGenerator(
-    val ctx: CodegenContext,
+    val ctx: SwiftCodegenContext,
     val protoCtx: ProtocolGenerator.GenerationContext,
     val delegator: SwiftDelegator
 ) {

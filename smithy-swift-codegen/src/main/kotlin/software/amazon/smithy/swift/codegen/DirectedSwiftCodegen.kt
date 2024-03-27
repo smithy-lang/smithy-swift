@@ -134,6 +134,12 @@ class DirectedSwiftCodegen(val context: PluginContext) :
         writers.useShapeWriter(shape) { writer: SwiftWriter ->
             StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator?.serviceErrorProtocolSymbol).renderErrors()
         }
+
+        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.hasTrait<SensitiveTrait>() || model.expectShape(it.target).hasTrait<SensitiveTrait>() }) {
+            writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
+                CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape, model).render()
+            }
+        }
     }
 
     override fun generateUnion(directive: GenerateUnionDirective<GenerationContext, SwiftSettings>) {

@@ -18,7 +18,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.core.CodegenContext
+import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.waiters.WaiterGenerator
@@ -61,7 +61,7 @@ extension TestClient {
                 model.defaultSettings(serviceShapeId, "Test", "2019-12-16", "Test")
             }
         context.generator.generateProtocolClient(context.generationCtx)
-        val codegenContext = object : CodegenContext {
+        val codegenContext = object : SwiftCodegenContext {
             override val model: Model = context.generationCtx.model
             override val symbolProvider: SymbolProvider = context.generationCtx.symbolProvider
             override val settings: SwiftSettings = context.generationCtx.settings
