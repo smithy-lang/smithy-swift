@@ -5,13 +5,13 @@
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.ImportDeclarations
+import software.amazon.smithy.swift.codegen.SwiftImportContainer
 
-class ImportDeclarationsTest {
+class SwiftImportContainerTest {
     @Test
     fun `it renders imports`() {
 
-        val decls = ImportDeclarations()
+        val decls = SwiftImportContainer()
 
         decls.addImport("Foundation")
         decls.addImport("ComplexModule")
@@ -23,7 +23,7 @@ class ImportDeclarationsTest {
 
     @Test
     fun `it filters duplicates`() {
-        val decls = ImportDeclarations()
+        val decls = SwiftImportContainer()
 
         decls.addImport("Foundation")
         decls.addImport("Foundation")
@@ -35,14 +35,14 @@ class ImportDeclarationsTest {
 
     @Test
     fun `it renders @testable declarations`() {
-        val subject = ImportDeclarations()
+        val subject = SwiftImportContainer()
         subject.addImport("MyPackage", true)
         assertEquals("@testable import MyPackage", subject.toString())
     }
 
     @Test
     fun `it preserves @testable declarations`() {
-        val subject = ImportDeclarations()
+        val subject = SwiftImportContainer()
         subject.addImport("MyPackage", true)
         subject.addImport("MyPackage", false)
         assertEquals("@testable import MyPackage", subject.toString())
@@ -50,21 +50,21 @@ class ImportDeclarationsTest {
 
     @Test
     fun `it renders a single @_spi() declaration`() {
-        val subject = ImportDeclarations()
+        val subject = SwiftImportContainer()
         subject.addImport("MyPackage", false, "MyInternalAPI")
         assertEquals("@_spi(MyInternalAPI) import MyPackage", subject.toString())
     }
 
     @Test
     fun `it renders a single @_spi() and @testable declaration`() {
-        val subject = ImportDeclarations()
+        val subject = SwiftImportContainer()
         subject.addImport("MyPackage", true, "MyInternalAPI")
         assertEquals("@testable @_spi(MyInternalAPI) import MyPackage", subject.toString())
     }
 
     @Test
     fun `it renders multiple @_spi() declarations`() {
-        val subject = ImportDeclarations()
+        val subject = SwiftImportContainer()
         subject.addImport("MyPackage", false, "MyInternalAPI1")
         subject.addImport("MyPackage", false, "MyInternalAPI2")
         assertEquals("@_spi(MyInternalAPI1) @_spi(MyInternalAPI2) import MyPackage", subject.toString())
@@ -72,7 +72,7 @@ class ImportDeclarationsTest {
 
     @Test
     fun `it deduplicates @_spi() declarations`() {
-        val subject = ImportDeclarations()
+        val subject = SwiftImportContainer()
         subject.addImport("MyPackage", false, "MyInternalAPI1")
         subject.addImport("MyPackage", false, "MyInternalAPI2")
         subject.addImport("MyPackage", false, "MyInternalAPI1")

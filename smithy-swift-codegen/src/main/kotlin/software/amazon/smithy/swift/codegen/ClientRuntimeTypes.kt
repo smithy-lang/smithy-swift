@@ -114,6 +114,7 @@ object ClientRuntimeTypes {
         val UnknownClientError = runtimeSymbol("ClientError.unknownError")
         val ServiceError = runtimeSymbol("ServiceError")
         val Logger = runtimeSymbol("LogAgent")
+        val TelemetryProvider = runtimeSymbol("TelemetryProvider")
         val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory")
         val SDKLogLevel = runtimeSymbol("SDKLogLevel")
         val ClientLogMode = runtimeSymbol("ClientLogMode")

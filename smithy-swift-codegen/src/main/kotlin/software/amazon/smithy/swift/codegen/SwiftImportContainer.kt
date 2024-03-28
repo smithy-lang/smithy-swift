@@ -5,8 +5,11 @@
 
 package software.amazon.smithy.swift.codegen
 
-class ImportDeclarations {
-    private val imports = mutableSetOf<ImportStatement>()
+import software.amazon.smithy.codegen.core.ImportContainer
+import software.amazon.smithy.codegen.core.Symbol
+
+class SwiftImportContainer : ImportContainer {
+    private val importStatements = mutableSetOf<ImportStatement>()
 
     fun addImport(
         packageName: String,
@@ -14,29 +17,32 @@ class ImportDeclarations {
         internalSPIName: String? = null,
         importOnlyIfCanImport: Boolean = false
     ) {
-        val existingImport = imports.find { it.packageName == packageName }
-        if (existingImport != null) {
+        importStatements.find { it.packageName == packageName }?.let {
             // Update isTestable to true if needed
-            existingImport.isTestable = existingImport.isTestable || isTestable
+            it.isTestable = it.isTestable || isTestable
             // If we have an existing import with the same package name, then add the SPI name to the existing list
             if (internalSPIName != null) {
-                existingImport.internalSPINames.add(internalSPIName)
+                it.internalSPINames.add(internalSPIName)
             }
             // Update importOnlyIfCanImport to true if needed
-            existingImport.importOnlyIfCanImport = existingImport.importOnlyIfCanImport || importOnlyIfCanImport
-        } else {
-            // Otherwise, we have a new package to import, so add it
+            it.importOnlyIfCanImport = it.importOnlyIfCanImport || importOnlyIfCanImport
+        } ?: run {
             val internalSPINames = listOf(internalSPIName).mapNotNull { it }.toMutableSet()
-            imports.add(ImportStatement(packageName, isTestable, internalSPINames, importOnlyIfCanImport))
+            importStatements.add(ImportStatement(packageName, isTestable, internalSPINames, importOnlyIfCanImport))
         }
     }
 
+    override fun importSymbol(symbol: Symbol, alias: String) {
+        symbol.dependencies
+            .forEach { addImport(it.packageName, false) }
+    }
+
     override fun toString(): String {
-        if (imports.isEmpty()) {
+        if (importStatements.isEmpty()) {
             return ""
         }
 
-        return imports
+        return importStatements
             .sortedBy { it.packageName }
             .map(ImportStatement::statement)
             .joinToString(separator = "\n")
