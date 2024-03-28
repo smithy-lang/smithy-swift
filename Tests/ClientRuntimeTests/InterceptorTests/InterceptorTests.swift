@@ -1,9 +1,17 @@
-import ClientRuntime
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
 import XCTest
+@testable import ClientRuntime
 
 class InterceptorTests: XCTestCase {
     struct TestInput {
         public var property: String?
+        public var otherProperty: Int = 0
     }
 
     struct TestOutput {
@@ -57,6 +65,27 @@ class InterceptorTests: XCTestCase {
         }
     }
 
+    struct ModifyMultipleInterceptor: HttpInterceptor {
+        private let newInputValue: Int
+
+        init(newInputValue: Int) {
+            self.newInputValue = newInputValue
+        }
+
+        public func modifyBeforeSerialization(context: inout some MutableInput<Self.AttributesType>) async throws {
+            var input: TestInput = context.getInput()!
+            input.otherProperty = newInputValue
+            context.updateInput(updated: input)
+        }
+
+        public func modifyBeforeTransmit(context: inout some MutableRequest<Self.RequestType, Self.AttributesType>) async throws {
+            let input: TestInput = context.getInput()!
+            let builder = context.getRequest().toBuilder()
+            builder.withHeader(name: "otherProperty", value: "\(input.otherProperty)")
+            context.updateRequest(updated: builder.build())
+        }
+    }
+
     func test_mutation() async throws {
         let httpContext = HttpContext(attributes: Attributes())
         let input = TestInput(property: "foo")
@@ -64,11 +93,13 @@ class InterceptorTests: XCTestCase {
         let addAttributeInterceptor = AddAttributeInterceptor<String, SdkHttpRequest, HttpResponse, HttpContext>(key: AttributeKey(name: "foo"), value: "bar")
         let modifyInputInterceptor = ModifyInputInterceptor<TestInput, SdkHttpRequest, HttpResponse, HttpContext>(keyPath: \.property, value: "bar")
         let addHeaderInterceptor = AddHeaderInterceptor(headerName: "foo", headerValue: "bar")
+        let modifyMultipleInterceptor = ModifyMultipleInterceptor(newInputValue: 1)
 
         let interceptors: [AnyInterceptor<SdkHttpRequest, HttpResponse, HttpContext>] = [
             addAttributeInterceptor.erase(), 
             modifyInputInterceptor.erase(), 
-            addHeaderInterceptor.erase()
+            addHeaderInterceptor.erase(),
+            modifyMultipleInterceptor.erase()
         ]
         for i in interceptors {
             try await i.modifyBeforeSerialization(context: &interceptorContext)
@@ -80,7 +111,9 @@ class InterceptorTests: XCTestCase {
 
         let updatedInput: TestInput = interceptorContext.getInput()!
         XCTAssertEqual(updatedInput.property, "bar")
+        XCTAssertEqual(updatedInput.otherProperty, 1)
         XCTAssertEqual(interceptorContext.getAttributes().get(key: AttributeKey(name: "foo")), "bar")
         XCTAssertEqual(interceptorContext.getRequest().headers.value(for: "foo"), "bar")
+        XCTAssertEqual(interceptorContext.getRequest().headers.value(for: "otherProperty"), "1")
     }
 }

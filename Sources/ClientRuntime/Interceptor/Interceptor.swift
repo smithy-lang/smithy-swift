@@ -121,7 +121,7 @@ public extension Interceptor {
     func readAfterExecution(context: some Finalization<RequestType, ResponseType, AttributesType>) async throws {}
 }
 
-public extension Interceptor {
+internal extension Interceptor {
     func erase() -> AnyInterceptor<RequestType, ResponseType, AttributesType> {
         return AnyInterceptor(interceptor: self)
     }
