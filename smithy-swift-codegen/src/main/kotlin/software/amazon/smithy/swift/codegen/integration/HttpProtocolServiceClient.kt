@@ -14,6 +14,7 @@ import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlu
 import software.amazon.smithy.swift.codegen.model.renderSwiftType
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
+import software.amazon.smithy.utils.CodeSection
 
 open class HttpProtocolServiceClient(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -124,9 +125,9 @@ open class HttpProtocolServiceClient(
                 .flatMap { it.clientConfigurations(ctx).flatMap { it.getProperties(ctx) } }
                 .let { overrideConfigProperties(it) }
 
-            renderConfigClassVariables(properties)
+            renderConfigClassVariables(serviceSymbol, properties)
 
-            renderConfigInitializer(properties)
+            renderConfigInitializer(serviceSymbol, properties)
 
             renderSynchronousConfigInitializer(properties)
 
@@ -167,19 +168,24 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
 
+    data class ConfigClassVariablesCustomization(val serviceSymbol: Symbol) : CodeSection
+
     /**
      * Declare class variables in client configuration class
      */
-    private fun renderConfigClassVariables(properties: List<ConfigProperty>) {
+    private fun renderConfigClassVariables(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
         properties
             .forEach {
                 writer.write("public var \$L: \$N", it.name, it.type)
                 writer.write("")
             }
+        writer.injectSection(ConfigClassVariablesCustomization(serviceSymbol))
         writer.write("")
     }
 
-    private fun renderConfigInitializer(properties: List<ConfigProperty>) {
+    data class ConfigInitializerCustomization(val serviceSymbol: Symbol) : CodeSection
+
+    private fun renderConfigInitializer(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
         writer.openBlock(
             "private init(\$L) {", "}",
             properties.joinToString(", ") { "_ ${it.name}: ${it.type.renderSwiftType()}" }
@@ -187,6 +193,7 @@ open class HttpProtocolServiceClient(
             properties.forEach {
                 writer.write("self.\$L = \$L", it.name, it.name)
             }
+            writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
         }
         writer.write("")
     }
