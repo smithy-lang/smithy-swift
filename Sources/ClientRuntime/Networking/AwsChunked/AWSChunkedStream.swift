@@ -56,7 +56,7 @@ class AWSChunkedStream {
             signingConfig: self.signingConfig,
             previousSignature: self.previousSignature,
             trailingHeaders: self.trailingHeaders,
-            checksum: checksumAlgorithm
+            checksumAlgorithm: checksumAlgorithm
         )
     }
 }
