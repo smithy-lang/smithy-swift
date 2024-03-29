@@ -8,17 +8,17 @@
 import AwsCommonRuntimeKit
 
 class CRC32C {
+    let checksumName = "crc32c"
+    let digestLength: Int = 4 // bytes
+
     private var previousHash: UInt32
 
-    public init(previousHash: UInt32 = UInt32()) {
+    public init(previousHash: UInt32 = 0) {
         self.previousHash = previousHash
     }
 }
 
 extension CRC32C: Checksum {
-    static let checksumName = "crc32c"
-    static let digestLength: Int = 4 // bytes
-
     func copy() -> any Checksum {
         return CRC32(previousHash: previousHash)
     }

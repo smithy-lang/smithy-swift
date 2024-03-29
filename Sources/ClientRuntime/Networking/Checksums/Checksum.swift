@@ -18,10 +18,10 @@ import AwsCommonRuntimeKit
  */
 public protocol Checksum {
     // Name of the checksum as a string.
-    static var checksumName: String { get }
+    var checksumName: String { get }
 
     // Constant length of the digest created by the algorithm in bytes.
-    static var digestLength: Int { get }
+    var digestLength: Int { get }
 
     // Returns the digest of all of the data passed.
     func digest() throws -> HashResult

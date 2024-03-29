@@ -8,6 +8,9 @@
 import AwsCommonRuntimeKit
 
 class MD5 {
+    let checksumName = "md5"
+    let digestLength: Int = 16 // bytes
+
     private var md5Checksum: Hash
 
     public init(md5Checksum: Hash = Hash(algorithm: .MD5)) {
@@ -16,9 +19,6 @@ class MD5 {
 }
 
 extension MD5: Checksum {
-    static let checksumName = "md5"
-    static let digestLength: Int = 16 // bytes
-
     func copy() -> any Checksum {
         return MD5(md5Checksum: md5Checksum)
     }

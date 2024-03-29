@@ -63,9 +63,9 @@ public class AWSChunkedReader {
 
         // Add a checksum if it is not nil
         if let checksum = self.checksum {
-            let headerName = "x-amz-checksum-\(checksum)"
-            let hashResult = try checksum.digest()
-            self.updateTrailingHeader(name: headerName, value: hashResult.toBase64String())
+            let headerName = "x-amz-checksum-\(checksum.checksumName)"
+            let hashResult = try checksum.digest().toBase64String()
+            self.updateTrailingHeader(name: headerName, value: hashResult)
         }
 
         // + any trailers
