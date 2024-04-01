@@ -45,7 +45,7 @@ extension ByteStream {
                 ValidatingBufferedStream(
                     stream: bufferedStream,
                     expectedChecksum: expectedChecksum,
-                    checksum: checksumAlgorithm
+                    checksumAlgorithm: checksumAlgorithm
                 )
             )
         }

@@ -17,22 +17,22 @@ public class AWSChunkedReader {
     private var chunkBody = Data()
     private var currentHash: UInt32 = 0
     private var emptyChunkSigned = false
-    private var checksum: ChecksumAlgorithm?
-    private var checksumHash: Hash?
+    private var checksum: (any Checksum)?
+    private var checksumAlgorithm: ChecksumAlgorithm?
 
     init(
         stream: ReadableStream,
         signingConfig: SigningConfig,
         previousSignature: String,
         trailingHeaders: Headers,
-        checksum: ChecksumAlgorithm? = nil // if nil, chunked encoding without checksum
+        checksumAlgorithm: ChecksumAlgorithm? = nil // if nil, chunked encoding without checksum
     ) {
         self.stream = stream
         self.signingConfig = signingConfig
         self.previousSignature = previousSignature
         self.trailingHeaders = trailingHeaders
-        self.checksum = checksum
-        self.checksumHash = checksum?.createHash() // for supporting data-based checksums
+        self.checksumAlgorithm = checksumAlgorithm // Enum for working with the checksum
+        self.checksum = self.checksumAlgorithm?.createChecksum() // Create an instance of the Checksum
     }
 
     public func processNextChunk() async throws -> Bool {
@@ -46,7 +46,7 @@ public class AWSChunkedReader {
 
         if let chunk = nextChunk {
             if let checksum = self.checksum {
-                try self.hashChunk(checksumAlgorithm: checksum)
+                try checksum.update(chunk: self.chunkBody)
             }
 
             self.chunk = chunk // Store the current chunk
@@ -62,15 +62,10 @@ public class AWSChunkedReader {
         var finalChunk = self.getCurrentChunk() // should be empty
 
         // Add a checksum if it is not nil
-        if let checksumAlgorithm = self.checksum {
-            let headerName = "x-amz-checksum-\(checksumAlgorithm)"
-            if let shaHash = checksumHash {
-                let hashResult = try HashResult.data(shaHash.finalize())
-                self.updateTrailingHeader(name: headerName, value: hashResult.toBase64String())
-            } else {
-                self.updateTrailingHeader(name: headerName, value: self.currentHash.toBase64EncodedString())
-            }
-
+        if let checksum = self.checksum {
+            let headerName = "x-amz-checksum-\(checksum.checksumName)"
+            let hashResult = try checksum.digest().toBase64String()
+            self.updateTrailingHeader(name: headerName, value: hashResult)
         }
 
         // + any trailers
@@ -83,19 +78,6 @@ public class AWSChunkedReader {
         finalChunk.append(Data("\r\n".utf8))
 
         return finalChunk
-    }
-
-    private func hashChunk(checksumAlgorithm: ChecksumAlgorithm) throws {
-        if let shaHash = checksumHash {
-            try shaHash.update(data: self.chunkBody)
-        } else {
-            let hashResult = try checksumAlgorithm.computeHash(of: self.chunkBody, previousHash: self.currentHash)
-            if case let .integer(newHash) = hashResult {
-                currentHash = newHash
-            } else {
-                throw ClientError.unknownError("Checksum result didnt return an integer!")
-            }
-        }
     }
 
     private func fetchNextChunk() async throws -> Data? {
@@ -221,11 +203,16 @@ extension AWSChunkedReader {
     }
 
     public func getChecksumAlgorithm() -> ChecksumAlgorithm? {
-        return self.checksum
+        return self.checksumAlgorithm
     }
 
-    public func setChecksumAlgorithm(checksum: ChecksumAlgorithm?) {
-        self.checksum = checksum
+    public func setChecksumAlgorithm(checksumAlgorithm: ChecksumAlgorithm?) {
+        self.checksumAlgorithm = checksumAlgorithm
+        self.checksum = checksumAlgorithm?.createChecksum()
+    }
+
+    public func getChecksum() -> (any Checksum)? {
+        return self.checksum
     }
 
     func getCurrentChunk() -> Data {

@@ -32,19 +32,18 @@ public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
             let base64Encoded = md5Hash.base64EncodedString()
             input.headers.update(name: "Content-MD5", value: base64Encoded)
         case .stream(let stream):
-            let checksum: ChecksumAlgorithm = .md5
+            let checksumAlgorithm: ChecksumAlgorithm = .md5
+            let md5Hasher = checksumAlgorithm.createChecksum()
             do {
-                if let md5Hasher = checksum.createHash() {
-                    // read chunks and update hasher
-                    while let chunk = try await stream.readAsync(upToCount: CHUNK_SIZE_BYTES), !chunk.isEmpty {
-                        // Update the hasher with the chunk.
-                        try md5Hasher.update(data: chunk)
-                    }
-
-                    // Finalize the hash after reading all chunks.
-                    let hashResult = try HashResult.data(md5Hasher.finalize())
-                    input.headers.update(name: "Content-MD5", value: hashResult.toBase64String())
+                // read chunks and update hasher
+                while let chunk = try await stream.readAsync(upToCount: CHUNK_SIZE_BYTES), !chunk.isEmpty {
+                    // Update the hasher with the chunk.
+                    try md5Hasher.update(chunk: chunk)
                 }
+
+                // Finalize the hash after reading all chunks.
+                let hashResult = try md5Hasher.digest().toBase64String()
+                input.headers.update(name: "Content-MD5", value: hashResult)
             } catch {
                 guard let logger = context.getLogger() else {
                     return try await next.handle(context: context, input: input)
