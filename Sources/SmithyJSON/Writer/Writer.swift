@@ -17,7 +17,7 @@ public final class Writer: SmithyWriter {
     let json: JSONNode
 
     public required init(nodeInfo: NodeInfo) {
-        self.json = .null
+        self.json = .object([:])
     }
 
     init(json: JSONNode) {

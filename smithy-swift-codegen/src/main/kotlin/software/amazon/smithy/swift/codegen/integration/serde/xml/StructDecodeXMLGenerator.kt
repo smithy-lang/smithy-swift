@@ -15,6 +15,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeG
 import software.amazon.smithy.swift.codegen.integration.serde.json.readerSymbol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
@@ -28,7 +29,7 @@ open class StructDecodeXMLGenerator(
     private val memberGenerator = MemberShapeDecodeXMLGenerator(ctx, writer, shapeContainingMembers)
 
     override fun render() {
-        writer.addImports(ctx.service.requestWireProtocol)
+        writer.addImports(ctx.service.responseWireProtocol)
         val symbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
             "static func read(from reader: \$N) throws -> \$N? {", "}",

@@ -37,6 +37,9 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.swiftEnumCaseName
+import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.node.NumberNode
+import software.amazon.smithy.model.node.StringNode
 
 class MemberShapeDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -143,7 +146,7 @@ class MemberShapeDecodeXMLGenerator(
             // Provide a default value dependent on the type.
             return when (targetShape) {
                 is EnumShape -> " ?? .${swiftEnumCaseName(it.expectStringNode().value, "")}"
-                is IntEnumShape -> " ?? .${swiftEnumCaseName(it.expectStringNode().value, "")}"
+                is IntEnumShape -> intEnumDefaultValue(it)
                 is StringShape -> " ?? \"${it.expectStringNode().value}\""
                 is ByteShape -> " ?? ${it.expectNumberNode().value}"
                 is ShortShape -> " ?? ${it.expectNumberNode().value}"
@@ -162,5 +165,13 @@ class MemberShapeDecodeXMLGenerator(
                 else -> ""
             }
         } ?: "" // If there is no default trait, provide no default value.
+    }
+
+    private fun intEnumDefaultValue(node: Node): String {
+        return when (node) {
+            is StringNode -> " ?? .${node.value}"
+            is NumberNode -> " ?? .init(rawValue: ${node.value})"
+            else -> ""
+        }
     }
 }

@@ -10,6 +10,8 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.declareSection
@@ -35,9 +37,10 @@ class XMLHttpResponseTraitWithHttpPayload(
             ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
         when (target.type) {
             ShapeType.DOCUMENT -> {
-                // Smithy Document is currently not used in AWS.
-                // If this is eventually required by a model, a Swift compile error will occur.
-                writer.write("#error(\"Not implemented\")")
+                writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
+                writer.openBlock("if let data = try await httpResponse.body.readData() {", "}") {
+                    writer.write("value.\$L = try \$N.document(from: data)", memberName, SmithyReadWriteTypes.Document)
+                }
             }
             ShapeType.STRING -> {
                 writer.openBlock("if let data = try await httpResponse.body.readData(), let output = \$N(data: data, encoding: .utf8) {", "}", SwiftTypes.String) {

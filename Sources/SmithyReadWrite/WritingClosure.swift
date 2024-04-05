@@ -16,7 +16,7 @@ public func mapWritingClosure<T, Writer: SmithyWriter>(
     keyNodeInfo: Writer.NodeInfo,
     valueNodeInfo: Writer.NodeInfo,
     isFlattened: Bool
-) -> WritingClosure<[String: T], Writer> {
+) -> WritingClosure<[String: T]?, Writer> {
     return { map, writer in
         try writer.writeMap(
             map,
@@ -32,7 +32,7 @@ public func listWritingClosure<T, Writer: SmithyWriter>(
     memberWritingClosure: @escaping WritingClosure<T, Writer>,
     memberNodeInfo: Writer.NodeInfo,
     isFlattened: Bool
-) -> WritingClosure<[T], Writer> {
+) -> WritingClosure<[T]?, Writer> {
     return { array, writer in
         try writer.writeList(
             array,

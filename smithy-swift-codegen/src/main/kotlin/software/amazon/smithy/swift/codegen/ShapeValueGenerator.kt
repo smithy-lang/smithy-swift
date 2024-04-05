@@ -86,12 +86,9 @@ class ShapeValueGenerator(
     }
 
     private fun documentDecl(writer: SwiftWriter, node: Node) {
-        writer.writeInline("try decoder.decode(Document.self, from:")
-            .write("")
-            .indent()
-            .write("\"\"\"")
-            .write(Node.prettyPrintJson(node))
-            .write("\"\"\".data(using: .utf8)!)")
+        writer.openBlock("try Document.document(from: Data(\"\"\"", "\"\"\".utf8))") {
+            writer.write(Node.prettyPrintJson(node))
+        }
     }
 
     private fun mapDecl(writer: SwiftWriter, block: () -> Unit) {

@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
+import class Foundation.JSONSerialization
+import class Foundation.NSNull
+
 public enum Document {
     case array([Document])
     case boolean(Bool)
@@ -83,4 +87,55 @@ public extension Document {
             return nil
         }
     }
+}
+
+extension Document {
+
+    private var jsonObject: Any {
+        switch self {
+        case .array(let array):
+            return array.map { $0.jsonObject }
+        case .boolean(let bool):
+            return bool
+        case .number(let double):
+            return double
+        case .object(let object):
+            return object.mapValues { $0.jsonObject }
+        case .string(let string):
+            return string
+        case .null:
+            return NSNull()
+        }
+    }
+
+    private static func make(from jsonObject: Any) throws -> Document {
+        if let object = jsonObject as? [String: Any] {
+            return .object(try object.mapValues { try Document.make(from: $0) })
+        } else if let array = jsonObject as? [Any] {
+            return .array(try array.map { try Document.make(from: $0) })
+        } else if let number = jsonObject as? Double {
+            return .number(number)
+        } else if let bool = jsonObject as? Bool {
+            return .boolean(bool)
+        } else if let string = jsonObject as? String {
+            return .string(string)
+        } else if jsonObject is NSNull {
+            return .null
+        } else {
+            throw SmithyDocumentError.invalidJSONData
+        }
+    }
+
+    public func data() throws -> Data {
+        try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+    }
+
+    public static func document(from data: Data) throws -> Document {
+        let jsonObject = try JSONSerialization.jsonObject(with: data)
+        return try Document.make(from: jsonObject)
+    }
+}
+
+enum SmithyDocumentError: Error {
+    case invalidJSONData
 }

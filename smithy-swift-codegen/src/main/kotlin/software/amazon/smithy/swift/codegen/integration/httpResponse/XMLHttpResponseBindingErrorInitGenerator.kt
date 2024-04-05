@@ -49,6 +49,7 @@ class XMLHttpResponseBindingErrorInitGenerator(
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addImports(ctx.service.responseWireProtocol)
             writer.openBlock("extension \$N {", "}", errorShape) {
                 writer.write("")
