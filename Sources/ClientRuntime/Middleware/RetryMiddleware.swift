@@ -22,23 +22,36 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
     public var id: String { "Retry" }
     public var strategy: Strategy
 
+    // The UUID string used to uniquely identify an API call and all of its subsequent retries.
+    private let invocationID = UUID().uuidString.lowercased()
+    // Max number of retries configured for retry strategy.
+    private var maxRetries: Int
+
     public init(options: RetryStrategyOptions) {
         self.strategy = Strategy(options: options)
+        self.maxRetries = options.maxRetriesBase
     }
 
     public func handle<H>(context: Context, input: SdkHttpRequestBuilder, next: H) async throws ->
         OperationOutput<OperationStackOutput>
         where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
 
+        input.headers.add(name: "amz-sdk-invocation-id", value: invocationID)
+
         let partitionID = try getPartitionID(context: context, input: input)
         let token = try await strategy.acquireInitialRetryToken(tokenScope: partitionID)
-        return try await sendRequest(token: token, context: context, input: input, next: next)
+        input.headers.add(name: "amz-sdk-request", value: "attempt=1; max=\(maxRetries)")
+        return try await sendRequest(attemptNumber: 1, token: token, context: context, input: input, next: next)
     }
 
-    private func sendRequest<H>(token: Strategy.Token, context: Context, input: MInput, next: H) async throws ->
+    private func sendRequest<H>(
+        attemptNumber: Int,
+        token: Strategy.Token,
+        context: Context,
+        input: MInput, next: H
+    ) async throws ->
         OperationOutput<OperationStackOutput>
         where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
-
         do {
             let serviceResponse = try await next.handle(context: context, input: input)
             await strategy.recordSuccess(token: token)
@@ -51,7 +64,24 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
                 // TODO: log token error here
                 throw operationError
             }
-            return try await sendRequest(token: token, context: context, input: input, next: next)
+            guard let estimatedSkew: TimeInterval = context.attributes.get(key: AttributeKeys.estimatedSkew) else {
+                throw ClientError.dataNotFound("Estimated skew not found; failed to calculate TTL for retry.")
+            }
+            guard let socketTimeout: TimeInterval = context.attributes.get(key: AttributeKeys.socketTimeout) else {
+                throw ClientError.dataNotFound("Socket timeout value not found; failed to caclulate TTL for retry.")
+            }
+            let ttlDateUTCString = getTTL(now: Date(), estimatedSkew: estimatedSkew, socketTimeout: socketTimeout)
+            input.headers.update(
+                name: "amz-sdk-request",
+                value: "ttl=\(ttlDateUTCString); attempt=\(attemptNumber + 1); max=\(maxRetries)"
+            )
+            return try await sendRequest(
+                attemptNumber: attemptNumber + 1,
+                token: token,
+                context: context,
+                input: input,
+                next: next
+            )
         }
     }
 
