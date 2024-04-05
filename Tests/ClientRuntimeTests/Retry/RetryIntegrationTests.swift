@@ -23,6 +23,8 @@ final class RetryIntegrationTests: XCTestCase {
         // Setup the HTTP context, used by the retry middleware
         context = HttpContext(attributes: Attributes())
         context.attributes.set(key: partitionIDKey, value: partitionID)
+        context.attributes.set(key: AttributeKeys.socketTimeout, value: 60.0)
+        context.attributes.set(key: AttributeKeys.estimatedSkew, value: 30.0)
 
         // Create the test output handler, which is the "next" middleware called by the retry middleware
         next = TestOutputHandler()
