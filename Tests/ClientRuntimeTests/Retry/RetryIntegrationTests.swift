@@ -116,6 +116,39 @@ final class RetryIntegrationTests: XCTestCase {
         }
         try await next.verifyResult()
     }
+
+    // Test getEstimatedSkew utility method.
+    func test_getEstimatedSkew() {
+        let responseDateString = "Mon, 15 Jul 2024 01:24:12 GMT"
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
+        let responseDate: Date = dateFormatter.date(from: responseDateString)!
+
+        let responseDateStringPlusTen = "Mon, 15 Jul 2024 01:24:22 GMT"
+        let estimatedSkew = getEstimatedSkew(now: responseDate, responseDateString: responseDateStringPlusTen)
+
+        XCTAssert(estimatedSkew == 10.0)
+    }
+
+    // Test getTTLutility method.
+    func test_getTTL() {
+        let nowDateString = "Mon, 15 Jul 2024 01:24:12 GMT"
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
+        let nowDate: Date = dateFormatter.date(from: nowDateString)!
+
+        // The two timeintervals below add up to 34  minutes 59 seconds, rounding to closest second.
+        let estimatedSkew = 2039.34
+        let socketTimeout = 60.0
+
+        // Verify calculated TTL is nowDate + (34 minutes and 59 seconds).
+        let ttl = getTTL(now: nowDate, estimatedSkew: estimatedSkew, socketTimeout: socketTimeout)
+        XCTAssertEqual(ttl, "20240715T015911Z")
+    }
 }
 
 private struct TestStep {
@@ -174,12 +207,16 @@ private class TestOutputHandler: Handler {
     var quota: RetryQuota!
     var actualDelay: TimeInterval?
     var finalError: Error?
+    var invocationID = ""
+    var prevAttemptNum = 0
 
     func handle(context: ClientRuntime.HttpContext, input: SdkHttpRequestBuilder) async throws -> OperationOutput<TestOutputResponse> {
         if index == testSteps.count { throw RetryIntegrationTestError.maxAttemptsExceeded }
 
         // Verify the results of the previous test step, if there was one.
         try await verifyResult(atEnd: false)
+        // Verify the input's retry information headers.
+        try await verifyInput(input: input)
 
         // Get the latest test step, then advance the index.
         let testStep = testSteps[index]
@@ -217,6 +254,46 @@ private class TestOutputHandler: Handler {
         case .retryRequest:
             XCTFail("Test should not end on retry", file: testStep.file, line: testStep.line)
         }
+    }
+
+    func verifyInput(input: SdkHttpRequestBuilder) async throws {
+        // Get invocation ID of the request off of amz-sdk-invocation-id header.
+        let invocationID = try XCTUnwrap(input.headers.value(for: "amz-sdk-invocation-id"))
+        // If this is the first request, save the retrieved ID.
+        if (self.invocationID.isEmpty) { self.invocationID = invocationID }
+
+        // Retrieved IDs from all requests under a same call must be the same.
+        XCTAssertEqual(self.invocationID, invocationID)
+
+        // Get retry information off of amz-sdk-request header.
+        let amzSdkRequestHeaderValue = try XCTUnwrap(input.headers.value(for: "amz-sdk-request"))
+        // Extract request pair values from amz-sdk-request header value.
+        let requestPairs = amzSdkRequestHeaderValue.components(separatedBy: "; ")
+        var ttl: String = ""
+        let attemptNum: Int = try XCTUnwrap(
+            Int(
+                try XCTUnwrap(requestPairs.first { $0.hasPrefix("attempt=") })
+                    .components(separatedBy: "=")[1]
+            )
+        )
+        _ = try XCTUnwrap(
+            Int(
+                try XCTUnwrap(requestPairs.first { $0.hasPrefix("max=") })
+                    .components(separatedBy: "=")[1]
+            )
+        )
+        // For attempts 2+, TTL must be present.
+        if (attemptNum > 1) {
+            ttl = try XCTUnwrap(requestPairs.first { $0.hasPrefix("ttl") }).components(separatedBy: "=")[1]
+            // Check that TTL date is in strftime format.
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyyMMdd'T'HHmmss'Z'"
+            XCTAssertNotNil(dateFormatter.date(from: ttl))
+        }
+
+        // Verify attempt number was incremented by 1 from previous request.
+        XCTAssert(attemptNum == self.prevAttemptNum + 1)
+        self.prevAttemptNum = attemptNum
     }
 }
 
