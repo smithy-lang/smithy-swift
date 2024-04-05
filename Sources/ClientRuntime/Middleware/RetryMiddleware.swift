@@ -107,6 +107,8 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
 func getTTL(now: Date, estimatedSkew: TimeInterval, socketTimeout: TimeInterval) -> String {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyyMMdd'T'HHmmss'Z'"
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
     let ttlDate = now.addingTimeInterval(estimatedSkew + socketTimeout)
     return dateFormatter.string(from: ttlDate)
 }
