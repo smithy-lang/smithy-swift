@@ -13,7 +13,7 @@ extension Writer {
 
     /// Translates this Writer and its children into XML ready to be sent.
     /// - Returns: A `Data` value containing this writer's UTF-8 XML representation.
-    func xmlString() -> Data {
+    public func data() throws -> Data {
         // Create a libxml document
         let doc = xmlNewDoc(nil)
 

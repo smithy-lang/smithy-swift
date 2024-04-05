@@ -5,17 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyReadWrite
+
 public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
     public var id: String = "Deserialize"
-    let httpResponseClosure: HTTPResponseOutputClosure<OperationStackOutput>
-    let httpResponseErrorClosure: HTTPResponseErrorClosure
+    let wireResponseClosure: WireResponseOutputClosure<HttpResponse, OperationStackOutput>
+    let wireResponseErrorClosure: WireResponseErrorClosure<HttpResponse>
 
     public init(
-        _ httpResponseClosure: @escaping HTTPResponseOutputClosure<OperationStackOutput>,
-        _ httpResponseErrorClosure: @escaping HTTPResponseErrorClosure
+        _ wireResponseClosure: @escaping WireResponseOutputClosure<HttpResponse, OperationStackOutput>,
+        _ wireResponseErrorClosure: @escaping WireResponseErrorClosure<HttpResponse>
     ) {
-        self.httpResponseClosure = httpResponseClosure
-        self.httpResponseErrorClosure = httpResponseErrorClosure
+        self.wireResponseClosure = wireResponseClosure
+        self.wireResponseErrorClosure = wireResponseErrorClosure
     }
     public func handle<H>(context: HttpContext,
                           input: SdkHttpRequest,
@@ -34,7 +36,7 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
 
             var copiedResponse = response
             if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
-                let output = try await httpResponseClosure(copiedResponse.httpResponse)
+                let output = try await wireResponseClosure(copiedResponse.httpResponse)
                 copiedResponse.output = output
                 return copiedResponse
             } else {
@@ -44,7 +46,7 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
                 // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
                 let bodyData = try await copiedResponse.httpResponse.body.readData()
                 copiedResponse.httpResponse.body = .data(bodyData)
-                throw try await httpResponseErrorClosure(copiedResponse.httpResponse)
+                throw try await wireResponseErrorClosure(copiedResponse.httpResponse)
           }
     }
 

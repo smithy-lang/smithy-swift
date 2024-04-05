@@ -18,7 +18,7 @@ class ReadingClosureUtils(
     val ctx: ProtocolGenerator.GenerationContext,
     val writer: SwiftWriter
 ) {
-    private val nodeInfoUtils = NodeInfoUtils(ctx, writer)
+    private val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.responseWireProtocol)
 
     fun readingClosure(member: MemberShape): String {
         val target = ctx.model.expectShape(member.target)
@@ -27,9 +27,6 @@ class ReadingClosureUtils(
     }
 
     private fun readingClosure(shape: Shape, memberTimestampFormatTrait: TimestampFormatTrait? = null): String {
-        if (ctx.service.responseWireProtocol == WireProtocol.JSON) {
-            return "JSONReadWrite.readingClosure()"
-        }
         when (shape) {
             is MapShape -> {
                 val valueReadingClosure = readingClosure(shape.value)
@@ -37,7 +34,7 @@ class ReadingClosureUtils(
                 val valueNodeInfo = nodeInfoUtils.nodeInfo(shape.value)
                 val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
                 return writer.format(
-                    "SmithyXML.mapReadingClosure(valueReadingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+                    "mapReadingClosure(valueReadingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
                     valueReadingClosure,
                     keyNodeInfo,
                     valueNodeInfo,
@@ -49,7 +46,7 @@ class ReadingClosureUtils(
                 val memberNodeInfo = nodeInfoUtils.nodeInfo(shape.member)
                 val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
                 return writer.format(
-                    "SmithyXML.listReadingClosure(memberReadingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+                    "listReadingClosure(memberReadingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
                     memberReadingClosure,
                     memberNodeInfo,
                     isFlattened
@@ -57,12 +54,12 @@ class ReadingClosureUtils(
             }
             is TimestampShape -> {
                 return writer.format(
-                    "SmithyXML.timestampReadingClosure(format: \$L)",
+                    "timestampReadingClosure(format: \$L)",
                     TimestampUtils.timestampFormat(memberTimestampFormatTrait, shape)
                 )
             }
             else -> {
-                return writer.format("\$N.readingClosure", ctx.symbolProvider.toSymbol(shape))
+                return writer.format("\$N.read(from:)", ctx.symbolProvider.toSymbol(shape))
             }
         }
     }

@@ -67,7 +67,7 @@ class HttpResponseTraitWithoutHttpPayload(
         val memberName = ctx.symbolProvider.toMemberName(streamingMember.member)
         when (shape.type) {
             ShapeType.UNION -> {
-                writer.openBlock("if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {", "} else {") {
+                writer.openBlock("if case let .stream(stream) = httpResponse.body {", "} else {") {
                     writer.declareSection(HttpResponseTraitWithHttpPayload.MessageDecoderSectionId) {
                         writer.write("let messageDecoder: \$D", ClientRuntimeTypes.EventStream.MessageDecoder)
                     }

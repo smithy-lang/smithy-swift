@@ -32,6 +32,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ReadingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
@@ -42,7 +43,7 @@ class MemberShapeDecodeXMLGenerator(
     private val writer: SwiftWriter,
     private val shapeContainingMembers: Shape,
 ) {
-    private val nodeInfoUtils = NodeInfoUtils(ctx, writer)
+    private val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.responseWireProtocol)
     private val readingClosureUtils = ReadingClosureUtils(ctx, writer)
 
     fun render(member: MemberShape, isPayload: Boolean = false) {
@@ -141,9 +142,9 @@ class MemberShapeDecodeXMLGenerator(
             if (it.isNullNode) { return "" }
             // Provide a default value dependent on the type.
             return when (targetShape) {
-                is EnumShape -> " ?? ${swiftEnumCaseName(it.expectStringNode().value, "")}"
-                is IntEnumShape -> " ?? ${swiftEnumCaseName(it.expectStringNode().value, "")}"
-                is StringShape -> " ?? ${it.expectStringNode().value}"
+                is EnumShape -> " ?? .${swiftEnumCaseName(it.expectStringNode().value, "")}"
+                is IntEnumShape -> " ?? .${swiftEnumCaseName(it.expectStringNode().value, "")}"
+                is StringShape -> " ?? \"${it.expectStringNode().value}\""
                 is ByteShape -> " ?? ${it.expectNumberNode().value}"
                 is ShortShape -> " ?? ${it.expectNumberNode().value}"
                 is IntegerShape -> " ?? ${it.expectNumberNode().value}"

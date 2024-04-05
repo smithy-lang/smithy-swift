@@ -7,12 +7,15 @@ import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.model.traits.XmlNamespaceTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class NodeInfoUtils(
     val ctx: ProtocolGenerator.GenerationContext,
-    val writer: SwiftWriter
+    val writer: SwiftWriter,
+    val wireProtocol: WireProtocol
 ) {
 
     fun nodeInfo(shape: Shape): String {
@@ -45,6 +48,7 @@ class NodeInfoUtils(
     }
 
     private fun namespaceParam(xmlNamespaceTrait: XmlNamespaceTrait?): String {
+        if (wireProtocol != WireProtocol.XML) { return "" }
         return xmlNamespaceTrait?.let {
             writer.format(
                 ", namespaceDef: .init(prefix: \$S, uri: \$S)",
@@ -55,7 +59,7 @@ class NodeInfoUtils(
     }
 
     private fun nodeInfo(resolvedName: String, xmlAttributeParam: String, xmlNamespaceParam: String): String {
-        if (xmlAttributeParam == "" && xmlNamespaceParam == "") {
+        if (xmlAttributeParam == "" && xmlNamespaceParam == "" || wireProtocol != WireProtocol.XML) {
             return writer.format("\$S", resolvedName)
         } else {
             return writer.format(

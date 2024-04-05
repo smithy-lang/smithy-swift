@@ -24,28 +24,15 @@ object ClientRuntimeTypes {
         val SdkHttpRequest = runtimeSymbol("SdkHttpRequest")
         val HttpResponse = runtimeSymbol("HttpResponse")
         val HttpResponseBinding = runtimeSymbol("HttpResponseBinding")
-        val HttpResponseErrorBinding = runtimeSymbol("HttpResponseErrorBinding")
         val HttpError = runtimeSymbol("HTTPError")
         val UnknownHttpServiceError = runtimeSymbol("UnknownHttpServiceError")
         val HttpContextBuilder = runtimeSymbol("HttpContextBuilder")
-        val HTTPResponseOutputBinding = runtimeSymbol("HTTPResponseOutputBinding")
-        val HTTPResponseErrorBinding = runtimeSymbol("HTTPResponseErrorBinding")
     }
 
     object Serde {
-        val RequestEncoder = runtimeSymbol("RequestEncoder")
-        val ResponseDecoder = runtimeSymbol("ResponseDecoder")
         val Key = runtimeSymbol("Key")
-        val FormURLEncoder = runtimeSymbol("FormURLEncoder")
         val JSONDecoder = runtimeSymbol("JSONDecoder")
         val JSONEncoder = runtimeSymbol("JSONEncoder")
-        val JSONWriter = runtimeSymbol("JSONWriter")
-        val FormURLWriter = runtimeSymbol("FormURLWriter")
-        val MessageMarshallable = runtimeSymbol("MessageMarshallable")
-        val MessageUnmarshallable = runtimeSymbol("MessageUnmarshallable")
-        val JSONReadWrite = runtimeSymbol("JSONReadWrite")
-        val FormURLReadWrite = runtimeSymbol("FormURLReadWrite")
-        val JSONReader = runtimeSymbol("JSONReader")
     }
 
     object EventStream {
@@ -87,12 +74,6 @@ object ClientRuntimeTypes {
         val EnumBodyMiddleware = runtimeSymbol("EnumBodyMiddleware")
         val IntEnumBodyMiddleware = runtimeSymbol("IntEnumBodyMiddleware")
         val StringBodyMiddleware = runtimeSymbol("StringBodyMiddleware")
-
-        object Providers {
-            val URLPathProvider = runtimeSymbol("URLPathProvider")
-            val QueryItemProvider = runtimeSymbol("QueryItemProvider")
-            val HeaderProvider = runtimeSymbol("HeaderProvider")
-        }
     }
 
     object Auth {
@@ -107,7 +88,6 @@ object ClientRuntimeTypes {
         val ByteStream = runtimeSymbol("ByteStream")
         val Date = runtimeSymbol("Date")
         val Data = runtimeSymbol("Data")
-        val Document = runtimeSymbol("Document")
         val SDKURLQueryItem = runtimeSymbol("SDKURLQueryItem")
         val URL = runtimeSymbol("URL")
         val ModeledError = runtimeSymbol("ModeledError")

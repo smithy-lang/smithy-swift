@@ -17,6 +17,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.xml.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -28,10 +29,12 @@ abstract class MemberShapeEncodeXMLGenerator(
 
     private val writingClosureUtils = WritingClosureUtils(ctx, writer)
 
-    private val nodeInfoUtils = NodeInfoUtils(ctx, writer)
+    private val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol)
 
-    fun writeMember(memberShape: MemberShape, unionMember: Boolean) {
-        val prefix = "value.".takeIf { !unionMember } ?: ""
+    fun writeMember(memberShape: MemberShape, unionMember: Boolean, errorMember: Boolean) {
+        val prefix1 = "value.".takeIf { !unionMember } ?: ""
+        val prefix2 = "properties.".takeIf { errorMember } ?: ""
+        val prefix = prefix1 + prefix2
         val targetShape = ctx.model.expectShape(memberShape.target)
         when (targetShape) {
             is StructureShape, is UnionShape -> {

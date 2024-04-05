@@ -151,12 +151,11 @@ private struct TestStep {
 
 private struct TestInput {}
 
-private struct TestOutputResponse: HttpResponseBinding {
+private struct TestOutputResponse {
     init() {}
-    init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws {}
 }
 
-private enum TestOutputError: HttpResponseErrorBinding {
+private enum TestOutputError {
     static func makeError(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws -> Error {
         RetryIntegrationTestError.dontCallThisMethod  // is never called
     }

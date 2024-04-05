@@ -61,12 +61,6 @@ class MiddlewareExecutionGenerator(
 
         // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
 
-        if (ctx.service.requestWireProtocol != WireProtocol.XML) {
-            writer.write("  .withEncoder(value: encoder)")
-        }
-        if (ctx.service.responseWireProtocol != WireProtocol.XML) {
-            writer.write("  .withDecoder(value: decoder)")
-        }
         writer.write("  .withMethod(value: .$httpMethod)")
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \"${op.toLowerCamelCase()}\")")

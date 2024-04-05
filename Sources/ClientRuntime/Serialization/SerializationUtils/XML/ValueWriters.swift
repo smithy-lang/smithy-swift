@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyXML.Writer
+import protocol SmithyReadWrite.SmithyWriter
 
-extension Writer {
+extension SmithyWriter {
 
     public func write(_ value: ByteStream?) throws {
         // This serialization will never be performed in practice, since

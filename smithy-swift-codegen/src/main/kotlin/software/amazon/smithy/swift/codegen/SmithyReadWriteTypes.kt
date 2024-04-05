@@ -14,13 +14,16 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
  * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
  */
 object SmithyReadWriteTypes {
+    val WireResponseOutputBinding = runtimeSymbol("WireResponseOutputBinding")
+    val WireResponseErrorBinding = runtimeSymbol("WireResponseErrorBinding")
     val WritingClosure = runtimeSymbol("WritingClosure")
     val ReadingClosure = runtimeSymbol("ReadingClosure")
     val DocumentWritingClosure = runtimeSymbol("DocumentWritingClosure")
+    val Document = runtimeSymbol("Document")
 }
 
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {
     this.name = name
     this.namespace = SwiftDependency.SMITHY_READ_WRITE.target
-    dependency(SwiftDependency.SMITHY_XML)
+    dependency(SwiftDependency.SMITHY_READ_WRITE)
 }

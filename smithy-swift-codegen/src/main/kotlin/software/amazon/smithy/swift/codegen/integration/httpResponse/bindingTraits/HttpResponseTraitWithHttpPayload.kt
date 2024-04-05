@@ -91,7 +91,7 @@ class HttpResponseTraitWithHttpPayload(
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 if (target.hasTrait<StreamingTrait>()) {
-                    writer.openBlock("if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {", "} else {") {
+                    writer.openBlock("if case let .stream(stream) = httpResponse.body {", "} else {") {
                         writer.declareSection(MessageDecoderSectionId) {
                             writer.write("let messageDecoder: \$D", ClientRuntimeTypes.EventStream.MessageDecoder)
                         }

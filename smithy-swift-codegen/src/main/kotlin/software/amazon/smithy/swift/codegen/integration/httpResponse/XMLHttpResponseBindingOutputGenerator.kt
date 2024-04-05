@@ -7,6 +7,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SmithyXMLTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -17,8 +18,12 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTrai
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitQueryParams
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitResponseCode
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.serde.json.readerSymbol
+import software.amazon.smithy.swift.codegen.integration.serde.json.writerSymbol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class XMLHttpResponseBindingOutputGenerator : HttpResponseBindingOutputGeneratable {
@@ -46,16 +51,16 @@ class XMLHttpResponseBindingOutputGenerator : HttpResponseBindingOutputGeneratab
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addImport(SwiftDependency.SMITHY_XML.target)
-            writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
+            writer.addImports(ctx.service.responseWireProtocol)
             writer.openBlock("extension \$N {", "}", outputSymbol) {
                 writer.write("")
                 writer.openBlock(
-                    "static var httpBinding: \$N<\$N, \$N> {",
+                    "static var httpBinding: \$N<\$N, \$N, \$N> {",
                     "}",
-                    ClientRuntimeTypes.Http.HTTPResponseOutputBinding,
+                    SmithyReadWriteTypes.WireResponseOutputBinding,
+                    ClientRuntimeTypes.Http.HttpResponse,
                     outputSymbol,
-                    SmithyXMLTypes.Reader,
+                    ctx.service.readerSymbol,
                 ) {
                     writer.openBlock("{ httpResponse, responseDocumentClosure in", "}") {
                         if (responseBindings.isEmpty()) {

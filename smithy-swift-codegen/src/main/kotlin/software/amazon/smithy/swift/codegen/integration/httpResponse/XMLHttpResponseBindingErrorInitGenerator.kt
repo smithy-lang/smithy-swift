@@ -19,25 +19,29 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTrai
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitPayloadFactory
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitQueryParams
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitResponseCode
+import software.amazon.smithy.swift.codegen.integration.serde.json.readerSymbol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 
 class XMLHttpResponseBindingErrorInitGenerator(
-    val ctx: ProtocolGenerator.GenerationContext,
-    val shape: StructureShape,
-    val httpBindingResolver: HttpBindingResolver,
     val defaultTimestampFormat: TimestampFormatTrait.Format,
     val httpResponseTraitPayloadFactory: HttpResponseTraitPayloadFactory? = null
-) : HttpResponseBindingRenderable {
+) : HttpResponseBindingErrorInitGeneratable {
 
     object XMLHttpResponseBindingErrorInit : SectionId
     object XMLHttpResponseBindingErrorInitMemberAssignment : SectionId
 
-    override fun render() {
-        val responseBindings = httpBindingResolver.responseBindings(shape)
+    override fun render(
+        ctx: ProtocolGenerator.GenerationContext,
+        structureShape: StructureShape,
+        httpBindingResolver: HttpBindingResolver
+    ) {
+        val responseBindings = httpBindingResolver.responseBindings(structureShape)
         val headerBindings = responseBindings
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
         val rootNamespace = ctx.settings.moduleName
-        val errorShape = ctx.symbolProvider.toSymbol(shape)
+        val errorShape = ctx.symbolProvider.toSymbol(structureShape)
 
         val httpBindingSymbol = Symbol.builder()
             .definitionFile("./$rootNamespace/models/${errorShape.name}+Init.swift")
@@ -45,15 +49,14 @@ class XMLHttpResponseBindingErrorInitGenerator(
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addImport(SwiftDependency.SMITHY_XML.target)
+            writer.addImports(ctx.service.responseWireProtocol)
             writer.openBlock("extension \$N {", "}", errorShape) {
                 writer.write("")
                 writer.declareSection(XMLHttpResponseBindingErrorInit) {
                     writer.write(
                         "static func responseErrorBinding(httpResponse: \$N, reader: \$N, message: \$D, requestID: \$D) async throws -> \$N {",
                         ClientRuntimeTypes.Http.HttpResponse,
-                        SmithyXMLTypes.Reader,
+                        ctx.service.readerSymbol,
                         SwiftTypes.String,
                         SwiftTypes.String,
                         SwiftTypes.Error,
@@ -63,7 +66,7 @@ class XMLHttpResponseBindingErrorInitGenerator(
                 writer.write("var value = \$N()", errorShape)
                 XMLHttpResponseHeaders(ctx, true, headerBindings, defaultTimestampFormat, writer).render()
                 XMLHttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                httpResponseTraitPayload(ctx, responseBindings, shape, writer)
+                httpResponseTraitPayload(ctx, responseBindings, structureShape, writer)
                 XMLHttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
                 XMLHttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
                 writer.write("value.httpResponse = httpResponse")
@@ -78,7 +81,7 @@ class XMLHttpResponseBindingErrorInitGenerator(
         }
     }
 
-    fun httpResponseTraitPayload(ctx: ProtocolGenerator.GenerationContext, responseBindings: List<HttpBindingDescriptor>, errorShape: Shape, writer: SwiftWriter) {
+    private fun httpResponseTraitPayload(ctx: ProtocolGenerator.GenerationContext, responseBindings: List<HttpBindingDescriptor>, errorShape: Shape, writer: SwiftWriter) {
         val responseTraitPayload = httpResponseTraitPayloadFactory?.let {
             it.construct(ctx, responseBindings, errorShape, writer)
         } ?: run {

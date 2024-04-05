@@ -9,7 +9,7 @@ import struct Foundation.Data
 
 extension EventStream {
     /// Stream adapter that encodes input into `Data` objects.
-    public class DefaultMessageEncoderStream<Event: MessageMarshallable>: MessageEncoderStream, Stream {
+    public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream {
         let stream: AsyncThrowingStream<Event, Error>
         let messageEncoder: MessageEncoder
         let messageSigner: MessageSigner

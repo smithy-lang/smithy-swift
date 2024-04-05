@@ -9,10 +9,9 @@ import ClientRuntime
 
 public enum MockMiddlewareError: Error {
     case unknown(Error)
-}
 
-extension MockMiddlewareError: HttpResponseErrorBinding {
-    public static func makeError(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws -> Error {
+    public static func responseErrorClosure(_ httpResponse: HttpResponse) -> Error {
         return UnknownServiceError(typeName: "MockMiddlewareError", message: httpResponse.debugDescription)
     }
 }
+

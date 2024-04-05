@@ -1,6 +1,7 @@
 package software.amazon.smithy.swift.codegen.integration.serde.readwrite
 
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
@@ -11,16 +12,12 @@ class ResponseClosureUtils(
 ) {
 
     fun render(): String {
-        return when (ctx.service.responseWireProtocol) {
-            WireProtocol.XML -> {
-                val outputShape = ctx.model.expectShape(op.outputShape)
-                val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
-                writer.format(
-                    "responseClosure(\$N.httpBinding, responseDocumentBinding)",
-                    outputSymbol
-                )
-            }
-            else -> "responseClosure(decoder: decoder)"
-        }
+        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
+        val outputShape = ctx.model.expectShape(op.outputShape)
+        val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
+        return writer.format(
+            "wireResponseOutputClosure(\$N.httpBinding, wireResponseDocumentBinding())",
+            outputSymbol
+        )
     }
 }

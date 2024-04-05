@@ -51,14 +51,6 @@ fun Symbol.defaultValue(): String? {
     return if (default.isPresent) default.get() else null
 }
 
-fun Symbol.bodySymbol(): Symbol {
-    return Symbol.builder()
-        .name("${name}Body")
-        .putProperty(SymbolProperty.BOXED_KEY, isBoxed())
-        .putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue())
-        .build()
-}
-
 /**
  * Mark a symbol as being boxed (nullable) i.e. `T?`
  */

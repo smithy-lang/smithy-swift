@@ -8,7 +8,7 @@
 // Inspired from:
 // https://stackoverflow.com/questions/45169254/custom-swift-encoder-decoder-for-the-strings-resource-format
 
-public class FormURLEncoder: RequestEncoder {
+public class FormURLEncoder {
     public init() {}
 
     public func encode<T>(_ value: T) throws -> Data where T: Encodable {

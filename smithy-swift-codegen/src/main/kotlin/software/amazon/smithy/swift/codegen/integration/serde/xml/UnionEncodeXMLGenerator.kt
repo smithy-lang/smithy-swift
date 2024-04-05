@@ -7,11 +7,12 @@ package software.amazon.smithy.swift.codegen.integration.serde.xml
 
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.swift.codegen.SmithyXMLTypes
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.MemberShapeEncodeXMLGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.json.writerSymbol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 
 class UnionEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -20,12 +21,12 @@ class UnionEncodeXMLGenerator(
     private val writer: SwiftWriter
 ) : MemberShapeEncodeXMLGenerator(ctx, writer) {
     override fun render() {
-        writer.addImport(SwiftDependency.SMITHY_XML.target)
+        writer.addImports(ctx.service.requestWireProtocol)
         val structSymbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
-            "static func writingClosure(_ value: \$N?, to writer: \$N) throws {", "}",
+            "static func write(value: \$N?, to writer: \$N) throws {", "}",
             structSymbol,
-            SmithyXMLTypes.Writer
+            ctx.service.writerSymbol,
         ) {
             writer.write("guard let value else { writer.detach(); return }")
             writer.openBlock("switch value {", "}") {
@@ -34,12 +35,12 @@ class UnionEncodeXMLGenerator(
                     val memberName = ctx.symbolProvider.toMemberName(member)
                     writer.write("case let .\$L(\$L):", memberName, memberName)
                     writer.indent()
-                    writeMember(member, true)
+                    writeMember(member, true, false)
                     writer.dedent()
                 }
                 writer.write("case let .sdkUnknown(sdkUnknown):")
                 writer.indent()
-                writer.write("try writer[.init(\"sdkUnknown\")].write(sdkUnknown)")
+                writer.write("try writer[\"sdkUnknown\"].write(sdkUnknown)")
                 writer.dedent()
             }
         }

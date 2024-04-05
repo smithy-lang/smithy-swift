@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyReadWrite.SmithyWriter
+import enum SmithyReadWrite.Document
 import struct Foundation.Date
 import struct Foundation.Data
 import typealias SmithyReadWrite.WritingClosure
@@ -19,7 +21,7 @@ import struct SmithyTimestamps.TimestampFormatter
 /// This writer will write all Swift types used by Smithy models, and will also write Swift
 /// `Array` and `Dictionary` (optionally as flattened XML) given a writing closure for
 /// their enclosed data types.
-public class Writer {
+public final class Writer: SmithyWriter {
     var content = ""
     var children: [Writer] = []
     weak var parent: Writer?
@@ -29,9 +31,9 @@ public class Writer {
     // MARK: - init & deinit
 
     /// Used by the `DocumentWriter` to begin serialization of a model to XML.
-    /// - Parameter rootNodeInfo: The node info for the root XML node.
-    init(rootNodeInfo: NodeInfo) {
-        self.nodeInfo = rootNodeInfo
+    /// - Parameter nodeInfo: The node info for the XML node.
+    public init(nodeInfo: NodeInfo) {
+        self.nodeInfo = nodeInfo
     }
 
     private init(nodeInfo: NodeInfo, parent: Writer?) {
@@ -118,6 +120,10 @@ public class Writer {
 
     public func write(_ value: Data?) throws {
         try write(value?.base64EncodedString())
+    }
+
+    public func write(_ value: Document?) throws {
+        // No operation.  Smithy document not supported in XML
     }
 
     public func writeTimestamp(_ value: Date?, format: TimestampFormat) throws {

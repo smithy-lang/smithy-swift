@@ -26,6 +26,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingErrorInitGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.serde.formurl.FormURLEncodeCustomizable
 import software.amazon.smithy.swift.codegen.integration.serde.formurl.StructEncodeFormURLGenerator
@@ -74,7 +75,8 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
         unknownServiceErrorSymbol,
         defaultTimestampFormat,
         HttpResponseBindingOutputGenerator(),
-        MockHttpResponseBindingErrorGenerator()
+        MockHttpResponseBindingErrorGenerator(),
+        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat)
     )
     override val shouldRenderDecodableBodyStructForInputShapes = false
     override val shouldRenderCodingKeysForEncodable = false

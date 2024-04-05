@@ -38,7 +38,7 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
             case let .unionvalue(unionvalue):
                 try writer["unionValue"].write(unionvalue, writingClosure: RestXmlProtocolClientTypes.XmlUnionShape.writingClosure(_:to:))
             case let .sdkUnknown(sdkUnknown):
-                try writer[.init("sdkUnknown")].write(sdkUnknown)
+                try writer["sdkUnknown"].write(sdkUnknown)
         }
     }
 

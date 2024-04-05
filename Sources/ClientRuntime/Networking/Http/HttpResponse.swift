@@ -1,7 +1,11 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+import protocol SmithyReadWrite.WireDataProviding
 import AwsCommonRuntimeKit
 
 public class HttpResponse: HttpUrlResponse {
@@ -29,6 +33,15 @@ extension HttpResponse: CustomDebugStringConvertible {
     }
     public var debugDescription: String {
         return "\nStatus Code: \(statusCode.description) \n \(headers)"
+    }
+}
+
+extension HttpResponse: WireDataProviding {
+
+    public func data() async throws -> Data {
+        let data = try await body.readData()
+        body = .data(data)
+        return data ?? Data()
     }
 }
 

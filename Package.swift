@@ -31,6 +31,8 @@ let package = Package(
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyReadWrite", targets: ["SmithyReadWrite"]),
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
+        .library(name: "SmithyJSON", targets: ["SmithyJSON"]),
+        .library(name: "SmithyFormURL", targets: ["SmithyFormURL"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: [
@@ -42,11 +44,18 @@ let package = Package(
             name: "ClientRuntime",
             dependencies: [
                 "SmithyXML",
+                "SmithyJSON",
+                "SmithyFormURL",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "Logging", package: "swift-log"),
             ]
         ),
-        .target(name: "SmithyReadWrite"),
+        .target(
+            name: "SmithyReadWrite",
+            dependencies: [
+                "SmithyTimestamps"
+            ]
+        ),
         .target(
             name: "SmithyXML",
             dependencies: [
@@ -54,6 +63,20 @@ let package = Package(
                 "SmithyTimestamps",
                 libXML2DependencyOrNil
             ].compactMap { $0 }
+        ),
+        .target(
+            name: "SmithyJSON",
+            dependencies: [
+                "SmithyReadWrite",
+                "SmithyTimestamps"
+            ]
+        ),
+        .target(
+            name: "SmithyFormURL",
+            dependencies: [
+                "SmithyReadWrite",
+                "SmithyTimestamps"
+            ]
         ),
         libXML2TargetOrNil,
         .target(
@@ -70,6 +93,14 @@ let package = Package(
         .testTarget(
             name: "SmithyXMLTests",
             dependencies: ["SmithyXML", "ClientRuntime"]
+        ),
+        .testTarget(
+            name: "SmithyJSONTests",
+            dependencies: ["SmithyJSON", "ClientRuntime"]
+        ),
+        .testTarget(
+            name: "SmithyFormURLTests",
+            dependencies: ["SmithyFormURL", "ClientRuntime"]
         ),
         .testTarget(
             name: "SmithyTimestampsTests",

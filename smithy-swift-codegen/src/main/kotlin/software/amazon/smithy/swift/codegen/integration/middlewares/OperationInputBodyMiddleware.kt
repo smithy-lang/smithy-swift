@@ -20,9 +20,11 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.serde.json.writerSymbol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.DocumentWritingClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
@@ -55,7 +57,7 @@ class OperationInputBodyMiddleware(
         val inputShape = MiddlewareShapeUtils.inputShape(model, op)
         val inputSymbol = symbolProvider.toSymbol(inputShape)
         val outputSymbol = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
-        val writerSymbol = documentWritingClosureUtils.writerSymbol()
+        val writerSymbol = ctx.service.writerSymbol
         var payloadShape = inputShape
         var keyPath = "\\.self"
         var payloadWritingClosure = writingClosureUtils.writingClosure(payloadShape)
@@ -89,10 +91,12 @@ class OperationInputBodyMiddleware(
                 if (isStreaming) {
                     addEventStreamMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, keyPath, defaultBody, requestWireProtocol, sendInitialRequest)
                 } else {
+                    writer.addImports(ctx.service.requestWireProtocol)
                     addAggregateMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
                 }
             }
             is StructureShape, is DocumentShape -> {
+                writer.addImports(ctx.service.requestWireProtocol)
                 addAggregateMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
             }
             is BlobShape -> {
@@ -155,13 +159,8 @@ class OperationInputBodyMiddleware(
         if (sendInitialRequest) {
             writer.write("let initialRequestMessage = try input.makeInitialRequestMessage(encoder: encoder)")
         }
-        val marshalClosure = when (requestWireProtocol) {
-            WireProtocol.XML -> ", marshalClosure: $payloadSymbol.marshal"
-            WireProtocol.JSON -> ", marshalClosure: jsonMarshalClosure(requestEncoder: encoder)"
-            else -> ""
-        }
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L\$L\$L))",
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L, marshalClosure: \$N.marshal\$L))",
             operationStackName,
             middlewareStep.stringValue(),
             position.stringValue(),
@@ -171,7 +170,7 @@ class OperationInputBodyMiddleware(
             payloadSymbol,
             keyPath,
             defaultBody,
-            marshalClosure,
+            payloadSymbol,
             if (sendInitialRequest) ", initialRequestMessage: initialRequestMessage" else ""
         )
     }

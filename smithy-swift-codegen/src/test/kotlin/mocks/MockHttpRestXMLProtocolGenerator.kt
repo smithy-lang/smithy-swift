@@ -21,6 +21,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingErrorInitGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeXMLGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.StructDecodeXMLGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
@@ -38,15 +39,12 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
         unknownServiceErrorSymbol,
         defaultTimestampFormat,
         HttpResponseBindingOutputGenerator(),
-        MockHttpResponseBindingErrorGenerator()
+        MockHttpResponseBindingErrorGenerator(),
+        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat)
     )
     override val shouldRenderDecodableBodyStructForInputShapes = false
     override val shouldRenderCodingKeysForEncodable = false
     override val shouldRenderEncodableConformance = false
-
-    override val codableProtocol = null
-    override val encodableProtocol = null
-    override val decodableProtocol = null
 
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,

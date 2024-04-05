@@ -36,7 +36,7 @@ class HttpResponseTraitPayload(
             val httpResponseTraitWithoutPayload = httpResponseTraitWithoutPayloadFactory?.let {
                 it.construct(ctx, responseBindings, outputShape, writer)
             } ?: run {
-                HttpResponseTraitWithoutHttpPayload(ctx, responseBindings, outputShape, writer)
+                XMLHttpResponseTraitWithoutHttpPayload(ctx, responseBindings, outputShape, writer)
             }
             httpResponseTraitWithoutPayload.render()
         }

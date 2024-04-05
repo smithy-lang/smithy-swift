@@ -228,7 +228,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler { (_, _) in
             XCTFail("Deserialize was mocked out, this should fail")
             let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
-            let mockServiceError = try await MockMiddlewareError.makeError(httpResponse: httpResponse, decoder: context.getDecoder())
+            let mockServiceError = MockMiddlewareError.responseErrorClosure(httpResponse)
             throw mockServiceError
         })
     }
