@@ -6,15 +6,19 @@
 //
 
 /// Default implementation for all interceptor context types.
-/// 
+///
 /// This object will be created before operation execution, and passed through each interceptor
 /// hook in the execution pipeline.
-public class DefaultInterceptorContext<RequestType, ResponseType, AttributesType: HasAttributes>: InterceptorContext {
+public class DefaultInterceptorContext<
+    RequestType: RequestMessage,
+    ResponseType: ResponseMessage,
+    AttributesType: HasAttributes
+>: InterceptorContext {
     private var attributes: AttributesType
     private var input: Any
     private var request: RequestType?
     private var response: ResponseType?
-    private var output: Any?
+    private var result: Result<Any, Error>?
 
     public init(input: Any, attributes: AttributesType) {
         self.input = input
@@ -63,8 +67,8 @@ extension DefaultInterceptorContext: MutableResponse {
 }
 
 extension DefaultInterceptorContext: AfterDeserialization {
-    public func getOutput() -> Any {
-        self.output!
+    public func getResult() -> Result<Any, Error> {
+        self.result!
     }
 }
 
@@ -75,8 +79,8 @@ extension DefaultInterceptorContext: AfterAttempt {
 }
 
 extension DefaultInterceptorContext: MutableOutputAfterAttempt {
-    public func updateOutput(updated: Any) {
-        self.output = updated
+    public func updateResult(updated: Result<Any, Error>) {
+        self.result = updated
     }
 }
 

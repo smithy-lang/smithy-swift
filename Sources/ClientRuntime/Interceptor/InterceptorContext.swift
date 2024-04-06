@@ -6,13 +6,13 @@
 //
 
 /// The base type of all context objects passed to `Interceptor` methods.
-public protocol InterceptorContext {
+public protocol InterceptorContext: AnyObject {
 
     /// The type of the transport message that will be transmitted by the operation being invoked.
-    associatedtype RequestType
+    associatedtype RequestType: RequestMessage
 
     /// The type of the transport message that will be received by the operation being invoked.
-    associatedtype ResponseType
+    associatedtype ResponseType: ResponseMessage
 
     /// The type of the attributes that will be available to all interceptors.
     associatedtype AttributesType: HasAttributes
@@ -40,7 +40,7 @@ public protocol MutableInput<AttributesType>: InterceptorContext {
 
     /// Mutates the operation input.
     /// - Parameter updated: The updated operation input.
-    mutating func updateInput(updated: Any)
+    func updateInput(updated: Any)
 }
 
 /// Context given to interceptor hooks called after request serialization.
@@ -62,7 +62,7 @@ public protocol MutableRequest<RequestType, AttributesType>: InterceptorContext 
 
     /// Mutates the serialized request.
     /// - Parameter updated: The updated request.
-    mutating func updateRequest(updated: RequestType)
+    func updateRequest(updated: RequestType)
 }
 
 /// Context given to interceptor hooks called before response deserialization, after the response has been received.
@@ -88,7 +88,7 @@ public protocol MutableResponse<RequestType, ResponseType, AttributesType>: Inte
 
     /// Mutates the serialized response.
     /// - Parameter updated: The updated response.
-    mutating func updateResponse(updated: ResponseType)
+    func updateResponse(updated: ResponseType)
 }
 
 /// Context given to interceptor hooks called after response deserialization.
@@ -101,8 +101,8 @@ public protocol AfterDeserialization<RequestType, ResponseType, AttributesType>:
     /// - Returns: The serialized response.
     func getResponse() -> ResponseType
 
-    /// - Returns: The operation output.
-    func getOutput() -> Any
+    /// - Returns: The operation result.
+    func getResult() -> Result<Any, Error>
 }
 
 /// Context given to interceptor hooks called after each attempt at sending the request.
@@ -115,8 +115,8 @@ public protocol AfterAttempt<RequestType, ResponseType, AttributesType>: Interce
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation output.
-    func getOutput() -> Any
+    /// - Returns: The operation result.
+    func getResult() -> Result<Any, Error>
 }
 
 /// Context given to interceptor hooks that can mutate the operation output, called after each attempt at sending the request.
@@ -129,12 +129,12 @@ public protocol MutableOutputAfterAttempt<RequestType, ResponseType, AttributesT
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation output.
-    func getOutput() -> Any
+    /// - Returns: The operation result.
+    func getResult() -> Result<Any, Error>
 
-    /// Mutates the operation output.
-    /// - Parameter updated: The updated output.
-    mutating func updateOutput(updated: Any)
+    /// Mutates the operation result.
+    /// - Parameter updated: The updated result.
+    func updateResult(updated: Result<Any, Error>)
 }
 
 /// Context given to interceptor hooks called after execution.
@@ -148,8 +148,8 @@ public protocol Finalization<RequestType, ResponseType, AttributesType>: Interce
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation output.
-    func getOutput() -> Any
+    /// - Returns: The operation result.
+    func getResult() -> Result<Any, Error>
 }
 
 /// Context given to interceptor hooks that can mutate the operation output, called after execution.
@@ -163,10 +163,10 @@ public protocol MutableOutputFinalization<RequestType, ResponseType, AttributesT
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation output.
-    func getOutput() -> Any
+    /// - Returns: The operation result.
+    func getResult() -> Result<Any, Error>
 
-    /// Mutates the operation output.
-    /// - Parameter updated: The updated output.
-    mutating func updateOutput(updated: Any)
+    /// Mutates the operation result.
+    /// - Parameter updated: The updated result.
+    func updateResult(updated: Result<Any, Error>)
 }

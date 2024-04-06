@@ -17,20 +17,24 @@ public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context {
+        try await addHeaders(builder: input, attributes: context)
+        return try await next.handle(context: context, input: input)
+    }
 
+    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: HttpContext) async throws {
         // Skip MD5 hash if using checksums
-        if input.headers.exists(name: "x-amz-sdk-checksum-algorithm") {
-            return try await next.handle(context: context, input: input)
+        if builder.headers.exists(name: "x-amz-sdk-checksum-algorithm") {
+            return
         }
 
-        switch input.body {
+        switch builder.body {
         case .data(let data):
             guard let data else {
-                return try await next.handle(context: context, input: input)
+                return
             }
             let md5Hash = try data.computeMD5()
             let base64Encoded = md5Hash.base64EncodedString()
-            input.headers.update(name: "Content-MD5", value: base64Encoded)
+            builder.headers.update(name: "Content-MD5", value: base64Encoded)
         case .stream(let stream):
             let checksumAlgorithm: ChecksumAlgorithm = .md5
             let md5Hasher = checksumAlgorithm.createChecksum()
@@ -45,22 +49,28 @@ public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
                 let hashResult = try md5Hasher.digest().toBase64String()
                 input.headers.update(name: "Content-MD5", value: hashResult)
             } catch {
-                guard let logger = context.getLogger() else {
-                    return try await next.handle(context: context, input: input)
+                guard let logger = attributes.getLogger() else {
+                    return
                 }
                 logger.error("Could not compute Content-MD5 of stream due to error \(error)")
             }
         default:
-            guard let logger = context.getLogger() else {
-                return try await next.handle(context: context, input: input)
+            guard let logger = attributes.getLogger() else {
+                return
             }
             logger.error("Unhandled case for Content-MD5")
         }
-
-        return try await next.handle(context: context, input: input)
     }
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+}
+
+extension ContentMD5Middleware: HttpInterceptor {
+    public func modifyBeforeTransmit(context: some MutableRequest<RequestType, AttributesType>) async throws {
+        let builder = context.getRequest().toBuilder()
+        try await addHeaders(builder: builder, attributes: context.getAttributes())
+        context.updateRequest(updated: builder.build())
+    }
 }

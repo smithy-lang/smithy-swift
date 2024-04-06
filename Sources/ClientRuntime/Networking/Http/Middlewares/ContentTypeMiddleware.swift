@@ -18,15 +18,25 @@ public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput>: 
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context {
-
-        if !input.builder.headers.exists(name: "Content-Type") {
-            input.builder.withHeader(name: "Content-Type", value: contentType)
-        }
-
+        addHeaders(builder: input.builder)
         return try await next.handle(context: context, input: input)
+    }
+
+    private func addHeaders(builder: SdkHttpRequestBuilder) {
+        if !builder.headers.exists(name: "Content-Type") {
+            builder.withHeader(name: "Content-Type", value: contentType)
+        }
     }
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+}
+
+extension ContentTypeMiddleware: HttpInterceptor {
+    public func modifyBeforeRetryLoop(context: some MutableRequest<RequestType, AttributesType>) async throws {
+        let builder = context.getRequest().toBuilder()
+        addHeaders(builder: builder)
+        context.updateRequest(updated: builder.build())
+    }
 }
