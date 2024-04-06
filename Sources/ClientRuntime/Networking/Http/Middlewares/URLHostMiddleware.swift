@@ -23,18 +23,27 @@ public struct URLHostMiddleware<OperationStackInput, OperationStackOutput>: Midd
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              if let host = host {
-                  context.attributes.set(key: AttributeKey<String>(name: "Host"),
-                                         value: host)
-              }
-              if let hostPrefix = hostPrefix {
-                  context.attributes.set(key: AttributeKey<String>(name: "HostPrefix"),
-                                         value: hostPrefix)
-              }
+              updateAttributes(attributes: context)
               return try await next.handle(context: context, input: input)
           }
+
+    private func updateAttributes(attributes: HttpContext) {
+        if let host = host {
+            attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
+        }
+        if let hostPrefix = hostPrefix {
+            attributes.set(key: AttributeKey<String>(name: "HostPrefix"), value: hostPrefix)
+        }
+    }
 
     public typealias MInput = OperationStackInput
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+}
+
+extension URLHostMiddleware: HttpInterceptor {
+    public func modifyBeforeSerialization(context: some MutableInput<AttributesType>) async throws {
+        // This is an interceptor and not a serializer because endpoints are used to resolve the host
+        updateAttributes(attributes: context.getAttributes())
+    }
 }

@@ -15,10 +15,10 @@ public protocol Interceptor<InputType, OutputType, RequestType, ResponseType, At
     associatedtype OutputType
 
     /// The type of the request transport messages sent by operations this interceptor can hook into.
-    associatedtype RequestType
+    associatedtype RequestType: RequestMessage
 
     /// The type of the response transport message received by operations this interceptor can hook into.
-    associatedtype ResponseType
+    associatedtype ResponseType: ResponseMessage
 
     /// The type of the attributes that will be available to the interceptor.
     associatedtype AttributesType: HasAttributes

@@ -24,13 +24,21 @@ public struct SignerMiddleware<OperationStackOutput>: Middleware {
     Self.MInput == H.Input,
     Self.MOutput == H.Output {
         // Retrieve selected auth scheme from context
-        guard let selectedAuthScheme = context.getSelectedAuthScheme() else {
+        let selectedAuthScheme = context.getSelectedAuthScheme()
+        let signed = try await apply(request: input.build(), selectedAuthScheme: selectedAuthScheme, attributes: context)
+        return try await next.handle(context: context, input: signed.toBuilder())
+    }
+}
+
+extension SignerMiddleware: ApplySigner {
+    public func apply(request: SdkHttpRequest, selectedAuthScheme: SelectedAuthScheme?, attributes: HttpContext) async throws -> SdkHttpRequest {
+        guard let selectedAuthScheme = selectedAuthScheme else {
             throw ClientError.authError("Auth scheme needed by signer middleware was not saved properly.")
         }
 
         // Return without signing request if resolved auth scheme is of noAuth type
         guard selectedAuthScheme.schemeID != "smithy.api#noAuth" else {
-            return try await next.handle(context: context, input: input)
+            return request
         }
 
         // Retrieve identity, signer, and signing properties from selected auth scheme to sign the request.
@@ -50,13 +58,11 @@ public struct SignerMiddleware<OperationStackOutput>: Middleware {
             )
         }
 
-        // Sign request and hand over to next middleware (handler) in line.
-        let signedInput = try await signer.signRequest(
-            requestBuilder: input, identity: identity, signingProperties: signingProperties
-        )
-        // The saved signature is used to sign event stream messages if needed.
-        context.attributes.set(key: AttributeKeys.requestSignature, value: signedInput.signature)
+        let signed = try await signer.signRequest(requestBuilder: request.toBuilder(), identity: identity, signingProperties: signingProperties)
 
-        return try await next.handle(context: context, input: signedInput)
+        // The saved signature is used to sign event stream messages if needed.
+        attributes.set(key: AttributeKeys.requestSignature, value: signed.signature)
+
+        return signed.build()
     }
 }

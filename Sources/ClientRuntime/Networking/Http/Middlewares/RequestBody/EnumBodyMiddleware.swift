@@ -25,13 +25,22 @@ public struct EnumBodyMiddleware<OperationStackInput,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              let bodyString = input.operationInput[keyPath: keyPath]?.rawValue ?? ""
-              let body = ByteStream.data(Data(bodyString.utf8))
-              input.builder.withBody(body)
+              try apply(input: input.operationInput, builder: input.builder, attributes: context)
               return try await next.handle(context: context, input: input)
           }
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+}
+
+extension EnumBodyMiddleware: RequestMessageSerializer {
+    public typealias InputType = OperationStackInput
+    public typealias RequestType = SdkHttpRequest
+    public typealias AttributesType = HttpContext
+
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+        let bodyString = input[keyPath: keyPath]?.rawValue ?? ""
+        builder.withBody(.data(Data(bodyString.utf8)))
+    }
 }
