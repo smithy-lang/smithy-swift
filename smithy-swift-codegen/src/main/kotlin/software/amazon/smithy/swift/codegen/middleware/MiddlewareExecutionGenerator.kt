@@ -45,15 +45,30 @@ class MiddlewareExecutionGenerator(
             renderContextAttributes(op, flowType)
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
-        writer.write(
-            "var \$L = \$N<\$L, \$L>(id: \$S)",
-            operationStackName,
-            OperationStack,
-            inputShapeName,
-            outputShapeName,
-            op.toLowerCamelCase(),
-        )
+        if (!ctx.settings.useInterceptors) {
+            writer.write(
+                "var \$L = \$N<\$L, \$L>(id: \$S)",
+                operationStackName,
+                OperationStack,
+                inputShapeName,
+                outputShapeName,
+                op.toLowerCamelCase(),
+            )
+        } else {
+            writer.write("let builder = OrchestratorBuilder<$inputShapeName, $outputShapeName, SdkHttpRequest, HttpResponse, HttpContext>()")
+        }
+
         renderMiddlewares(ctx, op, operationStackName)
+
+        if (ctx.settings.useInterceptors) {
+            writer.write(
+                """
+                let op = builder.attributes(context)
+                    .executeRequest(client)
+                    .build()
+                """.trimIndent()
+            )
+        }
     }
 
     private fun renderContextAttributes(op: OperationShape, flowType: ContextAttributeCodegenFlowType) {

@@ -27,15 +27,17 @@ class LoggingMiddleware(
 
     override val position = MiddlewarePosition.AFTER
 
-    override fun render(
+    override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape,
-        operationStackName: String
+        op: OperationShape
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
-        val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N>(${middlewareParamsString()}))", ClientRuntimeTypes.Middleware.LoggerMiddleware, output)
+        writer.write(
+            "\$N<\$N>(${middlewareParamsString()})",
+            ClientRuntimeTypes.Middleware.LoggerMiddleware,
+            output
+        )
     }
 
     private fun middlewareParamsString(): String {

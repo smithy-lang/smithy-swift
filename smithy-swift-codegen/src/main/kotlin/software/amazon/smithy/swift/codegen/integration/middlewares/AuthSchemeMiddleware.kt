@@ -27,10 +27,15 @@ class AuthSchemeMiddleware(
         op: OperationShape,
         operationStackName: String
     ) {
+        super.renderSpecific(ctx, writer, op, operationStackName, "selectAuthScheme")
+    }
+
+    override fun renderMiddlewareInit(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape
+    ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
-        writer.write(
-            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N>())",
-            ClientRuntimeTypes.Middleware.AuthSchemeMiddleware, output
-        )
+        writer.write("\$N<\$N>()", ClientRuntimeTypes.Middleware.AuthSchemeMiddleware, output)
     }
 }

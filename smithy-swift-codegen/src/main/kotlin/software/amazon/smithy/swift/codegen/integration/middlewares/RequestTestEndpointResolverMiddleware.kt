@@ -19,15 +19,29 @@ class RequestTestEndpointResolverMiddleware(private val model: Model, private va
 
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
         val outputErrorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
-        writer.openBlock(
-            "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, id: \"${name}\") { (context, input, next) -> \$N<$outputShapeName> in", "}",
-            ClientRuntimeTypes.Middleware.OperationOutput
-        ) {
-            writer.write("input.withMethod(context.getMethod())")
-            writer.write("input.withPath(context.getPath())")
-            writer.write("let host = \"\\(context.getHostPrefix() ?? \"\")\\(context.getHost() ?? \"\")\"")
-            writer.write("input.withHost(host)")
-            writer.write("return try await next.handle(context: context, input: input)")
+        if (ctx.settings.useInterceptors) {
+            writer.write(
+                """
+                builder.applyEndpoint({ (request, scheme, attributes) in
+                    return request.toBuilder()
+                        .withMethod(attributes.getMethod())
+                        .withPath(attributes.getPath())
+                        .withHost("\(attributes.getHostPrefix() ?? "")\(attributes.getHost() ?? "")")
+                        .build()
+                })
+                """.trimMargin()
+            )
+        } else {
+            writer.openBlock(
+                "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, id: \"${name}\") { (context, input, next) -> \$N<$outputShapeName> in", "}",
+                ClientRuntimeTypes.Middleware.OperationOutput
+            ) {
+                writer.write("input.withMethod(context.getMethod())")
+                writer.write("input.withPath(context.getPath())")
+                writer.write("let host = \"\\(context.getHostPrefix() ?? \"\")\\(context.getHost() ?? \"\")\"")
+                writer.write("input.withHost(host)")
+                writer.write("return try await next.handle(context: context, input: input)")
+            }
         }
     }
 }
