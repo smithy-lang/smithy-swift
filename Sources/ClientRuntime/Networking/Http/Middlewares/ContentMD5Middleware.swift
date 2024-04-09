@@ -47,7 +47,7 @@ public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
 
                 // Finalize the hash after reading all chunks.
                 let hashResult = try md5Hasher.digest().toBase64String()
-                input.headers.update(name: "Content-MD5", value: hashResult)
+                builder.headers.update(name: "Content-MD5", value: hashResult)
             } catch {
                 guard let logger = attributes.getLogger() else {
                     return
