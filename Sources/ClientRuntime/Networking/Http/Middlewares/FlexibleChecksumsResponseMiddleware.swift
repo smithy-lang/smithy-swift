@@ -79,9 +79,9 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
                 throw ClientError.dataNotFound("Cannot calculate checksum of empty body!")
             }
 
-            let calculatedChecksum = try responseChecksum.computeHash(of: data)
-
-            let actualChecksum = calculatedChecksum.toBase64String()
+            let responseChecksumHasher = responseChecksum.createChecksum()
+            try responseChecksumHasher.update(chunk: data)
+            let actualChecksum = try responseChecksumHasher.digest().toBase64String()
 
             guard expectedChecksum == actualChecksum else {
                 let message = "Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)"

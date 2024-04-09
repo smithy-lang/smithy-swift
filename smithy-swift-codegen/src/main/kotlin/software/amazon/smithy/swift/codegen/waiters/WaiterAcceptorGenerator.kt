@@ -14,9 +14,9 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.swift.codegen.SwiftSymbolProvider
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.SymbolVisitor
-import software.amazon.smithy.swift.codegen.core.CodegenContext
+import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.waiters.Acceptor
 import software.amazon.smithy.waiters.Matcher
 import software.amazon.smithy.waiters.PathComparator
@@ -28,7 +28,7 @@ import software.amazon.smithy.waiters.PathMatcher
 // https://smithy.io/2.0/additional-specs/waiters.html#acceptor-structure
 class WaiterAcceptorGenerator(
     val writer: SwiftWriter,
-    val ctx: CodegenContext,
+    val ctx: SwiftCodegenContext,
     val service: ServiceShape,
     val waitedOperation: OperationShape,
     val acceptor: Acceptor,
@@ -93,7 +93,7 @@ class WaiterAcceptorGenerator(
         val model = ctx.model.toBuilder()
             .addShapes(listOf(inputOutputShape, boolShape, stringShape, doubleShape))
             .build()
-        val symbolProvider = SymbolVisitor(model, ctx.settings)
+        val symbolProvider = SwiftSymbolProvider(model, ctx.settings)
 
         // Create a visitor & send it through the AST.  actual will hold the name of the variable
         // with the result of the expression

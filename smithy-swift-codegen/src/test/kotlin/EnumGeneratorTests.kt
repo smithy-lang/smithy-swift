@@ -35,7 +35,7 @@ class EnumGeneratorTests {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.staticHeader)
+        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
 
         val expectedGeneratedEnum =
             """
@@ -100,7 +100,7 @@ class EnumGeneratorTests {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.staticHeader)
+        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
 
         val expectedGeneratedEnum =
             """

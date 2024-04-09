@@ -56,7 +56,7 @@ class AWSChunkedStream {
             signingConfig: self.signingConfig,
             previousSignature: self.previousSignature,
             trailingHeaders: self.trailingHeaders,
-            checksum: checksumAlgorithm
+            checksumAlgorithm: checksumAlgorithm
         )
     }
 }
@@ -130,10 +130,11 @@ extension AWSChunkedStream: Stream {
         // If the stream is closed or some other Task has already replenished the stream,
         // then this operation is not needed.  Exit.
         guard !outputStream.isClosed, outputStream.bufferCount == 0 else { return }
+
         // Process the first chunk and determine if there are more to send
         let hasMoreChunks = try await chunkedReader.processNextChunk()
         let currentChunkBodyIsEmpty = chunkedReader.getCurrentChunkBody().isEmpty
-//        try await Task.sleep(nanoseconds: UInt64(Double.random(in: 0.1...1.0) * 1_000_000_000.0))
+
         if hasMoreChunks && !currentChunkBodyIsEmpty {
             // Send the next, non-final chunk
             let chunk = chunkedReader.getCurrentChunk()

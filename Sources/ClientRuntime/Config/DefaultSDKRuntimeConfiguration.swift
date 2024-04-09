@@ -40,10 +40,10 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
     /// If none is provided. one will be provided that supplies UUIDs.
     public var idempotencyTokenGenerator: IdempotencyTokenGenerator
 
-    /// The logger to be used for client activity.
+    /// Configuration for telemetry, including tracing, metrics, and logging.
     ///
-    /// If none is provided, the SDK's logger will be used.
-    public var logger: LogAgent
+    /// If none is provided, only a default logger provider will be used.
+    public var telemetryProvider: TelemetryProvider
 
     /// The retry strategy options to be used.
     ///
@@ -76,7 +76,7 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
         self.httpClientEngine = Self.makeClient(httpClientConfiguration: self.httpClientConfiguration)
         self.idempotencyTokenGenerator = Self.defaultIdempotencyTokenGenerator
         self.retryStrategyOptions = Self.defaultRetryStrategyOptions
-        self.logger = Self.defaultLogger(clientName: clientName)
+        self.telemetryProvider = DefaultTelemetry.provider
         self.clientLogMode = Self.defaultClientLogMode
     }
 }
@@ -118,11 +118,6 @@ public extension DefaultSDKRuntimeConfiguration {
     ///
     /// Defaults to options with the defaults defined in `RetryStrategyOptions`.
     static var defaultRetryStrategyOptions: RetryStrategyOptions { RetryStrategyOptions() }
-
-    /// The logger to use when none is provided
-    /// - Parameter clientName: The name of the client being logged
-    /// - Returns: A Swift logger with `clientName` as its label.
-    static func defaultLogger(clientName: String) -> SwiftLogger { SwiftLogger(label: clientName) }
 
     /// The log mode to use when none is provided
     ///
