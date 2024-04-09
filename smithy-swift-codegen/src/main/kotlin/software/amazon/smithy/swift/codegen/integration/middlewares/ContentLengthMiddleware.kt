@@ -26,13 +26,19 @@ class ContentLengthMiddleware(val model: Model, private val alwaysIntercept: Boo
     ) {
         val hasHttpBody = MiddlewareShapeUtils.hasHttpBody(model, op)
         if (hasHttpBody || alwaysIntercept) {
-            val str = "requiresLength: $requiresLength, unsignedPayload: $unsignedPayload"
-            val middlewareArgs = str.takeIf { requiresLength || unsignedPayload } ?: ""
-
-            val interceptStatement = "$operationStackName.${middlewareStep.stringValue()}.intercept(" +
-                "position: ${position.stringValue()}, middleware: ${ClientRuntimeTypes.Middleware.ContentLengthMiddleware}($middlewareArgs))"
-
-            writer.write(interceptStatement)
+            super.render(ctx, writer, op, operationStackName)
         }
+    }
+
+    override fun renderMiddlewareInit(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape
+    ) {
+        val str = "requiresLength: $requiresLength, unsignedPayload: $unsignedPayload"
+        val middlewareArgs = str.takeIf { requiresLength || unsignedPayload } ?: ""
+
+        val outputShapeName = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, model, op).name
+        writer.write("\$N<$outputShapeName>($middlewareArgs)", ClientRuntimeTypes.Middleware.ContentLengthMiddleware)
     }
 }

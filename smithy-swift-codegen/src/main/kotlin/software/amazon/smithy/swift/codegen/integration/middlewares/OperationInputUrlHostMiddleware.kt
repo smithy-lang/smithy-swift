@@ -27,11 +27,10 @@ class OperationInputUrlHostMiddleware(
 
     override val position = MiddlewarePosition.AFTER
 
-    override fun render(
+    override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape,
-        operationStackName: String
+        op: OperationShape
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
@@ -43,6 +42,10 @@ class OperationInputUrlHostMiddleware(
             inputParameters += if (requiresHost) ", " else ""
             inputParameters += "hostPrefix: \"$hostPrefix\""
         }
-        writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$inputShapeName, $outputShapeName>($inputParameters))", ClientRuntimeTypes.Middleware.URLHostMiddleware)
+
+        writer.write(
+            "\$N<$inputShapeName, $outputShapeName>($inputParameters)",
+            ClientRuntimeTypes.Middleware.URLHostMiddleware
+        )
     }
 }

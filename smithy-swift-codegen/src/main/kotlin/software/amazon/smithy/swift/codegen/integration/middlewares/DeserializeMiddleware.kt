@@ -30,14 +30,20 @@ class DeserializeMiddleware(
         op: OperationShape,
         operationStackName: String
     ) {
+        super.renderSpecific(ctx, writer, op, operationStackName, "deserialize")
+    }
+
+    override fun renderMiddlewareInit(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape
+    ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val httpResponseClosure = ResponseClosureUtils(ctx, writer, op).render()
         val httpResponseErrorClosure = ResponseErrorClosureUtils(ctx, writer, op).render()
+
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N>(\$L, \$L))",
-            operationStackName,
-            middlewareStep.stringValue(),
-            position.stringValue(),
+            "\$N<\$N>(\$L, \$L)",
             ClientRuntimeTypes.Middleware.DeserializeMiddleware,
             output,
             httpResponseClosure,
