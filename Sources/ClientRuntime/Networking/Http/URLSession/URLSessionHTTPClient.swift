@@ -142,12 +142,16 @@ public final class URLSessionHTTPClient: HTTPClient {
         ) {
             guard let tlsOptions = tlsOptions, tlsOptions.useSelfSignedCertificate,
                   let certFile = tlsOptions.certificateFile,
-                  let serverTrust = challenge.protectionSpace.serverTrust,
-                  let customRoot = Bundle.main.certificate(named: certFile) else {
-                logger.debug(
-                    "Either TLSOptions not set or missing values or certificate is not found! " +
-                    "Using default trust store."
+                  let serverTrust = challenge.protectionSpace.serverTrust else {
+                logger.error(
+                    "Either TLSOptions not set or missing values! Using defautl trust store."
                 )
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            guard let customRoot = Bundle.main.certificate(named: certFile) else {
+                logger.error("Certificate not found! Using default trust store.")
                 completionHandler(.performDefaultHandling, nil)
                 return
             }
@@ -156,7 +160,7 @@ public final class URLSessionHTTPClient: HTTPClient {
                 if try serverTrust.evaluateAllowing(rootCertificates: [customRoot]) {
                     completionHandler(.useCredential, URLCredential(trust: serverTrust))
                 } else {
-                    logger.debug("Trust evaluation failed, cancelling authentication challenge.")
+                    logger.error("Trust evaluation failed, cancelling authentication challenge.")
                     completionHandler(.cancelAuthenticationChallenge, nil)
                 }
             } catch {
@@ -172,15 +176,23 @@ public final class URLSessionHTTPClient: HTTPClient {
         ) {
             guard let tlsOptions, tlsOptions.useProvidedKeystore,
                   let keystoreName = tlsOptions.keyStoreName,
-                  let keystorePasword = tlsOptions.keyStorePassword,
-                  let identity = Bundle.main.identity(named: keystoreName, password: keystorePasword) else {
-                logger.debug(
-                    "Either TLSOptions not set or missing values or certificate is not found! " +
-                    "Using default key store."
+                  let keystorePasword = tlsOptions.keyStorePassword else {
+                logger.error(
+                    "Either TLSOptions not set or missing values! Using default keystore."
                 )
                 completionHandler(.performDefaultHandling, nil)
                 return
             }
+
+            guard let identity = Bundle.main.identity(named: keystoreName, password: keystorePasword) else {
+                logger.error(
+                    "Error accessing keystore! Ensure keystore file exists and password is correct!" +
+                    " Using default keystore."
+                )
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
             completionHandler(
                 .useCredential,
                 URLCredential(identity: identity, certificates: nil, persistence: .forSession)
@@ -302,7 +314,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     public init(httpClientConfiguration: HttpClientConfiguration) {
         self.config = httpClientConfiguration
         self.logger = SwiftLogger(label: "URLSessionHTTPClient")
-        self.tlsOptions = config.urlSessionTLSOptions
+        self.tlsOptions = config.tlsOptions?.urlSessionTLSOptions
         self.delegate = SessionDelegate(logger: logger, tlsOptions: tlsOptions)
         self.connectionTimeout = httpClientConfiguration.connectTimeout ?? 60.0
         var urlsessionConfiguration = URLSessionConfiguration.default
@@ -451,6 +463,7 @@ extension Bundle {
 extension SecTrust {
     enum TrustEvaluationError: Error {
         case evaluationFailed(error: CFError?)
+        case evaluationIssue(error: String)
     }
 
     /// Evaluates the trust object synchronously and returns a Boolean value indicating whether the trust evaluation succeeded.
@@ -458,7 +471,6 @@ extension SecTrust {
         var error: CFError?
         let evaluationSucceeded = SecTrustEvaluateWithError(self, &error)
         guard evaluationSucceeded else {
-            print(error.debugDescription)
             throw TrustEvaluationError.evaluationFailed(error: error)
         }
         return evaluationSucceeded
@@ -469,7 +481,7 @@ extension SecTrust {
         // Set the custom root certificates as trusted anchors.
         let status = SecTrustSetAnchorCertificates(self, rootCertificates as CFArray)
         guard status == errSecSuccess else {
-            throw TrustEvaluationError.evaluationFailed(error: nil)
+            throw TrustEvaluationError.evaluationIssue(error: "Failed to set anchor certificates!")
         }
 
         // Consider any built-in anchors in the evaluation.

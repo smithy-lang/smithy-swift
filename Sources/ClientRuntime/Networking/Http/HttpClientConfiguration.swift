@@ -39,13 +39,7 @@ public class HttpClientConfiguration {
     ///
     /// Enables specifying client certificates and trust stores for secure communication.
     /// Defaults to system's TLS settings if `nil`.
-    public var tlsContext: TLSContext?
-
-    /// Custom TLS configuration for HTTPS connections with URLSession client.
-    ///
-    /// Enables specifying client certificates and trust stores for secure communication.
-    /// Defaults to system's TLS settings if `nil`.
-    public var urlSessionTLSOptions: URLSessionTLSOptions?
+    public var tlsOptions: TLSOptions?
 
     /// Creates a configuration object for a SDK HTTP client.
     ///
@@ -62,14 +56,12 @@ public class HttpClientConfiguration {
         socketTimeout: TimeInterval? = nil,
         protocolType: ProtocolType = .https,
         defaultHeaders: Headers = Headers(),
-        tlsContext: TLSContext? = nil,
-        urlSessionTLSOptions: URLSessionTLSOptions? = nil
+        tlsOptions: TLSOptions? = nil
     ) {
         self.socketTimeout = socketTimeout
         self.protocolType = protocolType
         self.defaultHeaders = defaultHeaders
         self.connectTimeout = connectTimeout
-        self.tlsContext = tlsContext
-        self.urlSessionTLSOptions = urlSessionTLSOptions
+        self.tlsOptions = tlsOptions
     }
 }

@@ -97,7 +97,7 @@ public extension DefaultSDKRuntimeConfiguration {
         let socketTimeout = httpClientConfiguration.connectTimeout.map { UInt32($0) }
         let config = CRTClientEngineConfig(
           connectTimeoutMs: connectTimeoutMs,
-          tlsContext: httpClientConfiguration.tlsContext,
+          tlsContext: httpClientConfiguration.tlsOptions?.crtTLSContext,
           socketTimeout: socketTimeout
         )
         return CRTClientEngine(config: config)
