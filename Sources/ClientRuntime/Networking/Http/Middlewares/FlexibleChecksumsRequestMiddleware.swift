@@ -85,13 +85,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             // Retrieve the hash
             let hash = try checksum.digest().toBase64String()
 
-            request.updateHeader(name: headerName, value: [hash])
-        }
-
-        // Handle body vs handle stream
-        switch request.body {
-        case .data(let data):
-            try handleNormalPayload(data)
+            builder.updateHeader(name: headerName, value: [hash])
         case .stream:
             // Will handle calculating checksum and setting header later
             attributes.set(key: AttributeKeys.checksum, value: checksumHashFunction)
