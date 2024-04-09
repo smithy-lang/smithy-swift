@@ -50,7 +50,7 @@ public class HttpClientConfiguration {
     ///   - defaultHeaders: HTTP headers to be included with every HTTP request.
     ///   Note that certain headers may cause your API request to fail.  Defaults to no headers.
     ///   - protocolType: The HTTP scheme (`http` or `https`) to be used for API requests.  Defaults to the operation's standard configuration.
-    ///   - tlsContext: Optional custom TLS configuration for HTTPS requests. If `nil`, defaults to a standard configuration.
+    ///   - tlsOptions: Optional custom TLS configuration for HTTPS requests. If `nil`, defaults to a standard configuration.
     public init(
         connectTimeout: TimeInterval? = nil,
         socketTimeout: TimeInterval? = nil,
