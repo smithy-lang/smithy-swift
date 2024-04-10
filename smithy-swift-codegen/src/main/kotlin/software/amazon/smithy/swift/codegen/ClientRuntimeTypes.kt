@@ -48,6 +48,10 @@ object ClientRuntimeTypes {
         val JSONReader = runtimeSymbol("JSONReader")
     }
 
+    object Errors {
+        val DefaultError = runtimeSymbol("DefaultError")
+    }
+
     object EventStream {
         val MessageDecoder = runtimeSymbol("MessageDecoder")
         val ExceptionParams = runtimeSymbol("EventStream.MessageType.ExceptionParams")
