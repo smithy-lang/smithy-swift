@@ -81,3 +81,19 @@ let package = Package(
         ),
     ].compactMap { $0 }
 )
+
+func addTestServiceTargets() {
+    package.targets += [
+        .target(
+            name: "WeatherSDK",
+            dependencies: ["SmithyTestUtil", "ClientRuntime"]
+        ),
+        .testTarget(
+            name: "WeatherSDKTests",
+            dependencies: ["WeatherSDK"]
+        )
+    ]
+}
+
+// TODO: Uncomment below once the generated test client is fixed and build successfully
+addTestServiceTargets()
