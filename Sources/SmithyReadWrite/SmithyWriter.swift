@@ -13,7 +13,7 @@ public protocol SmithyWriter: AnyObject {
     associatedtype NodeInfo
 
     init(nodeInfo: NodeInfo)
-    func data() throws -> Data
+    func data() throws -> Data?
 
     subscript(_ nodeInfo: NodeInfo) -> Self { get }
     func detach()

@@ -55,7 +55,7 @@ class ReadingClosureUtils(
             is TimestampShape -> {
                 return writer.format(
                     "timestampReadingClosure(format: \$L)",
-                    TimestampUtils.timestampFormat(memberTimestampFormatTrait, shape)
+                    TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape)
                 )
             }
             else -> {

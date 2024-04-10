@@ -14,7 +14,6 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.json.readerSymbol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -42,7 +41,7 @@ open class StructDecodeXMLGenerator(
             val additionalCondition = "|| Mirror(reflecting: self).children.isEmpty ".takeIf {
                 ctx.settings.sdkId == "S3" && members.isEmpty()
             } ?: ""
-            writer.write("guard reader.content != nil \$Lelse { return nil }", additionalCondition)
+            writer.write("guard reader.hasContent \$Lelse { return nil }", additionalCondition)
             if (members.isEmpty()) {
                 writer.write("return \$N()", symbol)
             } else {

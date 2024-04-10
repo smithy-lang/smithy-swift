@@ -7,12 +7,13 @@
 
 import struct Foundation.Data
 import class Foundation.JSONSerialization
+import class Foundation.NSNull
 
 extension Reader {
 
     public static func from(data: Data) throws -> Reader {
-        let jsonObject = try JSONSerialization.jsonObject(with: data)
-        let rootNode = try JSONNode(jsonObject: jsonObject)
-        return Reader(nodeInfo: "")
+        guard !data.isEmpty else { return Reader(nodeInfo: "", parent: nil) }
+        let jsonObject = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
+        return try Reader(nodeInfo: "", jsonObject: jsonObject)
     }
 }

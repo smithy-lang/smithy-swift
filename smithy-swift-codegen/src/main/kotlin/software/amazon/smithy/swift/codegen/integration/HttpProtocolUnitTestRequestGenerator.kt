@@ -159,6 +159,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     WireProtocol.JSON -> ".json"
                     WireProtocol.FORM_URL -> ".formURL"
                 }
+//                writer.write("print(\"Actual: \\(String(data: try await actualHttpBody!.readData()!, encoding: .utf8)!)\")")
                 writer.write("try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: \$L)", contentType)
             }
         } else {

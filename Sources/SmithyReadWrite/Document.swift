@@ -8,6 +8,10 @@
 import struct Foundation.Data
 import class Foundation.JSONSerialization
 import class Foundation.NSNull
+import class Foundation.NSNumber
+import func CoreFoundation.CFGetTypeID
+import func CoreFoundation.CFBooleanGetTypeID
+
 
 public enum Document {
     case array([Document])
@@ -108,11 +112,13 @@ extension Document {
         }
     }
 
-    private static func make(from jsonObject: Any) throws -> Document {
+    public static func make(from jsonObject: Any) throws -> Document {
         if let object = jsonObject as? [String: Any] {
             return .object(try object.mapValues { try Document.make(from: $0) })
         } else if let array = jsonObject as? [Any] {
             return .array(try array.map { try Document.make(from: $0) })
+        } else if let nsNumber = jsonObject as? NSNumber, CFGetTypeID(nsNumber) == CFBooleanGetTypeID() {
+            return .boolean(nsNumber.boolValue)
         } else if let number = jsonObject as? Double {
             return .number(number)
         } else if let bool = jsonObject as? Bool {
@@ -126,12 +132,8 @@ extension Document {
         }
     }
 
-    public func data() throws -> Data {
-        try JSONSerialization.data(withJSONObject: jsonObject, options: [])
-    }
-
     public static func document(from data: Data) throws -> Document {
-        let jsonObject = try JSONSerialization.jsonObject(with: data)
+        let jsonObject = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
         return try Document.make(from: jsonObject)
     }
 }

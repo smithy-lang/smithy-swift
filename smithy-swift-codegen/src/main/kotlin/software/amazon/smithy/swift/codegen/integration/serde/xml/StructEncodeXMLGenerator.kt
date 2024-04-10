@@ -7,8 +7,10 @@ package software.amazon.smithy.swift.codegen.integration.serde.json
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.swift.codegen.SmithyFormURLTypes
 import software.amazon.smithy.swift.codegen.SmithyJSONTypes
 import software.amazon.smithy.swift.codegen.SmithyXMLTypes
@@ -19,6 +21,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProt
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
+import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.isError
 import java.lang.Exception
 
@@ -26,6 +29,7 @@ class StructEncodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val shapeContainingMembers: Shape,
     private val members: List<MemberShape>,
+    private val metadata: Map<ShapeMetadata, Any>,
     private val writer: SwiftWriter
 ) : MemberShapeEncodeXMLGenerator(ctx, writer) {
 
@@ -43,6 +47,22 @@ class StructEncodeXMLGenerator(
             )
             val isErrorMember = shapeContainingMembers.isError
             members.sortedBy { it.memberName }.forEach { writeMember(it, false, isErrorMember) }
+            writeExtraMembers()
+        }
+    }
+
+    private fun writeExtraMembers() {
+        when (ctx.service.requestWireProtocol) {
+            WireProtocol.FORM_URL -> {
+                if (metadata.containsKey(ShapeMetadata.OPERATION_SHAPE) && metadata.containsKey(ShapeMetadata.SERVICE_VERSION)) {
+                    val operationShape = metadata[ShapeMetadata.OPERATION_SHAPE] as OperationShape
+                    val version = metadata[ShapeMetadata.SERVICE_VERSION] as String
+                    writer.write("try writer[\"Action\"].write(\$S)", operationShape.id.name)
+                    writer.write("try writer[\"Version\"].write(\$S)", version)
+                }
+
+            }
+            else -> listOf<MemberShape>()
         }
     }
 }

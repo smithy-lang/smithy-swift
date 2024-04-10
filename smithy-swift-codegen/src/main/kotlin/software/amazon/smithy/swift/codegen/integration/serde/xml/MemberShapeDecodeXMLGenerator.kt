@@ -110,7 +110,7 @@ class MemberShapeDecodeXMLGenerator(
 
     private fun renderTimestampExp(memberShape: MemberShape, timestampShape: TimestampShape): String {
         val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
-        val swiftTimestampFormatCase = TimestampUtils.timestampFormat(memberTimestampFormatTrait, timestampShape)
+        val swiftTimestampFormatCase = TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, timestampShape)
         return writer.format(
             "try \$L.\$L(format: \$L)",
             reader(memberShape, false),

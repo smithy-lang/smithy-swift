@@ -16,8 +16,12 @@ import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeEncodeGeneratable
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.xml.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -72,7 +76,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val timestampKey = nodeInfoUtils.nodeInfo(memberShape)
         val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
-        val swiftTimestampFormatCase = TimestampUtils.timestampFormat(memberTimestampFormatTrait, timestampShape)
+        val swiftTimestampFormatCase = TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, timestampShape)
         writer.write(
             "try writer[\$L].writeTimestamp(\$L\$L, format: \$L)",
             timestampKey,
@@ -97,7 +101,7 @@ abstract class MemberShapeEncodeXMLGenerator(
         val memberName = ctx.symbolProvider.toMemberName(member)
         val listMemberWriter = writingClosureUtils.writingClosure(listShape.member)
         val listKey = nodeInfoUtils.nodeInfo(member)
-        val isFlattened = member.hasTrait<XmlFlattenedTrait>()
+        val isFlattened = member.hasTrait<XmlFlattenedTrait>() || ctx.service.awsProtocol == AWSProtocol.EC2_QUERY
         val memberNodeInfo = nodeInfoUtils.nodeInfo(listShape.member)
         writer.write(
             "try writer[\$L].writeList(\$L\$L, memberWritingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
@@ -132,12 +136,19 @@ abstract class MemberShapeEncodeXMLGenerator(
 
 object TimestampUtils {
 
-    fun timestampFormat(memberTimestampFormatTrait: TimestampFormatTrait?, timestampShape: TimestampShape): String {
-        val timestampFormatTrait = memberTimestampFormatTrait ?: timestampShape.getTrait<TimestampFormatTrait>() ?: TimestampFormatTrait(TimestampFormatTrait.DATE_TIME)
-        return when (timestampFormatTrait.value) {
+    fun timestampFormat(ctx: ProtocolGenerator.GenerationContext, memberTimestampFormatTrait: TimestampFormatTrait?, timestampShape: TimestampShape): String {
+        val timestampFormat = memberTimestampFormatTrait?.value ?: timestampShape.getTrait<TimestampFormatTrait>()?.value ?: defaultTimestampFormat(ctx)
+        return when (timestampFormat) {
             TimestampFormatTrait.EPOCH_SECONDS -> ".epochSeconds"
             TimestampFormatTrait.HTTP_DATE -> ".httpDate"
             else -> ".dateTime"
+        }
+    }
+
+    private fun defaultTimestampFormat(ctx: ProtocolGenerator.GenerationContext): String {
+        return when (ctx.service.requestWireProtocol) {
+            WireProtocol.XML, WireProtocol.FORM_URL -> TimestampFormatTrait.DATE_TIME
+            WireProtocol.JSON -> TimestampFormatTrait.EPOCH_SECONDS
         }
     }
 }

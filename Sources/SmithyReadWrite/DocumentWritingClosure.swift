@@ -7,7 +7,7 @@
 
 import struct Foundation.Data
 
-public typealias DocumentWritingClosure<T, Writer> = (T, WritingClosure<T, Writer>) throws -> Data
+public typealias DocumentWritingClosure<T, Writer> = (T, WritingClosure<T, Writer>) throws -> Data?
 
 public func documentWritingClosure<T, Writer: SmithyWriter>(rootNodeInfo: Writer.NodeInfo) -> DocumentWritingClosure<T, Writer> {
     return { value, writingClosure in

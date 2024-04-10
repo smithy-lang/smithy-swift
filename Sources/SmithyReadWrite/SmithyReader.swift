@@ -14,7 +14,7 @@ public protocol SmithyReader: AnyObject {
 
     static func from(data: Data) throws -> Self
 
-    var content: String? { get }
+    var hasContent: Bool { get }
     subscript(_ nodeInfo: NodeInfo) -> Self { get }
     func readIfPresent<T>(readingClosure: ReadingClosure<T, Self>) throws -> T?
     func readIfPresent() throws -> String?

@@ -15,11 +15,12 @@ import struct SmithyTimestamps.TimestampFormatter
 
 public final class Reader: SmithyReader {
     public typealias ReaderNodeInfo = NodeInfo
-    public internal(set) var content: String?
     public internal(set) var children: [Reader] = []
     public internal(set) weak var parent: Reader?
     public let nodeInfo: NodeInfo
     public var nodeInfoPath: [NodeInfo] { (parent?.nodeInfoPath ?? []) + [nodeInfo] }
+    public var hasContent: Bool { content != nil }
+    var content: String?
 
     // MARK: - init & deinit
 

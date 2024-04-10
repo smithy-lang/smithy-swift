@@ -32,8 +32,8 @@ class UnionDecodeXMLGenerator(
             ctx.service.readerSymbol,
             symbol,
         ) {
-            writer.write("guard reader.content != nil else { return nil }")
-            writer.write("let name = reader.children.first?.nodeInfo.name")
+            writer.write("guard reader.hasContent else { return nil }")
+            writer.write("let name = reader.children.first { $$0.nodeInfo.name != \"__type\" }?.nodeInfo.name")
             writer.openBlock("switch name {", "}") {
                 members.forEach {
                     writer.write("case \$S:", it.memberName)

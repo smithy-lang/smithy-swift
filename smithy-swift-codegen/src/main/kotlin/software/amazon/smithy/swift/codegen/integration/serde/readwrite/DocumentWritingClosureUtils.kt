@@ -16,7 +16,7 @@ class DocumentWritingClosureUtils(
     }
 
     fun closure(valueShape: Shape): String {
-        val rootNodeInfo = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol).nodeInfo(valueShape)
+        val rootNodeInfo = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol).nodeInfo(valueShape, true)
         return closure(rootNodeInfo)
     }
     private fun closure(rootNodeInfo: String): String {

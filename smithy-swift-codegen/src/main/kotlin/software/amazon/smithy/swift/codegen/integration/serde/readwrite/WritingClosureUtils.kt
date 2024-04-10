@@ -60,7 +60,7 @@ class WritingClosureUtils(
             is TimestampShape -> {
                 writer.format(
                     "timestampWritingClosure(format: \$L)",
-                    TimestampUtils.timestampFormat(memberTimestampFormatTrait, shape)
+                    TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape)
                 )
             }
             else -> {

@@ -13,7 +13,7 @@ public enum DocumentWriter {
         _ value: T,
         rootNodeInfo: Writer.NodeInfo,
         writingClosure: WritingClosure<T, Writer>
-    ) throws -> Data {
+    ) throws -> Data? {
         let writer = Writer(nodeInfo: rootNodeInfo)
         try writingClosure(value, writer)
         return try writer.data()
