@@ -144,7 +144,7 @@ public final class URLSessionHTTPClient: HTTPClient {
                   let certFile = tlsOptions.certificateFile,
                   let serverTrust = challenge.protectionSpace.serverTrust else {
                 logger.error(
-                    "Either TLSOptions not set or missing values! Using defautl trust store."
+                    "Either TLSOptions not set or missing values! Using default trust store."
                 )
                 completionHandler(.performDefaultHandling, nil)
                 return

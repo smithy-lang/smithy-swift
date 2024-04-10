@@ -12,7 +12,7 @@ public struct TLSOptions {
     ///
     /// Enables specifying client certificates and trust stores for secure communication.
     /// Defaults to system's TLS settings if `nil`.
-    public var crtTLSContext: TLSContext? = nil
+    public var crtTLSContext: TLSContext?
 
     /// Custom TLS configuration for HTTPS connections with URLSession client.
     ///
@@ -26,6 +26,9 @@ public struct TLSOptions {
         crtTLSOptions: CRTClientTLSOptions? = nil,
         urlSessionTLSOptions: URLSessionTLSOptions? = nil
     ) {
+        // Default to nil
+        self.crtTLSContext = nil
+
         // Set CRT client tls options with .client mode
         if let _crtTLSOptions = crtTLSOptions {
             do {
