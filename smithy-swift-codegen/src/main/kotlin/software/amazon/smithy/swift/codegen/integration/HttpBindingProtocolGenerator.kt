@@ -564,4 +564,5 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     abstract override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext)
 }
 
-class DefaultServiceConfig(writer: SwiftWriter, clientName: String, serviceName: String) : ServiceConfig(writer, clientName, serviceName)
+class DefaultServiceConfig(writer: SwiftWriter, serviceName: String) :
+    ServiceConfig(writer, serviceName, serviceName)

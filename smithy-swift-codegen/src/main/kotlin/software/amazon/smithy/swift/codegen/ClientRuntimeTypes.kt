@@ -26,7 +26,7 @@ object ClientRuntimeTypes {
         val HttpResponseBinding = runtimeSymbol("HttpResponseBinding")
         val HttpResponseErrorBinding = runtimeSymbol("HttpResponseErrorBinding")
         val HttpError = runtimeSymbol("HTTPError")
-        val UnknownHttpServiceError = runtimeSymbol("UnknownHttpServiceError")
+        val UnknownHttpServiceError = runtimeSymbol("UnknownHTTPServiceError")
         val HttpContextBuilder = runtimeSymbol("HttpContextBuilder")
         val HTTPResponseOutputBinding = runtimeSymbol("HTTPResponseOutputBinding")
         val HTTPResponseErrorBinding = runtimeSymbol("HTTPResponseErrorBinding")
@@ -46,6 +46,10 @@ object ClientRuntimeTypes {
         val JSONReadWrite = runtimeSymbol("JSONReadWrite")
         val FormURLReadWrite = runtimeSymbol("FormURLReadWrite")
         val JSONReader = runtimeSymbol("JSONReader")
+    }
+
+    object Errors {
+        val DefaultError = runtimeSymbol("DefaultError")
     }
 
     object EventStream {
