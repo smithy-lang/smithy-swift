@@ -16,7 +16,6 @@ public protocol SmithyReader: AnyObject {
 
     var hasContent: Bool { get }
     subscript(_ nodeInfo: NodeInfo) -> Self { get }
-    func readIfPresent<T>(readingClosure: ReadingClosure<T, Self>) throws -> T?
     func readIfPresent() throws -> String?
     func readIfPresent() throws -> Int8?
     func readIfPresent() throws -> Int16?
@@ -26,15 +25,15 @@ public protocol SmithyReader: AnyObject {
     func readIfPresent() throws -> Bool?
     func readIfPresent() throws -> Data?
     func readIfPresent() throws -> Document?
-    func readTimestampIfPresent(format: TimestampFormat) throws -> Date?
     func readIfPresent<T: RawRepresentable>() throws -> T? where T.RawValue == Int
     func readIfPresent<T: RawRepresentable>() throws -> T? where T.RawValue == String
-    func readMapIfPresent<T>(
-        valueReadingClosure: ReadingClosure<T?, Self>,
+    func readTimestampIfPresent(format: TimestampFormat) throws -> Date?
+    func readMapIfPresent<Value>(
+        valueReadingClosure: ReadingClosure<Value, Self>,
         keyNodeInfo: NodeInfo,
         valueNodeInfo: NodeInfo,
         isFlattened: Bool
-    ) throws -> [String: T]?
+    ) throws -> [String: Value]?
     func readListIfPresent<Member>(
         memberReadingClosure: ReadingClosure<Member, Self>,
         memberNodeInfo: NodeInfo,
@@ -45,11 +44,15 @@ public protocol SmithyReader: AnyObject {
 
 extension SmithyReader {
 
-    public func read<T>(readingClosure: ReadingClosure<T, Self>) throws -> T {
-        if let value = try readingClosure(self) {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
+    public func read<T>(with readingClosure: ReadingClosure<T, Self>) throws -> T {
+        try readingClosure(self)
+    }
+
+    public func readIfPresent<T>(with readingClosure: ReadingClosure<T, Self>) throws -> T? {
+        do {
+            return try readingClosure(self)
+        } catch ReaderError.requiredValueNotPresent {
+            return nil
         }
     }
 
@@ -117,6 +120,14 @@ extension SmithyReader {
         }
     }
 
+    public func read() throws -> Document {
+        if let value: Document = try readIfPresent() {
+            return value
+        } else {
+            throw ReaderError.requiredValueNotPresent
+        }
+    }
+
     public func readTimestamp(format: TimestampFormat) throws -> Date {
         if let value: Date = try readTimestampIfPresent(format: format) {
             return value
@@ -142,7 +153,7 @@ extension SmithyReader {
     }
 
     public func readMap<T>(
-        valueReadingClosure: ReadingClosure<T?, Self>,
+        valueReadingClosure: ReadingClosure<T, Self>,
         keyNodeInfo: NodeInfo,
         valueNodeInfo: NodeInfo,
         isFlattened: Bool

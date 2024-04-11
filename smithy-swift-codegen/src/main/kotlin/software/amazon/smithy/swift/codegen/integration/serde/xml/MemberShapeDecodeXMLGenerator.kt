@@ -29,6 +29,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.DefaultTrait
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -71,7 +72,7 @@ class MemberShapeDecodeXMLGenerator(
     private fun renderStructOrUnionExp(memberShape: MemberShape, isPayload: Boolean): String {
         val readingClosure = readingClosureUtils.readingClosure(memberShape)
         return writer.format(
-            "try \$L.\$L(readingClosure: \$L)",
+            "try \$L.\$L(with: \$L)",
             reader(memberShape, isPayload),
             readMethodName("read"),
             readingClosure
@@ -79,7 +80,8 @@ class MemberShapeDecodeXMLGenerator(
     }
 
     private fun renderListExp(memberShape: MemberShape, listShape: ListShape): String {
-        val memberReadingClosure = readingClosureUtils.readingClosure(listShape.member)
+        val isSparse = listShape.hasTrait<SparseTrait>()
+        val memberReadingClosure = readingClosureUtils.readingClosure(listShape.member, isSparse)
         val memberNodeInfo = nodeInfoUtils.nodeInfo(listShape.member)
         val isFlattened = memberShape.hasTrait<XmlFlattenedTrait>()
         return writer.format(
@@ -93,7 +95,8 @@ class MemberShapeDecodeXMLGenerator(
     }
 
     private fun renderMapExp(memberShape: MemberShape, mapShape: MapShape): String {
-        val valueReadingClosure = ReadingClosureUtils(ctx, writer).readingClosure(mapShape.value)
+        val isSparse = mapShape.hasTrait<SparseTrait>()
+        val valueReadingClosure = ReadingClosureUtils(ctx, writer).readingClosure(mapShape.value, isSparse)
         val keyNodeInfo = nodeInfoUtils.nodeInfo(mapShape.key)
         val valueNodeInfo = nodeInfoUtils.nodeInfo(mapShape.value)
         val isFlattened = memberShape.hasTrait<XmlFlattenedTrait>()

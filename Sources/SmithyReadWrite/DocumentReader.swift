@@ -14,10 +14,6 @@ public enum DocumentReader {
         readingClosure: ReadingClosure<T, Reader>
     ) throws -> T {
         let reader = try Reader.from(data: data)
-        if let value = try readingClosure(reader) {
-            return value
-        } else {
-            throw DocumentError.requiredValueNotPresent
-        }
+        return try readingClosure(reader)
     }
 }

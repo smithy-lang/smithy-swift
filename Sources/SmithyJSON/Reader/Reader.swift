@@ -7,6 +7,8 @@
 
 import protocol SmithyReadWrite.SmithyReader
 import enum SmithyReadWrite.Document
+import typealias SmithyReadWrite.ReadingClosure
+import enum SmithyReadWrite.ReaderError
 import enum SmithyTimestamps.TimestampFormat
 import struct SmithyTimestamps.TimestampFormatter
 import struct Foundation.Data
@@ -23,7 +25,7 @@ public final class Reader: SmithyReader {
     let jsonNode: JSONNode?
     public internal(set) var children = [Reader]()
     public internal(set) weak var parent: Reader?
-    public var hasContent: Bool { jsonNode != nil }
+    public var hasContent: Bool { jsonNode != nil && jsonNode != .null }
 
     init(nodeInfo: NodeInfo, jsonObject: Any, parent: Reader? = nil) throws {
         self.nodeInfo = nodeInfo
@@ -76,12 +78,6 @@ public extension Reader {
             // The queried node doesn't exist.  Return one that has nil content.
             return Reader(nodeInfo: nodeInfo, parent: self)
         }
-    }
-
-    func readIfPresent<T>(readingClosure: (Reader) throws -> T?) throws -> T? {
-        // This guard stops infinite recursion when decoding recursive structs or unions.
-        guard hasContent || !children.isEmpty else { return nil }
-        return try readingClosure(self)
     }
 
     func readIfPresent() throws -> String? {
@@ -177,34 +173,28 @@ public extension Reader {
         return T(rawValue: rawValue)
     }
 
-    func readMapIfPresent<T>(
-        valueReadingClosure: (Reader) throws -> T??,
+    func readMapIfPresent<Value>(
+        valueReadingClosure: (Reader) throws -> Value,
         keyNodeInfo: NodeInfo,
         valueNodeInfo: NodeInfo,
         isFlattened: Bool
-    ) throws -> [String: T]? {
-        if !hasContent { return nil }
-        var dict = [String: T]()
+    ) throws -> [String: Value]? {
+        if jsonNode != .object { return nil }
+        var dict = [String: Value]()
         for mapEntry in children {
-            guard let value = try valueReadingClosure(mapEntry) else { continue }
-            dict[mapEntry.nodeInfo.name] = value
+            let value = try valueReadingClosure(mapEntry)
+            dict.updateValue(value, forKey: mapEntry.nodeInfo.name)
         }
         return dict
     }
 
     func readListIfPresent<Member>(
-        memberReadingClosure: (Reader) throws -> Member?,
+        memberReadingClosure: (Reader) throws -> Member,
         memberNodeInfo: NodeInfo,
         isFlattened: Bool
     ) throws -> [Member]? {
-        if !hasContent { return nil }
-        var list = [Member]()
-        let members = children
-        for member in members {
-            guard let value = try memberReadingClosure(member) else { continue }
-            list.append(value)
-        }
-        return list
+        if jsonNode != .array { return nil }
+        return try children.map { try memberReadingClosure($0) }
     }
 
     /// Detaches this reader from its parent.  Typically used when this reader no longer
@@ -232,6 +222,16 @@ public extension Reader {
             return children.compactMap { $0.jsonObject }
         case .object:
             return Dictionary(uniqueKeysWithValues: children.map { ($0.nodeInfo.name, $0.jsonObject) })
+        }
+    }
+}
+
+public func optionalFormOf<T, Reader>(readingClosure: @escaping ReadingClosure<T, Reader>) -> ReadingClosure<T?, Reader> {
+    return { reader in
+        do {
+            return try readingClosure(reader)
+        } catch ReaderError.requiredValueNotPresent {
+            return nil
         }
     }
 }

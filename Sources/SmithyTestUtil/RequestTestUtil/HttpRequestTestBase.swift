@@ -252,15 +252,18 @@ open class HttpRequestTestBase: XCTestCase {
 
     private func compareData(contentType: HTTPBodyContentType, _ expected: Data?, _ actual: Data?, file: StaticString, line: UInt) {
         if let expected, let actual {
-            let expectedStr = String(data: expected, encoding: .utf8) ?? "<not UTF-8>"
-            let actualStr = String(data: actual, encoding: .utf8) ?? "<not UTF-8>"
+            let message = {
+                let expectedStr = String(data: expected, encoding: .utf8) ?? "<not UTF-8>"
+                let actualStr = String(data: actual, encoding: .utf8) ?? "<not UTF-8>"
+                return "Actual: \(actualStr)  Expected: \(expectedStr)"
+            }
             switch contentType {
             case .xml:
-                XCTAssertXMLDataEqual(actual, expected, file: file, line: line)
+                XCTAssertXMLDataEqual(actual, expected, message(), file: file, line: line)
             case .json:
-                XCTAssertJSONDataEqual(actual, expected, file: file, line: line)
+                XCTAssertJSONDataEqual(actual, expected, message(), file: file, line: line)
             case .formURL:
-                XCTAssertFormURLDataEqual(actual, expected, "Actual: \(actualStr)  Expected: \(expectedStr)", file: file, line: line)
+                XCTAssertFormURLDataEqual(actual, expected, message(), file: file, line: line)
             }
         } else if expected != nil && actual == nil {
             XCTFail("actual data in ByteStream is nil but expected is not", file: file, line: line)

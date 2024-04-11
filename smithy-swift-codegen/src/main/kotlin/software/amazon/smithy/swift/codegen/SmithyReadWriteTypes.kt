@@ -20,6 +20,7 @@ object SmithyReadWriteTypes {
     val ReadingClosure = runtimeSymbol("ReadingClosure")
     val DocumentWritingClosure = runtimeSymbol("DocumentWritingClosure")
     val Document = runtimeSymbol("Document")
+    val ReaderError = runtimeSymbol("ReaderError")
 }
 
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {

@@ -5,7 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyTimestamps
+import struct SmithyTimestamps.TimestampFormatter
+import enum SmithyTimestamps.TimestampFormat
 
 public typealias TimestampFormatter = SmithyTimestamps.TimestampFormatter
 public typealias TimestampFormat = SmithyTimestamps.TimestampFormat

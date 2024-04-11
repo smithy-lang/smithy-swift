@@ -20,10 +20,15 @@ class ReadingClosureUtils(
 ) {
     private val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.responseWireProtocol)
 
-    fun readingClosure(member: MemberShape): String {
+    fun readingClosure(member: MemberShape, isSparse: Boolean = false): String {
         val target = ctx.model.expectShape(member.target)
         val memberTimestampFormatTrait = member.getTrait<TimestampFormatTrait>()
-        return readingClosure(target, memberTimestampFormatTrait)
+        val baseClosure = readingClosure(target, memberTimestampFormatTrait)
+        if (isSparse) {
+            return writer.format("optionalFormOf(readingClosure: \$L)", baseClosure)
+        } else {
+            return baseClosure
+        }
     }
 
     private fun readingClosure(shape: Shape, memberTimestampFormatTrait: TimestampFormatTrait? = null): String {

@@ -251,19 +251,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         return shapesInfo
     }
 
-//    private fun resolveOutputShapes(ctx: ProtocolGenerator.GenerationContext): Map<Shape, Map<ShapeMetadata, Any>> {
-//        var shapesInfo: MutableMap<Shape, Map<ShapeMetadata, Any>> = mutableMapOf()
-//        val operations = getHttpBindingOperations(ctx)
-//        for (operation in operations) {
-//            val outputType = ctx.model.expectShape(operation.output.get())
-//            var metadata = mapOf<ShapeMetadata, Any>(
-//                Pair(ShapeMetadata.OPERATION_SHAPE, operation),
-//            )
-//            shapesInfo.put(outputType, metadata)
-//        }
-//        return shapesInfo
-//    }
-
     fun resolveErrorShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
         val operationErrorShapes = getHttpBindingOperations(ctx)
             .flatMap { it.errors }

@@ -118,10 +118,8 @@ extension Document {
             return .array(try array.map { try Document.make(from: $0) })
         } else if let nsNumber = jsonObject as? NSNumber, CFGetTypeID(nsNumber) == CFBooleanGetTypeID() {
             return .boolean(nsNumber.boolValue)
-        } else if let number = jsonObject as? Double {
-            return .number(number)
-        } else if let bool = jsonObject as? Bool {
-            return .boolean(bool)
+        } else if let nsNumber = jsonObject as? NSNumber {
+            return .number(nsNumber.doubleValue)
         } else if let string = jsonObject as? String {
             return .string(string)
         } else if jsonObject is NSNull {

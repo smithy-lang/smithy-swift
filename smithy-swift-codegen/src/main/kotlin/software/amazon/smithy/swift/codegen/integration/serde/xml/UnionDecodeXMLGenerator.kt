@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration.serde.xml
 
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
@@ -25,11 +26,14 @@ class UnionDecodeXMLGenerator(
         writer.addImports(ctx.service.requestWireProtocol)
         val symbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
-            "static func read(from reader: \$N) throws -> \$N? {", "}",
+            "static func read(from reader: \$N) throws -> \$N {", "}",
             ctx.service.readerSymbol,
             symbol,
         ) {
-            writer.write("guard reader.hasContent else { return nil }")
+            writer.write(
+                "guard reader.hasContent else { throw \$N.requiredValueNotPresent }",
+                SmithyReadWriteTypes.ReaderError,
+            )
             writer.write("let name = reader.children.first { $$0.nodeInfo.name != \"__type\" }?.nodeInfo.name")
             writer.openBlock("switch name {", "}") {
                 members.forEach {

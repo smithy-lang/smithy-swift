@@ -74,12 +74,6 @@ public final class Reader: SmithyReader {
 
     // MARK: - Reading values
 
-    public func readIfPresent<T>(readingClosure: ReadingClosure<T, Reader>) throws -> T? {
-        // This guard stops infinite recursion when decoding recursive structs or unions.
-        guard content != nil || !children.isEmpty else { return nil }
-        return try readingClosure(self)
-    }
-
     public func readIfPresent() throws -> String? {
         return content
     }
@@ -140,7 +134,7 @@ public final class Reader: SmithyReader {
     }
 
     public func readMapIfPresent<T>(
-        valueReadingClosure: ReadingClosure<T?, Reader>,
+        valueReadingClosure: ReadingClosure<T, Reader>,
         keyNodeInfo: NodeInfo,
         valueNodeInfo: NodeInfo,
         isFlattened: Bool
@@ -150,16 +144,16 @@ public final class Reader: SmithyReader {
             let entries = (parent?.children ?? []).filter { $0.nodeInfo.name == nodeInfo.name }
             guard !entries.isEmpty else { return nil }
             for entry in entries {
-                guard let key = entry[keyNodeInfo].content,
-                      let value = try valueReadingClosure(entry[valueNodeInfo]) else { continue }
+                guard let key = entry[keyNodeInfo].content else { continue }
+                let value = try valueReadingClosure(entry[valueNodeInfo])
                 dict[key] = value
             }
         } else {
             if content == nil { return nil }
             let entries = children.filter { $0.nodeInfo.name == "entry" }
             for entry in entries {
-                guard let key = entry[keyNodeInfo].content,
-                      let value = try valueReadingClosure(entry[valueNodeInfo]) else { continue }
+                guard let key = entry[keyNodeInfo].content else { continue }
+                let value = try valueReadingClosure(entry[valueNodeInfo])
                 dict[key] = value
             }
         }
@@ -176,14 +170,14 @@ public final class Reader: SmithyReader {
             let members = (parent?.children ?? []).filter { $0.nodeInfo.name == nodeInfo.name }
             guard !members.isEmpty else { return nil }
             for member in members {
-                guard let value = try memberReadingClosure(member) else { continue }
+                let value = try memberReadingClosure(member)
                 list.append(value)
             }
         } else {
             if content == nil { return nil }
             let members = children.filter { $0.nodeInfo.name == memberNodeInfo.name }
             for member in members {
-                guard let value = try memberReadingClosure(member) else { continue }
+                let value = try memberReadingClosure(member)
                 list.append(value)
             }
         }

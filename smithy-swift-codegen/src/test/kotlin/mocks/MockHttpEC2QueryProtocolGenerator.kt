@@ -29,8 +29,8 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResp
 import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.serde.formurl.FormURLEncodeCustomizable
-import software.amazon.smithy.swift.codegen.integration.serde.formurl.StructEncodeFormURLGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.formurl.trait.Ec2QueryNameTraitGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeXMLGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.StructDecodeXMLGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
@@ -88,9 +88,7 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat: TimestampFormatTrait.Format,
         path: String?
     ) {
-        val customizations = MockEc2QueryFormURLEncodeCustomizations()
-        val encodeGenerator = StructEncodeFormURLGenerator(ctx, customizations, shapeContainingMembers, shapeMetadata, members, writer, defaultTimestampFormat)
-        encodeGenerator.render()
+        StructEncodeXMLGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
     }
     override fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,

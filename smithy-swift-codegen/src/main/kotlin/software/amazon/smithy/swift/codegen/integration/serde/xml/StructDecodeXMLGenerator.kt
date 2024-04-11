@@ -9,6 +9,7 @@ import software.amazon.smithy.aws.traits.customizations.S3UnwrappedXmlOutputTrai
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
@@ -31,7 +32,7 @@ open class StructDecodeXMLGenerator(
         writer.addImports(ctx.service.responseWireProtocol)
         val symbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
-            "static func read(from reader: \$N) throws -> \$N? {", "}",
+            "static func read(from reader: \$N) throws -> \$N {", "}",
             ctx.service.readerSymbol,
             symbol,
         ) {
@@ -41,7 +42,11 @@ open class StructDecodeXMLGenerator(
             val additionalCondition = "|| Mirror(reflecting: self).children.isEmpty ".takeIf {
                 ctx.settings.sdkId == "S3" && members.isEmpty()
             } ?: ""
-            writer.write("guard reader.hasContent \$Lelse { return nil }", additionalCondition)
+            writer.write(
+                "guard reader.hasContent \$Lelse { throw \$N.requiredValueNotPresent }",
+                additionalCondition,
+                SmithyReadWriteTypes.ReaderError,
+            )
             if (members.isEmpty()) {
                 writer.write("return \$N()", symbol)
             } else {
