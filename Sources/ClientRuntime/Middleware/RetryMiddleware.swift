@@ -64,13 +64,17 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
                 // TODO: log token error here
                 throw operationError
             }
-            guard let estimatedSkew: TimeInterval = context.attributes.get(key: AttributeKeys.estimatedSkew) else {
-                throw ClientError.dataNotFound("Estimated skew not found; failed to calculate TTL for retry.")
+            var estimatedSkew = context.attributes.get(key: AttributeKeys.estimatedSkew)
+            if estimatedSkew == nil {
+                estimatedSkew = 0
+                context.getLogger()!.info("Estimated skew not found; defaulting to zero.")
             }
-            guard let socketTimeout: TimeInterval = context.attributes.get(key: AttributeKeys.socketTimeout) else {
-                throw ClientError.dataNotFound("Socket timeout value not found; failed to caclulate TTL for retry.")
+            var socketTimeout = context.attributes.get(key: AttributeKeys.socketTimeout)
+            if socketTimeout == nil {
+                socketTimeout = 60.0
+                context.getLogger()!.info("Socket timeout value not found; defaulting to 60 seconds.")
             }
-            let ttlDateUTCString = getTTL(now: Date(), estimatedSkew: estimatedSkew, socketTimeout: socketTimeout)
+            let ttlDateUTCString = getTTL(now: Date(), estimatedSkew: estimatedSkew!, socketTimeout: socketTimeout!)
             input.headers.update(
                 name: "amz-sdk-request",
                 value: "ttl=\(ttlDateUTCString); attempt=\(attemptNumber + 1); max=\(maxRetries)"
@@ -108,7 +112,7 @@ func getTTL(now: Date, estimatedSkew: TimeInterval, socketTimeout: TimeInterval)
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyyMMdd'T'HHmmss'Z'"
     dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-    dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
+    dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
     let ttlDate = now.addingTimeInterval(estimatedSkew + socketTimeout)
     return dateFormatter.string(from: ttlDate)
 }
