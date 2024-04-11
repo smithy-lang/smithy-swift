@@ -131,7 +131,7 @@ final class RetryIntegrationTests: XCTestCase {
         let responseDateStringPlusTen = "Mon, 15 Jul 2024 01:24:22 GMT"
         let estimatedSkew = getEstimatedSkew(now: responseDate, responseDateString: responseDateStringPlusTen)
 
-        XCTAssert(estimatedSkew == 10.0)
+        XCTAssertEqual(estimatedSkew, 10.0)
     }
 
     // Test getTTLutility method.
@@ -294,7 +294,7 @@ private class TestOutputHandler: Handler {
         }
 
         // Verify attempt number was incremented by 1 from previous request.
-        XCTAssert(attemptNum == self.prevAttemptNum + 1)
+        XCTAssertEqual(attemptNum, (self.prevAttemptNum + 1))
         self.prevAttemptNum = attemptNum
     }
 }
