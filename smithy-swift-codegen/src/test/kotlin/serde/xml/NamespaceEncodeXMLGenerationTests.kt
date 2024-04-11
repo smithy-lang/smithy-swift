@@ -16,7 +16,7 @@ class NamespaceEncodeXMLGenerationTests {
     @Test
     fun `001 xmlnamespace, XmlNamespacesInput, Encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesInput+Write.swift")
         val expectedContents = """
 extension XmlNamespacesInput {
     static func writingClosure(_ value: XmlNamespacesInput?, to writer: SmithyXML.Writer) throws {
@@ -31,7 +31,7 @@ extension XmlNamespacesInput {
     @Test
     fun `003 xmlnamespace, XmlNamespaceNested`() {
         val context = setupTests("Isolated/Restxml/xml-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNested+Codable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNested+ReadWrite.swift")
         val expectedContents = """
 extension RestXmlProtocolClientTypes.XmlNamespaceNested {
 
@@ -58,7 +58,7 @@ extension RestXmlProtocolClientTypes.XmlNamespaceNested {
     @Test
     fun `005 xmlnamespace nested list, Encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-nestedlist.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNestedListInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceNestedListInput+Write.swift")
         val expectedContents = """
 extension XmlNamespaceNestedListInput {
     static func writingClosure(_ value: XmlNamespaceNestedListInput?, to writer: SmithyXML.Writer) throws {
@@ -73,7 +73,7 @@ extension XmlNamespaceNestedListInput {
     @Test
     fun `007 xmlnamespace nested flattened list, encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-flattenedlist.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceFlattenedListInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespaceFlattenedListInput+Write.swift")
         val expectedContents = """
 extension XmlNamespaceFlattenedListInput {
     static func writingClosure(_ value: XmlNamespaceFlattenedListInput?, to writer: SmithyXML.Writer) throws {
@@ -88,7 +88,7 @@ extension XmlNamespaceFlattenedListInput {
     @Test
     fun `010 xmlnamespace on service, encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-onservice.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceInput+Write.swift")
         val expectedContents = """
 extension XmlNamespacesOnServiceInput {
     static func writingClosure(_ value: XmlNamespacesOnServiceInput?, to writer: SmithyXML.Writer) throws {
@@ -104,7 +104,7 @@ extension XmlNamespacesOnServiceInput {
     @Test
     fun `011 xmlnamespace on service, encodable`() {
         val context = setupTests("Isolated/Restxml/xml-namespace-onservice-overridable.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceOverridableInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNamespacesOnServiceOverridableInput+Write.swift")
         val expectedContents = """
 extension XmlNamespacesOnServiceOverridableInput {
     static func writingClosure(_ value: XmlNamespacesOnServiceOverridableInput?, to writer: SmithyXML.Writer) throws {

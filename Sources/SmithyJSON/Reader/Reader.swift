@@ -108,7 +108,6 @@ public extension Reader {
     func readIfPresent() throws -> Int? {
         switch jsonNode {
         case .number(let number): return number.intValue
-        case .bool(let bool): return bool ? 1 : 0
         default: return nil
         }
     }
@@ -168,17 +167,22 @@ public extension Reader {
         }
     }
 
-    func readIfPresent<T>() throws -> T? where T : RawRepresentable, T.RawValue == Int {
+    func readIfPresent<T>() throws -> T? where T: RawRepresentable, T.RawValue == Int {
         guard let rawValue: Int = try readIfPresent() else { return nil }
         return T(rawValue: rawValue)
     }
 
-    func readIfPresent<T>() throws -> T? where T : RawRepresentable, T.RawValue == String {
+    func readIfPresent<T>() throws -> T? where T: RawRepresentable, T.RawValue == String {
         guard let rawValue: String = try readIfPresent() else { return nil }
         return T(rawValue: rawValue)
     }
 
-    func readMapIfPresent<T>(valueReadingClosure: (Reader) throws -> T??, keyNodeInfo: NodeInfo, valueNodeInfo: NodeInfo, isFlattened: Bool) throws -> [String : T]? {
+    func readMapIfPresent<T>(
+        valueReadingClosure: (Reader) throws -> T??,
+        keyNodeInfo: NodeInfo,
+        valueNodeInfo: NodeInfo,
+        isFlattened: Bool
+    ) throws -> [String: T]? {
         if !hasContent { return nil }
         var dict = [String: T]()
         for mapEntry in children {
@@ -188,7 +192,11 @@ public extension Reader {
         return dict
     }
 
-    func readListIfPresent<Member>(memberReadingClosure: (Reader) throws -> Member?, memberNodeInfo: NodeInfo, isFlattened: Bool) throws -> [Member]? {
+    func readListIfPresent<Member>(
+        memberReadingClosure: (Reader) throws -> Member?,
+        memberNodeInfo: NodeInfo,
+        isFlattened: Bool
+    ) throws -> [Member]? {
         if !hasContent { return nil }
         var list = [Member]()
         let members = children

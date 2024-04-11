@@ -104,7 +104,6 @@ class ServiceRenamesTests {
             ),
             "aws.protocoltests.restjson#RestJson"
         )
-        print(listFilesFromManifest(context.manifest))
         val contents = getFileContents(context.manifest, "/RestJson/models/RenamedGreeting.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
@@ -136,30 +135,24 @@ class ServiceRenamesTests {
             ),
             "aws.protocoltests.restjson#RestJson"
         )
-        print(listFilesFromManifest(context.manifest))
-        val contents = getFileContents(context.manifest, "/RestJson/models/RenamedGreeting+Codable.swift")
+        val contents = getFileContents(context.manifest, "/RestJson/models/RenamedGreeting+ReadWrite.swift")
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension RestJsonProtocolClientTypes.RenamedGreeting: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case salutation
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let salutation = self.salutation {
-                        try encodeContainer.encode(salutation, forKey: .salutation)
-                    }
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let salutationDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .salutation)
-                    salutation = salutationDecoded
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension RestJsonProtocolClientTypes.RenamedGreeting {
+
+    static func write(value: RestJsonProtocolClientTypes.RenamedGreeting?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { writer.detach(); return }
+        try writer["salutation"].write(value.salutation)
+    }
+
+    static func read(from reader: SmithyJSON.Reader) throws -> RestJsonProtocolClientTypes.RenamedGreeting? {
+        guard reader.hasContent else { return nil }
+        var value = RestJsonProtocolClientTypes.RenamedGreeting()
+        value.salutation = try reader["salutation"].readIfPresent()
+        return value
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

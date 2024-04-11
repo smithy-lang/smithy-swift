@@ -7,7 +7,8 @@
 
 import struct Foundation.Data
 
-public typealias WireResponseDocumentBinding<WireResponse: WireDataProviding, Reader: SmithyReader> = (WireResponse) async throws -> Reader
+public typealias WireResponseDocumentBinding<WireResponse: WireDataProviding, Reader: SmithyReader> =
+    (WireResponse) async throws -> Reader
 
 /// Creates a `WireResponseDocumentBinding` for converting a wire response into a `Reader`.
 public func wireResponseDocumentBinding<WireResponse, Reader>() -> WireResponseDocumentBinding<WireResponse, Reader> {

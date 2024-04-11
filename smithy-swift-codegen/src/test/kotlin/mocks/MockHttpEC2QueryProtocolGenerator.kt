@@ -23,10 +23,10 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErro
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingErrorInitGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.serde.formurl.FormURLEncodeCustomizable
 import software.amazon.smithy.swift.codegen.integration.serde.formurl.StructEncodeFormURLGenerator
@@ -70,16 +70,14 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
     override val protocol: ShapeId = Ec2QueryTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val httpProtocolCustomizable = MockEC2QueryHttpProtocolCustomizations()
-    override val codingKeysGenerator = null
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
         unknownServiceErrorSymbol,
         defaultTimestampFormat,
-        HttpResponseBindingOutputGenerator(),
+        XMLHttpResponseBindingOutputGenerator(),
         MockHttpResponseBindingErrorGenerator(),
         XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat)
     )
     override val shouldRenderDecodableBodyStructForInputShapes = false
-    override val shouldRenderCodingKeysForEncodable = false
     override val shouldRenderEncodableConformance = true
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,

@@ -16,7 +16,7 @@ class UnionEncodeXMLGenerationTests {
     @Test
     fun `001 XmlUnionShape+Codable`() {
         val context = setupTests("Isolated/Restxml/xml-unions.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape+Codable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape+ReadWrite.swift")
         val expectedContents = """
 extension RestXmlProtocolClientTypes.XmlUnionShape {
 

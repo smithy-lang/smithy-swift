@@ -11,9 +11,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent

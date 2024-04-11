@@ -17,6 +17,5 @@ class ResponseErrorClosureUtils(
             "wireResponseErrorClosure(\$N.httpBinding, wireResponseDocumentBinding())",
             outputErrorSymbol
         )
-
     }
 }

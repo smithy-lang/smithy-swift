@@ -1,7 +1,6 @@
 package software.amazon.smithy.swift.codegen.integration.serde.xml
 
 import software.amazon.smithy.aws.traits.protocols.Ec2QueryNameTrait
-import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.XmlAttributeTrait
@@ -12,7 +11,6 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 

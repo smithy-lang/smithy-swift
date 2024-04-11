@@ -18,10 +18,10 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErro
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingErrorInitGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeXMLGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.StructDecodeXMLGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
@@ -34,16 +34,14 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
     override val protocol: ShapeId = RestXmlTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val httpProtocolCustomizable = MockRestXMLHttpProtocolCustomizations()
-    override val codingKeysGenerator = null
     override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
         unknownServiceErrorSymbol,
         defaultTimestampFormat,
-        HttpResponseBindingOutputGenerator(),
+        XMLHttpResponseBindingOutputGenerator(),
         MockHttpResponseBindingErrorGenerator(),
         XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat)
     )
     override val shouldRenderDecodableBodyStructForInputShapes = false
-    override val shouldRenderCodingKeysForEncodable = false
     override val shouldRenderEncodableConformance = false
 
     override fun renderStructEncode(
@@ -55,7 +53,7 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat: TimestampFormatTrait.Format,
         path: String?
     ) {
-        val encoder = StructEncodeXMLGenerator(ctx, shapeContainingMembers, members, writer)
+        val encoder = StructEncodeXMLGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer)
         encoder.render()
     }
     override fun renderStructDecode(

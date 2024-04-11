@@ -5,10 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public typealias WireResponseOutputClosure<WireResponse, OperationStackOutput> = (WireResponse) async throws -> OperationStackOutput
+public typealias WireResponseOutputClosure<WireResponse, OperationStackOutput> =
+    (WireResponse) async throws -> OperationStackOutput
 
-public typealias WireResponseOutputBinding<WireResponse: WireDataProviding, OperationStackOutput, Reader: SmithyReader> =
-    (WireResponse, WireResponseDocumentBinding<WireResponse, Reader>) async throws -> OperationStackOutput
+public typealias WireResponseOutputBinding<
+    WireResponse: WireDataProviding,
+    OperationStackOutput,
+    Reader: SmithyReader> =
+        (WireResponse, WireResponseDocumentBinding<WireResponse, Reader>) async throws -> OperationStackOutput
 
 /// Provides a response output closure for a type that provides closures for its output bindings.
 /// - Parameters:

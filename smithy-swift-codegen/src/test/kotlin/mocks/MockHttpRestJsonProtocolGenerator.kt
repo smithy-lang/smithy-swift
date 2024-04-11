@@ -26,7 +26,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeX
 import software.amazon.smithy.swift.codegen.integration.serde.xml.StructDecodeXMLGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
-class MockRestJsonHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations() {}
+class MockRestJsonHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
 class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
@@ -52,7 +52,7 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat: TimestampFormatTrait.Format,
         path: String?
     ) {
-        StructEncodeXMLGenerator(ctx, shapeContainingMembers, members, writer).render()
+        StructEncodeXMLGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
     }
     override fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,

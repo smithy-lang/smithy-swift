@@ -5,6 +5,9 @@
 
 package software.amazon.smithy.swift.codegen.integration.serde.xml
 
+import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.node.NumberNode
+import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.BigDecimalShape
 import software.amazon.smithy.model.shapes.BigIntegerShape
 import software.amazon.smithy.model.shapes.BooleanShape
@@ -37,9 +40,6 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.swiftEnumCaseName
-import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.node.NumberNode
-import software.amazon.smithy.model.node.StringNode
 
 class MemberShapeDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,

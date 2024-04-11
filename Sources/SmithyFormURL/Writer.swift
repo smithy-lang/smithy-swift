@@ -143,15 +143,21 @@ public extension Writer {
         record(string: TimestampFormatter(format: format).string(from: value))
     }
 
-    func write<T>(_ value: T?) throws where T : RawRepresentable, T.RawValue == Int {
+    func write<T>(_ value: T?) throws where T: RawRepresentable, T.RawValue == Int {
         try write(value?.rawValue)
     }
 
-    func write<T>(_ value: T?) throws where T : RawRepresentable, T.RawValue == String {
+    func write<T>(_ value: T?) throws where T: RawRepresentable, T.RawValue == String {
         try write(value?.rawValue)
     }
 
-    func writeMap<T>(_ value: [String : T]?, valueWritingClosure: (T, Writer) throws -> Void, keyNodeInfo: NodeInfo, valueNodeInfo: NodeInfo, isFlattened: Bool) throws {
+    func writeMap<T>(
+        _ value: [String: T]?,
+        valueWritingClosure: (T, Writer) throws -> Void,
+        keyNodeInfo: NodeInfo,
+        valueNodeInfo: NodeInfo,
+        isFlattened: Bool
+    ) throws {
         guard let value, !value.isEmpty else { detach(); return }
         let entryWriter = isFlattened ? self : self[.init("entry")]
         let keysAndValues = value.map { (key: $0.key, value: $0.value) }.sorted { $0.key < $1.key }
@@ -162,7 +168,12 @@ public extension Writer {
         }
     }
 
-    func writeList<T>(_ value: [T]?, memberWritingClosure: (T, Writer) throws -> Void, memberNodeInfo: NodeInfo, isFlattened: Bool) throws {
+    func writeList<T>(
+        _ value: [T]?,
+        memberWritingClosure: (T, Writer) throws -> Void,
+        memberNodeInfo: NodeInfo,
+        isFlattened: Bool
+    ) throws {
         guard let value else { detach(); return }
         guard !value.isEmpty else { try write(""); return }
         let entryWriter = isFlattened ? self : self[memberNodeInfo]

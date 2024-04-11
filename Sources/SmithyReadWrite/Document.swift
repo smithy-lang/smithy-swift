@@ -12,7 +12,6 @@ import class Foundation.NSNumber
 import func CoreFoundation.CFGetTypeID
 import func CoreFoundation.CFBooleanGetTypeID
 
-
 public enum Document {
     case array([Document])
     case boolean(Bool)

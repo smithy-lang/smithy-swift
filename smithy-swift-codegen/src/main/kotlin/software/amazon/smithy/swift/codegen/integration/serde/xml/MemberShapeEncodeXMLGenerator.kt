@@ -21,7 +21,6 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProt
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.xml.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait

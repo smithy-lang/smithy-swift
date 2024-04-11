@@ -156,7 +156,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val symbolName = symbol.name
             val rootNamespace = ctx.settings.moduleName
             val encodeSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/$symbolName+Encodable.swift")
+                .definitionFile("./$rootNamespace/models/$symbolName+Write.swift")
                 .name(symbolName)
                 .build()
             var httpBodyMembers = shape.members()
@@ -177,6 +177,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         symbolName,
                     ) {
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                        writer.write("")
                         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: null
                         renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat, path)
                     }

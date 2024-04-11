@@ -8,10 +8,10 @@
 import protocol SmithyReadWrite.SmithyWriter
 import enum SmithyReadWrite.Document
 import enum SmithyTimestamps.TimestampFormat
+import struct SmithyTimestamps.TimestampFormatter
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.NSNumber
-import SmithyTimestamps
 
 public final class Writer: SmithyWriter {
     public typealias NodeInfo = SmithyJSON.NodeInfo
@@ -123,15 +123,21 @@ extension Writer {
         }
     }
 
-    public func write<T>(_ value: T?) throws where T : RawRepresentable, T.RawValue == Int {
+    public func write<T>(_ value: T?) throws where T: RawRepresentable, T.RawValue == Int {
         try write(value?.rawValue)
     }
 
-    public func write<T>(_ value: T?) throws where T : RawRepresentable, T.RawValue == String {
+    public func write<T>(_ value: T?) throws where T: RawRepresentable, T.RawValue == String {
         try write(value?.rawValue)
     }
 
-    public func writeMap<T>(_ value: [String : T]?, valueWritingClosure: (T, Writer) throws -> Void, keyNodeInfo: NodeInfo, valueNodeInfo: NodeInfo, isFlattened: Bool) throws {
+    public func writeMap<T>(
+        _ value: [String: T]?,
+        valueWritingClosure: (T, Writer) throws -> Void,
+        keyNodeInfo: NodeInfo,
+        valueNodeInfo: NodeInfo,
+        isFlattened: Bool
+    ) throws {
         guard let value else { detach(); return }
         self.jsonNode = .object
         for (key, value) in value {
@@ -139,7 +145,12 @@ extension Writer {
         }
     }
 
-    public func writeList<T>(_ value: [T]?, memberWritingClosure: (T, Writer) throws -> Void, memberNodeInfo: NodeInfo, isFlattened: Bool) throws {
+    public func writeList<T>(
+        _ value: [T]?,
+        memberWritingClosure: (T, Writer) throws -> Void,
+        memberNodeInfo: NodeInfo,
+        isFlattened: Bool
+    ) throws {
         guard let value else { detach(); return }
         self.jsonNode = .array
         for member in value {
