@@ -3,6 +3,7 @@ package software.amazon.smithy.swift.codegen.integration.serde.xml
 import software.amazon.smithy.aws.traits.protocols.Ec2QueryNameTrait
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.traits.JsonNameTrait
 import software.amazon.smithy.model.traits.XmlAttributeTrait
 import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.model.traits.XmlNamespaceTrait
@@ -17,9 +18,10 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 class NodeInfoUtils(
     val ctx: ProtocolGenerator.GenerationContext,
     val writer: SwiftWriter,
-    val wireProtocol: WireProtocol
+    val wireProtocol: WireProtocol,
 ) {
 
+    val awsProtocol = ctx.service.awsProtocol
     fun nodeInfo(shape: Shape, forRootNode: Boolean = false): String {
         if (wireProtocol != WireProtocol.XML && forRootNode) return "\"\""
         val xmlName = shape.getTrait<XmlNameTrait>()?.value
@@ -71,6 +73,8 @@ class NodeInfoUtils(
             WireProtocol.JSON -> {
                 if (forRootNode) {
                     return "\"\""
+                } else if (awsProtocol == AWSProtocol.REST_JSON_1) {
+                    return member.getTrait<JsonNameTrait>()?.value ?: member.memberName
                 } else {
                     return member.memberName
                 }

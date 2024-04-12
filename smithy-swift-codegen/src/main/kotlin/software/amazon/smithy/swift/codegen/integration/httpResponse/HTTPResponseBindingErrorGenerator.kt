@@ -13,9 +13,7 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
-import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.serde.json.readerSymbol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
@@ -37,22 +35,17 @@ abstract class HTTPResponseBindingErrorGenerator : HttpResponseBindingErrorGener
             with(writer) {
                 addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 addImport(serviceBaseErrorSymbol.namespace)
-
-                openBlock("extension ${ctx.symbolProvider.toSymbol(ctx.service).name}Types {", "}") {
+                openBlock(
+                    "extension \$LTypes {",
+                    "}",
+                    ctx.symbolProvider.toSymbol(ctx.service).name
+                ) {
                     openBlock(
-                        "static func responseServiceErrorBinding(httpResponse: \$N, responseReader: \$N, noErrorWrapping: \$N) async throws -> \$N? {", "}",
-                        ClientRuntimeTypes.Http.HttpResponse,
-                        ctx.service.readerSymbol,
-                        SwiftTypes.Bool,
+                        "static func responseServiceErrorBinding(baseError: \$N) throws -> \$N? {", "}",
+                        serviceBaseErrorSymbol,
                         SwiftTypes.Error
                     ) {
-                        writer.write(
-                            "let errorBodyReader = \$N.errorBodyReader(responseReader: responseReader, noErrorWrapping: noErrorWrapping)",
-                            serviceBaseErrorSymbol,
-                        )
-                        val noErrorWrapping = ctx.service.getTrait<RestXmlTrait>()?.let { it.isNoErrorWrapping } ?: false
-                        writer.write("let error = try \$N(responseReader: responseReader, noErrorWrapping: \$L)", serviceBaseErrorSymbol, noErrorWrapping)
-                        openBlock("switch error.code {", "}") {
+                        openBlock("switch baseError.code {", "}") {
                             val serviceErrorShapes =
                                 serviceShape.errors
                                     .map { ctx.model.expectShape(it) as StructureShape }
@@ -62,7 +55,7 @@ abstract class HTTPResponseBindingErrorGenerator : HttpResponseBindingErrorGener
                                 val errorShapeName = errorShape.errorShapeName(ctx.symbolProvider)
                                 val errorShapeType = ctx.symbolProvider.toSymbol(errorShape).name
                                 write(
-                                    "case \$S: return try await \$L.responseErrorBinding(httpResponse: httpResponse, reader: errorBodyReader, message: error.message, requestID: error.requestID)",
+                                    "case \$S: return try \$L.makeError(baseError: baseError)",
                                     errorShapeName,
                                     errorShapeType
                                 )
@@ -75,8 +68,6 @@ abstract class HTTPResponseBindingErrorGenerator : HttpResponseBindingErrorGener
         }
     }
 
-    object RestXMLResponseBindingSectionId : SectionId
-
     override fun renderOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, unknownServiceErrorSymbol: Symbol) {
         val operationErrorName = "${op.toUpperCamelCase()}OutputError"
         val rootNamespace = ctx.settings.moduleName
@@ -86,67 +77,48 @@ abstract class HTTPResponseBindingErrorGenerator : HttpResponseBindingErrorGener
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            with(writer) {
-                addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                addImport(serviceBaseErrorSymbol.namespace)
-                writer.addImports(ctx.service.responseWireProtocol)
-                openBlock(
-                    "enum \$L {",
-                    "}",
-                    operationErrorName
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            writer.addImport(serviceBaseErrorSymbol.namespace)
+            writer.addImports(ctx.service.responseWireProtocol)
+            writer.openBlock("enum \$L {", "}", operationErrorName) {
+                writer.write("")
+                writer.openBlock(
+                    "static var httpErrorBinding: \$N<\$N, \$N> {", "}",
+                    SmithyReadWriteTypes.WireResponseErrorBinding,
+                    ClientRuntimeTypes.Http.HttpResponse,
+                    ctx.service.readerSymbol,
                 ) {
-                    write("")
-                    openBlock(
-                        "static var httpBinding: \$N<\$N, \$N> {", "}",
-                        SmithyReadWriteTypes.WireResponseErrorBinding,
-                        ClientRuntimeTypes.Http.HttpResponse,
-                        ctx.service.readerSymbol,
-                    ) {
-                        val errorShapes = op.errors
-                            .map { ctx.model.expectShape(it) as StructureShape }
-                            .toSet()
-                            .sorted()
-                        val context = mapOf<String, Any>(
-                            "operationErrorName" to operationErrorName,
-                            "ctx" to ctx,
-                            "unknownServiceErrorSymbol" to unknownServiceErrorSymbol,
-                            "errorShapes" to errorShapes
-                        )
-                        writer.openBlock("{ httpResponse, responseDocumentClosure in", "}") {
-                            declareSection(RestXMLResponseBindingSectionId, context) {
-                                val noErrorWrapping = ctx.service.getTrait<RestXmlTrait>()?.let { it.isNoErrorWrapping } ?: false
-                                writer.write("let responseReader = try await responseDocumentClosure(httpResponse)")
-                                if (errorShapes.isNotEmpty() || ctx.service.errors.isNotEmpty()) {
-                                    writer.write(
-                                        "let errorBodyReader = \$N.errorBodyReader(responseReader: responseReader, noErrorWrapping: \$L)",
-                                        serviceBaseErrorSymbol,
-                                        noErrorWrapping
-                                    )
-                                }
-                                if (ctx.service.errors.isNotEmpty()) {
-                                    openBlock(
-                                        "if let serviceError = try await \$LTypes.responseServiceErrorBinding(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L) {",
-                                        "}",
-                                        ctx.symbolProvider.toSymbol(ctx.service).name,
-                                        noErrorWrapping,
-                                    ) {
-                                        write("return serviceError")
-                                    }
-                                }
-                                writer.write("let error = try \$N(responseReader: responseReader, noErrorWrapping: \$L)", serviceBaseErrorSymbol, noErrorWrapping)
-                                openBlock("switch error.code {", "}") {
-                                    errorShapes.forEach { errorShape ->
-                                        val errorShapeName = errorShape.id.name
-                                        val errorShapeType = ctx.symbolProvider.toSymbol(errorShape).name
-                                        write(
-                                            "case \$S: return try await \$L.responseErrorBinding(httpResponse: httpResponse, reader: errorBodyReader, message: error.message, requestID: error.requestID)",
-                                            errorShapeName,
-                                            errorShapeType
-                                        )
-                                    }
-                                    write("default: return try await \$unknownServiceErrorSymbol:N.makeError(httpResponse: httpResponse, message: error.message, requestID: error.requestID, typeName: error.code)")
-                                }
+                    val errorShapes = op.errors
+                        .map { ctx.model.expectShape(it) as StructureShape }
+                        .toSet()
+                        .sorted()
+                    writer.openBlock("{ httpResponse, responseDocumentClosure in", "}") {
+                        writer.write("let responseReader = try await responseDocumentClosure(httpResponse)")
+                        val noErrorWrapping = ctx.service.getTrait<RestXmlTrait>()?.let { it.isNoErrorWrapping } ?: false
+                        writer.write("let baseError = try \$N(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L)", serviceBaseErrorSymbol, noErrorWrapping)
+                        if (ctx.service.errors.isNotEmpty()) {
+                            writer.openBlock(
+                                "if let serviceError = try \$LTypes.responseServiceErrorBinding(baseError: baseError) {",
+                                "}",
+                                ctx.symbolProvider.toSymbol(ctx.service).name,
+                            ) {
+                                writer.write("return serviceError")
                             }
+                        }
+                        writer.openBlock("switch baseError.code {", "}") {
+                            errorShapes.forEach { errorShape ->
+                                val errorShapeName = errorShape.errorShapeName(ctx.symbolProvider)
+                                val errorShapeType = ctx.symbolProvider.toSymbol(errorShape).name
+                                writer.write(
+                                    "case \$S: return try \$L.makeError(baseError: baseError)",
+                                    errorShapeName,
+                                    errorShapeType
+                                )
+                            }
+                            writer.write(
+                                "default: return try \$N.makeError(httpResponse: httpResponse, message: baseError.message, requestID: baseError.requestID, typeName: baseError.code)",
+                                unknownServiceErrorSymbol
+                            )
                         }
                     }
                 }

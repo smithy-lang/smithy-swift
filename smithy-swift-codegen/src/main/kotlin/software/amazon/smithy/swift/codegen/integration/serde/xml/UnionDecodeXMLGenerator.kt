@@ -7,13 +7,17 @@ package software.amazon.smithy.swift.codegen.integration.serde.xml
 
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.traits.JsonNameTrait
 import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.MemberShapeDecodeGeneratable
 import software.amazon.smithy.swift.codegen.integration.serde.json.readerSymbol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
+import software.amazon.smithy.swift.codegen.model.getTrait
 
 class UnionDecodeXMLGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -37,7 +41,7 @@ class UnionDecodeXMLGenerator(
             writer.write("let name = reader.children.first { $$0.nodeInfo.name != \"__type\" }?.nodeInfo.name")
             writer.openBlock("switch name {", "}") {
                 members.forEach {
-                    writer.write("case \$S:", it.memberName)
+                    writer.write("case \$S:", memberName(it))
                     writer.indent()
                     memberGenerator.render(it)
                     writer.dedent()
@@ -47,6 +51,14 @@ class UnionDecodeXMLGenerator(
                 writer.write("return .sdkUnknown(name ?? \"\")")
                 writer.dedent()
             }
+        }
+    }
+
+    private fun memberName(member: MemberShape): String {
+        if (ctx.service.awsProtocol == AWSProtocol.REST_JSON_1) {
+            return member.getTrait<JsonNameTrait>()?.value ?: member.memberName
+        } else {
+            return member.memberName
         }
     }
 }

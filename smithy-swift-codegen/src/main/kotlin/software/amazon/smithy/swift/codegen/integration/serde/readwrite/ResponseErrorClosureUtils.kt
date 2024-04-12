@@ -14,7 +14,7 @@ class ResponseErrorClosureUtils(
     fun render(): String {
         val outputErrorSymbol = MiddlewareShapeUtils.outputErrorSymbol(op)
         return writer.format(
-            "wireResponseErrorClosure(\$N.httpBinding, wireResponseDocumentBinding())",
+            "wireResponseErrorClosure(\$N.httpErrorBinding, wireResponseDocumentBinding())",
             outputErrorSymbol
         )
     }

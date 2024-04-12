@@ -5,9 +5,7 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
@@ -18,13 +16,13 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTrai
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HttpResponseTraitPayloadFactory
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitQueryParams
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitResponseCode
-import software.amazon.smithy.swift.codegen.integration.serde.json.readerSymbol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 
 class XMLHttpResponseBindingErrorInitGenerator(
     val defaultTimestampFormat: TimestampFormatTrait.Format,
-    val httpResponseTraitPayloadFactory: HttpResponseTraitPayloadFactory? = null
+    val serviceBaseErrorSymbol: Symbol,
+    val httpResponseTraitPayloadFactory: HttpResponseTraitPayloadFactory? = null,
 ) : HttpResponseBindingErrorInitGeneratable {
 
     object XMLHttpResponseBindingErrorInit : SectionId
@@ -39,6 +37,8 @@ class XMLHttpResponseBindingErrorInitGenerator(
         val headerBindings = responseBindings
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
+        val needsReader = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }.isNotEmpty()
+        val needsResponse = responseBindings.filter { it.location == HttpBinding.Location.HEADER || it.location == HttpBinding.Location.PREFIX_HEADERS }.isNotEmpty()
         val rootNamespace = ctx.settings.moduleName
         val errorShape = ctx.symbolProvider.toSymbol(structureShape)
 
@@ -49,33 +49,34 @@ class XMLHttpResponseBindingErrorInitGenerator(
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            writer.addImport(serviceBaseErrorSymbol.namespace)
             writer.addImports(ctx.service.responseWireProtocol)
             writer.openBlock("extension \$N {", "}", errorShape) {
                 writer.write("")
-                writer.declareSection(XMLHttpResponseBindingErrorInit) {
-                    writer.write(
-                        "static func responseErrorBinding(httpResponse: \$N, reader: \$N, message: \$D, requestID: \$D) async throws -> \$N {",
-                        ClientRuntimeTypes.Http.HttpResponse,
-                        ctx.service.readerSymbol,
-                        SwiftTypes.String,
-                        SwiftTypes.String,
-                        SwiftTypes.Error,
-                    )
+                writer.openBlock(
+                    "static func makeError(baseError: \$N) throws -> \$N {",
+                    "}",
+                    serviceBaseErrorSymbol,
+                    errorShape,
+                ) {
+                    if (needsReader) {
+                        writer.write("let reader = baseError.errorBodyReader")
+                    }
+                    if (needsResponse) {
+                        writer.write("let httpResponse = baseError.httpResponse")
+                    }
+                    writer.write("var value = \$N()", errorShape)
+                    XMLHttpResponseHeaders(ctx, true, headerBindings, defaultTimestampFormat, writer).render()
+                    XMLHttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
+                    httpResponseTraitPayload(ctx, responseBindings, structureShape, writer)
+                    XMLHttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
+                    XMLHttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
+                    writer.write("value.httpResponse = baseError.httpResponse")
+                    writer.write("value.requestID = baseError.requestID")
+                    writer.write("value.message = baseError.message")
+                    writer.declareSection(XMLHttpResponseBindingErrorInitMemberAssignment)
+                    writer.write("return value")
                 }
-                writer.indent()
-                writer.write("var value = \$N()", errorShape)
-                XMLHttpResponseHeaders(ctx, true, headerBindings, defaultTimestampFormat, writer).render()
-                XMLHttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                httpResponseTraitPayload(ctx, responseBindings, structureShape, writer)
-                XMLHttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
-                XMLHttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
-                writer.write("value.httpResponse = httpResponse")
-                writer.write("value.requestID = requestID")
-                writer.write("value.message = message")
-                writer.declareSection(XMLHttpResponseBindingErrorInitMemberAssignment)
-                writer.write("return value")
-                writer.dedent()
-                writer.write("}")
             }
             writer.write("")
         }
