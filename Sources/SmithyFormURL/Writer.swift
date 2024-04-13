@@ -17,7 +17,7 @@ public final class Writer: SmithyWriter {
     public typealias NodeInfo = SmithyFormURL.NodeInfo
 
     let nodeInfo: NodeInfo
-    var content = ""
+    var content: String?
     var children: [Writer] = []
     weak var parent: Writer?
     public var nodeInfoPath: [NodeInfo] { (parent?.nodeInfoPath ?? []) + [nodeInfo] }
@@ -34,14 +34,14 @@ public final class Writer: SmithyWriter {
 
 public extension Writer {
 
-    func data() throws -> Data? {
+    func data() throws -> Data {
         return Data((query ?? "").utf8)
     }
 
     private var query: String? {
         var subqueries = [String]()
-        if !nodeInfo.name.isEmpty && !(content.isEmpty && !children.isEmpty) {
-            subqueries.append(subqueryString)
+        if !nodeInfo.name.isEmpty && !((content ?? "").isEmpty && !children.isEmpty) {
+            self.subqueryString.map { subqueries.append($0) }
         }
         children.forEach { child in
             if let query = child.query { subqueries.append(query) }
@@ -50,7 +50,8 @@ public extension Writer {
         return subqueries.joined(separator: "&")
     }
 
-    private var subqueryString: String {
+    private var subqueryString: String? {
+        guard let content else { return nil }
         let queryName = nodeInfoPath.map(\.name).filter { !$0.isEmpty }.joined(separator: ".")
         return "\(queryName.urlPercentEncodedForQuery)=\(content.urlPercentEncodedForQuery)"
     }
@@ -63,11 +64,6 @@ public extension Writer {
             addChild(newChild)
             return newChild
         }
-    }
-
-    func detach() {
-        parent?.children.removeAll { $0 === self }
-        parent = nil
     }
 
     func write<T>(_ value: T, writingClosure: (T, Writer) throws -> Void) throws {
@@ -83,7 +79,7 @@ public extension Writer {
     }
 
     func write(_ value: Double?) throws {
-        guard let value else { detach(); return }
+        guard let value else { return }
         guard !value.isNaN else {
             record(string: "NaN")
             return
@@ -99,7 +95,7 @@ public extension Writer {
     }
 
     func write(_ value: Float?) throws {
-        guard let value else { detach(); return }
+        guard let value else { return }
         guard !value.isNaN else {
             record(string: "NaN")
             return
@@ -139,7 +135,7 @@ public extension Writer {
     }
 
     func writeTimestamp(_ value: Date?, format: SmithyTimestamps.TimestampFormat) throws {
-        guard let value else { detach(); return }
+        guard let value else { return }
         record(string: TimestampFormatter(format: format).string(from: value))
     }
 
@@ -158,7 +154,7 @@ public extension Writer {
         valueNodeInfo: NodeInfo,
         isFlattened: Bool
     ) throws {
-        guard let value, !value.isEmpty else { detach(); return }
+        guard let value, !value.isEmpty else { return }
         let entryWriter = isFlattened ? self : self[.init("entry")]
         let keysAndValues = value.map { (key: $0.key, value: $0.value) }.sorted { $0.key < $1.key }
         for (index, (key, value)) in keysAndValues.enumerated() {
@@ -174,7 +170,7 @@ public extension Writer {
         memberNodeInfo: NodeInfo,
         isFlattened: Bool
     ) throws {
-        guard let value else { detach(); return }
+        guard let value else { return }
         guard !value.isEmpty else { try write(""); return }
         let entryWriter = isFlattened ? self : self[memberNodeInfo]
         for (index, value) in value.enumerated() {
@@ -183,13 +179,20 @@ public extension Writer {
         }
     }
 
+    func writeNull() throws {
+        // Null not defined in FormURL.
+        // No action taken, node remains in 'no content' state.
+    }
+
+    // MARK: - Private methods
+
     private func addChild(_ child: Writer) {
         children.append(child)
         child.parent = self
     }
 
     private func record(string: String?) {
-        guard let string else { detach(); return }
+        guard let string else { return }
         content = string
     }
 }

@@ -12,8 +12,18 @@ import class Foundation.NSNumber
 
 extension Writer {
 
-    public func data() throws -> Data? {
+    public func data() throws -> Data {
+        trimTree()
         return try JSONSerialization.data(withJSONObject: jsonObject(), options: [.fragmentsAllowed])
+    }
+
+    private func trimTree() {
+        guard jsonNode != nil else {
+            parent?.children.removeAll { $0 === self }
+            parent = nil
+            return
+        }
+        children.forEach { $0.trimTree() }
     }
 
     private func jsonObject() -> Any {
@@ -35,9 +45,12 @@ extension Writer {
         case .null:
             return NSNull()
         case .array:
-            return children.map { $0.jsonObject() }
+            return children.compactMap { $0.jsonObject() }
         case .object:
             return Dictionary(uniqueKeysWithValues: children.map { ($0.nodeInfo.name, $0.jsonObject()) })
+        case nil:
+            // This case will never happen since tree was trimmed of nils before this method is called
+            return NSNull()
         }
     }
 }

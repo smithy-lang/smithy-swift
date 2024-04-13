@@ -11,6 +11,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -39,21 +40,22 @@ abstract class MemberShapeEncodeXMLGenerator(
         val prefix2 = "properties.".takeIf { errorMember } ?: ""
         val prefix = prefix1 + prefix2
         val targetShape = ctx.model.expectShape(memberShape.target)
+        val isSparse = targetShape.hasTrait<SparseTrait>()
         when (targetShape) {
             is StructureShape, is UnionShape -> {
                 writeStructureOrUnionMember(memberShape, prefix)
             }
             is ListShape -> {
-                writeListMember(memberShape, targetShape, prefix)
+                writeListMember(memberShape, targetShape, prefix, isSparse)
             }
             is MapShape -> {
-                writeMapMember(memberShape, targetShape, prefix)
+                writeMapMember(memberShape, targetShape, prefix, isSparse)
             }
             is TimestampShape -> {
                 writeTimestampMember(memberShape, targetShape, prefix)
             }
             else -> {
-                writePropertyMember(memberShape, targetShape, prefix)
+                writePropertyMember(memberShape, prefix)
             }
         }
     }
@@ -85,9 +87,9 @@ abstract class MemberShapeEncodeXMLGenerator(
         )
     }
 
-    private fun writePropertyMember(memberShape: MemberShape, targetShape: Shape, prefix: String) {
-        val memberName = ctx.symbolProvider.toMemberName(memberShape)
+    private fun writePropertyMember(memberShape: MemberShape, prefix: String) {
         val propertyNodeInfo = nodeInfoUtils.nodeInfo(memberShape)
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
         writer.write(
             "try writer[\$L].write(\$L\$L)",
             propertyNodeInfo,
@@ -96,9 +98,9 @@ abstract class MemberShapeEncodeXMLGenerator(
         )
     }
 
-    private fun writeListMember(member: MemberShape, listShape: ListShape, prefix: String) {
+    private fun writeListMember(member: MemberShape, listShape: ListShape, prefix: String, isSparse: Boolean) {
         val memberName = ctx.symbolProvider.toMemberName(member)
-        val listMemberWriter = writingClosureUtils.writingClosure(listShape.member)
+        val listMemberWriter = writingClosureUtils.writingClosure(listShape.member, isSparse)
         val listKey = nodeInfoUtils.nodeInfo(member)
         val isFlattened = member.hasTrait<XmlFlattenedTrait>() || ctx.service.awsProtocol == AWSProtocol.EC2_QUERY
         val memberNodeInfo = nodeInfoUtils.nodeInfo(listShape.member)
@@ -113,12 +115,12 @@ abstract class MemberShapeEncodeXMLGenerator(
         )
     }
 
-    private fun writeMapMember(member: MemberShape, mapShape: MapShape, prefix: String) {
+    private fun writeMapMember(member: MemberShape, mapShape: MapShape, prefix: String, isSparse: Boolean) {
         val memberName = ctx.symbolProvider.toMemberName(member)
         val mapKey = nodeInfoUtils.nodeInfo(member)
         val keyNodeInfo = nodeInfoUtils.nodeInfo(mapShape.key)
         val valueNodeInfo = nodeInfoUtils.nodeInfo(mapShape.value)
-        val valueWriter = writingClosureUtils.writingClosure(mapShape.value)
+        val valueWriter = writingClosureUtils.writingClosure(mapShape.value, isSparse)
         val isFlattened = member.hasTrait<XmlFlattenedTrait>()
         writer.write(
             "try writer[\$L].writeMap(\$L\$L, valueWritingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",

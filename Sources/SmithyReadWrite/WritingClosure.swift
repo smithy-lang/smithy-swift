@@ -111,3 +111,13 @@ public extension Document {
         try writer.write(value)
     }
 }
+
+public func sparseFormOf<T, Writer: SmithyWriter>(writingClosure: @escaping WritingClosure<T?, Writer>) -> WritingClosure<T?, Writer> {
+    return { value, writer in
+        if let value {
+            try writingClosure(value, writer)
+        } else {
+            try writer.writeNull()
+        }
+    }
+}

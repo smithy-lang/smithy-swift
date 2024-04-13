@@ -183,4 +183,9 @@ public final class Reader: SmithyReader {
         }
         return list
     }
+
+    public func readNullIfPresent() throws -> Bool? {
+        // Since null is not currently used in XML protocols, this method returns a default value.
+        return nil
+    }
 }

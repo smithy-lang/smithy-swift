@@ -27,7 +27,7 @@ public final class Reader: SmithyReader {
     public internal(set) weak var parent: Reader?
     public var hasContent: Bool { jsonNode != nil && jsonNode != .null }
 
-    init(nodeInfo: NodeInfo, jsonObject: Any, parent: Reader? = nil) throws {
+    init(nodeInfo: NodeInfo, jsonObject: Any?, parent: Reader? = nil) throws {
         self.nodeInfo = nodeInfo
         self.jsonNode = try Self.jsonNode(for: jsonObject)
         self.parent = parent
@@ -40,7 +40,7 @@ public final class Reader: SmithyReader {
         self.parent = parent
     }
 
-    private static func jsonNode(for jsonObject: Any) throws -> JSONNode {
+    private static func jsonNode(for jsonObject: Any?) throws -> JSONNode? {
         if jsonObject is [String: Any] {
             return .object
         } else if jsonObject is [Any] {
@@ -182,8 +182,14 @@ public extension Reader {
         if jsonNode != .object { return nil }
         var dict = [String: Value]()
         for mapEntry in children {
-            let value = try valueReadingClosure(mapEntry)
-            dict.updateValue(value, forKey: mapEntry.nodeInfo.name)
+            do {
+                let value = try valueReadingClosure(mapEntry)
+                dict.updateValue(value, forKey: mapEntry.nodeInfo.name)
+            } catch ReaderError.requiredValueNotPresent {
+                // This catch will "tolerate" a JSON null value in a map.
+                // Any other unreadable value is still an error
+                if !(try mapEntry.readNullIfPresent() ?? false) { throw ReaderError.requiredValueNotPresent }
+            }
         }
         return dict
     }
@@ -197,12 +203,9 @@ public extension Reader {
         return try children.map { try memberReadingClosure($0) }
     }
 
-    /// Detaches this reader from its parent.  Typically used when this reader no longer
-    /// belongs in the tree, either because its data is nil or its contents were flattened
-    /// into its parents.
-    func detach() {
-        parent?.children.removeAll { $0 === self }
-        parent = nil
+    func readNullIfPresent() throws -> Bool? {
+        guard let jsonNode else { return nil }
+        return jsonNode == .null
     }
 
     // MARK: - Private methods
@@ -222,16 +225,6 @@ public extension Reader {
             return children.compactMap { $0.jsonObject }
         case .object:
             return Dictionary(uniqueKeysWithValues: children.map { ($0.nodeInfo.name, $0.jsonObject) })
-        }
-    }
-}
-
-public func optionalFormOf<T, Reader>(readingClosure: @escaping ReadingClosure<T, Reader>) -> ReadingClosure<T?, Reader> {
-    return { reader in
-        do {
-            return try readingClosure(reader)
-        } catch ReaderError.requiredValueNotPresent {
-            return nil
         }
     }
 }

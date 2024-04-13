@@ -14,8 +14,8 @@ public struct JSONComparator {
     ///   - dataB: The second data object to compare to the first data object.
     /// - Returns: Returns true if the JSON documents, for the corresponding data objects, are equal.
     public static func jsonData(_ dataA: Data, isEqualTo dataB: Data) throws -> Bool {
-        let jsonDictA = try JSONSerialization.jsonObject(with: dataA)
-        let jsonDictB = try JSONSerialization.jsonObject(with: dataB)
+        let jsonDictA = try JSONSerialization.jsonObject(with: dataA, options: [.fragmentsAllowed])
+        let jsonDictB = try JSONSerialization.jsonObject(with: dataB, options: [.fragmentsAllowed])
         return anyValuesAreEqual(jsonDictA, jsonDictB)
     }
 }

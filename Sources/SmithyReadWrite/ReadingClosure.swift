@@ -181,3 +181,13 @@ public extension Document {
         try reader.readIfPresent()
     }
 }
+
+public func optionalFormOf<T, Reader: SmithyReader>(readingClosure: @escaping ReadingClosure<T, Reader>) -> ReadingClosure<T?, Reader> {
+    return { reader in
+        do {
+            return try readingClosure(reader)
+        } catch ReaderError.requiredValueNotPresent {
+            return nil
+        }
+    }
+}

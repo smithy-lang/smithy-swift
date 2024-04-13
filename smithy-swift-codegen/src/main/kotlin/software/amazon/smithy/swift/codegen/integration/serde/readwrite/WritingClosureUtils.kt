@@ -3,8 +3,10 @@ package software.amazon.smithy.swift.codegen.integration.serde.readwrite
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -21,22 +23,23 @@ class WritingClosureUtils(
 
     private val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol)
 
-    fun writingClosure(member: MemberShape): String {
+    fun writingClosure(member: MemberShape, isSparse: Boolean): String {
         val target = ctx.model.expectShape(member.target)
         val memberTimestampFormatTrait = member.getTrait<TimestampFormatTrait>()
-        return writingClosure(target, memberTimestampFormatTrait)
+        return makeWritingClosure(target, memberTimestampFormatTrait, isSparse)
     }
 
     fun writingClosure(shape: Shape): String {
-        return writingClosure(shape, null)
+        return makeWritingClosure(shape, null, false)
     }
 
-    private fun writingClosure(shape: Shape, memberTimestampFormatTrait: TimestampFormatTrait? = null): String {
-        return when (shape) {
+    private fun makeWritingClosure(shape: Shape, memberTimestampFormatTrait: TimestampFormatTrait?, isSparse: Boolean): String {
+        val base = when (shape) {
             is MapShape -> {
                 val keyNodeInfo = nodeInfoUtils.nodeInfo(shape.key)
                 val valueNodeInfo = nodeInfoUtils.nodeInfo(shape.value)
-                val valueWriter = writingClosure(shape.value)
+                val mapIsSparse = shape.hasTrait<SparseTrait>()
+                val valueWriter = writingClosure(shape.value, mapIsSparse)
                 val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
                 writer.format(
                     "mapWritingClosure(valueWritingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
@@ -48,7 +51,8 @@ class WritingClosureUtils(
             }
             is ListShape -> {
                 val memberNodeInfo = nodeInfoUtils.nodeInfo(shape.member)
-                val memberWriter = writingClosure(shape.member)
+                val listIsSparse = shape.hasTrait<SparseTrait>()
+                val memberWriter = writingClosure(shape.member, listIsSparse)
                 val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
                 writer.format(
                     "listWritingClosure(memberWritingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
@@ -66,6 +70,11 @@ class WritingClosureUtils(
             else -> {
                 writer.format("\$N.write(value:to:)", ctx.symbolProvider.toSymbol(shape))
             }
+        }
+        return if (isSparse) {
+            writer.format("sparseFormOf(writingClosure: \$L)", base)
+        } else {
+            base
         }
     }
 }

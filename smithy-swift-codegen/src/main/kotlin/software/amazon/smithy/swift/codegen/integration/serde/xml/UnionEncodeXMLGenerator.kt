@@ -28,7 +28,7 @@ class UnionEncodeXMLGenerator(
             structSymbol,
             ctx.service.writerSymbol,
         ) {
-            writer.write("guard let value else { writer.detach(); return }")
+            writer.write("guard let value else { return }")
             writer.openBlock("switch value {", "}") {
                 val membersSortedByName: List<MemberShape> = members.sortedBy { it.memberName }
                 membersSortedByName.forEach { member ->

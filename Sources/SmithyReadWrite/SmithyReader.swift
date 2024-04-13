@@ -39,7 +39,10 @@ public protocol SmithyReader: AnyObject {
         memberNodeInfo: NodeInfo,
         isFlattened: Bool
     ) throws -> [Member]?
-    func detach()
+
+    /// Attempts to read a `null` value from the source document.
+    /// - Returns: `true` if the value read is null, `false` if a value is present but it is not null, `nil` if no value is present.
+    func readNullIfPresent() throws -> Bool?
 }
 
 extension SmithyReader {
@@ -181,6 +184,14 @@ extension SmithyReader {
             isFlattened: isFlattened
         ) {
             return value
+        } else {
+            throw ReaderError.requiredValueNotPresent
+        }
+    }
+
+    public func readNull() throws -> Bool {
+        if let isNull = try readNullIfPresent() {
+            return isNull
         } else {
             throw ReaderError.requiredValueNotPresent
         }

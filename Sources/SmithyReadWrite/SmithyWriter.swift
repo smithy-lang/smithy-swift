@@ -13,10 +13,9 @@ public protocol SmithyWriter: AnyObject {
     associatedtype NodeInfo
 
     init(nodeInfo: NodeInfo)
-    func data() throws -> Data?
+    func data() throws -> Data
 
     subscript(_ nodeInfo: NodeInfo) -> Self { get }
-    func detach()
     func write<T>(_ value: T, writingClosure: WritingClosure<T, Self>) throws
     func write(_ value: Bool?) throws
     func write(_ value: String?) throws
@@ -44,4 +43,5 @@ public protocol SmithyWriter: AnyObject {
         memberNodeInfo: NodeInfo,
         isFlattened: Bool
     ) throws
+    func writeNull() throws
 }

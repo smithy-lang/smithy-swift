@@ -255,7 +255,7 @@ open class HttpRequestTestBase: XCTestCase {
             let message = {
                 let expectedStr = String(data: expected, encoding: .utf8) ?? "<not UTF-8>"
                 let actualStr = String(data: actual, encoding: .utf8) ?? "<not UTF-8>"
-                return "Actual: \(actualStr)  Expected: \(expectedStr)"
+                return "\nActual: \(actualStr)\nExpected: \(expectedStr)"
             }
             switch contentType {
             case .xml:

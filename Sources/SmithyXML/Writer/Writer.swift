@@ -22,10 +22,11 @@ import struct SmithyTimestamps.TimestampFormatter
 /// `Array` and `Dictionary` (optionally as flattened XML) given a writing closure for
 /// their enclosed data types.
 public final class Writer: SmithyWriter {
-    var content = ""
+    var content: String? = nil
     var children: [Writer] = []
     weak var parent: Writer?
     let nodeInfo: NodeInfo
+    var isCollection = false
     public var nodeInfoPath: [NodeInfo] { (parent?.nodeInfoPath ?? []) + [nodeInfo] }
 
     // MARK: - init & deinit
@@ -55,10 +56,10 @@ public final class Writer: SmithyWriter {
     /// Detaches this writer from its parent.  Typically used when this writer no longer
     /// belongs in the tree, either because its data is nil or its contents were flattened
     /// into its parents.
-    public func detach() {
-        parent?.children.removeAll { $0 === self }
-        parent = nil
-    }
+//    public func detach() {
+//        parent?.children.removeAll { $0 === self }
+//        parent = nil
+//    }
 
     // MARK: - Writing values
 
@@ -71,7 +72,7 @@ public final class Writer: SmithyWriter {
     }
 
     public func write(_ value: Double?) throws {
-        guard let value else { detach(); return }
+        guard let value else { return }
         guard !value.isNaN else {
             record(string: "NaN")
             return
@@ -87,7 +88,7 @@ public final class Writer: SmithyWriter {
     }
 
     public func write(_ value: Float?) throws {
-        guard let value else { detach(); return }
+        guard let value else { return }
         guard !value.isNaN else {
             record(string: "NaN")
             return
@@ -127,7 +128,7 @@ public final class Writer: SmithyWriter {
     }
 
     public func writeTimestamp(_ value: Date?, format: TimestampFormat) throws {
-        guard let value else { detach(); return }
+        guard let value else { return }
         record(string: TimestampFormatter(format: format).string(from: value))
     }
 
@@ -146,16 +147,17 @@ public final class Writer: SmithyWriter {
         valueNodeInfo: NodeInfo,
         isFlattened: Bool
     ) throws {
-        guard let value else { detach(); return }
+        guard let value else { return }
         if isFlattened {
-            defer { detach() }
             guard let parent = self.parent else { return }
+            parent.isCollection = true
             for (key, value) in value {
                 let entryWriter = parent[.init(nodeInfo.name)]
                 try entryWriter[keyNodeInfo].write(key)
                 try valueWritingClosure(value, entryWriter[valueNodeInfo])
             }
         } else {
+            isCollection = true
             for (key, value) in value {
                 let entryWriter = self[.init("entry")]
                 try entryWriter[keyNodeInfo].write(key)
@@ -170,10 +172,10 @@ public final class Writer: SmithyWriter {
         memberNodeInfo: NodeInfo,
         isFlattened: Bool
     ) throws {
-        guard let value else { detach(); return }
+        guard let value else { return }
         if isFlattened {
-            defer { detach() }
             guard let parent = self.parent, !nodeInfo.name.isEmpty else { return }
+            parent.isCollection = true
             let flattenedMemberNodeInfo = NodeInfo(
                 nodeInfo.name,
                 location: memberNodeInfo.location,
@@ -183,6 +185,7 @@ public final class Writer: SmithyWriter {
                 try memberWritingClosure(member, parent[flattenedMemberNodeInfo])
             }
         } else {
+            isCollection = true
             for member in value {
                 try memberWritingClosure(member, self[memberNodeInfo])
             }
@@ -193,6 +196,10 @@ public final class Writer: SmithyWriter {
         try writingClosure(value, self)
     }
 
+    public func writeNull() throws {
+        // Null not defined in XML.  No operation.
+    }
+
     // MARK: - Private methods
 
     private func addChild(_ child: Writer) {
@@ -201,7 +208,7 @@ public final class Writer: SmithyWriter {
     }
 
     private func record(string: String?) {
-        guard let string else { detach(); return }
+        guard let string else { return }
         content = string
     }
 }

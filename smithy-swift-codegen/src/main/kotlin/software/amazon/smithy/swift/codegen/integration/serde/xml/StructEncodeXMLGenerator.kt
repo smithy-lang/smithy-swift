@@ -40,9 +40,10 @@ class StructEncodeXMLGenerator(
             ctx.service.writerSymbol,
         ) {
             writer.write(
-                "guard \$L else { writer.detach(); return }",
+                "guard \$L else { return }",
                 "value != nil".takeIf { members.isEmpty() } ?: "let value"
             )
+            writer.write("_ = writer[\"\"]")
             val isErrorMember = shapeContainingMembers.isError
             members.sortedBy { it.memberName }.forEach { writeMember(it, false, isErrorMember) }
             writeExtraMembers()

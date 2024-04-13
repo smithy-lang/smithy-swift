@@ -17,7 +17,7 @@ public final class Writer: SmithyWriter {
     public typealias NodeInfo = SmithyJSON.NodeInfo
 
     let nodeInfo: NodeInfo
-    var jsonNode: JSONNode = .object
+    var jsonNode: JSONNode?
     var children: [Writer] = []
     weak var parent: Writer?
 
@@ -31,70 +31,65 @@ public final class Writer: SmithyWriter {
     }
 }
 
-extension Writer {
+public extension Writer {
 
-    public subscript(nodeInfo: NodeInfo) -> Writer {
+    subscript(nodeInfo: NodeInfo) -> Writer {
         self.jsonNode = .object
         let newChild = Writer(nodeInfo: nodeInfo, parent: self)
         children.append(newChild)
         return newChild
     }
 
-    public func detach() {
-        parent?.children.removeAll { $0 === self }
-        parent = nil
-    }
-
-    public func write<T>(_ value: T, writingClosure: (T, Writer) throws -> Void) throws {
+    func write<T>(_ value: T, writingClosure: (T, Writer) throws -> Void) throws {
         try writingClosure(value, self)
     }
 
-    public func write(_ value: Bool?) throws {
-        guard let value else { detach(); return }
+    func write(_ value: Bool?) throws {
+        guard let value else { return }
         self.jsonNode = .bool(value)
     }
 
-    public func write(_ value: String?) throws {
-        guard let value else { detach(); return }
+    func write(_ value: String?) throws {
+        guard let value else { return }
         self.jsonNode = .string(value)
     }
 
-    public func write(_ value: Double?) throws {
-        guard let value else { detach(); return }
+    func write(_ value: Double?) throws {
+        guard let value else { return }
         self.jsonNode = .number(NSNumber(value: value))
     }
 
-    public func write(_ value: Float?) throws {
-        guard let value else { detach(); return }
+    func write(_ value: Float?) throws {
+        guard let value else { return }
         self.jsonNode = .number(NSNumber(value: value))
     }
 
-    public func write(_ value: Int?) throws {
-        guard let value else { detach(); return }
+    func write(_ value: Int?) throws {
+        guard let value else { return }
         self.jsonNode = .number(NSNumber(value: value))
     }
 
-    public func write(_ value: Int8?) throws {
-        guard let value else { detach(); return }
+    func write(_ value: Int8?) throws {
+        guard let value else { return }
         self.jsonNode = .number(NSNumber(value: value))
     }
 
-    public func write(_ value: Int16?) throws {
-        guard let value else { detach(); return }
+    func write(_ value: Int16?) throws {
+        guard let value else { return }
         self.jsonNode = .number(NSNumber(value: value))
     }
 
-    public func write(_ value: UInt8?) throws {
-        guard let value else { detach(); return }
+    func write(_ value: UInt8?) throws {
+        guard let value else { return }
         self.jsonNode = .number(NSNumber(value: value))
     }
 
-    public func write(_ value: Data?) throws {
+    func write(_ value: Data?) throws {
         try write(value?.base64EncodedString())
     }
 
-    public func write(_ value: Document?) throws {
-        guard let value else { detach(); return }
+    func write(_ value: Document?) throws {
+        guard let value else { return }
         switch value {
         case .object(let object):
             try object.forEach { try self[.init($0.key)].write($0.value) }
@@ -113,8 +108,8 @@ extension Writer {
         }
     }
 
-    public func writeTimestamp(_ value: Date?, format: SmithyTimestamps.TimestampFormat) throws {
-        guard let value else { detach(); return }
+    func writeTimestamp(_ value: Date?, format: SmithyTimestamps.TimestampFormat) throws {
+        guard let value else { return }
         switch format {
         case .epochSeconds:
             self.jsonNode = .number(NSNumber(value: value.timeIntervalSince1970))
@@ -123,35 +118,35 @@ extension Writer {
         }
     }
 
-    public func write<T>(_ value: T?) throws where T: RawRepresentable, T.RawValue == Int {
+    func write<T>(_ value: T?) throws where T: RawRepresentable, T.RawValue == Int {
         try write(value?.rawValue)
     }
 
-    public func write<T>(_ value: T?) throws where T: RawRepresentable, T.RawValue == String {
+    func write<T>(_ value: T?) throws where T: RawRepresentable, T.RawValue == String {
         try write(value?.rawValue)
     }
 
-    public func writeMap<T>(
+    func writeMap<T>(
         _ value: [String: T]?,
         valueWritingClosure: (T, Writer) throws -> Void,
         keyNodeInfo: NodeInfo,
         valueNodeInfo: NodeInfo,
         isFlattened: Bool
     ) throws {
-        guard let value else { detach(); return }
+        guard let value else { return }
         self.jsonNode = .object
         for (key, value) in value {
             try valueWritingClosure(value, self[.init(key)])
         }
     }
 
-    public func writeList<T>(
+    func writeList<T>(
         _ value: [T]?,
         memberWritingClosure: (T, Writer) throws -> Void,
         memberNodeInfo: NodeInfo,
         isFlattened: Bool
     ) throws {
-        guard let value else { detach(); return }
+        guard let value else { return }
         self.jsonNode = .array
         for member in value {
             let element = Writer(nodeInfo: "")
@@ -159,6 +154,12 @@ extension Writer {
             try memberWritingClosure(member, element)
         }
     }
+
+    func writeNull() throws {
+        jsonNode = .null
+    }
+
+    // MARK: - Private methods
 
     private func addChild(_ child: Writer) {
         children.append(child)
