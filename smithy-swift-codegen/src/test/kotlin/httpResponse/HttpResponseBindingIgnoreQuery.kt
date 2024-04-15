@@ -20,14 +20,20 @@ class HttpResponseBindingIgnoreQuery {
         val context = setupTests("http-query-payload.smithy", "aws.protocoltests.restjson#RestJson")
         val contents = getFileContents(context.manifest, "/RestJson/models/IgnoreQueryParamsInResponseOutput+HttpResponseBinding.swift")
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension IgnoreQueryParamsInResponseOutput: ClientRuntime.HttpResponseBinding {
-                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-                    self.baz = nil
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension IgnoreQueryParamsInResponseOutput {
+
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, IgnoreQueryParamsInResponseOutput, SmithyJSON.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
+            var value = IgnoreQueryParamsInResponseOutput()
+            value.baz = nil
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

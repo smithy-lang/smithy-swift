@@ -51,10 +51,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: SmokeTestOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: SmokeTestOutput = try await wireResponseOutputClosure(SmokeTestOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
 
         let expected = SmokeTestOutput(
             boolHeader: false,
@@ -99,10 +96,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: HttpPrefixHeadersOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: HttpPrefixHeadersOutput = try await wireResponseOutputClosure(HttpPrefixHeadersOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo",
@@ -137,10 +131,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: HttpPrefixHeadersOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: HttpPrefixHeadersOutput = try await wireResponseOutputClosure(HttpPrefixHeadersOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo"
@@ -177,10 +168,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: JsonUnionsOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: JsonUnionsOutput = try await wireResponseOutputClosure(JsonUnionsOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
 
         let expected = JsonUnionsOutput(
             contents: MyUnion.stringvalue("foo")
@@ -226,10 +214,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: RecursiveShapesOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: RecursiveShapesOutput = try await wireResponseOutputClosure(RecursiveShapesOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
 
         let expected = RecursiveShapesOutput(
             nested: RecursiveShapesInputOutputNested1(
@@ -258,8 +243,6 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val contents = getTestFileContents("example", "InlineDocumentResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class InlineDocumentResponseTest: HttpResponseTestBase {
-    /// Serializes inline documents as part of the JSON response payload with no escaping.
     func testInlineDocumentOutput() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
@@ -279,26 +262,21 @@ class InlineDocumentResponseTest: HttpResponseTestBase {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: InlineDocumentOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: InlineDocumentOutput = try await wireResponseOutputClosure(InlineDocumentOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
 
         let expected = InlineDocumentOutput(
-            documentValue: try decoder.decode(Document.self, from:
-                ""${'"'}
+            documentValue: try Document.document(from: Data(""${'"'}
                 {
                     "foo": "bar"
                 }
-                ""${'"'}.data(using: .utf8)!)
-                ,
-                stringValue: "string"
-            )
+            ""${'"'}.utf8))
+            ,
+            stringValue: "string"
+        )
 
-            XCTAssertEqual(expected.stringValue, actual.stringValue)
-            XCTAssertEqual(expected.documentValue, actual.documentValue)
+        XCTAssertEqual(expected.stringValue, actual.stringValue)
+        XCTAssertEqual(expected.documentValue, actual.documentValue)
 
-        }
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -325,24 +303,19 @@ class InlineDocumentResponseTest: HttpResponseTestBase {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: InlineDocumentAsPayloadOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: InlineDocumentAsPayloadOutput = try await wireResponseOutputClosure(InlineDocumentAsPayloadOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
 
         let expected = InlineDocumentAsPayloadOutput(
-            documentValue: try decoder.decode(Document.self, from:
-                ""${'"'}
+            documentValue: try Document.document(from: Data(""${'"'}
                 {
                     "foo": "bar"
                 }
-                ""${'"'}.data(using: .utf8)!)
+            ""${'"'}.utf8))
 
-            )
+        )
 
-            XCTAssertEqual(expected.documentValue, actual.documentValue)
+        XCTAssertEqual(expected.documentValue, actual.documentValue)
 
-        }
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)

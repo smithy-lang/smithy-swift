@@ -19,9 +19,10 @@ class MapEncodeXMLGenerationTests {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsInput+Write.swift")
         val expectedContents = """
 extension XmlMapsInput {
-    static func writingClosure(_ value: XmlMapsInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+
+    static func write(value: XmlMapsInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }
 """
@@ -34,9 +35,10 @@ extension XmlMapsInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsWithNameProtocolInput+Write.swift")
         val expectedContents = """
 extension XmlMapsWithNameProtocolInput {
-    static func writingClosure(_ value: XmlMapsWithNameProtocolInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["protocol"].writeMap(value.`protocol`, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+
+    static func write(value: XmlMapsWithNameProtocolInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["protocol"].writeMap(value.`protocol`, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }
 """
@@ -49,9 +51,10 @@ extension XmlMapsWithNameProtocolInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedInput+Write.swift")
         val expectedContents = """
 extension XmlMapsNestedInput {
-    static func writingClosure(_ value: XmlMapsNestedInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+
+    static func write(value: XmlMapsNestedInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }
 """
@@ -64,9 +67,10 @@ extension XmlMapsNestedInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedNestedInput+Write.swift")
         val expectedContents = """
 extension XmlMapsNestedNestedInput {
-    static func writingClosure(_ value: XmlMapsNestedNestedInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+
+    static func write(value: XmlMapsNestedNestedInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: mapWritingClosure(valueWritingClosure: mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }
 """
@@ -79,9 +83,10 @@ extension XmlMapsNestedNestedInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedMapsInput+Write.swift")
         val expectedContents = """
 extension XmlFlattenedMapsInput {
-    static func writingClosure(_ value: XmlFlattenedMapsInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+
+    static func write(value: XmlFlattenedMapsInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
     }
 }
 """
@@ -94,9 +99,10 @@ extension XmlFlattenedMapsInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedNestedInput {
-    static func writingClosure(_ value: XmlMapsFlattenedNestedInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+
+    static func write(value: XmlMapsFlattenedNestedInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
     }
 }
 """
@@ -109,9 +115,10 @@ extension XmlMapsFlattenedNestedInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameInput+Write.swift")
         val expectedContents = """
 extension XmlMapsXmlNameInput {
-    static func writingClosure(_ value: XmlMapsXmlNameInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: "Attribute", valueNodeInfo: "Setting", isFlattened: false)
+
+    static func write(value: XmlMapsXmlNameInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.write(value:to:), keyNodeInfo: "Attribute", valueNodeInfo: "Setting", isFlattened: false)
     }
 }
 """
@@ -124,9 +131,10 @@ extension XmlMapsXmlNameInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameFlattenedInput+Write.swift")
         val expectedContents = """
 extension XmlMapsXmlNameFlattenedInput {
-    static func writingClosure(_ value: XmlMapsXmlNameFlattenedInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: "SomeCustomKey", valueNodeInfo: "SomeCustomValue", isFlattened: true)
+
+    static func write(value: XmlMapsXmlNameFlattenedInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.write(value:to:), keyNodeInfo: "SomeCustomKey", valueNodeInfo: "SomeCustomValue", isFlattened: true)
     }
 }
 """
@@ -139,9 +147,10 @@ extension XmlMapsXmlNameFlattenedInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameNestedInput+Write.swift")
         val expectedContents = """
 extension XmlMapsXmlNameNestedInput {
-    static func writingClosure(_ value: XmlMapsXmlNameNestedInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.writingClosure(_:to:), keyNodeInfo: "CustomKey2", valueNodeInfo: "CustomValue2", isFlattened: false), keyNodeInfo: "CustomKey1", valueNodeInfo: "CustomValue1", isFlattened: false)
+
+    static func write(value: XmlMapsXmlNameNestedInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.GreetingStruct.write(value:to:), keyNodeInfo: "CustomKey2", valueNodeInfo: "CustomValue2", isFlattened: false), keyNodeInfo: "CustomKey1", valueNodeInfo: "CustomValue1", isFlattened: false)
     }
 }
 """
@@ -154,9 +163,10 @@ extension XmlMapsXmlNameNestedInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedXmlNameInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedNestedXmlNameInput {
-    static func writingClosure(_ value: XmlMapsFlattenedNestedXmlNameInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false), keyNodeInfo: "yek", valueNodeInfo: "eulav", isFlattened: true)
+
+    static func write(value: XmlMapsFlattenedNestedXmlNameInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: mapWritingClosure(valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false), keyNodeInfo: "yek", valueNodeInfo: "eulav", isFlattened: true)
     }
 }
 """
@@ -169,9 +179,10 @@ extension XmlMapsFlattenedNestedXmlNameInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNamespaceInput+Write.swift")
         val expectedContents = """
 extension XmlMapsXmlNamespaceInput {
-    static func writingClosure(_ value: XmlMapsXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: .init("Quality", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Degree", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
+
+    static func write(value: XmlMapsXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: .init("Quality", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Degree", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
     }
 }
 """
@@ -183,9 +194,10 @@ extension XmlMapsXmlNamespaceInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedXmlNamespaceInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedXmlNamespaceInput {
-    static func writingClosure(_ value: XmlMapsFlattenedXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: .init("Uid", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Val", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
+
+    static func write(value: XmlMapsFlattenedXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: .init("Uid", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Val", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
     }
 }
 """
@@ -198,9 +210,10 @@ extension XmlMapsFlattenedXmlNamespaceInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedXmlNamespaceInput+Write.swift")
         val expectedContents = """
 extension XmlMapsNestedXmlNamespaceInput {
-    static func writingClosure(_ value: XmlMapsNestedXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
+
+    static func write(value: XmlMapsNestedXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: mapWritingClosure(valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
     }
 }
 """
@@ -212,9 +225,10 @@ extension XmlMapsNestedXmlNamespaceInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedXmlNamespaceInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedNestedXmlNamespaceInput {
-    static func writingClosure(_ value: XmlMapsFlattenedNestedXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: Swift.String.writingClosure(_:to:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
+
+    static func write(value: XmlMapsFlattenedNestedXmlNamespaceInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].writeMap(value.myMap, valueWritingClosure: mapWritingClosure(valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
     }
 }
 """
@@ -226,9 +240,10 @@ extension XmlMapsFlattenedNestedXmlNamespaceInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsContainListInput+Write.swift")
         val expectedContents = """
 extension XmlMapsContainListInput {
-    static func writingClosure(_ value: XmlMapsContainListInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+
+    static func write(value: XmlMapsContainListInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: listWritingClosure(memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }
 """
@@ -240,9 +255,10 @@ extension XmlMapsContainListInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedContainListInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedContainListInput {
-    static func writingClosure(_ value: XmlMapsFlattenedContainListInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: Swift.String.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+
+    static func write(value: XmlMapsFlattenedContainListInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["myMap"].writeMap(value.myMap, valueWritingClosure: listWritingClosure(memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
     }
 }
 """
@@ -254,9 +270,10 @@ extension XmlMapsFlattenedContainListInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsTimestampsInput+Write.swift")
         val expectedContents = """
 extension XmlMapsTimestampsInput {
-    static func writingClosure(_ value: XmlMapsTimestampsInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["timestampMap"].writeMap(value.timestampMap, valueWritingClosure: SmithyXML.timestampWritingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+
+    static func write(value: XmlMapsTimestampsInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["timestampMap"].writeMap(value.timestampMap, valueWritingClosure: timestampWritingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }
 """
@@ -269,9 +286,10 @@ extension XmlMapsTimestampsInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedTimestampsInput+Write.swift")
         val expectedContents = """
 extension XmlMapsFlattenedTimestampsInput {
-    static func writingClosure(_ value: XmlMapsFlattenedTimestampsInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["timestampMap"].writeMap(value.timestampMap, valueWritingClosure: SmithyXML.timestampWritingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+
+    static func write(value: XmlMapsFlattenedTimestampsInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["timestampMap"].writeMap(value.timestampMap, valueWritingClosure: timestampWritingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
     }
 }
 """
@@ -284,10 +302,11 @@ extension XmlMapsFlattenedTimestampsInput {
         val contents = getFileContents(context.manifest, "/RestXml/models/NestedXmlMapsInput+Write.swift")
         val expectedContents = """
 extension NestedXmlMapsInput {
-    static func writingClosure(_ value: NestedXmlMapsInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["flatNestedMap"].writeMap(value.flatNestedMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
-        try writer["nestedMap"].writeMap(value.nestedMap, valueWritingClosure: SmithyXML.mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+
+    static func write(value: NestedXmlMapsInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["flatNestedMap"].writeMap(value.flatNestedMap, valueWritingClosure: mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.FooEnum.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        try writer["nestedMap"].writeMap(value.nestedMap, valueWritingClosure: mapWritingClosure(valueWritingClosure: RestXmlProtocolClientTypes.FooEnum.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }
 """

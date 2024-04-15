@@ -17,25 +17,19 @@ class EnumDecodeXMLGenerationTests {
     @Test
     fun `decode enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutput+HttpResponseBinding.swift")
         val expectedContents = """
-struct XmlEnumsOutputBody: Swift.Equatable {
-    let fooEnum1: RestXmlProtocolClientTypes.FooEnum?
-    let fooEnum2: RestXmlProtocolClientTypes.FooEnum?
-    let fooEnum3: RestXmlProtocolClientTypes.FooEnum?
-    let fooEnumList: [RestXmlProtocolClientTypes.FooEnum]?
-}
+extension XmlEnumsOutput {
 
-extension XmlEnumsOutputBody {
-
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlEnumsOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlEnumsOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlEnumsOutput()
             value.fooEnum1 = try reader["fooEnum1"].readIfPresent()
             value.fooEnum2 = try reader["fooEnum2"].readIfPresent()
             value.fooEnum3 = try reader["fooEnum3"].readIfPresent()
-            value.fooEnumList = try reader["fooEnumList"].readListIfPresent(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.readingClosure, memberNodeInfo: "member", isFlattened: false)
+            value.fooEnumList = try reader["fooEnumList"].readListIfPresent(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.read(from:), memberNodeInfo: "member", isFlattened: false)
             return value
         }
     }
@@ -47,19 +41,16 @@ extension XmlEnumsOutputBody {
     @Test
     fun `decode enum nested`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
-struct XmlEnumsNestedOutputBody: Swift.Equatable {
-    let nestedEnumsList: [[RestXmlProtocolClientTypes.FooEnum]]?
-}
+extension XmlEnumsNestedOutput {
 
-extension XmlEnumsNestedOutputBody {
-
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlEnumsNestedOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlEnumsNestedOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlEnumsNestedOutput()
-            value.nestedEnumsList = try reader["nestedEnumsList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+            value.nestedEnumsList = try reader["nestedEnumsList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
             return value
         }
     }

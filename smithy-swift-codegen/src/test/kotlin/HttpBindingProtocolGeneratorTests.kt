@@ -63,19 +63,20 @@ class HttpBindingProtocolGeneratorTests {
     fun `it creates correct init for explicit struct payloads`() {
         val contents = getModelFileContents("example", "ExplicitStructOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-extension ExplicitStructOutput: ClientRuntime.HttpResponseBinding {
-    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-        if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {
-            let output: Nested2 = try responseDecoder.decode(responseBody: data)
-            self.payload1 = output
-        } else {
-            self.payload1 = nil
+        val expectedContents = """
+extension ExplicitStructOutput {
+
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, ExplicitStructOutput, SmithyJSON.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
+            var value = ExplicitStructOutput()
+            value.payload1 = try reader.readIfPresent(with: Nested2.read(from:))
+            return value
         }
     }
 }
-            """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -90,14 +91,18 @@ extension ExplicitStructOutput: ClientRuntime.HttpResponseBinding {
     fun `httpResponseCodeOutput response init content`() {
         val contents = getModelFileContents("example", "HttpResponseCodeOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-extension HttpResponseCodeOutput: ClientRuntime.HttpResponseBinding {
-    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-        self.status = httpResponse.statusCode.rawValue
+        val expectedContents = """
+extension HttpResponseCodeOutput {
+
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, HttpResponseCodeOutput, SmithyJSON.Reader> {
+        { httpResponse, responseDocumentClosure in
+            var value = HttpResponseCodeOutput()
+            value.status = httpResponse.statusCode.rawValue
+            return value
+        }
     }
 }
-            """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -105,49 +110,54 @@ extension HttpResponseCodeOutput: ClientRuntime.HttpResponseBinding {
     fun `decode the document type in HttpResponseBinding`() {
         val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-extension InlineDocumentAsPayloadOutput: ClientRuntime.HttpResponseBinding {
-    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-        if let data = try await httpResponse.body.readData(), let responseDecoder = decoder {
-            let output: ClientRuntime.Document = try responseDecoder.decode(responseBody: data)
-            self.documentValue = output
-        } else {
-            self.documentValue = nil
+        val expectedContents = """
+extension InlineDocumentAsPayloadOutput {
+
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, InlineDocumentAsPayloadOutput, SmithyJSON.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
+            var value = InlineDocumentAsPayloadOutput()
+            if let data = try await httpResponse.body.readData() {
+                value.documentValue = try SmithyReadWrite.Document.document(from: data)
+            }
+            return value
         }
     }
 }
-            """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `default fooMap to an empty map if keysForFooMap is empty`() {
         val contents = getModelFileContents("example", "HttpPrefixHeadersOutput+HttpResponseBinding.swift", newTestContext.manifest)
-        val expectedContents =
-            """
-            extension HttpPrefixHeadersOutput: ClientRuntime.HttpResponseBinding {
-                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-                    if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
-                        self.foo = fooHeaderValue
-                    } else {
-                        self.foo = nil
-                    }
-                    let keysForFooMap = httpResponse.headers.dictionary.keys.filter({ ${'$'}0.starts(with: "X-Foo-") })
-                    if (!keysForFooMap.isEmpty) {
-                        var mapMember = [Swift.String: String]()
-                        for headerKey in keysForFooMap {
-                            let mapMemberValue = httpResponse.headers.dictionary[headerKey]?[0]
-                            let mapMemberKey = headerKey.removePrefix("X-Foo-")
-                            mapMember[mapMemberKey] = mapMemberValue
-                        }
-                        self.fooMap = mapMember
-                    } else {
-                        self.fooMap = [:]
-                    }
-                }
+        val expectedContents = """
+extension HttpPrefixHeadersOutput {
+
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, HttpPrefixHeadersOutput, SmithyJSON.Reader> {
+        { httpResponse, responseDocumentClosure in
+            var value = HttpPrefixHeadersOutput()
+            if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
+                value.foo = fooHeaderValue
             }
-            """.trimIndent()
+            let keysForFooMap = httpResponse.headers.dictionary.keys.filter({ ${'$'}0.starts(with: "X-Foo-") })
+            if (!keysForFooMap.isEmpty) {
+                var mapMember = [Swift.String: String]()
+                for headerKey in keysForFooMap {
+                    let mapMemberValue = httpResponse.headers.dictionary[headerKey]?[0]
+                    let mapMemberKey = headerKey.removePrefix("X-Foo-")
+                    mapMember[mapMemberKey] = mapMemberValue
+                }
+                value.fooMap = mapMember
+            } else {
+                value.fooMap = [:]
+            }
+            return value
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }

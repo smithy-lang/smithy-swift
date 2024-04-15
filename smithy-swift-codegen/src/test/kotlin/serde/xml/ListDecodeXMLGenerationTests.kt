@@ -16,15 +16,16 @@ class ListDecodeXMLGenerationTests {
     @Test
     fun `001 wrapped list with xmlName`() {
         val context = setupTests("Isolated/Restxml/xml-lists-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlListXmlNameOutputBody {
+extension XmlListXmlNameOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlListXmlNameOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlListXmlNameOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlListXmlNameOutput()
-            value.renamedListMembers = try reader["renamed"].readListIfPresent(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "item", isFlattened: false)
+            value.renamedListMembers = try reader["renamed"].readListIfPresent(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "item", isFlattened: false)
             return value
         }
     }
@@ -36,15 +37,16 @@ extension XmlListXmlNameOutputBody {
     @Test
     fun `002 wrapped nested list with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-lists-xmlname-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameNestedOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListXmlNameNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlListXmlNameNestedOutputBody {
+extension XmlListXmlNameNestedOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlListXmlNameNestedOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlListXmlNameNestedOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlListXmlNameNestedOutput()
-            value.renamedListMembers = try reader["renamed"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "subItem", isFlattened: false), memberNodeInfo: "item", isFlattened: false)
+            value.renamedListMembers = try reader["renamed"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "subItem", isFlattened: false), memberNodeInfo: "item", isFlattened: false)
             return value
         }
     }
@@ -57,15 +59,16 @@ extension XmlListXmlNameNestedOutputBody {
     fun `003 decode flattened list`() {
         val context = setupTests("Isolated/Restxml/xml-lists-flattened.smithy", "aws.protocoltests.restxml#RestXml")
 
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedListOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedListOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlFlattenedListOutputBody {
+extension XmlFlattenedListOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlFlattenedListOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlFlattenedListOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlFlattenedListOutput()
-            value.myGroceryList = try reader["myGroceryList"].readListIfPresent(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: true)
+            value.myGroceryList = try reader["myGroceryList"].readListIfPresent(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: true)
             return value
         }
     }
@@ -77,18 +80,19 @@ extension XmlFlattenedListOutputBody {
     @Test
     fun `004 decode flattened empty list`() {
         val context = setupTests("Isolated/Restxml/xml-lists-emptyFlattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyFlattenedListsOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyFlattenedListsOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlEmptyFlattenedListsOutputBody {
+extension XmlEmptyFlattenedListsOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlEmptyFlattenedListsOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlEmptyFlattenedListsOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlEmptyFlattenedListsOutput()
-            value.stringList = try reader["stringList"].readListIfPresent(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: true)
-            value.stringSet = try reader["stringSet"].readListIfPresent(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: true)
-            value.integerList = try reader["integerList"].readListIfPresent(memberReadingClosure: Swift.Int.readingClosure, memberNodeInfo: "member", isFlattened: false)
-            value.booleanList = try reader["booleanList"].readListIfPresent(memberReadingClosure: Swift.Bool.readingClosure, memberNodeInfo: "member", isFlattened: false)
+            value.booleanList = try reader["booleanList"].readListIfPresent(memberReadingClosure: Swift.Bool.read(from:), memberNodeInfo: "member", isFlattened: false)
+            value.integerList = try reader["integerList"].readListIfPresent(memberReadingClosure: Swift.Int.read(from:), memberNodeInfo: "member", isFlattened: false)
+            value.stringList = try reader["stringList"].readListIfPresent(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: true)
+            value.stringSet = try reader["stringSet"].readListIfPresent(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: true)
             return value
         }
     }
@@ -100,15 +104,16 @@ extension XmlEmptyFlattenedListsOutputBody {
     @Test
     fun `005 decode nestednested flattened list serialization`() {
         val context = setupTests("Isolated/Restxml/xml-lists-nestednested-flattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedFlattenedListOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedFlattenedListOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlNestedNestedFlattenedListOutputBody {
+extension XmlNestedNestedFlattenedListOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlNestedNestedFlattenedListOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlNestedNestedFlattenedListOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlNestedNestedFlattenedListOutput()
-            value.nestedNestedStringList = try reader["nestedNestedStringList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: true)
+            value.nestedNestedStringList = try reader["nestedNestedStringList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: listReadingClosure(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: true)
             return value
         }
     }
@@ -120,15 +125,16 @@ extension XmlNestedNestedFlattenedListOutputBody {
     @Test
     fun `012 decode list containing map`() {
         val context = setupTests("Isolated/Restxml/xml-lists-contain-map.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListContainMapOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListContainMapOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlListContainMapOutputBody {
+extension XmlListContainMapOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlListContainMapOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlListContainMapOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlListContainMapOutput()
-            value.myList = try reader["myList"].readListIfPresent(memberReadingClosure: SmithyXML.mapReadingClosure(valueReadingClosure: Swift.String.readingClosure, keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+            value.myList = try reader["myList"].readListIfPresent(memberReadingClosure: mapReadingClosure(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
             return value
         }
     }
@@ -140,15 +146,16 @@ extension XmlListContainMapOutputBody {
     @Test
     fun `013 decode flattened list containing map`() {
         val context = setupTests("Isolated/Restxml/xml-lists-flattened-contain-map.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListFlattenedContainMapOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlListFlattenedContainMapOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlListFlattenedContainMapOutputBody {
+extension XmlListFlattenedContainMapOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlListFlattenedContainMapOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlListFlattenedContainMapOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlListFlattenedContainMapOutput()
-            value.myList = try reader["myList"].readListIfPresent(memberReadingClosure: SmithyXML.mapReadingClosure(valueReadingClosure: Swift.String.readingClosure, keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), memberNodeInfo: "member", isFlattened: true)
+            value.myList = try reader["myList"].readListIfPresent(memberReadingClosure: mapReadingClosure(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), memberNodeInfo: "member", isFlattened: true)
             return value
         }
     }

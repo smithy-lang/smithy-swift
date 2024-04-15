@@ -13,8 +13,6 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
         val contents = getTestFileContents("example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
-    /// Serializes a complex error with no message member
     func testRestJsonComplexErrorWithNoMessage() async throws {
         do {
             guard let httpResponse = buildHttpResponse(
@@ -37,10 +35,7 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                 return
             }
 
-            let decoder = ClientRuntime.JSONDecoder()
-            decoder.dateDecodingStrategy = .secondsSince1970
-            decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-            let greetingWithErrorsOutputError = try await responseErrorClosure(GreetingWithErrorsOutputError.self, decoder: decoder)(httpResponse)
+            let greetingWithErrorsOutputError = try await wireResponseErrorClosure(GreetingWithErrorsOutputError.httpErrorBinding, wireResponseDocumentBinding())(httpResponse)
 
             if let actual = greetingWithErrorsOutputError as? ComplexError {
 
@@ -63,7 +58,6 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
             XCTFail(error.localizedDescription)
         }
     }
-}
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -73,8 +67,6 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
         val contents = getTestFileContents("example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
-    /// Serializes a complex error with no message member
     func testRestJsonComplexErrorWithNoMessage() async throws {
         do {
             guard let httpResponse = buildHttpResponse(
@@ -97,10 +89,7 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
                 return
             }
 
-            let decoder = ClientRuntime.JSONDecoder()
-            decoder.dateDecodingStrategy = .secondsSince1970
-            decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-            let greetingWithErrorsOutputError = try await responseErrorClosure(GreetingWithErrorsOutputError.self, decoder: decoder)(httpResponse)
+            let greetingWithErrorsOutputError = try await wireResponseErrorClosure(GreetingWithErrorsOutputError.httpErrorBinding, wireResponseDocumentBinding())(httpResponse)
 
             if let actual = greetingWithErrorsOutputError as? ComplexError {
 
@@ -123,7 +112,6 @@ class GreetingWithErrorsComplexErrorTest: HttpResponseTestBase {
             XCTFail(error.localizedDescription)
         }
     }
-}
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }

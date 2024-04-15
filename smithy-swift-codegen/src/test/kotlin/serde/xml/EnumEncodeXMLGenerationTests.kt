@@ -16,15 +16,16 @@ class EnumEncodeXMLGenerationTests {
     @Test
     fun `001 encode enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsInput+Write.swift")
         val expectedContents = """
 extension XmlEnumsInput {
-    static func writingClosure(_ value: XmlEnumsInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
+
+    static func write(value: XmlEnumsInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
         try writer["fooEnum1"].write(value.fooEnum1)
         try writer["fooEnum2"].write(value.fooEnum2)
         try writer["fooEnum3"].write(value.fooEnum3)
-        try writer["fooEnumList"].writeList(value.fooEnumList, memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: false)
+        try writer["fooEnumList"].writeList(value.fooEnumList, memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.write(value:to:), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """
@@ -34,12 +35,13 @@ extension XmlEnumsInput {
     @Test
     fun `002 encode nested enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedInput+Write.swift")
         val expectedContents = """
 extension XmlEnumsNestedInput {
-    static func writingClosure(_ value: XmlEnumsNestedInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["nestedEnumsList"].writeList(value.nestedEnumsList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+
+    static func write(value: XmlEnumsNestedInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["nestedEnumsList"].writeList(value.nestedEnumsList, memberWritingClosure: listWritingClosure(memberWritingClosure: RestXmlProtocolClientTypes.FooEnum.write(value:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """

@@ -21,7 +21,7 @@ class TimeStampEncodeGenerationTests {
 extension XmlTimestampsInput {
 
     static func write(value: XmlTimestampsInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["dateTime"].writeTimestamp(value.dateTime, format: .dateTime)
         try writer["epochSeconds"].writeTimestamp(value.epochSeconds, format: .epochSeconds)
         try writer["httpDate"].writeTimestamp(value.httpDate, format: .httpDate)
@@ -40,7 +40,7 @@ extension XmlTimestampsInput {
 extension XmlTimestampsNestedInput {
 
     static func write(value: XmlTimestampsNestedInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: listWritingClosure(memberWritingClosure: timestampWritingClosure(format: .epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
     }
 }
@@ -56,7 +56,7 @@ extension XmlTimestampsNestedInput {
 extension XmlTimestampsNestedHTTPDateInput {
 
     static func write(value: XmlTimestampsNestedHTTPDateInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: listWritingClosure(memberWritingClosure: timestampWritingClosure(format: .httpDate), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
     }
 }
@@ -72,7 +72,7 @@ extension XmlTimestampsNestedHTTPDateInput {
 extension XmlTimestampsNestedXmlNameInput {
 
     static func write(value: XmlTimestampsNestedXmlNameInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: listWritingClosure(memberWritingClosure: timestampWritingClosure(format: .epochSeconds), memberNodeInfo: "nestedTag2", isFlattened: false), memberNodeInfo: "nestedTag1", isFlattened: false)
     }
 }
@@ -88,7 +88,7 @@ extension XmlTimestampsNestedXmlNameInput {
 extension XmlTimestampsXmlNameInput {
 
     static func write(value: XmlTimestampsXmlNameInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["dateTime"].writeTimestamp(value.dateTime, format: .dateTime)
         try writer["notNormalName"].writeTimestamp(value.normal, format: .dateTime)
     }

@@ -17,13 +17,14 @@ class BlobDecodeXMLGenerationTests {
     @Test
     fun `decode blob`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlBlobsOutputBody {
+extension XmlBlobsOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlBlobsOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlBlobsOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlBlobsOutput()
             value.data = try reader["data"].readIfPresent()
             return value
@@ -37,15 +38,16 @@ extension XmlBlobsOutputBody {
     @Test
     fun `decode blob nested`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlBlobsNestedOutputBody {
+extension XmlBlobsNestedOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlBlobsNestedOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlBlobsNestedOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlBlobsNestedOutput()
-            value.nestedBlobList = try reader["nestedBlobList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: ClientRuntime.Data.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+            value.nestedBlobList = try reader["nestedBlobList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: ClientRuntime.Data.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
             return value
         }
     }

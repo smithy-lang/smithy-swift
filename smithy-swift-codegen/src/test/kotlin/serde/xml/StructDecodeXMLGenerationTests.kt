@@ -17,15 +17,16 @@ class StructDecodeXMLGenerationTests {
     fun `XmlWrappedListOutputBody decodable`() {
         val context = setupTests("Isolated/Restxml/xml-lists-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
 
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlWrappedListOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlWrappedListOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlWrappedListOutputBody {
+extension XmlWrappedListOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlWrappedListOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlWrappedListOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlWrappedListOutput()
-            value.myGroceryList = try reader["myGroceryList"].readListIfPresent(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: false)
+            value.myGroceryList = try reader["myGroceryList"].readListIfPresent(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false)
             return value
         }
     }
@@ -38,37 +39,28 @@ extension XmlWrappedListOutputBody {
     fun `SimpleScalarPropertiesOutputBody decodable`() {
         val context = setupTests("Isolated/Restxml/xml-scalar.smithy", "aws.protocoltests.restxml#RestXml")
 
-        val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesOutput+HttpResponseBinding.swift")
         val expectedContents = """
-struct SimpleScalarPropertiesOutputBody: Swift.Equatable {
-    let stringValue: Swift.String?
-    let trueBooleanValue: Swift.Bool?
-    let falseBooleanValue: Swift.Bool?
-    let byteValue: Swift.Int8?
-    let shortValue: Swift.Int16?
-    let integerValue: Swift.Int?
-    let longValue: Swift.Int?
-    let floatValue: Swift.Float?
-    let `protocol`: Swift.String?
-    let doubleValue: Swift.Double?
-}
+extension SimpleScalarPropertiesOutput {
 
-extension SimpleScalarPropertiesOutputBody {
-
-    static var readingClosure: SmithyReadWrite.ReadingClosure<SimpleScalarPropertiesOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, SimpleScalarPropertiesOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = SimpleScalarPropertiesOutput()
-            value.stringValue = try reader["stringValue"].readIfPresent()
-            value.trueBooleanValue = try reader["trueBooleanValue"].readIfPresent()
-            value.falseBooleanValue = try reader["falseBooleanValue"].readIfPresent()
+            if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
+                value.foo = fooHeaderValue
+            }
             value.byteValue = try reader["byteValue"].readIfPresent()
-            value.shortValue = try reader["shortValue"].readIfPresent()
+            value.doubleValue = try reader["DoubleDribble"].readIfPresent()
+            value.falseBooleanValue = try reader["falseBooleanValue"].readIfPresent()
+            value.floatValue = try reader["floatValue"].readIfPresent()
             value.integerValue = try reader["integerValue"].readIfPresent()
             value.longValue = try reader["longValue"].readIfPresent()
-            value.floatValue = try reader["floatValue"].readIfPresent()
             value.`protocol` = try reader["protocol"].readIfPresent()
-            value.doubleValue = try reader["DoubleDribble"].readIfPresent()
+            value.shortValue = try reader["shortValue"].readIfPresent()
+            value.stringValue = try reader["stringValue"].readIfPresent()
+            value.trueBooleanValue = try reader["trueBooleanValue"].readIfPresent()
             return value
         }
     }
@@ -80,15 +72,16 @@ extension SimpleScalarPropertiesOutputBody {
     @Test
     fun `nestednested wrapped list deserialization`() {
         val context = setupTests("Isolated/Restxml/xml-lists-nestednested-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedWrappedListOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedNestedWrappedListOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlNestedNestedWrappedListOutputBody {
+extension XmlNestedNestedWrappedListOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlNestedNestedWrappedListOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlNestedNestedWrappedListOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlNestedNestedWrappedListOutput()
-            value.nestedNestedStringList = try reader["nestedNestedStringList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+            value.nestedNestedStringList = try reader["nestedNestedStringList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: listReadingClosure(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
             return value
         }
     }
@@ -100,18 +93,19 @@ extension XmlNestedNestedWrappedListOutputBody {
     @Test
     fun `empty lists decode`() {
         val context = setupTests("Isolated/Restxml/xml-lists-empty.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyListsOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEmptyListsOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlEmptyListsOutputBody {
+extension XmlEmptyListsOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlEmptyListsOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlEmptyListsOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlEmptyListsOutput()
-            value.stringList = try reader["stringList"].readListIfPresent(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: false)
-            value.stringSet = try reader["stringSet"].readListIfPresent(memberReadingClosure: Swift.String.readingClosure, memberNodeInfo: "member", isFlattened: false)
-            value.integerList = try reader["integerList"].readListIfPresent(memberReadingClosure: Swift.Int.readingClosure, memberNodeInfo: "member", isFlattened: false)
-            value.booleanList = try reader["booleanList"].readListIfPresent(memberReadingClosure: Swift.Bool.readingClosure, memberNodeInfo: "member", isFlattened: false)
+            value.booleanList = try reader["booleanList"].readListIfPresent(memberReadingClosure: Swift.Bool.read(from:), memberNodeInfo: "member", isFlattened: false)
+            value.integerList = try reader["integerList"].readListIfPresent(memberReadingClosure: Swift.Int.read(from:), memberNodeInfo: "member", isFlattened: false)
+            value.stringList = try reader["stringList"].readListIfPresent(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false)
+            value.stringSet = try reader["stringSet"].readListIfPresent(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false)
             return value
         }
     }

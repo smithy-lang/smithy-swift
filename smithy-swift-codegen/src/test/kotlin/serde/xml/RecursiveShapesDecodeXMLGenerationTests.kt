@@ -16,15 +16,16 @@ class RecursiveShapesDecodeXMLGenerationTests {
     @Test
     fun `decode recursive shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlRecursiveShapesOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlRecursiveShapesOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlRecursiveShapesOutputBody {
+extension XmlRecursiveShapesOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlRecursiveShapesOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlRecursiveShapesOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlRecursiveShapesOutput()
-            value.nested = try reader["nested"].readIfPresent(readingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.readingClosure)
+            value.nested = try reader["nested"].readIfPresent(with: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.read(from:))
             return value
         }
     }
@@ -36,15 +37,16 @@ extension XmlRecursiveShapesOutputBody {
     @Test
     fun `decode recursive nested shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlNestedRecursiveShapesOutputBody {
+extension XmlNestedRecursiveShapesOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlNestedRecursiveShapesOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlNestedRecursiveShapesOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlNestedRecursiveShapesOutput()
-            value.nestedRecursiveList = try reader["nestedRecursiveList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+            value.nestedRecursiveList = try reader["nestedRecursiveList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
             return value
         }
     }

@@ -16,11 +16,12 @@ class BlobEncodeXMLGenerationTests {
     @Test
     fun `encode blob`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsInput+Write.swift")
         val expectedContents = """
 extension XmlBlobsInput {
-    static func writingClosure(_ value: XmlBlobsInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
+
+    static func write(value: XmlBlobsInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
         try writer["data"].write(value.data)
     }
 }
@@ -31,12 +32,13 @@ extension XmlBlobsInput {
     @Test
     fun `encode nested blob`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedInput+Write.swift")
         val expectedContents = """
 extension XmlBlobsNestedInput {
-    static func writingClosure(_ value: XmlBlobsNestedInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
-        try writer["nestedBlobList"].writeList(value.nestedBlobList, memberWritingClosure: SmithyXML.listWritingClosure(memberWritingClosure: ClientRuntime.Data.writingClosure(_:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+
+    static func write(value: XmlBlobsNestedInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
+        try writer["nestedBlobList"].writeList(value.nestedBlobList, memberWritingClosure: listWritingClosure(memberWritingClosure: ClientRuntime.Data.write(value:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """

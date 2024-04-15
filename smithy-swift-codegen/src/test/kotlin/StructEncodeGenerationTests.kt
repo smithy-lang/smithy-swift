@@ -45,7 +45,7 @@ class StructEncodeGenerationTests {
 extension SmokeTestInput {
 
     static func write(value: SmokeTestInput?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["payload1"].write(value.payload1)
         try writer["payload2"].write(value.payload2)
         try writer["payload3"].write(value.payload3, writingClosure: Nested.write(value:to:))
@@ -63,15 +63,15 @@ extension SmokeTestInput {
 extension Nested4 {
 
     static func write(value: Nested4?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["intList"].writeList(value.intList, memberWritingClosure: Swift.Int.write(value:to:), memberNodeInfo: "member", isFlattened: false)
         try writer["intMap"].writeMap(value.intMap, valueWritingClosure: Swift.Int.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["member1"].write(value.member1)
         try writer["stringMap"].writeMap(value.stringMap, valueWritingClosure: listWritingClosure(memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 
-    static func read(from reader: SmithyJSON.Reader) throws -> Nested4? {
-        guard reader.hasContent else { return nil }
+    static func read(from reader: SmithyJSON.Reader) throws -> Nested4 {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
         var value = Nested4()
         value.member1 = try reader["member1"].readIfPresent()
         value.intList = try reader["intList"].readListIfPresent(memberReadingClosure: Swift.Int.read(from:), memberNodeInfo: "member", isFlattened: false)
@@ -92,7 +92,7 @@ extension Nested4 {
 extension TimestampInputInput {
 
     static func write(value: TimestampInputInput?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["dateTime"].writeTimestamp(value.dateTime, format: .dateTime)
         try writer["epochSeconds"].writeTimestamp(value.epochSeconds, format: .epochSeconds)
         try writer["httpDate"].writeTimestamp(value.httpDate, format: .httpDate)
@@ -113,7 +113,7 @@ extension TimestampInputInput {
 extension MapInputInput {
 
     static func write(value: MapInputInput?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["blobMap"].writeMap(value.blobMap, valueWritingClosure: ClientRuntime.Data.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["dateMap"].writeMap(value.dateMap, valueWritingClosure: timestampWritingClosure(format: .httpDate), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["enumMap"].writeMap(value.enumMap, valueWritingClosure: MyEnum.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
@@ -133,7 +133,7 @@ extension MapInputInput {
 extension EnumInputInput {
 
     static func write(value: EnumInputInput?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["nestedWithEnum"].write(value.nestedWithEnum, writingClosure: NestedEnum.write(value:to:))
     }
 }
@@ -146,12 +146,12 @@ extension EnumInputInput {
 extension NestedEnum {
 
     static func write(value: NestedEnum?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["myEnum"].write(value.myEnum)
     }
 
-    static func read(from reader: SmithyJSON.Reader) throws -> NestedEnum? {
-        guard reader.hasContent else { return nil }
+    static func read(from reader: SmithyJSON.Reader) throws -> NestedEnum {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
         var value = NestedEnum()
         value.myEnum = try reader["myEnum"].readIfPresent()
         return value
@@ -173,16 +173,16 @@ extension NestedEnum {
 extension RecursiveShapesInputOutputNested1 {
 
     static func write(value: RecursiveShapesInputOutputNested1?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["foo"].write(value.foo)
         try writer["nested"].write(value.nested, writingClosure: RecursiveShapesInputOutputNested2.write(value:to:))
     }
 
-    static func read(from reader: SmithyJSON.Reader) throws -> RecursiveShapesInputOutputNested1? {
-        guard reader.hasContent else { return nil }
+    static func read(from reader: SmithyJSON.Reader) throws -> RecursiveShapesInputOutputNested1 {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
         var value = RecursiveShapesInputOutputNested1()
         value.foo = try reader["foo"].readIfPresent()
-        value.nested = try reader["nested"].readIfPresent(readingClosure: RecursiveShapesInputOutputNested2.read(from:))
+        value.nested = try reader["nested"].readIfPresent(with: RecursiveShapesInputOutputNested2.read(from:))
         return value
     }
 }
@@ -202,16 +202,16 @@ extension RecursiveShapesInputOutputNested1 {
 extension RecursiveShapesInputOutputNested2 {
 
     static func write(value: RecursiveShapesInputOutputNested2?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["bar"].write(value.bar)
         try writer["recursiveMember"].write(value.recursiveMember, writingClosure: RecursiveShapesInputOutputNested1.write(value:to:))
     }
 
-    static func read(from reader: SmithyJSON.Reader) throws -> RecursiveShapesInputOutputNested2? {
-        guard reader.hasContent else { return nil }
+    static func read(from reader: SmithyJSON.Reader) throws -> RecursiveShapesInputOutputNested2 {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
         var value = RecursiveShapesInputOutputNested2()
         value.bar = try reader["bar"].readIfPresent()
-        value.recursiveMember = try reader["recursiveMember"].readIfPresent(readingClosure: RecursiveShapesInputOutputNested1.read(from:))
+        value.recursiveMember = try reader["recursiveMember"].readIfPresent(with: RecursiveShapesInputOutputNested1.read(from:))
         return value
     }
 }
@@ -227,11 +227,11 @@ extension RecursiveShapesInputOutputNested2 {
 extension JsonListsInput {
 
     static func write(value: JsonListsInput?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["booleanList"].writeList(value.booleanList, memberWritingClosure: Swift.Bool.write(value:to:), memberNodeInfo: "member", isFlattened: false)
         try writer["integerList"].writeList(value.integerList, memberWritingClosure: Swift.Int.write(value:to:), memberNodeInfo: "member", isFlattened: false)
         try writer["nestedStringList"].writeList(value.nestedStringList, memberWritingClosure: listWritingClosure(memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
-        try writer["sparseStringList"].writeList(value.sparseStringList, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+        try writer["sparseStringList"].writeList(value.sparseStringList, memberWritingClosure: sparseFormOf(writingClosure: Swift.String.write(value:to:)), memberNodeInfo: "member", isFlattened: false)
         try writer["stringList"].writeList(value.stringList, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
         try writer["stringSet"].writeList(value.stringSet, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
         try writer["timestampList"].writeList(value.timestampList, memberWritingClosure: timestampWritingClosure(format: .dateTime), memberNodeInfo: "member", isFlattened: false)
@@ -249,15 +249,15 @@ extension JsonListsInput {
 extension JsonMapsInput {
 
     static func write(value: JsonMapsInput?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["denseBooleanMap"].writeMap(value.denseBooleanMap, valueWritingClosure: Swift.Bool.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["denseNumberMap"].writeMap(value.denseNumberMap, valueWritingClosure: Swift.Int.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["denseStringMap"].writeMap(value.denseStringMap, valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["denseStructMap"].writeMap(value.denseStructMap, valueWritingClosure: GreetingStruct.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-        try writer["sparseBooleanMap"].writeMap(value.sparseBooleanMap, valueWritingClosure: Swift.Bool.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-        try writer["sparseNumberMap"].writeMap(value.sparseNumberMap, valueWritingClosure: Swift.Int.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-        try writer["sparseStringMap"].writeMap(value.sparseStringMap, valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-        try writer["sparseStructMap"].writeMap(value.sparseStructMap, valueWritingClosure: GreetingStruct.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["sparseBooleanMap"].writeMap(value.sparseBooleanMap, valueWritingClosure: sparseFormOf(writingClosure: Swift.Bool.write(value:to:)), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["sparseNumberMap"].writeMap(value.sparseNumberMap, valueWritingClosure: sparseFormOf(writingClosure: Swift.Int.write(value:to:)), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["sparseStringMap"].writeMap(value.sparseStringMap, valueWritingClosure: sparseFormOf(writingClosure: Swift.String.write(value:to:)), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["sparseStructMap"].writeMap(value.sparseStructMap, valueWritingClosure: sparseFormOf(writingClosure: GreetingStruct.write(value:to:)), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }
 """
@@ -272,7 +272,7 @@ extension JsonMapsInput {
 extension PrimitiveTypesInput {
 
     static func write(value: PrimitiveTypesInput?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["booleanVal"].write(value.booleanVal)
         try writer["byteVal"].write(value.byteVal)
         try writer["doubleVal"].write(value.doubleVal)

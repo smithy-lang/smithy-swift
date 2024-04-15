@@ -16,18 +16,19 @@ class TimeStampDecodeGenerationTests {
     @Test
     fun `001 decode all timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlTimestampsOutputBody {
+extension XmlTimestampsOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlTimestampsOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlTimestampsOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlTimestampsOutput()
-            value.normal = try reader["normal"].readTimestampIfPresent(format: .dateTime)
             value.dateTime = try reader["dateTime"].readTimestampIfPresent(format: .dateTime)
             value.epochSeconds = try reader["epochSeconds"].readTimestampIfPresent(format: .epochSeconds)
             value.httpDate = try reader["httpDate"].readTimestampIfPresent(format: .httpDate)
+            value.normal = try reader["normal"].readTimestampIfPresent(format: .dateTime)
             return value
         }
     }
@@ -39,15 +40,16 @@ extension XmlTimestampsOutputBody {
     @Test
     fun `002 decode nested timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlTimestampsNestedOutputBody {
+extension XmlTimestampsNestedOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlTimestampsNestedOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlTimestampsNestedOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlTimestampsNestedOutput()
-            value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: SmithyXML.timestampReadingClosure(format: .epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+            value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: timestampReadingClosure(format: .epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
             return value
         }
     }
@@ -59,15 +61,16 @@ extension XmlTimestampsNestedOutputBody {
     @Test
     fun `003 decode nested timestamps HttpDate`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedHTTPDateOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedHTTPDateOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlTimestampsNestedHTTPDateOutputBody {
+extension XmlTimestampsNestedHTTPDateOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlTimestampsNestedHTTPDateOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlTimestampsNestedHTTPDateOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlTimestampsNestedHTTPDateOutput()
-            value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: SmithyXML.timestampReadingClosure(format: .httpDate), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+            value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: timestampReadingClosure(format: .httpDate), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
             return value
         }
     }
@@ -79,15 +82,16 @@ extension XmlTimestampsNestedHTTPDateOutputBody {
     @Test
     fun `004 decode nested timestamps xmlName`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedXmlNameOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedXmlNameOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlTimestampsNestedXmlNameOutputBody {
+extension XmlTimestampsNestedXmlNameOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlTimestampsNestedXmlNameOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
+    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlTimestampsNestedXmlNameOutput, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            let responseReader = try await responseDocumentClosure(httpResponse)
+            let reader = responseReader
             var value = XmlTimestampsNestedXmlNameOutput()
-            value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: SmithyXML.timestampReadingClosure(format: .epochSeconds), memberNodeInfo: "nestedTag2", isFlattened: false), memberNodeInfo: "nestedTag1", isFlattened: false)
+            value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: timestampReadingClosure(format: .epochSeconds), memberNodeInfo: "nestedTag2", isFlattened: false), memberNodeInfo: "nestedTag1", isFlattened: false)
             return value
         }
     }

@@ -43,15 +43,15 @@ class StructDecodeGenerationTests {
 extension ExampleClientTypes.Nested4 {
 
     static func write(value: ExampleClientTypes.Nested4?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["intList"].writeList(value.intList, memberWritingClosure: Swift.Int.write(value:to:), memberNodeInfo: "member", isFlattened: false)
         try writer["intMap"].writeMap(value.intMap, valueWritingClosure: Swift.Int.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["member1"].write(value.member1)
         try writer["stringMap"].writeMap(value.stringMap, valueWritingClosure: listWritingClosure(memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 
-    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.Nested4? {
-        guard reader.hasContent else { return nil }
+    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.Nested4 {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
         var value = ExampleClientTypes.Nested4()
         value.member1 = try reader["member1"].readIfPresent()
         value.intList = try reader["intList"].readListIfPresent(memberReadingClosure: Swift.Int.read(from:), memberNodeInfo: "member", isFlattened: false)
@@ -76,16 +76,16 @@ extension ExampleClientTypes.Nested4 {
 extension ExampleClientTypes.RecursiveShapesInputOutputNested1 {
 
     static func write(value: ExampleClientTypes.RecursiveShapesInputOutputNested1?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["foo"].write(value.foo)
         try writer["nested"].write(value.nested, writingClosure: ExampleClientTypes.RecursiveShapesInputOutputNested2.write(value:to:))
     }
 
-    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.RecursiveShapesInputOutputNested1? {
-        guard reader.hasContent else { return nil }
+    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.RecursiveShapesInputOutputNested1 {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
         var value = ExampleClientTypes.RecursiveShapesInputOutputNested1()
         value.foo = try reader["foo"].readIfPresent()
-        value.nested = try reader["nested"].readIfPresent(readingClosure: ExampleClientTypes.RecursiveShapesInputOutputNested2.read(from:))
+        value.nested = try reader["nested"].readIfPresent(with: ExampleClientTypes.RecursiveShapesInputOutputNested2.read(from:))
         return value
     }
 }
@@ -105,16 +105,16 @@ extension ExampleClientTypes.RecursiveShapesInputOutputNested1 {
 extension ExampleClientTypes.RecursiveShapesInputOutputNested2 {
 
     static func write(value: ExampleClientTypes.RecursiveShapesInputOutputNested2?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["bar"].write(value.bar)
         try writer["recursiveMember"].write(value.recursiveMember, writingClosure: ExampleClientTypes.RecursiveShapesInputOutputNested1.write(value:to:))
     }
 
-    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.RecursiveShapesInputOutputNested2? {
-        guard reader.hasContent else { return nil }
+    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.RecursiveShapesInputOutputNested2 {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
         var value = ExampleClientTypes.RecursiveShapesInputOutputNested2()
         value.bar = try reader["bar"].readIfPresent()
-        value.recursiveMember = try reader["recursiveMember"].readIfPresent(readingClosure: ExampleClientTypes.RecursiveShapesInputOutputNested1.read(from:))
+        value.recursiveMember = try reader["recursiveMember"].readIfPresent(with: ExampleClientTypes.RecursiveShapesInputOutputNested1.read(from:))
         return value
     }
 }
