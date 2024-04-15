@@ -10,6 +10,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
@@ -38,7 +39,7 @@ class MockHttpRestJsonProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat,
         XMLHttpResponseBindingOutputGenerator(),
         MockHttpResponseBindingErrorGenerator(),
-        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat)
+        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat, ClientRuntimeTypes.Core.MockBaseError)
     )
     override val shouldRenderDecodableBodyStructForInputShapes = true
     override val shouldRenderEncodableConformance = false

@@ -29,12 +29,6 @@ object ClientRuntimeTypes {
         val HttpContextBuilder = runtimeSymbol("HttpContextBuilder")
     }
 
-    object Serde {
-        val Key = runtimeSymbol("Key")
-        val JSONDecoder = runtimeSymbol("JSONDecoder")
-        val JSONEncoder = runtimeSymbol("JSONEncoder")
-    }
-
     object EventStream {
         val MessageDecoder = runtimeSymbol("MessageDecoder")
         val ExceptionParams = runtimeSymbol("EventStream.MessageType.ExceptionParams")
@@ -106,6 +100,7 @@ object ClientRuntimeTypes {
         val DateFormatter = runtimeSymbol("DateFormatter")
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")
+        val MockBaseError = runtimeSymbol("MockBaseError")
     }
 }
 

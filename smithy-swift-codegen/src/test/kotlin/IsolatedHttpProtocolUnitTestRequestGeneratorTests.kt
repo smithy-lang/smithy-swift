@@ -13,8 +13,6 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
         val contents = getFileContents(context.manifest, "/RestJsonTests/HttpRequestWithFloatLabelsRequestTest.swift")
 
         val expectedContents = """
-class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
-    /// Supports handling NaN float label values.
     func testRestJsonSupportsNaNFloatLabels() async throws {
         let urlPrefix = urlPrefixFromHost(host: "")
         let hostOnly = hostOnlyFromHost(host: "")
@@ -26,15 +24,40 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
             resolvedHost: ""
         )
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-
         let input = HttpRequestWithFloatLabelsInput(
             double: Swift.Double.nan,
             float: Swift.Float.nan
         )
-        """.trimIndent()
+        let context = HttpContextBuilder()
+                      .withMethod(value: .get)
+                      .build()
+        var operationStack = OperationStack<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(id: "RestJsonSupportsNaNFloatLabels")
+        operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(urlPrefix: urlPrefix, HttpRequestWithFloatLabelsInput.urlPathProvider(_:)))
+        operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(host: hostOnly))
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<HttpRequestWithFloatLabelsOutput> in
+            input.withMethod(context.getMethod())
+            input.withPath(context.getPath())
+            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withHost(host)
+            return try await next.handle(context: context, input: input)
+        }
+        operationStack.deserializeStep.intercept(
+            position: .after,
+            middleware: MockDeserializeMiddleware<HttpRequestWithFloatLabelsOutput>(
+                id: "TestDeserializeMiddleware",
+                responseClosure: wireResponseOutputClosure(HttpRequestWithFloatLabelsOutput.httpBinding, wireResponseDocumentBinding()),
+                callback: { context, actual in
+                    try await self.assertEqual(expected, actual)
+                    return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: HttpRequestWithFloatLabelsOutput())
+                }
+            )
+        )
+        _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler() { (context, request) in
+            XCTFail("Deserialize was mocked out, this should fail")
+            throw SmithyTestUtilError("Mock handler unexpectedly failed")
+        })
+    }
+"""
 
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -44,28 +67,52 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         val context = setupTests("Isolated/number-type-test.smithy", "aws.protocoltests.restjson#RestJson")
         val contents = getFileContents(context.manifest, "/RestJsonTests/HttpRequestWithFloatLabelsRequestTest.swift")
 
-        val expectedContents =
-            """
+        val expectedContents = """
     func testRestJsonSupportsInfinityFloatLabels() async throws {
-            let urlPrefix = urlPrefixFromHost(host: "")
-            let hostOnly = hostOnlyFromHost(host: "")
-            let expected = buildExpectedHttpRequest(
-                method: .get,
-                path: "/FloatHttpLabels/Infinity/Infinity",
-                body: nil,
-                host: "",
-                resolvedHost: ""
-            )
+        let urlPrefix = urlPrefixFromHost(host: "")
+        let hostOnly = hostOnlyFromHost(host: "")
+        let expected = buildExpectedHttpRequest(
+            method: .get,
+            path: "/FloatHttpLabels/Infinity/Infinity",
+            body: nil,
+            host: "",
+            resolvedHost: ""
+        )
 
-            let decoder = ClientRuntime.JSONDecoder()
-            decoder.dateDecodingStrategy = .secondsSince1970
-            decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-
-            let input = HttpRequestWithFloatLabelsInput(
-                double: Swift.Double.infinity,
-                float: Swift.Float.infinity
+        let input = HttpRequestWithFloatLabelsInput(
+            double: Swift.Double.infinity,
+            float: Swift.Float.infinity
+        )
+        let context = HttpContextBuilder()
+                      .withMethod(value: .get)
+                      .build()
+        var operationStack = OperationStack<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(id: "RestJsonSupportsInfinityFloatLabels")
+        operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(urlPrefix: urlPrefix, HttpRequestWithFloatLabelsInput.urlPathProvider(_:)))
+        operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(host: hostOnly))
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<HttpRequestWithFloatLabelsOutput> in
+            input.withMethod(context.getMethod())
+            input.withPath(context.getPath())
+            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withHost(host)
+            return try await next.handle(context: context, input: input)
+        }
+        operationStack.deserializeStep.intercept(
+            position: .after,
+            middleware: MockDeserializeMiddleware<HttpRequestWithFloatLabelsOutput>(
+                id: "TestDeserializeMiddleware",
+                responseClosure: wireResponseOutputClosure(HttpRequestWithFloatLabelsOutput.httpBinding, wireResponseDocumentBinding()),
+                callback: { context, actual in
+                    try await self.assertEqual(expected, actual)
+                    return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: HttpRequestWithFloatLabelsOutput())
+                }
             )
-            """.trimIndent()
+        )
+        _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler() { (context, request) in
+            XCTFail("Deserialize was mocked out, this should fail")
+            throw SmithyTestUtilError("Mock handler unexpectedly failed")
+        })
+    }
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -74,28 +121,53 @@ class HttpRequestWithFloatLabelsRequestTest: HttpRequestTestBase {
         val context = setupTests("Isolated/number-type-test.smithy", "aws.protocoltests.restjson#RestJson")
         val contents = getFileContents(context.manifest, "/RestJsonTests/HttpRequestWithFloatLabelsRequestTest.swift")
 
-        val expectedContents =
-            """
+        val expectedContents = """
     func testRestJsonSupportsNegativeInfinityFloatLabels() async throws {
-            let urlPrefix = urlPrefixFromHost(host: "")
-            let hostOnly = hostOnlyFromHost(host: "")
-            let expected = buildExpectedHttpRequest(
-                method: .get,
-                path: "/FloatHttpLabels/-Infinity/-Infinity",
-                body: nil,
-                host: "",
-                resolvedHost: ""
+        let urlPrefix = urlPrefixFromHost(host: "")
+        let hostOnly = hostOnlyFromHost(host: "")
+        let expected = buildExpectedHttpRequest(
+            method: .get,
+            path: "/FloatHttpLabels/-Infinity/-Infinity",
+            body: nil,
+            host: "",
+            resolvedHost: ""
+        )
+
+        let input = HttpRequestWithFloatLabelsInput(
+            double: -Swift.Double.infinity,
+            float: -Swift.Float.infinity
+        )
+        let context = HttpContextBuilder()
+                      .withMethod(value: .get)
+                      .build()
+        var operationStack = OperationStack<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(id: "RestJsonSupportsNegativeInfinityFloatLabels")
+        operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(urlPrefix: urlPrefix, HttpRequestWithFloatLabelsInput.urlPathProvider(_:)))
+        operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(host: hostOnly))
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<HttpRequestWithFloatLabelsOutput> in
+            input.withMethod(context.getMethod())
+            input.withPath(context.getPath())
+            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withHost(host)
+            return try await next.handle(context: context, input: input)
+        }
+        operationStack.deserializeStep.intercept(
+            position: .after,
+            middleware: MockDeserializeMiddleware<HttpRequestWithFloatLabelsOutput>(
+                id: "TestDeserializeMiddleware",
+                responseClosure: wireResponseOutputClosure(HttpRequestWithFloatLabelsOutput.httpBinding, wireResponseDocumentBinding()),
+                callback: { context, actual in
+                    try await self.assertEqual(expected, actual)
+                    return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: HttpRequestWithFloatLabelsOutput())
+                }
             )
-    
-            let decoder = ClientRuntime.JSONDecoder()
-            decoder.dateDecodingStrategy = .secondsSince1970
-            decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-    
-            let input = HttpRequestWithFloatLabelsInput(
-                double: -Swift.Double.infinity,
-                float: -Swift.Float.infinity
-            )
-            """.trimIndent()
+        )
+        _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler() { (context, request) in
+            XCTFail("Deserialize was mocked out, this should fail")
+            throw SmithyTestUtilError("Mock handler unexpectedly failed")
+        })
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -120,10 +192,7 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: InputAndOutputWithHeadersOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: InputAndOutputWithHeadersOutput = try await wireResponseOutputClosure(InputAndOutputWithHeadersOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
 
         let expected = InputAndOutputWithHeadersOutput(
             headerDouble: Swift.Double.nan,
@@ -181,13 +250,8 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
             resolvedHost: ""
         )
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-
         let input = DocumentTypeInput(
-            documentValue: try decoder.decode(Document.self, from:
-                ""${'"'}
+            documentValue: try Document.document(from: Data(""${'"'}
                 [
                     true,
                     "hi",
@@ -204,10 +268,44 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
                         }
                     }
                 ]
-                ""${'"'}.data(using: .utf8)!)
-                ,
-                stringValue: "string"
+            ""${'"'}.utf8))
+            ,
+            stringValue: "string"
+        )
+        let context = HttpContextBuilder()
+                      .withMethod(value: .put)
+                      .build()
+        var operationStack = OperationStack<DocumentTypeInput, DocumentTypeOutput>(id: "DocumentInputWithList")
+        operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<DocumentTypeInput, DocumentTypeOutput>(urlPrefix: urlPrefix, DocumentTypeInput.urlPathProvider(_:)))
+        operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<DocumentTypeInput, DocumentTypeOutput>(host: hostOnly))
+        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<DocumentTypeOutput> in
+            input.withMethod(context.getMethod())
+            input.withPath(context.getPath())
+            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withHost(host)
+            return try await next.handle(context: context, input: input)
+        }
+        operationStack.deserializeStep.intercept(
+            position: .after,
+            middleware: MockDeserializeMiddleware<DocumentTypeOutput>(
+                id: "TestDeserializeMiddleware",
+                responseClosure: wireResponseOutputClosure(DocumentTypeOutput.httpBinding, wireResponseDocumentBinding()),
+                callback: { context, actual in
+                    try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
+                        XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
+                        XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
+                        try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: .json)
+                    })
+                    return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: DocumentTypeOutput())
+                }
             )
+        )
+        _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler() { (context, request) in
+            XCTFail("Deserialize was mocked out, this should fail")
+            throw SmithyTestUtilError("Mock handler unexpectedly failed")
+        })
+    }
+}
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }

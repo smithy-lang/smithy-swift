@@ -50,7 +50,7 @@ class UnionEncodeGeneratorTests {
 extension JsonUnionsInput {
 
     static func write(value: JsonUnionsInput?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         try writer["contents"].write(value.contents, writingClosure: ExampleClientTypes.MyUnion.write(value:to:))
     }
 }
@@ -66,7 +66,7 @@ extension JsonUnionsInput {
 extension ExampleClientTypes.MyUnion {
 
     static func write(value: ExampleClientTypes.MyUnion?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         switch value {
             case let .blobvalue(blobvalue):
                 try writer["blobValue"].write(blobvalue)
@@ -93,8 +93,8 @@ extension ExampleClientTypes.MyUnion {
         }
     }
 
-    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.MyUnion? {
-        guard reader.hasContent else { return nil }
+    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.MyUnion {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
         let name = reader.children.first { ${'$'}0.nodeInfo.name != "__type" }?.nodeInfo.name
         switch name {
             case "stringValue":
@@ -116,7 +116,7 @@ extension ExampleClientTypes.MyUnion {
             case "mapValue":
                 return .mapvalue(try reader["mapValue"].readMap(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false))
             case "structureValue":
-                return .structurevalue(try reader["structureValue"].read(readingClosure: ExampleClientTypes.GreetingWithErrorsOutput.read(from:)))
+                return .structurevalue(try reader["structureValue"].read(with: ExampleClientTypes.GreetingWithErrorsOutput.read(from:)))
             default:
                 return .sdkUnknown(name ?? "")
         }
@@ -134,7 +134,7 @@ extension ExampleClientTypes.MyUnion {
 extension ExampleClientTypes.IndirectEnum {
 
     static func write(value: ExampleClientTypes.IndirectEnum?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { writer.detach(); return }
+        guard let value else { return }
         switch value {
             case let .other(other):
                 try writer["other"].write(other)
@@ -145,12 +145,12 @@ extension ExampleClientTypes.IndirectEnum {
         }
     }
 
-    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.IndirectEnum? {
-        guard reader.hasContent else { return nil }
+    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.IndirectEnum {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
         let name = reader.children.first { ${'$'}0.nodeInfo.name != "__type" }?.nodeInfo.name
         switch name {
             case "some":
-                return .some(try reader["some"].read(readingClosure: ExampleClientTypes.IndirectEnum.read(from:)))
+                return .some(try reader["some"].read(with: ExampleClientTypes.IndirectEnum.read(from:)))
             case "other":
                 return .other(try reader["other"].read())
             default:

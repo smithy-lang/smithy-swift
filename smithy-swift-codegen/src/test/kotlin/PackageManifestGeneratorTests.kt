@@ -70,41 +70,7 @@ class PackageManifestGeneratorTests {
         writePackageManifest(settings, manifest, mockDependencies, true)
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
-        packageManifest.shouldContain(
-            "targets: [\n" +
-                "        .target(\n" +
-                "            name: \"MockSDK\",\n" +
-                "            dependencies: [\n" +
-                "                .product(\n" +
-                "                    name: \"ComplexModule\",\n" +
-                "                    package: \"swift-numerics\"\n" +
-                "                ),\n" +
-                "                .product(\n" +
-                "                    name: \"ClientRuntime\",\n" +
-                "                    package: \"smithy-swift\"\n" +
-                "                ),\n" +
-                "            ],\n" +
-                "            path: \"./MockSDK\"\n" +
-                "        ),\n" +
-                "        .testTarget(\n" +
-                "            name: \"MockSDKTests\",\n" +
-                "            dependencies: [\n" +
-                "                \"MockSDK\",\n" +
-                "                .product(name: \"SmithyTestUtil\", package: \"smithy-swift\")\n" +
-                "            ],\n" +
-                "            path: \"./MockSDKTests\"\n" +
-                "        )\n" +
-                "    ]"
-        )
-    }
-
-    @Test
-    fun `it renders package manifest file without test target`() {
-        writePackageManifest(settings, manifest, mockDependencies, false)
-        val packageManifest = manifest.getFileString("Package.swift").get()
-        assertNotNull(packageManifest)
-        packageManifest.shouldContain(
-"""
+        packageManifest.shouldContain("""
     targets: [
         .target(
             name: "MockSDK",
@@ -114,7 +80,41 @@ class PackageManifestGeneratorTests {
                     package: "swift-numerics"
                 ),
                 .product(
-                    name: "ClientRuntime",
+                    name: "SmithyReadWrite",
+                    package: "smithy-swift"
+                ),
+            ],
+            path: "./MockSDK"
+        ),
+        .testTarget(
+            name: "MockSDKTests",
+            dependencies: [
+                "MockSDK",
+                .product(name: "SmithyTestUtil", package: "smithy-swift")
+            ],
+            path: "./MockSDKTests"
+        )
+    ]
+"""
+        )
+    }
+
+    @Test
+    fun `it renders package manifest file without test target`() {
+        writePackageManifest(settings, manifest, mockDependencies, false)
+        val packageManifest = manifest.getFileString("Package.swift").get()
+        assertNotNull(packageManifest)
+        packageManifest.shouldContain("""
+    targets: [
+        .target(
+            name: "MockSDK",
+            dependencies: [
+                .product(
+                    name: "ComplexModule",
+                    package: "swift-numerics"
+                ),
+                .product(
+                    name: "SmithyReadWrite",
                     package: "smithy-swift"
                 ),
             ],

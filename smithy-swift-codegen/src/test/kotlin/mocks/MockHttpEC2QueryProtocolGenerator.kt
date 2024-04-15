@@ -14,6 +14,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
@@ -28,8 +29,6 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpRespons
 import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingErrorInitGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
-import software.amazon.smithy.swift.codegen.integration.serde.formurl.FormURLEncodeCustomizable
-import software.amazon.smithy.swift.codegen.integration.serde.formurl.trait.Ec2QueryNameTraitGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeXMLGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.xml.StructDecodeXMLGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
@@ -51,19 +50,6 @@ class MockEC2QueryHttpBindingResolver(
     }
 }
 
-class MockEc2QueryFormURLEncodeCustomizations : FormURLEncodeCustomizable {
-    override fun alwaysUsesFlattenedCollections(): Boolean {
-        return true
-    }
-    override fun customNameTraitGenerator(shape: Shape, defaultName: String): String {
-        return Ec2QueryNameTraitGenerator.construct(shape, defaultName).toString()
-    }
-
-    override fun shouldSerializeEmptyLists(): Boolean {
-        return true
-    }
-}
-
 class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/x-www-form-urlencoded"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
@@ -75,7 +61,7 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat,
         XMLHttpResponseBindingOutputGenerator(),
         MockHttpResponseBindingErrorGenerator(),
-        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat)
+        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat, ClientRuntimeTypes.Core.MockBaseError)
     )
     override val shouldRenderDecodableBodyStructForInputShapes = false
     override val shouldRenderEncodableConformance = true
