@@ -3,7 +3,6 @@ package software.amazon.smithy.swift.codegen.integration.serde.readwrite
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.SparseTrait

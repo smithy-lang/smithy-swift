@@ -182,7 +182,9 @@ public extension Document {
     }
 }
 
-public func optionalFormOf<T, Reader: SmithyReader>(readingClosure: @escaping ReadingClosure<T, Reader>) -> ReadingClosure<T?, Reader> {
+public func optionalFormOf<T, Reader: SmithyReader>(
+    readingClosure: @escaping ReadingClosure<T, Reader>
+) -> ReadingClosure<T?, Reader> {
     return { reader in
         do {
             return try readingClosure(reader)

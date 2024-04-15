@@ -43,7 +43,9 @@ class StructEncodeXMLGenerator(
                 "guard \$L else { return }",
                 "value != nil".takeIf { members.isEmpty() } ?: "let value"
             )
-            writer.write("_ = writer[\"\"]")
+            if (members.isEmpty()) {
+                writer.write("_ = writer[\"\"]  // create an empty structure")
+            }
             val isErrorMember = shapeContainingMembers.isError
             members.sortedBy { it.memberName }.forEach { writeMember(it, false, isErrorMember) }
             writeExtraMembers()

@@ -22,7 +22,7 @@ import struct SmithyTimestamps.TimestampFormatter
 /// `Array` and `Dictionary` (optionally as flattened XML) given a writing closure for
 /// their enclosed data types.
 public final class Writer: SmithyWriter {
-    var content: String? = nil
+    var content: String?
     var children: [Writer] = []
     weak var parent: Writer?
     let nodeInfo: NodeInfo
@@ -52,14 +52,6 @@ public final class Writer: SmithyWriter {
         addChild(newChild)
         return newChild
     }
-
-    /// Detaches this writer from its parent.  Typically used when this writer no longer
-    /// belongs in the tree, either because its data is nil or its contents were flattened
-    /// into its parents.
-//    public func detach() {
-//        parent?.children.removeAll { $0 === self }
-//        parent = nil
-//    }
 
     // MARK: - Writing values
 
