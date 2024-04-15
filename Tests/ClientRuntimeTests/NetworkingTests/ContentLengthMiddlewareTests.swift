@@ -14,8 +14,6 @@ class ContentLengthMiddlewareTests: XCTestCase {
         builtContext = HttpContextBuilder()
                   .withMethod(value: .get)
                   .withPath(value: "/")
-                  .withEncoder(value: JSONEncoder())
-                  .withDecoder(value: JSONDecoder())
                   .withOperation(value: "Test Operation")
                   .build()
         stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")

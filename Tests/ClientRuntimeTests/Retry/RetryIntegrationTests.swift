@@ -5,7 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+import SmithyReadWrite
+import SmithyXML
 import XCTest
 @testable import ClientRuntime
 
@@ -156,8 +157,10 @@ private struct TestOutputResponse {
 }
 
 private enum TestOutputError {
-    static func makeError(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws -> Error {
-        RetryIntegrationTestError.dontCallThisMethod  // is never called
+    static var httpErrorBinding: SmithyReadWrite.WireResponseErrorBinding<ClientRuntime.HttpResponse, SmithyXML.Reader> {
+        { httpResponse, responseDocumentClosure in
+            RetryIntegrationTestError.dontCallThisMethod  // is never called
+        }
     }
 }
 

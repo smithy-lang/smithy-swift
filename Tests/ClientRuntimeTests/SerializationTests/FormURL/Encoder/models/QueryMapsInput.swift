@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyFormURL
 @testable import ClientRuntime
 
 public struct QueryMapsInput: Equatable {
@@ -22,32 +23,10 @@ public struct QueryMapsInput: Equatable {
 }
 
 extension QueryMapsInput: Encodable {
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: Key.self)
-        if let flattenedMap = flattenedMap {
-            if flattenedMap.isEmpty {
-                let _ =  container.nestedContainer(keyedBy: Key.self, forKey: Key("FlattenedMap"))
-            } else {
-                for (index, element) in flattenedMap.enumerated() {
-                    let stringKey0 = element.key
-                    let stringValue0 = element.value
-                    var nestedContainer0 = container.nestedContainer(keyedBy: Key.self, forKey: Key("FlattenedMap.\(index.advanced(by: 1))"))
-                    try nestedContainer0.encode(stringKey0, forKey: Key("key"))
-                    try nestedContainer0.encode(stringValue0, forKey: Key("value"))
-                }
-            }
-        }
-        if let mapArg = mapArg {
-            var mapArgContainer = container.nestedContainer(keyedBy: Key.self, forKey: Key("MapArg"))
-            for (index, element0) in mapArg.enumerated() {
-                let stringKey0 = element0.key
-                let stringValue0 = element0.value
-                var entryContainer0 = mapArgContainer.nestedContainer(keyedBy: Key.self, forKey: Key("entry.\(index.advanced(by: 1))"))
-                var keyContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("key"))
-                try keyContainer0.encode(stringKey0, forKey: Key(""))
-                var valueContainer0 = entryContainer0.nestedContainer(keyedBy: Key.self, forKey: Key("value"))
-                try valueContainer0.encode(stringValue0, forKey: Key(""))
-            }
-        }
+
+    static func write(value: QueryMapsInput?, to writer: SmithyFormURL.Writer) throws {
+        guard let value else { return }
+        try writer["FlattenedMap"].writeMap(value.flattenedMap, valueWritingClosure: String.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        try writer["MapArg"].writeMap(value.mapArg, valueWritingClosure: String.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }
