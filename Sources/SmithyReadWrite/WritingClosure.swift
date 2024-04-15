@@ -84,6 +84,20 @@ public extension Int {
     }
 }
 
+public extension Int8 {
+
+    static func write<Writer: SmithyWriter>(value: Int8?, to writer: Writer) throws {
+        try writer.write(value)
+    }
+}
+
+public extension Int16 {
+
+    static func write<Writer: SmithyWriter>(value: Int16?, to writer: Writer) throws {
+        try writer.write(value)
+    }
+}
+
 public extension Double {
 
     static func write<Writer: SmithyWriter>(value: Double?, to writer: Writer) throws {
