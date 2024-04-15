@@ -45,8 +45,13 @@ import software.amazon.smithy.swift.codegen.integration.serde.json.StructDecodeG
 import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
+import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.utils.errorShapeName
-class FakeProtocolGenerator : HttpBindingProtocolGenerator() {
+
+/**
+ * A test JSON-based protocol generator for the Weather service client
+ */
+class TestProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultContentType: String = "application/json"
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
     override val protocol: ShapeId = ShapeId.from("common#fakeProtocol")
@@ -148,6 +153,7 @@ class HttpResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratable {
         ctx.delegator.useFileWriter(fileName) { writer ->
             with(writer) {
                 addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
 
                 openBlock("extension ${ctx.symbolProvider.toSymbol(ctx.service).name}Types {", "}") {
                     openBlock(
@@ -155,7 +161,7 @@ class HttpResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratable {
                         "}",
                         ClientRuntimeTypes.Http.HttpResponse,
                         ClientRuntimeTypes.Serde.ResponseDecoder,
-                        ClientRuntimeTypes.Errors.DefaultError,
+                        JSON_ERROR_SYMBOL,
                         SwiftTypes.Error
                     ) {
                         openBlock("switch error.errorType {", "}") {
@@ -195,6 +201,7 @@ class HttpResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratable {
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
             with(writer) {
 
                 openBlock(
@@ -209,10 +216,7 @@ class HttpResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratable {
                         ClientRuntimeTypes.Serde.ResponseDecoder,
                         SwiftTypes.Error
                     ) {
-                        write(
-                            "let defaultError = try await \$N(httpResponse: httpResponse)",
-                            ClientRuntimeTypes.Errors.DefaultError
-                        )
+                        write("let defaultError = try await \$N(httpResponse: httpResponse)", JSON_ERROR_SYMBOL)
 
                         if (ctx.service.errors.isNotEmpty()) {
                             write("let serviceError = try await ${ctx.symbolProvider.toSymbol(ctx.service).name}Types.makeServiceError(httpResponse, decoder, restJSONError, requestID)")
@@ -271,4 +275,10 @@ class HttpProtocolClientGeneratorFactory :
     private fun getConfigClass(writer: SwiftWriter, serviceName: String): ServiceConfig {
         return DefaultServiceConfig(writer, serviceName)
     }
+}
+
+private val JSON_ERROR_SYMBOL: Symbol = buildSymbol {
+    this.name = "JSONError"
+    this.namespace = SwiftDependency.SMITHY_TEST_UTIL.target
+    dependency(SwiftDependency.SMITHY_TEST_UTIL)
 }

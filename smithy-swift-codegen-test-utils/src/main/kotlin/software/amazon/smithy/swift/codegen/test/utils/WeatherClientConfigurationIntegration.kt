@@ -12,6 +12,6 @@ class WeatherClientConfigurationIntegration : SwiftIntegration {
 
     override val protocolGenerators: List<ProtocolGenerator>
         get() {
-            return listOf(FakeProtocolGenerator())
+            return listOf(TestProtocolGenerator())
         }
 }

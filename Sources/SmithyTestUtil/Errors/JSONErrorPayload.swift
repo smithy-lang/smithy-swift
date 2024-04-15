@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-public struct DefaultErrorPayload: Decodable {
+public struct JSONErrorPayload: Decodable {
     let message: String?
     let errorType: String?
 }

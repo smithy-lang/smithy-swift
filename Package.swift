@@ -95,5 +95,4 @@ func addTestServiceTargets() {
     ]
 }
 
-// TODO: Uncomment below once the generated test client is fixed and build successfully
 addTestServiceTargets()

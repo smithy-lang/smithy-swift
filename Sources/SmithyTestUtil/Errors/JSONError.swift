@@ -6,16 +6,16 @@
 import Foundation
 import ClientRuntime
 
-/// A general Error Structure for Rest JSON protocol
-public struct DefaultError {
+/// A general error structure for protocols with JSON response
+public struct JSONError {
     public let errorMessage: String?
     public let errorType: String?
 
     public init(httpResponse: HttpResponse) async throws {
-        var message: String? = nil
-        var errorType: String? = nil
+        var message: String?
+        var errorType: String?
         if let data = try await httpResponse.body.readData() {
-            let output: DefaultErrorPayload = try JSONDecoder().decode(responseBody: data)
+            let output: JSONErrorPayload = try JSONDecoder().decode(responseBody: data)
             message = output.message
             errorType = output.errorType
         }
@@ -23,5 +23,3 @@ public struct DefaultError {
         self.errorType = errorType
     }
 }
-
-
