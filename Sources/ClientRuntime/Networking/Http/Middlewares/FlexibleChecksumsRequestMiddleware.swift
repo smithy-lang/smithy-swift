@@ -77,9 +77,16 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
                 logger.debug("Calculating checksum")
             }
 
-            let checksum = try checksumHashFunction.computeHash(of: data).toBase64String()
+            // Create checksum instance
+            let checksum = checksumHashFunction.createChecksum()
 
-            request.updateHeader(name: headerName, value: [checksum])
+            // Pass data to hash
+            try checksum.update(chunk: data)
+
+            // Retrieve the hash
+            let hash = try checksum.digest().toBase64String()
+
+            request.updateHeader(name: headerName, value: [hash])
         }
 
         // Handle body vs handle stream

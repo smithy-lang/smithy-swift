@@ -5,11 +5,6 @@
 
 import AwsCommonRuntimeKit
 
-public enum HashResult {
-    case data(Data)
-    case integer(UInt32)
-}
-
 public enum HashError: Error {
     case invalidInput
     case hashingFailed(reason: String)
@@ -18,7 +13,7 @@ public enum HashError: Error {
 public enum ChecksumAlgorithm {
     case crc32, crc32c, sha1, sha256, md5
 
-    static func from(string: String) -> ChecksumAlgorithm? {
+    static func from(string: String) -> (ChecksumAlgorithm)? {
         switch string.lowercased() {
         case "crc32": return .crc32
         case "crc32c": return .crc32c
@@ -59,33 +54,18 @@ public enum ChecksumAlgorithm {
         }
     }
 
-    func computeHash(of data: Data, previousHash: UInt32 = 0) throws -> HashResult {
+    func createChecksum() -> any Checksum {
         switch self {
         case .crc32:
-            return .integer(data.computeCRC32(previousCrc32: previousHash))
+            return CRC32()
         case .crc32c:
-            return .integer(data.computeCRC32C(previousCrc32c: previousHash))
+            return CRC32C()
         case .sha1:
-            do {
-                let hashed = try data.computeSHA1()
-                return .data(hashed)
-            } catch {
-                throw HashError.hashingFailed(reason: "Error computing SHA1: \(error)")
-            }
+            return SHA1()
         case .sha256:
-            do {
-                let hashed = try data.computeSHA256()
-                return .data(hashed)
-            } catch {
-                throw HashError.hashingFailed(reason: "Error computing SHA256: \(error)")
-            }
+            return SHA256()
         case .md5:
-            do {
-                let hashed = try data.computeMD5()
-                return .data(hashed)
-            } catch {
-                throw HashError.hashingFailed(reason: "Error computing MD5: \(error)")
-            }
+           return MD5()
         }
     }
 }
@@ -144,22 +124,6 @@ extension HashResult {
             return data.base64EncodedString()
         case .integer(let integer):
             return integer.toBase64EncodedString()
-        }
-    }
-}
-
-extension ChecksumAlgorithm {
-    // Initialize a hashing process
-    func createHash() -> Hash? {
-        switch self {
-        case .sha1:
-            return Hash(algorithm: .SHA1)
-        case .sha256:
-            return Hash(algorithm: .SHA256)
-        case .md5:
-            return Hash(algorithm: .MD5)
-        default:
-            return nil
         }
     }
 }

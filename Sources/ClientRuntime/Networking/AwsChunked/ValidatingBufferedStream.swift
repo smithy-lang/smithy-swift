@@ -9,16 +9,16 @@ import AwsCommonRuntimeKit
 
 class ValidatingBufferedStream {
     private var stream: BufferedStream
-    private var checksum: ChecksumAlgorithm
-    private var checksumHash: Hash?
+    private var checksumAlgorithm: ChecksumAlgorithm
+    private var checksum: (any Checksum)
     private var expectedChecksum: String
     private var currentHash: UInt32 = 0
 
-    init(stream: BufferedStream, expectedChecksum: String, checksum: ChecksumAlgorithm) {
+    init(stream: BufferedStream, expectedChecksum: String, checksumAlgorithm: ChecksumAlgorithm) {
         self.stream = stream
         self.expectedChecksum = expectedChecksum
-        self.checksum = checksum
-        self.checksumHash = checksum.createHash()
+        self.checksumAlgorithm = checksumAlgorithm
+        self.checksum = checksumAlgorithm.createChecksum()
     }
 }
 
@@ -57,27 +57,12 @@ extension ValidatingBufferedStream: Stream {
 
         // This will be invoked when the user executes the readData() method on ByteStream
         if let data = streamData {
-            if let shaHash = checksumHash {
-                try shaHash.update(data: data)
-            } else {
-                let hashResult = try self.checksum.computeHash(of: data, previousHash: self.currentHash)
-                if case let .integer(newHash) = hashResult {
-                    self.currentHash = newHash
-                } else {
-                    throw ClientError.unknownError("Checksum result didnt return an integer!")
-                }
-            }
+            // Pass chunk data to checksum
+            try self.checksum.update(chunk: data)
 
             if self.position == self.length {
                 // Validate and throw
-                let actualChecksum: String
-                if let shaHash = checksumHash {
-                    let hashResult = try HashResult.data(shaHash.finalize())
-                    actualChecksum = hashResult.toBase64String()
-                } else {
-                    actualChecksum = currentHash.toBase64EncodedString()
-                }
-
+                let actualChecksum = try self.checksum.digest().toBase64String()
                 if expectedChecksum != actualChecksum {
                     throw ChecksumMismatchException.message(
                         "Checksum mismatch. Expected \(expectedChecksum) but was \(actualChecksum)"
