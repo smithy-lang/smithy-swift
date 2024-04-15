@@ -37,7 +37,7 @@ class PackageManifestGeneratorTests {
             url: "https://github.com/apple/swift-numerics",
             from: "0.0.5"
         ),
-        """
+"""
         packageManifest.shouldContain(expectedContents)
     }
 
@@ -70,7 +70,7 @@ class PackageManifestGeneratorTests {
         writePackageManifest(settings, manifest, mockDependencies, true)
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
-        packageManifest.shouldContain("""
+        val expected = """
     targets: [
         .target(
             name: "MockSDK",
@@ -96,7 +96,7 @@ class PackageManifestGeneratorTests {
         )
     ]
 """
-        )
+        packageManifest.shouldContain(expected)
     }
 
     @Test
@@ -104,7 +104,7 @@ class PackageManifestGeneratorTests {
         writePackageManifest(settings, manifest, mockDependencies, false)
         val packageManifest = manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
-        packageManifest.shouldContain("""
+        val expected = """
     targets: [
         .target(
             name: "MockSDK",
@@ -122,7 +122,7 @@ class PackageManifestGeneratorTests {
         ),
     ]
 """
-        )
+        packageManifest.shouldContain(expected)
     }
 
     fun getMockDependenciesFromModel(model: Model, symbolProvider: SymbolProvider): MutableList<SymbolDependency> {

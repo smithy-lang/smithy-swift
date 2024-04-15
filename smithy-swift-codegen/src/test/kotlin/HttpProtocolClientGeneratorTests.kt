@@ -14,7 +14,7 @@ class HttpProtocolClientGeneratorTests {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce("""
+        val expected = """
 public class RestJsonProtocolClient: Client {
     public static let clientName = "RestJsonProtocolClient"
     let client: ClientRuntime.SdkHttpClient
@@ -91,7 +91,7 @@ public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandl
     }
 }
 """
-        )
+        contents.shouldContainOnlyOnce(expected)
     }
     @Test
     fun `it renders host prefix with label in context correctly`() {
