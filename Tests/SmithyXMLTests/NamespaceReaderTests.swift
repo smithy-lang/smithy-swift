@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyReadWrite
 import SmithyXML
 import SmithyReadWrite
 import ClientRuntime
@@ -30,7 +31,7 @@ class NamespaceReaderTests: XCTestCase {
 
         """.utf8)
         let response = HttpResponse(body: .data(xmlData), statusCode: .ok)
-        let subject = try await SimpleScalarPropertiesOutput.httpBinding(response, responseDocumentBinding)
+        let subject = try await SimpleScalarPropertiesOutput.httpBinding(response, wireResponseDocumentBinding())
         XCTAssertEqual(subject.nested?.attrField, "nestedAttrValue")
     }
 }
@@ -79,7 +80,7 @@ public struct SimpleScalarPropertiesOutput: Swift.Equatable {
 
 extension SimpleScalarPropertiesOutput {
 
-    static var httpBinding: ClientRuntime.HTTPResponseOutputBinding<SimpleScalarPropertiesOutput, SmithyXML.Reader> {
+    static var httpBinding: WireResponseOutputBinding<HttpResponse, SimpleScalarPropertiesOutput, SmithyXML.Reader> {
         { httpResponse, responseDocumentBinding in
             let responseReader = try await responseDocumentBinding(httpResponse)
             let reader = responseReader
@@ -87,7 +88,7 @@ extension SimpleScalarPropertiesOutput {
             if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
                 value.foo = fooHeaderValue
             }
-            value.nested = try reader[.init("Nested", namespaceDef: .init(prefix: "xsi", uri: "https://example.com"))].readIfPresent(readingClosure: NestedWithNamespace.readingClosure)
+            value.nested = try reader[.init("Nested", namespaceDef: .init(prefix: "xsi", uri: "https://example.com"))].readIfPresent(with: NestedWithNamespace.read(from:))
             value.byteValue = try reader["byteValue"].readIfPresent()
             value.doubleValue = try reader["DoubleDribble"].readIfPresent()
             value.falseBooleanValue = try reader["falseBooleanValue"].readIfPresent()
@@ -112,17 +113,15 @@ public struct NestedWithNamespace: Swift.Equatable {
 
 extension NestedWithNamespace {
 
-    static func writingClosure(_ value: NestedWithNamespace?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
+    static func write(value: NestedWithNamespace?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
         try writer[.init("xsi:someName", location: .attribute)].write(value.attrField)
     }
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<NestedWithNamespace, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
-            var value = NestedWithNamespace()
-            value.attrField = try reader[.init("xsi:someName", location: .attribute)].readIfPresent()
-            return value
-        }
+    static func read(from reader: Reader) throws -> NestedWithNamespace {
+        guard reader.hasContent else { throw ReaderError.requiredValueNotPresent }
+        var value = NestedWithNamespace()
+        value.attrField = try reader[.init("xsi:someName", location: .attribute)].readIfPresent()
+        return value
     }
 }

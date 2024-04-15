@@ -13,7 +13,7 @@ class ReaderTests: XCTestCase {
     func test_readsNil() async throws {
         let jsonData = Data()
         let reader = try SmithyJSON.Reader.from(data: jsonData)
-        XCTAssertEqual(reader.jsonNode, .null)
+        XCTAssertEqual(reader.jsonNode, nil)
     }
 
     func test_readsAJSONObject() async throws {

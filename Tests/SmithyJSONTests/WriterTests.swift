@@ -13,6 +13,6 @@ class WriterTests: XCTestCase {
     func test_writesJSON() async throws {
         let writer = Writer(nodeInfo: "")
         try writer["property"].write("potato")
-        XCTAssertEqual(String(data: try writer.data()!, encoding: .utf8), "{\"property\":\"potato\"}")
+        XCTAssertEqual(String(data: try writer.data(), encoding: .utf8), "{\"property\":\"potato\"}")
     }
 }
