@@ -31,7 +31,7 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
         operationMiddleware: OperationMiddleware,
     ): HttpProtocolClientGenerator {
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
-        val config = getConfigClass(writer, ctx.settings.sdkId, serviceSymbol.name)
+        val config = getConfigClass(writer, serviceSymbol.name)
         return HttpProtocolClientGenerator(ctx, writer, config, httpBindingResolver, defaultContentType, httpProtocolCustomizable, operationMiddleware)
     }
 
@@ -42,8 +42,8 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
         )
     }
 
-    private fun getConfigClass(writer: SwiftWriter, clientName: String, serviceName: String): ServiceConfig {
-        return DefaultServiceConfig(writer, clientName, serviceName)
+    private fun getConfigClass(writer: SwiftWriter, serviceName: String): ServiceConfig {
+        return DefaultServiceConfig(writer, serviceName)
     }
 }
 

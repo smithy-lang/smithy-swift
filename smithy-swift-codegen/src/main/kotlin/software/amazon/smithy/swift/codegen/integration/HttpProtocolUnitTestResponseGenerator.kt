@@ -17,9 +17,9 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
-import software.amazon.smithy.swift.codegen.model.hasStreamingMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
@@ -64,7 +64,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         writer.write("}")
     }
 
-    private fun renderExpectedBody(test: HttpResponseTestCase) {
+    open fun renderExpectedBody(test: HttpResponseTestCase) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
             operation.output.ifPresent {
                 val outputShape = model.expectShape(it) as StructureShape

@@ -36,11 +36,16 @@ class PaginatorGenerator : SwiftIntegration {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
         val paginatedIndex = PaginatedIndex.of(ctx.model)
 
-        delegator.useFileWriter("${ctx.settings.moduleName}/Paginators.swift") { writer ->
-            val paginatedOperations = service.allOperations
-                .map { ctx.model.expectShape<OperationShape>(it) }
-                .filter { operationShape -> operationShape.hasTrait(PaginatedTrait.ID) }
+        val paginatedOperations = service.allOperations
+            .map { ctx.model.expectShape<OperationShape>(it) }
+            .filter { operationShape -> operationShape.hasTrait(PaginatedTrait.ID) }
 
+        // Skip generating Paginators.swift if service has no paginated operations
+        if (paginatedOperations.isEmpty()) {
+            return
+        }
+
+        delegator.useFileWriter("${ctx.settings.moduleName}/Paginators.swift") { writer ->
             paginatedOperations.forEach { paginatedOperation ->
                 val paginationInfo = paginatedIndex.getPaginationInfo(service, paginatedOperation).orElse(null)
                     ?: throw CodegenException("Unexpectedly unable to get PaginationInfo from $service $paginatedOperation")
