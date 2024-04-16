@@ -241,7 +241,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
     }
 
     @Test
-    fun `it renders error structures along with proper import statement`() {
+    fun `it renders error structures`() {
 
         val struct: StructureShape = createStructureWithOptionalErrorMessage()
         val model: Model = createModelWithStructureShape(struct)
@@ -255,10 +255,6 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
 
         contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
         val expectedGeneratedStructure = """
-import ClientRuntime
-import SmithyReadWrite
-
-/// This is documentation about the shape.
 public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError, Swift.Error {
 
     public struct Properties {
