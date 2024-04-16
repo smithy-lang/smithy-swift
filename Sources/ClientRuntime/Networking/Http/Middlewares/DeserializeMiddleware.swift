@@ -29,6 +29,11 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
 
             let response = try await next.handle(context: context, input: input) // call handler to get http response
 
+            if let responseDateString = response.httpResponse.headers.value(for: "Date") {
+                let estimatedSkew = getEstimatedSkew(now: Date(), responseDateString: responseDateString)
+                context.attributes.set(key: AttributeKeys.estimatedSkew, value: estimatedSkew)
+            }
+
             // check if the response body was effected by a previous middleware
             if let contextBody = context.response?.body {
                 response.httpResponse.body = contextBody

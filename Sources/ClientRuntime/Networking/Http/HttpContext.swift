@@ -289,6 +289,12 @@ public class HttpContextBuilder {
     }
 
     @discardableResult
+    public func withSocketTimeout(value: TimeInterval?) -> HttpContextBuilder {
+        self.attributes.set(key: AttributeKeys.socketTimeout, value: value)
+        return self
+    }
+
+    @discardableResult
     public func withUnsignedPayloadTrait(value: Bool) -> HttpContextBuilder {
         self.attributes.set(key: AttributeKeys.hasUnsignedPayloadTrait, value: value)
         return self
@@ -334,6 +340,10 @@ public enum AttributeKeys {
 
     // Streams
     public static let isChunkedEligibleStream = AttributeKey<Bool>(name: "isChunkedEligibleStream")
+
+    // TTL calculation in retries.
+    public static let estimatedSkew = AttributeKey<TimeInterval>(name: "EstimatedSkew")
+    public static let socketTimeout = AttributeKey<TimeInterval>(name: "SocketTimeout")
 }
 
 // The type of flow the mdidleware context is being constructed for

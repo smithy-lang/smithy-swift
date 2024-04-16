@@ -20,14 +20,18 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
         ConfigProperty(
             "httpClientEngine",
             ClientRuntimeTypes.Http.HttpClient,
-            "AWSClientConfigDefaultsProvider.httpClientEngine"
+            "DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.makeClient()"
         ),
         ConfigProperty(
             "httpClientConfiguration",
             ClientRuntimeTypes.Http.HttpClientConfiguration,
-            "AWSClientConfigDefaultsProvider.httpClientConfiguration"
+            "DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultHttpClientConfiguration"
         ),
         ConfigProperty("authSchemes", ClientRuntimeTypes.Auth.AuthSchemes.toOptional()),
-        ConfigProperty("authSchemeResolver", ClientRuntimeTypes.Auth.AuthSchemeResolver.toOptional())
+        ConfigProperty(
+            "authSchemeResolver",
+            ClientRuntimeTypes.Auth.AuthSchemeResolver,
+            "DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultAuthSchemeResolver"
+        )
     )
 }

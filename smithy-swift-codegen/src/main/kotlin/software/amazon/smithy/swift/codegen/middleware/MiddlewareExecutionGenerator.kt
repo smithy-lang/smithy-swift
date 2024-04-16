@@ -67,6 +67,7 @@ class MiddlewareExecutionGenerator(
         writer.write("  .withAuthSchemes(value: config.authSchemes ?? [])")
         writer.write("  .withAuthSchemeResolver(value: config.authSchemeResolver)")
         writer.write("  .withUnsignedPayloadTrait(value: ${op.hasTrait(UnsignedPayloadTrait::class.java)})")
+        writer.write("  .withSocketTimeout(value: config.httpClientConfiguration.socketTimeout)")
 
         // Add flag for presign / presign-url flows
         if (flowType == ContextAttributeCodegenFlowType.PRESIGN_REQUEST) {

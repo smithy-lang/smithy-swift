@@ -18,8 +18,8 @@ public class HttpClientConfiguration {
     /// Sets maximum time to wait between two data packets.
     /// Used to close stale connections that have no activity.
     ///
-    /// If no value is provided, the defaut client won't have a socket timeout.
-    public var socketTimeout: TimeInterval?
+    /// Defaults to 60 seconds if no value is provided.
+    public var socketTimeout: TimeInterval
 
     /// HTTP headers to be submitted with every HTTP request.
     ///
@@ -45,7 +45,7 @@ public class HttpClientConfiguration {
     ///   - protocolType: The HTTP scheme (`http` or `https`) to be used for API requests.  Defaults to the operation's standard configuration.
     public init(
         connectTimeout: TimeInterval? = nil,
-        socketTimeout: TimeInterval? = nil,
+        socketTimeout: TimeInterval = 60.0,
         protocolType: ProtocolType = .https,
         defaultHeaders: Headers = Headers()
     ) {

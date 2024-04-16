@@ -25,7 +25,7 @@ object ClientRuntimeTypes {
         val HttpResponse = runtimeSymbol("HttpResponse")
         val HttpResponseBinding = runtimeSymbol("HttpResponseBinding")
         val HttpError = runtimeSymbol("HTTPError")
-        val UnknownHttpServiceError = runtimeSymbol("UnknownHttpServiceError")
+        val UnknownHttpServiceError = runtimeSymbol("UnknownHTTPServiceError")
         val HttpContextBuilder = runtimeSymbol("HttpContextBuilder")
     }
 

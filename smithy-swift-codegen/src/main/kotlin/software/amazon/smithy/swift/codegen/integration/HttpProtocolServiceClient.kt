@@ -127,7 +127,11 @@ open class HttpProtocolServiceClient(
 
             renderAsynchronousConfigInitializer(properties)
 
+            renderEmptyAsynchronousConfigInitializer(properties)
+
             renderCustomConfigInitializer(properties)
+
+            renderPartitionID()
         }
         writer.write("")
     }
@@ -137,6 +141,19 @@ open class HttpProtocolServiceClient(
 
     open fun overrideConfigProperties(properties: List<ConfigProperty>): List<ConfigProperty> {
         return properties
+    }
+
+    private fun renderEmptyAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
+        writer.openBlock("public convenience required init() async throws {", "}") {
+            writer.write("try await self.init(\$L)", properties.joinToString(", ") { "${it.name}: nil" })
+        }
+        writer.write("")
+    }
+
+    open fun renderPartitionID() {
+        writer.openBlock("public var partitionID: String? {", "}") {
+            writer.write("return \"\"")
+        }
     }
 
     private fun renderLogHandlerFactory(serviceSymbol: Symbol) {

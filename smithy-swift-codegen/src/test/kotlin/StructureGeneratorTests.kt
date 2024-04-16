@@ -249,7 +249,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Equatable {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
         val writer = SwiftWriter("MockPackage")
         val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
-        generator.render()
+        generator.renderErrors()
 
         val contents = writer.toString()
 
