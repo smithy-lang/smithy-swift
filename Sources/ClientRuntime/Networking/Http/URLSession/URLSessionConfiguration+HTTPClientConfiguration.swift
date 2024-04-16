@@ -13,9 +13,7 @@ extension URLSessionConfiguration {
 
     public static func from(httpClientConfiguration: HttpClientConfiguration) -> URLSessionConfiguration {
         let config = URLSessionConfiguration.default
-        if let socketTimeout = httpClientConfiguration.socketTimeout {
-            config.timeoutIntervalForRequest = socketTimeout
-        }
+        config.timeoutIntervalForRequest = httpClientConfiguration.socketTimeout
         return config
     }
 }
