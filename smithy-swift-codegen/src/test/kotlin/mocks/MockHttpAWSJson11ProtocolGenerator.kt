@@ -13,7 +13,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SmithyTestUtilTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
@@ -73,7 +73,6 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
             httpProtocolCustomizable,
             operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
-//            HttpProtocolUnitTestGenerator.SerdeContext("JSONEncoder()", "JSONDecoder()", ".secondsSince1970")
         ).generateProtocolTests()
     }
 
@@ -84,7 +83,7 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat,
         XMLHttpResponseBindingOutputGenerator(),
         MockHttpResponseBindingErrorGenerator(),
-        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat, ClientRuntimeTypes.Core.MockBaseError)
+        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat, SmithyTestUtilTypes.TestBaseError)
     )
     override val shouldRenderDecodableBodyStructForInputShapes = true
     override val shouldRenderEncodableConformance = false

@@ -7,7 +7,7 @@ import SmithyTestUtil
 
 extension NoSuchResource {
 
-    static func makeError(baseError: SmithyTestUtil.JSONError) throws -> NoSuchResource {
+    static func makeError(baseError: SmithyTestUtil.TestBaseError) throws -> NoSuchResource {
         let reader = baseError.errorBodyReader
         var value = NoSuchResource()
         value.properties.message = try reader["message"].readIfPresent()

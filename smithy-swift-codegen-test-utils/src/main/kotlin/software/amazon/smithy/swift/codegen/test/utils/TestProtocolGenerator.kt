@@ -11,7 +11,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SmithyTestUtilTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.DefaultServiceConfig
@@ -49,7 +49,7 @@ class TestProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat,
         XMLHttpResponseBindingOutputGenerator(),
         TestHTTPResponseBindingErrorGenerator(),
-        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat, ClientRuntimeTypes.Core.JSONError),
+        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat, SmithyTestUtilTypes.TestBaseError),
     )
     override val shouldRenderDecodableBodyStructForInputShapes = true
     override val shouldRenderEncodableConformance = false
@@ -107,7 +107,7 @@ class TestProtocolGenerator : HttpBindingProtocolGenerator() {
 class RestJsonHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
 class TestHTTPResponseBindingErrorGenerator : HTTPResponseBindingErrorGenerator() {
 
-    override val serviceBaseErrorSymbol: Symbol = ClientRuntimeTypes.Core.JSONError
+    override val serviceBaseErrorSymbol: Symbol = SmithyTestUtilTypes.TestBaseError
 }
 
 class HttpProtocolClientGeneratorFactory :

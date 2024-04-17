@@ -10,7 +10,7 @@ import enum ClientRuntime.BaseErrorDecodeError
 import class ClientRuntime.HttpResponse
 import class SmithyJSON.Reader
 
-public struct JSONError: BaseError {
+public struct TestBaseError: BaseError {
     public let code: String
     public let message: String?
     public let requestID: String?

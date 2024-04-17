@@ -95,12 +95,6 @@ object ClientRuntimeTypes {
         val DefaultRetryErrorInfoProvider = runtimeSymbol("DefaultRetryErrorInfoProvider")
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")
-        val MockBaseError = runtimeSymbol("MockBaseError")
-        val JSONError = buildSymbol {
-            this.name = "JSONError"
-            this.namespace = SwiftDependency.SMITHY_TEST_UTIL.target
-            dependency(SwiftDependency.SMITHY_TEST_UTIL)
-        }
     }
 }
 
