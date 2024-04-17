@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
+
 import class Foundation.Bundle
 import Security
 
@@ -74,3 +76,5 @@ extension SecTrust {
         return try evaluate()
     }
 }
+
+#endif
