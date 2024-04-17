@@ -116,7 +116,7 @@ abstract class HTTPResponseBindingErrorGenerator : HttpResponseBindingErrorGener
                                 )
                             }
                             writer.write(
-                                "default: return try \$N.makeError(httpResponse: httpResponse, message: baseError.message, requestID: baseError.requestID, typeName: baseError.code)",
+                                "default: return try \$N.makeError(baseError: baseError)",
                                 unknownServiceErrorSymbol
                             )
                         }

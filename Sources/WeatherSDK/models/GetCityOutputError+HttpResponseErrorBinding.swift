@@ -13,7 +13,7 @@ enum GetCityOutputError {
             let baseError = try SmithyTestUtil.JSONError(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: false)
             switch baseError.code {
                 case "NoSuchResource": return try NoSuchResource.makeError(baseError: baseError)
-                default: return try ClientRuntime.UnknownHTTPServiceError.makeError(httpResponse: httpResponse, message: baseError.message, requestID: baseError.requestID, typeName: baseError.code)
+                default: return try ClientRuntime.UnknownHTTPServiceError.makeError(baseError: baseError)
             }
         }
     }

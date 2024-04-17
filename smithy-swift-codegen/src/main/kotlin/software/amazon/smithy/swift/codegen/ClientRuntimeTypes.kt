@@ -18,7 +18,6 @@ object ClientRuntimeTypes {
         val HttpClient = runtimeSymbol("HTTPClient")
         val HttpClientConfiguration = runtimeSymbol("HttpClientConfiguration")
         val Headers = runtimeSymbol("Headers")
-        val HttpStatusCode = runtimeSymbol("HttpStatusCode")
         val SdkHttpClient = runtimeSymbol("SdkHttpClient")
         val SdkHttpRequestBuilder = runtimeSymbol("SdkHttpRequestBuilder")
         val SdkHttpRequest = runtimeSymbol("SdkHttpRequest")
@@ -77,9 +76,7 @@ object ClientRuntimeTypes {
     }
 
     object Core {
-        val AttributeKey = runtimeSymbol("AttributeKey")
         val Endpoint = runtimeSymbol("Endpoint")
-        val ByteStream = runtimeSymbol("ByteStream")
         val Date = runtimeSymbol("Date")
         val Data = runtimeSymbol("Data")
         val SDKURLQueryItem = runtimeSymbol("SDKURLQueryItem")
@@ -96,8 +93,6 @@ object ClientRuntimeTypes {
         val DefaultRetryStrategy = runtimeSymbol("DefaultRetryStrategy")
         val RetryStrategyOptions = runtimeSymbol("RetryStrategyOptions")
         val DefaultRetryErrorInfoProvider = runtimeSymbol("DefaultRetryErrorInfoProvider")
-        val DefaultSDKRuntimeConfiguration = runtimeSymbol("DefaultSDKRuntimeConfiguration")
-        val DateFormatter = runtimeSymbol("DateFormatter")
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")
         val MockBaseError = runtimeSymbol("MockBaseError")

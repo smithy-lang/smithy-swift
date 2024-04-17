@@ -12,7 +12,7 @@ enum CreateCityOutputError {
             let responseReader = try await responseDocumentClosure(httpResponse)
             let baseError = try SmithyTestUtil.JSONError(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: false)
             switch baseError.code {
-                default: return try ClientRuntime.UnknownHTTPServiceError.makeError(httpResponse: httpResponse, message: baseError.message, requestID: baseError.requestID, typeName: baseError.code)
+                default: return try ClientRuntime.UnknownHTTPServiceError.makeError(baseError: baseError)
             }
         }
     }

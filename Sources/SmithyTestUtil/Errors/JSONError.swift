@@ -5,11 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol ClientRuntime.BaseError
 import enum ClientRuntime.BaseErrorDecodeError
 import class ClientRuntime.HttpResponse
 import class SmithyJSON.Reader
 
-public struct JSONError {
+public struct JSONError: BaseError {
     public let code: String
     public let message: String?
     public let requestID: String?
@@ -19,22 +20,14 @@ public struct JSONError {
     private let responseReader: Reader
 
     public init(httpResponse: HttpResponse, responseReader: Reader, noErrorWrapping: Bool) throws {
-        let code: String? = try httpResponse.headers.value(for: "X-Amzn-Errortype")
-                            ?? responseReader["code"].readIfPresent()
-                            ?? responseReader["__type"].readIfPresent()
-        let message: String? = try responseReader["Message"].readIfPresent()
+        let code: String? = try responseReader["errorType"].readIfPresent()
+        let message: String? = try responseReader["message"].readIfPresent()
         let requestID: String? = try responseReader["RequestId"].readIfPresent()
         guard let code else { throw BaseErrorDecodeError.missingRequiredData }
-        self.code = sanitizeErrorType(code)
+        self.code = code
         self.message = message
         self.requestID = requestID
         self.httpResponse = httpResponse
         self.responseReader = responseReader
     }
-}
-
-/// Filter additional information from error name and sanitize it
-/// Reference: https://awslabs.github.io/smithy/1.0/spec/aws/aws-restjson1-protocol.html#operation-error-serialization
-private func sanitizeErrorType(_ type: String) -> String {
-    return type.substringAfter("#").substringBefore(":").trim()
 }
