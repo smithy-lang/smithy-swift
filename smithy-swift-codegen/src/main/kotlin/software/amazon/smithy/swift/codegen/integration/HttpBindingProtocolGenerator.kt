@@ -55,8 +55,8 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.SignerMiddle
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
-import software.amazon.smithy.swift.codegen.integration.serde.xml.UnionDecodeXMLGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.xml.UnionEncodeXMLGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.union.UnionDecodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.union.UnionEncodeGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.findStreamingMember
@@ -228,9 +228,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     is UnionShape -> {
                         // get all members of the union shape
                         writer.write("")
-                        UnionEncodeXMLGenerator(ctx, shape, members, writer).render()
+                        UnionEncodeGenerator(ctx, shape, members, writer).render()
                         writer.write("")
-                        UnionDecodeXMLGenerator(ctx, shape, members, writer).render()
+                        UnionDecodeGenerator(ctx, shape, members, writer).render()
                     }
                 }
             }

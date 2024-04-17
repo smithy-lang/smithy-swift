@@ -17,11 +17,11 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTrai
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitQueryParams
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitResponseCode
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
-import software.amazon.smithy.swift.codegen.integration.serde.json.readerSymbol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class XMLHttpResponseBindingOutputGenerator : HttpResponseBindingOutputGeneratable {
@@ -32,9 +32,7 @@ class XMLHttpResponseBindingOutputGenerator : HttpResponseBindingOutputGeneratab
         httpBindingResolver: HttpBindingResolver,
         defaultTimestampFormat: TimestampFormatTrait.Format
     ) {
-        if (op.output.isEmpty) {
-            return
-        }
+        if (op.output.isEmpty) { return }
         val outputShape = ctx.model.expectShape(op.outputShape)
         val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
         val responseBindings = httpBindingResolver.responseBindings(op)

@@ -10,7 +10,6 @@ import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtils
-import software.amazon.smithy.swift.codegen.integration.serde.xml.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 

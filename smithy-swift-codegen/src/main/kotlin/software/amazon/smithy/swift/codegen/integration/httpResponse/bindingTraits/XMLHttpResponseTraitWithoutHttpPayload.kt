@@ -17,8 +17,8 @@ import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
+import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.isRPCBound
-import software.amazon.smithy.swift.codegen.integration.serde.xml.MemberShapeDecodeXMLGenerator
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
 class XMLHttpResponseTraitWithoutHttpPayload(
@@ -94,7 +94,7 @@ class XMLHttpResponseTraitWithoutHttpPayload(
 
     fun writeNonStreamingMembers(members: Set<HttpBindingDescriptor>) {
         members.sortedBy { it.memberName }.forEach {
-            MemberShapeDecodeXMLGenerator(ctx, writer, outputShape).render(it.member)
+            MemberShapeDecodeGenerator(ctx, writer, outputShape).render(it.member)
         }
     }
 

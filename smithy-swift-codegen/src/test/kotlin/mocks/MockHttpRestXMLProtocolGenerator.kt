@@ -23,8 +23,8 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpRespons
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingErrorInitGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingOutputGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeXMLGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.xml.StructDecodeXMLGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
 class MockRestXMLHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
@@ -54,7 +54,7 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat: TimestampFormatTrait.Format,
         path: String?
     ) {
-        val encoder = StructEncodeXMLGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer)
+        val encoder = StructEncodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer)
         encoder.render()
     }
     override fun renderStructDecode(
@@ -66,7 +66,7 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat: TimestampFormatTrait.Format,
         path: String
     ) {
-        val decodeGenerator = StructDecodeXMLGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer)
+        val decodeGenerator = StructDecodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer)
         decodeGenerator.render()
     }
 

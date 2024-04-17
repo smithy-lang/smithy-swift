@@ -18,7 +18,7 @@ import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
-import software.amazon.smithy.swift.codegen.integration.serde.xml.MemberShapeDecodeXMLGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isEnum
 
@@ -96,7 +96,7 @@ class XMLHttpResponseTraitWithHttpPayload(
                         writer.write("value.\$L = decoderStream.toAsyncStream()", memberName)
                     }
                 } else {
-                    MemberShapeDecodeXMLGenerator(ctx, writer, shapeContainingMembers)
+                    MemberShapeDecodeGenerator(ctx, writer, shapeContainingMembers)
                         .render(binding.member, true)
                 }
             }

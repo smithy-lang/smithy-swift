@@ -1,25 +1,40 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
-import Foundation
-import ClientRuntime
+import enum ClientRuntime.BaseErrorDecodeError
+import class ClientRuntime.HttpResponse
+import class SmithyJSON.Reader
 
-/// A general error structure for protocols with JSON response
 public struct JSONError {
-    public let errorMessage: String?
-    public let errorType: String?
+    public let code: String
+    public let message: String?
+    public let requestID: String?
+    public var errorBodyReader: Reader { responseReader }
 
-    public init(httpResponse: HttpResponse) async throws {
-        var message: String?
-        var errorType: String?
-        if let data = try await httpResponse.body.readData() {
-            let output: JSONErrorPayload = try JSONDecoder().decode(responseBody: data)
-            message = output.message
-            errorType = output.errorType
-        }
-        self.errorMessage = message
-        self.errorType = errorType
+    public let httpResponse: HttpResponse
+    private let responseReader: Reader
+
+    public init(httpResponse: HttpResponse, responseReader: Reader, noErrorWrapping: Bool) throws {
+        let code: String? = try httpResponse.headers.value(for: "X-Amzn-Errortype")
+                            ?? responseReader["code"].readIfPresent()
+                            ?? responseReader["__type"].readIfPresent()
+        let message: String? = try responseReader["Message"].readIfPresent()
+        let requestID: String? = try responseReader["RequestId"].readIfPresent()
+        guard let code else { throw BaseErrorDecodeError.missingRequiredData }
+        self.code = sanitizeErrorType(code)
+        self.message = message
+        self.requestID = requestID
+        self.httpResponse = httpResponse
+        self.responseReader = responseReader
     }
+}
+
+/// Filter additional information from error name and sanitize it
+/// Reference: https://awslabs.github.io/smithy/1.0/spec/aws/aws-restjson1-protocol.html#operation-error-serialization
+private func sanitizeErrorType(_ type: String) -> String {
+    return type.substringAfter("#").substringBefore(":").trim()
 }

@@ -28,8 +28,8 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpRespons
 import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingErrorInitGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
-import software.amazon.smithy.swift.codegen.integration.serde.json.StructEncodeXMLGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.xml.StructDecodeXMLGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
 class MockJsonHttpBindingResolver(
@@ -98,7 +98,7 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat: TimestampFormatTrait.Format,
         path: String?
     ) {
-        val encodeGenerator = StructEncodeXMLGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer)
+        val encodeGenerator = StructEncodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer)
         encodeGenerator.render()
     }
     override fun renderStructDecode(
@@ -110,7 +110,7 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat: TimestampFormatTrait.Format,
         path: String
     ) {
-        StructDecodeXMLGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
+        StructDecodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
     }
 
     override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
