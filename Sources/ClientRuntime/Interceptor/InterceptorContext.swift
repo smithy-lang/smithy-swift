@@ -6,7 +6,7 @@
 //
 
 /// The base type of all context objects passed to `Interceptor` methods.
-public protocol InterceptorContext {
+public protocol InterceptorContext: AnyObject {
 
     /// The type of the transport message that will be transmitted by the operation being invoked.
     associatedtype RequestType
@@ -40,7 +40,7 @@ public protocol MutableInput<AttributesType>: InterceptorContext {
 
     /// Mutates the operation input.
     /// - Parameter updated: The updated operation input.
-    mutating func updateInput(updated: Any)
+    func updateInput(updated: Any)
 }
 
 /// Context given to interceptor hooks called after request serialization.
@@ -62,7 +62,7 @@ public protocol MutableRequest<RequestType, AttributesType>: InterceptorContext 
 
     /// Mutates the serialized request.
     /// - Parameter updated: The updated request.
-    mutating func updateRequest(updated: RequestType)
+    func updateRequest(updated: RequestType)
 }
 
 /// Context given to interceptor hooks called before response deserialization, after the response has been received.
@@ -88,7 +88,7 @@ public protocol MutableResponse<RequestType, ResponseType, AttributesType>: Inte
 
     /// Mutates the serialized response.
     /// - Parameter updated: The updated response.
-    mutating func updateResponse(updated: ResponseType)
+    func updateResponse(updated: ResponseType)
 }
 
 /// Context given to interceptor hooks called after response deserialization.
@@ -134,7 +134,7 @@ public protocol MutableOutputAfterAttempt<RequestType, ResponseType, AttributesT
 
     /// Mutates the operation output.
     /// - Parameter updated: The updated output.
-    mutating func updateOutput(updated: Any)
+    func updateOutput(updated: Any)
 }
 
 /// Context given to interceptor hooks called after execution.
@@ -168,5 +168,5 @@ public protocol MutableOutputFinalization<RequestType, ResponseType, AttributesT
 
     /// Mutates the operation output.
     /// - Parameter updated: The updated output.
-    mutating func updateOutput(updated: Any)
+    func updateOutput(updated: Any)
 }

@@ -13,26 +13,25 @@
 internal struct AnyInterceptor<RequestType, ResponseType, AttributesType: HasAttributes> {
     internal typealias InterceptorContextType = DefaultInterceptorContext<RequestType, ResponseType, AttributesType>
     internal typealias InterceptorFn = (InterceptorContextType) async throws -> Void
-    internal typealias MutatingInterceptorFn = (inout InterceptorContextType) async throws -> Void
 
     private var readBeforeExecution: InterceptorFn
-    private var modifyBeforeSerialization: MutatingInterceptorFn
+    private var modifyBeforeSerialization: InterceptorFn
     private var readBeforeSerialization: InterceptorFn
     private var readAfterSerialization: InterceptorFn
-    private var modifyBeforeRetryLoop: MutatingInterceptorFn
+    private var modifyBeforeRetryLoop: InterceptorFn
     private var readBeforeAttempt: InterceptorFn
-    private var modifyBeforeSigning: MutatingInterceptorFn
+    private var modifyBeforeSigning: InterceptorFn
     private var readBeforeSigning: InterceptorFn
     private var readAfterSigning: InterceptorFn
-    private var modifyBeforeTransmit: MutatingInterceptorFn
+    private var modifyBeforeTransmit: InterceptorFn
     private var readBeforeTransmit: InterceptorFn
     private var readAfterTransmit: InterceptorFn
-    private var modifyBeforeDeserialization: MutatingInterceptorFn
+    private var modifyBeforeDeserialization: InterceptorFn
     private var readBeforeDeserialization: InterceptorFn
     private var readAfterDeserialization: InterceptorFn
-    private var modifyBeforeAttemptCompletion: MutatingInterceptorFn
+    private var modifyBeforeAttemptCompletion: InterceptorFn
     private var readAfterAttempt: InterceptorFn
-    private var modifyBeforeCompletion: MutatingInterceptorFn
+    private var modifyBeforeCompletion: InterceptorFn
     private var readAfterExecution: InterceptorFn
 
     internal init<I: Interceptor>(interceptor: I)
@@ -65,8 +64,8 @@ internal struct AnyInterceptor<RequestType, ResponseType, AttributesType: HasAtt
         try await self.readBeforeExecution(context)
     }
 
-    internal func modifyBeforeSerialization(context: inout InterceptorContextType) async throws {
-        try await self.modifyBeforeSerialization(&context)
+    internal func modifyBeforeSerialization(context: InterceptorContextType) async throws {
+        try await self.modifyBeforeSerialization(context)
     }
 
     internal func readBeforeSerialization(context: InterceptorContextType) async throws {
@@ -77,16 +76,16 @@ internal struct AnyInterceptor<RequestType, ResponseType, AttributesType: HasAtt
         try await self.readAfterSerialization(context)
     }
 
-    internal func modifyBeforeRetryLoop(context: inout InterceptorContextType) async throws {
-        try await self.modifyBeforeRetryLoop(&context)
+    internal func modifyBeforeRetryLoop(context: InterceptorContextType) async throws {
+        try await self.modifyBeforeRetryLoop(context)
     }
 
     internal func readBeforeAttempt(context: InterceptorContextType) async throws {
         try await self.readBeforeAttempt(context)
     }
 
-    internal func modifyBeforeSigning(context: inout InterceptorContextType) async throws {
-        try await self.modifyBeforeSigning(&context)
+    internal func modifyBeforeSigning(context: InterceptorContextType) async throws {
+        try await self.modifyBeforeSigning(context)
     }
 
     internal func readBeforeSigning(context: InterceptorContextType) async throws {
@@ -97,8 +96,8 @@ internal struct AnyInterceptor<RequestType, ResponseType, AttributesType: HasAtt
         try await self.readAfterSigning(context)
     }
 
-    internal func modifyBeforeTransmit(context: inout InterceptorContextType) async throws {
-        try await self.modifyBeforeTransmit(&context)
+    internal func modifyBeforeTransmit(context: InterceptorContextType) async throws {
+        try await self.modifyBeforeTransmit(context)
     }
 
     internal func readBeforeTransmit(context: InterceptorContextType) async throws {
@@ -109,8 +108,8 @@ internal struct AnyInterceptor<RequestType, ResponseType, AttributesType: HasAtt
         try await self.readAfterTransmit(context)
     }
 
-    internal func modifyBeforeDeserialization(context: inout InterceptorContextType) async throws {
-        try await self.modifyBeforeDeserialization(&context)
+    internal func modifyBeforeDeserialization(context: InterceptorContextType) async throws {
+        try await self.modifyBeforeDeserialization(context)
     }
 
     internal func readBeforeDeserialization(context: InterceptorContextType) async throws {
@@ -121,16 +120,16 @@ internal struct AnyInterceptor<RequestType, ResponseType, AttributesType: HasAtt
         try await self.readAfterDeserialization(context)
     }
 
-    internal func modifyBeforeAttemptCompletion(context: inout InterceptorContextType) async throws {
-        try await self.modifyBeforeAttemptCompletion(&context)
+    internal func modifyBeforeAttemptCompletion(context: InterceptorContextType) async throws {
+        try await self.modifyBeforeAttemptCompletion(context)
     }
 
     internal func readAfterAttempt(context: InterceptorContextType) async throws {
         try await self.readAfterAttempt(context)
     }
 
-    internal func modifyBeforeCompletion(context: inout InterceptorContextType) async throws {
-        try await self.modifyBeforeCompletion(&context)
+    internal func modifyBeforeCompletion(context: InterceptorContextType) async throws {
+        try await self.modifyBeforeCompletion(context)
     }
 
     internal func readAfterExecution(context: InterceptorContextType) async throws {

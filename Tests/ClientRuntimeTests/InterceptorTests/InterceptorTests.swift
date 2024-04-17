@@ -27,7 +27,7 @@ class InterceptorTests: XCTestCase {
             self.value = value
         }
 
-        public func modifyBeforeSerialization(context: inout some MutableInput<Self.AttributesType>) async throws {
+        public func modifyBeforeSerialization(context: some MutableInput<Self.AttributesType>) async throws {
             let attributes = context.getAttributes()
             attributes.set(key: self.key, value: self.value)
         }
@@ -42,8 +42,8 @@ class InterceptorTests: XCTestCase {
             self.value = value
         }
 
-        public func modifyBeforeSerialization(context: inout some MutableInput<Self.AttributesType>) async throws {
-            var input: InputType = context.getInput()!
+        public func modifyBeforeSerialization(context: some MutableInput<Self.AttributesType>) async throws {
+            var input: InputType = try XCTUnwrap(context.getInput())
             input[keyPath: keyPath] = value
             context.updateInput(updated: input)
         }
@@ -58,7 +58,7 @@ class InterceptorTests: XCTestCase {
             self.headerValue = headerValue
         }
 
-        public func modifyBeforeTransmit(context: inout some MutableRequest<Self.RequestType, Self.AttributesType>) async throws {
+        public func modifyBeforeTransmit(context: some MutableRequest<Self.RequestType, Self.AttributesType>) async throws {
             let builder = context.getRequest().toBuilder()
             builder.withHeader(name: headerName, value: headerValue)
             context.updateRequest(updated: builder.build())
@@ -72,14 +72,14 @@ class InterceptorTests: XCTestCase {
             self.newInputValue = newInputValue
         }
 
-        public func modifyBeforeSerialization(context: inout some MutableInput<Self.AttributesType>) async throws {
-            var input: TestInput = context.getInput()!
+        public func modifyBeforeSerialization(context: some MutableInput<Self.AttributesType>) async throws {
+            var input: TestInput = try XCTUnwrap(context.getInput())
             input.otherProperty = newInputValue
             context.updateInput(updated: input)
         }
 
-        public func modifyBeforeTransmit(context: inout some MutableRequest<Self.RequestType, Self.AttributesType>) async throws {
-            let input: TestInput = context.getInput()!
+        public func modifyBeforeTransmit(context: some MutableRequest<Self.RequestType, Self.AttributesType>) async throws {
+            let input: TestInput = try XCTUnwrap(context.getInput())
             let builder = context.getRequest().toBuilder()
             builder.withHeader(name: "otherProperty", value: "\(input.otherProperty)")
             context.updateRequest(updated: builder.build())
@@ -89,7 +89,7 @@ class InterceptorTests: XCTestCase {
     func test_mutation() async throws {
         let httpContext = HttpContext(attributes: Attributes())
         let input = TestInput(property: "foo")
-        var interceptorContext = DefaultInterceptorContext<SdkHttpRequest, HttpResponse, HttpContext>(input: input, attributes: httpContext)
+        let interceptorContext = DefaultInterceptorContext<SdkHttpRequest, HttpResponse, HttpContext>(input: input, attributes: httpContext)
         let addAttributeInterceptor = AddAttributeInterceptor<String, SdkHttpRequest, HttpResponse, HttpContext>(key: AttributeKey(name: "foo"), value: "bar")
         let modifyInputInterceptor = ModifyInputInterceptor<TestInput, SdkHttpRequest, HttpResponse, HttpContext>(keyPath: \.property, value: "bar")
         let addHeaderInterceptor = AddHeaderInterceptor(headerName: "foo", headerValue: "bar")
@@ -102,14 +102,14 @@ class InterceptorTests: XCTestCase {
             modifyMultipleInterceptor.erase()
         ]
         for i in interceptors {
-            try await i.modifyBeforeSerialization(context: &interceptorContext)
+            try await i.modifyBeforeSerialization(context: interceptorContext)
         }
         interceptorContext.updateRequest(updated: SdkHttpRequestBuilder().build())
         for i in interceptors {
-            try await i.modifyBeforeTransmit(context: &interceptorContext)
+            try await i.modifyBeforeTransmit(context: interceptorContext)
         }
 
-        let updatedInput: TestInput = interceptorContext.getInput()!
+        let updatedInput: TestInput = try XCTUnwrap(interceptorContext.getInput())
         XCTAssertEqual(updatedInput.property, "bar")
         XCTAssertEqual(updatedInput.otherProperty, 1)
         XCTAssertEqual(interceptorContext.getAttributes().get(key: AttributeKey(name: "foo")), "bar")
