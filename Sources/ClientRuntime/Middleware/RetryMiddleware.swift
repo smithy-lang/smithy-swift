@@ -5,6 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Foundation.DateFormatter
+import struct Foundation.Locale
+import struct Foundation.TimeInterval
+import struct Foundation.TimeZone
+import struct Foundation.UUID
+
 public struct RetryMiddleware<Strategy: RetryStrategy,
                               ErrorInfoProvider: RetryErrorInfoProvider,
                               OperationStackOutput>: Middleware {
@@ -16,23 +22,36 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
     public var id: String { "Retry" }
     public var strategy: Strategy
 
+    // The UUID string used to uniquely identify an API call and all of its subsequent retries.
+    private let invocationID = UUID().uuidString.lowercased()
+    // Max number of retries configured for retry strategy.
+    private var maxRetries: Int
+
     public init(options: RetryStrategyOptions) {
         self.strategy = Strategy(options: options)
+        self.maxRetries = options.maxRetriesBase
     }
 
     public func handle<H>(context: Context, input: SdkHttpRequestBuilder, next: H) async throws ->
         OperationOutput<OperationStackOutput>
         where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
 
+        input.headers.add(name: "amz-sdk-invocation-id", value: invocationID)
+
         let partitionID = try getPartitionID(context: context, input: input)
         let token = try await strategy.acquireInitialRetryToken(tokenScope: partitionID)
-        return try await sendRequest(token: token, context: context, input: input, next: next)
+        input.headers.add(name: "amz-sdk-request", value: "attempt=1; max=\(maxRetries)")
+        return try await sendRequest(attemptNumber: 1, token: token, context: context, input: input, next: next)
     }
 
-    private func sendRequest<H>(token: Strategy.Token, context: Context, input: MInput, next: H) async throws ->
+    private func sendRequest<H>(
+        attemptNumber: Int,
+        token: Strategy.Token,
+        context: Context,
+        input: MInput, next: H
+    ) async throws ->
         OperationOutput<OperationStackOutput>
         where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
-
         do {
             let serviceResponse = try await next.handle(context: context, input: input)
             await strategy.recordSuccess(token: token)
@@ -45,7 +64,28 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
                 // TODO: log token error here
                 throw operationError
             }
-            return try await sendRequest(token: token, context: context, input: input, next: next)
+            var estimatedSkew = context.attributes.get(key: AttributeKeys.estimatedSkew)
+            if estimatedSkew == nil {
+                estimatedSkew = 0
+                context.getLogger()!.info("Estimated skew not found; defaulting to zero.")
+            }
+            var socketTimeout = context.attributes.get(key: AttributeKeys.socketTimeout)
+            if socketTimeout == nil {
+                socketTimeout = 60.0
+                context.getLogger()!.info("Socket timeout value not found; defaulting to 60 seconds.")
+            }
+            let ttlDateUTCString = getTTL(now: Date(), estimatedSkew: estimatedSkew!, socketTimeout: socketTimeout!)
+            input.headers.update(
+                name: "amz-sdk-request",
+                value: "ttl=\(ttlDateUTCString); attempt=\(attemptNumber + 1); max=\(maxRetries)"
+            )
+            return try await sendRequest(
+                attemptNumber: attemptNumber + 1,
+                token: token,
+                context: context,
+                input: input,
+                next: next
+            )
         }
     }
 
@@ -65,4 +105,25 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
             throw ClientError.unknownError("Partition ID could not be determined")
         }
     }
+}
+
+// Calculates & returns TTL datetime in strftime format `YYYYmmddTHHMMSSZ`.
+func getTTL(now: Date, estimatedSkew: TimeInterval, socketTimeout: TimeInterval) -> String {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyyMMdd'T'HHmmss'Z'"
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+    let ttlDate = now.addingTimeInterval(estimatedSkew + socketTimeout)
+    return dateFormatter.string(from: ttlDate)
+}
+
+// Calculates & returns estimated skew.
+func getEstimatedSkew(now: Date, responseDateString: String) -> TimeInterval {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
+    let responseDate: Date = dateFormatter.date(from: responseDateString) ?? now
+    // (Estimated skew) = (Date header from HTTP response) - (client's current time)).
+    return responseDate.timeIntervalSince(now)
 }

@@ -87,6 +87,8 @@ class DirectedSwiftCodegen(val context: PluginContext) :
             val numProtocolUnitTestsGenerated = generateProtocolUnitTests(ctx)
             shouldGenerateTestTarget = (numProtocolUnitTestsGenerated > 0)
 
+            LOGGER.info("[${service.id}] Generated $numProtocolUnitTestsGenerated tests for protocol ${this.protocol}")
+
             LOGGER.info("[${service.id}] Generating service client for protocol ${this.protocol}")
 
             generateProtocolClient(ctx)

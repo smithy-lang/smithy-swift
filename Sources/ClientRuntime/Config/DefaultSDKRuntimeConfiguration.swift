@@ -89,12 +89,14 @@ public extension DefaultSDKRuntimeConfiguration {
     ///
     /// - Parameter httpClientConfiguration: The configuration for the HTTP client.
     /// - Returns: The `CRTClientEngine` client on Mac & Linux platforms, returns `URLSessionHttpClient` on non-Mac Apple platforms.
-    static func makeClient(httpClientConfiguration: HttpClientConfiguration) -> HTTPClient {
+    static func makeClient(
+        httpClientConfiguration: HttpClientConfiguration = defaultHttpClientConfiguration
+    ) -> HTTPClient {
         #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS) || os(macOS)
         return URLSessionHTTPClient(httpClientConfiguration: httpClientConfiguration)
         #else
         let connectTimeoutMs = httpClientConfiguration.connectTimeout.map { UInt32($0 * 1000) }
-        let socketTimeout = httpClientConfiguration.connectTimeout.map { UInt32($0) }
+        let socketTimeout = UInt32(httpClientConfiguration.socketTimeout)
         let config = CRTClientEngineConfig(
           connectTimeoutMs: connectTimeoutMs,
           tlsContext: httpClientConfiguration.tlsOptions?.crtTLSContext,
@@ -123,4 +125,27 @@ public extension DefaultSDKRuntimeConfiguration {
     ///
     /// Defaults to `.request`.
     static var defaultClientLogMode: ClientLogMode { .request }
+
+    static var defaultAuthSchemeResolver: AuthSchemeResolver { DefaultAuthSchemeResolver() }
+}
+
+public class DefaultAuthSchemeResolverParameters: AuthSchemeResolverParameters {
+    public var operation: String
+    public init(operation: String) {
+        self.operation = operation
+    }
+}
+
+public class DefaultAuthSchemeResolver: AuthSchemeResolver {
+    public func resolveAuthScheme(params: AuthSchemeResolverParameters) throws -> [AuthOption] {
+        return []
+    }
+
+    public func constructParameters(context: HttpContext) throws -> AuthSchemeResolverParameters {
+        guard let opName = context.getOperation() else {
+            throw ClientError.dataNotFound(
+                "Operation name not configured in middleware context for auth scheme resolver params construction.")
+        }
+        return DefaultAuthSchemeResolverParameters(operation: opName)
+    }
 }
