@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
+import AwsCommonRuntimeKit
 
 public struct CRTClientTLSOptions {
 
@@ -20,10 +21,14 @@ public struct CRTClientTLSOptions {
     public let keyStorePassword: String?
 
     /// Information is provided to use custom trust store
-    public let useSelfSignedCertificate: Bool
+    public var useSelfSignedCertificate: Bool {
+        return certificatePath != nil && certificateFilename != nil
+    }
 
     /// Information is provided to use custom key store
-    public let useProvidedKeystore: Bool
+    public var useProvidedKeystore: Bool {
+        return keyStoreFilepath != nil && keyStorePassword != nil
+    }
 
     public init(
         certificatePath: String? = nil,
@@ -35,8 +40,45 @@ public struct CRTClientTLSOptions {
         self.certificateFilename = certificateFilename
         self.keyStoreFilepath = keyStoreFilepath
         self.keyStorePassword = keyStorePassword
+    }
+}
 
-        self.useSelfSignedCertificate = certificatePath != nil && certificateFilename != nil
-        self.useProvidedKeystore = keyStoreFilepath != nil && keyStorePassword != nil
+extension CRTClientTLSOptions {
+    func resolveContext() -> TLSContext? {
+        // Provide default tls context
+        var tlsContext: TLSContext? = nil
+
+        // Set CRT client tls options with .client mode
+        do {
+            let tlsOptions: TLSContextOptions
+            if self.useProvidedKeystore == true,
+               let keyStoreFilepath = self.keyStoreFilepath,
+               let keyStorePassword = self.keyStorePassword {
+                tlsOptions = try .makeMtlsPkcs12FromPath(
+                    path: keyStoreFilepath,
+                    password: keyStorePassword
+                )
+            } else {
+                tlsOptions = TLSContextOptions.makeDefault()
+            }
+
+            if self.useSelfSignedCertificate == true,
+               let certificatePath = self.certificatePath,
+               let certificateFilename = self.certificateFilename {
+                try tlsOptions.overrideDefaultTrustStore(
+                    caPath: certificatePath,
+                    caFile: certificateFilename
+                )
+            }
+
+            tlsContext = try TLSContext(options: tlsOptions, mode: .client)
+        } catch {
+            let logger = SwiftLogger(label: "HTTPClientConfiguration")
+            logger.error(
+                "TLS Options provided are invliad! Could not create TLSContext. " +
+                "Using default options."
+            )
+        }
+        return tlsContext
     }
 }

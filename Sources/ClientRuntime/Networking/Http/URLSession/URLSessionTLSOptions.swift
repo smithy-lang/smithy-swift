@@ -17,10 +17,14 @@ public struct URLSessionTLSOptions {
     public let keyStorePassword: String?
 
     /// Information is provided to use custom trust store
-    public let useSelfSignedCertificate: Bool
+    public var useSelfSignedCertificate: Bool {
+        return certificateFile != nil
+    }
 
     /// Information is provided to use custom key store
-    public let useProvidedKeystore: Bool
+    public var useProvidedKeystore: Bool {
+        return keyStoreName != nil && keyStorePassword != nil
+    }
 
     public init(
         certificateFile: String? = nil, // .cer
@@ -30,8 +34,5 @@ public struct URLSessionTLSOptions {
         self.certificateFile = certificateFile
         self.keyStoreName = keyStoreName
         self.keyStorePassword = keyStorePassword
-
-        self.useSelfSignedCertificate = certificateFile != nil
-        self.useProvidedKeystore = keyStoreName != nil && keyStorePassword != nil
     }
 }

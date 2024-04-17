@@ -12,7 +12,7 @@ public struct TLSOptions {
     ///
     /// Enables specifying client certificates and trust stores for secure communication.
     /// Defaults to system's TLS settings if `nil`.
-    public var crtTLSContext: TLSContext?
+    public var crtTLSOptions: CRTClientTLSOptions?
 
     /// Custom TLS configuration for HTTPS connections with URLSession client.
     ///
@@ -27,41 +27,7 @@ public struct TLSOptions {
         urlSessionTLSOptions: URLSessionTLSOptions? = nil
     ) {
         // Default to nil
-        self.crtTLSContext = nil
-
-        // Set CRT client tls options with .client mode
-        if let _crtTLSOptions = crtTLSOptions {
-            do {
-                let tlsOptions: TLSContextOptions
-                if _crtTLSOptions.useProvidedKeystore == true,
-                   let keyStoreFilepath = _crtTLSOptions.keyStoreFilepath,
-                   let keyStorePassword = _crtTLSOptions.keyStorePassword {
-                    tlsOptions = try .makeMtlsPkcs12FromPath(
-                        path: keyStoreFilepath,
-                        password: keyStorePassword
-                    )
-                } else {
-                    tlsOptions = TLSContextOptions.makeDefault()
-                }
-
-                if _crtTLSOptions.useSelfSignedCertificate == true,
-                   let certificatePath = _crtTLSOptions.certificatePath,
-                   let certificateFilename = _crtTLSOptions.certificateFilename {
-                    try tlsOptions.overrideDefaultTrustStore(
-                        caPath: certificatePath,
-                        caFile: certificateFilename
-                    )
-                }
-
-                self.crtTLSContext = try TLSContext(options: tlsOptions, mode: .client)
-            } catch {
-                let logger = SwiftLogger(label: "HTTPClientConfiguration")
-                logger.error(
-                    "TLS Options provided are invliad! Could not create TLSContext. " +
-                    "Using default options."
-                )
-            }
-        }
+        self.crtTLSOptions = crtTLSOptions
 
         // Set URLSession client tls options
         self.urlSessionTLSOptions = urlSessionTLSOptions
