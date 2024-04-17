@@ -44,7 +44,8 @@ let package = Package(
                 "SmithyXML",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "Logging", package: "swift-log"),
-            ]
+            ],
+            resources: [.copy("PrivacyInfo.xcprivacy")]
         ),
         .target(name: "SmithyReadWrite"),
         .target(
