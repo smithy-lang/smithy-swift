@@ -7,43 +7,27 @@ package software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTra
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.shapes.BooleanShape
-import software.amazon.smithy.model.shapes.ByteShape
-import software.amazon.smithy.model.shapes.DoubleShape
-import software.amazon.smithy.model.shapes.FloatShape
-import software.amazon.smithy.model.shapes.IntegerShape
-import software.amazon.smithy.model.shapes.LongShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
-import software.amazon.smithy.model.shapes.ShortShape
-import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.declareSection
+import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
-import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingRenderable
+import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.isRPCBound
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
-interface HttpResponseTraitWithoutHttpPayloadFactory {
-    fun construct(
-        ctx: ProtocolGenerator.GenerationContext,
-        responseBindings: List<HttpBindingDescriptor>,
-        outputShape: Shape,
-        writer: SwiftWriter
-    ): HttpResponseBindingRenderable
-}
-
-class HttpResponseTraitWithoutHttpPayload(
+class HTTPResponseTraitWithoutHTTPPayload(
     val ctx: ProtocolGenerator.GenerationContext,
     val responseBindings: List<HttpBindingDescriptor>,
     val outputShape: Shape,
-    val writer: SwiftWriter
-) : HttpResponseBindingRenderable {
+    val writer: SwiftWriter,
+    val customizations: HTTPProtocolCustomizable,
+) : HTTPResponseBindingRenderable {
     override fun render() {
         val bodyMembers = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }
         val bodyMembersWithoutQueryTrait = bodyMembers
@@ -68,27 +52,26 @@ class HttpResponseTraitWithoutHttpPayload(
         when (shape.type) {
             ShapeType.UNION -> {
                 writer.openBlock("if case let .stream(stream) = httpResponse.body {", "} else {") {
-                    writer.declareSection(HttpResponseTraitWithHttpPayload.MessageDecoderSectionId) {
-                        writer.write("let messageDecoder: \$D", ClientRuntimeTypes.EventStream.MessageDecoder)
-                    }
+                    writer.write("let messageDecoder = \$N()", customizations.messageDecoderSymbol)
                     writer.write(
-                        "let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: jsonUnmarshalClosure(responseDecoder: responseDecoder))",
+                        "let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
                         ClientRuntimeTypes.EventStream.MessageDecoderStream,
-                        symbol
+                        symbol,
+                        symbol,
                     )
-                    writer.write("self.\$L = decoderStream.toAsyncStream()", memberName)
-                    if (isRPCService(ctx) && initialResponseMembers.isNotEmpty()) {
+                    writer.write("value.\$L = decoderStream.toAsyncStream()", memberName)
+                    if (ctx.service.isRPCBound && initialResponseMembers.isNotEmpty()) {
                         writeInitialResponseMembers(initialResponseMembers)
                     }
                 }
                 writer.indent()
-                writer.write("self.\$L = nil", memberName).closeBlock("}")
+                writer.write("value.\$L = nil", memberName).closeBlock("}")
             }
             ShapeType.BLOB -> {
                 writer.write("switch httpResponse.body {")
                     .write("case .data(let data):")
                     .indent()
-                writer.write("self.\$L = .data(data)", memberName)
+                writer.write("value.\$L = .data(data)", memberName)
 
                 // For binary streams, we need to set the member to the stream directly.
                 // this allows us to stream the data directly to the user
@@ -96,11 +79,11 @@ class HttpResponseTraitWithoutHttpPayload(
                 writer.dedent()
                     .write("case .stream(let stream):")
                     .indent()
-                writer.write("self.\$L = .stream(stream)", memberName)
+                writer.write("value.\$L = .stream(stream)", memberName)
                 writer.dedent()
                     .write("case .noStream:")
                     .indent()
-                    .write("self.\$L = nil", memberName).closeBlock("}")
+                    .write("value.\$L = nil", memberName).closeBlock("}")
             }
             else -> {
                 throw CodegenException("member shape ${streamingMember.member} cannot stream")
@@ -109,36 +92,10 @@ class HttpResponseTraitWithoutHttpPayload(
     }
 
     fun writeNonStreamingMembers(members: Set<HttpBindingDescriptor>) {
-        val outputShapeName = ctx.symbolProvider.toSymbol(outputShape).name
-        val memberNames = members.map { ctx.symbolProvider.toMemberName(it.member) }
-        writer.write("if let data = try await httpResponse.body.readData(),")
-        writer.indent()
-        writer.write("let responseDecoder = decoder {")
-        writer.write("let output: ${outputShapeName}Body = try responseDecoder.decode(responseBody: data)")
-        memberNames.sorted().forEach {
-            writer.write("self.$path$it = output.$it")
-        }
-        writer.dedent()
-        writer.write("} else {")
-        writer.indent()
         members.sortedBy { it.memberName }.forEach {
-            val memberName = ctx.symbolProvider.toMemberName(it.member)
-            val type = ctx.model.expectShape(it.member.target)
-            val value = if (ctx.symbolProvider.toSymbol(it.member).isBoxed()) "nil" else {
-                when (type) {
-                    is IntegerShape, is ByteShape, is ShortShape, is LongShape -> 0
-                    is FloatShape, is DoubleShape -> 0.0
-                    is BooleanShape -> false
-                    else -> "nil"
-                }
-            }
-            writer.write("self.$path$memberName = $value")
+            MemberShapeDecodeGenerator(ctx, writer, outputShape).render(it.member)
         }
-        writer.dedent()
-        writer.write("}")
     }
-
-    private val path: String = "properties.".takeIf { outputShape.hasTrait<ErrorTrait>() } ?: ""
 
     private fun writeInitialResponseMembers(initialResponseMembers: Set<HttpBindingDescriptor>) {
         writer.apply {
@@ -173,18 +130,4 @@ class HttpResponseTraitWithoutHttpPayload(
             write("}")
         }
     }
-
-    private fun isRPCService(ctx: ProtocolGenerator.GenerationContext): Boolean {
-        return rpcBoundProtocols.contains(ctx.protocol.name)
-    }
-
-    /**
-     * A set of RPC-bound Smithy protocols
-     */
-    private val rpcBoundProtocols = setOf(
-        "awsJson1_0",
-        "awsJson1_1",
-        "awsQuery",
-        "ec2Query",
-    )
 }

@@ -12,7 +12,7 @@ import software.amazon.smithy.swift.codegen.integration.DefaultServiceConfig
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGeneratorFactory
-import software.amazon.smithy.swift.codegen.integration.HttpProtocolCustomizable
+import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceConfig
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
@@ -25,7 +25,7 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
         writer: SwiftWriter,
         serviceName: String,
         defaultContentType: String,
-        httpProtocolCustomizable: HttpProtocolCustomizable,
+        httpProtocolCustomizable: HTTPProtocolCustomizable,
         operationMiddleware: OperationMiddleware,
     ): HttpProtocolClientGenerator {
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
@@ -43,7 +43,7 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
 }
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
-class HttpBindingProtocolGeneratorTests {
+class HTTPBindingProtocolGeneratorTests {
     private var model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()

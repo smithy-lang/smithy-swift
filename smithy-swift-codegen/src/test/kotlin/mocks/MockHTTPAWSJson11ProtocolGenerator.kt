@@ -15,8 +15,9 @@ import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SmithyTestUtilTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
-import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
+import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
@@ -25,8 +26,8 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResp
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingErrorInitGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingOutputGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingErrorInitGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
@@ -46,7 +47,7 @@ class MockJsonHttpBindingResolver(
             .build()
     }
 }
-class MockAWSJson11HttpProtocolCustomizations() : DefaultHttpProtocolCustomizations() {
+class MockAWSJson11HTTPProtocolCustomizations() : DefaultHTTPProtocolCustomizations() {
     override fun renderEventStreamAttributes(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
@@ -57,9 +58,8 @@ class MockAWSJson11HttpProtocolCustomizations() : DefaultHttpProtocolCustomizati
     }
 }
 
-class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
+class MockHTTPAWSJson11ProtocolGenerator() : HTTPBindingProtocolGenerator(MockAWSJson11HTTPProtocolCustomizations()) {
     override val defaultContentType: String = "application/json"
-    override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
     override val protocol: ShapeId = AwsJson1_1Trait.ID
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
@@ -70,22 +70,15 @@ class MockHttpAWSJson11ProtocolGenerator : HttpBindingProtocolGenerator() {
             requestTestBuilder,
             responseTestBuilder,
             errorTestBuilder,
-            httpProtocolCustomizable,
+            customizations,
             operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
         ).generateProtocolTests()
     }
 
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
-    override val httpProtocolCustomizable = MockAWSJson11HttpProtocolCustomizations()
-    override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
-        unknownServiceErrorSymbol,
-        defaultTimestampFormat,
-        XMLHttpResponseBindingOutputGenerator(),
-        MockHttpResponseBindingErrorGenerator(),
-        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat, SmithyTestUtilTypes.TestBaseError)
-    )
-    override val shouldRenderDecodableBodyStructForInputShapes = true
+    override val customizations = MockAWSJson11HTTPProtocolCustomizations()
+    override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(customizations)
     override val shouldRenderEncodableConformance = false
 
     override fun renderStructEncode(

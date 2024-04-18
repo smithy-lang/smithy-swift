@@ -14,20 +14,21 @@ import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.declareSection
+import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingRenderable
 import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isEnum
 
-class XMLHttpResponseTraitWithHttpPayload(
+class HTTPResponseTraitWithHTTPPayload(
     val ctx: ProtocolGenerator.GenerationContext,
     val binding: HttpBindingDescriptor,
     val writer: SwiftWriter,
     val shapeContainingMembers: Shape,
-) : HttpResponseBindingRenderable {
+    val customizations: HTTPProtocolCustomizable,
+) : HTTPResponseBindingRenderable {
 
     override fun render() {
         val memberName = ctx.symbolProvider.toMemberName(binding.member)
@@ -85,9 +86,7 @@ class XMLHttpResponseTraitWithHttpPayload(
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 if (target.hasTrait<StreamingTrait>()) {
                     writer.openBlock("if case .stream(let stream) = httpResponse.body {", "}") {
-                        writer.declareSection(HttpResponseTraitWithHttpPayload.MessageDecoderSectionId) {
-                            writer.write("let messageDecoder: \$D", ClientRuntimeTypes.EventStream.MessageDecoder)
-                        }
+                        writer.write("let messageDecoder = \$N()", customizations.messageDecoderSymbol)
                         writer.write(
                             "let decoderStream = \$N(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
                             ClientRuntimeTypes.EventStream.MessageDecoderStream,

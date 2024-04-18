@@ -5,11 +5,15 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.AuthSchemeResolverGenerator
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SmithyTestUtilTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
-abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
+abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
     override fun serviceClient(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
@@ -30,4 +34,12 @@ abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
     override fun renderInternals(ctx: ProtocolGenerator.GenerationContext) {
         AuthSchemeResolverGenerator().render(ctx)
     }
+
+    override val messageDecoderSymbol: Symbol = ClientRuntimeTypes.EventStream.MessageDecoder
+
+    override val baseErrorSymbol: Symbol = SmithyTestUtilTypes.TestBaseError
+
+    override val unknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
+
+    override val defaultTimestampFormat = TimestampFormatTrait.Format.EPOCH_SECONDS
 }

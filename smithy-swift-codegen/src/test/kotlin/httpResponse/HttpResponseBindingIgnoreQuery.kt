@@ -5,7 +5,7 @@
 
 package httpResponse
 
-import MockHttpRestJsonProtocolGenerator
+import MockHTTPRestJsonProtocolGenerator
 import TestContext
 import defaultSettings
 import getFileContents
@@ -38,7 +38,7 @@ extension IgnoreQueryParamsInResponseOutput {
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestJsonProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol")
         }
         context.generator.generateDeserializers(context.generationCtx)

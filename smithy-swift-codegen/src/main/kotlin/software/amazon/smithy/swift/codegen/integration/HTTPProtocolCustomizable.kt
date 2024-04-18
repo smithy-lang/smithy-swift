@@ -9,10 +9,11 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
-interface HttpProtocolCustomizable {
+interface HTTPProtocolCustomizable {
     fun renderInternals(ctx: ProtocolGenerator.GenerationContext) {
         // Default implementation is no-op
     }
@@ -49,4 +50,12 @@ interface HttpProtocolCustomizable {
     fun alwaysHasHttpBody(): Boolean {
         return false
     }
+
+    val baseErrorSymbol: Symbol
+
+    val messageDecoderSymbol: Symbol
+
+    val unknownServiceErrorSymbol: Symbol
+
+    val defaultTimestampFormat: TimestampFormatTrait.Format
 }

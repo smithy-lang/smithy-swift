@@ -16,8 +16,8 @@ import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SmithyTestUtilTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
-import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
+import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
@@ -26,14 +26,14 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResp
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingErrorInitGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingOutputGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingErrorInitGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
-class MockEC2QueryHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
+class MockEC2QueryHTTPProtocolCustomizations() : DefaultHTTPProtocolCustomizations()
 
 class MockEC2QueryHttpBindingResolver(
     private val context: ProtocolGenerator.GenerationContext,
@@ -50,20 +50,12 @@ class MockEC2QueryHttpBindingResolver(
     }
 }
 
-class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
+class MockHTTPEC2QueryProtocolGenerator : HTTPBindingProtocolGenerator(MockEC2QueryHTTPProtocolCustomizations()) {
     override val defaultContentType: String = "application/x-www-form-urlencoded"
-    override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
     override val protocol: ShapeId = Ec2QueryTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
-    override val httpProtocolCustomizable = MockEC2QueryHttpProtocolCustomizations()
-    override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
-        unknownServiceErrorSymbol,
-        defaultTimestampFormat,
-        XMLHttpResponseBindingOutputGenerator(),
-        MockHttpResponseBindingErrorGenerator(),
-        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat, SmithyTestUtilTypes.TestBaseError)
-    )
-    override val shouldRenderDecodableBodyStructForInputShapes = false
+    override val customizations = MockEC2QueryHTTPProtocolCustomizations()
+    override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(customizations)
     override val shouldRenderEncodableConformance = true
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
@@ -114,10 +106,9 @@ class MockHttpEC2QueryProtocolGenerator : HttpBindingProtocolGenerator() {
             requestTestBuilder,
             responseTestBuilder,
             errorTestBuilder,
-            httpProtocolCustomizable,
+            customizations,
             operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
-//            HttpProtocolUnitTestGenerator.SerdeContext("FormURLEncoder()", null, ".secondsSince1970")
         ).generateProtocolTests()
     }
 }

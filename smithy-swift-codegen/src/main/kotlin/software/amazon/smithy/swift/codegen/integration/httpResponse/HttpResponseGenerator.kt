@@ -10,16 +10,16 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 class HttpResponseGenerator(
-    val unknownServiceErrorSymbol: Symbol,
-    val defaultTimestampFormat: TimestampFormatTrait.Format,
-    val httpResponseBindingOutputGenerator: HttpResponseBindingOutputGeneratable,
-    val httpResponseBindingErrorGenerator: HttpResponseBindingErrorGeneratable,
-    val httpResponseBindingErrorInitGenerator: HttpResponseBindingErrorInitGeneratable
+    val customizations: HTTPProtocolCustomizable,
 ) : HttpResponseGeneratable {
+    val httpResponseBindingOutputGenerator = HTTPResponseBindingOutputGenerator(customizations)
+    val httpResponseBindingErrorGenerator = HTTPResponseBindingErrorGenerator(customizations)
+    val httpResponseBindingErrorInitGenerator = HTTPResponseBindingErrorInitGenerator(customizations)
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, httpOperations: List<OperationShape>, httpBindingResolver: HttpBindingResolver) {
         val visitedOutputShapes: MutableSet<ShapeId> = mutableSetOf()
@@ -29,7 +29,7 @@ class HttpResponseGenerator(
                 if (visitedOutputShapes.contains(outputShapeId)) {
                     continue
                 }
-                httpResponseBindingOutputGenerator.render(ctx, operation, httpBindingResolver, defaultTimestampFormat)
+                httpResponseBindingOutputGenerator.render(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
                 visitedOutputShapes.add(outputShapeId)
             }
         }
@@ -38,7 +38,7 @@ class HttpResponseGenerator(
             httpResponseBindingErrorGenerator.renderServiceError(ctx)
         }
         httpOperations.forEach {
-            httpResponseBindingErrorGenerator.renderOperationError(ctx, it, unknownServiceErrorSymbol)
+            httpResponseBindingErrorGenerator.renderOperationError(ctx, it, customizations.unknownServiceErrorSymbol)
         }
 
         val modeledOperationErrors = httpOperations

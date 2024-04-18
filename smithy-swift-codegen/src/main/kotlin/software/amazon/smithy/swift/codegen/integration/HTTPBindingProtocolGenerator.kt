@@ -121,11 +121,11 @@ fun formatHeaderOrQueryValue(
 /**
  * Abstract implementation useful for all HTTP protocols
  */
-abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
+abstract class HTTPBindingProtocolGenerator(
+    override val customizations: HTTPProtocolCustomizable,
+) : ProtocolGenerator {
     private val LOGGER = Logger.getLogger(javaClass.name)
     private val idempotencyTokenValue = "idempotencyTokenGenerator.generateToken()"
-
-    override val unknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
 
     override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpError
 
@@ -141,8 +141,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
                 HttpUrlPathProvider.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
-                HttpHeaderProvider.renderHeaderMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
-                HttpQueryItemProvider.renderQueryMiddleware(ctx, operation, httpBindingResolver, defaultTimestampFormat)
+                HttpHeaderProvider.renderHeaderMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
+                HttpQueryItemProvider.renderQueryMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
         }
@@ -179,7 +179,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                         writer.write("")
                         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: null
-                        renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, defaultTimestampFormat, path)
+                        renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, customizations.defaultTimestampFormat, path)
                     }
                 }
             }
@@ -221,9 +221,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         val httpBodyMembers = members.filter { it.isInHttpBody() }
                         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
                         writer.write("")
-                        renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer, defaultTimestampFormat, path)
+                        renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer, customizations.defaultTimestampFormat, path)
                         writer.write("")
-                        renderStructDecode(ctx, shape, mapOf(), httpBodyMembers, writer, defaultTimestampFormat, path)
+                        renderStructDecode(ctx, shape, mapOf(), httpBodyMembers, writer, customizations.defaultTimestampFormat, path)
                     }
                     is UnionShape -> {
                         // get all members of the union shape
@@ -369,7 +369,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer,
                 serviceSymbol.name,
                 defaultContentType,
-                httpProtocolCustomizable,
+                customizations,
                 operationMiddleware,
             )
             clientGenerator.render()
@@ -412,10 +412,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override val operationMiddleware = OperationMiddlewareGenerator()
 
-    protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
     protected abstract val httpResponseGenerator: HttpResponseGeneratable
-    protected abstract val shouldRenderDecodableBodyStructForInputShapes: Boolean
     protected abstract val shouldRenderEncodableConformance: Boolean
     protected abstract fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,

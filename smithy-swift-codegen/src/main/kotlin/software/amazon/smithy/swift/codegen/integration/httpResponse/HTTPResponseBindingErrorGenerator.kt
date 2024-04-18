@@ -13,6 +13,7 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
+import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
@@ -21,9 +22,9 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.utils.errorShapeName
 
-abstract class HTTPResponseBindingErrorGenerator : HttpResponseBindingErrorGeneratable {
-
-    abstract val serviceBaseErrorSymbol: Symbol
+class HTTPResponseBindingErrorGenerator(
+    val customizations: HTTPProtocolCustomizable,
+) : HttpResponseBindingErrorGeneratable {
 
     override fun renderServiceError(ctx: ProtocolGenerator.GenerationContext) {
         val serviceShape = ctx.service
@@ -34,7 +35,7 @@ abstract class HTTPResponseBindingErrorGenerator : HttpResponseBindingErrorGener
         ctx.delegator.useFileWriter(fileName) { writer ->
             with(writer) {
                 addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                addImport(serviceBaseErrorSymbol.namespace)
+                addImport(customizations.baseErrorSymbol.namespace)
                 openBlock(
                     "extension \$LTypes {",
                     "}",
@@ -42,7 +43,7 @@ abstract class HTTPResponseBindingErrorGenerator : HttpResponseBindingErrorGener
                 ) {
                     openBlock(
                         "static func responseServiceErrorBinding(baseError: \$N) throws -> \$N? {", "}",
-                        serviceBaseErrorSymbol,
+                        customizations.baseErrorSymbol,
                         SwiftTypes.Error
                     ) {
                         openBlock("switch baseError.code {", "}") {
@@ -78,7 +79,7 @@ abstract class HTTPResponseBindingErrorGenerator : HttpResponseBindingErrorGener
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addImport(serviceBaseErrorSymbol.namespace)
+            writer.addImport(customizations.baseErrorSymbol.namespace)
             writer.addImports(ctx.service.responseWireProtocol)
             writer.openBlock("enum \$L {", "}", operationErrorName) {
                 writer.write("")
@@ -94,8 +95,12 @@ abstract class HTTPResponseBindingErrorGenerator : HttpResponseBindingErrorGener
                         .sorted()
                     writer.openBlock("{ httpResponse, responseDocumentClosure in", "}") {
                         writer.write("let responseReader = try await responseDocumentClosure(httpResponse)")
-                        val noErrorWrapping = ctx.service.getTrait<RestXmlTrait>()?.let { it.isNoErrorWrapping } ?: false
-                        writer.write("let baseError = try \$N(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L)", serviceBaseErrorSymbol, noErrorWrapping)
+                        val noErrorWrapping = ctx.service.getTrait<RestXmlTrait>()?.isNoErrorWrapping ?: false
+                        writer.write(
+                            "let baseError = try \$N(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L)",
+                            customizations.baseErrorSymbol,
+                            noErrorWrapping
+                        )
                         if (ctx.service.errors.isNotEmpty()) {
                             writer.openBlock(
                                 "if let serviceError = try \$LTypes.responseServiceErrorBinding(baseError: baseError) {",

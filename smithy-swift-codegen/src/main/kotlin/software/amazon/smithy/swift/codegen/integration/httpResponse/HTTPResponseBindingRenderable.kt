@@ -5,6 +5,6 @@
 
 package software.amazon.smithy.swift.codegen.integration.httpResponse
 
-interface HttpResponseBindingRenderable {
+interface HTTPResponseBindingRenderable {
     fun render()
 }

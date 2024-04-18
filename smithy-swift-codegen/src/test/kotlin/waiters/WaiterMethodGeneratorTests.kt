@@ -5,7 +5,7 @@
 
 package waiters
 
-import MockHttpRestJsonProtocolGenerator
+import MockHTTPRestJsonProtocolGenerator
 import TestContext
 import defaultSettings
 import getFileContents
@@ -55,7 +55,7 @@ class WaiterMethodGeneratorTests {
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context =
-            TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
+            TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestJsonProtocolGenerator()) { model ->
                 model.defaultSettings(serviceShapeId, "Test", "2019-12-16", "Test")
             }
         context.generator.generateProtocolClient(context.generationCtx)

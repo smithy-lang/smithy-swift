@@ -4,7 +4,7 @@
  */
 
 import mocks.MockHttpResponseBindingErrorGenerator
-import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
+import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
@@ -12,8 +12,8 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SmithyTestUtilTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
-import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
+import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
@@ -21,28 +21,19 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResp
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingErrorInitGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.XMLHttpResponseBindingOutputGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingErrorInitGenerator
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
-class MockRestXMLHttpProtocolCustomizations() : DefaultHttpProtocolCustomizations()
-
-class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
-    override val defaultContentType: String = "application/xml"
-    override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
-    override val protocol: ShapeId = RestXmlTrait.ID
+class MockRestJsonHTTPProtocolCustomizations() : DefaultHTTPProtocolCustomizations()
+class MockHTTPRestJsonProtocolGenerator : HTTPBindingProtocolGenerator(MockRestJsonHTTPProtocolCustomizations()) {
+    override val defaultContentType: String = "application/json"
+    override val protocol: ShapeId = RestJson1Trait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
-    override val httpProtocolCustomizable = MockRestXMLHttpProtocolCustomizations()
-    override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(
-        unknownServiceErrorSymbol,
-        defaultTimestampFormat,
-        XMLHttpResponseBindingOutputGenerator(),
-        MockHttpResponseBindingErrorGenerator(),
-        XMLHttpResponseBindingErrorInitGenerator(defaultTimestampFormat, SmithyTestUtilTypes.TestBaseError)
-    )
-    override val shouldRenderDecodableBodyStructForInputShapes = false
+    override val customizations = MockRestJsonHTTPProtocolCustomizations()
+    override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(customizations)
     override val shouldRenderEncodableConformance = false
 
     override fun renderStructEncode(
@@ -54,8 +45,7 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat: TimestampFormatTrait.Format,
         path: String?
     ) {
-        val encoder = StructEncodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer)
-        encoder.render()
+        StructEncodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
     }
     override fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,
@@ -66,8 +56,7 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
         defaultTimestampFormat: TimestampFormatTrait.Format,
         path: String
     ) {
-        val decodeGenerator = StructDecodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer)
-        decodeGenerator.render()
+        StructDecodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
     }
 
     override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
@@ -92,7 +81,7 @@ class MockHttpRestXMLProtocolGenerator : HttpBindingProtocolGenerator() {
             requestTestBuilder,
             responseTestBuilder,
             errorTestBuilder,
-            httpProtocolCustomizable,
+            customizations,
             operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
         ).generateProtocolTests()

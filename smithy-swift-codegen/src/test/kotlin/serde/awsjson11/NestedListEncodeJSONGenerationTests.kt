@@ -4,7 +4,7 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import mocks.MockHttpAWSJson11ProtocolGenerator
+import mocks.MockHTTPAWSJson11ProtocolGenerator
 import org.junit.jupiter.api.Test
 import shouldSyntacticSanityCheck
 
@@ -48,7 +48,7 @@ extension ListOfMapsOperationInput {
         contents.shouldContainOnlyOnce(expectedContents)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpAWSJson11ProtocolGenerator()) { model ->
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPAWSJson11ProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "Example", "2014-11-06", "aws json 11")
         }
         context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)

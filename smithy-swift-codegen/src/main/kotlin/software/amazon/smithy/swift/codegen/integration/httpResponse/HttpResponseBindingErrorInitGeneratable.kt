@@ -8,6 +8,6 @@ interface HttpResponseBindingErrorInitGeneratable {
     fun render(
         ctx: ProtocolGenerator.GenerationContext,
         structureShape: StructureShape,
-        httpBindingResolver: HttpBindingResolver
+        httpBindingResolver: HttpBindingResolver,
     )
 }

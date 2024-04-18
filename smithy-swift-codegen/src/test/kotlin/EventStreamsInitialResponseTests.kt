@@ -4,9 +4,9 @@
  */
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import mocks.MockHttpAWSJson11ProtocolGenerator
+import mocks.MockHTTPAWSJson11ProtocolGenerator
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
 
 class EventStreamsInitialResponseTests {
     @Test
@@ -14,7 +14,7 @@ class EventStreamsInitialResponseTests {
         val context = setupInitialMessageTests(
             "event-stream-initial-request-response.smithy",
             "com.test#Example",
-            MockHttpAWSJson11ProtocolGenerator()
+            MockHTTPAWSJson11ProtocolGenerator()
         )
         val contents = getFileContents(
             context.manifest,
@@ -62,7 +62,7 @@ extension TestStreamOperationWithInitialRequestResponseOutput {
     private fun setupInitialMessageTests(
         smithyFile: String,
         serviceShapeId: String,
-        protocolGenerator: HttpBindingProtocolGenerator
+        protocolGenerator: HTTPBindingProtocolGenerator
     ): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, protocolGenerator) { model ->
             model.defaultSettings(serviceShapeId, "InitialMessageEventStreams", "123", "InitialMessageEventStreams")

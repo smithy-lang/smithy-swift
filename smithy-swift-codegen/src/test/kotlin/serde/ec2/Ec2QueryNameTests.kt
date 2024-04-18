@@ -9,7 +9,7 @@ import TestContext
 import defaultSettings
 import getFileContents
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import mocks.MockHttpEC2QueryProtocolGenerator
+import mocks.MockHTTPEC2QueryProtocolGenerator
 import org.junit.jupiter.api.Test
 import shouldSyntacticSanityCheck
 
@@ -41,7 +41,7 @@ extension Ec2SimpleInputParamsInput {
         contents.shouldContainOnlyOnce(expectedContents)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpEC2QueryProtocolGenerator()) { model ->
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPEC2QueryProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "Example", "2020-01-08", "Ec2 query protocol")
         }
         context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)

@@ -280,7 +280,7 @@ public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandl
         val context = TestContext.initContextFrom(
             listOf(smithyFile),
             serviceShapeId,
-            MockHttpRestJsonProtocolGenerator(),
+            MockHTTPRestJsonProtocolGenerator(),
             { model -> model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol") },
             listOf(DefaultClientConfigurationIntegration())
         )

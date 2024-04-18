@@ -10,10 +10,11 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitPayload
+import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitPayload
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitQueryParams
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitResponseCode
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
@@ -24,13 +25,15 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.response
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
-class XMLHttpResponseBindingOutputGenerator : HttpResponseBindingOutputGeneratable {
+class HTTPResponseBindingOutputGenerator(
+    val customizations: HTTPProtocolCustomizable,
+) {
 
-    override fun render(
+    fun render(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
         httpBindingResolver: HttpBindingResolver,
-        defaultTimestampFormat: TimestampFormatTrait.Format
+        defaultTimestampFormat: TimestampFormatTrait.Format,
     ) {
         if (op.output.isEmpty) { return }
         val outputShape = ctx.model.expectShape(op.outputShape)
@@ -67,9 +70,9 @@ class XMLHttpResponseBindingOutputGenerator : HttpResponseBindingOutputGeneratab
                                 writer.write("let reader = \$L", reader(ctx, op, writer))
                             }
                             writer.write("var value = \$N()", outputSymbol)
-                            XMLHttpResponseHeaders(ctx, false, headerBindings, defaultTimestampFormat, writer).render()
-                            XMLHttpResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                            XMLHttpResponseTraitPayload(ctx, responseBindings, outputShape, writer).render()
+                            HTTPResponseHeaders(ctx, false, headerBindings, defaultTimestampFormat, writer).render()
+                            HTTPResponsePrefixHeaders(ctx, responseBindings, writer).render()
+                            HTTPResponseTraitPayload(ctx, responseBindings, outputShape, writer, customizations).render()
                             XMLHttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
                             XMLHttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
                             writer.write("return value")

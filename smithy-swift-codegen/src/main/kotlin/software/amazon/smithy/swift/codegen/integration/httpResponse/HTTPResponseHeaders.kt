@@ -27,7 +27,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 
-class XMLHttpResponseHeaders(
+class HTTPResponseHeaders(
     val ctx: ProtocolGenerator.GenerationContext,
     val error: Boolean,
     val bindings: List<HttpBindingDescriptor>,

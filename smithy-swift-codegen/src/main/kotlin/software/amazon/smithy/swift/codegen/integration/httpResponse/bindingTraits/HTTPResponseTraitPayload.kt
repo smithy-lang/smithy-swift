@@ -8,35 +8,38 @@ package software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTra
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseBindingRenderable
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingRenderable
 
-interface HttpResponseTraitPayloadFactory {
+interface HTTPResponseTraitPayloadFactory {
     fun construct(
         ctx: ProtocolGenerator.GenerationContext,
         responseBindings: List<HttpBindingDescriptor>,
         errorShape: Shape,
-        writer: SwiftWriter
-    ): HttpResponseBindingRenderable
+        writer: SwiftWriter,
+        customizations: HTTPProtocolCustomizable,
+    ): HTTPResponseBindingRenderable
 }
 
-class HttpResponseTraitPayload(
+class HTTPResponseTraitPayload(
     val ctx: ProtocolGenerator.GenerationContext,
     val responseBindings: List<HttpBindingDescriptor>,
     val outputShape: Shape,
     val writer: SwiftWriter,
-    val httpResponseTraitWithoutPayloadFactory: HttpResponseTraitWithoutHttpPayloadFactory? = null
-) : HttpResponseBindingRenderable {
+    val customizations: HTTPProtocolCustomizable,
+    val httpResponseTraitWithoutPayloadFactory: HTTPResponseTraitWithoutHTTPPayloadFactory? = null,
+) : HTTPResponseBindingRenderable {
     override fun render() {
         val httpPayload = responseBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
-            HttpResponseTraitWithHttpPayload(ctx, httpPayload, writer).render()
+            HTTPResponseTraitWithHTTPPayload(ctx, httpPayload, writer, outputShape, customizations).render()
         } else {
             val httpResponseTraitWithoutPayload = httpResponseTraitWithoutPayloadFactory?.let {
                 it.construct(ctx, responseBindings, outputShape, writer)
             } ?: run {
-                XMLHttpResponseTraitWithoutHttpPayload(ctx, responseBindings, outputShape, writer)
+                HTTPResponseTraitWithoutHTTPPayload(ctx, responseBindings, outputShape, writer, customizations)
             }
             httpResponseTraitWithoutPayload.render()
         }
