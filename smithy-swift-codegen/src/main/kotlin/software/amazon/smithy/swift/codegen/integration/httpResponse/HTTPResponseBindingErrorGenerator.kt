@@ -84,47 +84,46 @@ class HTTPResponseBindingErrorGenerator(
             writer.openBlock("enum \$L {", "}", operationErrorName) {
                 writer.write("")
                 writer.openBlock(
-                    "static var httpErrorBinding: \$N<\$N, \$N> {", "}",
-                    SmithyReadWriteTypes.WireResponseErrorBinding,
+                    "static func httpError(from httpResponse: \$N) async throws -> \$N {", "}",
                     ClientRuntimeTypes.Http.HttpResponse,
-                    ctx.service.readerSymbol,
+                    SwiftTypes.Error,
                 ) {
                     val errorShapes = op.errors
                         .map { ctx.model.expectShape(it) as StructureShape }
                         .toSet()
                         .sorted()
-                    writer.openBlock("{ httpResponse, responseDocumentClosure in", "}") {
-                        writer.write("let responseReader = try await responseDocumentClosure(httpResponse)")
-                        val noErrorWrapping = ctx.service.getTrait<RestXmlTrait>()?.isNoErrorWrapping ?: false
-                        writer.write(
-                            "let baseError = try \$N(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L)",
-                            customizations.baseErrorSymbol,
-                            noErrorWrapping
-                        )
-                        if (ctx.service.errors.isNotEmpty()) {
-                            writer.openBlock(
-                                "if let serviceError = try \$LTypes.responseServiceErrorBinding(baseError: baseError) {",
-                                "}",
-                                ctx.symbolProvider.toSymbol(ctx.service).name,
-                            ) {
-                                writer.write("return serviceError")
-                            }
+                    writer.write("let data = try await httpResponse.data()")
+                    writer.write("let responseReader = try \$N.from(data: data)", ctx.service.readerSymbol)
+                    val noErrorWrapping = ctx.service.getTrait<RestXmlTrait>()?.isNoErrorWrapping ?: false
+                    writer.write(
+                        "let baseError = try \$N(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L)",
+                        customizations.baseErrorSymbol,
+                        noErrorWrapping
+                    )
+                    writer.write("if let error = baseError.customError() { return error }")
+                    if (ctx.service.errors.isNotEmpty()) {
+                        writer.openBlock(
+                            "if let serviceError = try \$LTypes.responseServiceErrorBinding(baseError: baseError) {",
+                            "}",
+                            ctx.symbolProvider.toSymbol(ctx.service).name,
+                        ) {
+                            writer.write("return serviceError")
                         }
-                        writer.openBlock("switch baseError.code {", "}") {
-                            errorShapes.forEach { errorShape ->
-                                val errorShapeName = errorShape.errorShapeName(ctx.symbolProvider)
-                                val errorShapeType = ctx.symbolProvider.toSymbol(errorShape).name
-                                writer.write(
-                                    "case \$S: return try \$L.makeError(baseError: baseError)",
-                                    errorShapeName,
-                                    errorShapeType
-                                )
-                            }
+                    }
+                    writer.openBlock("switch baseError.code {", "}") {
+                        errorShapes.forEach { errorShape ->
+                            val errorShapeName = errorShape.errorShapeName(ctx.symbolProvider)
+                            val errorShapeType = ctx.symbolProvider.toSymbol(errorShape).name
                             writer.write(
-                                "default: return try \$N.makeError(baseError: baseError)",
-                                unknownServiceErrorSymbol
+                                "case \$S: return try \$L.makeError(baseError: baseError)",
+                                errorShapeName,
+                                errorShapeType
                             )
                         }
+                        writer.write(
+                            "default: return try \$N.makeError(baseError: baseError)",
+                            unknownServiceErrorSymbol
+                        )
                     }
                 }
             }

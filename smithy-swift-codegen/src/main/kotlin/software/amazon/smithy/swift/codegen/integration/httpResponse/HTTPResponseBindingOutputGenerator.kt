@@ -54,29 +54,26 @@ class HTTPResponseBindingOutputGenerator(
             writer.openBlock("extension \$N {", "}", outputSymbol) {
                 writer.write("")
                 writer.openBlock(
-                    "static var httpBinding: \$N<\$N, \$N, \$N> {",
+                    "static func httpOutput(from httpResponse: \$N) async throws -> \$N {",
                     "}",
-                    SmithyReadWriteTypes.WireResponseOutputBinding,
                     ClientRuntimeTypes.Http.HttpResponse,
                     outputSymbol,
-                    ctx.service.readerSymbol,
                 ) {
-                    writer.openBlock("{ httpResponse, responseDocumentClosure in", "}") {
-                        if (responseBindings.isEmpty()) {
-                            writer.write("return \$N()", outputSymbol)
-                        } else {
-                            if (needsAReader(ctx, responseBindings)) {
-                                writer.write("let responseReader = try await responseDocumentClosure(httpResponse)")
-                                writer.write("let reader = \$L", reader(ctx, op, writer))
-                            }
-                            writer.write("var value = \$N()", outputSymbol)
-                            HTTPResponseHeaders(ctx, false, headerBindings, defaultTimestampFormat, writer).render()
-                            HTTPResponsePrefixHeaders(ctx, responseBindings, writer).render()
-                            HTTPResponseTraitPayload(ctx, responseBindings, outputShape, writer, customizations).render()
-                            HTTPResponseTraitQueryParams(ctx, responseBindings, writer).render()
-                            HTTPResponseTraitResponseCode(ctx, responseBindings, writer).render()
-                            writer.write("return value")
+                    if (responseBindings.isEmpty()) {
+                        writer.write("return \$N()", outputSymbol)
+                    } else {
+                        if (needsAReader(ctx, responseBindings)) {
+                            writer.write("let data = try await httpResponse.data()")
+                            writer.write("let responseReader = try \$N.from(data: data)", ctx.service.readerSymbol)
+                            writer.write("let reader = \$L", reader(ctx, op, writer))
                         }
+                        writer.write("var value = \$N()", outputSymbol)
+                        HTTPResponseHeaders(ctx, false, headerBindings, defaultTimestampFormat, writer).render()
+                        HTTPResponsePrefixHeaders(ctx, responseBindings, writer).render()
+                        HTTPResponseTraitPayload(ctx, responseBindings, outputShape, writer, customizations).render()
+                        HTTPResponseTraitQueryParams(ctx, responseBindings, writer).render()
+                        HTTPResponseTraitResponseCode(ctx, responseBindings, writer).render()
+                        writer.write("return value")
                     }
                 }
             }

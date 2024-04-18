@@ -15,9 +15,6 @@ class ResponseClosureUtils(
         writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         val outputShape = ctx.model.expectShape(op.outputShape)
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
-        return writer.format(
-            "wireResponseOutputClosure(\$N.httpBinding, wireResponseDocumentBinding())",
-            outputSymbol
-        )
+        return writer.format("\$N.httpOutput(from:)", outputSymbol)
     }
 }
