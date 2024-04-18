@@ -7,8 +7,8 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Middleware.OperationStack
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
+import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase

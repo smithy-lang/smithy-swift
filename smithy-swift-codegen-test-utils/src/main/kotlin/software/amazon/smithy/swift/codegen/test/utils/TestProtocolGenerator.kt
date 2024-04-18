@@ -14,9 +14,9 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.DefaultServiceConfig
 import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
-import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
@@ -28,7 +28,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncod
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
-class TestCustomizations: DefaultHTTPProtocolCustomizations()
+class TestCustomizations : DefaultHTTPProtocolCustomizations()
 /**
  * A test JSON-based protocol generator for the Weather service client
  */

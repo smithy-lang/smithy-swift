@@ -54,19 +54,7 @@ private struct TestInputType {
     var tokenMember: String?
 }
 
-private struct TestOutputType {
-//    init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws {
-//        // no-op
-//    }
-}
-
-//private enum TestOutputErrorType: HttpResponseErrorBinding {
-//    static func makeError(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder?) async throws -> Error {
-//        return TestError()
-//    }
-//}
-
-private struct TestError: Error {}
+private struct TestOutputType {}
 
 private struct MockHandler<I, O>: Handler {
     typealias Output = OperationOutput<O>

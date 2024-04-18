@@ -7,12 +7,11 @@ import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.DefaultServiceConfig
+import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGeneratorFactory
-import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceConfig
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
@@ -31,10 +30,6 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val config = getConfigClass(writer, serviceSymbol.name)
         return HttpProtocolClientGenerator(ctx, writer, config, httpBindingResolver, defaultContentType, httpProtocolCustomizable, operationMiddleware)
-    }
-
-    private fun getClientProperties(ctx: ProtocolGenerator.GenerationContext): List<ClientProperty> {
-        return listOf()
     }
 
     private fun getConfigClass(writer: SwiftWriter, serviceName: String): ServiceConfig {
