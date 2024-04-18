@@ -19,12 +19,6 @@ let libXML2DependencyOrNil: Target.Dependency? = nil
 let libXML2TargetOrNil: Target? = nil
 #endif
 
-#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
-    let privacyManifestPath = "./PrivacyInfo.xcprivacy"
-#else
-    let privacyManifestPath = "./Resources/PrivacyInfo.xcprivacy"
-#endif
-
 let package = Package(
     name: "smithy-swift",
     platforms: [
@@ -51,7 +45,9 @@ let package = Package(
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "Logging", package: "swift-log"),
             ],
-            resources: [.process(privacyManifestPath)]
+            resources: [
+                .copy("PrivacyInfo.xcprivacy")
+            ]
         ),
         .target(name: "SmithyReadWrite"),
         .target(
