@@ -14,7 +14,6 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SmithyTestUtilTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
@@ -24,10 +23,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErro
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingErrorInitGenerator
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingOutputGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
@@ -54,8 +49,6 @@ class MockHTTPEC2QueryProtocolGenerator : HTTPBindingProtocolGenerator(MockEC2Qu
     override val defaultContentType: String = "application/x-www-form-urlencoded"
     override val protocol: ShapeId = Ec2QueryTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
-    override val customizations = MockEC2QueryHTTPProtocolCustomizations()
-    override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(customizations)
     override val shouldRenderEncodableConformance = true
     override fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,

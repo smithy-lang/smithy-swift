@@ -100,7 +100,7 @@ extension EventStreamingOutput {
         { httpResponse, responseDocumentClosure in
             var value = EventStreamingOutput()
             if case let .stream(stream) = httpResponse.body {
-                let messageDecoder: ClientRuntime.MessageDecoder? = nil
+                let messageDecoder = ClientRuntime.MessageDecoder()
                 let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: EventStream.unmarshal)
                 value.eventStream = decoderStream.toAsyncStream()
             } else {

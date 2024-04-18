@@ -5,23 +5,21 @@
 
 package software.amazon.smithy.swift.codegen.integration.httpResponse
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
-class HttpResponseGenerator(
+class HTTPResponseGenerator(
     val customizations: HTTPProtocolCustomizable,
-) : HttpResponseGeneratable {
+) {
     val httpResponseBindingOutputGenerator = HTTPResponseBindingOutputGenerator(customizations)
     val httpResponseBindingErrorGenerator = HTTPResponseBindingErrorGenerator(customizations)
     val httpResponseBindingErrorInitGenerator = HTTPResponseBindingErrorInitGenerator(customizations)
 
-    override fun render(ctx: ProtocolGenerator.GenerationContext, httpOperations: List<OperationShape>, httpBindingResolver: HttpBindingResolver) {
+    fun render(ctx: ProtocolGenerator.GenerationContext, httpOperations: List<OperationShape>, httpBindingResolver: HttpBindingResolver) {
         val visitedOutputShapes: MutableSet<ShapeId> = mutableSetOf()
         for (operation in httpOperations) {
             if (operation.output.isPresent) {

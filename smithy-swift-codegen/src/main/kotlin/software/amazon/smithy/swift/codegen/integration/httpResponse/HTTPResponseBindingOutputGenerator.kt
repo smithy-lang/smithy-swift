@@ -15,8 +15,8 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitPayload
-import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitQueryParams
-import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.XMLHttpResponseTraitResponseCode
+import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitQueryParams
+import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitResponseCode
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
@@ -73,8 +73,8 @@ class HTTPResponseBindingOutputGenerator(
                             HTTPResponseHeaders(ctx, false, headerBindings, defaultTimestampFormat, writer).render()
                             HTTPResponsePrefixHeaders(ctx, responseBindings, writer).render()
                             HTTPResponseTraitPayload(ctx, responseBindings, outputShape, writer, customizations).render()
-                            XMLHttpResponseTraitQueryParams(ctx, responseBindings, writer).render()
-                            XMLHttpResponseTraitResponseCode(ctx, responseBindings, writer).render()
+                            HTTPResponseTraitQueryParams(ctx, responseBindings, writer).render()
+                            HTTPResponseTraitResponseCode(ctx, responseBindings, writer).render()
                             writer.write("return value")
                         }
                     }

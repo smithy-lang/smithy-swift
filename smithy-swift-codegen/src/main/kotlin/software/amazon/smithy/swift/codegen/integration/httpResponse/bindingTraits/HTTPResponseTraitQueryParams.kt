@@ -5,24 +5,26 @@
 
 package software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits
 
-import software.amazon.smithy.model.traits.HttpResponseCodeTrait
+import software.amazon.smithy.model.knowledge.HttpBinding
+import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
-class XMLHttpResponseTraitResponseCode(
+class HTTPResponseTraitQueryParams(
     val ctx: ProtocolGenerator.GenerationContext,
     val responseBindings: List<HttpBindingDescriptor>,
     val writer: SwiftWriter
 ) {
     fun render() {
-        val responseCodeTraitMembers = responseBindings
-            .filter { it.member.hasTrait(HttpResponseCodeTrait::class.java) }
+        val bodyMembers = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }
+
+        val bodyMembersWithQueryTrait = bodyMembers
+            .filter { it.member.hasTrait(HttpQueryTrait::class.java) }
+            .map { ctx.symbolProvider.toMemberName(it.member) }
             .toMutableSet()
-        if (responseCodeTraitMembers.isNotEmpty()) {
-            responseCodeTraitMembers.forEach {
-                writer.write("value.${it.locationName.decapitalize()} = httpResponse.statusCode.rawValue")
-            }
+        bodyMembersWithQueryTrait.sorted().forEach {
+            writer.write("value.$it = nil")
         }
     }
 }

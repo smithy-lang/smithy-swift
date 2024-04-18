@@ -23,8 +23,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequ
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceConfig
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
@@ -38,8 +36,6 @@ class TestProtocolGenerator : HTTPBindingProtocolGenerator(TestCustomizations())
     override val defaultContentType: String = "application/json"
     override val protocol: ShapeId = ShapeId.from("common#fakeProtocol")
     override val httpProtocolClientGeneratorFactory = HttpProtocolClientGeneratorFactory()
-    override val customizations = RestJsonHTTPProtocolCustomizations()
-    override val httpResponseGenerator: HttpResponseGeneratable = HttpResponseGenerator(customizations)
     override val shouldRenderEncodableConformance = false
 
     override fun renderStructEncode(

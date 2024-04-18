@@ -30,7 +30,7 @@ extension TestStreamOperationWithInitialRequestResponseOutput {
             let reader = responseReader
             var value = TestStreamOperationWithInitialRequestResponseOutput()
             if case let .stream(stream) = httpResponse.body {
-                let messageDecoder: ClientRuntime.MessageDecoder? = nil
+                let messageDecoder = ClientRuntime.MessageDecoder()
                 let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<InitialMessageEventStreamsClientTypes.TestStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: InitialMessageEventStreamsClientTypes.TestStream.unmarshal)
                 value.value = decoderStream.toAsyncStream()
                 if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {

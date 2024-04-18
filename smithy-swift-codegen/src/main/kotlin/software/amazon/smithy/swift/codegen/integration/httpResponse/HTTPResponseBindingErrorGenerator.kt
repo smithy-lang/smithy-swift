@@ -24,9 +24,9 @@ import software.amazon.smithy.swift.codegen.utils.errorShapeName
 
 class HTTPResponseBindingErrorGenerator(
     val customizations: HTTPProtocolCustomizable,
-) : HttpResponseBindingErrorGeneratable {
+) {
 
-    override fun renderServiceError(ctx: ProtocolGenerator.GenerationContext) {
+    fun renderServiceError(ctx: ProtocolGenerator.GenerationContext) {
         val serviceShape = ctx.service
         val serviceName = ctx.service.id.name
         val rootNamespace = ctx.settings.moduleName
@@ -69,7 +69,7 @@ class HTTPResponseBindingErrorGenerator(
         }
     }
 
-    override fun renderOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, unknownServiceErrorSymbol: Symbol) {
+    fun renderOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, unknownServiceErrorSymbol: Symbol) {
         val operationErrorName = "${op.toUpperCamelCase()}OutputError"
         val rootNamespace = ctx.settings.moduleName
         val httpBindingSymbol = Symbol.builder()

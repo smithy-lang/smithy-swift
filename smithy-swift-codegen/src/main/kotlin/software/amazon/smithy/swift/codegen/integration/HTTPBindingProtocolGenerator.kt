@@ -37,7 +37,6 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.middlewares.AuthSchemeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
@@ -67,6 +66,7 @@ import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
+import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseGenerator
 
 private val Shape.isStreaming: Boolean
     get() = hasTrait<StreamingTrait>() && isUnionShape
@@ -413,12 +413,12 @@ abstract class HTTPBindingProtocolGenerator(
     override val operationMiddleware = OperationMiddlewareGenerator()
 
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
-    protected abstract val httpResponseGenerator: HttpResponseGeneratable
+    protected val httpResponseGenerator = HTTPResponseGenerator(customizations)
     protected abstract val shouldRenderEncodableConformance: Boolean
     protected abstract fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
-        shapeMetaData: Map<ShapeMetadata, Any>,
+        shapeMetadata: Map<ShapeMetadata, Any>,
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
@@ -427,7 +427,7 @@ abstract class HTTPBindingProtocolGenerator(
     protected abstract fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
-        shapeMetaData: Map<ShapeMetadata, Any>,
+        shapeMetadata: Map<ShapeMetadata, Any>,
         members: List<MemberShape>,
         writer: SwiftWriter,
         defaultTimestampFormat: TimestampFormatTrait.Format,
