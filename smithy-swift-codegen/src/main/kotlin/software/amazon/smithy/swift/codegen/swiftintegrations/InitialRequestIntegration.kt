@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class InitialRequestIntegration : SwiftIntegration {
@@ -49,7 +50,7 @@ class InitialRequestIntegration : SwiftIntegration {
                             val nodeInfoUtils = NodeInfoUtils(protocolGenerationContext, writer, protocolGenerationContext.service.requestWireProtocol)
                             val rootNodeInfo = nodeInfoUtils.nodeInfo(it, true)
                             val valueWritingClosure = WritingClosureUtils(protocolGenerationContext, writer).writingClosure(it)
-                            writer.write("let writer = \$N(nodeInfo: \$L)", rootNodeInfo)
+                            writer.write("let writer = \$N(nodeInfo: \$L)", protocolGenerationContext.service.writerSymbol, rootNodeInfo)
                             writer.write("try writer.write(self, writingClosure: \$L)", valueWritingClosure)
                             writer.write("let initialRequestPayload = try writer.data()")
                             openBlock(
