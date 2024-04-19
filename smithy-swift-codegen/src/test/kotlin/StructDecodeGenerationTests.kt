@@ -78,7 +78,7 @@ extension ExampleClientTypes.RecursiveShapesInputOutputNested1 {
     static func write(value: ExampleClientTypes.RecursiveShapesInputOutputNested1?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
         try writer["foo"].write(value.foo)
-        try writer["nested"].write(value.nested, writingClosure: ExampleClientTypes.RecursiveShapesInputOutputNested2.write(value:to:))
+        try writer["nested"].write(value.nested, with: ExampleClientTypes.RecursiveShapesInputOutputNested2.write(value:to:))
     }
 
     static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.RecursiveShapesInputOutputNested1 {
@@ -107,7 +107,7 @@ extension ExampleClientTypes.RecursiveShapesInputOutputNested2 {
     static func write(value: ExampleClientTypes.RecursiveShapesInputOutputNested2?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
         try writer["bar"].write(value.bar)
-        try writer["recursiveMember"].write(value.recursiveMember, writingClosure: ExampleClientTypes.RecursiveShapesInputOutputNested1.write(value:to:))
+        try writer["recursiveMember"].write(value.recursiveMember, with: ExampleClientTypes.RecursiveShapesInputOutputNested1.write(value:to:))
     }
 
     static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.RecursiveShapesInputOutputNested2 {

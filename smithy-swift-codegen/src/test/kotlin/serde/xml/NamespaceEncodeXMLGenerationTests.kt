@@ -22,7 +22,7 @@ extension XmlNamespacesInput {
 
     static func write(value: XmlNamespacesInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer[.init("nested", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].write(value.nested, writingClosure: RestXmlProtocolClientTypes.XmlNamespaceNested.write(value:to:))
+        try writer[.init("nested", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].write(value.nested, with: RestXmlProtocolClientTypes.XmlNamespaceNested.write(value:to:))
     }
 }
 """
@@ -96,7 +96,7 @@ extension XmlNamespacesOnServiceInput {
     static func write(value: XmlNamespacesOnServiceInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
         try writer["foo"].write(value.foo)
-        try writer[.init("nested", namespaceDef: .init(prefix: "xsi", uri: "https://example.com"))].write(value.nested, writingClosure: RestXmlProtocolClientTypes.NestedWithNamespace.write(value:to:))
+        try writer[.init("nested", namespaceDef: .init(prefix: "xsi", uri: "https://example.com"))].write(value.nested, with: RestXmlProtocolClientTypes.NestedWithNamespace.write(value:to:))
     }
 }
 """
@@ -113,7 +113,7 @@ extension XmlNamespacesOnServiceOverridableInput {
     static func write(value: XmlNamespacesOnServiceOverridableInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
         try writer["foo"].write(value.foo)
-        try writer[.init("nested", namespaceDef: .init(prefix: "xsi", uri: "https://example.com"))].write(value.nested, writingClosure: RestXmlProtocolClientTypes.NestedWithNamespace.write(value:to:))
+        try writer[.init("nested", namespaceDef: .init(prefix: "xsi", uri: "https://example.com"))].write(value.nested, with: RestXmlProtocolClientTypes.NestedWithNamespace.write(value:to:))
     }
 }
 """

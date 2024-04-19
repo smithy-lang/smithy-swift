@@ -23,7 +23,7 @@ extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1 {
     static func write(value: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
         try writer["foo"].write(value.foo)
-        try writer["nested"].write(value.nested, writingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2.write(value:to:))
+        try writer["nested"].write(value.nested, with: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2.write(value:to:))
     }
 
     static func read(from reader: SmithyXML.Reader) throws -> RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1 {
@@ -48,7 +48,7 @@ extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2 {
     static func write(value: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
         try writer["bar"].write(value.bar)
-        try writer["recursiveMember"].write(value.recursiveMember, writingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.write(value:to:))
+        try writer["recursiveMember"].write(value.recursiveMember, with: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.write(value:to:))
     }
 
     static func read(from reader: SmithyXML.Reader) throws -> RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2 {

@@ -32,11 +32,11 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
             case let .stringlist(stringlist):
                 try writer["stringList"].writeList(stringlist, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
             case let .structvalue(structvalue):
-                try writer["structValue"].write(structvalue, writingClosure: RestXmlProtocolClientTypes.XmlNestedUnionStruct.write(value:to:))
+                try writer["structValue"].write(structvalue, with: RestXmlProtocolClientTypes.XmlNestedUnionStruct.write(value:to:))
             case let .timestampvalue(timestampvalue):
                 try writer["timeStampValue"].writeTimestamp(timestampvalue, format: .dateTime)
             case let .unionvalue(unionvalue):
-                try writer["unionValue"].write(unionvalue, writingClosure: RestXmlProtocolClientTypes.XmlUnionShape.write(value:to:))
+                try writer["unionValue"].write(unionvalue, with: RestXmlProtocolClientTypes.XmlUnionShape.write(value:to:))
             case let .sdkUnknown(sdkUnknown):
                 try writer["sdkUnknown"].write(sdkUnknown)
         }

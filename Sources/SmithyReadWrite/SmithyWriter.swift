@@ -47,7 +47,11 @@ public protocol SmithyWriter: AnyObject {
 
 public extension SmithyWriter {
 
-    static func write<T>(_ value: T, rootNodeInfo: NodeInfo, with writingClosure: WritingClosure<T, Self>) throws -> Data? {
+    static func write<T>(
+        _ value: T,
+        rootNodeInfo: NodeInfo,
+        with writingClosure: WritingClosure<T, Self>
+    ) throws -> Data? {
         let writer = Self(nodeInfo: rootNodeInfo)
         try writer.write(value, with: writingClosure)
         return try writer.data()

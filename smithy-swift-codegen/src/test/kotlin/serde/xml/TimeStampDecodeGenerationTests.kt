@@ -20,17 +20,16 @@ class TimeStampDecodeGenerationTests {
         val expectedContents = """
 extension XmlTimestampsOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlTimestampsOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlTimestampsOutput()
-            value.dateTime = try reader["dateTime"].readTimestampIfPresent(format: .dateTime)
-            value.epochSeconds = try reader["epochSeconds"].readTimestampIfPresent(format: .epochSeconds)
-            value.httpDate = try reader["httpDate"].readTimestampIfPresent(format: .httpDate)
-            value.normal = try reader["normal"].readTimestampIfPresent(format: .dateTime)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlTimestampsOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlTimestampsOutput()
+        value.dateTime = try reader["dateTime"].readTimestampIfPresent(format: .dateTime)
+        value.epochSeconds = try reader["epochSeconds"].readTimestampIfPresent(format: .epochSeconds)
+        value.httpDate = try reader["httpDate"].readTimestampIfPresent(format: .httpDate)
+        value.normal = try reader["normal"].readTimestampIfPresent(format: .dateTime)
+        return value
     }
 }
 """
@@ -44,14 +43,13 @@ extension XmlTimestampsOutput {
         val expectedContents = """
 extension XmlTimestampsNestedOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlTimestampsNestedOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlTimestampsNestedOutput()
-            value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: timestampReadingClosure(format: .epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlTimestampsNestedOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlTimestampsNestedOutput()
+        value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: timestampReadingClosure(format: .epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        return value
     }
 }
 """
@@ -65,14 +63,13 @@ extension XmlTimestampsNestedOutput {
         val expectedContents = """
 extension XmlTimestampsNestedHTTPDateOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlTimestampsNestedHTTPDateOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlTimestampsNestedHTTPDateOutput()
-            value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: timestampReadingClosure(format: .httpDate), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlTimestampsNestedHTTPDateOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlTimestampsNestedHTTPDateOutput()
+        value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: timestampReadingClosure(format: .httpDate), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        return value
     }
 }
 """
@@ -86,14 +83,13 @@ extension XmlTimestampsNestedHTTPDateOutput {
         val expectedContents = """
 extension XmlTimestampsNestedXmlNameOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlTimestampsNestedXmlNameOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlTimestampsNestedXmlNameOutput()
-            value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: timestampReadingClosure(format: .epochSeconds), memberNodeInfo: "nestedTag2", isFlattened: false), memberNodeInfo: "nestedTag1", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlTimestampsNestedXmlNameOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlTimestampsNestedXmlNameOutput()
+        value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: timestampReadingClosure(format: .epochSeconds), memberNodeInfo: "nestedTag2", isFlattened: false), memberNodeInfo: "nestedTag1", isFlattened: false)
+        return value
     }
 }
 """

@@ -57,7 +57,7 @@ extension ExampleClientTypes.MyUnion {
             case let .stringvalue(stringvalue):
                 try writer["stringValue"].write(stringvalue)
             case let .structurevalue(structurevalue):
-                try writer["structureValue"].write(structurevalue, writingClosure: ExampleClientTypes.GreetingWithErrorsOutput.write(value:to:))
+                try writer["structureValue"].write(structurevalue, with: ExampleClientTypes.GreetingWithErrorsOutput.write(value:to:))
             case let .timestampvalue(timestampvalue):
                 try writer["timestampValue"].writeTimestamp(timestampvalue, format: .epochSeconds)
             case let .sdkUnknown(sdkUnknown):

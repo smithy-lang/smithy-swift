@@ -51,7 +51,7 @@ extension JsonUnionsInput {
 
     static func write(value: JsonUnionsInput?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
-        try writer["contents"].write(value.contents, writingClosure: ExampleClientTypes.MyUnion.write(value:to:))
+        try writer["contents"].write(value.contents, with: ExampleClientTypes.MyUnion.write(value:to:))
     }
 }
 """
@@ -85,7 +85,7 @@ extension ExampleClientTypes.MyUnion {
             case let .stringvalue(stringvalue):
                 try writer["stringValue"].write(stringvalue)
             case let .structurevalue(structurevalue):
-                try writer["structureValue"].write(structurevalue, writingClosure: ExampleClientTypes.GreetingWithErrorsOutput.write(value:to:))
+                try writer["structureValue"].write(structurevalue, with: ExampleClientTypes.GreetingWithErrorsOutput.write(value:to:))
             case let .timestampvalue(timestampvalue):
                 try writer["timestampValue"].writeTimestamp(timestampvalue, format: .epochSeconds)
             case let .sdkUnknown(sdkUnknown):
@@ -139,7 +139,7 @@ extension ExampleClientTypes.IndirectEnum {
             case let .other(other):
                 try writer["other"].write(other)
             case let .some(some):
-                try writer["some"].write(some, writingClosure: ExampleClientTypes.IndirectEnum.write(value:to:))
+                try writer["some"].write(some, with: ExampleClientTypes.IndirectEnum.write(value:to:))
             case let .sdkUnknown(sdkUnknown):
                 try writer["sdkUnknown"].write(sdkUnknown)
         }

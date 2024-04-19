@@ -35,7 +35,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
                 return
             }
 
-            let greetingWithErrorsOutputError = try await wireResponseErrorClosure(GreetingWithErrorsOutputError.httpErrorBinding, wireResponseDocumentBinding())(httpResponse)
+            let greetingWithErrorsOutputError = try await GreetingWithErrorsOutputError.httpError(from:)(httpResponse)
 
             if let actual = greetingWithErrorsOutputError as? ComplexError {
 
@@ -89,7 +89,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
                 return
             }
 
-            let greetingWithErrorsOutputError = try await wireResponseErrorClosure(GreetingWithErrorsOutputError.httpErrorBinding, wireResponseDocumentBinding())(httpResponse)
+            let greetingWithErrorsOutputError = try await GreetingWithErrorsOutputError.httpError(from:)(httpResponse)
 
             if let actual = greetingWithErrorsOutputError as? ComplexError {
 

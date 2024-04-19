@@ -31,7 +31,7 @@ class NamespaceReaderTests: XCTestCase {
 
         """.utf8)
         let response = HttpResponse(body: .data(xmlData), statusCode: .ok)
-        let subject = try await SimpleScalarPropertiesOutput.httpBinding(response, wireResponseDocumentBinding())
+        let subject = try await SimpleScalarPropertiesOutput.httpOutput(from:)(response)
         XCTAssertEqual(subject.nested?.attrField, "nestedAttrValue")
     }
 }
@@ -80,26 +80,25 @@ public struct SimpleScalarPropertiesOutput: Swift.Equatable {
 
 extension SimpleScalarPropertiesOutput {
 
-    static var httpBinding: WireResponseOutputBinding<HttpResponse, SimpleScalarPropertiesOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentBinding in
-            let responseReader = try await responseDocumentBinding(httpResponse)
-            let reader = responseReader
-            var value = SimpleScalarPropertiesOutput()
-            if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
-                value.foo = fooHeaderValue
-            }
-            value.nested = try reader[.init("Nested", namespaceDef: .init(prefix: "xsi", uri: "https://example.com"))].readIfPresent(with: NestedWithNamespace.read(from:))
-            value.byteValue = try reader["byteValue"].readIfPresent()
-            value.doubleValue = try reader["DoubleDribble"].readIfPresent()
-            value.falseBooleanValue = try reader["falseBooleanValue"].readIfPresent()
-            value.floatValue = try reader["floatValue"].readIfPresent()
-            value.integerValue = try reader["integerValue"].readIfPresent()
-            value.longValue = try reader["longValue"].readIfPresent()
-            value.shortValue = try reader["shortValue"].readIfPresent()
-            value.stringValue = try reader["stringValue"].readIfPresent()
-            value.trueBooleanValue = try reader["trueBooleanValue"].readIfPresent()
-            return value
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> SimpleScalarPropertiesOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = SimpleScalarPropertiesOutput()
+        if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
+            value.foo = fooHeaderValue
         }
+        value.nested = try reader[.init("Nested", namespaceDef: .init(prefix: "xsi", uri: "https://example.com"))].readIfPresent(with: NestedWithNamespace.read(from:))
+        value.byteValue = try reader["byteValue"].readIfPresent()
+        value.doubleValue = try reader["DoubleDribble"].readIfPresent()
+        value.falseBooleanValue = try reader["falseBooleanValue"].readIfPresent()
+        value.floatValue = try reader["floatValue"].readIfPresent()
+        value.integerValue = try reader["integerValue"].readIfPresent()
+        value.longValue = try reader["longValue"].readIfPresent()
+        value.shortValue = try reader["shortValue"].readIfPresent()
+        value.stringValue = try reader["stringValue"].readIfPresent()
+        value.trueBooleanValue = try reader["trueBooleanValue"].readIfPresent()
+        return value
     }
 }
 

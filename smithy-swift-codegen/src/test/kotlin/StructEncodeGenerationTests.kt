@@ -48,7 +48,7 @@ extension SmokeTestInput {
         guard let value else { return }
         try writer["payload1"].write(value.payload1)
         try writer["payload2"].write(value.payload2)
-        try writer["payload3"].write(value.payload3, writingClosure: Nested.write(value:to:))
+        try writer["payload3"].write(value.payload3, with: Nested.write(value:to:))
     }
 }
 """
@@ -134,7 +134,7 @@ extension EnumInputInput {
 
     static func write(value: EnumInputInput?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
-        try writer["nestedWithEnum"].write(value.nestedWithEnum, writingClosure: NestedEnum.write(value:to:))
+        try writer["nestedWithEnum"].write(value.nestedWithEnum, with: NestedEnum.write(value:to:))
     }
 }
 """
@@ -175,7 +175,7 @@ extension RecursiveShapesInputOutputNested1 {
     static func write(value: RecursiveShapesInputOutputNested1?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
         try writer["foo"].write(value.foo)
-        try writer["nested"].write(value.nested, writingClosure: RecursiveShapesInputOutputNested2.write(value:to:))
+        try writer["nested"].write(value.nested, with: RecursiveShapesInputOutputNested2.write(value:to:))
     }
 
     static func read(from reader: SmithyJSON.Reader) throws -> RecursiveShapesInputOutputNested1 {
@@ -204,7 +204,7 @@ extension RecursiveShapesInputOutputNested2 {
     static func write(value: RecursiveShapesInputOutputNested2?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
         try writer["bar"].write(value.bar)
-        try writer["recursiveMember"].write(value.recursiveMember, writingClosure: RecursiveShapesInputOutputNested1.write(value:to:))
+        try writer["recursiveMember"].write(value.recursiveMember, with: RecursiveShapesInputOutputNested1.write(value:to:))
     }
 
     static func read(from reader: SmithyJSON.Reader) throws -> RecursiveShapesInputOutputNested2 {

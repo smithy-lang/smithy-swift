@@ -21,14 +21,13 @@ class MapDecodeXMLGenerationTests {
         val expectedContents = """
 extension XmlMapsOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        return value
     }
 }
 """
@@ -42,14 +41,13 @@ extension XmlMapsOutput {
         val expectedContents = """
 extension XmlMapsWithNameProtocolOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsWithNameProtocolOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsWithNameProtocolOutput()
-            value.`protocol` = try reader["protocol"].readMapIfPresent(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsWithNameProtocolOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsWithNameProtocolOutput()
+        value.`protocol` = try reader["protocol"].readMapIfPresent(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        return value
     }
 }
 """
@@ -63,14 +61,13 @@ extension XmlMapsWithNameProtocolOutput {
         val expectedContents = """
 extension XmlMapsNestedOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsNestedOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsNestedOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsNestedOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsNestedOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        return value
     }
 }
 """
@@ -84,14 +81,13 @@ extension XmlMapsNestedOutput {
         val expectedContents = """
 extension XmlMapsNestedNestedOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsNestedNestedOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsNestedNestedOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsNestedNestedOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsNestedNestedOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        return value
     }
 }
 """
@@ -105,14 +101,13 @@ extension XmlMapsNestedNestedOutput {
         val expectedContents = """
 extension XmlFlattenedMapsOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlFlattenedMapsOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlFlattenedMapsOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlFlattenedMapsOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlFlattenedMapsOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        return value
     }
 }
 """
@@ -126,14 +121,13 @@ extension XmlFlattenedMapsOutput {
         val expectedContents = """
 extension XmlMapsFlattenedNestedOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsFlattenedNestedOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsFlattenedNestedOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsFlattenedNestedOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsFlattenedNestedOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        return value
     }
 }
 """
@@ -147,14 +141,13 @@ extension XmlMapsFlattenedNestedOutput {
         val expectedContents = """
 extension XmlMapsXmlNameOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsXmlNameOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsXmlNameOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "Attribute", valueNodeInfo: "Setting", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsXmlNameOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsXmlNameOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "Attribute", valueNodeInfo: "Setting", isFlattened: false)
+        return value
     }
 }
 """
@@ -168,14 +161,13 @@ extension XmlMapsXmlNameOutput {
         val expectedContents = """
 extension XmlMapsXmlNameFlattenedOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsXmlNameFlattenedOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsXmlNameFlattenedOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "SomeCustomKey", valueNodeInfo: "SomeCustomValue", isFlattened: true)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsXmlNameFlattenedOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsXmlNameFlattenedOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "SomeCustomKey", valueNodeInfo: "SomeCustomValue", isFlattened: true)
+        return value
     }
 }
 """
@@ -189,14 +181,13 @@ extension XmlMapsXmlNameFlattenedOutput {
         val expectedContents = """
 extension XmlMapsXmlNameNestedOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsXmlNameNestedOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsXmlNameNestedOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "CustomKey2", valueNodeInfo: "CustomValue2", isFlattened: false), keyNodeInfo: "CustomKey1", valueNodeInfo: "CustomValue1", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsXmlNameNestedOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsXmlNameNestedOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "CustomKey2", valueNodeInfo: "CustomValue2", isFlattened: false), keyNodeInfo: "CustomKey1", valueNodeInfo: "CustomValue1", isFlattened: false)
+        return value
     }
 }
 """
@@ -209,14 +200,13 @@ extension XmlMapsXmlNameNestedOutput {
         val expectedContents = """
 extension XmlMapsFlattenedNestedXmlNameOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsFlattenedNestedXmlNameOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsFlattenedNestedXmlNameOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false), keyNodeInfo: "yek", valueNodeInfo: "eulav", isFlattened: true)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsFlattenedNestedXmlNameOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsFlattenedNestedXmlNameOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false), keyNodeInfo: "yek", valueNodeInfo: "eulav", isFlattened: true)
+        return value
     }
 }
 """
@@ -230,14 +220,13 @@ extension XmlMapsFlattenedNestedXmlNameOutput {
         val expectedContents = """
 extension XmlMapsXmlNamespaceOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsXmlNamespaceOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsXmlNamespaceOutput()
-            value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("Quality", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Degree", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsXmlNamespaceOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsXmlNamespaceOutput()
+        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("Quality", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Degree", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
+        return value
     }
 }
 """
@@ -251,14 +240,13 @@ extension XmlMapsXmlNamespaceOutput {
         val expectedContents = """
 extension XmlMapsFlattenedXmlNamespaceOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsFlattenedXmlNamespaceOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsFlattenedXmlNamespaceOutput()
-            value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("Uid", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Val", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsFlattenedXmlNamespaceOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsFlattenedXmlNamespaceOutput()
+        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("Uid", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Val", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
+        return value
     }
 }
 """
@@ -272,14 +260,13 @@ extension XmlMapsFlattenedXmlNamespaceOutput {
         val expectedContents = """
 extension XmlMapsNestedXmlNamespaceOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsNestedXmlNamespaceOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsNestedXmlNamespaceOutput()
-            value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsNestedXmlNamespaceOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsNestedXmlNamespaceOutput()
+        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
+        return value
     }
 }
 """
@@ -293,14 +280,13 @@ extension XmlMapsNestedXmlNamespaceOutput {
         val expectedContents = """
 extension XmlMapsFlattenedNestedXmlNamespaceOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsFlattenedNestedXmlNamespaceOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsFlattenedNestedXmlNamespaceOutput()
-            value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsFlattenedNestedXmlNamespaceOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsFlattenedNestedXmlNamespaceOutput()
+        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
+        return value
     }
 }
 """
@@ -313,14 +299,13 @@ extension XmlMapsFlattenedNestedXmlNamespaceOutput {
         val expectedContents = """
 extension XmlMapsContainListOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsContainListOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsContainListOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: listReadingClosure(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsContainListOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsContainListOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: listReadingClosure(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        return value
     }
 }
 """
@@ -333,14 +318,13 @@ extension XmlMapsContainListOutput {
         val expectedContents = """
 extension XmlMapsFlattenedContainListOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsFlattenedContainListOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsFlattenedContainListOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: listReadingClosure(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsFlattenedContainListOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsFlattenedContainListOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: listReadingClosure(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        return value
     }
 }
 """
@@ -354,14 +338,13 @@ extension XmlMapsFlattenedContainListOutput {
         val expectedContents = """
 extension XmlMapsTimestampsOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsTimestampsOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsTimestampsOutput()
-            value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: timestampReadingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsTimestampsOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsTimestampsOutput()
+        value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: timestampReadingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        return value
     }
 }
 """
@@ -375,14 +358,13 @@ extension XmlMapsTimestampsOutput {
         val expectedContents = """
 extension XmlMapsFlattenedTimestampsOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsFlattenedTimestampsOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsFlattenedTimestampsOutput()
-            value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: timestampReadingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsFlattenedTimestampsOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsFlattenedTimestampsOutput()
+        value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: timestampReadingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        return value
     }
 }
 """
@@ -395,15 +377,14 @@ extension XmlMapsFlattenedTimestampsOutput {
         val expectedContents = """
 extension XmlMapsTwoOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, XmlMapsTwoOutput, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = XmlMapsTwoOutput()
-            value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-            value.mySecondMap = try reader["mySecondMap"].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlMapsTwoOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlMapsTwoOutput()
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        value.mySecondMap = try reader["mySecondMap"].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        return value
     }
 }
 """
