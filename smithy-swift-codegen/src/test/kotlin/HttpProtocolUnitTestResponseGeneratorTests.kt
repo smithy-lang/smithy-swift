@@ -51,7 +51,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: SmokeTestOutput = try await wireResponseOutputClosure(SmokeTestOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
+        let actual: SmokeTestOutput = try await SmokeTestOutput.httpOutput(from:)(httpResponse)
 
         let expected = SmokeTestOutput(
             boolHeader: false,
@@ -96,7 +96,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: HttpPrefixHeadersOutput = try await wireResponseOutputClosure(HttpPrefixHeadersOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
+        let actual: HttpPrefixHeadersOutput = try await HttpPrefixHeadersOutput.httpOutput(from:)(httpResponse)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo",
@@ -131,7 +131,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: HttpPrefixHeadersOutput = try await wireResponseOutputClosure(HttpPrefixHeadersOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
+        let actual: HttpPrefixHeadersOutput = try await HttpPrefixHeadersOutput.httpOutput(from:)(httpResponse)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo"
@@ -168,7 +168,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: JsonUnionsOutput = try await wireResponseOutputClosure(JsonUnionsOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
+        let actual: JsonUnionsOutput = try await JsonUnionsOutput.httpOutput(from:)(httpResponse)
 
         let expected = JsonUnionsOutput(
             contents: MyUnion.stringvalue("foo")
@@ -214,7 +214,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: RecursiveShapesOutput = try await wireResponseOutputClosure(RecursiveShapesOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
+        let actual: RecursiveShapesOutput = try await RecursiveShapesOutput.httpOutput(from:)(httpResponse)
 
         let expected = RecursiveShapesOutput(
             nested: RecursiveShapesInputOutputNested1(
@@ -262,10 +262,10 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: InlineDocumentOutput = try await wireResponseOutputClosure(InlineDocumentOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
+        let actual: InlineDocumentOutput = try await InlineDocumentOutput.httpOutput(from:)(httpResponse)
 
         let expected = InlineDocumentOutput(
-            documentValue: try Document.document(from: Data(""${'"'}
+            documentValue: try SmithyReadWrite.Document.make(from: Data(""${'"'}
                 {
                     "foo": "bar"
                 }
@@ -303,10 +303,10 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: InlineDocumentAsPayloadOutput = try await wireResponseOutputClosure(InlineDocumentAsPayloadOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
+        let actual: InlineDocumentAsPayloadOutput = try await InlineDocumentAsPayloadOutput.httpOutput(from:)(httpResponse)
 
         let expected = InlineDocumentAsPayloadOutput(
-            documentValue: try Document.document(from: Data(""${'"'}
+            documentValue: try SmithyReadWrite.Document.make(from: Data(""${'"'}
                 {
                     "foo": "bar"
                 }

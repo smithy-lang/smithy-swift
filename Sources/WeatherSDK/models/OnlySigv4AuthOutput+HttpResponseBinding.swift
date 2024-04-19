@@ -6,9 +6,7 @@ import SmithyReadWrite
 
 extension OnlySigv4AuthOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, OnlySigv4AuthOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            return OnlySigv4AuthOutput()
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> OnlySigv4AuthOutput {
+        return OnlySigv4AuthOutput()
     }
 }

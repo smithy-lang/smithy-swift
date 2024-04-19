@@ -6,9 +6,7 @@ import SmithyReadWrite
 
 extension OnlyHttpBearerAuthOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, OnlyHttpBearerAuthOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            return OnlyHttpBearerAuthOutput()
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> OnlyHttpBearerAuthOutput {
+        return OnlyHttpBearerAuthOutput()
     }
 }

@@ -6,20 +6,19 @@ import SmithyReadWrite
 
 extension InvokeOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, InvokeOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = InvokeOutput()
-            switch httpResponse.body {
-            case .data(let data):
-                value.payload = data
-            case .stream(let stream):
-                value.payload = try stream.readToEnd()
-            case .noStream:
-                value.payload = nil
-            }
-            return value
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> InvokeOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let reader = responseReader
+        var value = InvokeOutput()
+        switch httpResponse.body {
+        case .data(let data):
+            value.payload = data
+        case .stream(let stream):
+            value.payload = try stream.readToEnd()
+        case .noStream:
+            value.payload = nil
         }
+        return value
     }
 }

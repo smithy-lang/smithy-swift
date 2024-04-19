@@ -6,14 +6,13 @@ import SmithyReadWrite
 
 extension ListCitiesOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, ListCitiesOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = ListCitiesOutput()
-            value.items = try reader["items"].readListIfPresent(memberReadingClosure: WeatherClientTypes.CitySummary.read(from:), memberNodeInfo: "member", isFlattened: false)
-            value.nextToken = try reader["nextToken"].readIfPresent()
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> ListCitiesOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let reader = responseReader
+        var value = ListCitiesOutput()
+        value.items = try reader["items"].readListIfPresent(memberReadingClosure: WeatherClientTypes.CitySummary.read(from:), memberNodeInfo: "member", isFlattened: false)
+        value.nextToken = try reader["nextToken"].readIfPresent()
+        return value
     }
 }

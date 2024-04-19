@@ -192,10 +192,8 @@ private struct TestOutputResponse {
 }
 
 private enum TestOutputError {
-    static var httpErrorBinding: SmithyReadWrite.WireResponseErrorBinding<ClientRuntime.HttpResponse, SmithyXML.Reader> {
-        { httpResponse, responseDocumentClosure in
-            RetryIntegrationTestError.dontCallThisMethod  // is never called
-        }
+    static func httpError(from httpResponse: HttpResponse) async throws -> Error  {
+        RetryIntegrationTestError.dontCallThisMethod  // is never called
     }
 }
 

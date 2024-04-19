@@ -6,14 +6,13 @@ import SmithyReadWrite
 
 extension GetForecastOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, GetForecastOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = GetForecastOutput()
-            value.chanceOfRain = try reader["chanceOfRain"].readIfPresent()
-            value.precipitation = try reader["precipitation"].readIfPresent(with: WeatherClientTypes.Precipitation.read(from:))
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> GetForecastOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let reader = responseReader
+        var value = GetForecastOutput()
+        value.chanceOfRain = try reader["chanceOfRain"].readIfPresent()
+        value.precipitation = try reader["precipitation"].readIfPresent(with: WeatherClientTypes.Precipitation.read(from:))
+        return value
     }
 }

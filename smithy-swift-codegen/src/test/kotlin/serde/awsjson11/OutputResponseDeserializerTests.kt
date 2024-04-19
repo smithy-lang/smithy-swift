@@ -40,15 +40,14 @@ class OutputDeserializerTests {
         val expectedContents = """
 extension SimpleStructureOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, SimpleStructureOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = SimpleStructureOutput()
-            value.name = try reader["name"].readIfPresent()
-            value.number = try reader["number"].readIfPresent()
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> SimpleStructureOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let reader = responseReader
+        var value = SimpleStructureOutput()
+        value.name = try reader["name"].readIfPresent()
+        value.number = try reader["number"].readIfPresent()
+        return value
     }
 }
 """
@@ -66,19 +65,17 @@ extension SimpleStructureOutput {
         val expectedContents = """
 extension DataStreamingOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, DataStreamingOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            var value = DataStreamingOutput()
-            switch httpResponse.body {
-            case .data(let data):
-                value.streamingData = .data(data)
-            case .stream(let stream):
-                value.streamingData = .stream(stream)
-            case .noStream:
-                value.streamingData = nil
-            }
-            return value
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> DataStreamingOutput {
+        var value = DataStreamingOutput()
+        switch httpResponse.body {
+        case .data(let data):
+            value.streamingData = .data(data)
+        case .stream(let stream):
+            value.streamingData = .stream(stream)
+        case .noStream:
+            value.streamingData = nil
         }
+        return value
     }
 }
 """
@@ -96,18 +93,16 @@ extension DataStreamingOutput {
         val expectedContents = """
 extension EventStreamingOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, EventStreamingOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            var value = EventStreamingOutput()
-            if case let .stream(stream) = httpResponse.body {
-                let messageDecoder = ClientRuntime.MessageDecoder()
-                let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: EventStream.unmarshal)
-                value.eventStream = decoderStream.toAsyncStream()
-            } else {
-                value.eventStream = nil
-            }
-            return value
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> EventStreamingOutput {
+        var value = EventStreamingOutput()
+        if case let .stream(stream) = httpResponse.body {
+            let messageDecoder = ClientRuntime.MessageDecoder()
+            let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: EventStream.unmarshal)
+            value.eventStream = decoderStream.toAsyncStream()
+        } else {
+            value.eventStream = nil
         }
+        return value
     }
 }
 """

@@ -26,7 +26,7 @@ class GetCityAnnouncementsNoSuchResourceTest: HttpResponseTestBase {
                 return
             }
 
-            let getCityAnnouncementsOutputError = try await wireResponseErrorClosure(GetCityAnnouncementsOutputError.httpErrorBinding, wireResponseDocumentBinding())(httpResponse)
+            let getCityAnnouncementsOutputError = try await GetCityAnnouncementsOutputError.httpError(from:)(httpResponse)
 
             if let actual = getCityAnnouncementsOutputError as? NoSuchResource {
 

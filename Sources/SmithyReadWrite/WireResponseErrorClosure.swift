@@ -5,5 +5,5 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// Defines a closure that can be used to convert a HTTP response to a Swift `Error`.
+/// Defines a closure that can be used to convert a wire response to a Swift `Error`.
 public typealias WireResponseErrorClosure<WireResponse> = (WireResponse) async throws -> Error

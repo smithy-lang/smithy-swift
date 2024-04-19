@@ -6,9 +6,7 @@ import SmithyReadWrite
 
 extension OnlyHttpApiKeyAuthOptionalOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, OnlyHttpApiKeyAuthOptionalOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            return OnlyHttpApiKeyAuthOptionalOutput()
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> OnlyHttpApiKeyAuthOptionalOutput {
+        return OnlyHttpApiKeyAuthOptionalOutput()
     }
 }

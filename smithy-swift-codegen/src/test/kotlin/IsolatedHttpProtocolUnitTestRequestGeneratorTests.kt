@@ -45,7 +45,7 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
             position: .after,
             middleware: MockDeserializeMiddleware<HttpRequestWithFloatLabelsOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(HttpRequestWithFloatLabelsOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: HttpRequestWithFloatLabelsOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual)
                     return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: HttpRequestWithFloatLabelsOutput())
@@ -100,7 +100,7 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
             position: .after,
             middleware: MockDeserializeMiddleware<HttpRequestWithFloatLabelsOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(HttpRequestWithFloatLabelsOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: HttpRequestWithFloatLabelsOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual)
                     return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: HttpRequestWithFloatLabelsOutput())
@@ -154,7 +154,7 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
             position: .after,
             middleware: MockDeserializeMiddleware<HttpRequestWithFloatLabelsOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(HttpRequestWithFloatLabelsOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: HttpRequestWithFloatLabelsOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual)
                     return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: HttpRequestWithFloatLabelsOutput())
@@ -166,7 +166,6 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
             throw SmithyTestUtilError("Mock handler unexpectedly failed")
         })
     }
-}
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
@@ -192,7 +191,7 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
             return
         }
 
-        let actual: InputAndOutputWithHeadersOutput = try await wireResponseOutputClosure(InputAndOutputWithHeadersOutput.httpBinding, wireResponseDocumentBinding())(httpResponse)
+        let actual: InputAndOutputWithHeadersOutput = try await InputAndOutputWithHeadersOutput.httpOutput(from:)(httpResponse)
 
         let expected = InputAndOutputWithHeadersOutput(
             headerDouble: Swift.Double.nan,
@@ -251,7 +250,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
         )
 
         let input = DocumentTypeInput(
-            documentValue: try Document.document(from: Data(""${'"'}
+            documentValue: try SmithyReadWrite.Document.make(from: Data(""${'"'}
                 [
                     true,
                     "hi",
@@ -289,7 +288,7 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
             position: .after,
             middleware: MockDeserializeMiddleware<DocumentTypeOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(DocumentTypeOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: DocumentTypeOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                         XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")

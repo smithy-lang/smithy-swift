@@ -6,15 +6,14 @@ import SmithyReadWrite
 
 extension GetCityOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, GetCityOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = GetCityOutput()
-            value.city = try reader["city"].readIfPresent(with: WeatherClientTypes.CitySummary.read(from:))
-            value.coordinates = try reader["coordinates"].readIfPresent(with: WeatherClientTypes.CityCoordinates.read(from:))
-            value.name = try reader["name"].readIfPresent()
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> GetCityOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let reader = responseReader
+        var value = GetCityOutput()
+        value.city = try reader["city"].readIfPresent(with: WeatherClientTypes.CitySummary.read(from:))
+        value.coordinates = try reader["coordinates"].readIfPresent(with: WeatherClientTypes.CityCoordinates.read(from:))
+        value.name = try reader["name"].readIfPresent()
+        return value
     }
 }

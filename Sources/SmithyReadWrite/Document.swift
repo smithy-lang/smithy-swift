@@ -129,7 +129,7 @@ extension Document {
         }
     }
 
-    public static func document(from data: Data) throws -> Document {
+    public static func make(from data: Data) throws -> Document {
         let jsonObject = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
         return try Document.make(from: jsonObject)
     }

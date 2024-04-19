@@ -6,27 +6,27 @@
 //
 
 import struct Foundation.Data
-import typealias SmithyReadWrite.DocumentWritingClosure
+import protocol SmithyReadWrite.SmithyWriter
 import typealias SmithyReadWrite.WritingClosure
 
 public struct PayloadBodyMiddleware<OperationStackInput,
                                     OperationStackOutput,
                                     OperationStackInputPayload,
-                                    Writer>: Middleware {
+                                    Writer: SmithyWriter>: Middleware {
     public let id: Swift.String = "PayloadBodyMiddleware"
 
-    let documentWritingClosure: DocumentWritingClosure<OperationStackInputPayload, Writer>
+    let rootNodeInfo: Writer.NodeInfo
     let inputWritingClosure: WritingClosure<OperationStackInputPayload, Writer>
     let keyPath: KeyPath<OperationStackInput, OperationStackInputPayload?>
     let defaultBody: String?
 
     public init(
-        documentWritingClosure: @escaping DocumentWritingClosure<OperationStackInputPayload, Writer>,
+        rootNodeInfo: Writer.NodeInfo,
         inputWritingClosure: @escaping WritingClosure<OperationStackInputPayload, Writer>,
         keyPath: KeyPath<OperationStackInput, OperationStackInputPayload?>,
         defaultBody: String?
     ) {
-        self.documentWritingClosure = documentWritingClosure
+        self.rootNodeInfo = rootNodeInfo
         self.inputWritingClosure = inputWritingClosure
         self.keyPath = keyPath
         self.defaultBody = defaultBody
@@ -41,7 +41,11 @@ public struct PayloadBodyMiddleware<OperationStackInput,
           Self.Context == H.Context {
               do {
                   if let payload = input.operationInput[keyPath: keyPath] {
-                      let data = try documentWritingClosure(payload, inputWritingClosure)
+                      let data = try Writer.write(
+                        payload,
+                        rootNodeInfo: rootNodeInfo,
+                        with: inputWritingClosure
+                      )
                       let body = ByteStream.data(data)
                       input.builder.withBody(body)
                   } else if let defaultBody {

@@ -61,14 +61,13 @@ class HTTPBindingProtocolGeneratorTests {
         val expectedContents = """
 extension ExplicitStructOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, ExplicitStructOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = ExplicitStructOutput()
-            value.payload1 = try reader.readIfPresent(with: Nested2.read(from:))
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> ExplicitStructOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let reader = responseReader
+        var value = ExplicitStructOutput()
+        value.payload1 = try reader.readIfPresent(with: Nested2.read(from:))
+        return value
     }
 }
 """
@@ -89,12 +88,10 @@ extension ExplicitStructOutput {
         val expectedContents = """
 extension HttpResponseCodeOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, HttpResponseCodeOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            var value = HttpResponseCodeOutput()
-            value.status = httpResponse.statusCode.rawValue
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> HttpResponseCodeOutput {
+        var value = HttpResponseCodeOutput()
+        value.status = httpResponse.statusCode.rawValue
+        return value
     }
 }
 """
@@ -108,16 +105,15 @@ extension HttpResponseCodeOutput {
         val expectedContents = """
 extension InlineDocumentAsPayloadOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, InlineDocumentAsPayloadOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = InlineDocumentAsPayloadOutput()
-            if let data = try await httpResponse.body.readData() {
-                value.documentValue = try SmithyReadWrite.Document.document(from: data)
-            }
-            return value
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> InlineDocumentAsPayloadOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let reader = responseReader
+        var value = InlineDocumentAsPayloadOutput()
+        if let data = try await httpResponse.body.readData() {
+            value.documentValue = try SmithyReadWrite.Document.make(from: data)
         }
+        return value
     }
 }
 """
@@ -130,26 +126,24 @@ extension InlineDocumentAsPayloadOutput {
         val expectedContents = """
 extension HttpPrefixHeadersOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, HttpPrefixHeadersOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            var value = HttpPrefixHeadersOutput()
-            if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
-                value.foo = fooHeaderValue
-            }
-            let keysForFooMap = httpResponse.headers.dictionary.keys.filter({ ${'$'}0.starts(with: "X-Foo-") })
-            if (!keysForFooMap.isEmpty) {
-                var mapMember = [Swift.String: String]()
-                for headerKey in keysForFooMap {
-                    let mapMemberValue = httpResponse.headers.dictionary[headerKey]?[0]
-                    let mapMemberKey = headerKey.removePrefix("X-Foo-")
-                    mapMember[mapMemberKey] = mapMemberValue
-                }
-                value.fooMap = mapMember
-            } else {
-                value.fooMap = [:]
-            }
-            return value
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> HttpPrefixHeadersOutput {
+        var value = HttpPrefixHeadersOutput()
+        if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
+            value.foo = fooHeaderValue
         }
+        let keysForFooMap = httpResponse.headers.dictionary.keys.filter({ ${'$'}0.starts(with: "X-Foo-") })
+        if (!keysForFooMap.isEmpty) {
+            var mapMember = [Swift.String: String]()
+            for headerKey in keysForFooMap {
+                let mapMemberValue = httpResponse.headers.dictionary[headerKey]?[0]
+                let mapMemberKey = headerKey.removePrefix("X-Foo-")
+                mapMember[mapMemberKey] = mapMemberValue
+            }
+            value.fooMap = mapMember
+        } else {
+            value.fooMap = [:]
+        }
+        return value
     }
 }
 """

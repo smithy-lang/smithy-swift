@@ -65,7 +65,7 @@ abstract class MemberShapeEncodeGenerator(
         val propertyKey = nodeInfoUtils.nodeInfo(memberShape)
         val writingClosure = writingClosureUtils.writingClosure(memberShape)
         writer.write(
-            "try writer[\$L].write(\$L\$L, writingClosure: \$L)",
+            "try writer[\$L].write(\$L\$L, with: \$L)",
             propertyKey,
             prefix,
             memberName,

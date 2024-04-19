@@ -66,10 +66,6 @@ public extension Writer {
         }
     }
 
-    func write<T>(_ value: T, writingClosure: (T, Writer) throws -> Void) throws {
-        try writingClosure(value, self)
-    }
-
     func write(_ value: Bool?) throws {
         record(string: value.map { $0 ? "true" : "false" })
     }

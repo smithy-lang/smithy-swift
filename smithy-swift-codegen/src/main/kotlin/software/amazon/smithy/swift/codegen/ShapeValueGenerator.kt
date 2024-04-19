@@ -86,7 +86,11 @@ class ShapeValueGenerator(
     }
 
     private fun documentDecl(writer: SwiftWriter, node: Node) {
-        writer.openBlock("try Document.document(from: Data(\"\"\"", "\"\"\".utf8))") {
+        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
+        writer.openBlock(
+            "try \$N.make(from: Data(\"\"\"", "\"\"\".utf8))",
+            SmithyReadWriteTypes.Document,
+        ) {
             writer.write(Node.prettyPrintJson(node))
         }
     }

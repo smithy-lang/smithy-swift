@@ -86,13 +86,13 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SmokeTestInput, SmokeTestOutput>(SmokeTestInput.headerProvider(_:)))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.QueryItemMiddleware<SmokeTestInput, SmokeTestOutput>(SmokeTestInput.queryItemProvider(_:)))
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SmokeTestInput, SmokeTestOutput>(contentType: "application/json"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SmokeTestInput, SmokeTestOutput, SmithyJSON.Writer>(documentWritingClosure: SmithyReadWrite.documentWritingClosure(rootNodeInfo: ""), inputWritingClosure: SmokeTestInput.write(value:to:)))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SmokeTestInput, SmokeTestOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: SmokeTestInput.write(value:to:)))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<SmokeTestOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(SmokeTestOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: SmokeTestOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                         XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
@@ -158,7 +158,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             position: .after,
             middleware: MockDeserializeMiddleware<ExplicitStringOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(ExplicitStringOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: ExplicitStringOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                         XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
@@ -213,7 +213,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             position: .after,
             middleware: MockDeserializeMiddleware<EmptyInputAndEmptyOutputOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(EmptyInputAndEmptyOutputOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: EmptyInputAndEmptyOutputOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual)
                     return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: EmptyInputAndEmptyOutputOutput())
@@ -268,13 +268,13 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>(SimpleScalarPropertiesInput.headerProvider(_:)))
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>(contentType: "application/json"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput, SmithyJSON.Writer>(documentWritingClosure: SmithyReadWrite.documentWritingClosure(rootNodeInfo: ""), inputWritingClosure: SimpleScalarPropertiesInput.write(value:to:)))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: SimpleScalarPropertiesInput.write(value:to:)))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<SimpleScalarPropertiesOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(SimpleScalarPropertiesOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: SimpleScalarPropertiesOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                         XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
@@ -341,7 +341,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             position: .after,
             middleware: MockDeserializeMiddleware<StreamingTraitsOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(StreamingTraitsOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: StreamingTraitsOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                         XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
@@ -403,7 +403,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             position: .after,
             middleware: MockDeserializeMiddleware<HttpPrefixHeadersOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(HttpPrefixHeadersOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: HttpPrefixHeadersOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual)
                     return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: HttpPrefixHeadersOutput())
@@ -462,13 +462,13 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutput>(contentType: "application/json"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<JsonUnionsInput, JsonUnionsOutput, SmithyJSON.Writer>(documentWritingClosure: SmithyReadWrite.documentWritingClosure(rootNodeInfo: ""), inputWritingClosure: JsonUnionsInput.write(value:to:)))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<JsonUnionsInput, JsonUnionsOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: JsonUnionsInput.write(value:to:)))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<JsonUnionsOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(JsonUnionsOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: JsonUnionsOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                         XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
@@ -550,13 +550,13 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutput>(contentType: "application/json"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<RecursiveShapesInput, RecursiveShapesOutput, SmithyJSON.Writer>(documentWritingClosure: SmithyReadWrite.documentWritingClosure(rootNodeInfo: ""), inputWritingClosure: RecursiveShapesInput.write(value:to:)))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<RecursiveShapesInput, RecursiveShapesOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: RecursiveShapesInput.write(value:to:)))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<RecursiveShapesOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(RecursiveShapesOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: RecursiveShapesOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                         XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
@@ -603,7 +603,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let input = InlineDocumentInput(
-            documentValue: try Document.document(from: Data(""${'"'}
+            documentValue: try SmithyReadWrite.Document.make(from: Data(""${'"'}
                 {
                     "foo": "bar"
                 }
@@ -625,13 +625,13 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutput>(contentType: "application/json"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<InlineDocumentInput, InlineDocumentOutput, SmithyJSON.Writer>(documentWritingClosure: SmithyReadWrite.documentWritingClosure(rootNodeInfo: ""), inputWritingClosure: InlineDocumentInput.write(value:to:)))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<InlineDocumentInput, InlineDocumentOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: InlineDocumentInput.write(value:to:)))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<InlineDocumentOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(InlineDocumentOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: InlineDocumentOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                         XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
@@ -675,7 +675,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let input = InlineDocumentAsPayloadInput(
-            documentValue: try Document.document(from: Data(""${'"'}
+            documentValue: try SmithyReadWrite.Document.make(from: Data(""${'"'}
                 {
                     "foo": "bar"
                 }
@@ -696,13 +696,13 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>(contentType: "application/json"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.PayloadBodyMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput, SmithyReadWrite.Document, SmithyJSON.Writer>(documentWritingClosure: SmithyReadWrite.documentWritingClosure(rootNodeInfo: ""), inputWritingClosure: SmithyReadWrite.Document.write(value:to:), keyPath: \.documentValue, defaultBody: "{}"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.PayloadBodyMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput, SmithyReadWrite.Document, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: SmithyReadWrite.Document.write(value:to:), keyPath: \.documentValue, defaultBody: "{}"))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: wireResponseOutputClosure(InlineDocumentAsPayloadOutput.httpBinding, wireResponseDocumentBinding()),
+                responseClosure: InlineDocumentAsPayloadOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
                         XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")

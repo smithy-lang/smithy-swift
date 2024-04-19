@@ -40,10 +40,6 @@ public extension Writer {
         return newChild
     }
 
-    func write<T>(_ value: T, writingClosure: (T, Writer) throws -> Void) throws {
-        try writingClosure(value, self)
-    }
-
     func write(_ value: Bool?) throws {
         guard let value else { return }
         self.jsonNode = .bool(value)

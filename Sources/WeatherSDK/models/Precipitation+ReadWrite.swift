@@ -10,17 +10,17 @@ extension WeatherClientTypes.Precipitation {
         guard let value else { return }
         switch value {
             case let .baz(baz):
-                try writer["baz"].write(baz, writingClosure: WeatherClientTypes.Baz.write(value:to:))
+                try writer["baz"].write(baz, with: WeatherClientTypes.Baz.write(value:to:))
             case let .blob(blob):
                 try writer["blob"].write(blob)
             case let .foo(foo):
-                try writer["foo"].write(foo, writingClosure: WeatherClientTypes.Foo.write(value:to:))
+                try writer["foo"].write(foo, with: WeatherClientTypes.Foo.write(value:to:))
             case let .hail(hail):
                 try writer["hail"].writeMap(hail, valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
             case let .mixed(mixed):
                 try writer["mixed"].write(mixed)
             case let .other(other):
-                try writer["other"].write(other, writingClosure: WeatherClientTypes.OtherStructure.write(value:to:))
+                try writer["other"].write(other, with: WeatherClientTypes.OtherStructure.write(value:to:))
             case let .rain(rain):
                 try writer["rain"].write(rain)
             case let .sleet(sleet):

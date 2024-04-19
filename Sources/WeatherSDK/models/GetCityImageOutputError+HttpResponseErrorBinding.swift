@@ -7,14 +7,14 @@ import SmithyTestUtil
 
 enum GetCityImageOutputError {
 
-    static var httpErrorBinding: SmithyReadWrite.WireResponseErrorBinding<ClientRuntime.HttpResponse, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let baseError = try SmithyTestUtil.TestBaseError(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: false)
-            switch baseError.code {
-                case "NoSuchResource": return try NoSuchResource.makeError(baseError: baseError)
-                default: return try ClientRuntime.UnknownHTTPServiceError.makeError(baseError: baseError)
-            }
+    static func httpError(from httpResponse: ClientRuntime.HttpResponse) async throws -> Swift.Error {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let baseError = try SmithyTestUtil.TestBaseError(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: false)
+        if let error = baseError.customError() { return error }
+        switch baseError.code {
+            case "NoSuchResource": return try NoSuchResource.makeError(baseError: baseError)
+            default: return try ClientRuntime.UnknownHTTPServiceError.makeError(baseError: baseError)
         }
     }
 }

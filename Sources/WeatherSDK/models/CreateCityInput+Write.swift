@@ -8,8 +8,8 @@ extension CreateCityInput {
 
     static func write(value: CreateCityInput?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
-        try writer["city"].write(value.city, writingClosure: WeatherClientTypes.CitySummary.write(value:to:))
-        try writer["coordinates"].write(value.coordinates, writingClosure: WeatherClientTypes.CityCoordinates.write(value:to:))
+        try writer["city"].write(value.city, with: WeatherClientTypes.CitySummary.write(value:to:))
+        try writer["coordinates"].write(value.coordinates, with: WeatherClientTypes.CityCoordinates.write(value:to:))
         try writer["name"].write(value.name)
     }
 }

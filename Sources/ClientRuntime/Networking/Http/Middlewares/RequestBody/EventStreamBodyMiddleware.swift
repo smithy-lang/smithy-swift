@@ -6,7 +6,6 @@
 //
 
 import struct Foundation.Data
-import typealias SmithyReadWrite.DocumentWritingClosure
 import typealias SmithyReadWrite.WritingClosure
 
 public struct EventStreamBodyMiddleware<OperationStackInput,

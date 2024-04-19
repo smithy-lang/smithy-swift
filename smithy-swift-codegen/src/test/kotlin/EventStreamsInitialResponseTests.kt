@@ -22,37 +22,34 @@ class EventStreamsInitialResponseTests {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-extension TestStreamOperationWithInitialRequestResponseOutput {
-
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, TestStreamOperationWithInitialRequestResponseOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = TestStreamOperationWithInitialRequestResponseOutput()
-            if case let .stream(stream) = httpResponse.body {
-                let messageDecoder = ClientRuntime.MessageDecoder()
-                let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<InitialMessageEventStreamsClientTypes.TestStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: InitialMessageEventStreamsClientTypes.TestStream.unmarshal)
-                value.value = decoderStream.toAsyncStream()
-                if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {
-                    let decoder = JSONDecoder()
-                    do {
-                        let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)
-                        self.initial1 = response["initial1"]
-                        self.initial2 = response["initial2"]
-                    } catch {
-                        print("Error decoding JSON: \(error)")
-                        self.initial1 = nil
-                        self.initial2 = nil
-                    }
-                } else {
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> TestStreamOperationWithInitialRequestResponseOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let reader = responseReader
+        var value = TestStreamOperationWithInitialRequestResponseOutput()
+        if case let .stream(stream) = httpResponse.body {
+            let messageDecoder = ClientRuntime.MessageDecoder()
+            let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<InitialMessageEventStreamsClientTypes.TestStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: InitialMessageEventStreamsClientTypes.TestStream.unmarshal)
+            value.value = decoderStream.toAsyncStream()
+            if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {
+                let decoder = JSONDecoder()
+                do {
+                    let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)
+                    self.initial1 = response["initial1"]
+                    self.initial2 = response["initial2"]
+                } catch {
+                    print("Error decoding JSON: \(error)")
                     self.initial1 = nil
                     self.initial2 = nil
                 }
             } else {
-                value.value = nil
+                self.initial1 = nil
+                self.initial2 = nil
             }
-            return value
+        } else {
+            value.value = nil
         }
+        return value
     }
 }
 """

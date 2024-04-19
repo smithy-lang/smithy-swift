@@ -6,22 +6,22 @@
 //
 
 import struct Foundation.Data
-import typealias SmithyReadWrite.DocumentWritingClosure
+import protocol SmithyReadWrite.SmithyWriter
 import typealias SmithyReadWrite.WritingClosure
 
 public struct BodyMiddleware<OperationStackInput,
                              OperationStackOutput,
-                             Writer>: Middleware {
+                             Writer: SmithyWriter>: Middleware {
     public let id: Swift.String = "BodyMiddleware"
 
-    let documentWritingClosure: DocumentWritingClosure<OperationStackInput, Writer>
+    let rootNodeInfo: Writer.NodeInfo
     let inputWritingClosure: WritingClosure<OperationStackInput, Writer>
 
     public init(
-        documentWritingClosure: @escaping DocumentWritingClosure<OperationStackInput, Writer>,
+        rootNodeInfo: Writer.NodeInfo,
         inputWritingClosure: @escaping WritingClosure<OperationStackInput, Writer>
     ) {
-        self.documentWritingClosure = documentWritingClosure
+        self.rootNodeInfo = rootNodeInfo
         self.inputWritingClosure = inputWritingClosure
     }
 
@@ -33,7 +33,11 @@ public struct BodyMiddleware<OperationStackInput,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
               do {
-                  let data = try documentWritingClosure(input.operationInput, inputWritingClosure)
+                  let data = try Writer.write(
+                    input.operationInput,
+                    rootNodeInfo: rootNodeInfo,
+                    with: inputWritingClosure
+                  )
                   let body = ByteStream.data(data)
                   input.builder.withBody(body)
               } catch {

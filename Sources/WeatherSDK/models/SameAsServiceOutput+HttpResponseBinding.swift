@@ -6,9 +6,7 @@ import SmithyReadWrite
 
 extension SameAsServiceOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, SameAsServiceOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            return SameAsServiceOutput()
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> SameAsServiceOutput {
+        return SameAsServiceOutput()
     }
 }

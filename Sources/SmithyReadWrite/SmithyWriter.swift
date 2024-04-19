@@ -16,7 +16,6 @@ public protocol SmithyWriter: AnyObject {
     func data() throws -> Data
 
     subscript(_ nodeInfo: NodeInfo) -> Self { get }
-    func write<T>(_ value: T, writingClosure: WritingClosure<T, Self>) throws
     func write(_ value: Bool?) throws
     func write(_ value: String?) throws
     func write(_ value: Double?) throws
@@ -44,4 +43,17 @@ public protocol SmithyWriter: AnyObject {
         isFlattened: Bool
     ) throws
     func writeNull() throws
+}
+
+public extension SmithyWriter {
+
+    static func write<T>(_ value: T, rootNodeInfo: NodeInfo, with writingClosure: WritingClosure<T, Self>) throws -> Data? {
+        let writer = Self(nodeInfo: rootNodeInfo)
+        try writer.write(value, with: writingClosure)
+        return try writer.data()
+    }
+
+    func write<T>(_ value: T, with writingClosure: WritingClosure<T, Self>) throws {
+        return try writingClosure(value, self)
+    }
 }

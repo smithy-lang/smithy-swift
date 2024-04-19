@@ -184,10 +184,6 @@ public final class Writer: SmithyWriter {
         }
     }
 
-    public func write<T>(_ value: T, writingClosure: WritingClosure<T, Writer>) throws {
-        try writingClosure(value, self)
-    }
-
     public func writeNull() throws {
         // Null not defined in XML.  No operation.
     }

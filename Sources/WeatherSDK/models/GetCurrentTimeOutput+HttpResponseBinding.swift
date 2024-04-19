@@ -6,13 +6,12 @@ import SmithyReadWrite
 
 extension GetCurrentTimeOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, GetCurrentTimeOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            let responseReader = try await responseDocumentClosure(httpResponse)
-            let reader = responseReader
-            var value = GetCurrentTimeOutput()
-            value.time = try reader["time"].readTimestampIfPresent(format: .epochSeconds)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> GetCurrentTimeOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let reader = responseReader
+        var value = GetCurrentTimeOutput()
+        value.time = try reader["time"].readTimestampIfPresent(format: .epochSeconds)
+        return value
     }
 }

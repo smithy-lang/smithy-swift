@@ -6,13 +6,11 @@ import SmithyReadWrite
 
 extension GetCityAnnouncementsOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, GetCityAnnouncementsOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            var value = GetCityAnnouncementsOutput()
-            if let lastUpdatedHeaderValue = httpResponse.headers.value(for: "x-last-updated") {
-                value.lastUpdated = TimestampFormatter(format: .httpDate).date(from: lastUpdatedHeaderValue)
-            }
-            return value
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> GetCityAnnouncementsOutput {
+        var value = GetCityAnnouncementsOutput()
+        if let lastUpdatedHeaderValue = httpResponse.headers.value(for: "x-last-updated") {
+            value.lastUpdated = TimestampFormatter(format: .httpDate).date(from: lastUpdatedHeaderValue)
         }
+        return value
     }
 }

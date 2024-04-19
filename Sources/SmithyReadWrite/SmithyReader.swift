@@ -13,6 +13,7 @@ public protocol SmithyReader: AnyObject {
     associatedtype NodeInfo
 
     static func from(data: Data) throws -> Self
+    static func readFrom<T>(_ data: Data, with readingClosure: ReadingClosure<T, Self>) throws -> T
 
     var hasContent: Bool { get }
     subscript(_ nodeInfo: NodeInfo) -> Self { get }
@@ -45,13 +46,18 @@ public protocol SmithyReader: AnyObject {
     func readNullIfPresent() throws -> Bool?
 }
 
-extension SmithyReader {
+public extension SmithyReader {
 
-    public func read<T>(with readingClosure: ReadingClosure<T, Self>) throws -> T {
+    static func readFrom<T>(_ data: Data, with readingClosure: ReadingClosure<T, Self>) throws -> T {
+        let reader = try Self.from(data: data)
+        return try readingClosure(reader)
+    }
+
+    func read<T>(with readingClosure: ReadingClosure<T, Self>) throws -> T {
         try readingClosure(self)
     }
 
-    public func readIfPresent<T>(with readingClosure: ReadingClosure<T, Self>) throws -> T? {
+    func readIfPresent<T>(with readingClosure: ReadingClosure<T, Self>) throws -> T? {
         do {
             return try readingClosure(self)
         } catch ReaderError.requiredValueNotPresent {
@@ -59,7 +65,7 @@ extension SmithyReader {
         }
     }
 
-    public func read() throws -> String {
+    func read() throws -> String {
         if let value: String = try readIfPresent() {
             return value
         } else {
@@ -67,7 +73,7 @@ extension SmithyReader {
         }
     }
 
-    public func read() throws -> Int8 {
+    func read() throws -> Int8 {
         if let value: Int8 = try readIfPresent() {
             return value
         } else {
@@ -75,7 +81,7 @@ extension SmithyReader {
         }
     }
 
-    public func read() throws -> Int16 {
+    func read() throws -> Int16 {
         if let value: Int16 = try readIfPresent() {
             return value
         } else {
@@ -83,7 +89,7 @@ extension SmithyReader {
         }
     }
 
-    public func read() throws -> Int {
+    func read() throws -> Int {
         if let value: Int = try readIfPresent() {
             return value
         } else {
@@ -91,7 +97,7 @@ extension SmithyReader {
         }
     }
 
-    public func read() throws -> Float {
+    func read() throws -> Float {
         if let value: Float = try readIfPresent() {
             return value
         } else {
@@ -99,7 +105,7 @@ extension SmithyReader {
         }
     }
 
-    public func read() throws -> Double {
+    func read() throws -> Double {
         if let value: Double = try readIfPresent() {
             return value
         } else {
@@ -107,7 +113,7 @@ extension SmithyReader {
         }
     }
 
-    public func read() throws -> Bool {
+    func read() throws -> Bool {
         if let value: Bool = try readIfPresent() {
             return value
         } else {
@@ -115,7 +121,7 @@ extension SmithyReader {
         }
     }
 
-    public func read() throws -> Data {
+    func read() throws -> Data {
         if let value: Data = try readIfPresent() {
             return value
         } else {
@@ -123,7 +129,7 @@ extension SmithyReader {
         }
     }
 
-    public func read() throws -> Document {
+    func read() throws -> Document {
         if let value: Document = try readIfPresent() {
             return value
         } else {
@@ -131,7 +137,7 @@ extension SmithyReader {
         }
     }
 
-    public func readTimestamp(format: TimestampFormat) throws -> Date {
+    func readTimestamp(format: TimestampFormat) throws -> Date {
         if let value: Date = try readTimestampIfPresent(format: format) {
             return value
         } else {
@@ -139,7 +145,7 @@ extension SmithyReader {
         }
     }
 
-    public func read<T: RawRepresentable>() throws -> T where T.RawValue == Int {
+    func read<T: RawRepresentable>() throws -> T where T.RawValue == Int {
         if let value: T = try readIfPresent() {
             return value
         } else {
@@ -147,7 +153,7 @@ extension SmithyReader {
         }
     }
 
-    public func read<T: RawRepresentable>() throws -> T where T.RawValue == String {
+    func read<T: RawRepresentable>() throws -> T where T.RawValue == String {
         if let value: T = try readIfPresent() {
             return value
         } else {
@@ -155,7 +161,7 @@ extension SmithyReader {
         }
     }
 
-    public func readMap<T>(
+    func readMap<T>(
         valueReadingClosure: ReadingClosure<T, Self>,
         keyNodeInfo: NodeInfo,
         valueNodeInfo: NodeInfo,
@@ -173,7 +179,7 @@ extension SmithyReader {
         }
     }
 
-    public func readList<T>(
+    func readList<T>(
         memberReadingClosure: ReadingClosure<T, Self>,
         memberNodeInfo: NodeInfo,
         isFlattened: Bool
@@ -189,7 +195,7 @@ extension SmithyReader {
         }
     }
 
-    public func readNull() throws -> Bool {
+    func readNull() throws -> Bool {
         if let isNull = try readNullIfPresent() {
             return isNull
         } else {

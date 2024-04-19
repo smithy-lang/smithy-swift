@@ -6,9 +6,7 @@ import SmithyReadWrite
 
 extension OnlyFakeAuthOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, OnlyFakeAuthOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            return OnlyFakeAuthOutput()
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> OnlyFakeAuthOutput {
+        return OnlyFakeAuthOutput()
     }
 }

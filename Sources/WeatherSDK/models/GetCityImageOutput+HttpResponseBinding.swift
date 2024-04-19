@@ -6,18 +6,16 @@ import SmithyReadWrite
 
 extension GetCityImageOutput {
 
-    static var httpBinding: SmithyReadWrite.WireResponseOutputBinding<ClientRuntime.HttpResponse, GetCityImageOutput, SmithyJSON.Reader> {
-        { httpResponse, responseDocumentClosure in
-            var value = GetCityImageOutput()
-            switch httpResponse.body {
-            case .data(let data):
-                value.image = .data(data)
-            case .stream(let stream):
-                value.image = .stream(stream)
-            case .noStream:
-                value.image = nil
-            }
-            return value
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> GetCityImageOutput {
+        var value = GetCityImageOutput()
+        switch httpResponse.body {
+        case .data(let data):
+            value.image = .data(data)
+        case .stream(let stream):
+            value.image = .stream(stream)
+        case .noStream:
+            value.image = nil
         }
+        return value
     }
 }

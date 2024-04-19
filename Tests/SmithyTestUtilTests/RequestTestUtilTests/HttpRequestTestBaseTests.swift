@@ -96,25 +96,31 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     struct SayHelloInputBodyMiddleware<StackOutput>: Middleware {
         var id: String = "SayHelloInputBodyMiddleware"
 
-        let documentWritingClosure: DocumentWritingClosure<SayHelloInput, SmithyJSON.Writer>
+        let rootNodeInfo: SmithyJSON.Writer.NodeInfo
         let inputWritingClosure: WritingClosure<SayHelloInput, SmithyJSON.Writer>
 
         public init(
-            documentWritingClosure: @escaping DocumentWritingClosure<SayHelloInput, SmithyJSON.Writer>,
+            rootNodeInfo: SmithyJSON.Writer.NodeInfo,
             inputWritingClosure: @escaping WritingClosure<SayHelloInput, SmithyJSON.Writer>
         ) {
-            self.documentWritingClosure = documentWritingClosure
+            self.rootNodeInfo = rootNodeInfo
             self.inputWritingClosure = inputWritingClosure
         }
 
-        func handle<H>(context: HttpContext,
-                       input: MInput,
-                       next: H) async throws -> MOutput where H: Handler,
-                                                                Self.Context == H.Context,
-                                                                Self.MInput == H.Input,
-                                                                Self.MOutput == H.Output {
+        func handle<H>(
+            context: HttpContext,
+            input: MInput,
+            next: H
+        ) async throws -> MOutput where
+            H: Handler,
+            Self.Context == H.Context,
+            Self.MInput == H.Input,
+            Self.MOutput == H.Output {
 
-            let body = ByteStream.data(try documentWritingClosure(input.operationInput, inputWritingClosure))
+
+            let writer = SmithyJSON.Writer(nodeInfo: rootNodeInfo)
+            try writer.write(input.operationInput, with: inputWritingClosure)
+            let body = ByteStream.data(try writer.data())
             input.builder.withBody(body)
             return try await next.handle(context: context, input: input)
 
@@ -183,9 +189,9 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         }
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputHeaderMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware(documentWritingClosure: documentWritingClosure(rootNodeInfo: ""), inputWritingClosure: SayHelloInput.write(value:to:)))
+        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware(rootNodeInfo: "", inputWritingClosure: SayHelloInput.write(value:to:)))
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput>(
-            id: "TestDeserializeMiddleware", responseClosure: { _ in try MockOutput() }) { _, actual in
+            id: "TestDeserializeMiddleware", responseClosure: { _ in MockOutput() }) { _, actual in
 
             let forbiddenQueryParams = ["ForbiddenQuery"]
             for forbiddenQueryParam in forbiddenQueryParams {

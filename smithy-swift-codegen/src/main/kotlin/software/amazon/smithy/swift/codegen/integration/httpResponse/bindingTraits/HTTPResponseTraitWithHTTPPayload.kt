@@ -40,7 +40,7 @@ class HTTPResponseTraitWithHTTPPayload(
             ShapeType.DOCUMENT -> {
                 writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
                 writer.openBlock("if let data = try await httpResponse.body.readData() {", "}") {
-                    writer.write("value.\$L = try \$N.document(from: data)", memberName, SmithyReadWriteTypes.Document)
+                    writer.write("value.\$L = try \$N.make(from: data)", memberName, SmithyReadWriteTypes.Document)
                 }
             }
             ShapeType.STRING -> {

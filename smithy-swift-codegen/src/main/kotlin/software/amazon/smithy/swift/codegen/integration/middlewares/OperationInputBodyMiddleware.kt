@@ -20,7 +20,7 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.DocumentWritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
@@ -53,7 +53,7 @@ class OperationInputBodyMiddleware(
     ) {
         if (!alwaysSendBody && !MiddlewareShapeUtils.hasHttpBody(ctx.model, op)) return
         val writingClosureUtils = WritingClosureUtils(ctx, writer)
-        val documentWritingClosureUtils = DocumentWritingClosureUtils(ctx, writer)
+        val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol)
         val inputShape = MiddlewareShapeUtils.inputShape(model, op)
         val inputSymbol = symbolProvider.toSymbol(inputShape)
         val outputSymbol = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
@@ -61,7 +61,7 @@ class OperationInputBodyMiddleware(
         var payloadShape = inputShape
         var keyPath = "\\.self"
         var payloadWritingClosure = writingClosureUtils.writingClosure(payloadShape)
-        var documentWritingClosure = documentWritingClosureUtils.closure(payloadShape)
+        var rootNodeInfo = nodeInfoUtils.nodeInfo(payloadShape, true)
         var isPayloadMember = false
         val defaultBody = "\"{}\"".takeIf { ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>() || ctx.service.hasTrait<RestJson1Trait>() } ?: "nil"
         var payloadMember = inputShape.members().find { it.hasTrait<HttpPayloadTrait>() }
@@ -79,7 +79,7 @@ class OperationInputBodyMiddleware(
             val memberName = ctx.symbolProvider.toMemberName(it)
             keyPath = writer.format("\\.\$L", memberName)
             payloadWritingClosure = writingClosureUtils.writingClosure(it)
-            documentWritingClosure = documentWritingClosureUtils.closure(it)
+            rootNodeInfo = nodeInfoUtils.nodeInfo(it, true)
             isPayloadMember = true
         }
         val isStreaming = payloadShape.hasTrait<StreamingTrait>()
@@ -92,12 +92,12 @@ class OperationInputBodyMiddleware(
                     addEventStreamMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, keyPath, defaultBody, requestWireProtocol, sendInitialRequest)
                 } else {
                     writer.addImports(ctx.service.requestWireProtocol)
-                    addAggregateMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
+                    addAggregateMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
                 }
             }
             is StructureShape, is DocumentShape -> {
                 writer.addImports(ctx.service.requestWireProtocol)
-                addAggregateMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
+                addAggregateMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
             }
             is BlobShape -> {
                 addBlobStreamMiddleware(writer, operationStackName, inputSymbol, outputSymbol, keyPath, isStreaming)
@@ -114,17 +114,17 @@ class OperationInputBodyMiddleware(
         }
     }
 
-    private fun addAggregateMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, writerSymbol: Symbol, documentWritingClosure: String, payloadWritingClosure: String, keyPath: String, defaultBody: String, isPayloadMember: Boolean) {
+    private fun addAggregateMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, writerSymbol: Symbol, rootNodeInfo: String, payloadWritingClosure: String, keyPath: String, defaultBody: String, isPayloadMember: Boolean) {
         if (isPayloadMember) {
-            addPayloadBodyMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody)
+            addPayloadBodyMiddleware(writer, operationStackName, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure, keyPath, defaultBody)
         } else {
-            addBodyMiddleware(writer, operationStackName, inputSymbol, outputSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure)
+            addBodyMiddleware(writer, operationStackName, inputSymbol, outputSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure)
         }
     }
 
-    private fun addBodyMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, writerSymbol: Symbol, documentWritingClosure: String, payloadWritingClosure: String) {
+    private fun addBodyMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, writerSymbol: Symbol, rootNodeInfo: String, payloadWritingClosure: String) {
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(documentWritingClosure: \$L, inputWritingClosure: \$L))",
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(rootNodeInfo: \$L, inputWritingClosure: \$L))",
             operationStackName,
             middlewareStep.stringValue(),
             position.stringValue(),
@@ -132,14 +132,14 @@ class OperationInputBodyMiddleware(
             inputSymbol,
             outputSymbol,
             writerSymbol,
-            documentWritingClosure,
+            rootNodeInfo,
             payloadWritingClosure,
         )
     }
 
-    private fun addPayloadBodyMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, writerSymbol: Symbol, documentWritingClosure: String, payloadWritingClosure: String, keyPath: String, defaultBody: String) {
+    private fun addPayloadBodyMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, writerSymbol: Symbol, rootNodeInfo: String, payloadWritingClosure: String, keyPath: String, defaultBody: String) {
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N, \$N>(documentWritingClosure: \$L, inputWritingClosure: \$L, keyPath: \$L, defaultBody: \$L))",
+            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N, \$N>(rootNodeInfo: \$L, inputWritingClosure: \$L, keyPath: \$L, defaultBody: \$L))",
             operationStackName,
             middlewareStep.stringValue(),
             position.stringValue(),
@@ -148,7 +148,7 @@ class OperationInputBodyMiddleware(
             outputSymbol,
             payloadSymbol,
             writerSymbol,
-            documentWritingClosure,
+            rootNodeInfo,
             payloadWritingClosure,
             keyPath,
             defaultBody

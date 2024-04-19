@@ -15,10 +15,6 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
  */
 object SmithyReadWriteTypes {
     val WireResponseOutputBinding = runtimeSymbol("WireResponseOutputBinding")
-    val WireResponseErrorBinding = runtimeSymbol("WireResponseErrorBinding")
-    val WritingClosure = runtimeSymbol("WritingClosure")
-    val ReadingClosure = runtimeSymbol("ReadingClosure")
-    val DocumentWritingClosure = runtimeSymbol("DocumentWritingClosure")
     val Document = runtimeSymbol("Document")
     val ReaderError = runtimeSymbol("ReaderError")
 }
