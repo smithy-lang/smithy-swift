@@ -37,41 +37,34 @@ class EnumGeneratorTests {
 
         contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
 
-        val expectedGeneratedEnum =
-            """
-            /// Really long multi-line Documentation for the enum
-            public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
-                /// Documentation for BAR
-                case bar
-                case fooBazXap
-                case sdkUnknown(Swift.String)
-            
-                public static var allCases: [MyEnum] {
-                    return [
-                        .bar,
-                        .fooBazXap,
-                        .sdkUnknown("")
-                    ]
-                }
-                public init?(rawValue: Swift.String) {
-                    let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
-                    self = value ?? Self.sdkUnknown(rawValue)
-                }
-                public var rawValue: Swift.String {
-                    switch self {
-                    case .bar: return "BAR"
-                    case .fooBazXap: return "FOO_BAZ@-. XAP - . "
-                    case let .sdkUnknown(s): return s
-                    }
-                }
-                public init(from decoder: Swift.Decoder) throws {
-                    let container = try decoder.singleValueContainer()
-                    let rawValue = try container.decode(RawValue.self)
-                    self = MyEnum(rawValue: rawValue) ?? MyEnum.sdkUnknown(rawValue)
-                }
-            }
-            """.trimIndent()
+        val expectedGeneratedEnum = """
+/// Really long multi-line Documentation for the enum
+public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+    /// Documentation for BAR
+    case bar
+    case fooBazXap
+    case sdkUnknown(Swift.String)
 
+    public static var allCases: [MyEnum] {
+        return [
+            .bar,
+            .fooBazXap,
+            .sdkUnknown("")
+        ]
+    }
+    public init?(rawValue: Swift.String) {
+        let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
+        self = value ?? Self.sdkUnknown(rawValue)
+    }
+    public var rawValue: Swift.String {
+        switch self {
+        case .bar: return "BAR"
+        case .fooBazXap: return "FOO_BAZ@-. XAP - . "
+        case let .sdkUnknown(s): return s
+        }
+    }
+}
+"""
         contents.shouldContain(expectedGeneratedEnum)
     }
 
@@ -102,41 +95,34 @@ class EnumGeneratorTests {
 
         contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
 
-        val expectedGeneratedEnum =
-            """
-            /// Really long multi-line Documentation for the enum
-            public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
-                /// ""${'"'} T2 instances are Burstable Performance Instances that provide a baseline level of CPU performance with the ability to burst above the baseline.""${'"'}
-                case t2Micro
-                case t2Nano
-                case sdkUnknown(Swift.String)
-            
-                public static var allCases: [MyEnum] {
-                    return [
-                        .t2Micro,
-                        .t2Nano,
-                        .sdkUnknown("")
-                    ]
-                }
-                public init?(rawValue: Swift.String) {
-                    let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
-                    self = value ?? Self.sdkUnknown(rawValue)
-                }
-                public var rawValue: Swift.String {
-                    switch self {
-                    case .t2Micro: return "t2.micro"
-                    case .t2Nano: return "t2.nano"
-                    case let .sdkUnknown(s): return s
-                    }
-                }
-                public init(from decoder: Swift.Decoder) throws {
-                    let container = try decoder.singleValueContainer()
-                    let rawValue = try container.decode(RawValue.self)
-                    self = MyEnum(rawValue: rawValue) ?? MyEnum.sdkUnknown(rawValue)
-                }
-            }
-            """.trimIndent()
+        val expectedGeneratedEnum = """
+/// Really long multi-line Documentation for the enum
+public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+    /// ""${'"'} T2 instances are Burstable Performance Instances that provide a baseline level of CPU performance with the ability to burst above the baseline.""${'"'}
+    case t2Micro
+    case t2Nano
+    case sdkUnknown(Swift.String)
 
+    public static var allCases: [MyEnum] {
+        return [
+            .t2Micro,
+            .t2Nano,
+            .sdkUnknown("")
+        ]
+    }
+    public init?(rawValue: Swift.String) {
+        let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
+        self = value ?? Self.sdkUnknown(rawValue)
+    }
+    public var rawValue: Swift.String {
+        switch self {
+        case .t2Micro: return "t2.micro"
+        case .t2Nano: return "t2.nano"
+        case let .sdkUnknown(s): return s
+        }
+    }
+}
+"""
         contents.shouldContain(expectedGeneratedEnum)
     }
 
@@ -150,47 +136,40 @@ class EnumGeneratorTests {
             .getFileString("example/models/Suit.swift").get()
         Assertions.assertNotNull(suitEnumShape)
 
-        var expectedGeneratedEnum =
-            """
-            extension ExampleClientTypes {
-                public enum Suit: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
-                    case club
-                    case diamond
-                    case heart
-                    case spade
-                    case sdkUnknown(Swift.String)
+        var expectedGeneratedEnum = """
+extension ExampleClientTypes {
+    public enum Suit: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+        case club
+        case diamond
+        case heart
+        case spade
+        case sdkUnknown(Swift.String)
 
-                    public static var allCases: [Suit] {
-                        return [
-                            .club,
-                            .diamond,
-                            .heart,
-                            .spade,
-                            .sdkUnknown("")
-                        ]
-                    }
-                    public init?(rawValue: Swift.String) {
-                        let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
-                        self = value ?? Self.sdkUnknown(rawValue)
-                    }
-                    public var rawValue: Swift.String {
-                        switch self {
-                        case .club: return "CLUB"
-                        case .diamond: return "DIAMOND"
-                        case .heart: return "HEART"
-                        case .spade: return "SPADE"
-                        case let .sdkUnknown(s): return s
-                        }
-                    }
-                    public init(from decoder: Swift.Decoder) throws {
-                        let container = try decoder.singleValueContainer()
-                        let rawValue = try container.decode(RawValue.self)
-                        self = Suit(rawValue: rawValue) ?? Suit.sdkUnknown(rawValue)
-                    }
-                }
+        public static var allCases: [Suit] {
+            return [
+                .club,
+                .diamond,
+                .heart,
+                .spade,
+                .sdkUnknown("")
+            ]
+        }
+        public init?(rawValue: Swift.String) {
+            let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
+            self = value ?? Self.sdkUnknown(rawValue)
+        }
+        public var rawValue: Swift.String {
+            switch self {
+            case .club: return "CLUB"
+            case .diamond: return "DIAMOND"
+            case .heart: return "HEART"
+            case .spade: return "SPADE"
+            case let .sdkUnknown(s): return s
             }
-            """.trimIndent()
-
+        }
+    }
+}
+"""
         suitEnumShape.shouldContain(expectedGeneratedEnum)
     }
 
