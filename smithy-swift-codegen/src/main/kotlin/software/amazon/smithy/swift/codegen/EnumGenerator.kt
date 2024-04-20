@@ -155,9 +155,6 @@ class EnumGenerator(
 
             // Generate rawValue internal enum
             generateRawValueEnumBlock()
-
-            // Generate deserializer
-            generateInitFromDecoderBlock()
         }
     }
 
@@ -208,14 +205,6 @@ class EnumGenerator(
             writer.write("switch self {")
             writer.write(rawValuesBuilder.joinToString("\n"))
             writer.write("}")
-        }
-    }
-
-    fun generateInitFromDecoderBlock() {
-        writer.openBlock("public init(from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
-            writer.write("let container = try decoder.singleValueContainer()")
-            writer.write("let rawValue = try container.decode(RawValue.self)")
-            writer.write("self = \$enum.name:L(rawValue: rawValue) ?? \$enum.name:L.sdkUnknown(rawValue)")
         }
     }
 
