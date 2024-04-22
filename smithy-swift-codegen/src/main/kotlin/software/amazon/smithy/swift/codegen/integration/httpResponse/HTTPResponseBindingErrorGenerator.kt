@@ -29,28 +29,26 @@ class HTTPResponseBindingErrorGenerator(
         val serviceShape = ctx.service
         val serviceName = ctx.service.id.name
         val rootNamespace = ctx.settings.moduleName
-        val fileName = "./$rootNamespace/models/$serviceName+ServiceErrorHelperMethod.swift"
+        val fileName = "./$rootNamespace/models/$serviceName+HTTPServiceError.swift"
 
         ctx.delegator.useFileWriter(fileName) { writer ->
             with(writer) {
                 addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 addImport(customizations.baseErrorSymbol.namespace)
                 openBlock(
-                    "extension \$LTypes {",
+                    "func httpServiceError(baseError: \$N) throws -> \$N? {",
                     "}",
-                    ctx.symbolProvider.toSymbol(ctx.service).name
+                    customizations.baseErrorSymbol,
+                    SwiftTypes.Error
                 ) {
-                    openBlock(
-                        "static func responseServiceErrorBinding(baseError: \$N) throws -> \$N? {", "}",
-                        customizations.baseErrorSymbol,
-                        SwiftTypes.Error
-                    ) {
+                    customizations.renderServiceErrorCustomizations(ctx, this)
+                    val serviceErrorShapes =
+                        serviceShape.errors
+                            .map { ctx.model.expectShape(it) as StructureShape }
+                            .toSet()
+                            .sorted()
+                    if (serviceErrorShapes.isNotEmpty()) {
                         openBlock("switch baseError.code {", "}") {
-                            val serviceErrorShapes =
-                                serviceShape.errors
-                                    .map { ctx.model.expectShape(it) as StructureShape }
-                                    .toSet()
-                                    .sorted()
                             serviceErrorShapes.forEach { errorShape ->
                                 val errorShapeName = errorShape.errorShapeName(ctx.symbolProvider)
                                 val errorShapeType = ctx.symbolProvider.toSymbol(errorShape).name
@@ -62,6 +60,8 @@ class HTTPResponseBindingErrorGenerator(
                             }
                             write("default: return nil")
                         }
+                    } else {
+                        write("return nil")
                     }
                 }
             }
@@ -100,14 +100,8 @@ class HTTPResponseBindingErrorGenerator(
                         noErrorWrapping
                     )
                     writer.write("if let error = baseError.customError() { return error }")
-                    if (ctx.service.errors.isNotEmpty()) {
-                        writer.openBlock(
-                            "if let serviceError = try \$LTypes.responseServiceErrorBinding(baseError: baseError) {",
-                            "}",
-                            ctx.symbolProvider.toSymbol(ctx.service).name,
-                        ) {
-                            writer.write("return serviceError")
-                        }
+                    if (ctx.service.errors.isNotEmpty() || customizations.hasServiceErrorCustomizations(ctx)) {
+                        writer.write("if let error = try httpServiceError(baseError: baseError) { return error }")
                     }
                     writer.openBlock("switch baseError.code {", "}") {
                         errorShapes.forEach { errorShape ->

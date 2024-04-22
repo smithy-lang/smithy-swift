@@ -51,6 +51,15 @@ interface HTTPProtocolCustomizable {
         return false
     }
 
+    fun hasServiceErrorCustomizations(ctx: ProtocolGenerator.GenerationContext): Boolean {
+        return false
+    }
+
+    fun renderServiceErrorCustomizations(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {
+        // This code runs after a BaseError is created, but before matching to a modeled error type.
+        // Default implementation does nothing.
+    }
+
     val baseErrorSymbol: Symbol
 
     val messageDecoderSymbol: Symbol
