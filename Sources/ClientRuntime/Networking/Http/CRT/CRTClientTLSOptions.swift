@@ -20,6 +20,9 @@ public struct CRTClientTLSOptions {
     /// Password for the key store if required.
     public let keyStorePassword: String?
 
+    /// Path to a private key
+    public let privateKeyFilepath: String?
+
     /// Information is provided to use custom trust store
     public var useSelfSignedCertificate: Bool {
         return certificatePath != nil && certificateFilename != nil
@@ -27,13 +30,14 @@ public struct CRTClientTLSOptions {
 
     /// Information is provided to use custom key store
     public var useProvidedKeystore: Bool {
-        return keyStoreFilepath != nil && keyStorePassword != nil
+        return (keyStoreFilepath != nil && keyStorePassword != nil) ||
+            (privateKeyFilepath != nil && useSelfSignedCertificate)
     }
 
     public init(
         certificatePath: String? = nil,
         certificateFilename: String? = nil, // .cer
-        keyStoreFilepath: String? = nil, // .p12
+        keyStoreFilepath: String? = nil, // .p12 PEM
         keyStorePassword: String? = nil
     ) {
         self.certificatePath = certificatePath
@@ -45,33 +49,34 @@ public struct CRTClientTLSOptions {
 
 extension CRTClientTLSOptions {
     func resolveContext() -> TLSContext? {
-        // Provide default tls context
+        // Provide default tls context (nil)
         var tlsContext: TLSContext?
 
         // Set CRT client tls options with .client mode
         do {
-            let tlsOptions: TLSContextOptions
-            if self.useProvidedKeystore == true,
-               let keyStoreFilepath = self.keyStoreFilepath,
-               let keyStorePassword = self.keyStorePassword {
-                tlsOptions = try .makeMTLS(
-                    pkcs12Path: keyStoreFilepath,
-                    password: keyStorePassword
-                )
-            } else {
-                tlsOptions = TLSContextOptions.makeDefault()
+            // Set tlsOptions to default value
+            var tlsOptions = TLSContextOptions.makeDefault()
+
+            if self.useProvidedKeystore {
+                #if os(tvOS) || os(iOS) || os(watchOS) || os(macOS)
+                if let path = keyStoreFilepath, let password = keyStorePassword {
+                    tlsOptions = try .makeMTLS(pkcs12Path: path, password: password)
+                }
+                #else
+                if let certPath = certificatePath,
+                    let certFilename = certificateFilename,
+                    let privateKeyPath = privateKeyFilepath {
+                    let certFilepath = "\(certPath)/\(certFilename)"
+                    tlsOptions = try .makeMTLS(certificatePath: certFilepath, privateKeyPath: privateKeyPath)
+                }
+                #endif
             }
 
-            if self.useSelfSignedCertificate == true,
-               let certificatePath = self.certificatePath,
-               let certificateFilename = self.certificateFilename {
-                try tlsOptions.overrideDefaultTrustStore(
-                    caPath: certificatePath,
-                    caFile: certificateFilename
-                )
+            if self.useSelfSignedCertificate, let certPath = certificatePath, let certFilename = certificateFilename {
+                try tlsOptions.overrideDefaultTrustStore(caPath: certPath, caFile: certFilename)
             }
 
-            tlsContext = try TLSContext(options: tlsOptions, mode: .client)
+            return try TLSContext(options: tlsOptions, mode: .client)
         } catch {
             let logger = SwiftLogger(label: "HTTPClientConfiguration")
             logger.error(
