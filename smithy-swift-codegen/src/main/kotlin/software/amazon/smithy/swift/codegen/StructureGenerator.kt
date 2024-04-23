@@ -112,8 +112,8 @@ class StructureGenerator(
     private fun generateStruct() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        val equatableConformance = (": " + SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
-        writer.openBlock("public struct \$struct.name:L ${equatableConformance} {")
+        val equatableConformance = (": " + SwiftTypes.Protocols.Equatable + " ").takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
+        writer.openBlock("public struct \$struct.name:L ${equatableConformance}{")
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure(false) }

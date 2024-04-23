@@ -27,7 +27,7 @@ object EquatableConformanceTransformer {
         // Collect all member shapes used as inputToken or outputToken for paginated operations.
         for (op in service.allOperations) {
             val paginationInfo = paginatedIndex.getPaginationInfo(service.id, op.toShapeId())
-            paginationInfo?.get()?.let {
+            paginationInfo.ifPresent {
                 paginationTokenMembers.add(it.inputTokenMember)
                 paginationTokenMembers.addAll(it.outputTokenMemberPath)
             }
