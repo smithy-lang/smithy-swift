@@ -78,7 +78,7 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
         val expectedContents =
             """
             extension ExampleClientTypes {
-                public indirect enum XmlUnionShape: Swift.Equatable {
+                public indirect enum XmlUnionShape {
                     case doublevalue(Swift.Double)
                     case datavalue(ClientRuntime.Data)
                     case unionvalue(ExampleClientTypes.XmlUnionShape)

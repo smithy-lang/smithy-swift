@@ -44,7 +44,7 @@ class UnionGeneratorTests {
         val expectedGeneratedEnum =
             """
             /// Really long multi-line Documentation for MyUnion
-            public enum MyUnion: Swift.Equatable {
+            public enum MyUnion {
                 case foo(Swift.String)
                 case baz(Swift.Int)
                 /// Documentation for bar
@@ -88,7 +88,7 @@ class UnionGeneratorTests {
         val expectedGeneratedEnum =
             """
             /// Really long multi-line Documentation for MyUnion
-            public enum MyUnion: Swift.Equatable {
+            public enum MyUnion {
                 case foo(Swift.String)
                 /// Documentation for bar
                 case bar(Swift.Int)
@@ -128,7 +128,7 @@ class UnionGeneratorTests {
         val expectedGeneratedEnum =
             """
             /// Really long multi-line Documentation for MyUnion
-            public indirect enum MyUnion: Swift.Equatable {
+            public indirect enum MyUnion {
                 /// Really long multi-line Documentation for MyUnion
                 case foo(MyUnion)
                 case baz(Swift.Int)

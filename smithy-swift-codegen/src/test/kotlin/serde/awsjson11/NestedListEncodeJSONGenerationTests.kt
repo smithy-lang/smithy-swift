@@ -17,7 +17,7 @@ class NestedListEncodeJSONGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            public struct ListOfMapsOperationInput: Swift.Equatable {
+            public struct ListOfMapsOperationInput {
                 public var targetMaps: [[Swift.String:[Swift.String]]]?
             
                 public init(
