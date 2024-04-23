@@ -38,12 +38,14 @@ public struct CRTClientTLSOptions {
         certificatePath: String? = nil,
         certificateFilename: String? = nil, // .cer
         keyStoreFilepath: String? = nil, // .p12 PEM
-        keyStorePassword: String? = nil
+        keyStorePassword: String? = nil,
+        privateKeyFilepath: String? = nil
     ) {
         self.certificatePath = certificatePath
         self.certificateFilename = certificateFilename
         self.keyStoreFilepath = keyStoreFilepath
         self.keyStorePassword = keyStorePassword
+        self.privateKeyFilepath = privateKeyFilepath
     }
 }
 
