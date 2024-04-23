@@ -3,6 +3,7 @@
 import ClientRuntime
 import Foundation
 import Logging
+import SmithyTestUtil
 
 public class WeatherClient: Client {
     public static let clientName = "WeatherClient"
@@ -33,7 +34,9 @@ public class WeatherClient: Client {
 }
 
 extension WeatherClient {
-    public class WeatherClientConfiguration: DefaultClientConfiguration & DefaultHttpClientConfiguration {
+    public class WeatherClientConfiguration: StageConfiguration & DefaultClientConfiguration & DefaultHttpClientConfiguration {
+        public var stage: Swift.String?
+
         public var telemetryProvider: ClientRuntime.TelemetryProvider
 
         public var retryStrategyOptions: ClientRuntime.RetryStrategyOptions
@@ -52,9 +55,12 @@ extension WeatherClient {
 
         public var authSchemeResolver: ClientRuntime.AuthSchemeResolver
 
+        public var endpointResolver: EndpointResolver
+
         internal let logger: ClientRuntime.LogAgent
 
-        private init(_ telemetryProvider: ClientRuntime.TelemetryProvider, _ retryStrategyOptions: ClientRuntime.RetryStrategyOptions, _ clientLogMode: ClientRuntime.ClientLogMode, _ endpoint: Swift.String?, _ idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator, _ httpClientEngine: ClientRuntime.HTTPClient, _ httpClientConfiguration: ClientRuntime.HttpClientConfiguration, _ authSchemes: [ClientRuntime.AuthScheme]?, _ authSchemeResolver: ClientRuntime.AuthSchemeResolver) {
+        private init(_ stage: Swift.String?, _ telemetryProvider: ClientRuntime.TelemetryProvider, _ retryStrategyOptions: ClientRuntime.RetryStrategyOptions, _ clientLogMode: ClientRuntime.ClientLogMode, _ endpoint: Swift.String?, _ idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator, _ httpClientEngine: ClientRuntime.HTTPClient, _ httpClientConfiguration: ClientRuntime.HttpClientConfiguration, _ authSchemes: [ClientRuntime.AuthScheme]?, _ authSchemeResolver: ClientRuntime.AuthSchemeResolver, _ endpointResolver: EndpointResolver) {
+            self.stage = stage
             self.telemetryProvider = telemetryProvider
             self.retryStrategyOptions = retryStrategyOptions
             self.clientLogMode = clientLogMode
@@ -64,15 +70,16 @@ extension WeatherClient {
             self.httpClientConfiguration = httpClientConfiguration
             self.authSchemes = authSchemes
             self.authSchemeResolver = authSchemeResolver
+            self.endpointResolver = endpointResolver
             self.logger = telemetryProvider.loggerProvider.getLogger(name: WeatherClient.clientName)
         }
 
-        public convenience init(telemetryProvider: ClientRuntime.TelemetryProvider? = nil, retryStrategyOptions: ClientRuntime.RetryStrategyOptions? = nil, clientLogMode: ClientRuntime.ClientLogMode? = nil, endpoint: Swift.String? = nil, idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator? = nil, httpClientEngine: ClientRuntime.HTTPClient? = nil, httpClientConfiguration: ClientRuntime.HttpClientConfiguration? = nil, authSchemes: [ClientRuntime.AuthScheme]? = nil, authSchemeResolver: ClientRuntime.AuthSchemeResolver? = nil) throws {
-            self.init(telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider, retryStrategyOptions ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultRetryStrategyOptions, clientLogMode ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultClientLogMode, endpoint, idempotencyTokenGenerator ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultIdempotencyTokenGenerator, httpClientEngine ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.makeClient(), httpClientConfiguration ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultHttpClientConfiguration, authSchemes, authSchemeResolver ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultAuthSchemeResolver)
+        public convenience init(stage: Swift.String? = nil, telemetryProvider: ClientRuntime.TelemetryProvider? = nil, retryStrategyOptions: ClientRuntime.RetryStrategyOptions? = nil, clientLogMode: ClientRuntime.ClientLogMode? = nil, endpoint: Swift.String? = nil, idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator? = nil, httpClientEngine: ClientRuntime.HTTPClient? = nil, httpClientConfiguration: ClientRuntime.HttpClientConfiguration? = nil, authSchemes: [ClientRuntime.AuthScheme]? = nil, authSchemeResolver: ClientRuntime.AuthSchemeResolver? = nil, endpointResolver: EndpointResolver? = nil) throws {
+            self.init(stage ?? "prod", telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider, retryStrategyOptions ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultRetryStrategyOptions, clientLogMode ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultClientLogMode, endpoint, idempotencyTokenGenerator ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultIdempotencyTokenGenerator, httpClientEngine ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.makeClient(), httpClientConfiguration ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultHttpClientConfiguration, authSchemes, authSchemeResolver ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultAuthSchemeResolver, try endpointResolver ?? DefaultEndpointResolver())
         }
 
         public convenience required init() async throws {
-            try await self.init(telemetryProvider: nil, retryStrategyOptions: nil, clientLogMode: nil, endpoint: nil, idempotencyTokenGenerator: nil, httpClientEngine: nil, httpClientConfiguration: nil, authSchemes: nil, authSchemeResolver: nil)
+            try await self.init(stage: nil, telemetryProvider: nil, retryStrategyOptions: nil, clientLogMode: nil, endpoint: nil, idempotencyTokenGenerator: nil, httpClientEngine: nil, httpClientConfiguration: nil, authSchemes: nil, authSchemeResolver: nil, endpointResolver: nil)
         }
 
         public var partitionID: String? {
@@ -125,6 +132,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<CreateCityInput, CreateCityOutput>(id: "createCity")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<CreateCityInput, CreateCityOutput>(CreateCityInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<CreateCityInput, CreateCityOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<CreateCityOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<CreateCityOutput>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<CreateCityInput, CreateCityOutput>(contentType: "application/json"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<CreateCityInput, CreateCityOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
@@ -167,6 +176,8 @@ extension WeatherClient {
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<GetCityInput, GetCityOutput>(GetCityInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<GetCityInput, GetCityOutput>())
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.ContentMD5Middleware<GetCityOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<GetCityOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<GetCityOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, GetCityOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<GetCityOutput>())
@@ -205,6 +216,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<GetCityAnnouncementsInput, GetCityAnnouncementsOutput>(id: "getCityAnnouncements")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<GetCityAnnouncementsInput, GetCityAnnouncementsOutput>(GetCityAnnouncementsInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<GetCityAnnouncementsInput, GetCityAnnouncementsOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<GetCityAnnouncementsOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<GetCityAnnouncementsOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, GetCityAnnouncementsOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<GetCityAnnouncementsOutput>())
@@ -243,6 +256,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<GetCityImageInput, GetCityImageOutput>(id: "getCityImage")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<GetCityImageInput, GetCityImageOutput>(GetCityImageInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<GetCityImageInput, GetCityImageOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<GetCityImageOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<GetCityImageOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, GetCityImageOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<GetCityImageOutput>())
@@ -276,6 +291,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<GetCurrentTimeInput, GetCurrentTimeOutput>(id: "getCurrentTime")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<GetCurrentTimeInput, GetCurrentTimeOutput>(GetCurrentTimeInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<GetCurrentTimeInput, GetCurrentTimeOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<GetCurrentTimeOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<GetCurrentTimeOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, GetCurrentTimeOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<GetCurrentTimeOutput>())
@@ -309,6 +326,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<GetForecastInput, GetForecastOutput>(id: "getForecast")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<GetForecastInput, GetForecastOutput>(GetForecastInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<GetForecastInput, GetForecastOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<GetForecastOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<GetForecastOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, GetForecastOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<GetForecastOutput>())
@@ -342,6 +361,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<InvokeInput, InvokeOutput>(id: "invoke")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<InvokeInput, InvokeOutput>(InvokeInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<InvokeInput, InvokeOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<InvokeOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<InvokeOutput>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InvokeInput, InvokeOutput>(contentType: "application/octet-stream"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BlobBodyMiddleware<InvokeInput, InvokeOutput>(keyPath: \.payload))
@@ -383,6 +404,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<ListCitiesInput, ListCitiesOutput>(id: "listCities")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<ListCitiesInput, ListCitiesOutput>(ListCitiesInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<ListCitiesInput, ListCitiesOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<ListCitiesOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<ListCitiesOutput>())
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.QueryItemMiddleware<ListCitiesInput, ListCitiesOutput>(ListCitiesInput.queryItemProvider(_:)))
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, ListCitiesOutput>(options: config.retryStrategyOptions))
@@ -417,6 +440,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<OnlyFakeAuthInput, OnlyFakeAuthOutput>(id: "onlyFakeAuth")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<OnlyFakeAuthInput, OnlyFakeAuthOutput>(OnlyFakeAuthInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<OnlyFakeAuthInput, OnlyFakeAuthOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<OnlyFakeAuthOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyFakeAuthOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyFakeAuthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyFakeAuthOutput>())
@@ -450,6 +475,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<OnlyFakeAuthOptionalInput, OnlyFakeAuthOptionalOutput>(id: "onlyFakeAuthOptional")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<OnlyFakeAuthOptionalInput, OnlyFakeAuthOptionalOutput>(OnlyFakeAuthOptionalInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<OnlyFakeAuthOptionalInput, OnlyFakeAuthOptionalOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<OnlyFakeAuthOptionalOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyFakeAuthOptionalOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyFakeAuthOptionalOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyFakeAuthOptionalOutput>())
@@ -483,6 +510,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<OnlyHttpApiKeyAndBearerAuthInput, OnlyHttpApiKeyAndBearerAuthOutput>(id: "onlyHttpApiKeyAndBearerAuth")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<OnlyHttpApiKeyAndBearerAuthInput, OnlyHttpApiKeyAndBearerAuthOutput>(OnlyHttpApiKeyAndBearerAuthInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<OnlyHttpApiKeyAndBearerAuthInput, OnlyHttpApiKeyAndBearerAuthOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<OnlyHttpApiKeyAndBearerAuthOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpApiKeyAndBearerAuthOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpApiKeyAndBearerAuthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpApiKeyAndBearerAuthOutput>())
@@ -516,6 +545,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<OnlyHttpApiKeyAndBearerAuthReversedInput, OnlyHttpApiKeyAndBearerAuthReversedOutput>(id: "onlyHttpApiKeyAndBearerAuthReversed")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<OnlyHttpApiKeyAndBearerAuthReversedInput, OnlyHttpApiKeyAndBearerAuthReversedOutput>(OnlyHttpApiKeyAndBearerAuthReversedInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<OnlyHttpApiKeyAndBearerAuthReversedInput, OnlyHttpApiKeyAndBearerAuthReversedOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<OnlyHttpApiKeyAndBearerAuthReversedOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpApiKeyAndBearerAuthReversedOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpApiKeyAndBearerAuthReversedOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpApiKeyAndBearerAuthReversedOutput>())
@@ -549,6 +580,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<OnlyHttpApiKeyAuthInput, OnlyHttpApiKeyAuthOutput>(id: "onlyHttpApiKeyAuth")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<OnlyHttpApiKeyAuthInput, OnlyHttpApiKeyAuthOutput>(OnlyHttpApiKeyAuthInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<OnlyHttpApiKeyAuthInput, OnlyHttpApiKeyAuthOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<OnlyHttpApiKeyAuthOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpApiKeyAuthOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpApiKeyAuthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpApiKeyAuthOutput>())
@@ -582,6 +615,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<OnlyHttpApiKeyAuthOptionalInput, OnlyHttpApiKeyAuthOptionalOutput>(id: "onlyHttpApiKeyAuthOptional")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<OnlyHttpApiKeyAuthOptionalInput, OnlyHttpApiKeyAuthOptionalOutput>(OnlyHttpApiKeyAuthOptionalInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<OnlyHttpApiKeyAuthOptionalInput, OnlyHttpApiKeyAuthOptionalOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<OnlyHttpApiKeyAuthOptionalOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpApiKeyAuthOptionalOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpApiKeyAuthOptionalOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpApiKeyAuthOptionalOutput>())
@@ -615,6 +650,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<OnlyHttpBearerAuthInput, OnlyHttpBearerAuthOutput>(id: "onlyHttpBearerAuth")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<OnlyHttpBearerAuthInput, OnlyHttpBearerAuthOutput>(OnlyHttpBearerAuthInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<OnlyHttpBearerAuthInput, OnlyHttpBearerAuthOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<OnlyHttpBearerAuthOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpBearerAuthOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpBearerAuthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpBearerAuthOutput>())
@@ -648,6 +685,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<OnlyHttpBearerAuthOptionalInput, OnlyHttpBearerAuthOptionalOutput>(id: "onlyHttpBearerAuthOptional")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<OnlyHttpBearerAuthOptionalInput, OnlyHttpBearerAuthOptionalOutput>(OnlyHttpBearerAuthOptionalInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<OnlyHttpBearerAuthOptionalInput, OnlyHttpBearerAuthOptionalOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<OnlyHttpBearerAuthOptionalOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpBearerAuthOptionalOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpBearerAuthOptionalOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpBearerAuthOptionalOutput>())
@@ -681,6 +720,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<OnlySigv4AuthInput, OnlySigv4AuthOutput>(id: "onlySigv4Auth")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<OnlySigv4AuthInput, OnlySigv4AuthOutput>(OnlySigv4AuthInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<OnlySigv4AuthInput, OnlySigv4AuthOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<OnlySigv4AuthOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlySigv4AuthOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlySigv4AuthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlySigv4AuthOutput>())
@@ -714,6 +755,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<OnlySigv4AuthOptionalInput, OnlySigv4AuthOptionalOutput>(id: "onlySigv4AuthOptional")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<OnlySigv4AuthOptionalInput, OnlySigv4AuthOptionalOutput>(OnlySigv4AuthOptionalInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<OnlySigv4AuthOptionalInput, OnlySigv4AuthOptionalOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<OnlySigv4AuthOptionalOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlySigv4AuthOptionalOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlySigv4AuthOptionalOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlySigv4AuthOptionalOutput>())
@@ -747,6 +790,8 @@ extension WeatherClient {
         var operation = ClientRuntime.OperationStack<SameAsServiceInput, SameAsServiceOutput>(id: "sameAsService")
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<SameAsServiceInput, SameAsServiceOutput>(SameAsServiceInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<SameAsServiceInput, SameAsServiceOutput>())
+        let endpointParams = EndpointParams(stage: config.stage)
+        operation.buildStep.intercept(position: .before, middleware: EndpointResolverMiddleware<SameAsServiceOutput>(endpointResolver: config.endpointResolver, endpointParams: endpointParams))
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<SameAsServiceOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, SameAsServiceOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<SameAsServiceOutput>())

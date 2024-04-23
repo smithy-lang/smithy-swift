@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.endpoint.OperationEndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.integration.ClientProperty
 import software.amazon.smithy.swift.codegen.integration.DefaultHttpProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.DefaultRequestEncoder
@@ -94,7 +95,7 @@ class TestProtocolGenerator : HttpBindingProtocolGenerator() {
     }
 
     override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
-        // Intentionally empty
+        operationMiddleware.appendMiddleware(operation, OperationEndpointResolverMiddleware(ctx))
     }
 
     override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext) {

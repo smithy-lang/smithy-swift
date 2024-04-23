@@ -126,6 +126,13 @@ object ClientRuntimeTypes {
         val DateFormatter = runtimeSymbol("DateFormatter")
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")
+
+        val EndpointsRuleEngine = runtimeSymbol("EndpointsRuleEngine")
+        val EndpointsRequestContext = runtimeSymbol("EndpointsRequestContext")
+        val PartitionDefinition = runtimeSymbol("partitionDefinition")
+
+        val AuthSchemeResolver = runtimeSymbol("EndpointAuthSchemeResolver")
+        val DefaultAuthSchemeResolver = runtimeSymbol("DefaultEndpointAuthSchemeResolver")
     }
 }
 

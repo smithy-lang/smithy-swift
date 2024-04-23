@@ -463,26 +463,46 @@ structure Message {
 apply Weather @smithy.rules#endpointRuleSet({
   "version": "1.3",
   "parameters": {
-    "Region": {
-      "required": true,
+    "Stage": {
+      "required": false,
       "type": "String",
       "documentation": "docs"
     }
   },
   "rules": [
-    {
-      "conditions": [],
-      "documentation": "base rule",
-      "endpoint": {
-        "url": "https://{Region}.amazonaws.com",
-        "properties": {},
-        "headers": {}
+      // Rule to for Stage = alpha (point to beta)
+      {
+          "type": "endpoint",
+          "conditions": [ {"fn": "isSet", "argv": [{"ref": "Stage"}]}, {"fn": "stringEquals", "argv": [{"ref": "Stage"}, "alpha"]} ],
+          "endpoint": { "url": "https://fpmhmw9kd7.execute-api.us-west-2.amazonaws.com/beta" },
       },
-      "type": "endpoint"
-    }
+      // Rule to for Stage = beta
+      {
+          "type": "endpoint",
+          "conditions": [ {"fn": "isSet", "argv": [{"ref": "Stage"}]}, {"fn": "stringEquals", "argv": [{"ref": "Stage"}, "beta"]} ],
+          "endpoint": { "url": "https://fpmhmw9kd7.execute-api.us-west-2.amazonaws.com/beta" },
+      },
+      // Rule to for Stage = gamma
+      {
+          "type": "endpoint",
+          "conditions": [ {"fn": "isSet", "argv": [{"ref": "Stage"}]}, {"fn": "stringEquals", "argv": [{"ref": "Stage"}, "gamma"]} ],
+          "endpoint": { "url": "https://mow32it2pa.execute-api.us-east-1.amazonaws.com/gamma" },
+      },
+      // Rule to for Stage = prod
+      {
+          "type": "endpoint",
+          "conditions": [ {"fn": "isSet", "argv": [{"ref": "Stage"}]}, {"fn": "stringEquals", "argv": [{"ref": "Stage"}, "prod"]} ],
+          "endpoint": { "url": "https://bqcgz0nn7a.execute-api.us-east-1.amazonaws.com/prod" },
+      },
+      // Default to prod endpoint if none of the above rules match
+      {
+          "type": "endpoint",
+          "conditions": [],
+          "endpoint": { "url": "https://bqcgz0nn7a.execute-api.us-east-1.amazonaws.com/prod" },
+      }
   ]
 })
 
 apply Weather @smithy.rules#clientContextParams(
-  Region: {type: "string", documentation: "docs"}
+    Stage: {type: "string", documentation: "docs"}
 )

@@ -113,7 +113,10 @@ open class HttpProtocolServiceClient(
         val clientConfigurationProtocols =
             ctx.integrations
                 .flatMap { it.clientConfigurations(ctx) }
-                .mapNotNull { it.swiftProtocolName?.name }
+                .mapNotNull {
+                    it.swiftProtocolName?.let { writer.addImport(it) }
+                    it.swiftProtocolName?.name
+                }
                 .joinToString(" & ")
 
         writer.openBlock(
@@ -124,6 +127,7 @@ open class HttpProtocolServiceClient(
             val properties: List<ConfigProperty> = ctx.integrations
                 .flatMap { it.clientConfigurations(ctx).flatMap { it.getProperties(ctx) } }
                 .let { overrideConfigProperties(it) }
+                .distinctBy { it.name }
 
             renderConfigClassVariables(serviceSymbol, properties)
 
