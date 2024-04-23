@@ -46,7 +46,7 @@ public struct CRTClientTLSOptions {
 extension CRTClientTLSOptions {
     func resolveContext() -> TLSContext? {
         // Provide default tls context
-        var tlsContext: TLSContext? = nil
+        var tlsContext: TLSContext?
 
         // Set CRT client tls options with .client mode
         do {
