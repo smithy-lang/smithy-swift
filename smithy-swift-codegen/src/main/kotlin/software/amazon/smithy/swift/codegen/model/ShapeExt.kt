@@ -125,7 +125,7 @@ fun Model.getNestedShapes(serviceShape: ServiceShape): Set<Shape> {
 
 fun Model.getNestedShapes(memberShape: MemberShape): Set<Shape> {
     return Selector
-        .parse("member [id=${memberShape.id}] ~> *")
+        .parse("member [id='${memberShape.id}'] ~> *")
         .select(this)
 }
 
