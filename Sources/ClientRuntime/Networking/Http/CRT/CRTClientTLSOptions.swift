@@ -54,8 +54,8 @@ extension CRTClientTLSOptions {
             if self.useProvidedKeystore == true,
                let keyStoreFilepath = self.keyStoreFilepath,
                let keyStorePassword = self.keyStorePassword {
-                tlsOptions = try .makeMtlsPkcs12FromPath(
-                    path: keyStoreFilepath,
+                tlsOptions = try .makeMTLS(
+                    pkcs12Path: keyStoreFilepath,
                     password: keyStorePassword
                 )
             } else {
