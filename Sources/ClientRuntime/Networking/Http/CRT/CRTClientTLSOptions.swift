@@ -76,7 +76,7 @@ extension CRTClientTLSOptions {
                 try tlsOptions.overrideDefaultTrustStore(caPath: certPath, caFile: certFilename)
             }
 
-            return try TLSContext(options: tlsOptions, mode: .client)
+            tlsContext = try TLSContext(options: tlsOptions, mode: .client)
         } catch {
             let logger = SwiftLogger(label: "HTTPClientConfiguration")
             logger.error(
