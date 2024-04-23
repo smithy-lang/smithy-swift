@@ -51,7 +51,7 @@ class HTTPResponseTraitWithoutHTTPPayload(
         val memberName = ctx.symbolProvider.toMemberName(streamingMember.member)
         when (shape.type) {
             ShapeType.UNION -> {
-                writer.openBlock("if case let .stream(stream) = httpResponse.body {", "} else {") {
+                writer.openBlock("if case let .stream(stream) = httpResponse.body {", "}") {
                     writer.write("let messageDecoder = \$N()", customizations.messageDecoderSymbol)
                     writer.write(
                         "let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
@@ -64,8 +64,6 @@ class HTTPResponseTraitWithoutHTTPPayload(
                         writeInitialResponseMembers(initialResponseMembers)
                     }
                 }
-                writer.indent()
-                writer.write("value.\$L = nil", memberName).closeBlock("}")
             }
             ShapeType.BLOB -> {
                 writer.write("switch httpResponse.body {")
@@ -98,36 +96,18 @@ class HTTPResponseTraitWithoutHTTPPayload(
     }
 
     private fun writeInitialResponseMembers(initialResponseMembers: Set<HttpBindingDescriptor>) {
-        writer.apply {
-            write("if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {")
-            indent()
-            write("let decoder = JSONDecoder()")
-            write("do {")
-            indent()
-            write("let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)")
+        writer.openBlock("if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {",
+            "}"
+        ) {
+            writer.write("let payloadReader = try Reader.from(data: initialDataWithoutHttp)")
             initialResponseMembers.forEach { responseMember ->
                 val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
-                write("self.$responseMemberName = response[\"$responseMemberName\"]")
+                writer.write(
+                    "value.\$L = try payloadReader[\$S].readIfPresent()",
+                    responseMemberName,
+                    responseMemberName,
+                )
             }
-            dedent()
-            write("} catch {")
-            indent()
-            write("print(\"Error decoding JSON: \\(error)\")")
-            initialResponseMembers.forEach { responseMember ->
-                val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
-                write("self.$responseMemberName = nil")
-            }
-            dedent()
-            write("}")
-            dedent()
-            write("} else {")
-            indent()
-            initialResponseMembers.forEach { responseMember ->
-                val responseMemberName = ctx.symbolProvider.toMemberName(responseMember.member)
-                write("self.$responseMemberName = nil")
-            }
-            dedent()
-            write("}")
         }
     }
 }

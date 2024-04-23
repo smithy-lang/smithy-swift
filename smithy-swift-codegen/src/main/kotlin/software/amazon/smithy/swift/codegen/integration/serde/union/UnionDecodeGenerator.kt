@@ -38,7 +38,7 @@ class UnionDecodeGenerator(
                 "guard reader.hasContent else { throw \$N.requiredValueNotPresent }",
                 SmithyReadWriteTypes.ReaderError,
             )
-            writer.write("let name = reader.children.filter { $$0.hasContent }.first { $$0.nodeInfo.name != \"__type\" }?.nodeInfo.name")
+            writer.write("let name = reader.children.filter { $$0.hasContent && $$0.nodeInfo.name != \"__type\" }.first?.nodeInfo.name")
             writer.openBlock("switch name {", "}") {
                 members.forEach {
                     writer.write("case \$S:", memberName(it))

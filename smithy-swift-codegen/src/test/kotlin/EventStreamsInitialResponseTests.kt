@@ -22,6 +22,8 @@ class EventStreamsInitialResponseTests {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
+extension TestStreamOperationWithInitialRequestResponseOutput {
+
     static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> TestStreamOperationWithInitialRequestResponseOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyJSON.Reader.from(data: data)
@@ -32,22 +34,10 @@ class EventStreamsInitialResponseTests {
             let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<InitialMessageEventStreamsClientTypes.TestStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: InitialMessageEventStreamsClientTypes.TestStream.unmarshal)
             value.value = decoderStream.toAsyncStream()
             if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {
-                let decoder = JSONDecoder()
-                do {
-                    let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)
-                    self.initial1 = response["initial1"]
-                    self.initial2 = response["initial2"]
-                } catch {
-                    print("Error decoding JSON: \(error)")
-                    self.initial1 = nil
-                    self.initial2 = nil
-                }
-            } else {
-                self.initial1 = nil
-                self.initial2 = nil
+                let payloadReader = try Reader.from(data: initialDataWithoutHttp)
+                value.initial1 = try payloadReader["initial1"].readIfPresent()
+                value.initial2 = try payloadReader["initial2"].readIfPresent()
             }
-        } else {
-            value.value = nil
         }
         return value
     }

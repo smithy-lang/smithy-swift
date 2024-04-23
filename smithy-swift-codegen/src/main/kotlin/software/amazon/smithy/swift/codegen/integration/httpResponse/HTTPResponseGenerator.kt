@@ -32,7 +32,7 @@ class HTTPResponseGenerator(
             }
         }
 
-        if (ctx.service.errors.isNotEmpty() || customizations.hasServiceErrorCustomizations(ctx)) {
+        if (ctx.service.errors.isNotEmpty() || customizations.serviceErrorCustomRenderer(ctx) != null) {
             httpResponseBindingErrorGenerator.renderServiceError(ctx)
         }
         httpOperations.forEach {

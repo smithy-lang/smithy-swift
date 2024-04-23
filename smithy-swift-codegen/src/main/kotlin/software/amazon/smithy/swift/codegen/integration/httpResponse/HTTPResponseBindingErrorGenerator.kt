@@ -41,7 +41,7 @@ class HTTPResponseBindingErrorGenerator(
                     customizations.baseErrorSymbol,
                     SwiftTypes.Error
                 ) {
-                    customizations.renderServiceErrorCustomizations(ctx, this)
+                    customizations.serviceErrorCustomRenderer(ctx)?.let { it.render(writer) }
                     val serviceErrorShapes =
                         serviceShape.errors
                             .map { ctx.model.expectShape(it) as StructureShape }
@@ -100,7 +100,7 @@ class HTTPResponseBindingErrorGenerator(
                         noErrorWrapping
                     )
                     writer.write("if let error = baseError.customError() { return error }")
-                    if (ctx.service.errors.isNotEmpty() || customizations.hasServiceErrorCustomizations(ctx)) {
+                    if (ctx.service.errors.isNotEmpty() || customizations.serviceErrorCustomRenderer(ctx) != null) {
                         writer.write("if let error = try httpServiceError(baseError: baseError) { return error }")
                     }
                     writer.openBlock("switch baseError.code {", "}") {

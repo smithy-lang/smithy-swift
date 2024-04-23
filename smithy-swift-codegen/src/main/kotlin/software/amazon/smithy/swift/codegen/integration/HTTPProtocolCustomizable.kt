@@ -14,6 +14,7 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 interface HTTPProtocolCustomizable {
+
     fun renderInternals(ctx: ProtocolGenerator.GenerationContext) {
         // Default implementation is no-op
     }
@@ -51,13 +52,12 @@ interface HTTPProtocolCustomizable {
         return false
     }
 
-    fun hasServiceErrorCustomizations(ctx: ProtocolGenerator.GenerationContext): Boolean {
-        return false
+    interface ServiceErrorCustomRenderer {
+        fun render(writer: SwiftWriter)
     }
 
-    fun renderServiceErrorCustomizations(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {
-        // This code runs after a BaseError is created, but before matching to a modeled error type.
-        // Default implementation does nothing.
+    fun serviceErrorCustomRenderer(ctx: ProtocolGenerator.GenerationContext): ServiceErrorCustomRenderer? {
+        return null
     }
 
     val baseErrorSymbol: Symbol
