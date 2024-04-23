@@ -96,7 +96,8 @@ class HTTPResponseTraitWithoutHTTPPayload(
     }
 
     private fun writeInitialResponseMembers(initialResponseMembers: Set<HttpBindingDescriptor>) {
-        writer.openBlock("if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {",
+        writer.openBlock(
+            "if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {",
             "}"
         ) {
             writer.write("let payloadReader = try Reader.from(data: initialDataWithoutHttp)")

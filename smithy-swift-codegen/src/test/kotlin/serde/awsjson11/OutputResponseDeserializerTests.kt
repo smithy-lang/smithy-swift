@@ -99,8 +99,6 @@ extension EventStreamingOutput {
             let messageDecoder = ClientRuntime.MessageDecoder()
             let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: EventStream.unmarshal)
             value.eventStream = decoderStream.toAsyncStream()
-        } else {
-            value.eventStream = nil
         }
         return value
     }
