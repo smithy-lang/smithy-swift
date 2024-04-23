@@ -11,7 +11,7 @@ class ReservedWordsGeneratorTests {
     fun `test enum`() {
         val context = setupTests("reserved-name-enum-test.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/example/models/ReservedWordsEnum.swift")
-        val expectedContents =  """
+        val expectedContents = """
 extension ExampleClientTypes {
     public enum ReservedWordsEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
         case any
