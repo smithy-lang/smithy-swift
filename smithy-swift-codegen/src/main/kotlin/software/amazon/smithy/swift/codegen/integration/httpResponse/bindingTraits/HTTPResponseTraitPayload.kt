@@ -13,16 +13,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseBindingRenderable
 
-interface HTTPResponseTraitPayloadFactory {
-    fun construct(
-        ctx: ProtocolGenerator.GenerationContext,
-        responseBindings: List<HttpBindingDescriptor>,
-        errorShape: Shape,
-        writer: SwiftWriter,
-        customizations: HTTPProtocolCustomizable,
-    ): HTTPResponseBindingRenderable
-}
-
 class HTTPResponseTraitPayload(
     val ctx: ProtocolGenerator.GenerationContext,
     val responseBindings: List<HttpBindingDescriptor>,

@@ -41,17 +41,18 @@ class InitialRequestIntegration : SwiftIntegration {
                 .build()
             protocolGenerationContext.delegator.useShapeWriter(inputStruct) { writer ->
                 writer.apply {
-                    addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                    openBlock("extension ${symbol.fullName} {", "}") {
+                    addImport(protocolGenerationContext.service.writerSymbol.namespace)
+                    openBlock("extension \$N {", "}", symbol) {
+                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                         openBlock(
-                            "func makeInitialRequestMessage(encoder: ClientRuntime.RequestEncoder) throws -> EventStream.Message {",
+                            "func makeInitialRequestMessage() throws -> EventStream.Message {",
                             "}"
                         ) {
                             val nodeInfoUtils = NodeInfoUtils(protocolGenerationContext, writer, protocolGenerationContext.service.requestWireProtocol)
                             val rootNodeInfo = nodeInfoUtils.nodeInfo(it, true)
                             val valueWritingClosure = WritingClosureUtils(protocolGenerationContext, writer).writingClosure(it)
                             writer.write("let writer = \$N(nodeInfo: \$L)", protocolGenerationContext.service.writerSymbol, rootNodeInfo)
-                            writer.write("try writer.write(self, writingClosure: \$L)", valueWritingClosure)
+                            writer.write("try writer.write(self, with: \$L)", valueWritingClosure)
                             writer.write("let initialRequestPayload = try writer.data()")
                             openBlock(
                                 "let initialRequestMessage = EventStream.Message(",

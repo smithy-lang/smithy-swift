@@ -157,7 +157,7 @@ class OperationInputBodyMiddleware(
 
     private fun addEventStreamMiddleware(writer: SwiftWriter, operationStackName: String, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String, requestWireProtocol: WireProtocol, sendInitialRequest: Boolean) {
         if (sendInitialRequest) {
-            writer.write("let initialRequestMessage = try input.makeInitialRequestMessage(encoder: encoder)")
+            writer.write("let initialRequestMessage = try input.makeInitialRequestMessage()")
         }
         writer.write(
             "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L, marshalClosure: \$N.marshal\$L))",

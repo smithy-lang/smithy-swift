@@ -86,6 +86,7 @@ class HTTPResponseTraitWithHTTPPayload(
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 if (target.hasTrait<StreamingTrait>()) {
                     writer.openBlock("if case .stream(let stream) = httpResponse.body {", "}") {
+                        writer.addImport(customizations.messageDecoderSymbol.namespace)
                         writer.write("let messageDecoder = \$N()", customizations.messageDecoderSymbol)
                         writer.write(
                             "let decoderStream = \$N(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",

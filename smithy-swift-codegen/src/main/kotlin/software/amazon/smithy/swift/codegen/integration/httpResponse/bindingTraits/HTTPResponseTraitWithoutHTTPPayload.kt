@@ -52,6 +52,7 @@ class HTTPResponseTraitWithoutHTTPPayload(
         when (shape.type) {
             ShapeType.UNION -> {
                 writer.openBlock("if case let .stream(stream) = httpResponse.body {", "}") {
+                    writer.addImport(customizations.messageDecoderSymbol.namespace)
                     writer.write("let messageDecoder = \$N()", customizations.messageDecoderSymbol)
                     writer.write(
                         "let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
