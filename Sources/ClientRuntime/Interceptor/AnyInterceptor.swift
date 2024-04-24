@@ -6,12 +6,14 @@
 //
 
 /// Type-erased, concrete interceptor.
-/// 
+///
 /// In order to have multiple interceptors hooked into a single operation, we
 /// need a concrete type, not a protocol. This stores references to the closures
 /// of interceptor implementations and delegates to them for each interceptor hook.
-internal struct AnyInterceptor<RequestType, ResponseType, AttributesType: HasAttributes> {
-    internal typealias InterceptorContextType = DefaultInterceptorContext<RequestType, ResponseType, AttributesType>
+internal struct AnyInterceptor<InputType, OutputType, RequestType, ResponseType, AttributesType: HasAttributes> {
+    internal typealias InterceptorContextType = DefaultInterceptorContext<
+        InputType, OutputType, RequestType, ResponseType, AttributesType
+    >
     internal typealias InterceptorFn = (InterceptorContextType) async throws -> Void
 
     private var readBeforeExecution: InterceptorFn
@@ -36,6 +38,8 @@ internal struct AnyInterceptor<RequestType, ResponseType, AttributesType: HasAtt
 
     internal init<I: Interceptor>(interceptor: I)
     where
+        I.InputType == InputType,
+        I.OutputType == OutputType,
         I.RequestType == RequestType,
         I.ResponseType == ResponseType,
         I.AttributesType == AttributesType {

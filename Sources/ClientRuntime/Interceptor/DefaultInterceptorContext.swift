@@ -6,22 +6,23 @@
 //
 
 /// Default implementation for all interceptor context types.
-/// 
+///
 /// This object will be created before operation execution, and passed through each interceptor
 /// hook in the execution pipeline.
-public class DefaultInterceptorContext<RequestType, ResponseType, AttributesType: HasAttributes>: InterceptorContext {
+public class DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType, AttributesType: HasAttributes>:
+    InterceptorContext {
     private var attributes: AttributesType
-    private var input: Any
+    private var input: InputType
     private var request: RequestType?
     private var response: ResponseType?
-    private var output: Any?
+    private var output: OutputType?
 
-    public init(input: Any, attributes: AttributesType) {
+    public init(input: InputType, attributes: AttributesType) {
         self.input = input
         self.attributes = attributes
     }
 
-    public func getInput() -> Any {
+    public func getInput() -> InputType {
         self.input
     }
 
@@ -33,7 +34,7 @@ public class DefaultInterceptorContext<RequestType, ResponseType, AttributesType
 extension DefaultInterceptorContext: BeforeSerialization {}
 
 extension DefaultInterceptorContext: MutableInput {
-    public func updateInput(updated: Any) {
+    public func updateInput(updated: InputType) {
         self.input = updated
     }
 }
@@ -63,7 +64,7 @@ extension DefaultInterceptorContext: MutableResponse {
 }
 
 extension DefaultInterceptorContext: AfterDeserialization {
-    public func getOutput() -> Any {
+    public func getOutput() -> OutputType {
         self.output!
     }
 }
@@ -75,7 +76,7 @@ extension DefaultInterceptorContext: AfterAttempt {
 }
 
 extension DefaultInterceptorContext: MutableOutputAfterAttempt {
-    public func updateOutput(updated: Any) {
+    public func updateOutput(updated: OutputType) {
         self.output = updated
     }
 }

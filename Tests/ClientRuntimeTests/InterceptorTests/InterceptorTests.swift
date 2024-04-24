@@ -18,7 +18,7 @@ class InterceptorTests: XCTestCase {
         public var property: String?
     }
 
-    struct AddAttributeInterceptor<T, RequestType, ResponseType, AttributesType: HasAttributes> : Interceptor {
+    struct AddAttributeInterceptor<T, InputType, OutputType, RequestType, ResponseType, AttributesType: HasAttributes>: Interceptor {
         private let key: AttributeKey<T>
         private let value: T
 
@@ -27,13 +27,13 @@ class InterceptorTests: XCTestCase {
             self.value = value
         }
 
-        public func modifyBeforeSerialization(context: some MutableInput<Self.AttributesType>) async throws {
+        public func modifyBeforeSerialization(context: some MutableInput<Self.InputType, Self.AttributesType>) async throws {
             let attributes = context.getAttributes()
             attributes.set(key: self.key, value: self.value)
         }
     }
 
-    struct ModifyInputInterceptor<InputType, RequestType, ResponseType, AttributesType: HasAttributes> : Interceptor {
+    struct ModifyInputInterceptor<InputType, OutputType, RequestType, ResponseType, AttributesType: HasAttributes>: Interceptor {
         private let keyPath: WritableKeyPath<InputType, String?>
         private let value: String
 
@@ -42,14 +42,14 @@ class InterceptorTests: XCTestCase {
             self.value = value
         }
 
-        public func modifyBeforeSerialization(context: some MutableInput<Self.AttributesType>) async throws {
-            var input: InputType = try XCTUnwrap(context.getInput())
+        public func modifyBeforeSerialization(context: some MutableInput<Self.InputType, Self.AttributesType>) async throws {
+            var input = context.getInput()
             input[keyPath: keyPath] = value
             context.updateInput(updated: input)
         }
     }
 
-    struct AddHeaderInterceptor : HttpInterceptor {
+    struct AddHeaderInterceptor<InputType, OutputType>: HttpInterceptor {
         private let headerName: String
         private let headerValue: String
 
@@ -58,27 +58,29 @@ class InterceptorTests: XCTestCase {
             self.headerValue = headerValue
         }
 
-        public func modifyBeforeTransmit(context: some MutableRequest<Self.RequestType, Self.AttributesType>) async throws {
+        public func modifyBeforeTransmit(context: some MutableRequest<Self.InputType, Self.RequestType, Self.AttributesType>) async throws {
             let builder = context.getRequest().toBuilder()
             builder.withHeader(name: headerName, value: headerValue)
             context.updateRequest(updated: builder.build())
         }
     }
 
-    struct ModifyMultipleInterceptor: HttpInterceptor {
+    struct ModifyMultipleInterceptor<OutputType>: HttpInterceptor {
+        public typealias InputType = TestInput
+
         private let newInputValue: Int
 
         init(newInputValue: Int) {
             self.newInputValue = newInputValue
         }
 
-        public func modifyBeforeSerialization(context: some MutableInput<Self.AttributesType>) async throws {
-            var input: TestInput = try XCTUnwrap(context.getInput())
+        public func modifyBeforeSerialization(context: some MutableInput<Self.InputType, Self.AttributesType>) async throws {
+            var input = context.getInput()
             input.otherProperty = newInputValue
             context.updateInput(updated: input)
         }
 
-        public func modifyBeforeTransmit(context: some MutableRequest<Self.RequestType, Self.AttributesType>) async throws {
+        public func modifyBeforeTransmit(context: some MutableRequest<Self.InputType, Self.RequestType, Self.AttributesType>) async throws {
             let input: TestInput = try XCTUnwrap(context.getInput())
             let builder = context.getRequest().toBuilder()
             builder.withHeader(name: "otherProperty", value: "\(input.otherProperty)")
@@ -89,13 +91,13 @@ class InterceptorTests: XCTestCase {
     func test_mutation() async throws {
         let httpContext = HttpContext(attributes: Attributes())
         let input = TestInput(property: "foo")
-        let interceptorContext = DefaultInterceptorContext<SdkHttpRequest, HttpResponse, HttpContext>(input: input, attributes: httpContext)
-        let addAttributeInterceptor = AddAttributeInterceptor<String, SdkHttpRequest, HttpResponse, HttpContext>(key: AttributeKey(name: "foo"), value: "bar")
-        let modifyInputInterceptor = ModifyInputInterceptor<TestInput, SdkHttpRequest, HttpResponse, HttpContext>(keyPath: \.property, value: "bar")
-        let addHeaderInterceptor = AddHeaderInterceptor(headerName: "foo", headerValue: "bar")
-        let modifyMultipleInterceptor = ModifyMultipleInterceptor(newInputValue: 1)
+        let interceptorContext = DefaultInterceptorContext<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(input: input, attributes: httpContext)
+        let addAttributeInterceptor = AddAttributeInterceptor<String, TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(key: AttributeKey(name: "foo"), value: "bar")
+        let modifyInputInterceptor = ModifyInputInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(keyPath: \.property, value: "bar")
+        let addHeaderInterceptor = AddHeaderInterceptor<TestInput, TestOutput>(headerName: "foo", headerValue: "bar")
+        let modifyMultipleInterceptor = ModifyMultipleInterceptor<TestOutput>(newInputValue: 1)
 
-        let interceptors: [AnyInterceptor<SdkHttpRequest, HttpResponse, HttpContext>] = [
+        let interceptors: [AnyInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>] = [
             addAttributeInterceptor.erase(), 
             modifyInputInterceptor.erase(), 
             addHeaderInterceptor.erase(),
@@ -109,7 +111,7 @@ class InterceptorTests: XCTestCase {
             try await i.modifyBeforeTransmit(context: interceptorContext)
         }
 
-        let updatedInput: TestInput = try XCTUnwrap(interceptorContext.getInput())
+        let updatedInput = interceptorContext.getInput()
         XCTAssertEqual(updatedInput.property, "bar")
         XCTAssertEqual(updatedInput.otherProperty, 1)
         XCTAssertEqual(interceptorContext.getAttributes().get(key: AttributeKey(name: "foo")), "bar")

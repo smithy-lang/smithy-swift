@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public protocol HttpInterceptor: Interceptor
+public protocol HttpInterceptor<InputType, OutputType>: Interceptor
 where
     RequestType == SdkHttpRequest,
     ResponseType == HttpResponse,
