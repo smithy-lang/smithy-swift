@@ -41,7 +41,7 @@ class UnionDecodeGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            struct JsonUnionsOutputBody: Swift.Equatable {
+            struct JsonUnionsOutputBody {
                 let contents: ExampleClientTypes.MyUnion?
             }
             
