@@ -19,7 +19,7 @@ public func floatingPointValuesMatch(
     // Both are NaN => equal
     if (lhs!.isNaN && rhs!.isNaN) { return true }
     // Both are non-nil & non-NaN => equal IFF values equal
-    let doubleMatch = (lhs as? Double) == (rhs as? Double)
-    let floatMatch = (lhs as? Float) == (rhs as? Float)
+    let doubleMatch = (lhs as? Double ?? .nan) == (rhs as? Double ?? .nan)
+    let floatMatch = (lhs as? Float ?? .nan) == (rhs as? Float ?? .nan)
     return doubleMatch || floatMatch
 }
