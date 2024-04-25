@@ -48,7 +48,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             writer.write("")
             renderExpectedOutput(test, it)
             writer.write("")
-            renderAssertions(test)
+            renderAssertions(test, it)
             writer.write("")
         }
     }
@@ -138,7 +138,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             .write("")
     }
 
-    protected open fun renderAssertions(test: HttpResponseTestCase) {
+    protected open fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
         val nestedShapes = model.getNestedInputShapes(operation)
         for (shape in nestedShapes) {
             when (shape.type) {
