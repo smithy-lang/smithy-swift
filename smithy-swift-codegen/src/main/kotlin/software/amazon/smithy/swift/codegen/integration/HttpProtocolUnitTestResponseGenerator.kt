@@ -193,12 +193,13 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                                 when (target) {
                                     is FloatShape, is DoubleShape -> {
                                         writer.write(
-                                            "if (lhs.\$L?.isNaN ?? false && rhs.\$L?.isNaN ?? false) || (lhs.\$L != rhs.\$L) { return false }",
+                                            "if (lhs.\$L?.isNaN ?? false && rhs.\$L?.isNaN ?? false) { return true }",
                                             propertyAccessor,
                                             propertyAccessor,
                                             propertyAccessor,
                                             propertyAccessor,
                                         )
+                                        writer.write("if lhs.\$L != rhs.\$L { return false }", propertyAccessor, propertyAccessor)
                                     }
                                     else -> {
                                         writer.write("if lhs.\$L != rhs.\$L { return false }", propertyAccessor, propertyAccessor)
