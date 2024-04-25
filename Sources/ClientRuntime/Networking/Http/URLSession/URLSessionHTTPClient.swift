@@ -7,10 +7,15 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
+import class Foundation.Bundle
 import class Foundation.InputStream
 import class Foundation.NSObject
 import class Foundation.NSRecursiveLock
+import var Foundation.NSURLAuthenticationMethodClientCertificate
+import var Foundation.NSURLAuthenticationMethodServerTrust
+import class Foundation.URLAuthenticationChallenge
 import struct Foundation.URLComponents
+import class Foundation.URLCredential
 import struct Foundation.URLQueryItem
 import struct Foundation.URLRequest
 import class Foundation.URLResponse
@@ -21,6 +26,7 @@ import class Foundation.URLSessionConfiguration
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
+import Security
 import AwsCommonRuntimeKit
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
@@ -121,8 +127,93 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// Logger for HTTP-related events.
         let logger: LogAgent
 
-        init(logger: LogAgent) {
+        /// TLS options
+        let tlsOptions: URLSessionTLSOptions?
+
+        init(logger: LogAgent, tlsOptions: URLSessionTLSOptions?) {
             self.logger = logger
+            self.tlsOptions = tlsOptions
+        }
+
+        /// Handles server trust challenges by validating against a custom certificate.
+        func didReceive(
+            serverTrustChallenge challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            guard let tlsOptions = tlsOptions, tlsOptions.useSelfSignedCertificate,
+                  let certFile = tlsOptions.certificateFile,
+                  let serverTrust = challenge.protectionSpace.serverTrust else {
+                logger.error(
+                    "Either TLSOptions not set or missing values! Using default trust store."
+                )
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            guard let customRoot = Bundle.main.certificate(named: certFile) else {
+                logger.error("Certificate not found! Using default trust store.")
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            do {
+                if try serverTrust.evaluateAllowing(rootCertificates: [customRoot]) {
+                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                } else {
+                    logger.error("Trust evaluation failed, cancelling authentication challenge.")
+                    completionHandler(.cancelAuthenticationChallenge, nil)
+                }
+            } catch {
+                logger.error("Trust evaluation threw an error: \(error.localizedDescription)")
+                completionHandler(.cancelAuthenticationChallenge, nil)
+            }
+        }
+
+        /// Handles client identity challenges by presenting a client certificate.
+        func didReceive(
+            clientIdentityChallenge challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            guard let tlsOptions, tlsOptions.useProvidedKeystore,
+                  let keystoreName = tlsOptions.keyStoreName,
+                  let keystorePasword = tlsOptions.keyStorePassword else {
+                logger.error(
+                    "Either TLSOptions not set or missing values! Using default keystore."
+                )
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            guard let identity = Bundle.main.identity(named: keystoreName, password: keystorePasword) else {
+                logger.error(
+                    "Error accessing keystore! Ensure keystore file exists and password is correct!" +
+                    " Using default keystore."
+                )
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            completionHandler(
+                .useCredential,
+                URLCredential(identity: identity, certificates: nil, persistence: .forSession)
+            )
+        }
+
+        /// The URLSession delegate method where authentication challenges are handled.
+        func urlSession(
+            _ session: URLSession,
+            task: URLSessionTask,
+            didReceive challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            switch challenge.protectionSpace.authenticationMethod {
+            case NSURLAuthenticationMethodServerTrust:
+                self.didReceive(serverTrustChallenge: challenge, completionHandler: completionHandler)
+            case NSURLAuthenticationMethodClientCertificate:
+                self.didReceive(clientIdentityChallenge: challenge, completionHandler: completionHandler)
+            default:
+                completionHandler(.performDefaultHandling, nil)
+            }
         }
 
         /// Called when the initial response to a HTTP request is received.
@@ -207,6 +298,9 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// The logger for this HTTP client.
     private var logger: LogAgent
 
+    /// The TLS options for this HTTP client.
+    private let tlsOptions: URLSessionTLSOptions?
+
     /// The initial connection timeout for this HTTP client.
     let connectionTimeout: TimeInterval
 
@@ -220,7 +314,8 @@ public final class URLSessionHTTPClient: HTTPClient {
     public init(httpClientConfiguration: HttpClientConfiguration) {
         self.config = httpClientConfiguration
         self.logger = SwiftLogger(label: "URLSessionHTTPClient")
-        self.delegate = SessionDelegate(logger: logger)
+        self.tlsOptions = config.tlsOptions?.urlSessionTLSOptions
+        self.delegate = SessionDelegate(logger: logger, tlsOptions: tlsOptions)
         self.connectionTimeout = httpClientConfiguration.connectTimeout ?? 60.0
         var urlsessionConfiguration = URLSessionConfiguration.default
         urlsessionConfiguration = URLSessionConfiguration.from(httpClientConfiguration: httpClientConfiguration)

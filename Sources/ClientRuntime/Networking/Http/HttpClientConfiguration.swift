@@ -6,6 +6,7 @@
 //
 
 import struct Foundation.TimeInterval
+import AwsCommonRuntimeKit
 
 public class HttpClientConfiguration {
 
@@ -34,6 +35,12 @@ public class HttpClientConfiguration {
     /// If none is provided, the default protocol for the operation will be used
     public var protocolType: ProtocolType?
 
+    /// Custom TLS configuration for HTTPS connections.
+    ///
+    /// Enables specifying client certificates and trust stores for secure communication.
+    /// Defaults to system's TLS settings if `nil`.
+    public var tlsOptions: TLSOptions?
+
     /// Creates a configuration object for a SDK HTTP client.
     ///
     /// Not all configuration settings may be followed by all clients.
@@ -43,15 +50,18 @@ public class HttpClientConfiguration {
     ///   - defaultHeaders: HTTP headers to be included with every HTTP request.
     ///   Note that certain headers may cause your API request to fail.  Defaults to no headers.
     ///   - protocolType: The HTTP scheme (`http` or `https`) to be used for API requests.  Defaults to the operation's standard configuration.
+    ///   - tlsOptions: Optional custom TLS configuration for HTTPS requests. If `nil`, defaults to a standard configuration.
     public init(
         connectTimeout: TimeInterval? = nil,
         socketTimeout: TimeInterval = 60.0,
         protocolType: ProtocolType = .https,
-        defaultHeaders: Headers = Headers()
+        defaultHeaders: Headers = Headers(),
+        tlsOptions: TLSOptions? = nil
     ) {
         self.socketTimeout = socketTimeout
         self.protocolType = protocolType
         self.defaultHeaders = defaultHeaders
         self.connectTimeout = connectTimeout
+        self.tlsOptions = tlsOptions
     }
 }
