@@ -143,8 +143,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     private fun findShapesRequiringEquatable(shape: Shape) {
-        if (hasBeenRenderedEquatable.contains(identifier(ctx, shape))
-            || shape.hasTrait<EquatableConformanceTrait>()) { return }
+        if (hasBeenRenderedEquatable.contains(identifier(ctx, shape)) ||
+            shape.hasTrait<EquatableConformanceTrait>()
+        ) { return }
         hasBeenRenderedEquatable.add(identifier(ctx, shape))
         when (shape) {
             is StructureShape -> {
@@ -187,7 +188,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                             shape.members().filter { !it.hasTrait<HttpQueryTrait>() }.forEach { member ->
                                 val propertyName = ctx.symbolProvider.toMemberName(member)
                                 val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
-                                val propertyAccessor = "${path}${propertyName}"
+                                val propertyAccessor = "$path$propertyName"
                                 val target = ctx.model.expectShape(member.target)
                                 when (target) {
                                     is FloatShape, is DoubleShape -> {
