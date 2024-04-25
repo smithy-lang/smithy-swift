@@ -7,20 +7,21 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.DoubleShape
 import software.amazon.smithy.model.shapes.FloatShape
-import software.amazon.smithy.model.shapes.ListShape
-import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTrait
 import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.model.getNestedShapes
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 /**
@@ -138,33 +139,14 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     protected open fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
-        findShapesRequiringEquatable(outputShape)
-        writer.write("XCTAssertEqual(actual, expected)")
-    }
-
-    private fun findShapesRequiringEquatable(shape: Shape) {
-        if (hasBeenRenderedEquatable.contains(identifier(ctx, shape)) ||
-            shape.hasTrait<EquatableConformanceTrait>()
-        ) { return }
-        hasBeenRenderedEquatable.add(identifier(ctx, shape))
-        when (shape) {
-            is StructureShape -> {
-                renderEquatable(shape)
-                val memberShapes = shape.members().map { ctx.model.expectShape(it.target) }
-                memberShapes.forEach { findShapesRequiringEquatable(it) }
-            }
-            is UnionShape -> {
-                renderEquatable(shape)
-                val memberShapes = shape.members().map { ctx.model.expectShape(it.target) }
-                memberShapes.forEach { findShapesRequiringEquatable(it) }
-            }
-            is MapShape -> {
-                findShapesRequiringEquatable(ctx.model.expectShape(shape.value.target))
-            }
-            is ListShape -> {
-                findShapesRequiringEquatable(ctx.model.expectShape(shape.member.target))
+        val nestedShapes = model.getNestedShapes(outputShape.asMemberShape().get())
+        for (shape in nestedShapes) {
+            when (shape.type) {
+                ShapeType.STRUCTURE -> renderEquatable(shape)
+                ShapeType.UNION -> renderEquatable(shape)
             }
         }
+        writer.write("XCTAssertEqual(actual, expected)")
     }
 
     private fun identifier(ctx: ProtocolGenerator.GenerationContext, shape: Shape): String {
@@ -172,7 +154,10 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     private fun renderEquatable(shape: Shape) {
-        if (!(shape is StructureShape || shape is UnionShape)) { return }
+        if (hasBeenRenderedEquatable.contains(identifier(ctx, shape)) ||
+            shape.hasTrait<EquatableConformanceTrait>()
+        ) { return }
+        hasBeenRenderedEquatable.add(identifier(ctx, shape))
         val symbol = ctx.symbolProvider.toSymbol(shape)
         val httpBindingSymbol = Symbol.builder()
             .definitionFile("./${ctx.settings.moduleName}Tests/models/${symbol.name}+Equatable.swift")
@@ -180,6 +165,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             .build()
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(ctx.settings.moduleName)
+            writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
             writer.openBlock("extension \$L: \$N {", "}", symbol.fullName, SwiftTypes.Protocols.Equatable) {
                 writer.write("")
                 writer.openBlock("public static func ==(lhs: \$L, rhs: \$L) -> Bool {", "}", symbol.fullName, symbol.fullName) {
@@ -191,13 +177,19 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                                 val propertyAccessor = "$path$propertyName"
                                 val target = ctx.model.expectShape(member.target)
                                 when (target) {
-                                    is FloatShape, is DoubleShape -> {
+                                    is FloatShape -> {
                                         writer.write(
-                                            "if (lhs.\$L?.isNaN ?? false && rhs.\$L?.isNaN ?? false) { return true }",
+                                            "if (!floatsMatch(lhs: lhs.\$L, rhs: rhs.\$L)) { return false }",
                                             propertyAccessor,
                                             propertyAccessor
                                         )
-                                        writer.write("if lhs.\$L != rhs.\$L { return false }", propertyAccessor, propertyAccessor)
+                                    }
+                                    is DoubleShape -> {
+                                        writer.write(
+                                            "if (!doublesMatch(lhs: lhs.\$L, rhs: rhs.\$L)) { return false }",
+                                            propertyAccessor,
+                                            propertyAccessor
+                                        )
                                     }
                                     else -> {
                                         writer.write("if lhs.\$L != rhs.\$L { return false }", propertyAccessor, propertyAccessor)
