@@ -43,36 +43,6 @@ extension ByteStream: Equatable {
     }
 }
 
-extension ByteStream: Codable {
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if container.decodeNil() {
-            self = .data(nil)
-        } else {
-            let data = try container.decode(Data.self)
-            self = .data(data)
-        }
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .data(let data):
-            try container.encode(data)
-        case .stream:
-            throw EncodingError.invalidValue(
-                self,
-                EncodingError.Context(
-                    codingPath: encoder.codingPath,
-                    debugDescription: "Cannot encode a stream."
-                )
-            )
-        case .noStream:
-            try container.encodeNil()
-        }
-    }
-}
-
 extension ByteStream {
 
     // Static property for an empty ByteStream
