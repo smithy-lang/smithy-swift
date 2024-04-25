@@ -129,8 +129,10 @@ fun Model.getNestedShapes(memberShape: MemberShape): Set<Shape> {
         .select(this)
 }
 
-fun Model.getNestedInputShapes(opShape: OperationShape): Set<Shape> {
-    return Selector.parse("operation [id='${opShape.id}'] -[input]-> structure ~> *").select(this)
+fun Model.getNestedShapes(shape: Shape): Set<Shape> {
+    return Selector
+        .parse("operation [id='${shape.id}'] ~> *")
+        .select(this)
 }
 
 /**

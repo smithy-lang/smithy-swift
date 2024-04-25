@@ -21,7 +21,7 @@ import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTra
 import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
-import software.amazon.smithy.swift.codegen.model.getNestedInputShapes
+import software.amazon.smithy.swift.codegen.model.getNestedShapes
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 /**
@@ -139,7 +139,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     protected open fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
-        val nestedShapes = model.getNestedInputShapes(operation)
+        val nestedShapes = model.getNestedShapes(operation)
         for (shape in nestedShapes) {
             when (shape.type) {
                 ShapeType.STRUCTURE -> renderEquatable(shape)
