@@ -195,9 +195,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                                         writer.write(
                                             "if (lhs.\$L?.isNaN ?? false && rhs.\$L?.isNaN ?? false) { return true }",
                                             propertyAccessor,
-                                            propertyAccessor,
-                                            propertyAccessor,
-                                            propertyAccessor,
+                                            propertyAccessor
                                         )
                                         writer.write("if lhs.\$L != rhs.\$L { return false }", propertyAccessor, propertyAccessor)
                                     }
