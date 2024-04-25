@@ -129,6 +129,10 @@ fun Model.getNestedShapes(memberShape: MemberShape): Set<Shape> {
         .select(this)
 }
 
+fun Model.getNestedShapes(shape: Shape): Set<Shape> {
+    return Selector.parse("[id='$shape.id'] ~> *").select(this)
+}
+
 /**
  * Test if an operation input is an event stream
  */

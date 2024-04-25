@@ -139,7 +139,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     protected open fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
-        val nestedShapes = model.getNestedShapes(outputShape.asMemberShape().get())
+        val nestedShapes = model.getNestedShapes(outputShape)
         for (shape in nestedShapes) {
             when (shape.type) {
                 ShapeType.STRUCTURE -> renderEquatable(shape)
