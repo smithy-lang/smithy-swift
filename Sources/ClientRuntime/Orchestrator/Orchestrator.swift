@@ -56,9 +56,11 @@ public struct Orchestrator<
     ResponseType: ResponseMessage,
     AttributesType: HasAttributes
 > {
-    internal typealias InterceptorContextType = DefaultInterceptorContext<RequestType, ResponseType, AttributesType>
+    internal typealias InterceptorContextType = DefaultInterceptorContext<
+        InputType, OutputType, RequestType, ResponseType, AttributesType
+    >
 
-    private let interceptors: Interceptors<RequestType, ResponseType, AttributesType>
+    private let interceptors: Interceptors<InputType, OutputType, RequestType, ResponseType, AttributesType>
     private let attributes: AttributesType
     private let serialize: (InputType, RequestType.RequestBuilderType, AttributesType) throws -> Void
     private let deserialize: (ResponseType, AttributesType) async throws -> Result<OutputType, Error>
@@ -103,7 +105,7 @@ public struct Orchestrator<
         self.executeRequest = builder.executeRequest!
     }
 
-    /// Executes the operation until after the request is signed, and returns that signed request.
+    /// Executes the operation until just before the request would be sent, and returns the request.
     ///
     /// Unlike execute, there's no specific error behavior here. Errors are thrown from where they
     /// occur (although interceptors still throw the last error, and log the rest).
@@ -111,7 +113,7 @@ public struct Orchestrator<
     /// - Parameter input: Operation input
     /// - Returns: Presigned request
     public func presignRequest(input: InputType) async throws -> RequestType {
-        let context = DefaultInterceptorContext<RequestType, ResponseType, AttributesType>(
+        let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType, AttributesType>(
             input: input,
             attributes: attributes
         )
@@ -120,7 +122,7 @@ public struct Orchestrator<
         try await interceptors.modifyBeforeSerialization(context: context)
         try await interceptors.readBeforeSerialization(context: context)
 
-        let finalizedInput: InputType = context.getInput()!
+        let finalizedInput = context.getInput()
         let builder = RequestType.RequestBuilderType()
         try serialize(finalizedInput, builder, context.getAttributes())
         context.updateRequest(updated: builder.build())
@@ -140,11 +142,18 @@ public struct Orchestrator<
         try await interceptors.modifyBeforeSigning(context: context)
         try await interceptors.readBeforeSigning(context: context)
 
-        return try await applySigner.apply(
+        let signed = try await applySigner.apply(
             request: context.getRequest(),
             selectedAuthScheme: selectedAuthScheme,
             attributes: context.getAttributes()
         )
+        context.updateRequest(updated: signed)
+
+        try await interceptors.readAfterSigning(context: context)
+        try await interceptors.modifyBeforeTransmit(context: context)
+        try await interceptors.readBeforeTransmit(context: context)
+
+        return context.getRequest()
     }
 
     /// Executes the operation.
@@ -152,7 +161,7 @@ public struct Orchestrator<
     /// - Parameter input: Operation input
     /// - Returns: Operation output
     public func execute(input: InputType) async throws -> OutputType {
-        let context = DefaultInterceptorContext<RequestType, ResponseType, AttributesType>(
+        let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType, AttributesType>(
             input: input,
             attributes: attributes
         )
@@ -162,7 +171,7 @@ public struct Orchestrator<
             try await interceptors.modifyBeforeSerialization(context: context)
             try await interceptors.readBeforeSerialization(context: context)
 
-            let finalizedInput: InputType = context.getInput()!
+            let finalizedInput = context.getInput()
             let builder = RequestType.RequestBuilderType()
             try serialize(finalizedInput, builder, context.getAttributes())
             context.updateRequest(updated: builder.build())
@@ -183,9 +192,6 @@ public struct Orchestrator<
         return try await startCompletion(context: context)
     }
 
-    // TODO: This only throws because getting the partitionId and initial token are fallible.
-    //  That's fine, but where do we want to go if they fail? Do we just skip retries entirely
-    //  and go to an attempt?
     private func enterRetryLoop(context: InterceptorContextType, strategy: some RetryStrategy) async throws {
         let partitionId = try getPartitionId(context: context)
         let token = try await strategy.acquireInitialRetryToken(tokenScope: partitionId)
@@ -311,7 +317,7 @@ public struct Orchestrator<
         // The last error that occurred, if any, is thrown
         switch context.getResult() {
         case let .success(output):
-            return output as! OutputType
+            return output
         case let .failure(error):
             throw error
         }

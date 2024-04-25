@@ -25,13 +25,21 @@ public struct SignerMiddleware<OperationStackOutput>: Middleware {
     Self.MOutput == H.Output {
         // Retrieve selected auth scheme from context
         let selectedAuthScheme = context.getSelectedAuthScheme()
-        let signed = try await apply(request: input.build(), selectedAuthScheme: selectedAuthScheme, attributes: context)
+        let signed = try await apply(
+            request: input.build(),
+            selectedAuthScheme: selectedAuthScheme,
+            attributes: context
+        )
         return try await next.handle(context: context, input: signed.toBuilder())
     }
 }
 
 extension SignerMiddleware: ApplySigner {
-    public func apply(request: SdkHttpRequest, selectedAuthScheme: SelectedAuthScheme?, attributes: HttpContext) async throws -> SdkHttpRequest {
+    public func apply(
+        request: SdkHttpRequest,
+        selectedAuthScheme: SelectedAuthScheme?,
+        attributes: HttpContext
+    ) async throws -> SdkHttpRequest {
         guard let selectedAuthScheme = selectedAuthScheme else {
             throw ClientError.authError("Auth scheme needed by signer middleware was not saved properly.")
         }
@@ -58,7 +66,11 @@ extension SignerMiddleware: ApplySigner {
             )
         }
 
-        let signed = try await signer.signRequest(requestBuilder: request.toBuilder(), identity: identity, signingProperties: signingProperties)
+        let signed = try await signer.signRequest(
+            requestBuilder: request.toBuilder(),
+            identity: identity,
+            signingProperties: signingProperties
+        )
 
         // The saved signature is used to sign event stream messages if needed.
         attributes.set(key: AttributeKeys.requestSignature, value: signed.signature)

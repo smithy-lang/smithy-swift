@@ -36,10 +36,11 @@ public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutp
 }
 
 extension IdempotencyTokenMiddleware: HttpInterceptor {
-    public func modifyBeforeSerialization(context: some MutableInput<AttributesType>) async throws {
-        if let input: OperationStackInput = context.getInput() {
-            let withToken = addToken(input: input, attributes: context.getAttributes())
-            context.updateInput(updated: withToken)
-        }
+    public typealias InputType = OperationStackInput
+    public typealias OutputType = OperationStackOutput
+
+    public func modifyBeforeSerialization(context: some MutableInput<InputType, AttributesType>) async throws {
+        let withToken = addToken(input: context.getInput(), attributes: context.getAttributes())
+        context.updateInput(updated: withToken)
     }
 }

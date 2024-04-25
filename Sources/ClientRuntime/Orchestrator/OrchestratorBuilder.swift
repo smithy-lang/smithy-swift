@@ -6,7 +6,7 @@
 //
 
 /// Builds an Orchestrator, combining runtime components, interceptors, serializers, and deserializers.
-/// 
+///
 /// Note: This is intended to be used within generated code, not directly.
 public class OrchestratorBuilder<
     InputType,
@@ -16,7 +16,8 @@ public class OrchestratorBuilder<
     AttributesType: HasAttributes
 > {
     /// A mutable container of the interceptors the orchestrator will use
-    public var interceptors: Interceptors<RequestType, ResponseType, AttributesType> = Interceptors()
+    public var interceptors: Interceptors<InputType, OutputType, RequestType, ResponseType, AttributesType> =
+        Interceptors()
 
     internal var attributes: AttributesType?
     internal var serialize: (InputType, RequestType.RequestBuilderType, AttributesType) throws -> Void = { _, _, _ in }
@@ -62,8 +63,9 @@ public class OrchestratorBuilder<
     /// - Parameter deserializer: Function that performs response deserialization
     /// - Returns: Builder
     @discardableResult
-    public func deserialize(_ deserializer: @escaping (ResponseType, AttributesType) async throws -> Result<OutputType, Error>) -> Self
-    {
+    public func deserialize(
+        _ deserializer: @escaping (ResponseType, AttributesType) async throws -> Result<OutputType, Error>
+    ) -> Self {
         self.deserialize = deserializer
         return self
     }
@@ -77,7 +79,7 @@ public class OrchestratorBuilder<
         return self.deserialize(deserializer.deserialize(response:attributes:))
     }
 
-    /// - Parameter retryStrategy: Runtime component that tells the orchestrator how to perform retries 
+    /// - Parameter retryStrategy: Runtime component that tells the orchestrator how to perform retries
     /// - Returns: Builder
     @discardableResult
     public func retryStrategy(_ retryStrategy: any RetryStrategy) -> Self {
@@ -150,8 +152,9 @@ public class OrchestratorBuilder<
     /// - Parameter executeRequest: Runtime component that sends the request and receives the response
     /// - Returns: Builder
     @discardableResult
-    public func executeRequest(_ executeRequest: some ExecuteRequest<RequestType, ResponseType, AttributesType>) -> Self
-    {
+    public func executeRequest(
+        _ executeRequest: some ExecuteRequest<RequestType, ResponseType, AttributesType>
+    ) -> Self {
         self.executeRequest = executeRequest
         return self
     }

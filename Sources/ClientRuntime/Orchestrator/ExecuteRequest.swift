@@ -7,7 +7,6 @@
 
 /// Component used by an Orchestrator to send a request to the service and receive a response.
 public protocol ExecuteRequest<RequestType, ResponseType, AttributesType> {
-    
     /// The type of the request message.
     associatedtype RequestType: RequestMessage
 

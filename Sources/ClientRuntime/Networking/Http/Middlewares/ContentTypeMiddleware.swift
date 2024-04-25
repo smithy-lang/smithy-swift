@@ -34,7 +34,12 @@ public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput>: 
 }
 
 extension ContentTypeMiddleware: HttpInterceptor {
-    public func modifyBeforeRetryLoop(context: some MutableRequest<RequestType, AttributesType>) async throws {
+    public typealias InputType = OperationStackInput
+    public typealias OutputType = OperationStackOutput
+
+    public func modifyBeforeRetryLoop(
+        context: some MutableRequest<InputType, RequestType, AttributesType>
+    ) async throws {
         let builder = context.getRequest().toBuilder()
         addHeaders(builder: builder)
         context.updateRequest(updated: builder.build())

@@ -36,8 +36,9 @@ class ContentMD5Middleware(
         writer: SwiftWriter,
         op: OperationShape
     ) {
+        val inputShapeName = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-        writer.write("\$N<$outputShapeName>()", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
+        writer.write("\$N<$inputShapeName, $outputShapeName>()", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
     }
 }
 

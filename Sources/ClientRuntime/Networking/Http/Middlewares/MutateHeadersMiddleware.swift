@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct MutateHeadersMiddleware<OperationStackOutput>: Middleware {
+public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "MutateHeaders"
 
@@ -52,7 +52,12 @@ public struct MutateHeadersMiddleware<OperationStackOutput>: Middleware {
 }
 
 extension MutateHeadersMiddleware: HttpInterceptor {
-    public func modifyBeforeTransmit(context: some MutableRequest<RequestType, AttributesType>) async throws {
+    public typealias InputType = OperationStackInput
+    public typealias OutputType = OperationStackOutput
+
+    public func modifyBeforeTransmit(
+        context: some MutableRequest<InputType, RequestType, AttributesType>
+    ) async throws {
         let builder = context.getRequest().toBuilder()
         mutateHeaders(builder: builder)
         context.updateRequest(updated: builder.build())

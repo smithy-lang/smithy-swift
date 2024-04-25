@@ -38,7 +38,8 @@ class ContentLengthMiddleware(val model: Model, private val alwaysIntercept: Boo
         val str = "requiresLength: $requiresLength, unsignedPayload: $unsignedPayload"
         val middlewareArgs = str.takeIf { requiresLength || unsignedPayload } ?: ""
 
+        val inputShapeName = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, model, op).name
-        writer.write("\$N<$outputShapeName>($middlewareArgs)", ClientRuntimeTypes.Middleware.ContentLengthMiddleware)
+        writer.write("\$N<$inputShapeName, $outputShapeName>($middlewareArgs)", ClientRuntimeTypes.Middleware.ContentLengthMiddleware)
     }
 }

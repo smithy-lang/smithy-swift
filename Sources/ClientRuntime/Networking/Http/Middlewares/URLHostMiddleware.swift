@@ -42,7 +42,10 @@ public struct URLHostMiddleware<OperationStackInput, OperationStackOutput>: Midd
 }
 
 extension URLHostMiddleware: HttpInterceptor {
-    public func modifyBeforeSerialization(context: some MutableInput<AttributesType>) async throws {
+    public typealias InputType = OperationStackInput
+    public typealias OutputType = OperationStackOutput
+
+    public func modifyBeforeSerialization(context: some MutableInput<InputType, AttributesType>) async throws {
         // This is an interceptor and not a serializer because endpoints are used to resolve the host
         updateAttributes(attributes: context.getAttributes())
     }

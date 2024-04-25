@@ -11,7 +11,7 @@
 /// may serialize parts of the input. This allows for serializers to be composed
 /// together (which should be done by `Orchestrator`).
 public protocol RequestMessageSerializer<InputType, RequestType, AttributesType> {
-    
+
     /// The type of the modeled operation input.
     associatedtype InputType
 

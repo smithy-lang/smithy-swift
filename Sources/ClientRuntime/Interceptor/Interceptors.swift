@@ -7,99 +7,105 @@
 
 /// Container for 0 or more interceptors that supports adding concrete interceptor
 /// implementations and closures that act as single-hook interceptors.
-public struct Interceptors<RequestType: RequestMessage, ResponseType: ResponseMessage, AttributesType: HasAttributes> {
-    internal typealias InterceptorType = AnyInterceptor<RequestType, ResponseType, AttributesType>
+public struct Interceptors<
+    InputType,
+    OutputType,
+    RequestType: RequestMessage,
+    ResponseType: ResponseMessage,
+    AttributesType: HasAttributes
+> {
+    internal typealias InterceptorType = AnyInterceptor<
+        InputType, OutputType, RequestType, ResponseType, AttributesType
+    >
     internal var interceptors: [InterceptorType] = []
-
-    internal init() {}
 
     /// - Parameter interceptor: The Interceptor to add.
     public mutating func add(
-        _ interceptor: any Interceptor<RequestType, ResponseType, AttributesType>
+        _ interceptor: any Interceptor<InputType, OutputType, RequestType, ResponseType, AttributesType>
     ) {
         self.interceptors.append(interceptor.erase())
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadBeforeExecution(
-        _ interceptorFn: @escaping (any BeforeSerialization<AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any BeforeSerialization<InputType, AttributesType>) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readBeforeExecution: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addModifyBeforeSerialization(
-        _ interceptorFn: @escaping (any MutableInput<AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any MutableInput<InputType, AttributesType>) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(modifyBeforeSerialization: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadBeforeSerialization(
-        _ interceptorFn: @escaping (any BeforeSerialization<AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any BeforeSerialization<InputType, AttributesType>) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readBeforeSerialization: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadAfterSerialization(
-        _ interceptorFn: @escaping (any AfterSerialization<RequestType, AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any AfterSerialization<InputType, RequestType, AttributesType>) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readAfterSerialization: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addModifyBeforeRetryLoop(
-        _ interceptorFn: @escaping (any MutableRequest<RequestType, AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any MutableRequest<InputType, RequestType, AttributesType>) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(modifyBeforeRetryLoop: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadBeforeAttempt(
-        _ interceptorFn: @escaping (any AfterSerialization<RequestType, AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any AfterSerialization<InputType, RequestType, AttributesType>) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readBeforeAttempt: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addModifyBeforeSigning(
-        _ interceptorFn: @escaping (any MutableRequest<RequestType, AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any MutableRequest<InputType, RequestType, AttributesType>) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(modifyBeforeSigning: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadBeforeSigning(
-        _ interceptorFn: @escaping (any AfterSerialization<RequestType, AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any AfterSerialization<InputType, RequestType, AttributesType>) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readBeforeSigning: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadAfterSigning(
-        _ interceptorFn: @escaping (any AfterSerialization<RequestType, AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any AfterSerialization<InputType, RequestType, AttributesType>) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readAfterSigning: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addModifyBeforeTransmit(
-        _ interceptorFn: @escaping (any MutableRequest<RequestType, AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any MutableRequest<InputType, RequestType, AttributesType>) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(modifyBeforeTransmit: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadBeforeTransmit(
-        _ interceptorFn: @escaping (any AfterSerialization<RequestType, AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any AfterSerialization<InputType, RequestType, AttributesType>) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readBeforeTransmit: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadAfterTransmit(
-        _ interceptorFn: @escaping (any BeforeDeserialization<RequestType, ResponseType, AttributesType>)
+        _ interceptorFn: @escaping (any BeforeDeserialization<InputType, RequestType, ResponseType, AttributesType>)
             async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readAfterTransmit: interceptorFn))
@@ -107,14 +113,15 @@ public struct Interceptors<RequestType: RequestMessage, ResponseType: ResponseMe
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addModifyBeforeDeserialization(
-        _ interceptorFn: @escaping (any MutableResponse<RequestType, ResponseType, AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any MutableResponse<InputType, RequestType, ResponseType, AttributesType>)
+            async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(modifyBeforeDeserialization: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadBeforeDeserialization(
-        _ interceptorFn: @escaping (any BeforeDeserialization<RequestType, ResponseType, AttributesType>)
+        _ interceptorFn: @escaping (any BeforeDeserialization<InputType, RequestType, ResponseType, AttributesType>)
             async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readBeforeDeserialization: interceptorFn))
@@ -122,7 +129,9 @@ public struct Interceptors<RequestType: RequestMessage, ResponseType: ResponseMe
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadAfterDeserialization(
-        _ interceptorFn: @escaping (any AfterDeserialization<RequestType, ResponseType, AttributesType>)
+        _ interceptorFn: @escaping (
+            any AfterDeserialization<InputType, OutputType, RequestType, ResponseType, AttributesType>
+        )
             async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readAfterDeserialization: interceptorFn))
@@ -130,7 +139,9 @@ public struct Interceptors<RequestType: RequestMessage, ResponseType: ResponseMe
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addModifyBeforeAttemptCompletion(
-        _ interceptorFn: @escaping (any MutableOutputAfterAttempt<RequestType, ResponseType, AttributesType>)
+        _ interceptorFn: @escaping (
+            any MutableOutputAfterAttempt<InputType, OutputType, RequestType, ResponseType, AttributesType>
+        )
             async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(modifyBeforeAttemptCompletion: interceptorFn))
@@ -138,22 +149,25 @@ public struct Interceptors<RequestType: RequestMessage, ResponseType: ResponseMe
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadAfterAttempt(
-        _ interceptorFn: @escaping (any AfterAttempt<RequestType, ResponseType, AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any AfterAttempt<InputType, OutputType, RequestType, ResponseType, AttributesType>)
+            async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readAfterAttempt: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addModifyBeforeCompletion(
-        _ interceptorFn: @escaping (any MutableOutputFinalization<RequestType, ResponseType, AttributesType>)
-            async throws -> Void
+        _ interceptorFn: @escaping (
+            any MutableOutputFinalization<InputType, OutputType, RequestType, ResponseType, AttributesType>
+        ) async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(modifyBeforeCompletion: interceptorFn))
     }
 
     /// - Parameter interceptorFn: The closure to use as the Interceptor hook.
     public mutating func addReadAfterExecution(
-        _ interceptorFn: @escaping (any Finalization<RequestType, ResponseType, AttributesType>) async throws -> Void
+        _ interceptorFn: @escaping (any Finalization<InputType, OutputType, RequestType, ResponseType, AttributesType>)
+            async throws -> Void
     ) {
         self.interceptors.append(AnyInterceptor(readAfterExecution: interceptorFn))
     }
@@ -167,7 +181,7 @@ public struct Interceptors<RequestType: RequestMessage, ResponseType: ResponseMe
 /// interceptors fail, only the last error is thrown. The rest are logged (TODO)
 extension Interceptors {
     internal func readBeforeExecution(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readBeforeExecution(context: context)
@@ -181,7 +195,7 @@ extension Interceptors {
     }
 
     internal func modifyBeforeSerialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.modifyBeforeSerialization(context: context)
@@ -195,7 +209,7 @@ extension Interceptors {
     }
 
     internal func readBeforeSerialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readBeforeSerialization(context: context)
@@ -209,7 +223,7 @@ extension Interceptors {
     }
 
     internal func readAfterSerialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readAfterSerialization(context: context)
@@ -223,7 +237,7 @@ extension Interceptors {
     }
 
     internal func modifyBeforeRetryLoop(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.modifyBeforeRetryLoop(context: context)
@@ -237,7 +251,7 @@ extension Interceptors {
     }
 
     internal func readBeforeAttempt(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readBeforeAttempt(context: context)
@@ -251,7 +265,7 @@ extension Interceptors {
     }
 
     internal func modifyBeforeSigning(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.modifyBeforeSigning(context: context)
@@ -265,7 +279,7 @@ extension Interceptors {
     }
 
     internal func readBeforeSigning(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readBeforeSigning(context: context)
@@ -279,7 +293,7 @@ extension Interceptors {
     }
 
     internal func readAfterSigning(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readAfterSigning(context: context)
@@ -293,7 +307,7 @@ extension Interceptors {
     }
 
     internal func modifyBeforeTransmit(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.modifyBeforeTransmit(context: context)
@@ -307,7 +321,7 @@ extension Interceptors {
     }
 
     internal func readBeforeTransmit(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readBeforeTransmit(context: context)
@@ -321,7 +335,7 @@ extension Interceptors {
     }
 
     internal func readAfterTransmit(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readAfterTransmit(context: context)
@@ -335,7 +349,7 @@ extension Interceptors {
     }
 
     internal func modifyBeforeDeserialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.modifyBeforeDeserialization(context: context)
@@ -349,7 +363,7 @@ extension Interceptors {
     }
 
     internal func readBeforeDeserialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readBeforeDeserialization(context: context)
@@ -363,7 +377,7 @@ extension Interceptors {
     }
 
     internal func readAfterDeserialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readAfterDeserialization(context: context)
@@ -377,7 +391,7 @@ extension Interceptors {
     }
 
     internal func modifyBeforeAttemptCompletion(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.modifyBeforeAttemptCompletion(context: context)
@@ -391,7 +405,7 @@ extension Interceptors {
     }
 
     internal func readAfterAttempt(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readAfterAttempt(context: context)
@@ -405,7 +419,7 @@ extension Interceptors {
     }
 
     internal func modifyBeforeCompletion(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.modifyBeforeCompletion(context: context)
@@ -419,7 +433,7 @@ extension Interceptors {
     }
 
     internal func readAfterExecution(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error? = nil
+        var error: Error?
         for i in interceptors {
             do {
                 try await i.readAfterExecution(context: context)

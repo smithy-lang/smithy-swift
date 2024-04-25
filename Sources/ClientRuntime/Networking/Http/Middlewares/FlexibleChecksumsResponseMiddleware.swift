@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middleware {
+public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "FlexibleChecksumsResponseMiddleware"
 
@@ -113,12 +113,21 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackOutput>: Middlew
 }
 
 extension FlexibleChecksumsResponseMiddleware: HttpInterceptor {
-    public func modifyBeforeRetryLoop(context: some MutableRequest<RequestType, AttributesType>) async throws {
+    public typealias InputType = OperationStackInput
+    public typealias OutputType = OperationStackOutput
+
+    public func modifyBeforeRetryLoop(
+        context: some MutableRequest<InputType, RequestType, AttributesType>
+    ) async throws {
         context.getAttributes().set(key: AttributeKey<String>(name: "ChecksumHeaderValidated"), value: nil)
     }
 
-    public func modifyBeforeDeserialization(context: some MutableResponse<RequestType, ResponseType, AttributesType>) async throws {
-        guard let logger = context.getAttributes().getLogger() else { throw ClientError.unknownError("No logger found!") }
+    public func modifyBeforeDeserialization(
+        context: some MutableResponse<InputType, RequestType, ResponseType, AttributesType>
+    ) async throws {
+        guard let logger = context.getAttributes().getLogger() else {
+            throw ClientError.unknownError("No logger found!")
+        }
 
         let response = context.getResponse()
         try await validateChecksum(response: response, logger: logger, attributes: context.getAttributes())

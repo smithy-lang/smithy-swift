@@ -39,7 +39,7 @@ class MutateHeaderMiddlewareTests: XCTestCase {
             input.withHeader(name: "baz", value: "qux")
             return try await next.handle(context: context, input: input)
         }
-        stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware(overrides: ["foo": "override"], additional: ["z": "zebra"]))
+        stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware<MockInput, MockOutput>(overrides: ["foo": "override"], additional: ["z": "zebra"]))
 
         let output = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
 
@@ -54,7 +54,7 @@ class MutateHeaderMiddlewareTests: XCTestCase {
             input.withHeader(name: "baz", value: "qux")
             return try await next.handle(context: context, input: input)
         }
-        stack.buildStep.intercept(position: .before, middleware: MutateHeadersMiddleware(additional: ["foo": "appended", "z": "zebra"]))
+        stack.buildStep.intercept(position: .before, middleware: MutateHeadersMiddleware<MockInput, MockOutput>(additional: ["foo": "appended", "z": "zebra"]))
 
         let output = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
 
@@ -69,7 +69,7 @@ class MutateHeaderMiddlewareTests: XCTestCase {
             input.withHeader(name: "baz", value: "qux")
             return try await next.handle(context: context, input: input)
         }
-        stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware(conditionallySet: ["foo": "nope", "z": "zebra"]))
+        stack.buildStep.intercept(position: .after, middleware: MutateHeadersMiddleware<MockInput, MockOutput>(conditionallySet: ["foo": "nope", "z": "zebra"]))
 
         let output = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: httpClient.getHandler())
 

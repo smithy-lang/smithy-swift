@@ -44,26 +44,11 @@ public struct URLPathMiddleware<OperationStackInput, OperationStackOutput>: Midd
 }
 
 extension URLPathMiddleware: HttpInterceptor {
-    public func modifyBeforeSerialization(context: some MutableInput<AttributesType>) async throws {
-        // This is an interceptor and not a serializer because endpoints are used to resolve the host
-        try updateAttributes(input: context.getInput()!, attributes: context.getAttributes())
-    }
-}
-
-extension URLPathMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
-    public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = HttpContext
+    public typealias OutputType = OperationStackOutput
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
-        guard var urlPath = urlPathProvider(input) else {
-          let message = "Creating the url path failed, a required property in the path was nil"
-          throw ClientError.pathCreationFailed(message)
-        }
-        if let urlPrefix = urlPrefix, !urlPrefix.isEmpty {
-            urlPath = "\(urlPrefix)\(urlPath)"
-        }
-        attributes.set(key: AttributeKey<String>(name: "Path"), value: urlPath)
-        builder.withPath(urlPath)
+    public func modifyBeforeSerialization(context: some MutableInput<InputType, AttributesType>) async throws {
+        // This is an interceptor and not a serializer because endpoints are used to resolve the host
+        try updateAttributes(input: context.getInput(), attributes: context.getAttributes())
     }
 }

@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct ContentLengthMiddleware<OperationStackOutput>: Middleware {
+public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "ContentLength"
 
     private let contentLengthHeaderName = "Content-Length"
@@ -67,7 +67,12 @@ public struct ContentLengthMiddleware<OperationStackOutput>: Middleware {
 }
 
 extension ContentLengthMiddleware: HttpInterceptor {
-    public func modifyBeforeTransmit(context: some MutableRequest<RequestType, AttributesType>) async throws {
+    public typealias InputType = OperationStackInput
+    public typealias OutputType = OperationStackOutput
+
+    public func modifyBeforeTransmit(
+        context: some MutableRequest<InputType, RequestType, AttributesType>
+    ) async throws {
         let builder = context.getRequest().toBuilder()
         try addHeaders(builder: builder, attributes: context.getAttributes())
         context.updateRequest(updated: builder.build())

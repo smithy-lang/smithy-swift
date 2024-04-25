@@ -32,10 +32,12 @@ class LoggingMiddleware(
         writer: SwiftWriter,
         op: OperationShape
     ) {
+        val input = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, model, op)
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         writer.write(
-            "\$N<\$N>(${middlewareParamsString()})",
+            "\$N<\$N, \$N>(${middlewareParamsString()})",
             ClientRuntimeTypes.Middleware.LoggerMiddleware,
+            input,
             output
         )
     }

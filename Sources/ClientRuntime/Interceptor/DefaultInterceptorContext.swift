@@ -9,8 +9,13 @@
 ///
 /// This object will be created before operation execution, and passed through each interceptor
 /// hook in the execution pipeline.
-public class DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType, AttributesType: HasAttributes>:
-    InterceptorContext {
+public class DefaultInterceptorContext<
+    InputType,
+    OutputType,
+    RequestType: RequestMessage,
+    ResponseType: ResponseMessage,
+    AttributesType: HasAttributes
+>: InterceptorContext {
     private var attributes: AttributesType
     private var input: InputType
     private var request: RequestType?

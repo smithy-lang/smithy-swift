@@ -3,7 +3,7 @@
 
 import AwsCommonRuntimeKit
 
-public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
+public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "ContentMD5"
 
     private let contentMD5HeaderName = "Content-MD5"
@@ -68,7 +68,12 @@ public struct ContentMD5Middleware<OperationStackOutput>: Middleware {
 }
 
 extension ContentMD5Middleware: HttpInterceptor {
-    public func modifyBeforeTransmit(context: some MutableRequest<RequestType, AttributesType>) async throws {
+    public typealias InputType = OperationStackInput
+    public typealias OutputType = OperationStackOutput
+
+    public func modifyBeforeTransmit(
+        context: some MutableRequest<InputType, RequestType, AttributesType>
+    ) async throws {
         let builder = context.getRequest().toBuilder()
         try await addHeaders(builder: builder, attributes: context.getAttributes())
         context.updateRequest(updated: builder.build())

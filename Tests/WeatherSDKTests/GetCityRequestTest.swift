@@ -36,7 +36,7 @@ class GetCityRequestTest: HttpRequestTestBase {
         var operationStack = OperationStack<GetCityInput, GetCityOutput>(id: "WriteGetCityAssertions")
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<GetCityInput, GetCityOutput>(urlPrefix: urlPrefix, GetCityInput.urlPathProvider(_:)))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<GetCityInput, GetCityOutput>(host: hostOnly))
-        operationStack.buildStep.intercept(position: .before, middleware: ClientRuntime.ContentMD5Middleware<GetCityOutput>())
+        operationStack.buildStep.intercept(position: .before, middleware: ClientRuntime.ContentMD5Middleware<GetCityInput, GetCityOutput>())
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<GetCityOutput> in
             input.withMethod(context.getMethod())
             input.withPath(context.getPath())

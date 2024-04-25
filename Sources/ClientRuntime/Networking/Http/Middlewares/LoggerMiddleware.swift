@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct LoggerMiddleware<OperationStackOutput>: Middleware {
+public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "Logger"
 
@@ -58,7 +58,12 @@ public struct LoggerMiddleware<OperationStackOutput>: Middleware {
 }
 
 extension LoggerMiddleware: HttpInterceptor {
-    public func readBeforeTransmit(context: some AfterSerialization<RequestType, AttributesType>) async throws {
+    public typealias InputType = OperationStackInput
+    public typealias OutputType = OperationStackOutput
+
+    public func readBeforeTransmit(
+        context: some AfterSerialization<InputType, RequestType, AttributesType>
+    ) async throws {
         guard let logger = context.getAttributes().getLogger() else {
             return
         }
@@ -66,7 +71,9 @@ extension LoggerMiddleware: HttpInterceptor {
         logRequest(logger: logger, request: context.getRequest())
     }
 
-    public func readAfterTransmit(context: some BeforeDeserialization<RequestType, ResponseType, AttributesType>) async throws {
+    public func readAfterTransmit(
+        context: some BeforeDeserialization<InputType, RequestType, ResponseType, AttributesType>
+    ) async throws {
         guard let logger = context.getAttributes().getLogger() else {
             return
         }

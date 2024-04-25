@@ -50,7 +50,10 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
 }
 
 extension DeserializeMiddleware: ResponseMessageDeserializer {
-    public func deserialize(response: HttpResponse, attributes: HttpContext) async throws -> Result<OperationStackOutput, Error> {
+    public func deserialize(
+        response: HttpResponse,
+        attributes: HttpContext
+    ) async throws -> Result<OperationStackOutput, Error> {
         // check if the response body was effected by a previous middleware
         if let contextBody = attributes.response?.body {
             response.body = contextBody

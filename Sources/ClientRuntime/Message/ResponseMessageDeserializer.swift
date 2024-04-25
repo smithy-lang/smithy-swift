@@ -7,7 +7,6 @@
 
 /// Deserializes service response messages into modeled operation output or error.
 public protocol ResponseMessageDeserializer<OutputType, ResponseType, AttributesType> {
-    
     /// The type of the modeled operation output.
     associatedtype OutputType
 

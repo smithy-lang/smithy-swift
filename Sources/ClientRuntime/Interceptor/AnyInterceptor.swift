@@ -14,31 +14,37 @@
 /// This doesn't conform to Interceptor because the stored closures accept a concrete
 /// DefaultInterceptorContext, not the boxed `some InterceptorContext`, which can't be
 /// used in closure types.
-internal struct AnyInterceptor<InputType, OutputType, RequestType, ResponseType, AttributesType: HasAttributes> {
+internal struct AnyInterceptor<
+    InputType,
+    OutputType,
+    RequestType: RequestMessage,
+    ResponseType: ResponseMessage,
+    AttributesType: HasAttributes
+> {
     internal typealias InterceptorContextType = DefaultInterceptorContext<
         InputType, OutputType, RequestType, ResponseType, AttributesType
     >
     internal typealias InterceptorFn = (InterceptorContextType) async throws -> Void
 
-    private var readBeforeExecution: InterceptorFn
-    private var modifyBeforeSerialization: InterceptorFn
-    private var readBeforeSerialization: InterceptorFn
-    private var readAfterSerialization: InterceptorFn
-    private var modifyBeforeRetryLoop: InterceptorFn
-    private var readBeforeAttempt: InterceptorFn
-    private var modifyBeforeSigning: InterceptorFn
-    private var readBeforeSigning: InterceptorFn
-    private var readAfterSigning: InterceptorFn
-    private var modifyBeforeTransmit: InterceptorFn
-    private var readBeforeTransmit: InterceptorFn
-    private var readAfterTransmit: InterceptorFn
-    private var modifyBeforeDeserialization: InterceptorFn
-    private var readBeforeDeserialization: InterceptorFn
-    private var readAfterDeserialization: InterceptorFn
-    private var modifyBeforeAttemptCompletion: InterceptorFn
-    private var readAfterAttempt: InterceptorFn
-    private var modifyBeforeCompletion: InterceptorFn
-    private var readAfterExecution: InterceptorFn
+    private var readBeforeExecution: InterceptorFn?
+    private var modifyBeforeSerialization: InterceptorFn?
+    private var readBeforeSerialization: InterceptorFn?
+    private var readAfterSerialization: InterceptorFn?
+    private var modifyBeforeRetryLoop: InterceptorFn?
+    private var readBeforeAttempt: InterceptorFn?
+    private var modifyBeforeSigning: InterceptorFn?
+    private var readBeforeSigning: InterceptorFn?
+    private var readAfterSigning: InterceptorFn?
+    private var modifyBeforeTransmit: InterceptorFn?
+    private var readBeforeTransmit: InterceptorFn?
+    private var readAfterTransmit: InterceptorFn?
+    private var modifyBeforeDeserialization: InterceptorFn?
+    private var readBeforeDeserialization: InterceptorFn?
+    private var readAfterDeserialization: InterceptorFn?
+    private var modifyBeforeAttemptCompletion: InterceptorFn?
+    private var readAfterAttempt: InterceptorFn?
+    private var modifyBeforeCompletion: InterceptorFn?
+    private var readAfterExecution: InterceptorFn?
 
     internal init<I: Interceptor>(interceptor: I)
     where
@@ -46,8 +52,7 @@ internal struct AnyInterceptor<InputType, OutputType, RequestType, ResponseType,
         I.OutputType == OutputType,
         I.RequestType == RequestType,
         I.ResponseType == ResponseType,
-        I.AttributesType == AttributesType
-    {
+        I.AttributesType == AttributesType {
         self.readBeforeExecution = interceptor.readBeforeExecution(context:)
         self.modifyBeforeSerialization = interceptor.modifyBeforeSerialization(context:)
         self.readBeforeSerialization = interceptor.readBeforeSerialization(context:)
@@ -111,17 +116,12 @@ internal struct AnyInterceptor<InputType, OutputType, RequestType, ResponseType,
         self.readAfterExecution = readAfterExecution
     }
 
-<<<<<<< HEAD
-    internal func modifyBeforeSerialization(context: InterceptorContextType) async throws {
-        try await self.modifyBeforeSerialization(context)
-=======
     internal func readBeforeExecution(context: InterceptorContextType) async throws {
         try await self.readBeforeExecution?(context)
     }
 
     internal func modifyBeforeSerialization(context: InterceptorContextType) async throws {
         try await self.modifyBeforeSerialization?(context)
->>>>>>> 6fca2117 (feat: add operation orchestrator)
     }
 
     internal func readBeforeSerialization(context: InterceptorContextType) async throws {
@@ -133,11 +133,7 @@ internal struct AnyInterceptor<InputType, OutputType, RequestType, ResponseType,
     }
 
     internal func modifyBeforeRetryLoop(context: InterceptorContextType) async throws {
-<<<<<<< HEAD
-        try await self.modifyBeforeRetryLoop(context)
-=======
         try await self.modifyBeforeRetryLoop?(context)
->>>>>>> 6fca2117 (feat: add operation orchestrator)
     }
 
     internal func readBeforeAttempt(context: InterceptorContextType) async throws {
@@ -145,11 +141,7 @@ internal struct AnyInterceptor<InputType, OutputType, RequestType, ResponseType,
     }
 
     internal func modifyBeforeSigning(context: InterceptorContextType) async throws {
-<<<<<<< HEAD
-        try await self.modifyBeforeSigning(context)
-=======
         try await self.modifyBeforeSigning?(context)
->>>>>>> 6fca2117 (feat: add operation orchestrator)
     }
 
     internal func readBeforeSigning(context: InterceptorContextType) async throws {
@@ -161,11 +153,7 @@ internal struct AnyInterceptor<InputType, OutputType, RequestType, ResponseType,
     }
 
     internal func modifyBeforeTransmit(context: InterceptorContextType) async throws {
-<<<<<<< HEAD
-        try await self.modifyBeforeTransmit(context)
-=======
         try await self.modifyBeforeTransmit?(context)
->>>>>>> 6fca2117 (feat: add operation orchestrator)
     }
 
     internal func readBeforeTransmit(context: InterceptorContextType) async throws {
@@ -177,11 +165,7 @@ internal struct AnyInterceptor<InputType, OutputType, RequestType, ResponseType,
     }
 
     internal func modifyBeforeDeserialization(context: InterceptorContextType) async throws {
-<<<<<<< HEAD
-        try await self.modifyBeforeDeserialization(context)
-=======
         try await self.modifyBeforeDeserialization?(context)
->>>>>>> 6fca2117 (feat: add operation orchestrator)
     }
 
     internal func readBeforeDeserialization(context: InterceptorContextType) async throws {
@@ -193,11 +177,7 @@ internal struct AnyInterceptor<InputType, OutputType, RequestType, ResponseType,
     }
 
     internal func modifyBeforeAttemptCompletion(context: InterceptorContextType) async throws {
-<<<<<<< HEAD
-        try await self.modifyBeforeAttemptCompletion(context)
-=======
         try await self.modifyBeforeAttemptCompletion?(context)
->>>>>>> 6fca2117 (feat: add operation orchestrator)
     }
 
     internal func readAfterAttempt(context: InterceptorContextType) async throws {
@@ -205,11 +185,7 @@ internal struct AnyInterceptor<InputType, OutputType, RequestType, ResponseType,
     }
 
     internal func modifyBeforeCompletion(context: InterceptorContextType) async throws {
-<<<<<<< HEAD
-        try await self.modifyBeforeCompletion(context)
-=======
         try await self.modifyBeforeCompletion?(context)
->>>>>>> 6fca2117 (feat: add operation orchestrator)
     }
 
     internal func readAfterExecution(context: InterceptorContextType) async throws {
