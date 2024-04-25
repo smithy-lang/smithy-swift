@@ -177,16 +177,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                                 val propertyAccessor = "$path$propertyName"
                                 val target = ctx.model.expectShape(member.target)
                                 when (target) {
-                                    is FloatShape -> {
+                                    is FloatShape, is DoubleShape -> {
                                         writer.write(
-                                            "if (!floatsMatch(lhs: lhs.\$L, rhs: rhs.\$L)) { return false }",
-                                            propertyAccessor,
-                                            propertyAccessor
-                                        )
-                                    }
-                                    is DoubleShape -> {
-                                        writer.write(
-                                            "if (!doublesMatch(lhs: lhs.\$L, rhs: rhs.\$L)) { return false }",
+                                            "if (!floatingPointValuesMatch(lhs: lhs.\$L, rhs: rhs.\$L)) { return false }",
                                             propertyAccessor,
                                             propertyAccessor
                                         )
