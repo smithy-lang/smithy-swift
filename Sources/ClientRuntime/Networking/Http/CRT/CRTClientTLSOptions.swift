@@ -60,9 +60,18 @@ extension CRTClientTLSOptions {
             var tlsOptions = TLSContextOptions.makeDefault()
 
             if self.useProvidedKeystore {
-                #if os(tvOS) || os(iOS) || os(watchOS) || os(macOS)
+                #if os(tvOS) || os(iOS) || os(watchOS)
                 if let path = keyStoreFilepath, let password = keyStorePassword {
                     tlsOptions = try .makeMTLS(pkcs12Path: path, password: password)
+                }
+                #elseif os(macOS)
+                if let path = keyStoreFilepath, let password = keyStorePassword {
+                    tlsOptions = try .makeMTLS(pkcs12Path: path, password: password)
+                } else if let certPath = certificatePath,
+                    let certFilename = certificateFilename,
+                    let privateKeyPath = privateKeyFilepath {
+                    let certFilepath = "\(certPath)/\(certFilename)"
+                    tlsOptions = try .makeMTLS(certificatePath: certFilepath, privateKeyPath: privateKeyPath)
                 }
                 #else
                 if let certPath = certificatePath,
