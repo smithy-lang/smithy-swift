@@ -74,7 +74,7 @@ class UnionGenerator(
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
         val indirectOrNot = "indirect ".takeIf { shape.hasTrait<RecursiveUnionTrait>() } ?: ""
-        writer.openBlock("public ${indirectOrNot}enum \$union.name:L: \$N {", "}\n", SwiftTypes.Protocols.Equatable) {
+        writer.openBlock("public ${indirectOrNot}enum \$union.name:L {", "}") {
             // event streams (@streaming union) MAY have variants that target errors.
             // These errors if encountered on the stream will be thrown as an exception rather
             // than showing up as one of the possible events the consumer will see on the stream (AsyncThrowingStream<T>).

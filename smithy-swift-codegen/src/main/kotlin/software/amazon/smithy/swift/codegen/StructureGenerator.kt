@@ -111,12 +111,11 @@ class StructureGenerator(
     private fun generateStruct() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public struct \$struct.name:L: \$N {", SwiftTypes.Protocols.Equatable)
+        writer.openBlock("public struct \$struct.name:L {")
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure(false) }
             .closeBlock("}")
-            .write("")
     }
 
     private fun generateStructMembers() {

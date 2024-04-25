@@ -34,7 +34,7 @@ extension ByteStream: Equatable {
         case (.data(let lhsData), .data(let rhsData)):
             return lhsData == rhsData
         case (.stream(let lhsStream), .stream(let rhsStream)):
-            return lhsStream === rhsStream
+            return try! lhsStream.readToEnd() == rhsStream.readToEnd()
         case (.noStream, .noStream):
             return true
         default:
