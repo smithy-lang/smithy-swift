@@ -372,3 +372,21 @@ public enum AttributeKeys {
 public enum FlowType {
     case NORMAL, PRESIGN_REQUEST, PRESIGN_URL
 }
+
+extension HttpContext: HasAttributes {
+    public func get<T>(key: AttributeKey<T>) -> T? {
+        self.attributes.get(key: key)
+    }
+
+    public func contains<T>(key: AttributeKey<T>) -> Bool {
+        self.attributes.contains(key: key)
+    }
+
+    public func set<T>(key: AttributeKey<T>, value: T) {
+        self.attributes.set(key: key, value: value)
+    }
+
+    public func remove<T>(key: AttributeKey<T>) {
+        self.attributes.remove(key: key)
+    }
+}
