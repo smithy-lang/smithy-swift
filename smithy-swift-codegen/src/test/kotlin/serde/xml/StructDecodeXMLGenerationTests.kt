@@ -40,7 +40,7 @@ extension XmlWrappedListOutputBody {
 
         val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesOutputBody+Decodable.swift")
         val expectedContents = """
-struct SimpleScalarPropertiesOutputBody: Swift.Equatable {
+struct SimpleScalarPropertiesOutputBody {
     let stringValue: Swift.String?
     let trueBooleanValue: Swift.Bool?
     let falseBooleanValue: Swift.Bool?

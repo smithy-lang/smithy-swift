@@ -14,6 +14,7 @@ import software.amazon.smithy.model.transform.ModelTransformer
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
+import software.amazon.smithy.swift.codegen.model.EquatableConformanceTransformer
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.UnionIndirectivizer
@@ -53,6 +54,7 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
             resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
             resolvedModel = NestedShapeTransformer.transform(resolvedModel, settings.getService(resolvedModel))
             resolvedModel = UnionIndirectivizer.transform(resolvedModel)
+            resolvedModel = EquatableConformanceTransformer.transform(resolvedModel, settings.getService(resolvedModel))
             return resolvedModel
         }
 
