@@ -38,6 +38,7 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTrait
 import software.amazon.smithy.swift.codegen.integration.codingKeys.CodingKeysGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HttpResponseGeneratable
 import software.amazon.smithy.swift.codegen.integration.middlewares.AuthSchemeMiddleware
@@ -300,7 +301,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .build()
 
         ctx.delegator.useShapeWriter(decodeSymbol) { writer ->
-            writer.openBlock("struct ${decodeSymbol.name}: \$N {", "}", SwiftTypes.Protocols.Equatable) {
+            val equatableConformance = (": " + SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
+            writer.openBlock("struct ${decodeSymbol.name}$equatableConformance {", "}") {
                 httpBodyMembers.forEach {
                     val memberSymbol = ctx.symbolProvider.toSymbol(it)
                     writer.write("let \$L: \$T", ctx.symbolProvider.toMemberName(it), memberSymbol)

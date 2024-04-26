@@ -46,7 +46,7 @@ class StructDecodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-            struct SmokeTestOutputBody: Swift.Equatable {
+            struct SmokeTestOutputBody {
                 let payload1: Swift.String?
                 let payload2: Swift.Int?
                 let payload3: ExampleClientTypes.Nested?
@@ -171,7 +171,7 @@ class StructDecodeGenerationTests {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct TimestampInputOutputBody: Swift.Equatable {
+struct TimestampInputOutputBody {
     let normal: ClientRuntime.Date?
     let dateTime: ClientRuntime.Date?
     let epochSeconds: ClientRuntime.Date?
@@ -249,7 +249,7 @@ extension TimestampInputOutputBody: Swift.Decodable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct MapInputOutputBody: Swift.Equatable {
+struct MapInputOutputBody {
     let intMap: [Swift.String:Swift.Int]?
     let structMap: [Swift.String:ExampleClientTypes.ReachableOnlyThroughMap]?
     let enumMap: [Swift.String:ExampleClientTypes.MyEnum]?
@@ -355,7 +355,7 @@ extension MapInputOutputBody: Swift.Decodable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
-struct NestedShapesOutputBody: Swift.Equatable {
+struct NestedShapesOutputBody {
     let nestedListInDict: [Swift.String:[ClientRuntime.Date]]?
     let nestedDictInList: [[Swift.String:Swift.String]]?
     let nestedListOfListInDict: [Swift.String:[[Swift.Int]]]?

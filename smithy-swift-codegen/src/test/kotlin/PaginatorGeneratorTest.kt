@@ -141,6 +141,39 @@ class PaginatorGeneratorTest {
         contents.shouldContainOnlyOnce(expected)
     }
 
+    @Test
+    fun testRenderEquatableConformanceForStructNestedInPaginationToken() {
+        val context = setupTests("pagination.smithy", "com.test#Lambda")
+        // Equatable conformance must have been generated for struct nested inside a pagination token.
+        val contents = getFileContents(context.manifest, "/Test/models/NestedInputTokenValue.swift")
+        val expected = """
+    public struct NestedInputTokenValue : Swift.Equatable {
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun testRenderEquatableConformanceForStructDoublyNestedInPaginationToken() {
+        val context = setupTests("pagination.smithy", "com.test#Lambda")
+        // Equatable conformance must have been generated for struct nested under pagination token.
+        val contents = getFileContents(context.manifest, "/Test/models/DoublyNestedInputTokenValue.swift")
+        val expected = """
+    public struct DoublyNestedInputTokenValue : Swift.Equatable {
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun testRenderEquatableConformanceForUnionNestedInPaginationToken() {
+        val context = setupTests("pagination.smithy", "com.test#Lambda")
+        // Equatable conformance must have been generated for union nested under pagination token.
+        val contents = getFileContents(context.manifest, "/Test/models/InputPaginationUnion.swift")
+        val expected = """
+    public enum InputPaginationUnion : Swift.Equatable {
+        """.trimIndent()
+        contents.shouldContainOnlyOnce(expected)
+    }
+
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "Test", "2019-12-16", "Test")

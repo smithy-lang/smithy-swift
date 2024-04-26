@@ -11,6 +11,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.UnionShape
+import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTrait
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.customtraits.RecursiveUnionTrait
 import software.amazon.smithy.swift.codegen.model.eventStreamEvents
@@ -74,7 +75,8 @@ class UnionGenerator(
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
         val indirectOrNot = "indirect ".takeIf { shape.hasTrait<RecursiveUnionTrait>() } ?: ""
-        writer.openBlock("public ${indirectOrNot}enum \$union.name:L: \$N {", "}\n", SwiftTypes.Protocols.Equatable) {
+        val equatableConformance = (": " + SwiftTypes.Protocols.Equatable + " ").takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
+        writer.openBlock("public ${indirectOrNot}enum \$union.name:L $equatableConformance{", "}\n") {
             // event streams (@streaming union) MAY have variants that target errors.
             // These errors if encountered on the stream will be thrown as an exception rather
             // than showing up as one of the possible events the consumer will see on the stream (AsyncThrowingStream<T>).
