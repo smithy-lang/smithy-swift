@@ -13,6 +13,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
+import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTrait
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -112,7 +113,8 @@ class StructureGenerator(
     private fun generateStruct() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock("public struct \$struct.name:L: \$N {", SwiftTypes.Protocols.Equatable)
+        val equatableConformance = (": " + SwiftTypes.Protocols.Equatable + " ").takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
+        writer.openBlock("public struct \$struct.name:L $equatableConformance{")
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure(false) }

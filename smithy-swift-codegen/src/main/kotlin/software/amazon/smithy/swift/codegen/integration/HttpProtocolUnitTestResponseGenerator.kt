@@ -5,24 +5,24 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.DoubleShape
+import software.amazon.smithy.model.shapes.FloatShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
-import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
-import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftTypes
+import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTrait
 import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.model.getNestedShapes
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.isBoxed
-import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
 /**
  * Generates HTTP protocol unit tests for `httpResponseTest` cases
@@ -139,9 +139,74 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     protected open fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
-        val members = outputShape.members().filterNot { it.hasTrait(HttpQueryTrait::class.java) }
-        val path = ".properties".takeIf { outputShape.hasTrait<ErrorTrait>() } ?: ""
-        renderMemberAssertions(writer, test, members, model, symbolProvider, "expected$path", "actual$path")
+        val nestedShapes = model.getNestedShapes(operation)
+        for (shape in nestedShapes) {
+            when (shape.type) {
+                ShapeType.STRUCTURE -> renderEquatable(shape)
+                ShapeType.UNION -> renderEquatable(shape)
+            }
+        }
+        writer.write("XCTAssertEqual(actual, expected)")
+    }
+
+    private fun identifier(ctx: ProtocolGenerator.GenerationContext, shape: Shape): String {
+        return "${ctx.service.id}.${shape.id}"
+    }
+
+    private fun renderEquatable(shape: Shape) {
+        if (hasBeenRenderedEquatable.contains(identifier(ctx, shape)) ||
+            shape.hasTrait<EquatableConformanceTrait>()
+        ) { return }
+        hasBeenRenderedEquatable.add(identifier(ctx, shape))
+        val symbol = ctx.symbolProvider.toSymbol(shape)
+        val httpBindingSymbol = Symbol.builder()
+            .definitionFile("./${ctx.settings.moduleName}Tests/models/${symbol.name}+Equatable.swift")
+            .name(symbol.name)
+            .build()
+        ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
+            writer.addImport(ctx.settings.moduleName)
+            writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
+            writer.openBlock("extension \$L: \$N {", "}", symbol.fullName, SwiftTypes.Protocols.Equatable) {
+                writer.write("")
+                writer.openBlock("public static func ==(lhs: \$L, rhs: \$L) -> Bool {", "}", symbol.fullName, symbol.fullName) {
+                    when (shape) {
+                        is StructureShape -> {
+                            shape.members().filter { !it.hasTrait<HttpQueryTrait>() }.forEach { member ->
+                                val propertyName = ctx.symbolProvider.toMemberName(member)
+                                val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
+                                val propertyAccessor = "$path$propertyName"
+                                val target = ctx.model.expectShape(member.target)
+                                when (target) {
+                                    is FloatShape, is DoubleShape -> {
+                                        writer.write(
+                                            "if (!floatingPointValuesMatch(lhs: lhs.\$L, rhs: rhs.\$L)) { return false }",
+                                            propertyAccessor,
+                                            propertyAccessor
+                                        )
+                                    }
+                                    else -> {
+                                        writer.write("if lhs.\$L != rhs.\$L { return false }", propertyAccessor, propertyAccessor)
+                                    }
+                                }
+                            }
+                            writer.write("return true")
+                        }
+                        is UnionShape -> {
+                            writer.openBlock("switch (lhs, rhs) {", "}") {
+                                shape.members().forEach { member ->
+                                    val enumCaseName = ctx.symbolProvider.toMemberName(member)
+                                    writer.write("case (.\$L(let lhs), .\$L(let rhs)):", enumCaseName, enumCaseName)
+                                    writer.indent {
+                                        writer.write("return lhs == rhs")
+                                    }
+                                }
+                                writer.write("default: return false")
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpResponseTestCase>() {
@@ -151,32 +216,4 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 }
 
-fun renderMemberAssertions(writer: SwiftWriter, test: HttpMessageTestCase, members: Collection<MemberShape>, model: Model, symbolProvider: SymbolProvider, expected: String, actual: String) {
-    for (member in members) {
-        val shape = model.expectShape(member.target.toShapeId())
-        val baseVarName = symbolProvider.toMemberName(member)
-        val expectedMemberName = "$expected.$baseVarName"
-        val actualMemberName = "$actual.$baseVarName"
-        val suffix = if (symbolProvider.toSymbol(member).isBoxed()) "?" else ""
-        if (member.isStructureShape) {
-            writer.write("XCTAssert(\$L === \$L)", expectedMemberName, actualMemberName)
-        } else if ((shape.isDoubleShape || shape.isFloatShape)) {
-            val stringNodes = test.params.stringMap.values.map { it.asStringNode().orElse(null) }
-            if (stringNodes.isNotEmpty() && stringNodes.mapNotNull { it?.value }.contains("NaN")) {
-                writer.write("XCTAssertEqual(\$L$suffix.isNaN, \$L$suffix.isNaN)", expectedMemberName, actualMemberName)
-            } else {
-                writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
-            }
-        } else if (shape.isBlobShape && shape.hasTrait<StreamingTrait>()) {
-            val expectedVarName = "${expected}${baseVarName.toUpperCamelCase()}Data"
-            val actualVarName = "${actual}${baseVarName.toUpperCamelCase()}Data"
-            writer.write("")
-            writer.write("// Compare blobs by reading them both to data")
-            writer.write("let $expectedVarName = try await $expectedMemberName$suffix.readData()")
-            writer.write("let $actualVarName = try await $actualMemberName$suffix.readData()")
-            writer.write("XCTAssertEqual(\$L, \$L)", expectedVarName, actualVarName)
-        } else {
-            writer.write("XCTAssertEqual(\$L, \$L)", expectedMemberName, actualMemberName)
-        }
-    }
-}
+val hasBeenRenderedEquatable = mutableSetOf<String>()

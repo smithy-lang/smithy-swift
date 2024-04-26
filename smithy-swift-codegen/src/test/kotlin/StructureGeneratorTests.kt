@@ -35,7 +35,7 @@ class StructureGeneratorTests {
         val expectedGeneratedStructure =
             """
             /// This is documentation about the shape.
-            public struct MyStruct: Swift.Equatable {
+            public struct MyStruct {
                 public var bar: Swift.Int
                 /// This is documentation about the member.
                 public var baz: Swift.Int?
@@ -68,7 +68,7 @@ class StructureGeneratorTests {
         Assertions.assertNotNull(primitiveTypesInput)
         val expected =
             """
-        public struct PrimitiveTypesInput: Swift.Equatable {
+        public struct PrimitiveTypesInput {
             public var booleanVal: Swift.Bool?
             public var byteVal: Swift.Int8?
             public var doubleVal: Swift.Double?
@@ -139,7 +139,7 @@ class StructureGeneratorTests {
         val contents = writer.toString()
         val expected =
             """
-public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
+public struct RecursiveShapesInputOutputNested1 {
     public var foo: Swift.String?
     @Indirect public var nested: RecursiveShapesInputOutputNested2?
 
@@ -153,7 +153,7 @@ public struct RecursiveShapesInputOutputNested1: Swift.Equatable {
     }
 }
 
-public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
+public struct RecursiveShapesInputOutputNested2 {
     public var bar: Swift.String?
     public var recursiveMember: RecursiveShapesInputOutputNested1?
 
@@ -168,7 +168,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
 }
 
 /// This is documentation about the shape.
-public struct RecursiveShapesInputOutput: Swift.Equatable {
+public struct RecursiveShapesInputOutput {
     public var nested: RecursiveShapesInputOutputNested1?
 
     public init(
@@ -197,7 +197,7 @@ public struct RecursiveShapesInputOutput: Swift.Equatable {
         val contents = writer.toString()
         val expected =
             """
-public struct RecursiveShapesInputOutputNestedList1: Swift.Equatable {
+public struct RecursiveShapesInputOutputNestedList1 {
     public var foo: Swift.String?
     public var recursiveList: [RecursiveShapesInputOutputNested2]?
 
@@ -211,7 +211,7 @@ public struct RecursiveShapesInputOutputNestedList1: Swift.Equatable {
     }
 }
 
-public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
+public struct RecursiveShapesInputOutputNested2 {
     public var bar: Swift.String?
     public var recursiveMember: RecursiveShapesInputOutputNested1?
 
@@ -226,7 +226,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Equatable {
 }
 
 /// This is documentation about the shape.
-public struct RecursiveShapesInputOutputLists: Swift.Equatable {
+public struct RecursiveShapesInputOutputLists {
     public var nested: RecursiveShapesInputOutputNested1?
 
     public init(
@@ -311,7 +311,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
 
         val expectedContents =
             """
-            public struct JsonListsInput: Swift.Equatable {
+            public struct JsonListsInput {
                 public var booleanList: [Swift.Bool]?
                 public var integerList: [Swift.Int]?
                 public var nestedStringList: [[Swift.String]]?
@@ -359,7 +359,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
         Assertions.assertNotNull(jsonMapsInput)
         val expectedJsonMapsInput =
             """
-            public struct JsonMapsInput: Swift.Equatable {
+            public struct JsonMapsInput {
                 public var denseBooleanMap: [Swift.String:Swift.Bool]?
                 public var denseNumberMap: [Swift.String:Swift.Int]?
                 public var denseStringMap: [Swift.String:Swift.String]?
@@ -398,7 +398,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
         Assertions.assertNotNull(jsonMapsOutput)
         val expectedJsonMapsOutput =
             """
-            public struct JsonMapsOutput: Swift.Equatable {
+            public struct JsonMapsOutput {
                 public var denseBooleanMap: [Swift.String:Swift.Bool]?
                 public var denseNumberMap: [Swift.String:Swift.Int]?
                 public var denseStringMap: [Swift.String:Swift.String]?
@@ -447,7 +447,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
         var structContainsDeprecatedTrait = """
         extension ExampleClientTypes {
             @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-            public struct StructWithDeprecatedTrait: Swift.Equatable {
+            public struct StructWithDeprecatedTrait {
         """.trimIndent()
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
 
@@ -457,7 +457,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
         structContainsDeprecatedTrait = """
         extension ExampleClientTypes {
             @available(*, deprecated, message: " API deprecated since 2019-03-21")
-            public struct StructSincePropertySet: Swift.Equatable {
+            public struct StructSincePropertySet {
         """.trimIndent()
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
     }
@@ -474,7 +474,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
         @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-        public struct OperationWithDeprecatedTraitInput: Swift.Equatable {
+        public struct OperationWithDeprecatedTraitInput {
             public var bool: Swift.Bool?
             public var foo: ExampleClientTypes.Foo?
             public var intVal: Swift.Int?
@@ -500,7 +500,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
         extension ExampleClientTypes {
-            public struct Foo: Swift.Equatable {
+            public struct Foo {
                 /// Test documentation with deprecated
                 @available(*, deprecated)
                 public var baz: Swift.String?

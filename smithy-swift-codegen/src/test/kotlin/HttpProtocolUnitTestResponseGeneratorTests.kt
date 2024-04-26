@@ -65,12 +65,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             strHeader: "Hello"
         )
 
-        XCTAssertEqual(expected.strHeader, actual.strHeader)
-        XCTAssertEqual(expected.intHeader, actual.intHeader)
-        XCTAssertEqual(expected.boolHeader, actual.boolHeader)
-        XCTAssertEqual(expected.payload1, actual.payload1)
-        XCTAssertEqual(expected.payload2, actual.payload2)
-        XCTAssertEqual(expected.payload3, actual.payload3)
+        XCTAssertEqual(actual, expected)
 
     }
 """
@@ -106,8 +101,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
         )
 
-        XCTAssertEqual(expected.foo, actual.foo)
-        XCTAssertEqual(expected.fooMap, actual.fooMap)
+        XCTAssertEqual(actual, expected)
 
     }
 """
@@ -137,8 +131,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             foo: "Foo"
         )
 
-        XCTAssertEqual(expected.foo, actual.foo)
-        XCTAssertEqual(expected.fooMap, actual.fooMap)
+        XCTAssertEqual(actual, expected)
 
     }
 """
@@ -175,7 +168,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
         )
 
-        XCTAssertEqual(expected.contents, actual.contents)
+        XCTAssertEqual(actual, expected)
 
     }
 """
@@ -231,7 +224,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             )
         )
 
-        XCTAssertEqual(expected.nested, actual.nested)
+        XCTAssertEqual(actual, expected)
 
     }
 """
@@ -274,8 +267,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             stringValue: "string"
         )
 
-        XCTAssertEqual(expected.stringValue, actual.stringValue)
-        XCTAssertEqual(expected.documentValue, actual.documentValue)
+        XCTAssertEqual(actual, expected)
 
     }
 """
@@ -314,7 +306,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
         )
 
-        XCTAssertEqual(expected.documentValue, actual.documentValue)
+        XCTAssertEqual(actual, expected)
 
     }
 """

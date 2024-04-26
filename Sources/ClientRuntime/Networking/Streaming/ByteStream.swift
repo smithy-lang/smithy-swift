@@ -28,21 +28,6 @@ public enum ByteStream {
     }
 }
 
-extension ByteStream: Equatable {
-    public static func ==(lhs: ByteStream, rhs: ByteStream) -> Bool {
-        switch (lhs, rhs) {
-        case (.data(let lhsData), .data(let rhsData)):
-            return lhsData == rhsData
-        case (.stream(let lhsStream), .stream(let rhsStream)):
-            return lhsStream === rhsStream
-        case (.noStream, .noStream):
-            return true
-        default:
-            return false
-        }
-    }
-}
-
 extension ByteStream {
 
     // Static property for an empty ByteStream

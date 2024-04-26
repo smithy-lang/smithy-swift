@@ -198,8 +198,7 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
             headerFloat: Swift.Float.nan
         )
 
-        XCTAssertEqual(expected.headerFloat?.isNaN, actual.headerFloat?.isNaN)
-        XCTAssertEqual(expected.headerDouble?.isNaN, actual.headerDouble?.isNaN)
+        XCTAssertEqual(actual, expected)
 
     }
 }

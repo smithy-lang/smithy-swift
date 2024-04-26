@@ -123,6 +123,18 @@ fun Model.getNestedShapes(serviceShape: ServiceShape): Set<Shape> {
         .select(this)
 }
 
+fun Model.getNestedShapes(memberShape: MemberShape): Set<Shape> {
+    return Selector
+        .parse("member [id='${memberShape.id}'] ~> *")
+        .select(this)
+}
+
+fun Model.getNestedShapes(shape: Shape): Set<Shape> {
+    return Selector
+        .parse("operation [id='${shape.id}'] ~> *")
+        .select(this)
+}
+
 /**
  * Test if an operation input is an event stream
  */

@@ -4,7 +4,7 @@ use aws.protocols#restXml
 
 @restXml
 service Lambda {
-    operations: [ListFunctions, ListFunctions2]
+    operations: [ListFunctions, ListFunctions2, ListFunctions3]
 }
 
 @paginated(
@@ -70,4 +70,52 @@ structure ListFunctionsRequest2 {
 structure ListFunctionsResponse2 {
     functions: FunctionConfigurationList,
     nextMarker: String
+}
+
+// Suppress warning to mimic DynamoDB using map as pagination token.
+@suppress(["PaginatedTrait.WrongShapeType"])
+@paginated(
+    inputToken: "mapToken",
+    outputToken: "nextMapToken",
+    pageSize: "maxItems"
+)
+@readonly
+@http(method: "PUT", uri: "/function4", code: 200)
+operation ListFunctions3 {
+    input: ListFunctions3Input,
+    output: ListFunctions3Output
+}
+
+structure ListFunctions3Input {
+    @httpHeader("MaxItems")
+    maxItems: Integer
+    mapToken: PaginationMapInputToken
+}
+
+map PaginationMapInputToken {
+    key: String,
+    value: NestedInputTokenValue
+}
+
+structure NestedInputTokenValue {
+    doublyNestedValue: DoublyNestedInputTokenValue
+    doublyNextedUnion: InputPaginationUnion
+}
+
+structure DoublyNestedInputTokenValue {
+    a: String
+}
+
+union InputPaginationUnion {
+    a: Integer
+    b: String
+}
+
+structure ListFunctions3Output {
+    nextMapToken: PaginationMapOutputToken
+}
+
+map PaginationMapOutputToken {
+    key: String,
+    value: Integer
 }

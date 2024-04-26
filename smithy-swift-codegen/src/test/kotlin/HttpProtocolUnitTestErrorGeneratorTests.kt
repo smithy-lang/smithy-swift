@@ -47,9 +47,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
                     topLevel: "Top level"
                 )
                 XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: 403))
-                XCTAssertEqual(expected.properties.header, actual.properties.header)
-                XCTAssertEqual(expected.properties.topLevel, actual.properties.topLevel)
-                XCTAssertEqual(expected.properties.nested, actual.properties.nested)
+                XCTAssertEqual(actual, expected)
             } else {
                 XCTFail("The deserialized error type does not match expected type")
             }
@@ -101,9 +99,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
                     topLevel: "Top level"
                 )
                 XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: 403))
-                XCTAssertEqual(expected.properties.header, actual.properties.header)
-                XCTAssertEqual(expected.properties.topLevel, actual.properties.topLevel)
-                XCTAssertEqual(expected.properties.nested, actual.properties.nested)
+                XCTAssertEqual(actual, expected)
             } else {
                 XCTFail("The deserialized error type does not match expected type")
             }
