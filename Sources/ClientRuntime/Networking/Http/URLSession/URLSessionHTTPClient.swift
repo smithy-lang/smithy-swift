@@ -141,7 +141,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
         ) {
             guard let tlsOptions = tlsOptions, tlsOptions.useSelfSignedCertificate,
-                  let certFile = tlsOptions.certificateFile,
+                  let certFile = tlsOptions.certificate,
                   let serverTrust = challenge.protectionSpace.serverTrust else {
                 logger.error(
                     "Either TLSOptions not set or missing values! Using default trust store."
@@ -175,8 +175,8 @@ public final class URLSessionHTTPClient: HTTPClient {
             completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
         ) {
             guard let tlsOptions, tlsOptions.useProvidedKeystore,
-                  let keystoreName = tlsOptions.keyStoreName,
-                  let keystorePasword = tlsOptions.keyStorePassword else {
+                  let keystoreName = tlsOptions.pkcs12Path,
+                  let keystorePasword = tlsOptions.pkcs12Password else {
                 logger.error(
                     "Either TLSOptions not set or missing values! Using default keystore."
                 )
@@ -299,7 +299,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     private var logger: LogAgent
 
     /// The TLS options for this HTTP client.
-    private let tlsOptions: URLSessionTLSOptions?
+    private let tlsConfiguration: URLSessionTLSOptions?
 
     /// The initial connection timeout for this HTTP client.
     let connectionTimeout: TimeInterval
@@ -314,8 +314,8 @@ public final class URLSessionHTTPClient: HTTPClient {
     public init(httpClientConfiguration: HttpClientConfiguration) {
         self.config = httpClientConfiguration
         self.logger = SwiftLogger(label: "URLSessionHTTPClient")
-        self.tlsOptions = config.tlsOptions?.urlSessionTLSOptions
-        self.delegate = SessionDelegate(logger: logger, tlsOptions: tlsOptions)
+        self.tlsConfiguration = config.tlsConfiguration as? URLSessionTLSOptions
+        self.delegate = SessionDelegate(logger: logger, tlsOptions: tlsConfiguration)
         self.connectionTimeout = httpClientConfiguration.connectTimeout ?? 60.0
         var urlsessionConfiguration = URLSessionConfiguration.default
         urlsessionConfiguration = URLSessionConfiguration.from(httpClientConfiguration: httpClientConfiguration)
