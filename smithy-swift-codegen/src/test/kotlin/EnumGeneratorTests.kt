@@ -39,7 +39,7 @@ class EnumGeneratorTests {
 
         val expectedGeneratedEnum = """
 /// Really long multi-line Documentation for the enum
-public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Hashable {
     /// Documentation for BAR
     case bar
     case fooBazXap
@@ -52,10 +52,12 @@ public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable,
             .sdkUnknown("")
         ]
     }
+
     public init?(rawValue: Swift.String) {
         let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
         self = value ?? Self.sdkUnknown(rawValue)
     }
+
     public var rawValue: Swift.String {
         switch self {
         case .bar: return "BAR"
@@ -97,7 +99,7 @@ public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable,
 
         val expectedGeneratedEnum = """
 /// Really long multi-line Documentation for the enum
-public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Hashable {
     /// ""${'"'} T2 instances are Burstable Performance Instances that provide a baseline level of CPU performance with the ability to burst above the baseline.""${'"'}
     case t2Micro
     case t2Nano
@@ -110,10 +112,12 @@ public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable,
             .sdkUnknown("")
         ]
     }
+
     public init?(rawValue: Swift.String) {
         let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
         self = value ?? Self.sdkUnknown(rawValue)
     }
+
     public var rawValue: Swift.String {
         switch self {
         case .t2Micro: return "t2.micro"
@@ -138,7 +142,8 @@ public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable,
 
         var expectedGeneratedEnum = """
 extension ExampleClientTypes {
-    public enum Suit: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+
+    public enum Suit: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Hashable {
         case club
         case diamond
         case heart
@@ -154,10 +159,12 @@ extension ExampleClientTypes {
                 .sdkUnknown("")
             ]
         }
+
         public init?(rawValue: Swift.String) {
             let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
             self = value ?? Self.sdkUnknown(rawValue)
         }
+
         public var rawValue: Swift.String {
             switch self {
             case .club: return "CLUB"

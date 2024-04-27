@@ -129,6 +129,7 @@ class EnumGenerator(
         if (isNestedType) {
             val service = model.expectShape<ServiceShape>(settings.service)
             writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
+                writer.write("")
                 renderEnum()
             }
         } else {
@@ -140,18 +141,26 @@ class EnumGenerator(
     private fun renderEnum() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(null, shape)
-        writer.openBlock("public enum \$enum.name:L: \$N, \$N, \$N, \$N, \$N {", "}", SwiftTypes.Protocols.Equatable, SwiftTypes.Protocols.RawRepresentable, SwiftTypes.Protocols.CaseIterable, SwiftTypes.Protocols.Codable, SwiftTypes.Protocols.Hashable) {
+        writer.openBlock(
+            "public enum \$enum.name:L: \$N, \$N, \$N, \$N {",
+            "}",
+            SwiftTypes.Protocols.Equatable,
+            SwiftTypes.Protocols.RawRepresentable,
+            SwiftTypes.Protocols.CaseIterable,
+            SwiftTypes.Protocols.Hashable
+        ) {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
             writer.write("case sdkUnknown(\$N)", SwiftTypes.String)
-
             writer.write("")
 
             // Generate allCases static array
             generateAllCasesBlock()
+            writer.write("")
 
             // Generate initializer from rawValue
             generateInitFromRawValueBlock()
+            writer.write("")
 
             // Generate rawValue internal enum
             generateRawValueEnumBlock()
