@@ -20,6 +20,7 @@ import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.UnionIndirectivizer
 import java.util.ServiceLoader
 import java.util.logging.Logger
+import software.amazon.smithy.swift.codegen.model.NeedsReaderWriterTransformer
 
 /**
  * Plugin to trigger Swift code generation.
@@ -55,6 +56,7 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
             resolvedModel = NestedShapeTransformer.transform(resolvedModel, settings.getService(resolvedModel))
             resolvedModel = UnionIndirectivizer.transform(resolvedModel)
             resolvedModel = EquatableConformanceTransformer.transform(resolvedModel, settings.getService(resolvedModel))
+            resolvedModel = NeedsReaderWriterTransformer.transform(resolvedModel, settings.getService(resolvedModel))
             return resolvedModel
         }
 

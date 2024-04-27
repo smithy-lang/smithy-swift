@@ -67,6 +67,8 @@ import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
+import software.amazon.smithy.swift.codegen.customtraits.NeedsReaderTrait
+import software.amazon.smithy.swift.codegen.customtraits.NeedsWriterTrait
 
 private val Shape.isStreaming: Boolean
     get() = hasTrait<StreamingTrait>() && isUnionShape
@@ -204,6 +206,7 @@ abstract class HTTPBindingProtocolGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
     ) {
+        if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) { return }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
         val rootNamespace = ctx.settings.moduleName
@@ -220,17 +223,40 @@ abstract class HTTPBindingProtocolGenerator(
                         // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
                         val httpBodyMembers = members.filter { it.isInHttpBody() }
                         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
-                        writer.write("")
-                        renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer, customizations.defaultTimestampFormat, path)
-                        writer.write("")
-                        renderStructDecode(ctx, shape, mapOf(), httpBodyMembers, writer, customizations.defaultTimestampFormat, path)
+                        if (shape.hasTrait<NeedsWriterTrait>()) {
+                            writer.write("")
+                            renderStructEncode(
+                                ctx,
+                                shape,
+                                mapOf(),
+                                httpBodyMembers,
+                                writer,
+                                customizations.defaultTimestampFormat,
+                                path
+                            )
+                        }
+                        if (shape.hasTrait<NeedsReaderTrait>()) {
+                            writer.write("")
+                            renderStructDecode(
+                                ctx,
+                                shape,
+                                mapOf(),
+                                httpBodyMembers,
+                                writer,
+                                customizations.defaultTimestampFormat,
+                                path
+                            )
+                        }
                     }
                     is UnionShape -> {
-                        // get all members of the union shape
-                        writer.write("")
-                        UnionEncodeGenerator(ctx, shape, members, writer).render()
-                        writer.write("")
-                        UnionDecodeGenerator(ctx, shape, members, writer).render()
+                        if (shape.hasTrait<NeedsWriterTrait>()) {
+                            writer.write("")
+                            UnionEncodeGenerator(ctx, shape, members, writer).render()
+                        }
+                        if (shape.hasTrait<NeedsReaderTrait>()) {
+                            writer.write("")
+                            UnionDecodeGenerator(ctx, shape, members, writer).render()
+                        }
                     }
                 }
             }
