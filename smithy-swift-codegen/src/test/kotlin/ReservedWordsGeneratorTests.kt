@@ -13,7 +13,8 @@ class ReservedWordsGeneratorTests {
         val contents = getFileContents(context.manifest, "/example/models/ReservedWordsEnum.swift")
         val expectedContents = """
 extension ExampleClientTypes {
-    public enum ReservedWordsEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+
+    public enum ReservedWordsEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Hashable {
         case any
         case `open`
         case `self`
@@ -29,10 +30,12 @@ extension ExampleClientTypes {
                 .sdkUnknown("")
             ]
         }
+
         public init?(rawValue: Swift.String) {
             let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
             self = value ?? Self.sdkUnknown(rawValue)
         }
+
         public var rawValue: Swift.String {
             switch self {
             case .any: return "Any"
@@ -54,7 +57,8 @@ extension ExampleClientTypes {
         val contents = getFileContents(context.manifest, "/example/models/Type.swift")
         val expectedContents = """
 extension ExampleClientTypes {
-    public enum ModelType: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+
+    public enum ModelType: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Hashable {
         case foo
         case test
         case sdkUnknown(Swift.String)
@@ -66,10 +70,12 @@ extension ExampleClientTypes {
                 .sdkUnknown("")
             ]
         }
+
         public init?(rawValue: Swift.String) {
             let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
             self = value ?? Self.sdkUnknown(rawValue)
         }
+
         public var rawValue: Swift.String {
             switch self {
             case .foo: return "foo"
@@ -89,7 +95,8 @@ extension ExampleClientTypes {
         val contents = getFileContents(context.manifest, "/example/models/Protocol.swift")
         val expectedContents = """
 extension ExampleClientTypes {
-    public enum ModelProtocol: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+
+    public enum ModelProtocol: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Hashable {
         case bar
         case foo
         case sdkUnknown(Swift.String)
@@ -101,10 +108,12 @@ extension ExampleClientTypes {
                 .sdkUnknown("")
             ]
         }
+
         public init?(rawValue: Swift.String) {
             let value = Self.allCases.first(where: { ${'$'}0.rawValue == rawValue })
             self = value ?? Self.sdkUnknown(rawValue)
         }
+
         public var rawValue: Swift.String {
             switch self {
             case .bar: return "bar"
