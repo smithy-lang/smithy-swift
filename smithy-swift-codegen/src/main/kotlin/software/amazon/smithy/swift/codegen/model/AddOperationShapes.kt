@@ -24,12 +24,16 @@ class AddOperationShapes {
     companion object {
         private val LOGGER = Logger.getLogger(javaClass.name)
         private const val SYNTHETIC_NAMESPACE = "smithy.swift.synthetic"
+
+        // These suffixes are appended to the operation name to form input/output shape names
+        private val inputSuffix = "OperationInput"
+        private val outputSuffix = "OperationOutput"
         /**
-         * Processes the given model and returns a new model ensuring service operation has an unique input and output
+         * Processes the given model and returns a new model ensuring service operation has a unique input and output
          * synthesized shape.
          *
          * @param model the model
-         * @param serviceShapeId the service shape
+         * @param serviceShape the service shape
          * @return a model with unique operation input and output shapes
          */
         fun execute(model: Model, serviceShape: ServiceShape, moduleName: String): Model {
@@ -43,19 +47,19 @@ class AddOperationShapes {
                     .map { shapeId ->
                         cloneOperationShape(
                             operationId, (model.expectShape(shapeId) as StructureShape),
-                            "Input"
+                            inputSuffix
                         )
                     }
-                    .orElseGet { emptyOperationStructure(operationId, "Input", moduleName) }
+                    .orElseGet { emptyOperationStructure(operationId, inputSuffix, moduleName) }
 
                 val outputShape = operation.output
                     .map { shapeId ->
                         cloneOperationShape(
                             operationId, (model.expectShape(shapeId) as StructureShape),
-                            "Output"
+                            outputSuffix
                         )
                     }
-                    .orElseGet { emptyOperationStructure(operationId, "Output", moduleName) }
+                    .orElseGet { emptyOperationStructure(operationId, outputSuffix, moduleName) }
 
                 // Add new input/output to model
                 modelBuilder.addShape(inputShape)

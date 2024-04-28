@@ -27,6 +27,7 @@ object ClientRuntimeTypes {
         val HttpResponseErrorBinding = runtimeSymbol("HttpResponseErrorBinding")
         val HttpError = runtimeSymbol("HTTPError")
         val UnknownHttpServiceError = runtimeSymbol("UnknownHTTPServiceError")
+        val HttpContext = runtimeSymbol("HttpContext")
         val HttpContextBuilder = runtimeSymbol("HttpContextBuilder")
         val HTTPResponseOutputBinding = runtimeSymbol("HTTPResponseOutputBinding")
         val HTTPResponseErrorBinding = runtimeSymbol("HTTPResponseErrorBinding")
@@ -126,6 +127,7 @@ object ClientRuntimeTypes {
         val DateFormatter = runtimeSymbol("DateFormatter")
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")
+        val Plugin = runtimeSymbol("Plugin")
     }
 }
 

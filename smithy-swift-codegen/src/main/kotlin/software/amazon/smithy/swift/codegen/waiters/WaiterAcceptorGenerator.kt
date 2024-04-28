@@ -14,7 +14,9 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftSymbolProvider
+import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.waiters.Acceptor
@@ -36,10 +38,11 @@ class WaiterAcceptorGenerator(
 
     fun render() {
         writer.openBlock(
-            ".init(state: .\$L, matcher: { (input: \$L, result: Result<\$L, Error>) -> Bool in", "}),",
+            ".init(state: .\$L, matcher: { (input: \$L, result: Result<\$L, \$N>) -> Bool in", "}),",
             acceptor.state,
             inputTypeName,
-            outputTypeName
+            outputTypeName,
+            SwiftTypes.Error,
         ) {
             val matcher = acceptor.matcher
             // There are 4 possible types of acceptor.  Render each separately below.
@@ -58,7 +61,11 @@ class WaiterAcceptorGenerator(
                 }
                 is Matcher.ErrorTypeMember -> {
                     writer.write("guard case .failure(let error) = result else { return false }")
-                    writer.write("return (error as? ServiceError)?.typeName == \$S", matcher.value)
+                    writer.write(
+                        "return (error as? \$N)?.typeName == \$S",
+                        ClientRuntimeTypes.Core.ServiceError,
+                        matcher.value,
+                    )
                 }
             }
         }

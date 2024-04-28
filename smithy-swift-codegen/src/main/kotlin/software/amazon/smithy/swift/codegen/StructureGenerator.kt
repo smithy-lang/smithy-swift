@@ -9,20 +9,16 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTrait
-import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SectionId
-import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
-import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.errorShapeName
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
@@ -98,15 +94,7 @@ class StructureGenerator(
      * ```
      */
     private fun renderNonErrorStructure() {
-        val isNestedType = shape.hasTrait<NestedTrait>()
-        if (isNestedType) {
-            val service = model.expectShape<ServiceShape>(settings.service)
-            writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
-                generateStruct()
-            }
-        } else {
-            generateStruct()
-        }
+        generateStruct()
     }
 
     private fun generateStruct() {

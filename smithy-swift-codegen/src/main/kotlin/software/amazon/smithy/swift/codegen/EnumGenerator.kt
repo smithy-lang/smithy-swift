@@ -7,14 +7,9 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
-import software.amazon.smithy.swift.codegen.model.expectShape
-import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 
 /**
  * Generates an appropriate Swift type for a Smithy enum string.
@@ -125,15 +120,7 @@ class EnumGenerator(
     fun render() {
         val symbol = symbolProvider.toSymbol(shape)
         writer.putContext("enum.name", symbol.name)
-        val isNestedType = shape.hasTrait<NestedTrait>()
-        if (isNestedType) {
-            val service = model.expectShape<ServiceShape>(settings.service)
-            writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
-                renderEnum()
-            }
-        } else {
-            renderEnum()
-        }
+        renderEnum()
         writer.removeContext("enum.name")
     }
 

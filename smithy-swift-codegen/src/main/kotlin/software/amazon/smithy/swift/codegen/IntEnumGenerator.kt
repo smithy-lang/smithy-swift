@@ -4,12 +4,8 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.IntEnumShape
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.EnumValueTrait
-import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
-import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 
 class IntEnumGenerator(
     private val model: Model,
@@ -24,15 +20,7 @@ class IntEnumGenerator(
     fun render() {
         val symbol = symbolProvider.toSymbol(shape)
         writer.putContext("enum.name", symbol.name)
-        val isNestedType = shape.hasTrait<NestedTrait>()
-        if (isNestedType) {
-            val service = model.expectShape<ServiceShape>(settings.service)
-            writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
-                renderEnum()
-            }
-        } else {
-            renderEnum()
-        }
+        renderEnum()
         writer.removeContext("enum.name")
     }
 

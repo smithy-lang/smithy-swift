@@ -15,15 +15,11 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftSymbolProvider
-import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.isBoxed
@@ -270,86 +266,5 @@ class SymbolProviderTest {
             val isSwiftIdentifierValid = SwiftSymbolProvider.isValidSwiftIdentifier(invalidName)
             assertFalse(isSwiftIdentifierValid, "$invalidName is wrongly interpreted as valid swift identifier")
         }
-    }
-
-    @Test
-    fun `it adds namespace to nested structure`() {
-        val memberQuux = MemberShape.builder()
-            .id("foo.bar#Struct1\$quux")
-            .target("smithy.api#String")
-            .build()
-        val struct1 = StructureShape.builder()
-            .id("foo.bar#Struct1")
-            .addMember(memberQuux)
-            .build()
-        val struct1AsMember = MemberShape.builder()
-            .id("foo.bar#InputStruct\$foo")
-            .target(struct1)
-            .build()
-        val input = StructureShape.builder()
-            .id("foo.bar#InputStruct")
-            .addMember(struct1AsMember)
-            .build()
-        val operation = OperationShape.builder()
-            .id("foo.bar#TestOperation")
-            .input(input)
-            .build()
-        val service = ServiceShape.builder()
-            .id("foo.bar#QuuxService")
-            .version("1.0")
-            .addOperation(operation)
-            .build()
-        val model = Model.assembler()
-            .addShapes(struct1, memberQuux, struct1AsMember, input, operation, service)
-            .assemble()
-            .unwrap()
-
-        val updatedModel = NestedShapeTransformer.transform(model, service)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(updatedModel, updatedModel.defaultSettings(service.id.toString(), sdkId = "Quux"))
-        val updatedStruct = updatedModel.expectShape(struct1.id)
-        val updatedStructSymbol = provider.toSymbol(updatedStruct)
-
-        assertEquals("QuuxClientTypes", updatedStructSymbol.namespace)
-    }
-
-    @Test
-    fun `it does not add namespace to error structure`() {
-        val memberQuux = MemberShape.builder()
-            .id("foo.bar#ErrorStruct\$quux")
-            .target("smithy.api#String")
-            .build()
-        val struct1Error = StructureShape.builder()
-            .id("foo.bar#ErrorStruct")
-            .addMember(memberQuux)
-            .addTrait(ErrorTrait("client"))
-            .build()
-        val struct1AsMember = MemberShape.builder()
-            .id("foo.bar#InputStruct\$foo")
-            .target(struct1Error)
-            .build()
-        val input = StructureShape.builder()
-            .id("foo.bar#InputStruct")
-            .addMember(struct1AsMember)
-            .build()
-        val operation = OperationShape.builder()
-            .id("foo.bar#TestOperation")
-            .input(input)
-            .build()
-        val service = ServiceShape.builder()
-            .id("foo.bar#QuuxService")
-            .version("1.0")
-            .addOperation(operation)
-            .build()
-        val model = Model.assembler()
-            .addShapes(struct1Error, memberQuux, struct1AsMember, input, operation, service)
-            .assemble()
-            .unwrap()
-
-        val updatedModel = NestedShapeTransformer.transform(model, service)
-        val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(updatedModel, updatedModel.defaultSettings(service.id.toString(), sdkId = "Quux"))
-        val updatedStruct = updatedModel.expectShape(struct1Error.id)
-        val updatedStructSymbol = provider.toSymbol(updatedStruct)
-
-        assertEquals("", updatedStructSymbol.namespace)
     }
 }

@@ -44,14 +44,12 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.lang.swiftReservedWords
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
@@ -141,7 +139,7 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
 
     private fun createEnumSymbol(shape: Shape): Symbol {
         val name = shape.defaultName(service)
-        val builder = createSymbolBuilder(shape, name, boxed = true)
+        val builder = createSymbolBuilder(shape, name, null, boxed = true)
             .definitionFile(formatModuleName(shape.type, name))
 
         // add a reference to each member symbol
@@ -149,9 +147,6 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
             addDeclareMemberReferences(builder, shape.allMembers.values)
         }
 
-        if (shape.hasTrait<NestedTrait>() && service != null) {
-            builder.namespace(service.nestedNamespaceType(this).name, ".")
-        }
         return builder.build()
     }
 
@@ -161,15 +156,11 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName(service)
-        val builder = createSymbolBuilder(shape, name, boxed = true)
+        val builder = createSymbolBuilder(shape, name, null, boxed = true)
             .definitionFile(formatModuleName(shape.type, name))
 
         // add a reference to each member symbol
         addDeclareMemberReferences(builder, shape.allMembers.values)
-
-        if (shape.hasTrait<NestedTrait>() && service != null && !shape.hasTrait<ErrorTrait>()) {
-            builder.namespace(service.nestedNamespaceType(this).name, ".")
-        }
 
         if (shape.hasTrait<ErrorTrait>()) {
             builder.addDependency(SwiftDependency.CLIENT_RUNTIME)
@@ -180,13 +171,13 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
         val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "$reference?" else "$reference"
-        return createSymbolBuilder(shape, "[$referenceTypeName]", true).addReference(reference).build()
+        return createSymbolBuilder(shape, "[$referenceTypeName]", null, true).addReference(reference).build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
         val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "$reference?" else "$reference"
-        return createSymbolBuilder(shape, "[${SwiftTypes.String}:$referenceTypeName]", true)
+        return createSymbolBuilder(shape, "[${SwiftTypes.String}: $referenceTypeName]", null,true)
             .addReference(reference)
             .putProperty(SymbolProperty.ENTRY_EXPRESSION, "(String, $referenceTypeName)")
             .build()
@@ -200,7 +191,7 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
 
     override fun resourceShape(shape: ResourceShape): Symbol {
         // May implement a resource type in future
-        return createSymbolBuilder(shape, "Any", true).build()
+        return createSymbolBuilder(shape, "Any", null, true).build()
     }
 
     override fun memberShape(shape: MemberShape): Symbol {
@@ -212,7 +203,7 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
 
         val isEventStream = targetShape.isStreaming && targetShape.isUnionShape
         if (isEventStream) {
-            return createSymbolBuilder(shape, "AsyncThrowingStream<${symbol.fullName}, Swift.Error>", true)
+            return createSymbolBuilder(shape, "AsyncThrowingStream<${symbol.fullName}, Swift.Error>", null, true)
                 .putProperty(SymbolProperty.NESTED_SYMBOL, symbol)
                 .build()
         }
@@ -263,17 +254,6 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
     }
 
     /**
-     * Creates a symbol builder for the shape with the given type name in the root namespace.
-     */
-    private fun createSymbolBuilder(shape: Shape?, typeName: String, boxed: Boolean = false): Symbol.Builder {
-        val builder = Symbol.builder().putProperty("shape", shape).name(typeName)
-        if (boxed) {
-            builder.boxed()
-        }
-        return builder
-    }
-
-    /**
      * Creates a symbol builder for the shape with the given type name in a child namespace relative
      * to the root namespace e.g. `relativeNamespace = bar` with a root namespace of `foo` would set
      * the namespace (and ultimately the package name) to `foo.bar` for the symbol.
@@ -281,11 +261,13 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
     private fun createSymbolBuilder(
         shape: Shape?,
         typeName: String,
-        namespace: String,
+        namespace: String?,
         boxed: Boolean = false
     ): Symbol.Builder {
-        return createSymbolBuilder(shape, typeName, boxed)
-            .namespace(namespace, ".")
+        val builder = Symbol.builder().putProperty("shape", shape).name(typeName)
+        if (boxed) { builder.boxed() }
+        namespace?.let { builder.namespace(it, ".") }
+        return builder
     }
 
     private fun formatModuleName(shapeType: ShapeType, name: String): String? {

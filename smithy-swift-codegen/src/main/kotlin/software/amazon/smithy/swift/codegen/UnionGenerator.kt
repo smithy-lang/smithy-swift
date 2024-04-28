@@ -9,15 +9,11 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTrait
-import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.customtraits.RecursiveUnionTrait
 import software.amazon.smithy.swift.codegen.model.eventStreamEvents
-import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 
 /**
  * Generates an appropriate Swift type for a Smithy union shape
@@ -59,15 +55,7 @@ class UnionGenerator(
 
     fun render() {
         writer.putContext("union.name", unionSymbol.name)
-        val isNestedType = shape.hasTrait<NestedTrait>()
-        if (isNestedType) {
-            val service = model.expectShape<ServiceShape>(settings.service)
-            writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
-                renderUnion()
-            }
-        } else {
-            renderUnion()
-        }
+        renderUnion()
         writer.removeContext("union.name")
     }
 

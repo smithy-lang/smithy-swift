@@ -236,9 +236,10 @@ class AuthSchemeResolverGenerator {
     ) {
         writer.apply {
             openBlock(
-                "public func constructParameters(context: HttpContext) throws -> \$L {",
+                "public func constructParameters(context: \$N) throws -> \$L {",
                 "}",
-                ClientRuntimeTypes.Auth.AuthSchemeResolverParams
+                ClientRuntimeTypes.Http.HttpContext,
+                ClientRuntimeTypes.Auth.AuthSchemeResolverParams,
             ) {
                 if (usesRulesBasedAuthResolver(ctx)) {
                     write("return try Default${getSdkId(ctx) + AUTH_SCHEME_RESOLVER}().constructParameters(context: context)")

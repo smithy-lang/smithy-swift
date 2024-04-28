@@ -24,7 +24,7 @@ class StructureGeneratorTests {
         val model = createModelWithStructureWithoutErrorTrait()
         val swiftSettings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", )
         val struct = model.getShape(ShapeId.from("smithy.example#MyStruct")).get() as StructureShape
         val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
         generator.render()
