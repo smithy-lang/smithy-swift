@@ -177,7 +177,7 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
         val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "$reference?" else "$reference"
-        return createSymbolBuilder(shape, "[${SwiftTypes.String}: $referenceTypeName]", null,true)
+        return createSymbolBuilder(shape, "[${SwiftTypes.String}: $referenceTypeName]", null, true)
             .addReference(reference)
             .putProperty(SymbolProperty.ENTRY_EXPRESSION, "(String, $referenceTypeName)")
             .build()

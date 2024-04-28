@@ -125,7 +125,8 @@ class StructureGenerator(
 
         if (hasMembers) {
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.openBlock("public init(", ")") {
+            writer.write("public init(")
+            writer.indent {
                 for ((index, member) in membersSortedByName.withIndex()) {
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
@@ -134,15 +135,17 @@ class StructureGenerator(
                     writer.write("\$L: \$D$terminator", memberName, symbolToUse)
                 }
             }
-            writer.openBlock("{", "}") {
+            writer.write(") {")
+            writer.indent {
                 val path = "properties.".takeIf { error } ?: ""
                 membersSortedByName.forEach {
                     val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.write("self.$path\$L = \$L", memberName, memberName)
                 }
             }
+            writer.write("}")
         } else {
-            writer.write("public init() { }")
+            writer.write("public init() {}")
         }
     }
 
