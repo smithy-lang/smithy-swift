@@ -35,9 +35,13 @@ public extension Writer {
 
     subscript(nodeInfo: NodeInfo) -> Writer {
         self.jsonNode = .object
-        let newChild = Writer(nodeInfo: nodeInfo, parent: self)
-        children.append(newChild)
-        return newChild
+        if let child = children.first(where: { $0.nodeInfo == nodeInfo }) {
+            return child
+        } else {
+            let newChild = Writer(nodeInfo: nodeInfo, parent: self)
+            children.append(newChild)
+            return newChild
+        }
     }
 
     func write(_ value: Bool?) throws {
