@@ -15,19 +15,27 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.swift.codegen.SyntheticClone
 import java.util.logging.Logger
+import software.amazon.smithy.model.shapes.OperationShape
+
+var operationCount = 0
+var requestCount = 0
+var inputCount = 0
+var otherCount = 0
+var dontStartWithOperation = mutableListOf<String>()
 
 /**
  * Ensures that each operation has a unique input and output shape.
  */
 class AddOperationShapes {
 
+    private enum class IO {
+        INPUT, OUTPUT
+    }
+
     companion object {
-        private val LOGGER = Logger.getLogger(javaClass.name)
+        private val LOGGER = Logger.getLogger(AddOperationShapes::class.java.name)
         private const val SYNTHETIC_NAMESPACE = "smithy.swift.synthetic"
 
-        // These suffixes are appended to the operation name to form input/output shape names
-        private val inputSuffix = "OperationInput"
-        private val outputSuffix = "OperationOutput"
         /**
          * Processes the given model and returns a new model ensuring service operation has a unique input and output
          * synthesized shape.
@@ -41,25 +49,19 @@ class AddOperationShapes {
             val operations = topDownIndex.getContainedOperations(serviceShape)
             val modelBuilder: Model.Builder = model.toBuilder()
             for (operation in operations) {
-                val operationId = operation.id
-                LOGGER.info("building unique input/output shapes for $operationId")
-                val inputShape = operation.input
-                    .map { shapeId ->
-                        cloneOperationShape(
-                            operationId, (model.expectShape(shapeId) as StructureShape),
-                            inputSuffix
-                        )
-                    }
-                    .orElseGet { emptyOperationStructure(operationId, inputSuffix, moduleName) }
+                LOGGER.info("building unique input/output shapes for $operation.id")
 
-                val outputShape = operation.output
-                    .map { shapeId ->
-                        cloneOperationShape(
-                            operationId, (model.expectShape(shapeId) as StructureShape),
-                            outputSuffix
-                        )
-                    }
-                    .orElseGet { emptyOperationStructure(operationId, outputSuffix, moduleName) }
+                val inputUniqueName = findUniqueName(model, operation, IO.INPUT)
+                val inputShape = operation.input.map { shapeId ->
+                    val structureShape = model.expectShape<StructureShape>(shapeId)
+                    cloneOperationShape(structureShape, inputUniqueName)
+                }.orElseGet { emptyOperationStructure(moduleName, inputUniqueName) }
+
+                val outputUniqueName = findUniqueName(model, operation, IO.OUTPUT)
+                val outputShape = operation.output.map { shapeId ->
+                    val structureShape = model.expectShape<StructureShape>(shapeId)
+                    cloneOperationShape(structureShape, outputUniqueName)
+                }.orElseGet { emptyOperationStructure(moduleName, outputUniqueName) }
 
                 // Add new input/output to model
                 modelBuilder.addShape(inputShape)
@@ -73,30 +75,62 @@ class AddOperationShapes {
                         .build()
                 )
             }
+
+            println("Has Request: $requestCount.  Input: $inputCount  Other: $otherCount Operation: $operationCount")
+            println("Exceptions: $dontStartWithOperation")
             return modelBuilder.build()
         }
 
-        private fun emptyOperationStructure(opShapeId: ShapeId, suffix: String, moduleName: String): StructureShape {
-            return StructureShape.builder()
-                .id(
-                    ShapeId.fromParts(
-                        moduleName,
-                        opShapeId.name + suffix
-                    )
-                )
-                .build()
+        private fun emptyOperationStructure(moduleName: String, uniqueName: String): StructureShape {
+            val shapeID = ShapeId.fromParts(moduleName, uniqueName)
+            return StructureShape.builder().id(shapeID).build()
         }
 
         private fun cloneOperationShape(
-            operationShapeId: ShapeId,
             structureShape: StructureShape,
-            suffix: String
+            uniqueName: String
         ): StructureShape {
-            return cloneShape(structureShape, operationShapeId.name + suffix) as StructureShape
+            return cloneShape(structureShape, uniqueName) as StructureShape
+        }
+
+        private fun findUniqueName(
+            model: Model,
+            operation: OperationShape,
+            structure: IO,
+        ): String {
+            // These suffixes are appended to the operation name to form input/output shape names
+            val inputSuffixes = listOf("Input", "OperationInput", "OpInput", "Request")
+            val outputSuffixes = listOf("Output", "OperationOutput", "OpOutput", "Response")
+            val suffixes = inputSuffixes.takeIf { structure == IO.INPUT } ?: outputSuffixes
+
+            val shapeIDToReplace = operation.inputShape.takeIf { structure == IO.INPUT } ?: operation.outputShape
+
+            if (structure == IO.INPUT) {
+                if (shapeIDToReplace.name.endsWith("Request")) {
+                    requestCount++
+                } else if (shapeIDToReplace.name.endsWith("Input")) {
+                    inputCount++
+                } else {
+                    otherCount++
+                }
+                if (!shapeIDToReplace.name.startsWith(operation.id.name)) {
+                    operationCount++
+                    dontStartWithOperation.add(shapeIDToReplace.name)
+                }
+            }
+            suffixes.forEach { suffix ->
+                val nameCandidate = operation.id.name + suffix
+                val shapeIDCandidate = ShapeId.from(operation.id.namespace + "#" + nameCandidate)
+                if (model.getShape(shapeIDCandidate).isPresent && shapeIDCandidate != shapeIDToReplace) {
+                    println("DETECTED CLASH: $shapeIDToReplace to $shapeIDCandidate")
+                    return@forEach
+                }
+                return nameCandidate
+            }
+            throw Exception("Unable to find a deconflicted input/output name for ${operation.id}")
         }
 
         private fun cloneShape(shape: Shape, cloneShapeName: String): Shape {
-
             val cloneShapeId = ShapeId.fromParts(SYNTHETIC_NAMESPACE, cloneShapeName)
 
             var builder: AbstractShapeBuilder<*, *> = Shape.shapeToBuilder(shape)
