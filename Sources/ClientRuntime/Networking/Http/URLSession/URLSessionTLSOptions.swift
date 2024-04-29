@@ -5,34 +5,40 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct URLSessionTLSOptions {
+public struct URLSessionTLSOptions: TLSConfiguration {
 
-    /// Filename of the trust store certificate file in main bundle (.cer).
-    public let certificateFile: String?
+    /// Filename of the turst certificate file in main bundle (.cer)
+    public var certificate: String?
 
-    /// Name of key store file (.p12).
-    public let keyStoreName: String?
+    /// Not supported for URLSession HTTP Client
+    public var certificateDir: String?
 
-    /// Password for the key store if required.
-    public let keyStorePassword: String?
+    /// Not supported for URLSession HTTP Client
+    public var privateKey: String?
+
+    /// Optional path to PKCS #12 certificate , in PEM format
+    public var pkcs12Path: String?
+
+    /// Optional PKCS#12 password
+    public var pkcs12Password: String?
 
     /// Information is provided to use custom trust store
     public var useSelfSignedCertificate: Bool {
-        return certificateFile != nil
+        return certificate != nil
     }
 
     /// Information is provided to use custom key store
     public var useProvidedKeystore: Bool {
-        return keyStoreName != nil && keyStorePassword != nil
+        return pkcs12Path != nil && pkcs12Password != nil
     }
 
     public init(
-        certificateFile: String? = nil, // .cer
-        keyStoreName: String? = nil, // .p12
-        keyStorePassword: String? = nil
+        certificate: String? = nil, // .cer
+        pkcs12Path: String? = nil, // .p12
+        pkcs12Password: String? = nil
     ) {
-        self.certificateFile = certificateFile
-        self.keyStoreName = keyStoreName
-        self.keyStorePassword = keyStorePassword
+        self.certificate = certificate
+        self.pkcs12Path = pkcs12Path
+        self.pkcs12Password = pkcs12Password
     }
 }
