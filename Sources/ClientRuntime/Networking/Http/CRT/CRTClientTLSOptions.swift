@@ -10,7 +10,7 @@ public struct CRTClientTLSOptions: TLSConfiguration {
 
     /// Optional PEM certificate filename
     public var certificate: String?
-    
+
     /// Optional path to certificate directory
     public var certificateDir: String?
 
