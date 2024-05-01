@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
+
 import func Foundation.CFWriteStreamSetDispatchQueue
 import class Foundation.DispatchQueue
 import class Foundation.NSObject
@@ -204,3 +206,5 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
     }
 }
+
+#endif
