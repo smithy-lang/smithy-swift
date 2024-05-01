@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct GetCurrentTimeInputBody: Swift.Equatable {
+struct GetCurrentTimeInputBody {
 }
 
 extension GetCurrentTimeInputBody: Swift.Decodable {

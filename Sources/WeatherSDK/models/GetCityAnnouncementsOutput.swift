@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-public struct GetCityAnnouncementsOutput: Swift.Equatable {
+public struct GetCityAnnouncementsOutput {
     public var lastUpdated: ClientRuntime.Date?
 
     public init(

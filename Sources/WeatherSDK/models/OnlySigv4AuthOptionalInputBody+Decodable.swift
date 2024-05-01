@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct OnlySigv4AuthOptionalInputBody: Swift.Equatable {
+struct OnlySigv4AuthOptionalInputBody {
 }
 
 extension OnlySigv4AuthOptionalInputBody: Swift.Decodable {

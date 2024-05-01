@@ -3,7 +3,7 @@
 import ClientRuntime
 
 extension WeatherClientTypes {
-    public enum Precipitation: Swift.Equatable {
+    public enum Precipitation {
         case rain(Swift.Bool)
         case sleet(Swift.Bool)
         case hail([Swift.String:Swift.String])

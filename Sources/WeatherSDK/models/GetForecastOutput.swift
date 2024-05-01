@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-public struct GetForecastOutput: Swift.Equatable {
+public struct GetForecastOutput {
     public var chanceOfRain: Swift.Float?
     public var precipitation: WeatherClientTypes.Precipitation?
 

@@ -26,18 +26,18 @@ class DefaultClientConfiguration : ClientConfiguration {
         ConfigProperty(
             "retryStrategyOptions",
             ClientRuntimeTypes.Core.RetryStrategyOptions,
-            "DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultRetryStrategyOptions"
+            "ClientConfigurationDefaults.defaultRetryStrategyOptions"
         ),
         ConfigProperty(
             "clientLogMode",
             ClientRuntimeTypes.Core.ClientLogMode,
-            "DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultClientLogMode"
+            "ClientConfigurationDefaults.defaultClientLogMode"
         ),
         ConfigProperty("endpoint", SwiftTypes.String.toOptional()),
         ConfigProperty(
             "idempotencyTokenGenerator",
             ClientRuntimeTypes.Core.IdempotencyTokenGenerator,
-            "DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultIdempotencyTokenGenerator"
+            "ClientConfigurationDefaults.defaultIdempotencyTokenGenerator"
         ),
     )
 }
