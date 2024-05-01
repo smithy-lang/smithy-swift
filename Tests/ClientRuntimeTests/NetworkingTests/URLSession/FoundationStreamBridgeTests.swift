@@ -5,14 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-// Run this unit test on macOS only.
-//
-// `FoundationStreamBridge` is not usable on Linux because it uses ObjC-interop features.
-//
-// Unit tests of types that spawn threads are unreliable on Apple-platform simulators.
-// Mac tests "run on metal", not a simulator, so they will run reliably.
-#if os(macOS)
-
 import Foundation
 import XCTest
 @testable import ClientRuntime
@@ -93,5 +85,3 @@ class FoundationStreamBridgeTests: XCTestCase {
         }
     }
 }
-
-#endif

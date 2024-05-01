@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
-
 import class Foundation.Bundle
 import class Foundation.InputStream
 import class Foundation.NSObject
@@ -31,8 +29,8 @@ import AwsCommonRuntimeKit
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
 ///
-/// This client is usable on all Swift platforms that support both the `URLSession` library and Objective-C interoperability features
-/// (these are generally the Apple platforms.)
+/// This client is usable on all platforms, but is only used by default on Apple platforms (Mac, iOS, iPadOS, tvOS, watchOS, and visionOS.)  On Linux,
+/// this client may be used but the AWS CRT HTTP client is used by default.
 ///
 /// Use of this client is recommended on all Apple platforms, and is required on Apple Watch ( see
 /// [TN3135: Low-level networking on watchOS](https://developer.apple.com/documentation/technotes/tn3135-low-level-networking-on-watchos)
@@ -424,5 +422,3 @@ public enum URLSessionHTTPClientError: Error {
     /// Please file a bug with aws-sdk-swift if you experience this error.
     case unresumedConnection
 }
-
-#endif

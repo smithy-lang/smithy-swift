@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
-
 import func Foundation.CFWriteStreamSetDispatchQueue
 import class Foundation.DispatchQueue
 import class Foundation.NSObject
@@ -165,7 +163,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                 buffer.append(data)
                 var writeCount = 0
                 buffer.withUnsafeBytes { bufferPtr in
-                    let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress!
+                    guard let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress else { return }
                     writeCount = outputStream.write(bytePtr, maxLength: buffer.count)
                 }
                 if writeCount > 0 {
@@ -206,5 +204,3 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
     }
 }
-
-#endif
