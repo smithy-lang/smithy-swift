@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct GetCityImageInputBody: Swift.Equatable {
+struct GetCityImageInputBody {
 }
 
 extension GetCityImageInputBody: Swift.Decodable {

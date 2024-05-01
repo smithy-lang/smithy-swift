@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-public struct CreateCityInput: Swift.Equatable {
+public struct CreateCityInput {
     public var city: WeatherClientTypes.CitySummary?
     /// This member is required.
     public var coordinates: WeatherClientTypes.CityCoordinates?

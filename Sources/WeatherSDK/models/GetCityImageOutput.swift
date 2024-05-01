@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-public struct GetCityImageOutput: Swift.Equatable {
+public struct GetCityImageOutput {
     /// This member is required.
     public var image: ClientRuntime.ByteStream?
 

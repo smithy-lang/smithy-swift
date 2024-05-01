@@ -3,7 +3,7 @@
 import ClientRuntime
 
 /// The input used to get a city.
-public struct GetCityInput: Swift.Equatable {
+public struct GetCityInput {
     /// This member is required.
     public var cityId: Swift.String?
 
