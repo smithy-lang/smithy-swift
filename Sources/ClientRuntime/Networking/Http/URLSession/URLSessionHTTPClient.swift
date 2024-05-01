@@ -31,7 +31,7 @@ import AwsCommonRuntimeKit
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
 ///
-/// This client is usable on all Swift platforms that support both the `URLSession` and `Security` libraries
+/// This client is usable on all Swift platforms that support both the `URLSession` library and Objective-C interoperability features
 /// (these are generally the Apple platforms.)
 ///
 /// Use of this client is recommended on all Apple platforms, and is required on Apple Watch ( see
