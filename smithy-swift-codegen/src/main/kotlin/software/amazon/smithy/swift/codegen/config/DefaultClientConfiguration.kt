@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.config
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SmithyRetriesAPITypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.config.ClientConfiguration.Companion.runtimeSymbol
@@ -25,7 +26,7 @@ class DefaultClientConfiguration : ClientConfiguration {
         ),
         ConfigProperty(
             "retryStrategyOptions",
-            ClientRuntimeTypes.Core.RetryStrategyOptions,
+            SmithyRetriesAPITypes.RetryStrategyOptions,
             "DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultRetryStrategyOptions"
         ),
         ConfigProperty(

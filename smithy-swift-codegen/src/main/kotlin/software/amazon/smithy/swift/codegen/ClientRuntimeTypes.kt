@@ -120,7 +120,6 @@ object ClientRuntimeTypes {
         val ClientLogMode = runtimeSymbol("ClientLogMode")
         val IdempotencyTokenGenerator = runtimeSymbol("IdempotencyTokenGenerator")
         val DefaultRetryStrategy = runtimeSymbol("DefaultRetryStrategy")
-        val RetryStrategyOptions = runtimeSymbol("RetryStrategyOptions")
         val DefaultRetryErrorInfoProvider = runtimeSymbol("DefaultRetryErrorInfoProvider")
         val DefaultSDKRuntimeConfiguration = runtimeSymbol("DefaultSDKRuntimeConfiguration")
         val DateFormatter = runtimeSymbol("DateFormatter")
