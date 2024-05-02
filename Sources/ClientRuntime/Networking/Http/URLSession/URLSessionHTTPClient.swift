@@ -252,7 +252,7 @@ public final class URLSessionHTTPClient: HTTPClient {
 
             // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
             // that URLSession can stream its request body from.
-            let streamBridge = requestStream.map { FoundationStreamBridge(readableStream: $0, bufferSize: 4096) }
+            let streamBridge = requestStream.map { FoundationStreamBridge(readableStream: $0, bufferSize: 4096, logger: logger) }
 
             // Create the request (with a streaming body when needed.)
             let urlRequest = self.makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
