@@ -29,6 +29,8 @@ let package = Package(
     ],
     products: [
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
+        .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
+        .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
         .library(name: "SmithyReadWrite", targets: ["SmithyReadWrite"]),
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
