@@ -6,6 +6,9 @@
 //
 
 import struct Foundation.TimeInterval
+import protocol SmithyRetriesAPI.RetryStrategy
+import struct SmithyRetriesAPI.RetryStrategyOptions
+import struct SmithyRetriesAPI.RetryErrorInfo
 
 public struct DefaultRetryStrategy: RetryStrategy {
     public typealias Token = DefaultRetryToken

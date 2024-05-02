@@ -7,6 +7,8 @@
 
 import Foundation
 import XCTest
+import SmithyRetriesAPI
+@testable import SmithyRetries
 @testable import ClientRuntime
 
 final class DefaultRetryStrategyTests: XCTestCase {

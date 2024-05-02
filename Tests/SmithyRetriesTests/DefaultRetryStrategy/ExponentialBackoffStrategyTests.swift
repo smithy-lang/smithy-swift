@@ -7,6 +7,7 @@
 
 import Foundation
 import XCTest
+@testable import SmithyRetries
 @testable import ClientRuntime
 
 final class ExponentialBackoffStrategyTests: XCTestCase {

@@ -4,7 +4,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-import AwsCommonRuntimeKit
 
 public enum RetryErrorType: Equatable {
 
@@ -21,16 +20,4 @@ public enum RetryErrorType: Equatable {
 
     /// Doesn’t count against any budgets.  This could be something like a 401 challenge in HTTP.
     case clientError
-}
-
-public extension RetryErrorType {
-
-    func toCRTType() -> AwsCommonRuntimeKit.RetryError {
-        switch self {
-        case .transient: return .transient
-        case .throttling: return .throttling
-        case .serverError: return .serverError
-        case .clientError: return .clientError
-        }
-    }
 }

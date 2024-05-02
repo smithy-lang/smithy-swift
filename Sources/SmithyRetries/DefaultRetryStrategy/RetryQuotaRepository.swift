@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct SmithyRetriesAPI.RetryStrategyOptions
+
 /// Holds multiple quotas, keyed by partition IDs.
 actor RetryQuotaRepository {
     let options: RetryStrategyOptions

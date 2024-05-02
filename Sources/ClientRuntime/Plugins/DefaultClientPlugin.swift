@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct SmithyRetries.DefaultRetryStrategy
+
 public class DefaultClientPlugin: Plugin {
     public init() {}
     public func configureClient(clientConfiguration: ClientConfiguration) {

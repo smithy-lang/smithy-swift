@@ -5,6 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyRetriesAPI.RetryStrategy
+import protocol SmithyRetriesAPI.RetryErrorInfoProvider
+import struct SmithyRetriesAPI.RetryStrategyOptions
+import struct SmithyRetries.ExponentialBackoffStrategy
+
 /// Provides configuration options for a Smithy-based service.
 public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy,
     DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider> {
@@ -119,7 +124,7 @@ public extension DefaultSDKRuntimeConfiguration {
     /// The retry strategy options to use when none is provided.
     ///
     /// Defaults to options with the defaults defined in `RetryStrategyOptions`.
-    static var defaultRetryStrategyOptions: RetryStrategyOptions { RetryStrategyOptions() }
+    static var defaultRetryStrategyOptions: RetryStrategyOptions { RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy()) }
 
     /// The log mode to use when none is provided
     ///

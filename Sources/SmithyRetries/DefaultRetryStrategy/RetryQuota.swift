@@ -6,6 +6,7 @@
 //
 
 import struct Foundation.TimeInterval
+import struct SmithyRetriesAPI.RetryStrategyOptions
 
 /// Keeps the retry quota count for one partition ID.
 ///

@@ -10,6 +10,9 @@ import struct Foundation.Locale
 import struct Foundation.TimeInterval
 import struct Foundation.TimeZone
 import struct Foundation.UUID
+import protocol SmithyRetriesAPI.RetryStrategy
+import protocol SmithyRetriesAPI.RetryErrorInfoProvider
+import struct SmithyRetriesAPI.RetryStrategyOptions
 
 public struct RetryMiddleware<Strategy: RetryStrategy,
                               ErrorInfoProvider: RetryErrorInfoProvider,

@@ -41,6 +41,8 @@ let package = Package(
         .target(
             name: "ClientRuntime",
             dependencies: [
+                "SmithyRetriesAPI",
+                "SmithyRetries",
                 "SmithyXML",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "Logging", package: "swift-log"),
@@ -48,6 +50,19 @@ let package = Package(
             resources: [
                 .copy("PrivacyInfo.xcprivacy")
             ]
+        ),
+        .target(
+            name: "SmithyRetriesAPI"
+        ),
+        .target(
+            name: "SmithyRetries",
+            dependencies: [
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+            ]
+        ),
+        .testTarget(
+            name: "SmithyRetriesTests",
+            dependencies: ["ClientRuntime", "SmithyRetriesAPI", "SmithyRetries"]
         ),
         .target(name: "SmithyReadWrite"),
         .target(
