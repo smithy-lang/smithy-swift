@@ -161,6 +161,7 @@ public class CRTClientEngine: HTTPClient {
         self.serialExecutor = SerialExecutor(config: config)
     }
 
+    // swiftlint:disable:function_body_length
     public func send(request: SdkHttpRequest) async throws -> HttpResponse {
         // Boolean flag for each independent request's continuation.
         let continuationFlag = ContinuationFlag()
@@ -271,7 +272,7 @@ public class CRTClientEngine: HTTPClient {
                         )
                         return
                     }
-                    
+
                     // At this point, continuation is resumed when the initial headers are received
                     // it is now safe to write the body
                     // writing is done in a separate task to avoid blocking the continuation
@@ -288,6 +289,7 @@ public class CRTClientEngine: HTTPClient {
             fatalError("Unknown HTTP version")
         }
     }
+    // swiftlint:enable:function_body_length
 
     // Forces an Http2 request that uses CRT's `HTTP2StreamManager`.
     // This may be removed or improved as part of SRA work and CRT adapting to SRA for HTTP.
@@ -420,7 +422,7 @@ public class CRTClientEngine: HTTPClient {
 
     actor ContinuationFlag {
         var continuationResumed = false
-        public func setFlag(val : Bool) {
+        public func setFlag(val: Bool) {
             continuationResumed = val
         }
     }
