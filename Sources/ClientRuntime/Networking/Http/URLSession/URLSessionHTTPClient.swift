@@ -414,17 +414,21 @@ public final class URLSessionHTTPClient: HTTPClient {
             }
 
             // Create the request (with a streaming body when needed.)
-            let urlRequest = self.makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
+            do {
+                let urlRequest = try self.makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
+                // Create the data task and associated connection object, then place them in storage.
+                let dataTask = session.dataTask(with: urlRequest)
+                let connection = Connection(streamBridge: streamBridge, continuation: continuation)
+                delegate.storage.set(connection, for: dataTask)
 
-            // Create the data task and associated connection object, then place them in storage.
-            let dataTask = session.dataTask(with: urlRequest)
-            let connection = Connection(streamBridge: streamBridge, continuation: continuation)
-            delegate.storage.set(connection, for: dataTask)
+                // Start the HTTP connection and start streaming the request body data
+                dataTask.resume()
+                logger.info("start URLRequest(\(urlRequest.url?.absoluteString ?? "")) called")
+                Task { await streamBridge?.open() }
+            } catch {
+                continuation.resume(throwing: error)
+            }
 
-            // Start the HTTP connection and start streaming the request body data
-            dataTask.resume()
-            logger.info("start URLRequest(\(urlRequest.url?.absoluteString ?? "")) called")
-            Task { await streamBridge?.open() }
         }
     }
 
@@ -435,7 +439,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     ///   - request: The SDK-native, signed `SdkHttpRequest` ready to be transmitted.
     ///   - httpBodyStream: A Foundation `InputStream` carrying the HTTP body for this request.
     /// - Returns: A `URLRequest` ready to be transmitted by `URLSession` for this operation.
-    private func makeURLRequest(from request: SdkHttpRequest, httpBodyStream: InputStream?) -> URLRequest {
+    private func makeURLRequest(from request: SdkHttpRequest, httpBodyStream: InputStream?) throws -> URLRequest {
         var components = URLComponents()
         components.scheme = config.protocolType?.rawValue ?? request.endpoint.protocolType?.rawValue ?? "https"
         components.host = request.endpoint.host
@@ -446,7 +450,7 @@ public final class URLSessionHTTPClient: HTTPClient {
                 Foundation.URLQueryItem(name: $0.name, value: $0.value)
             }
         }
-        guard let url = components.url else { fatalError("Invalid HTTP request.  Please file a bug to report this.") }
+        guard let url = components.url else { throw URLSessionHTTPClientError.incompleteHTTPRequest }
         var urlRequest = URLRequest(url: url, timeoutInterval: self.connectionTimeout)
         urlRequest.httpMethod = request.method.rawValue
         urlRequest.httpBodyStream = httpBodyStream
@@ -471,6 +475,10 @@ public final class URLSessionHTTPClient: HTTPClient {
 
 /// Errors that are particular to the URLSession-based Smithy HTTP client.
 public enum URLSessionHTTPClientError: Error {
+
+    /// A URL could not be formed from the `SdkHttpRequest`.
+    /// Please file a bug with aws-sdk-swift if you experience this error.
+    case incompleteHTTPRequest
 
     /// A non-HTTP response was returned by the server.
     /// Please file a bug with aws-sdk-swift if you experience this error.
