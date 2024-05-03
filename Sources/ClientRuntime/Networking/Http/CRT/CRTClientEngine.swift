@@ -165,6 +165,8 @@ public class CRTClientEngine: HTTPClient {
     public func send(request: SdkHttpRequest) async throws -> HttpResponse {
         // Boolean flag for each independent request's continuation.
         let continuationFlag = ContinuationFlag()
+        // Dispatch queue used to sync continuation resume flag checking & setting.
+        let continuationFlagSyncQueue = DispatchQueue(label: "Continuation Flag Sync Queue")
 
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
@@ -176,6 +178,7 @@ public class CRTClientEngine: HTTPClient {
             let crtRequest = try request.toHttpRequest()
             return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
                 let requestOptions = makeHttpRequestStreamOptions(
+                    continuationFlagSyncQueue: continuationFlagSyncQueue,
                     continuationFlag: continuationFlag,
                     request: crtRequest,
                     continuation: continuation
@@ -228,6 +231,7 @@ public class CRTClientEngine: HTTPClient {
                                 logger.error(error.localizedDescription)
                                 Task {
                                     await self.safeResumeThrowContinuation(
+                                        continuationFlagSyncQueue: continuationFlagSyncQueue,
                                         continuationFlag: continuationFlag,
                                         continuation: continuation,
                                         error: error
@@ -240,6 +244,7 @@ public class CRTClientEngine: HTTPClient {
                     logger.error(error.localizedDescription)
                     Task {
                         await self.safeResumeThrowContinuation(
+                            continuationFlagSyncQueue: continuationFlagSyncQueue,
                             continuationFlag: continuationFlag,
                             continuation: continuation,
                             error: error
@@ -252,6 +257,7 @@ public class CRTClientEngine: HTTPClient {
             let crtRequest = try request.toHttp2Request()
             return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
                 let requestOptions = makeHttpRequestStreamOptions(
+                    continuationFlagSyncQueue: continuationFlagSyncQueue,
                     continuationFlag: continuationFlag,
                     request: crtRequest,
                     continuation: continuation,
@@ -266,6 +272,7 @@ public class CRTClientEngine: HTTPClient {
                     } catch {
                         logger.error(error.localizedDescription)
                         await self.safeResumeThrowContinuation(
+                            continuationFlagSyncQueue: continuationFlagSyncQueue,
                             continuationFlag: continuationFlag,
                             continuation: continuation,
                             error: error
@@ -296,6 +303,8 @@ public class CRTClientEngine: HTTPClient {
     func executeHTTP2Request(request: SdkHttpRequest) async throws -> HttpResponse {
         // Boolean flag for each new request's continuation.
         let continuationFlag = ContinuationFlag()
+        // Dispatch queue used to sync continuation resume flag checking & setting.
+        let continuationFlagSyncQueue = DispatchQueue(label: "Continuation Flag Sync Queue")
 
         let connectionMgr = try await serialExecutor.getOrCreateHTTP2ConnectionPool(endpoint: request.endpoint)
 
@@ -304,6 +313,7 @@ public class CRTClientEngine: HTTPClient {
 
         return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
             let requestOptions = makeHttpRequestStreamOptions(
+                continuationFlagSyncQueue: continuationFlagSyncQueue,
                 continuationFlag: continuationFlag,
                 request: crtRequest,
                 continuation: continuation,
@@ -317,6 +327,7 @@ public class CRTClientEngine: HTTPClient {
                     logger.error(error.localizedDescription)
                     Task {
                         await self.safeResumeThrowContinuation(
+                            continuationFlagSyncQueue: continuationFlagSyncQueue,
                             continuationFlag: continuationFlag,
                             continuation: continuation,
                             error: error
@@ -352,6 +363,7 @@ public class CRTClientEngine: HTTPClient {
     ///     the manual writes.
     /// - Returns: A `HTTPRequestOptions` object that can be used to make a HTTP request
     private func makeHttpRequestStreamOptions(
+        continuationFlagSyncQueue: DispatchQueue,
         continuationFlag: ContinuationFlag,
         request: HTTPRequestBase,
         continuation: StreamContinuation,
@@ -378,6 +390,7 @@ public class CRTClientEngine: HTTPClient {
             // instead of waiting for the entire response to be received
             Task {
                 await self.safeResumeReturnContinuation(
+                    continuationFlagSyncQueue: continuationFlagSyncQueue,
                     continuationFlag: continuationFlag,
                     continuation: continuation,
                     response: response
@@ -402,6 +415,7 @@ public class CRTClientEngine: HTTPClient {
                 self.logger.error("Response encountered an error: \(error)")
                 Task {
                     await self.safeResumeThrowContinuation(
+                        continuationFlagSyncQueue: continuationFlagSyncQueue,
                         continuationFlag: continuationFlag,
                         continuation: continuation,
                         error: error
@@ -421,31 +435,44 @@ public class CRTClientEngine: HTTPClient {
     }
 
     actor ContinuationFlag {
-        var continuationResumed = false
-        public func setFlag(val: Bool) {
+        private var continuationResumed = false
+        public func getContinuationResumedFlag() -> Bool {
+            return continuationResumed
+        }
+        public func setContinuationResumedFlag(_ val: Bool) {
             continuationResumed = val
         }
     }
 
     private func safeResumeThrowContinuation (
+        continuationFlagSyncQueue: DispatchQueue,
         continuationFlag: ContinuationFlag,
         continuation: StreamContinuation,
         error: Error
     ) async {
-        if !(await continuationFlag.continuationResumed) {
-            await continuationFlag.setFlag(val: true)
-            continuation.resume(throwing: error)
+        continuationFlagSyncQueue.async {
+            Task {
+                if !(await continuationFlag.getContinuationResumedFlag()) {
+                    await continuationFlag.setContinuationResumedFlag(true)
+                    continuation.resume(throwing: error)
+                }
+            }
         }
     }
 
     private func safeResumeReturnContinuation(
+        continuationFlagSyncQueue: DispatchQueue,
         continuationFlag: ContinuationFlag,
         continuation: StreamContinuation,
         response: HttpResponse
     ) async {
-        if !(await continuationFlag.continuationResumed) {
-            await continuationFlag.setFlag(val: true)
-            continuation.resume(returning: response)
+        continuationFlagSyncQueue.async {
+            Task {
+                if !(await continuationFlag.getContinuationResumedFlag()) {
+                    await continuationFlag.setContinuationResumedFlag(true)
+                    continuation.resume(returning: response)
+                }
+            }
         }
     }
 }
