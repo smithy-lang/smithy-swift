@@ -151,9 +151,6 @@ public class CRTClientEngine: HTTPClient {
     private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
 
-    private static let syncQueue = DispatchQueue(label: "Continuation resume sync queue")
-    private var continuationResumed = false
-
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
 
@@ -165,8 +162,9 @@ public class CRTClientEngine: HTTPClient {
     }
 
     public func send(request: SdkHttpRequest) async throws -> HttpResponse {
-        // Reset the flag for each new request.
-        continuationResumed = false
+        // Boolean flag for each independent request's continuation.
+        let continuationFlag = ContinuationFlag()
+
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
 
@@ -176,8 +174,11 @@ public class CRTClientEngine: HTTPClient {
             self.logger.debug("Using HTTP/1.1 connection")
             let crtRequest = try request.toHttpRequest()
             return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
-                let requestOptions = makeHttpRequestStreamOptions(request: crtRequest,
-                                                                  continuation: continuation)
+                let requestOptions = makeHttpRequestStreamOptions(
+                    continuationFlag: continuationFlag,
+                    request: crtRequest,
+                    continuation: continuation
+                )
                 do {
                     let stream = try connection.makeRequest(requestOptions: requestOptions)
                     try stream.activate()
@@ -223,39 +224,63 @@ public class CRTClientEngine: HTTPClient {
                                     }
                                 }
                             } catch {
-                                self.safeResumeThrowContinuation(continuation: continuation, error: error)
+                                logger.error(error.localizedDescription)
+                                Task {
+                                    await self.safeResumeThrowContinuation(
+                                        continuationFlag: continuationFlag,
+                                        continuation: continuation,
+                                        error: error
+                                    )
+                                }
                             }
                         }
                     }
                 } catch {
-                    self.safeResumeThrowContinuation(continuation: continuation, error: error)
+                    logger.error(error.localizedDescription)
+                    Task {
+                        await self.safeResumeThrowContinuation(
+                            continuationFlag: continuationFlag,
+                            continuation: continuation,
+                            error: error
+                        )
+                    }
                 }
             }
         case .version_2:
             self.logger.debug("Using HTTP/2 connection")
             let crtRequest = try request.toHttp2Request()
             return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
-                let requestOptions = makeHttpRequestStreamOptions(request: crtRequest,
-                                                                  continuation: continuation,
-                                                                  http2ManualDataWrites: true)
-                let stream: HTTP2Stream
-                do {
-                    // swiftlint:disable:next force_cast
-                    stream = try connection.makeRequest(requestOptions: requestOptions) as! HTTP2Stream
-                    try stream.activate()
-                } catch {
-                    self.safeResumeThrowContinuation(continuation: continuation, error: error)
-                    return
-                }
-
-                // At this point, continuation is resumed when the initial headers are received
-                // it is now safe to write the body
-                // writing is done in a separate task to avoid blocking the continuation
-                Task { [logger] in
+                let requestOptions = makeHttpRequestStreamOptions(
+                    continuationFlag: continuationFlag,
+                    request: crtRequest,
+                    continuation: continuation,
+                    http2ManualDataWrites: true
+                )
+                Task {
+                    let stream: HTTP2Stream
                     do {
-                        try await stream.write(body: request.body)
+                        // swiftlint:disable:next force_cast
+                        stream = try connection.makeRequest(requestOptions: requestOptions) as! HTTP2Stream
+                        try stream.activate()
                     } catch {
                         logger.error(error.localizedDescription)
+                        await self.safeResumeThrowContinuation(
+                            continuationFlag: continuationFlag,
+                            continuation: continuation,
+                            error: error
+                        )
+                        return
+                    }
+                    
+                    // At this point, continuation is resumed when the initial headers are received
+                    // it is now safe to write the body
+                    // writing is done in a separate task to avoid blocking the continuation
+                    Task { [logger] in
+                        do {
+                            try await stream.write(body: request.body)
+                        } catch {
+                            logger.error(error.localizedDescription)
+                        }
                     }
                 }
             }
@@ -267,6 +292,9 @@ public class CRTClientEngine: HTTPClient {
     // Forces an Http2 request that uses CRT's `HTTP2StreamManager`.
     // This may be removed or improved as part of SRA work and CRT adapting to SRA for HTTP.
     func executeHTTP2Request(request: SdkHttpRequest) async throws -> HttpResponse {
+        // Boolean flag for each new request's continuation.
+        let continuationFlag = ContinuationFlag()
+
         let connectionMgr = try await serialExecutor.getOrCreateHTTP2ConnectionPool(endpoint: request.endpoint)
 
         self.logger.debug("Using HTTP/2 connection")
@@ -274,6 +302,7 @@ public class CRTClientEngine: HTTPClient {
 
         return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
             let requestOptions = makeHttpRequestStreamOptions(
+                continuationFlag: continuationFlag,
                 request: crtRequest,
                 continuation: continuation,
                 http2ManualDataWrites: true
@@ -283,7 +312,14 @@ public class CRTClientEngine: HTTPClient {
                 do {
                     stream = try await connectionMgr.acquireStream(requestOptions: requestOptions)
                 } catch {
-                    self.safeResumeThrowContinuation(continuation: continuation, error: error)
+                    logger.error(error.localizedDescription)
+                    Task {
+                        await self.safeResumeThrowContinuation(
+                            continuationFlag: continuationFlag,
+                            continuation: continuation,
+                            error: error
+                        )
+                    }
                     return
                 }
 
@@ -303,6 +339,7 @@ public class CRTClientEngine: HTTPClient {
 
     /// Creates a `HTTPRequestOptions` object that can be used to make a HTTP request
     /// - Parameters:
+    ///   - continuationFlag: The actor that wraps the boolean flag used to track continuation resume status
     ///   - request: The `HTTPRequestBase` object that contains the request information
     ///   - continuation: The continuation that will be resumed when the request is complete
     ///   - http2ManualDataWrites: Whether or not the request is using HTTP/2 manual data writes, defaults to `false`
@@ -313,6 +350,7 @@ public class CRTClientEngine: HTTPClient {
     ///     the manual writes.
     /// - Returns: A `HTTPRequestOptions` object that can be used to make a HTTP request
     private func makeHttpRequestStreamOptions(
+        continuationFlag: ContinuationFlag,
         request: HTTPRequestBase,
         continuation: StreamContinuation,
         http2ManualDataWrites: Bool = false
@@ -336,7 +374,13 @@ public class CRTClientEngine: HTTPClient {
             // resume the continuation as soon as we have all the initial headers
             // this allows callers to start reading the response as it comes in
             // instead of waiting for the entire response to be received
-            self.safeResumeReturnContinuation(continuation: continuation, response: response)
+            Task {
+                await self.safeResumeReturnContinuation(
+                    continuationFlag: continuationFlag,
+                    continuation: continuation,
+                    response: response
+                )
+            }
         } onIncomingBody: { bodyChunk in
             self.logger.debug("Body chunk received")
             do {
@@ -354,7 +398,13 @@ public class CRTClientEngine: HTTPClient {
                 response.statusCode = makeStatusCode(statusCode)
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
-                self.safeResumeThrowContinuation(continuation: continuation, error: error)
+                Task {
+                    await self.safeResumeThrowContinuation(
+                        continuationFlag: continuationFlag,
+                        continuation: continuation,
+                        error: error
+                    )
+                }
             }
 
             // closing the stream is required to signal to the caller that the response is complete
@@ -368,21 +418,32 @@ public class CRTClientEngine: HTTPClient {
         return requestOptions
     }
 
-    private func safeResumeThrowContinuation(continuation: StreamContinuation, error: Error) {
-        CRTClientEngine.syncQueue.sync {
-            if !continuationResumed {
-                continuationResumed = true
-                continuation.resume(throwing: error)
-            }
+    actor ContinuationFlag {
+        var continuationResumed = false
+        public func setFlag(val : Bool) {
+            continuationResumed = val
         }
     }
 
-    private func safeResumeReturnContinuation(continuation: StreamContinuation, response: HttpResponse) {
-        CRTClientEngine.syncQueue.sync {
-            if !continuationResumed {
-                continuationResumed = true
-                continuation.resume(returning: response)
-            }
+    private func safeResumeThrowContinuation (
+        continuationFlag: ContinuationFlag,
+        continuation: StreamContinuation,
+        error: Error
+    ) async {
+        if !(await continuationFlag.continuationResumed) {
+            await continuationFlag.setFlag(val: true)
+            continuation.resume(throwing: error)
+        }
+    }
+
+    private func safeResumeReturnContinuation(
+        continuationFlag: ContinuationFlag,
+        continuation: StreamContinuation,
+        response: HttpResponse
+    ) async {
+        if !(await continuationFlag.continuationResumed) {
+            await continuationFlag.setFlag(val: true)
+            continuation.resume(returning: response)
         }
     }
 }
