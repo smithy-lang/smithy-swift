@@ -124,6 +124,7 @@ open class HttpProtocolServiceClient(
             val properties: List<ConfigProperty> = ctx.integrations
                 .flatMap { it.clientConfigurations(ctx).flatMap { it.getProperties(ctx) } }
                 .let { overrideConfigProperties(it) }
+            properties.forEach { writer.addImport(it.type) }
 
             renderConfigClassVariables(serviceSymbol, properties)
 

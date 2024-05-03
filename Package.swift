@@ -106,11 +106,11 @@ func addTestServiceTargets() {
     package.targets += [
         .target(
             name: "WeatherSDK",
-            dependencies: ["SmithyTestUtil", "ClientRuntime"]
+            dependencies: ["ClientRuntime", "SmithyRetriesAPI", "SmithyRetries"]
         ),
         .testTarget(
             name: "WeatherSDKTests",
-            dependencies: ["WeatherSDK"]
+            dependencies: ["WeatherSDK", "SmithyTestUtil"]
         )
     ]
 }

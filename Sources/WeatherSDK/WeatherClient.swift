@@ -4,6 +4,7 @@ import ClientRuntime
 import Foundation
 import Logging
 import SmithyRetries
+import SmithyRetriesAPI
 
 public class WeatherClient: Client {
     public static let clientName = "WeatherClient"
