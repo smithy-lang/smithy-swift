@@ -4,6 +4,7 @@
  */
 
 import AwsCommonRuntimeKit
+import class Foundation.DispatchQueue
 #if os(Linux)
 import Glibc
 #else
@@ -150,6 +151,9 @@ public class CRTClientEngine: HTTPClient {
     private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
     private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
 
+    private static let syncQueue = DispatchQueue(label: "Continuation resume sync queue")
+    private var continuationResumed = false
+
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int
 
@@ -217,12 +221,12 @@ public class CRTClientEngine: HTTPClient {
                                     }
                                 }
                             } catch {
-                                continuation.resume(throwing: error)
+                                self.safeResumeThrowContinuation(continuation: continuation, error: error)
                             }
                         }
                     }
                 } catch {
-                    continuation.resume(throwing: error)
+                    self.safeResumeThrowContinuation(continuation: continuation, error: error)
                 }
             }
         case .version_2:
@@ -238,7 +242,7 @@ public class CRTClientEngine: HTTPClient {
                     stream = try connection.makeRequest(requestOptions: requestOptions) as! HTTP2Stream
                     try stream.activate()
                 } catch {
-                    continuation.resume(throwing: error)
+                    self.safeResumeThrowContinuation(continuation: continuation, error: error)
                     return
                 }
 
@@ -277,7 +281,7 @@ public class CRTClientEngine: HTTPClient {
                 do {
                     stream = try await connectionMgr.acquireStream(requestOptions: requestOptions)
                 } catch {
-                    continuation.resume(throwing: error)
+                    self.safeResumeThrowContinuation(continuation: continuation, error: error)
                     return
                 }
 
@@ -330,7 +334,7 @@ public class CRTClientEngine: HTTPClient {
             // resume the continuation as soon as we have all the initial headers
             // this allows callers to start reading the response as it comes in
             // instead of waiting for the entire response to be received
-            continuation.resume(returning: response)
+            self.safeResumeReturnContinuation(continuation: continuation, response: response)
         } onIncomingBody: { bodyChunk in
             self.logger.debug("Body chunk received")
             do {
@@ -348,7 +352,7 @@ public class CRTClientEngine: HTTPClient {
                 response.statusCode = makeStatusCode(statusCode)
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
-                continuation.resume(throwing: error)
+                self.safeResumeThrowContinuation(continuation: continuation, error: error)
             }
 
             // closing the stream is required to signal to the caller that the response is complete
@@ -360,5 +364,23 @@ public class CRTClientEngine: HTTPClient {
 
         response.body = .stream(stream)
         return requestOptions
+    }
+
+    private func safeResumeThrowContinuation(continuation: StreamContinuation, error: Error) {
+        CRTClientEngine.syncQueue.sync {
+            if (!continuationResumed) {
+                continuationResumed = true
+                continuation.resume(throwing: error)
+            }
+        }
+    }
+
+    private func safeResumeReturnContinuation(continuation: StreamContinuation, response: HttpResponse) {
+        CRTClientEngine.syncQueue.sync {
+            if (!continuationResumed) {
+                continuationResumed = true
+                continuation.resume(returning: response)
+            }
+        }
     }
 }
