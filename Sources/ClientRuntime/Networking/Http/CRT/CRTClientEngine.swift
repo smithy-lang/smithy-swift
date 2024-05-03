@@ -370,7 +370,7 @@ public class CRTClientEngine: HTTPClient {
 
     private func safeResumeThrowContinuation(continuation: StreamContinuation, error: Error) {
         CRTClientEngine.syncQueue.sync {
-            if (!continuationResumed) {
+            if !continuationResumed {
                 continuationResumed = true
                 continuation.resume(throwing: error)
             }
@@ -379,7 +379,7 @@ public class CRTClientEngine: HTTPClient {
 
     private func safeResumeReturnContinuation(continuation: StreamContinuation, response: HttpResponse) {
         CRTClientEngine.syncQueue.sync {
-            if (!continuationResumed) {
+            if !continuationResumed {
                 continuationResumed = true
                 continuation.resume(returning: response)
             }
