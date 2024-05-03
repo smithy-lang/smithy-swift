@@ -1,10 +1,7 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
-package software.amazon.smithy.swift.codegen
+package software.amazon.smithy.swift.codegen.swiftmodules
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 
 /**
@@ -13,12 +10,12 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
  *
  * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
  */
-object SmithyRetriesAPITypes {
-    val RetryStrategyOptions = runtimeSymbol("RetryStrategyOptions")
+object SmithyRetriesTypes {
+    val DefaultRetryStrategy = runtimeSymbol("DefaultRetryStrategy")
 }
 
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {
     this.name = name
-    this.namespace = SwiftDependency.SMITHY_RETRIES_API.target
-    dependency(SwiftDependency.SMITHY_RETRIES_API)
+    this.namespace = SwiftDependency.SMITHY_RETRIES.target
+    this.dependency(SwiftDependency.SMITHY_RETRIES)
 }
