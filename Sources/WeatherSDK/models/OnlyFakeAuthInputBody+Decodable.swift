@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct OnlyFakeAuthInputBody: Swift.Equatable {
+struct OnlyFakeAuthInputBody {
 }
 
 extension OnlyFakeAuthInputBody: Swift.Decodable {

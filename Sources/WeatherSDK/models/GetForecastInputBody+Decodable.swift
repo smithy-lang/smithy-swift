@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct GetForecastInputBody: Swift.Equatable {
+struct GetForecastInputBody {
 }
 
 extension GetForecastInputBody: Swift.Decodable {

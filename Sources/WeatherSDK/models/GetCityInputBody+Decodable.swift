@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct GetCityInputBody: Swift.Equatable {
+struct GetCityInputBody {
 }
 
 extension GetCityInputBody: Swift.Decodable {

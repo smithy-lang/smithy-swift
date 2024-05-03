@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-public struct GetCityImageInput: Swift.Equatable {
+public struct GetCityImageInput {
     /// This member is required.
     public var cityId: Swift.String?
 

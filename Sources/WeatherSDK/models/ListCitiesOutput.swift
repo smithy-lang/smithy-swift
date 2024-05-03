@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-public struct ListCitiesOutput: Swift.Equatable {
+public struct ListCitiesOutput {
     /// This member is required.
     public var items: [WeatherClientTypes.CitySummary]?
     public var nextToken: Swift.String?

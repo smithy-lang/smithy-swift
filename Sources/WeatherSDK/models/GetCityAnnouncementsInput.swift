@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-public struct GetCityAnnouncementsInput: Swift.Equatable {
+public struct GetCityAnnouncementsInput {
     /// This member is required.
     public var cityId: Swift.String?
 

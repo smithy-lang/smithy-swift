@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct NoSuchResourceBody: Swift.Equatable {
+struct NoSuchResourceBody {
     let resourceType: Swift.String?
     let message: Swift.String?
 }

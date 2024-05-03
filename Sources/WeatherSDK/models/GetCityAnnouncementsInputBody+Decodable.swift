@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct GetCityAnnouncementsInputBody: Swift.Equatable {
+struct GetCityAnnouncementsInputBody {
 }
 
 extension GetCityAnnouncementsInputBody: Swift.Decodable {

@@ -2,7 +2,7 @@
 
 
 
-public struct OnlyHttpApiKeyAuthInput: Swift.Equatable {
+public struct OnlyHttpApiKeyAuthInput {
 
     public init() { }
 }

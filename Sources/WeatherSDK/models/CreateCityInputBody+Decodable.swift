@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct CreateCityInputBody: Swift.Equatable {
+struct CreateCityInputBody {
     let name: Swift.String?
     let coordinates: WeatherClientTypes.CityCoordinates?
     let city: WeatherClientTypes.CitySummary?

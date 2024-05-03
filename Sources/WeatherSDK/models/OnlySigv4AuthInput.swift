@@ -2,7 +2,7 @@
 
 
 
-public struct OnlySigv4AuthInput: Swift.Equatable {
+public struct OnlySigv4AuthInput {
 
     public init() { }
 }

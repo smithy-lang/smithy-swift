@@ -3,7 +3,7 @@
 import ClientRuntime
 
 extension WeatherClientTypes {
-    public struct CitySummary: Swift.Equatable {
+    public struct CitySummary {
         public var `case`: Swift.String?
         /// This member is required.
         public var cityId: Swift.String?

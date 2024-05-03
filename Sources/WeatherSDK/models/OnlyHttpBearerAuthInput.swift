@@ -2,7 +2,7 @@
 
 
 
-public struct OnlyHttpBearerAuthInput: Swift.Equatable {
+public struct OnlyHttpBearerAuthInput {
 
     public init() { }
 }

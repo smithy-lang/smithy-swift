@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct GetCityImageOutputBody: Swift.Equatable {
+struct GetCityImageOutputBody {
     let image: ClientRuntime.ByteStream?
 }
 

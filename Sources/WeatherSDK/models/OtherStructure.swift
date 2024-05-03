@@ -3,7 +3,7 @@
 
 
 extension WeatherClientTypes {
-    public struct OtherStructure: Swift.Equatable {
+    public struct OtherStructure {
 
         public init() { }
     }
