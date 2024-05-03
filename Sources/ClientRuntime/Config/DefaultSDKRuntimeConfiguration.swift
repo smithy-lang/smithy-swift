@@ -124,7 +124,9 @@ public extension DefaultSDKRuntimeConfiguration {
     /// The retry strategy options to use when none is provided.
     ///
     /// Defaults to options with the defaults defined in `RetryStrategyOptions`.
-    static var defaultRetryStrategyOptions: RetryStrategyOptions { RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy()) }
+    static var defaultRetryStrategyOptions: RetryStrategyOptions {
+        RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())
+    }
 
     /// The log mode to use when none is provided
     ///

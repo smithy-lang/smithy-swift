@@ -10,7 +10,6 @@ import struct SmithyRetriesAPI.RetryErrorInfo
 import enum SmithyRetriesAPI.RetryErrorType
 import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 
-
 public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider {
 
     static let retryableStatusCodes: [HttpStatusCode] = [
