@@ -165,6 +165,8 @@ public class CRTClientEngine: HTTPClient {
     }
 
     public func send(request: SdkHttpRequest) async throws -> HttpResponse {
+        // Reset the flag for each new request.
+        continuationResumed = false
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
 
