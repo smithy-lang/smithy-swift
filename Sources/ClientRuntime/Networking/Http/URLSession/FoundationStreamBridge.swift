@@ -59,11 +59,13 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         ///
         /// Acts as a sort of "serial queue" of Swift concurrency tasks.
         /// - Parameter block: The code to be performed in this task.
-        func perform(_ block: @escaping @Sendable (WriteCoordinator) async throws -> Void) {
-            self.task = Task { [task] in
+        func perform(_ block: @escaping @Sendable () async throws -> Void) async throws {
+            let task = Task { [task] in
                 _ = await task?.result
-                try await block(self)
+                try await block()
             }
+            self.task = task
+            _ = try await task.value
         }
     }
 
@@ -178,7 +180,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         //
         // Note that it is safe to access `buffer` and `readableStreamIsClosed` instance vars
         // from inside the block passed to `perform()`.
-        await writeCoordinator.perform { [self] writeCoordinator in
+        try await writeCoordinator.perform { [self] in
 
             // If there is no data in the buffer and the `ReadableStream` is still open,
             // attempt to read the stream.  Otherwise, skip reading the `ReadableStream` and
@@ -205,9 +207,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             }
 
             // If the output stream write produced an error, throw it now, else just return.
-            if let streamError {
-                throw streamError
-            }
+            if let streamError { throw streamError }
         }
     }
 
