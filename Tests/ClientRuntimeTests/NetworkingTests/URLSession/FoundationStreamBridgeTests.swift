@@ -22,7 +22,7 @@ class FoundationStreamBridgeTests: XCTestCase {
     func test_open_streamsAllDataToOutputBuffer() async throws {
 
         // The maximum size of input streaming data in the tests
-        let maxDataSize = 16_384
+        let maxDataSize = 1 * 1024 * 1024
 
         // The max size of the buffer for data being streamed.
         let maxBufferSize = 2 * maxDataSize
@@ -46,21 +46,24 @@ class FoundationStreamBridgeTests: XCTestCase {
         // not readily reproducible causes, so run this test repeatedly to help uncover
         // problems
 
-        let numberOfRuns = 100
+        let numberOfRuns = maxDataSize
 
         for run in 1...numberOfRuns {
             // Run a test for every possible data size up to the maximum
             let dataSize = min(run, maxDataSize)
 
-            // The buffer may be as small as 1 byte, up to 2x as big as the data size capped by maxBufferSize
-            let bufferSize = Int.random(in: 1...min(2 * dataSize, maxBufferSize))
+            // The bridge buffer may be as small as 1 byte, up to 2x as big as the data size capped by maxBufferSize
+            let bridgeBufferSize = Int.random(in: 1...min(2 * dataSize, maxBufferSize))
+
+            // The bound stream buffer may be as small as 1 byte, up to 2x as big as the data size capped by maxBufferSize
+            let boundStreamBufferSize = Int.random(in: 1...min(2 * dataSize, maxBufferSize))
 
             // Fill a data buffer with dataSize random numbers
             let originalData = Data(bytes: randomBuffer, count: dataSize)
 
             // Create a stream bridge with our original data & open it
             let bufferedStream = BufferedStream(data: originalData, isClosed: true)
-            let subject = FoundationStreamBridge(readableStream: bufferedStream, bufferSize: bufferSize, logger: TestLogger())
+            let subject = FoundationStreamBridge(readableStream: bufferedStream, bridgeBufferSize: bridgeBufferSize, boundStreamBufferSize: boundStreamBufferSize, logger: TestLogger())
             await subject.open()
 
             // This will hold the data that is bridged from the ReadableStream to the Foundation InputStream
@@ -71,7 +74,7 @@ class FoundationStreamBridgeTests: XCTestCase {
             while ![.atEnd, .error].contains(subject.inputStream.streamStatus) {
 
                 // Copy the input stream to the temp buffer.  When count is positive, bytes were read
-                let count = subject.inputStream.read(tempBuffer, maxLength: bufferSize)
+                let count = subject.inputStream.read(tempBuffer, maxLength: maxDataSize)
                 if count > 0 {
                     // Add the read bytes onto the bridged data
                     bridgedData.append(tempBuffer, count: count)
@@ -89,7 +92,7 @@ class FoundationStreamBridgeTests: XCTestCase {
             XCTAssertNil(subject.inputStream.streamError, "Stream failed with error: \(subject.inputStream.streamError?.localizedDescription ?? "")")
 
             // Verify data was all bridged
-            XCTAssertEqual(bridgedData, originalData, "Run \(run) failed (dataSize: \(dataSize), bufferSize: \(bufferSize)")
+            XCTAssertEqual(bridgedData, originalData, "Run \(run) failed (dataSize: \(dataSize), bridgeBufferSize: \(bridgeBufferSize), boundStreamBufferSize: \(boundStreamBufferSize)")
         }
     }
 }
