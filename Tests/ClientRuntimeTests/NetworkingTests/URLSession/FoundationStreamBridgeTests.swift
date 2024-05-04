@@ -8,7 +8,7 @@
 // `FoundationStreamBridge` is not usable on Linux because it uses ObjC-interop features,
 // so this test is disabled there.
 
-#if !os(Linux)
+#if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
 import Foundation
 import XCTest
