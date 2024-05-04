@@ -192,8 +192,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             }
 
             // Write the previously buffered data and/or newly read data, if any, to the Foundation `OutputStream`.
+            // Capture the error from the stream write, if any.
+            var streamError: Error?
             if !buffer.isEmpty {
-                await writeToOutputStream()
+                streamError = await writeToOutputStream()
             }
 
             // If the readable stream has closed and there is no data in the buffer,
@@ -203,8 +205,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             }
 
             // If the output stream write produced an error, throw it now, else just return.
-            if let error = outputStream.streamError {
-                throw error
+            if let streamError {
+                throw streamError
             }
         }
     }
@@ -212,7 +214,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Using the output stream's callback queue, write the buffered data to the Foundation `OutputStream`.
     ///
     /// After writing, remove the written data from the buffer.
-    private func writeToOutputStream() async {
+    /// - Returns: The error resulting from the write to the Foundation `OutputStream`, or `nil` if no error occurred.
+    private func writeToOutputStream() async -> Error? {
 
         // Suspend the caller while the write is performed on the Foundation `OutputStream`'s queue.
         await withCheckedContinuation { continuation in
@@ -235,8 +238,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                     buffer.removeFirst(writeCount)
                 }
 
-                // Resume the caller now that the write is complete.
-                continuation.resume()
+                // Resume the caller now that the write is complete, returning the stream error, if any.
+                continuation.resume(returning: outputStream.streamError)
             }
         }
     }
