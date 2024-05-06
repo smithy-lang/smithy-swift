@@ -6,46 +6,46 @@
 //
 import AwsCommonRuntimeKit
 
-public struct CRTClientTLSOptions {
+public struct CRTClientTLSOptions: TLSConfiguration {
 
-    /// Path to the trust store certificate
-    public let certificatePath: String?
+    /// Optional PEM certificate filename
+    public var certificate: String?
 
-    /// Filename of the trust store certificate file in main bundle
-    public let certificateFilename: String?
+    /// Optional path to certificate directory
+    public var certificateDir: String?
 
-    /// Name of key store file. ex. /path/file
-    public let keyStoreFilepath: String?
+    /// Optional path to a PEM format private key
+    public var privateKey: String?
 
-    /// Password for the key store if required.
-    public let keyStorePassword: String?
+    /// Optional path to PKCS #12 certificate , in PEM format
+    public var pkcs12Path: String?
 
-    /// Path to a private key
-    public let privateKeyFilepath: String?
+    /// Optional PKCS#12 password
+    public var pkcs12Password: String?
 
     /// Information is provided to use custom trust store
     public var useSelfSignedCertificate: Bool {
-        return certificatePath != nil && certificateFilename != nil
+        return certificateDir != nil && certificate != nil
     }
 
     /// Information is provided to use custom key store
     public var useProvidedKeystore: Bool {
-        return (keyStoreFilepath != nil && keyStorePassword != nil) ||
-            (privateKeyFilepath != nil && useSelfSignedCertificate)
+        return (pkcs12Path != nil && pkcs12Password != nil) ||
+            (privateKey != nil && useSelfSignedCertificate)
     }
 
     public init(
-        certificatePath: String? = nil,
-        certificateFilename: String? = nil, // .cer
-        keyStoreFilepath: String? = nil, // .p12 PEM
-        keyStorePassword: String? = nil,
-        privateKeyFilepath: String? = nil
+        certificateDir: String? = nil,
+        certificate: String? = nil, // .cer
+        pkcs12Path: String? = nil, // .p12 PEM
+        pkcs12Password: String? = nil,
+        privateKey: String? = nil
     ) {
-        self.certificatePath = certificatePath
-        self.certificateFilename = certificateFilename
-        self.keyStoreFilepath = keyStoreFilepath
-        self.keyStorePassword = keyStorePassword
-        self.privateKeyFilepath = privateKeyFilepath
+        self.certificateDir = certificateDir
+        self.certificate = certificate
+        self.pkcs12Path = pkcs12Path
+        self.pkcs12Password = pkcs12Password
+        self.privateKey = privateKey
     }
 }
 
@@ -61,22 +61,22 @@ extension CRTClientTLSOptions {
 
             if self.useProvidedKeystore {
                 #if os(tvOS) || os(iOS) || os(watchOS) || os(macOS) // visionOS not supported
-                if let path = keyStoreFilepath, let password = keyStorePassword {
+                if let path = pkcs12Path, let password = pkcs12Password {
                     tlsOptions = try .makeMTLS(pkcs12Path: path, password: password)
                 }
                 #endif
             } else if self.useSelfSignedCertificate {
                 #if os(Linux) || os(macOS)
-                if let certPath = certificatePath,
-                    let certFilename = certificateFilename,
-                    let privateKeyPath = privateKeyFilepath {
+                if let certPath = certificateDir,
+                    let certFilename = certificate,
+                    let privateKeyPath = pkcs12Path {
                     let certFilepath = "\(certPath)/\(certFilename)"
                     tlsOptions = try .makeMTLS(certificatePath: certFilepath, privateKeyPath: privateKeyPath)
                 }
                 #endif
             }
 
-            if self.useSelfSignedCertificate, let certPath = certificatePath, let certFilename = certificateFilename {
+            if self.useSelfSignedCertificate, let certPath = certificateDir, let certFilename = certificate {
                 try tlsOptions.overrideDefaultTrustStore(caPath: certPath, caFile: certFilename)
             }
 
