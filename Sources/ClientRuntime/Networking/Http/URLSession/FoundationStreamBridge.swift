@@ -80,7 +80,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// - Writing to the stream
     /// - Receiving `StreamDelegate` callbacks
     ///
-    /// Queue operations are run in the order they are started, but not necessarily exclusively.
+    /// Queue operations are run in the order they are placed on the queue, and only one operation
+    /// runs at a time (i.e. this is a "serial queue".)
     private let queue = DispatchQueue(label: "AWSFoundationStreamBridge")
 
     /// `true` if the readable stream has been closed, `false` otherwise.  Will be flipped to `true` once the readable stream is read,
@@ -142,7 +143,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Open the output stream and schedule this bridge to receive stream delegate callbacks.
     ///
     /// Stream operations are performed on the stream's queue.
-    /// Stream opening is completed before returning to the caller.
+    /// Stream opening is completed before asynchronous return to the caller.
     func open() async {
         await withCheckedContinuation { continuation in
             queue.async {
@@ -156,7 +157,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Close the output stream and unschedule this bridge from receiving stream delegate callbacks.
     ///
     /// Stream operations are performed on the stream's queue.
-    /// Stream closing is completed before returning to the caller.
+    /// Stream closing is completed before asynchronous return to the caller.
     func close() async {
         await withCheckedContinuation { continuation in
             queue.async {
@@ -179,7 +180,9 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         // and one at a time.
         //
         // Note that it is safe to access `buffer` and `readableStreamIsClosed` instance vars
-        // from inside the block passed to `perform()`.
+        // from inside the block passed to `perform()` because this is the only place
+        // these instance vars are accessed, and the code in the `perform()` block runs
+        // in series with any other calls to `perform()`.
         try await writeCoordinator.perform { [self] in
 
             // If there is no data in the buffer and the `ReadableStream` is still open,
@@ -246,8 +249,18 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     // MARK: - StreamDelegate protocol
 
-    /// The stream places this callback when appropriate.  Call will be delivered on the GCD queue for stream callbacks.
-    /// `.hasSpaceAvailable` prompts this type to query the readable stream for more data.
+    /// The stream places this callback when an event happens.
+    ///
+    /// The `FoundationStreamBridge` sets itself as the delegate of the Foundation `OutputStream` whenever the
+    /// `OutputStream` is open.  Stream callbacks will be delivered on the GCD serial queue.
+    ///
+    /// `.hasSpaceAvailable` is the only event where the `FoundationStreamBridge` takes action; in response to
+    /// this event, the `FoundationStreamBridge` will write data to the `OutputStream`.
+    ///
+    /// This method is implemented for the Foundation `StreamDelegate` protocol.
+    /// - Parameters:
+    ///   - aStream: The stream which experienced the event.
+    ///   - eventCode: A code describing the type of event that happened.
     @objc func stream(_ aStream: Foundation.Stream, handle eventCode: Foundation.Stream.Event) {
         switch eventCode {
         case .openCompleted:
@@ -261,9 +274,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             Task { try await writeToOutput() }
         case .errorOccurred:
             logger.info("FoundationStreamBridge: .errorOccurred event")
-            if let error = aStream.streamError {
-                logger.info("FoundationStreamBridge: Stream error: \(error)")
-            }
+            logger.info("FoundationStreamBridge: Stream error: \(aStream.streamError.debugDescription)")
         case .endEncountered:
             break
         default:
