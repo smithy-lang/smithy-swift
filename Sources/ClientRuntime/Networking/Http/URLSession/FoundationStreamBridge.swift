@@ -108,8 +108,9 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         self.outputStream = outputStream
         self.logger = logger
 
-        // The stream is configured to deliver its callbacks on the dispatch queue.
+        // The output stream is configured to deliver its callbacks on the dispatch queue.
         // This precludes the need for a Thread with RunLoop.
+        // For safety, all interactions with the output stream will be performed on this queue.
         CFWriteStreamSetDispatchQueue(outputStream, queue)
     }
 
