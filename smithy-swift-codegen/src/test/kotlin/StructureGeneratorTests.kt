@@ -472,7 +472,7 @@ public struct RecursiveShapesInputOutputLists {
             public var bool: Swift.Bool?
             public var foo: ExampleClientTypes.Foo?
             public var intVal: Swift.Int?
-            @available(*, deprecated)
+            @available(*, deprecated, message: " API deprecated since 2024-11-12")
             public var string: Swift.String?
             @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
             public var structWithDeprecatedTrait: ExampleClientTypes.StructWithDeprecatedTrait?

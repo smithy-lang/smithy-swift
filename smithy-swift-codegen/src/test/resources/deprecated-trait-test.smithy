@@ -21,7 +21,7 @@ operation OperationWithDeprecatedTrait {
 structure OperationWithDeprecatedTraitInputOutput {
     bool: Boolean,
     intVal: Integer,
-    @deprecated
+    @deprecated(since: "2024-11-12")
     string: String,
     structWithDeprecatedTrait: StructWithDeprecatedTrait,
     structSincePropertySet: StructSincePropertySet,
