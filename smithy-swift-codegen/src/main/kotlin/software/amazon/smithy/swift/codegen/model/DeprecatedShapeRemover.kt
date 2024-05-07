@@ -1,0 +1,34 @@
+package software.amazon.smithy.swift.codegen.model
+
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.traits.DeprecatedTrait
+import software.amazon.smithy.model.transform.ModelTransformer
+import java.time.DateTimeException
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.function.Predicate
+
+private val DEPRECATED_SINCE_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+private val AWS_SWIFT_SDK_GA_DATE = "2024-09-17"
+
+/**
+ * Parses a string of yyyy-MM-dd format to [LocalDate], returning `null` if parsing fails.
+ */
+internal fun String.toLocalDate(): LocalDate? = try { LocalDate.parse(this, DEPRECATED_SINCE_DATE_FORMATTER) } catch (e: DateTimeException) { null }
+
+object DeprecatedShapeRemover {
+    fun transform(model: Model): Model {
+        return ModelTransformer.create().removeShapesIf(
+            model,
+            Predicate<Shape> {
+                val since = it.getTrait<DeprecatedTrait>()?.since?.orElse(null) ?: return@Predicate false
+                val deprecatedDate = since.toLocalDate() ?: return@Predicate false.also {
+                    println("Failed to parse `since` field $since as a date, skipping removal of deprecated shape $it")
+                }
+                return@Predicate deprecatedDate < AWS_SWIFT_SDK_GA_DATE.toLocalDate()
+            }
+        )
+    }
+}
