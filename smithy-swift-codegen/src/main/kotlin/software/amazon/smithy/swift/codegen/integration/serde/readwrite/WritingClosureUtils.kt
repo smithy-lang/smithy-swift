@@ -35,6 +35,7 @@ class WritingClosureUtils(
         when (ctx.service.requestWireProtocol) {
             WireProtocol.JSON -> return "JSONReadWrite.writingClosure()"
             WireProtocol.FORM_URL -> return "FormURLReadWrite.writingClosure()"
+            else -> {}
         }
         return when (shape) {
             is MapShape -> {

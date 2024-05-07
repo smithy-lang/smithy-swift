@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("jvm")
     id("org.jetbrains.dokka")
@@ -25,7 +28,7 @@ val junitVersion: String by project
 val jacocoVersion: String by project
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("stdlib"))
     api("software.amazon.smithy:smithy-codegen-core:$smithyVersion")
     api("software.amazon.smithy:smithy-waiters:$smithyVersion")
     api("software.amazon.smithy:smithy-smoke-test-traits:${smithyVersion}")
@@ -37,6 +40,17 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     implementation("software.amazon.smithy:smithy-rules-engine:$smithyVersion")
+}
+
+tasks.withType<KotlinCompile> {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
+}
+
+tasks.withType<JavaCompile> {
+    sourceCompatibility = JavaVersion.VERSION_17.toString()
+    targetCompatibility = JavaVersion.VERSION_17.toString()
 }
 
 jacoco {

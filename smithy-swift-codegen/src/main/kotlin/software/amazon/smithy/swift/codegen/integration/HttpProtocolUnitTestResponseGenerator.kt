@@ -144,6 +144,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             when (shape.type) {
                 ShapeType.STRUCTURE -> renderEquatable(shape)
                 ShapeType.UNION -> renderEquatable(shape)
+                else -> {}
             }
         }
         writer.write("XCTAssertEqual(actual, expected)")
