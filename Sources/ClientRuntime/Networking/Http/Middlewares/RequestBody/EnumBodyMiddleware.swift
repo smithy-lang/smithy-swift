@@ -41,6 +41,7 @@ extension EnumBodyMiddleware: RequestMessageSerializer {
 
     public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
         let bodyString = input[keyPath: keyPath]?.rawValue ?? ""
-        builder.withBody(.data(Data(bodyString.utf8)))
+        let bodyData = Data(bodyString.utf8)
+        builder.withBody(.data(bodyData))
     }
 }

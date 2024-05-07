@@ -178,252 +178,135 @@ public struct Interceptors<
 /// doesn't conform to Interceptor.
 ///
 /// These methods throw the last error that occurred when executing a given hook, so if multiple
-/// interceptors fail, only the last error is thrown. The rest are logged (TODO)
+/// interceptors fail, only the last error is thrown. The rest are logged.
 extension Interceptors {
     internal func readBeforeExecution(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readBeforeExecution(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readBeforeExecution(context: ctx)
         }
     }
 
     internal func modifyBeforeSerialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.modifyBeforeSerialization(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.modifyBeforeSerialization(context: ctx)
         }
     }
 
     internal func readBeforeSerialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readBeforeSerialization(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readBeforeSerialization(context: ctx)
         }
     }
 
     internal func readAfterSerialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readAfterSerialization(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readAfterSerialization(context: ctx)
         }
     }
 
     internal func modifyBeforeRetryLoop(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.modifyBeforeRetryLoop(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.modifyBeforeRetryLoop(context: ctx)
         }
     }
 
     internal func readBeforeAttempt(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readBeforeAttempt(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readBeforeAttempt(context: ctx)
         }
     }
 
     internal func modifyBeforeSigning(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.modifyBeforeSigning(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.modifyBeforeSigning(context: ctx)
         }
     }
 
     internal func readBeforeSigning(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readBeforeSigning(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readBeforeSigning(context: ctx)
         }
     }
 
     internal func readAfterSigning(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readAfterSigning(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readAfterSigning(context: ctx)
         }
     }
 
     internal func modifyBeforeTransmit(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.modifyBeforeTransmit(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.modifyBeforeTransmit(context: ctx)
         }
     }
 
     internal func readBeforeTransmit(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readBeforeTransmit(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readBeforeTransmit(context: ctx)
         }
     }
 
     internal func readAfterTransmit(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readAfterTransmit(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readAfterTransmit(context: ctx)
         }
     }
 
     internal func modifyBeforeDeserialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.modifyBeforeDeserialization(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.modifyBeforeDeserialization(context: ctx)
         }
     }
 
     internal func readBeforeDeserialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readBeforeDeserialization(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readBeforeDeserialization(context: ctx)
         }
     }
 
     internal func readAfterDeserialization(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readAfterDeserialization(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readAfterDeserialization(context: ctx)
         }
     }
 
     internal func modifyBeforeAttemptCompletion(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.modifyBeforeAttemptCompletion(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.modifyBeforeAttemptCompletion(context: ctx)
         }
     }
 
     internal func readAfterAttempt(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readAfterAttempt(context: context)
-            } catch let e {
-                error = e
-            }
-        }
-        if let error = error {
-            throw error
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readAfterAttempt(context: ctx)
         }
     }
 
     internal func modifyBeforeCompletion(context: InterceptorType.InterceptorContextType) async throws {
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.modifyBeforeCompletion(context: ctx)
+        }
+    }
+
+    internal func readAfterExecution(context: InterceptorType.InterceptorContextType) async throws {
+        try await executeInterceptors(context: context) { interceptor, ctx in
+            try await interceptor.readAfterExecution(context: ctx)
+        }
+    }
+
+    private func executeInterceptors(
+        context: InterceptorType.InterceptorContextType,
+        executeInterceptor: (InterceptorType, InterceptorType.InterceptorContextType) async throws -> Void
+    ) async throws {
         var error: Error?
-        for i in interceptors {
+        for interceptor in interceptors {
             do {
-                try await i.modifyBeforeCompletion(context: context)
+                try await executeInterceptor(interceptor, context)
             } catch let e {
+                // Log the previous error, if present
+                if let error = error {
+                    logError(error: error, context: context)
+                }
                 error = e
             }
         }
@@ -432,17 +315,10 @@ extension Interceptors {
         }
     }
 
-    internal func readAfterExecution(context: InterceptorType.InterceptorContextType) async throws {
-        var error: Error?
-        for i in interceptors {
-            do {
-                try await i.readAfterExecution(context: context)
-            } catch let e {
-                error = e
-            }
+    private func logError(error: Error, context: InterceptorType.InterceptorContextType) {
+        guard let logger = context.getAttributes().get(key: AttributeKeys.logger) else {
+            return
         }
-        if let error = error {
-            throw error
-        }
+        logger.error(error.localizedDescription)
     }
 }

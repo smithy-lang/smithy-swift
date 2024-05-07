@@ -18,8 +18,12 @@ class OrchestratorTests: XCTestCase {
         let bar: String
     }
 
-    struct TestError: Error, Equatable {
+    struct TestError: Error, Equatable, LocalizedError {
         let value: String
+
+        public var errorDescription: String? {
+            value
+        }
     }
 
     // Reference type wrapper for an array
@@ -28,6 +32,16 @@ class OrchestratorTests: XCTestCase {
 
         func append(_ thing: String) {
             self.trace.append(thing)
+        }
+    }
+
+    class TraceLogger: LogAgent {
+        var trace: Trace = Trace()
+        var name: String = "TestTraceLogger"
+        var level: LogAgentLevel = .debug
+
+        func log(level: LogAgentLevel, message: String, metadata: [String : String]?, source: String, file: String, function: String, line: UInt) {
+            trace.append(message)
         }
     }
 
@@ -1234,6 +1248,33 @@ class OrchestratorTests: XCTestCase {
                 "readAfterExecution",
             ]
         )
+    }
+
+    func test_throwsLastInterceptorErrorAndLogsRest() async {
+        let logger = TraceLogger()
+        let trace = Trace()
+        let result = await asyncResult {
+            let b = self.traceOrchestrator(trace: trace)
+            b.attributes?.set(key: AttributeKeys.logger, value: logger)
+            b.interceptors.addReadBeforeExecution({ _ in throw TestError(value: "firstError") })
+            b.interceptors.addReadBeforeExecution({ _ in throw TestError(value: "secondError") })
+            return try await b.build().execute(input: TestInput(foo: ""))
+        }
+
+        XCTAssertEqual(result, .failure(TestError(value: "secondError")))
+        XCTAssertEqual(
+            trace.trace,
+            [
+                "readBeforeExecution",
+                "modifyBeforeCompletion",
+                "readAfterExecution",
+            ]
+        )
+
+        XCTAssertEqual(logger.trace.trace.count, 1)
+        let firstError = logger.trace.trace[0]
+        XCTAssert(firstError.contains("firstError"), "Expected first error to contain `firstError` but was: `\(firstError)`")
+
     }
 
     private func asyncResult(_ fn: @escaping () async throws -> TestOutput) async -> Result<TestOutput, TestError> {

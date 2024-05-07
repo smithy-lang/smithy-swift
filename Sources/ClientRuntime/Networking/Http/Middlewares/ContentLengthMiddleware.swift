@@ -35,7 +35,8 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
     private func addHeaders(builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
         switch builder.body {
         case .data(let data):
-            builder.headers.update(name: "Content-Length", value: String(data?.count ?? 0))
+            let contentLength = data?.count ?? 0
+            builder.headers.update(name: "Content-Length", value: String(contentLength))
         case .stream(let stream):
             if let length = stream.length {
                 if !stream.isEligibleForAwsChunkedStreaming()
