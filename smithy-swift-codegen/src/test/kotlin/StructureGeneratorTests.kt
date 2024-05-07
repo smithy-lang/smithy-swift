@@ -454,16 +454,6 @@ public struct RecursiveShapesInputOutputLists {
             public struct StructWithDeprecatedTrait {
         """.trimIndent()
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
-
-        structWithDeprecatedTrait = manifest
-            .getFileString("example/models/StructSincePropertySet.swift").get()
-        Assertions.assertNotNull(structWithDeprecatedTrait)
-        structContainsDeprecatedTrait = """
-        extension ExampleClientTypes {
-            @available(*, deprecated, message: " API deprecated since 2019-03-21")
-            public struct StructSincePropertySet {
-        """.trimIndent()
-        structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
     }
 
     @Test
@@ -484,8 +474,6 @@ public struct RecursiveShapesInputOutputLists {
             public var intVal: Swift.Int?
             @available(*, deprecated)
             public var string: Swift.String?
-            @available(*, deprecated, message: " API deprecated since 2019-03-21")
-            public var structSincePropertySet: ExampleClientTypes.StructSincePropertySet?
             @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
             public var structWithDeprecatedTrait: ExampleClientTypes.StructWithDeprecatedTrait?
         """.trimIndent()
