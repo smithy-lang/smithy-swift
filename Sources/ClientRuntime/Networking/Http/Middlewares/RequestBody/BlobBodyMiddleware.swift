@@ -24,12 +24,21 @@ public struct BlobBodyMiddleware<OperationStackInput,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              let body = ByteStream.data(input.operationInput[keyPath: keyPath])
-              input.builder.withBody(body)
+              try apply(input: input.operationInput, builder: input.builder, attributes: context)
               return try await next.handle(context: context, input: input)
           }
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+}
+
+extension BlobBodyMiddleware: RequestMessageSerializer {
+    public typealias InputType = OperationStackInput
+    public typealias RequestType = SdkHttpRequest
+    public typealias AttributesType = HttpContext
+
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+        builder.withBody(.data(input[keyPath: keyPath]))
+    }
 }

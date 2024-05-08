@@ -105,7 +105,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("  .build()")
             }
             val operationStack = "operationStack"
-            writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol>(id: \"${test.id}\")")
+            if (!ctx.settings.useInterceptors) {
+                writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol>(id: \"${test.id}\")")
+            } else {
+                writer.write("let builder = OrchestratorBuilder<$inputSymbol, $outputSymbol, SdkHttpRequest, HttpResponse, HttpContext>()")
+            }
 
             operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.INITIALIZESTEP)
             operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.BUILDSTEP)
@@ -113,11 +117,29 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.FINALIZESTEP)
             operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.DESERIALIZESTEP)
 
-            renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
-
-            writer.openBlock("_ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler() { (context, request) in ", "})") {
-                writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
-                writer.write("throw SmithyTestUtilError(\"Mock handler unexpectedly failed\")")
+            if (ctx.settings.useInterceptors) {
+                writer.write(
+                    """
+                    let op = builder.attributes(context)
+                        .deserialize({ (_, _) in 
+                            return .success($outputSymbol())
+                        })
+                        .executeRequest({ (actual, attributes) in
+                            ${'$'}{C|}
+                            return HttpResponse(body: .noStream, statusCode: .ok)
+                        })
+                        .build()
+                    
+                    _ = try await op.execute(input: input)
+                    """.trimIndent(),
+                    Runnable { renderBodyAssert(test, inputSymbol, inputShape) }
+                )
+            } else {
+                renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
+                writer.openBlock("_ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler() { (context, request) in ", "})") {
+                    writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
+                    writer.write("throw SmithyTestUtilError(\"Mock handler unexpectedly failed\")")
+                }
             }
         }
     }

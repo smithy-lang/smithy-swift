@@ -64,7 +64,7 @@ class ContentLengthMiddlewareTests: XCTestCase {
     private func addContentLengthMiddlewareWith(requiresLength: Bool?, unsignedPayload: Bool?) {
         stack.finalizeStep.intercept(
             position: .before,
-            middleware: ContentLengthMiddleware(requiresLength: requiresLength, unsignedPayload: unsignedPayload)
+            middleware: ContentLengthMiddleware<MockInput, MockOutput>(requiresLength: requiresLength, unsignedPayload: unsignedPayload)
         )
     }
 
