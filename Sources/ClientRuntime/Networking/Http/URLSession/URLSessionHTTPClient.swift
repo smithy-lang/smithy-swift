@@ -7,19 +7,26 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
+import class Foundation.Bundle
 import class Foundation.InputStream
 import class Foundation.NSObject
 import class Foundation.NSRecursiveLock
+import var Foundation.NSURLAuthenticationMethodClientCertificate
+import var Foundation.NSURLAuthenticationMethodServerTrust
+import class Foundation.URLAuthenticationChallenge
 import struct Foundation.URLComponents
+import class Foundation.URLCredential
 import struct Foundation.URLQueryItem
 import struct Foundation.URLRequest
 import class Foundation.URLResponse
 import class Foundation.HTTPURLResponse
+import struct Foundation.TimeInterval
 import class Foundation.URLSession
 import class Foundation.URLSessionConfiguration
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
+import Security
 import AwsCommonRuntimeKit
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
@@ -46,8 +53,29 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// The continuation for the asynchronous call that was made to initiate this request.
         ///
         /// Once the initial response is received, the continuation is called, and is subsequently set to `nil` so its
-        /// resources may be deallocated.
-        var continuation: CheckedContinuation<HttpResponse, Error>?
+        /// resources may be deallocated and to prevent it from being resumed twice.
+        private var continuation: CheckedContinuation<HttpResponse, Error>?
+
+        /// Returns `true` once the continuation is set to `nil`, which will happen once it has been resumed.
+        var hasBeenResumed: Bool { continuation == nil }
+
+        /// Resumes the continuation, returning the passed value.
+        ///
+        /// Calling this method and/or `resume(throwing:)` more than once has no effect.
+        /// - Parameter httpResponse: The HTTP response to be asynchronously returned to the caller.
+        func resume(returning httpResponse: HttpResponse) {
+            continuation?.resume(returning: httpResponse)
+            continuation = nil
+        }
+
+        /// Resumes the continuation, throwing the passed error.
+        ///
+        /// Calling this method and/or `resume(returning:)` more than once has no effect.
+        /// - Parameter error: The error to be asynchronously thrown to the caller.
+        func resume(throwing error: Error) {
+            continuation?.resume(throwing: error)
+            continuation = nil
+        }
 
         /// Any error received during a delegate callback for this request.
         ///
@@ -66,19 +94,23 @@ public final class URLSessionHTTPClient: HTTPClient {
             self.streamBridge = streamBridge
             self.continuation = continuation
         }
+
+        /// Ensure continuation is resumed and stream is closed before deallocation.
+        ///
+        /// This should never happen in practice but is being done defensively.
+        deinit {
+            if let continuation {
+                continuation.resume(throwing: URLSessionHTTPClientError.unresumedConnection)
+                responseStream.close()
+            } else {
+                // This has no effect if the response stream was already closed
+                responseStream.closeWithError(URLSessionHTTPClientError.unclosedResponseStream)
+            }
+        }
     }
 
     /// Provides thread-safe associative storage of `Connection`s keyed by their `URLSessionDataTask`.
     private final class Storage: @unchecked Sendable {
-
-        /// Ensure all continuations are resumed before deallocation.
-        ///
-        /// This should never happen in practice but is being done defensively.
-        deinit {
-            connections.values.forEach {
-                $0.continuation?.resume(throwing: URLSessionHTTPClientError.unresumedConnection)
-            }
-        }
 
         /// Lock used to enforce exclusive access to this `Storage` object.
         private let lock = NSRecursiveLock()
@@ -120,8 +152,93 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// Logger for HTTP-related events.
         let logger: LogAgent
 
-        init(logger: LogAgent) {
+        /// TLS options
+        let tlsOptions: URLSessionTLSOptions?
+
+        init(logger: LogAgent, tlsOptions: URLSessionTLSOptions?) {
             self.logger = logger
+            self.tlsOptions = tlsOptions
+        }
+
+        /// Handles server trust challenges by validating against a custom certificate.
+        func didReceive(
+            serverTrustChallenge challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            guard let tlsOptions = tlsOptions, tlsOptions.useSelfSignedCertificate,
+                  let certFile = tlsOptions.certificate,
+                  let serverTrust = challenge.protectionSpace.serverTrust else {
+                logger.error(
+                    "Either TLSOptions not set or missing values! Using default trust store."
+                )
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            guard let customRoot = Bundle.main.certificate(named: certFile) else {
+                logger.error("Certificate not found! Using default trust store.")
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            do {
+                if try serverTrust.evaluateAllowing(rootCertificates: [customRoot]) {
+                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                } else {
+                    logger.error("Trust evaluation failed, cancelling authentication challenge.")
+                    completionHandler(.cancelAuthenticationChallenge, nil)
+                }
+            } catch {
+                logger.error("Trust evaluation threw an error: \(error.localizedDescription)")
+                completionHandler(.cancelAuthenticationChallenge, nil)
+            }
+        }
+
+        /// Handles client identity challenges by presenting a client certificate.
+        func didReceive(
+            clientIdentityChallenge challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            guard let tlsOptions, tlsOptions.useProvidedKeystore,
+                  let keystoreName = tlsOptions.pkcs12Path,
+                  let keystorePasword = tlsOptions.pkcs12Password else {
+                logger.error(
+                    "Either TLSOptions not set or missing values! Using default keystore."
+                )
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            guard let identity = Bundle.main.identity(named: keystoreName, password: keystorePasword) else {
+                logger.error(
+                    "Error accessing keystore! Ensure keystore file exists and password is correct!" +
+                    " Using default keystore."
+                )
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            completionHandler(
+                .useCredential,
+                URLCredential(identity: identity, certificates: nil, persistence: .forSession)
+            )
+        }
+
+        /// The URLSession delegate method where authentication challenges are handled.
+        func urlSession(
+            _ session: URLSession,
+            task: URLSessionTask,
+            didReceive challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            switch challenge.protectionSpace.authenticationMethod {
+            case NSURLAuthenticationMethodServerTrust:
+                self.didReceive(serverTrustChallenge: challenge, completionHandler: completionHandler)
+            case NSURLAuthenticationMethodClientCertificate:
+                self.didReceive(clientIdentityChallenge: challenge, completionHandler: completionHandler)
+            default:
+                completionHandler(.performDefaultHandling, nil)
+            }
         }
 
         /// Called when the initial response to a HTTP request is received.
@@ -130,13 +247,12 @@ public final class URLSessionHTTPClient: HTTPClient {
         func urlSession(
             _ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse
         ) async -> URLSession.ResponseDisposition {
-            logger.debug("urlSession(_:dataTask:didReceive:) called")
+            logger.debug("urlSession(_:dataTask:didReceive response:) called")
             storage.modify(dataTask) { connection in
                 guard let httpResponse = response as? HTTPURLResponse else {
                     logger.error("Received non-HTTP urlResponse")
                     let error = URLSessionHTTPClientError.responseNotHTTP
-                    connection.continuation?.resume(throwing: error)
-                    connection.continuation = nil
+                    connection.resume(throwing: error)
                     return
                 }
                 let statusCode = HttpStatusCode(rawValue: httpResponse.statusCode) ?? .insufficientStorage
@@ -147,19 +263,41 @@ public final class URLSessionHTTPClient: HTTPClient {
                 let headers = Headers(httpHeaders: httpHeaders)
                 let body = ByteStream.stream(connection.responseStream)
                 let response = HttpResponse(headers: headers, body: body, statusCode: statusCode)
-                connection.continuation?.resume(returning: response)
-                connection.continuation = nil
+                connection.resume(returning: response)
             }
             return .allow
         }
 
+        /// Called when the task needs a new `InputStream` to continue streaming the request body.
+        ///
+        /// The `FoundationStreamBridge` is called and told to replace its bound streams; the new `InputStream` is then passed
+        /// back through this method's `completionHandler` block.
+        ///
+        /// In practice, this seems to get called when multiple requests are made concurrently.
+        /// - Parameters:
+        ///   - session: The `URLSession` the task belongs to.
+        ///   - task: The `URLSessionTask` that needs a new body stream.
+        ///   - completionHandler: A block to be called with the new `InputStream` when it is ready.
+        func urlSession(
+            _ session: URLSession,
+            task: URLSessionTask,
+            needNewBodyStream completionHandler: @escaping (InputStream?) -> Void
+        ) {
+            storage.modify(task) { connection in
+                guard let streamBridge = connection.streamBridge else { completionHandler(nil); return }
+                Task { await streamBridge.replaceStreams(completion: completionHandler) }
+            }
+        }
+
         /// Called when response data is received.
         func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-            logger.debug("urlSession(_:dataTask:didReceive:) called with \(data.count) bytes")
+            logger.debug("urlSession(_:dataTask:didReceive data:) called (\(data.count) bytes)")
             storage.modify(dataTask) { connection in
                 do {
                     try connection.responseStream.write(contentsOf: data)
                 } catch {
+                    // If the response stream errored on write, save the error for later return &
+                    // cancel the HTTP request.
                     connection.error = error
                     dataTask.cancel()
                 }
@@ -171,26 +309,41 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// If the error is returned prior to the initial response, the request fails with an error.
         /// If the error is returned after the initial response, the error is used to fail the response stream.
         func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-            logger.debug("urlSession(_:task:didCompleteWithError:) called. \(error == nil ? "Success" : "Failure")")
-            if let error { logger.debug("  Error: \(error.localizedDescription)") }
+            if let error {
+                logger.error("urlSession(_:task:didCompleteWithError:) failed. Error: \(error.localizedDescription)")
+            } else {
+                logger.debug("urlSession(_:task:didCompleteWithError:) called. Success")
+            }
+
+            // This connection is complete.  No further data will be sent, and none will be received.
+            // Below, we ensure that, successful or not, before disposing of the connection:
+            //  - The continuation has been resumed.
+            //  - The response stream is closed.
+            //  - The stream bridge is closed.
+            // This ensures that resources are freed and stream readers/writers are continued.
             storage.modify(task) { connection in
                 if let error = connection.error ?? error {
-                    if let continuation = connection.continuation {
-                        continuation.resume(throwing: error)
-                        connection.continuation = nil
-                    } else {
+                    if connection.hasBeenResumed {
                         connection.responseStream.closeWithError(error)
+                    } else {
+                        connection.resume(throwing: error)
+                        connection.responseStream.close()
                     }
                 } else {
+                    if !connection.hasBeenResumed {
+                        connection.resume(throwing: URLSessionHTTPClientError.closedBeforeResponse)
+                    }
                     connection.responseStream.close()
                 }
 
                 // Close the stream bridge so that its resources are deallocated
-                Task { await connection.streamBridge?.close() }
-            }
+                Task {
+                    await connection.streamBridge?.close()
 
-            // Task is complete & no longer needed.  Remove it from storage.
-            storage.remove(task)
+                    // Task is complete & no longer needed.  Remove it from storage.
+                    storage.remove(task)
+                }
+            }
         }
     }
 
@@ -206,20 +359,44 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// The logger for this HTTP client.
     private var logger: LogAgent
 
+    /// The TLS options for this HTTP client.
+    private let tlsConfiguration: URLSessionTLSOptions?
+
+    /// The initial connection timeout for this HTTP client.
+    let connectionTimeout: TimeInterval
+
     // MARK: - init & deinit
 
     /// Creates a new `URLSessionHTTPClient`.
     ///
     /// The client is created with its own internal `URLSession`, which is configured with system defaults and with a private delegate for handling
     /// URL task lifecycle events.
-    /// - Parameter urlsessionConfiguration: The configuration to use for the client's `URLSession`.
-    public init(httpClientConfiguration: HttpClientConfiguration) {
+    /// - Parameters:
+    ///   - httpClientConfiguration: The configuration to use for the client's `URLSession`.
+    public convenience init(
+        httpClientConfiguration: HttpClientConfiguration
+    ) {
+        self.init(httpClientConfiguration: httpClientConfiguration, sessionType: URLSession.self)
+    }
+
+    /// Creates a new `URLSessionHTTPClient`.
+    ///
+    /// The client is created with its own internal `URLSession`.  A mocked subclass may be substituted.
+    /// - Parameters:
+    ///   - httpClientConfiguration: The configuration to use for the client's `URLSession`.
+    ///   - SessionType: The type for the URLSession to be created.  Used for testing.  Defaults to `URLSession`.
+    init(
+        httpClientConfiguration: HttpClientConfiguration,
+        sessionType SessionType: URLSession.Type
+    ) {
         self.config = httpClientConfiguration
         self.logger = SwiftLogger(label: "URLSessionHTTPClient")
-        self.delegate = SessionDelegate(logger: logger)
+        self.tlsConfiguration = config.tlsConfiguration as? URLSessionTLSOptions
+        self.delegate = SessionDelegate(logger: logger, tlsOptions: tlsConfiguration)
+        self.connectionTimeout = httpClientConfiguration.connectTimeout ?? 60.0
         var urlsessionConfiguration = URLSessionConfiguration.default
         urlsessionConfiguration = URLSessionConfiguration.from(httpClientConfiguration: httpClientConfiguration)
-        self.session = URLSession(configuration: urlsessionConfiguration, delegate: delegate, delegateQueue: nil)
+        self.session = SessionType.init(configuration: urlsessionConfiguration, delegate: delegate, delegateQueue: nil)
     }
 
     /// On deallocation, finish any in-process tasks before disposing of the `URLSession`.
@@ -252,19 +429,27 @@ public final class URLSessionHTTPClient: HTTPClient {
 
             // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
             // that URLSession can stream its request body from.
-            let streamBridge = requestStream.map { FoundationStreamBridge(readableStream: $0, bufferSize: 4096, logger: logger) }
+            // Allow 16kb of in-memory buffer for request body streaming
+            let streamBridge = requestStream.map {
+                FoundationStreamBridge(readableStream: $0, bridgeBufferSize: 16_384, logger: logger)
+            }
 
             // Create the request (with a streaming body when needed.)
-            let urlRequest = self.makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
+            do {
+                let urlRequest = try self.makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
+                // Create the data task and associated connection object, then place them in storage.
+                let dataTask = session.dataTask(with: urlRequest)
+                let connection = Connection(streamBridge: streamBridge, continuation: continuation)
+                delegate.storage.set(connection, for: dataTask)
 
-            // Create the data task and associated connection object, then place them in storage.
-            let dataTask = session.dataTask(with: urlRequest)
-            let connection = Connection(streamBridge: streamBridge, continuation: continuation)
-            delegate.storage.set(connection, for: dataTask)
+                // Start the HTTP connection and start streaming the request body data
+                dataTask.resume()
+                logger.info("start URLRequest(\(urlRequest.url?.absoluteString ?? "")) called")
+                Task { await streamBridge?.open() }
+            } catch {
+                continuation.resume(throwing: error)
+            }
 
-            // Start the HTTP connection and start streaming the request body data
-            dataTask.resume()
-            Task { await streamBridge?.open() }
         }
     }
 
@@ -275,7 +460,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     ///   - request: The SDK-native, signed `SdkHttpRequest` ready to be transmitted.
     ///   - httpBodyStream: A Foundation `InputStream` carrying the HTTP body for this request.
     /// - Returns: A `URLRequest` ready to be transmitted by `URLSession` for this operation.
-    private func makeURLRequest(from request: SdkHttpRequest, httpBodyStream: InputStream?) -> URLRequest {
+    private func makeURLRequest(from request: SdkHttpRequest, httpBodyStream: InputStream?) throws -> URLRequest {
         var components = URLComponents()
         components.scheme = config.protocolType?.rawValue ?? request.endpoint.protocolType?.rawValue ?? "https"
         components.host = request.endpoint.host
@@ -286,8 +471,8 @@ public final class URLSessionHTTPClient: HTTPClient {
                 Foundation.URLQueryItem(name: $0.name, value: $0.value)
             }
         }
-        guard let url = components.url else { fatalError("Invalid HTTP request.  Please file a bug to report this.") }
-        var urlRequest = URLRequest(url: url)
+        guard let url = components.url else { throw URLSessionHTTPClientError.incompleteHTTPRequest }
+        var urlRequest = URLRequest(url: url, timeoutInterval: self.connectionTimeout)
         urlRequest.httpMethod = request.method.rawValue
         urlRequest.httpBodyStream = httpBodyStream
         for header in request.headers.headers + config.defaultHeaders.headers {
@@ -312,13 +497,26 @@ public final class URLSessionHTTPClient: HTTPClient {
 /// Errors that are particular to the URLSession-based Smithy HTTP client.
 public enum URLSessionHTTPClientError: Error {
 
+    /// A URL could not be formed from the `SdkHttpRequest`.
+    /// Please file a bug with aws-sdk-swift if you experience this error.
+    case incompleteHTTPRequest
+
     /// A non-HTTP response was returned by the server.
     /// Please file a bug with aws-sdk-swift if you experience this error.
     case responseNotHTTP
 
-    /// A connection was not ended
+    /// A HTTP connection was closed before a response could be returned,
+    /// and there was no Foundation error returned.
+    /// Please file a bug with aws-sdk-swift if you experience this error.
+    case closedBeforeResponse
+
+    /// A connection was not ended before disposing the connection.
     /// Please file a bug with aws-sdk-swift if you experience this error.
     case unresumedConnection
+
+    /// A response stream was not closed before disposing the connection.
+    /// Please file a bug with aws-sdk-swift if you experience this error.
+    case unclosedResponseStream
 }
 
 #endif
