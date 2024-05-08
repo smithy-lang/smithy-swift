@@ -6,16 +6,17 @@
 import Foundation
 
 public struct Endpoint: Hashable {
-    public let path: String
-    public let queryItems: [SDKURLQueryItem]?
+    public let uri: URI
     public let protocolType: ProtocolType?
-    public let host: String
-    public let port: Int16
-    public let headers: Headers?
+    public var queryItems: [SDKURLQueryItem] { uri.query }
+    public var path: String { uri.path }
+    public var host: String { uri.host }
+    public var port: Int16 { uri.port }
+    public var headers: Headers
     public let properties: [String: AnyHashable]
 
     public init(urlString: String,
-                headers: Headers? = nil,
+                headers: Headers = Headers(),
                 properties: [String: AnyHashable] = [:]) throws {
         guard let url = URL(string: urlString) else {
             throw ClientError.unknownError("invalid url \(urlString)")
@@ -25,17 +26,19 @@ public struct Endpoint: Hashable {
     }
 
     public init(url: URL,
-                headers: Headers? = nil,
+                headers: Headers = Headers(),
                 properties: [String: AnyHashable] = [:]) throws {
         guard let host = url.host else {
             throw ClientError.unknownError("invalid host \(String(describing: url.host))")
         }
 
         let protocolType = ProtocolType(rawValue: url.scheme ?? "") ?? .https
-        self.init(host: host,
-                  path: url.path,
-                  port: Int16(url.port ?? protocolType.port),
-                  queryItems: url.toQueryItems(),
+        let uri = URI(scheme: protocolType.rawValue,
+                      path: url.path,
+                      host: host,
+                      port: Int16(url.port ?? protocolType.port),
+                      query: url.toQueryItems() ?? [])
+        self.init(uri: uri,
                   protocolType: protocolType,
                   headers: headers,
                   properties: properties)
@@ -45,13 +48,17 @@ public struct Endpoint: Hashable {
                 path: String = "/",
                 port: Int16 = 443,
                 queryItems: [SDKURLQueryItem]? = nil,
+                headers: Headers = Headers(),
+                protocolType: ProtocolType = .https) {
+        let uri = URI(scheme: protocolType.rawValue, path: path, host: host, port: port, query: queryItems ?? [])
+        self.init(uri: uri, protocolType: protocolType, headers: headers)
+    }
+
+    public init(uri: URI,
                 protocolType: ProtocolType? = .https,
-                headers: Headers? = nil,
+                headers: Headers = Headers(),
                 properties: [String: AnyHashable] = [:]) {
-        self.host = host
-        self.path = path
-        self.port = port
-        self.queryItems = queryItems
+        self.uri = uri
         self.protocolType = protocolType
         self.headers = headers
         self.properties = properties
@@ -64,14 +71,16 @@ extension Endpoint {
     public var url: URL? {
         var components = URLComponents()
         components.scheme = protocolType?.rawValue
-        components.host = host.isEmpty ? nil : host // If host is empty, URL is invalid
-        components.percentEncodedPath = path
-        components.percentEncodedQuery = queryItemString
+        components.host = uri.host.isEmpty ? nil : uri.host // If host is empty, URL is invalid
+        components.percentEncodedPath = uri.path
+        components.percentEncodedQuery = query
         return (components.host == nil || components.scheme == nil) ? nil : components.url
     }
 
-    var queryItemString: String? {
-        guard let queryItems = queryItems else { return nil }
+    var query: String? {
+        if (queryItems.isEmpty) {
+            return nil
+        }
         return queryItems.map { queryItem in
             return [queryItem.name, queryItem.value].compactMap { $0 }.joined(separator: "=")
         }.joined(separator: "&")

@@ -118,17 +118,17 @@ class HttpRequestTests: NetworkingTestUtils {
             .withQueryItem(queryItem2)
             .withHeader(name: "Content-Length", value: "6")
 
-        XCTAssert(builder.queryItems?.count == 2)
+        XCTAssert(builder.queryItems.count == 2)
 
         let httpRequest = try builder.build().toHttpRequest()
         httpRequest.path = "/hello?foo=bar&quz=bar&signedthing=signed"
         let updatedRequest = builder.update(from: httpRequest, originalRequest: builder.build())
 
         XCTAssert(updatedRequest.path == "/hello")
-        XCTAssert(updatedRequest.queryItems?.count == 3)
-        XCTAssert(updatedRequest.queryItems?.contains(queryItem1) ?? false)
-        XCTAssert(updatedRequest.queryItems?.contains(queryItem2) ?? false)
-        XCTAssert(updatedRequest.queryItems?.contains(SDKURLQueryItem(name: "signedthing", value: "signed")) ?? false)
+        XCTAssert(updatedRequest.queryItems.count == 3)
+        XCTAssert(updatedRequest.queryItems.contains(queryItem1) ?? false)
+        XCTAssert(updatedRequest.queryItems.contains(queryItem2) ?? false)
+        XCTAssert(updatedRequest.queryItems.contains(SDKURLQueryItem(name: "signedthing", value: "signed")) ?? false)
     }
 
     func testPathInInHttpRequestIsNotAltered() throws {
@@ -143,7 +143,7 @@ class HttpRequestTests: NetworkingTestUtils {
     func testConversionToUrlRequestFailsWithInvalidEndpoint() {
         // Testing with an invalid endpoint where host is empty,
         // path is empty, and protocolType is nil.
-        let endpoint = Endpoint(host: "", path: "", protocolType: nil)
+        let endpoint = Endpoint(host: "", path: "")
         XCTAssertNil(endpoint.url, "An invalid endpoint should result in a nil URL.")
     }
 }

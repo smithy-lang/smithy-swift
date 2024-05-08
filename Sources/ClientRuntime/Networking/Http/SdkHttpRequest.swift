@@ -17,18 +17,14 @@ import struct Foundation.URLRequest
 // in the CRT engine so that is why it's a class
 public final class SdkHttpRequest: RequestMessage {
     public var body: ByteStream
-    public let endpoint: Endpoint
+    public var endpoint: Endpoint
     public let method: HttpMethodType
-    private var additionalHeaders: Headers = Headers()
-    public var headers: Headers {
-        var allHeaders = endpoint.headers ?? Headers()
-        allHeaders.addAll(headers: additionalHeaders)
-        return allHeaders
-    }
-    public var trailingHeaders: Headers = Headers()
+    public var destination: URI { endpoint.uri }
+    public var headers: Headers { endpoint.headers }
     public var path: String { endpoint.path }
     public var host: String { endpoint.host }
     public var queryItems: [SDKURLQueryItem]? { endpoint.queryItems }
+    public var trailingHeaders: Headers = Headers()
 
     public init(method: HttpMethodType,
                 endpoint: Endpoint,
@@ -55,11 +51,11 @@ public final class SdkHttpRequest: RequestMessage {
     }
 
     public func withHeader(name: String, value: String) {
-        self.additionalHeaders.add(name: name, value: value)
+        self.endpoint.headers.add(name: name, value: value)
     }
 
     public func withoutHeader(name: String) {
-        self.additionalHeaders.remove(name: name)
+        self.endpoint.headers.remove(name: name)
     }
 
     public func withBody(_ body: ByteStream) {
@@ -92,7 +88,7 @@ extension SdkHttpRequest {
     public func toHttpRequest() throws -> HTTPRequest {
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        httpRequest.path = [endpoint.path, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
+        httpRequest.path = [endpoint.path, endpoint.query].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
         httpRequest.body = isChunked ? nil : StreamableHttpBody(body: body) // body needs to be nil to use writeChunk()
         return httpRequest
@@ -104,7 +100,7 @@ extension SdkHttpRequest {
     public func toHttp2Request() throws -> HTTPRequestBase {
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        httpRequest.path = [endpoint.path, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
+        httpRequest.path = [endpoint.path, endpoint.query].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
 
         // Remove the "Transfer-Encoding" header if it exists since h2 does not support it
@@ -198,7 +194,7 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
     var host: String = ""
     var path: String = "/"
     var body: ByteStream = .noStream
-    var queryItems: [SDKURLQueryItem]?
+    var queryItems: [SDKURLQueryItem] = []
     var port: Int16 = 443
     var protocolType: ProtocolType = .https
     var trailingHeaders: Headers = Headers()
@@ -267,8 +263,7 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
 
     @discardableResult
     public func withQueryItems(_ value: [SDKURLQueryItem]) -> SdkHttpRequestBuilder {
-        self.queryItems = self.queryItems ?? []
-        self.queryItems?.append(contentsOf: value)
+        self.queryItems.append(contentsOf: value)
         return self
     }
 
@@ -290,15 +285,9 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
     }
 
     public func build() -> SdkHttpRequest {
-        let endpoint = Endpoint(host: host,
-                                path: path,
-                                port: port,
-                                queryItems: queryItems,
-                                protocolType: protocolType,
-                                headers: headers)
-        return SdkHttpRequest(method: methodType,
-                              endpoint: endpoint,
-                              body: body)
+        let uri = URI(scheme: protocolType.rawValue, path: path, host: host, port: port, query: queryItems)
+        let endpoint = Endpoint(uri: uri, protocolType: protocolType, headers: headers)
+        return SdkHttpRequest(method: methodType, endpoint: endpoint, body: body)
     }
 }
 

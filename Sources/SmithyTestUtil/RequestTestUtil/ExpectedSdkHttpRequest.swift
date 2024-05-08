@@ -12,7 +12,7 @@ public struct ExpectedSdkHttpRequest {
     public var headers: Headers?
     public var forbiddenHeaders: [String]?
     public var requiredHeaders: [String]?
-    public let queryItems: [SDKURLQueryItem]?
+    public var queryItems: [SDKURLQueryItem] { endpoint.queryItems }
     public let forbiddenQueryItems: [SDKURLQueryItem]?
     public let requiredQueryItems: [SDKURLQueryItem]?
     public let endpoint: Endpoint
@@ -23,7 +23,6 @@ public struct ExpectedSdkHttpRequest {
                 headers: Headers? = nil,
                 forbiddenHeaders: [String]? = nil,
                 requiredHeaders: [String]? = nil,
-                queryItems: [SDKURLQueryItem]? = nil,
                 forbiddenQueryItems: [SDKURLQueryItem]? = nil,
                 requiredQueryItems: [SDKURLQueryItem]? = nil,
                 body: ByteStream = ByteStream.noStream) {
@@ -32,7 +31,6 @@ public struct ExpectedSdkHttpRequest {
         self.headers = headers
         self.forbiddenHeaders = forbiddenHeaders
         self.requiredHeaders = requiredHeaders
-        self.queryItems = queryItems
         self.forbiddenQueryItems = forbiddenQueryItems
         self.requiredQueryItems = requiredQueryItems
         self.body = body
@@ -139,12 +137,8 @@ public class ExpectedSdkHttpRequestBuilder {
     }
 
     public func build() -> ExpectedSdkHttpRequest {
-        let endpoint = Endpoint(host: host,
-                                path: path,
-                                port: port,
-                                queryItems: queryItems,
-                                protocolType: protocolType)
-        let queryItems = !queryItems.isEmpty ? queryItems : nil
+        let uri = URI(scheme: protocolType.rawValue, path: path, host: host, port: port, query: queryItems)
+        let endpoint = Endpoint(uri: uri, protocolType: protocolType)
         let forbiddenQueryItems = !forbiddenQueryItems.isEmpty ? forbiddenQueryItems : nil
         let requiredQueryItems = !requiredQueryItems.isEmpty ? requiredQueryItems : nil
 
@@ -156,7 +150,6 @@ public class ExpectedSdkHttpRequestBuilder {
                               headers: headers,
                               forbiddenHeaders: forbiddenHeaders,
                               requiredHeaders: requiredHeaders,
-                              queryItems: queryItems,
                               forbiddenQueryItems: forbiddenQueryItems,
                               requiredQueryItems: requiredQueryItems,
                               body: body)
