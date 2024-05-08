@@ -32,6 +32,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// at any given time.
     let bridgeBufferSize: Int
 
+    /// The max number of bytes to buffer between the Foundation `OutputStream` and the Foundation `InputStream`
+    /// at any given time.
+    let boundStreamBufferSize: Int
+
     /// A buffer to hold data that has been read from the `ReadableStream` but not yet written to the
     /// Foundation `OutputStream`.  At most, it will contain `bridgeBufferSize` bytes.
     private var buffer: Data
@@ -42,10 +46,14 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     let readableStream: ReadableStream
 
     /// A Foundation stream that will carry the bytes read from the readableStream as they become available.
-    let inputStream: InputStream
+    ///
+    /// May be replaced if needed by calling the `replaceStreams(_:)` method.
+    var inputStream: InputStream
 
-    /// A Foundation `OutputStream` that will read from the `ReadableStream`
-    private let outputStream: OutputStream
+    /// A Foundation `OutputStream` that will read from the `ReadableStream`.
+    ///
+    /// Will be replaced when `replaceStreams(_:)` is called to replace the input stream.
+    private var outputStream: OutputStream
 
     /// A Logger for logging events.
     private let logger: LogAgent
@@ -110,6 +118,31 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         boundStreamBufferSize: Int? = nil,
         logger: LogAgent
     ) {
+        self.bridgeBufferSize = bridgeBufferSize
+        self.boundStreamBufferSize = boundStreamBufferSize ?? bridgeBufferSize
+        self.buffer = Data(capacity: bridgeBufferSize)
+        self.readableStream = readableStream
+        self.logger = logger
+        (inputStream, outputStream) = Self.makeStreams(boundStreamBufferSize: self.boundStreamBufferSize, queue: queue)
+    }
+
+    func replaceStreams(completion: @escaping (InputStream?) -> Void) async {
+        // Close the current output stream, since it will accept no more data and is about to
+        // be replaced.
+        await close()
+
+        // Replace the bound stream pair with new bound streams.
+        (inputStream, outputStream) = Self.makeStreams(boundStreamBufferSize: boundStreamBufferSize, queue: queue)
+
+        // Call the completion block.  When this method is called from `urlSession(_:task:needNewBodyStream:)`,
+        // the completion block will be that method's completion handler.
+        completion(inputStream)
+
+        // Re-open the `OutputStream` for writing.
+        await open()
+    }
+
+    private static func makeStreams(boundStreamBufferSize: Int, queue: DispatchQueue) -> (InputStream, OutputStream) {
         var inputStream: InputStream?
         var outputStream: OutputStream?
 
@@ -117,7 +150,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         // Data written into the output stream will automatically flow to the inputStream for reading.
         // The bound streams have a buffer between them of size equal to the buffer held by this bridge.
         Foundation.Stream.getBoundStreams(
-            withBufferSize: boundStreamBufferSize ?? bridgeBufferSize,
+            withBufferSize: boundStreamBufferSize,
             inputStream: &inputStream,
             outputStream: &outputStream
         )
@@ -125,17 +158,14 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             // Fail with fatalError since this is not a failure that would happen in normal operation.
             fatalError("Get pair of bound streams failed.  Please file a bug with AWS SDK for Swift.")
         }
-        self.bridgeBufferSize = bridgeBufferSize
-        self.buffer = Data(capacity: bridgeBufferSize)
-        self.readableStream = readableStream
-        self.inputStream = inputStream
-        self.outputStream = outputStream
-        self.logger = logger
 
         // The Foundation `OutputStream` is configured to deliver its callbacks on the dispatch queue.
         // This precludes the need for a Thread with RunLoop.
         // For safety, all interactions with the output stream will be performed on this queue.
         CFWriteStreamSetDispatchQueue(outputStream, queue)
+
+        // Return the input & output streams to the caller in a tuple
+        return (inputStream, outputStream)
     }
 
     // MARK: - Opening & closing

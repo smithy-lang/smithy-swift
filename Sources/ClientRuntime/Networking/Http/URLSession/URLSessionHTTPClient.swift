@@ -268,6 +268,27 @@ public final class URLSessionHTTPClient: HTTPClient {
             return .allow
         }
 
+        /// Called when the task needs a new `InputStream` to continue streaming the request body.
+        ///
+        /// The `FoundationStreamBridge` is called and told to replace its bound streams; the new `InputStream` is then passed
+        /// back through this method's `completionHandler` block.
+        ///
+        /// In practice, this seems to get called when multiple requests are made concurrently.
+        /// - Parameters:
+        ///   - session: The `URLSession` the task belongs to.
+        ///   - task: The `URLSessionTask` that needs a new body stream.
+        ///   - completionHandler: A block to be called with the new `InputStream` when it is ready.
+        func urlSession(
+            _ session: URLSession,
+            task: URLSessionTask,
+            needNewBodyStream completionHandler: @escaping (InputStream?) -> Void
+        ) {
+            storage.modify(task) { connection in
+                guard let streamBridge = connection.streamBridge else { completionHandler(nil); return }
+                Task { await streamBridge.replaceStreams(completion: completionHandler) }
+            }
+        }
+
         /// Called when response data is received.
         func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
             logger.debug("urlSession(_:dataTask:didReceive data:) called (\(data.count) bytes)")
