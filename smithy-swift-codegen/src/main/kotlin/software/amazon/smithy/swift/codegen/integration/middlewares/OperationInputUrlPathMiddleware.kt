@@ -23,25 +23,21 @@ class OperationInputUrlPathMiddleware(
 
     override val position = MiddlewarePosition.AFTER
 
-    override fun render(
+    override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape,
-        operationStackName: String
+        op: OperationShape
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
         val params = "".takeIf { inputParameters.isEmpty() } ?: "$inputParameters, "
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$L, \$L>(\$L\$L.urlPathProvider(_:)))",
-            operationStackName,
-            middlewareStep.stringValue(),
-            position.stringValue(),
+            "\$N<\$L, \$L>(\$L\$L.urlPathProvider(_:))",
             ClientRuntimeTypes.Middleware.URLPathMiddleware,
             inputShapeName,
             outputShapeName,
             params,
-            inputShapeName,
+            inputShapeName
         )
     }
 }

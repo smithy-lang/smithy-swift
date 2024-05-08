@@ -27,9 +27,18 @@ class ContentMD5Middleware(
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
         if (op.isMD5ChecksumRequired()) {
-            val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-            writer.write("$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<$outputShapeName>())", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
+            super.render(ctx, writer, op, operationStackName)
         }
+    }
+
+    override fun renderMiddlewareInit(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape
+    ) {
+        val inputShapeName = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, model, op).name
+        val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
+        writer.write("\$N<$inputShapeName, $outputShapeName>()", ClientRuntimeTypes.Middleware.ContentMD5Middleware)
     }
 }
 

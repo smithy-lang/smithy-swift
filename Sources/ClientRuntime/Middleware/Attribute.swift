@@ -55,7 +55,7 @@ public protocol HasAttributes: AnyObject {
     /// - Parameters:
     ///   - key: The key to associate with `value`.
     ///   - value: The value to set in the property bag.
-    func set<T>(key: AttributeKey<T>, value: T)
+    func set<T>(key: AttributeKey<T>, value: T?)
 
     /// - Parameter key: The key of the attribute to remove from the property bag.
     func remove<T>(key: AttributeKey<T>)

@@ -23,18 +23,25 @@ public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
     Self.Context == H.Context,
     Self.MInput == H.Input,
     Self.MOutput == H.Output {
+        _ = try await select(attributes: context)
+        return try await next.handle(context: context, input: input)
+    }
+}
+
+extension AuthSchemeMiddleware: SelectAuthScheme {
+    public func select(attributes: HttpContext) async throws -> SelectedAuthScheme? {
         // Get auth scheme resolver from middleware context
-        guard let resolver = context.getAuthSchemeResolver() else {
+        guard let resolver = attributes.getAuthSchemeResolver() else {
             throw ClientError.authError("No auth scheme resolver has been configured on the service.")
         }
 
         // Construct auth scheme resolver parameters
-        let resolverParams = try resolver.constructParameters(context: context)
+        let resolverParams = try resolver.constructParameters(context: attributes)
         // Retrieve valid auth options for the operation at hand
         let validAuthOptions = try resolver.resolveAuthScheme(params: resolverParams)
 
         // Create IdentityResolverConfiguration
-        let identityResolvers = context.getIdentityResolvers()
+        let identityResolvers = attributes.getIdentityResolvers()
         guard let identityResolvers, identityResolvers.size > 0 else {
             throw ClientError.authError("No identity resolver has been configured on the service.")
         }
@@ -42,7 +49,7 @@ public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
 
         // Get auth schemes configured on the service
         // If none is confugred, create empty Attributes object
-        let validAuthSchemes = context.getAuthSchemes() ?? Attributes()
+        let validAuthSchemes = attributes.getAuthSchemes() ?? Attributes()
 
         // Variable for selected auth scheme
         var selectedAuthScheme: SelectedAuthScheme?
@@ -71,7 +78,7 @@ public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
                     // Hook for auth scheme to customize signing properties
                     let signingProperties = try authScheme.customizeSigningProperties(
                         signingProperties: option.signingProperties,
-                        context: context
+                        context: attributes
                     )
                     // Resolve identity using the resolver from auth scheme
                     let identity = try await identityResolver.getIdentity(identityProperties: option.identityProperties)
@@ -98,8 +105,9 @@ public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
             )
         }
 
-        // Set the selected auth scheme in context for subsequent middleware access, then pass to next middleware in chain
-        context.attributes.set(key: AttributeKeys.selectedAuthScheme, value: selectedAuthScheme)
-        return try await next.handle(context: context, input: input)
+        // Set the selected auth scheme in context for subsequent middleware access
+        attributes.set(key: AttributeKeys.selectedAuthScheme, value: selectedAuthScheme)
+
+        return selectedAuthScheme
     }
 }
