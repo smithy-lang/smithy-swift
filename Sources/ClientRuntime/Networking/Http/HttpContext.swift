@@ -360,7 +360,7 @@ extension HttpContext: HasAttributes {
         self.attributes.contains(key: key)
     }
 
-    public func set<T>(key: AttributeKey<T>, value: T) {
+    public func set<T>(key: AttributeKey<T>, value: T?) {
         self.attributes.set(key: key, value: value)
     }
 

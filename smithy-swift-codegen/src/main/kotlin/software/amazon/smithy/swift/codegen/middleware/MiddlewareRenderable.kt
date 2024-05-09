@@ -21,5 +21,51 @@ interface MiddlewareRenderable {
 
     val position: MiddlewarePosition
 
-    fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String)
+    /**
+     * Primary render method - what actually gets called to generate the middleware.
+     *
+     * The default implementation calls `renderSpecific` with the method name
+     * `interceptors.add` (only applies when using interceptors).
+     *
+     * @see renderSpecific
+     */
+    fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
+        renderSpecific(ctx, writer, op, operationStackName, "interceptors.add")
+    }
+
+    /**
+     * Utility method for rendering the initializer for the middleware.
+     */
+    fun renderMiddlewareInit(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape) {}
+
+    /**
+     * When using interceptors, renders a specific method call on the orchestrator. Otherwise, adds
+     * a middleware to the operation stack. Either way, `renderMiddlewareInit` is called to generate
+     * the middleware.
+     *
+     * @see renderMiddlewareInit
+     */
+    fun renderSpecific(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape,
+        operationStackName: String,
+        orchestratorMethodName: String,
+    ) {
+        if (ctx.settings.useInterceptors) {
+            writer.write(
+                "builder.\$L(\$C)",
+                orchestratorMethodName,
+                Runnable { renderMiddlewareInit(ctx, writer, op) }
+            )
+        } else {
+            writer.write(
+                "\$L.\$L.intercept(position: \$L, middleware: \$C)",
+                operationStackName,
+                middlewareStep.stringValue(),
+                position.stringValue(),
+                Runnable { renderMiddlewareInit(ctx, writer, op) }
+            )
+        }
+    }
 }

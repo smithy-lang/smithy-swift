@@ -43,6 +43,7 @@ class MiddlewareGenerator(
             }
             middleware.generateInit()
             writer.write("")
+
             writer.write("public func handle<H>(context: Context,")
             writer.swiftFunctionParameterIndent {
                 writer.write("  input: \$N,", middleware.inputType)
@@ -60,5 +61,7 @@ class MiddlewareGenerator(
             writer.write("public typealias MOutput = \$L", middleware.outputType)
             writer.write("public typealias Context = \$N", middleware.contextType)
         }
+
+        middleware.renderExtensions()
     }
 }

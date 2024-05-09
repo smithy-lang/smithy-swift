@@ -27,36 +27,51 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
             Self.MOutput == H.Output,
             Self.Context == H.Context {
 
-            let response = try await next.handle(context: context, input: input) // call handler to get http response
+            var response = try await next.handle(context: context, input: input) // call handler to get http response
 
             if let responseDateString = response.httpResponse.headers.value(for: "Date") {
                 let estimatedSkew = getEstimatedSkew(now: Date(), responseDateString: responseDateString)
                 context.attributes.set(key: AttributeKeys.estimatedSkew, value: estimatedSkew)
             }
 
-            // check if the response body was effected by a previous middleware
-            if let contextBody = context.response?.body {
-                response.httpResponse.body = contextBody
+            let result = try await deserialize(response: response.httpResponse, attributes: context)
+
+            switch result {
+            case let .success(output):
+                response.output = output
+            case let .failure(error):
+                throw error
             }
 
-            var copiedResponse = response
-            if (200..<300).contains(response.httpResponse.statusCode.rawValue) {
-                let output = try await wireResponseClosure(copiedResponse.httpResponse)
-                copiedResponse.output = output
-                return copiedResponse
-            } else {
-                // if the response is a stream, we need to cache the stream so that it can be read again
-                // error deserialization reads the stream multiple times to first deserialize the protocol error
-                // eg. [RestJSONError](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Core/AWSClientRuntime/Protocols/RestJSON/RestJSONError.swift#L38,
-                // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
-                let bodyData = try await copiedResponse.httpResponse.body.readData()
-                copiedResponse.httpResponse.body = .data(bodyData)
-                throw try await wireResponseErrorClosure(copiedResponse.httpResponse)
-          }
+            return response
     }
 
     public typealias MInput = SdkHttpRequest
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+}
 
+extension DeserializeMiddleware: ResponseMessageDeserializer {
+    public func deserialize(
+        response: HttpResponse,
+        attributes: HttpContext
+    ) async throws -> Result<OperationStackOutput, Error> {
+        // check if the response body was effected by a previous middleware
+        if let contextBody = attributes.response?.body {
+            response.body = contextBody
+        }
+
+        let copiedResponse = response
+        if (200..<300).contains(response.statusCode.rawValue) {
+            return .success(try await httpResponseClosure(copiedResponse))
+        } else {
+            // if the response is a stream, we need to cache the stream so that it can be read again
+            // error deserialization reads the stream multiple times to first deserialize the protocol error
+            // eg. [RestJSONError](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Core/AWSClientRuntime/Protocols/RestJSON/RestJSONError.swift#L38,
+            // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
+            let bodyData = try await copiedResponse.body.readData()
+            copiedResponse.body = .data(bodyData)
+            return .failure(try await httpResponseErrorClosure(copiedResponse))
+        }
+    }
 }

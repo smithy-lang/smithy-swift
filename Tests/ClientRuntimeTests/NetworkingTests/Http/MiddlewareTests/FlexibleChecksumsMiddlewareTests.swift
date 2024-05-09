@@ -105,7 +105,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
     private func addFlexibleChecksumsResponseMiddleware(validationMode: Bool, priorityList: [String] = []) {
         stack.deserializeStep.intercept(
             position: .after,
-            middleware: FlexibleChecksumsResponseMiddleware<MockOutput>(
+            middleware: FlexibleChecksumsResponseMiddleware<MockInput, MockOutput>(
                 validationMode: validationMode,
                 priorityList: priorityList
             )

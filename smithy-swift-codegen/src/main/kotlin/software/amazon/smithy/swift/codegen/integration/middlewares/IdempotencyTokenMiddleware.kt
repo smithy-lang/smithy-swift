@@ -30,19 +30,28 @@ class IdempotencyTokenMiddleware(
         val inputShape = model.expectShape(op.input.get())
         val idempotentMember = inputShape.members().firstOrNull { it.hasTrait<IdempotencyTokenTrait>() }
         idempotentMember?.let {
+            super.render(ctx, writer, op, operationStackName)
+        }
+    }
+
+    override fun renderMiddlewareInit(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape
+    ) {
+        val inputShape = model.expectShape(op.input.get())
+        val idempotentMember = inputShape.members().firstOrNull { it.hasTrait<IdempotencyTokenTrait>() }
+        idempotentMember?.let {
             val idempotentMemberName = it.memberName.decapitalize()
             val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
             val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-            val outputErrorShapeName = MiddlewareShapeUtils.outputErrorSymbolName(op)
+
             writer.write(
-                "\$L.\$L.intercept(position: \$L, middleware: \$N<\$L, \$L>(keyPath: \\.\$L))",
-                operationStackName,
-                middlewareStep.stringValue(),
-                position.stringValue(),
+                "\$N<\$L, \$L>(keyPath: \\.\$L)",
                 ClientRuntimeTypes.Middleware.IdempotencyTokenMiddleware,
                 inputShapeName,
                 outputShapeName,
-                idempotentMemberName
+                idempotentMemberName,
             )
         }
     }

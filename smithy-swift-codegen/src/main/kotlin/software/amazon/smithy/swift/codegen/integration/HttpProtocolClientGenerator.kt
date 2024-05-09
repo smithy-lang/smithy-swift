@@ -61,11 +61,16 @@ open class HttpProtocolClientGenerator(
                             labelMemberName,
                         )
                     }
-                    writer.write(
-                        "let result = try await \$L.handleMiddleware(context: context, input: input, next: client.getHandler())",
-                        operationStackName,
-                    )
-                    writer.write("return result")
+
+                    if (ctx.settings.useInterceptors) {
+                        writer.write("return try await op.execute(input: input)")
+                    } else {
+                        writer.write(
+                            "let result = try await \$L.handleMiddleware(context: context, input: input, next: client.getHandler())",
+                            operationStackName,
+                        )
+                        writer.write("return result")
+                    }
                 }
                 writer.write("")
             }
