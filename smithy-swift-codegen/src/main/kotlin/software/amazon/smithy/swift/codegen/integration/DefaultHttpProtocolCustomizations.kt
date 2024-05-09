@@ -7,7 +7,11 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.AuthSchemeResolverGenerator
+import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.endpoints.EndpointResolverGenerator
+import software.amazon.smithy.swift.codegen.middleware.EndpointResolverMiddleware
 
 abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
     override fun serviceClient(
@@ -29,5 +33,10 @@ abstract class DefaultHttpProtocolCustomizations : HttpProtocolCustomizable {
 
     override fun renderInternals(ctx: ProtocolGenerator.GenerationContext) {
         AuthSchemeResolverGenerator().render(ctx)
+        EndpointResolverGenerator(
+            partitionDefinition = ClientRuntimeTypes.Core.PartitionDefinition,
+            dependency = SwiftDependency.CLIENT_RUNTIME,
+            endpointResolverMiddleware = { w, i, o, oe -> EndpointResolverMiddleware(w, i, o, oe) }
+        ).render(ctx)
     }
 }
