@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-public struct InvokeInput: Swift.Equatable {
+public struct InvokeInput {
     public var payload: ClientRuntime.Data?
 
     public init(

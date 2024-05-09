@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct OnlyHttpBearerAuthOptionalInputBody: Swift.Equatable {
+struct OnlyHttpBearerAuthOptionalInputBody {
 }
 
 extension OnlyHttpBearerAuthOptionalInputBody: Swift.Decodable {

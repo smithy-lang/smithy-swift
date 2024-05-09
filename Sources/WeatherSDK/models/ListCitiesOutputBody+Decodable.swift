@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct ListCitiesOutputBody: Swift.Equatable {
+struct ListCitiesOutputBody {
     let nextToken: Swift.String?
     let items: [WeatherClientTypes.CitySummary]?
 }

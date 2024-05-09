@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct OnlyHttpApiKeyAndBearerAuthReversedInputBody: Swift.Equatable {
+struct OnlyHttpApiKeyAndBearerAuthReversedInputBody {
 }
 
 extension OnlyHttpApiKeyAndBearerAuthReversedInputBody: Swift.Decodable {

@@ -149,3 +149,6 @@ public class DefaultAuthSchemeResolver: AuthSchemeResolver {
         return DefaultAuthSchemeResolverParameters(operation: opName)
     }
 }
+
+public typealias ClientConfigurationDefaults
+    = DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>

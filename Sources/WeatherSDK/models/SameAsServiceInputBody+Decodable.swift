@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct SameAsServiceInputBody: Swift.Equatable {
+struct SameAsServiceInputBody {
 }
 
 extension SameAsServiceInputBody: Swift.Decodable {

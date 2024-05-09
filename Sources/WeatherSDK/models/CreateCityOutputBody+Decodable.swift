@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct CreateCityOutputBody: Swift.Equatable {
+struct CreateCityOutputBody {
     let cityId: Swift.String?
 }
 

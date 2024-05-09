@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-struct GetCurrentTimeOutputBody: Swift.Equatable {
+struct GetCurrentTimeOutputBody {
     let time: ClientRuntime.Date?
 }
 

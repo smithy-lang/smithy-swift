@@ -2,7 +2,7 @@
 
 import ClientRuntime
 
-public struct ListCitiesInput: Swift.Equatable {
+public struct ListCitiesInput {
     public var nextToken: Swift.String?
     public var pageSize: Swift.Int?
 
