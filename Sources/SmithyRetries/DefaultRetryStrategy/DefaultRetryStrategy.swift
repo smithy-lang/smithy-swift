@@ -9,6 +9,7 @@ import struct Foundation.TimeInterval
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryStrategyOptions
 import struct SmithyRetriesAPI.RetryErrorInfo
+import enum SmithyRetriesAPI.RetryError
 
 public struct DefaultRetryStrategy: RetryStrategy {
     public typealias Token = DefaultRetryToken
@@ -57,9 +58,4 @@ public struct DefaultRetryStrategy: RetryStrategy {
     public func recordSuccess(token: DefaultRetryToken) async {
         await token.quota.retryQuotaRelease(isSuccess: true, capacityAmount: token.capacityAmount)
     }
-}
-
-enum RetryError: Error {
-    case maxAttemptsReached
-    case insufficientQuota
 }

@@ -8,6 +8,8 @@
 import XCTest
 
 @testable import ClientRuntime
+import SmithyRetriesAPI
+import SmithyRetries
 
 class OrchestratorTests: XCTestCase {
     struct TestInput {
@@ -167,7 +169,7 @@ class OrchestratorTests: XCTestCase {
     }
 
     struct ThrowingRetryStrategy: RetryStrategy {
-        init(options: ClientRuntime.RetryStrategyOptions) {}
+        init(options: RetryStrategyOptions) {}
 
         public func acquireInitialRetryToken(tokenScope: String) async throws -> DefaultRetryToken {
             throw TestError(value: "1")
@@ -210,7 +212,7 @@ class OrchestratorTests: XCTestCase {
                     return .failure(try await UnknownHTTPServiceError.makeError(httpResponse: response))
                 }
             })
-            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions()))
+            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())))
             .retryErrorInfoProvider({ e in
                 trace.append("errorInfo")
                 return DefaultRetryErrorInfoProvider.errorInfo(for: e)
@@ -504,7 +506,7 @@ class OrchestratorTests: XCTestCase {
         let initialTokenTrace = Trace()
         let initialToken = await asyncResult {
             return try await self.traceOrchestrator(trace: initialTokenTrace)
-                .retryStrategy(ThrowingRetryStrategy(options: RetryStrategyOptions()))
+                .retryStrategy(ThrowingRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())))
                 .build()
                 .execute(input: TestInput(foo: ""))
         }

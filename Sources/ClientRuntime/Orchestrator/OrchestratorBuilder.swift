@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyRetriesAPI.RetryStrategy
+import struct SmithyRetriesAPI.RetryErrorInfo
+
 /// Builds an Orchestrator, combining runtime components, interceptors, serializers, and deserializers.
 ///
 /// Note: This is intended to be used within generated code, not directly.
