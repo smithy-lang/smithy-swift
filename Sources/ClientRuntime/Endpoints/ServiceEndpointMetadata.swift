@@ -7,10 +7,10 @@
 import ClientRuntime
 
 public struct ServiceEndpointMetadata {
-    private let defaultProtocol = ProtocolType.https.rawValue
-    private let defaultSigner = "v4"
-    private let protocolPriority = ProtocolType.allCases.map { $0.rawValue }
-    private let signerPriority = ["v4"]
+    public let defaultProtocol = ProtocolType.https.rawValue
+    public let defaultSigner = "v4"
+    public let protocolPriority = ProtocolType.allCases.map { $0.rawValue }
+    public let signerPriority = ["v4"]
     /**
       A URI **template** used to resolve the hostname of the endpoint.
       Templates are of the form `{name}`. e.g. `{service}.{region}.amazonaws.com`
@@ -20,16 +20,16 @@ public struct ServiceEndpointMetadata {
       - `region` - the region name
       - `dnsSuffix` - the dns suffix of the partition
      */
-    let hostName: String?
+    public let hostName: String?
 
     /// A list of supported protocols for the endpoint
-    let protocols: [String]
+    public let protocols: [String]
 
     /// A custom signing constraint for the endpoint
-    let credentialScope: CredentialScope?
+    public let credentialScope: CredentialScope?
 
     /// A list of allowable signature versions for the endpoint (e.g. "v4", "v2", "v3", "s3v3", etc)
-    let signatureVersions: [String]
+    public let signatureVersions: [String]
 
     public init(hostName: String? = nil,
                 protocols: [String] = [],
@@ -43,28 +43,24 @@ public struct ServiceEndpointMetadata {
 }
 
 extension ServiceEndpointMetadata {
-    func resolve(region: String, defaults: ServiceEndpointMetadata) throws -> AWSEndpoint {
+    func resolve(region: String, defaults: ServiceEndpointMetadata) throws -> SmithyEndpoint {
         let serviceEndpointMetadata = buildEndpointMetadataIfNotSet(defaults: defaults)
         guard let hostname = serviceEndpointMetadata.hostName else {
             throw EndpointError.hostnameIsNil("EndpointDefinition.hostname cannot be nil at this point")
         }
-        let editedHostName = hostname.replacingOccurrences(of: "{region}", with: region)
         let transportProtocol = getProtocolByPriority(from: serviceEndpointMetadata.protocols)
         let signingName = serviceEndpointMetadata.credentialScope?.serviceId
-        let signingRegion = serviceEndpointMetadata.credentialScope?.region ?? region
 
-        return AWSEndpoint(endpoint: Endpoint(host: editedHostName,
-                                              path: "/",
-                                              protocolType: ProtocolType(rawValue: transportProtocol)),
-                           signingName: signingName,
-                           signingRegion: signingRegion)
+        return SmithyEndpoint(endpoint: Endpoint(host: hostname,
+                              path: "/",
+                              protocolType: ProtocolType(rawValue: transportProtocol)),
+                              signingName: signingName)
     }
 
     private func buildEndpointMetadataIfNotSet(defaults: ServiceEndpointMetadata) -> ServiceEndpointMetadata {
         let hostName = self.hostName ?? defaults.hostName
         let protocols = !self.protocols.isEmpty ? self.protocols : defaults.protocols
         let credentialScope = CredentialScope(
-            region: self.credentialScope?.region ?? defaults.credentialScope?.region,
             serviceId: self.credentialScope?.serviceId ?? defaults.credentialScope?.serviceId
         )
         let signatureVersions = !self.signatureVersions.isEmpty ? self.signatureVersions : defaults.signatureVersions
