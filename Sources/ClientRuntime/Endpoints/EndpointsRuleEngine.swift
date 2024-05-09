@@ -13,8 +13,8 @@ public class EndpointsRuleEngine {
         crtEngine = try AwsCommonRuntimeKit.EndpointsRuleEngine(partitions: partitions, ruleSet: ruleSet)
     }
 
-    public func resolve(context: EndpointsRequestContext) throws -> EndpointsResolvedEndpoint? {
+    public func resolve(context: EndpointsRequestContext) throws -> CRTResolvedEndpoint? {
         let crtResolvedEndpoint = try crtEngine.resolve(context: context.toCRT())
-        return EndpointsResolvedEndpoint(crtResolvedEndpoint: crtResolvedEndpoint)
+        return CRTResolvedEndpoint(crtResolvedEndpoint: crtResolvedEndpoint)
     }
 }

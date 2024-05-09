@@ -4,7 +4,7 @@
 import AwsCommonRuntimeKit
 
 /// Wrapper for CRTAWSEndpointResolvedEndpoint
-public class EndpointsResolvedEndpoint {
+public class CRTResolvedEndpoint {
 
     let crtResolvedEndpoint: AwsCommonRuntimeKit.ResolvedEndpoint
 
@@ -12,8 +12,8 @@ public class EndpointsResolvedEndpoint {
         self.crtResolvedEndpoint = crtResolvedEndpoint
     }
 
-    public func getType() -> EndpointsResolvedEndpointType {
-        EndpointsResolvedEndpointType(crtType: crtResolvedEndpoint)
+    public func getType() -> CRTResolvedEndpointType {
+        CRTResolvedEndpointType(crtType: crtResolvedEndpoint)
     }
 
     public func getError() -> String? {

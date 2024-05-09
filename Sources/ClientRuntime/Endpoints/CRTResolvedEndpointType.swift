@@ -4,7 +4,7 @@
 import AwsCommonRuntimeKit
 
 /// Wrapper for CRTAWSEndpointsResolvedEndpointType
-public enum EndpointsResolvedEndpointType {
+public enum CRTResolvedEndpointType {
     case error
     case endpoint
 
