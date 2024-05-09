@@ -94,12 +94,12 @@ class OperationInputBodyMiddleware(
         val payloadSymbol = ctx.symbolProvider.toSymbol(payloadShape)
         val requestWireProtocol = ctx.service.requestWireProtocol
 
+        writer.addImports(ctx.service.requestWireProtocol)
         when (payloadShape) {
             is UnionShape -> {
                 if (isStreaming) {
                     addEventStreamMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, keyPath, defaultBody, requestWireProtocol, sendInitialRequest)
                 } else {
-                    writer.addImports(ctx.service.requestWireProtocol)
                     addAggregateMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
                 }
             }

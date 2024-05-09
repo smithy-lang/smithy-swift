@@ -49,12 +49,12 @@ extension BodyMiddleware: RequestMessageSerializer {
     public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
         do {
             let data = try Writer.write(
-                input.operationInput,
+                input,
                 rootNodeInfo: rootNodeInfo,
                 with: inputWritingClosure
             )
             let body = ByteStream.data(data)
-            input.builder.withBody(body)
+            builder.withBody(body)
         } catch {
             throw ClientError.serializationFailed(error.localizedDescription)
         }

@@ -48,26 +48,6 @@ public struct PayloadBodyMiddleware<OperationStackInput,
     public typealias Context = HttpContext
 }
 
-public extension PayloadBodyMiddleware {
-    func apply(input: OperationStackInput, request: SdkHttpRequestBuilder, attributes: HttpContext) throws {
-        do {
-            if let payload = input[keyPath: keyPath] {
-                let data = try Writer.write(
-                    payload,
-                    rootNodeInfo: rootNodeInfo,
-                    with: inputWritingClosure
-                )
-                let body = ByteStream.data(data)
-                input.builder.withBody(body)
-            } else if let defaultBody {
-                request.withBody(.data(Data(defaultBody.utf8)))
-            }
-        } catch {
-            throw ClientError.serializationFailed(error.localizedDescription)
-        }
-    }
-}
-
 extension PayloadBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = SdkHttpRequest
@@ -76,8 +56,13 @@ extension PayloadBodyMiddleware: RequestMessageSerializer {
     public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
         do {
             if let payload = input[keyPath: keyPath] {
-                let data = try documentWritingClosure(payload, inputWritingClosure)
-                builder.withBody(.data(data))
+                let data = try Writer.write(
+                    payload,
+                    rootNodeInfo: rootNodeInfo,
+                    with: inputWritingClosure
+                )
+                let body = ByteStream.data(data)
+                builder.withBody(body)
             } else if let defaultBody {
                 builder.withBody(.data(Data(defaultBody.utf8)))
             }
