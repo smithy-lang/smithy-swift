@@ -49,3 +49,10 @@ public struct MockDeserializeMiddleware<OperationStackOutput>: Middleware {
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
 }
+
+extension MockDeserializeMiddleware: ResponseMessageDeserializer {
+    public func deserialize(response: HttpResponse, attributes: HttpContext) async throws -> Result<OperationStackOutput, Error> {
+        let output = try await responseClosure(response)
+        return .success(output)
+    }
+}
