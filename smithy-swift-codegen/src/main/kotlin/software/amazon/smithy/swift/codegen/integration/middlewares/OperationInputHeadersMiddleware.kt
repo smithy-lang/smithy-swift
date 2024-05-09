@@ -29,17 +29,22 @@ class OperationInputHeadersMiddleware(
         operationStackName: String,
     ) {
         if (!MiddlewareShapeUtils.hasHttpHeaders(model, op)) { return }
+        super.renderSpecific(ctx, writer, op, operationStackName, "serialize")
+    }
+
+    override fun renderMiddlewareInit(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape
+    ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
         writer.write(
-            "\$L.\$L.intercept(position: \$L, middleware: \$N<\$L, \$L>(\$L.headerProvider(_:)))",
-            operationStackName,
-            middlewareStep.stringValue(),
-            position.stringValue(),
+            "\$N<\$L, \$L>(\$L.headerProvider(_:))",
             ClientRuntimeTypes.Middleware.HeaderMiddleware,
             inputShapeName,
             outputShapeName,
-            inputShapeName,
+            inputShapeName
         )
     }
 }

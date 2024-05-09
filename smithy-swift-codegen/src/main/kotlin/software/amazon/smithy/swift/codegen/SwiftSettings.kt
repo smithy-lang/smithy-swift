@@ -26,6 +26,7 @@ private const val HOMEPAGE = "homepage"
 private const val SDK_ID = "sdkId"
 private const val GIT_REPO = "gitRepo"
 private const val SWIFT_VERSION = "swiftVersion"
+private const val USE_INTERCEPTORS = "useInterceptors"
 
 class SwiftSettings(
     val service: ShapeId,
@@ -36,7 +37,8 @@ class SwiftSettings(
     val homepage: String,
     val sdkId: String,
     val gitRepo: String,
-    val swiftVersion: String
+    val swiftVersion: String,
+    var useInterceptors: Boolean
 ) {
 
     companion object {
@@ -62,7 +64,8 @@ class SwiftSettings(
                     SDK_ID,
                     HOMEPAGE,
                     GIT_REPO,
-                    SWIFT_VERSION
+                    SWIFT_VERSION,
+                    USE_INTERCEPTORS
                 )
             )
 
@@ -78,8 +81,9 @@ class SwiftSettings(
             val gitRepo = config.expectStringMember(GIT_REPO).value
             val swiftVersion = config.expectStringMember(SWIFT_VERSION).value
             val sdkId = sanitizeSdkId(config.getStringMemberOrDefault(SDK_ID, serviceId.name))
+            val useInterceptors = config.getBooleanMemberOrDefault(USE_INTERCEPTORS)
 
-            return SwiftSettings(serviceId, moduleName, version, desc, author, homepage, sdkId, gitRepo, swiftVersion)
+            return SwiftSettings(serviceId, moduleName, version, desc, author, homepage, sdkId, gitRepo, swiftVersion, useInterceptors)
         }
 
         private fun sanitizeSdkId(sdkId: String): String {

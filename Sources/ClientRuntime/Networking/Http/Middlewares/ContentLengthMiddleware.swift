@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct ContentLengthMiddleware<OperationStackOutput>: Middleware {
+public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "ContentLength"
 
     private let contentLengthHeaderName = "Content-Length"
@@ -28,24 +28,29 @@ public struct ContentLengthMiddleware<OperationStackOutput>: Middleware {
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context {
+        try addHeaders(builder: input, attributes: context)
+        return try await next.handle(context: context, input: input)
+    }
 
-        switch input.body {
+    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+        switch builder.body {
         case .data(let data):
-            input.headers.update(name: "Content-Length", value: String(data?.count ?? 0))
+            let contentLength = data?.count ?? 0
+            builder.headers.update(name: "Content-Length", value: String(contentLength))
         case .stream(let stream):
             if let length = stream.length {
                 if !stream.isEligibleForAwsChunkedStreaming()
-                    && !(input.headers.value(for: "Transfer-Encoding") == "chunked") {
-                    input.headers.update(name: "Content-Length", value: String(length))
+                    && !(builder.headers.value(for: "Transfer-Encoding") == "chunked") {
+                    builder.headers.update(name: "Content-Length", value: String(length))
                 }
             } else if (requiresLength == false && unsignedPayload == true) ||
                         (requiresLength == nil && unsignedPayload == nil) {
                 // Transfer-Encoding can be sent on all Event Streams where length cannot be determined
                 // or on blob Data Streams where requiresLength is true and unsignedPayload is false
                 // Only for HTTP/1.1 requests, will be removed in all HTTP/2 requests
-                input.headers.update(name: "Transfer-Encoding", value: "chunked")
+                builder.headers.update(name: "Transfer-Encoding", value: "chunked")
             } else {
-                let operation = context.attributes.get(key: AttributeKey<String>(name: "Operation"))
+                let operation = attributes.get(key: AttributeKey<String>(name: "Operation"))
                              ?? "Error getting operation name"
                 let errorMessage = (unsignedPayload ?? false) ?
                     "Missing content-length for operation: \(operation)" :
@@ -53,12 +58,24 @@ public struct ContentLengthMiddleware<OperationStackOutput>: Middleware {
                 throw StreamError.notSupported(errorMessage)
             }
         case .noStream:
-            input.headers.update(name: "Content-Length", value: "0")
+            builder.headers.update(name: "Content-Length", value: "0")
         }
-        return try await next.handle(context: context, input: input)
     }
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+}
+
+extension ContentLengthMiddleware: HttpInterceptor {
+    public typealias InputType = OperationStackInput
+    public typealias OutputType = OperationStackOutput
+
+    public func modifyBeforeTransmit(
+        context: some MutableRequest<InputType, RequestType, AttributesType>
+    ) async throws {
+        let builder = context.getRequest().toBuilder()
+        try addHeaders(builder: builder, attributes: context.getAttributes())
+        context.updateRequest(updated: builder.build())
+    }
 }

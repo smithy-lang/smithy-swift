@@ -26,11 +26,11 @@ class IdempotencyTokenTraitTests {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<IdempotencyTokenWithStructureOutput>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>(contentType: "application/xml"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput, SmithyXML.Writer>(documentWritingClosure: SmithyXML.XMLReadWrite.documentWritingClosure(rootNodeInfo: "IdempotencyToken"), inputWritingClosure: IdempotencyTokenWithStructureInput.writingClosure(_:to:)))
-        operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+        operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, IdempotencyTokenWithStructureOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<IdempotencyTokenWithStructureOutput>())
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<IdempotencyTokenWithStructureOutput>(responseClosure(IdempotencyTokenWithStructureOutput.httpBinding, responseDocumentBinding), responseErrorClosure(IdempotencyTokenWithStructureOutputError.httpBinding, responseDocumentBinding)))
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<IdempotencyTokenWithStructureOutput>(clientLogMode: config.clientLogMode))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
     }

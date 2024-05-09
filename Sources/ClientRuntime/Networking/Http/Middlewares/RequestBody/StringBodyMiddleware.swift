@@ -23,12 +23,21 @@ public struct StringBodyMiddleware<OperationStackInput, OperationStackOutput>: M
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              let body = ByteStream.data(Data((input.operationInput[keyPath: keyPath] ?? "").utf8))
-              input.builder.withBody(body)
+              try apply(input: input.operationInput, builder: input.builder, attributes: context)
               return try await next.handle(context: context, input: input)
           }
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+}
+
+extension StringBodyMiddleware: RequestMessageSerializer {
+    public typealias InputType = OperationStackInput
+    public typealias RequestType = SdkHttpRequest
+    public typealias AttributesType = HttpContext
+
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+        builder.withBody(.data(Data((input[keyPath: keyPath] ?? "").utf8)))
+    }
 }

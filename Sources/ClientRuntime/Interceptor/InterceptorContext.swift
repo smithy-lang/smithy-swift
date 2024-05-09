@@ -15,10 +15,10 @@ public protocol InterceptorContext: AnyObject {
     associatedtype OutputType
 
     /// The type of the transport message that will be transmitted by the operation being invoked.
-    associatedtype RequestType
+    associatedtype RequestType: RequestMessage
 
     /// The type of the transport message that will be received by the operation being invoked.
-    associatedtype ResponseType
+    associatedtype ResponseType: ResponseMessage
 
     /// The type of the attributes that will be available to all interceptors.
     associatedtype AttributesType: HasAttributes
@@ -101,8 +101,8 @@ public protocol AfterDeserialization<InputType, OutputType, RequestType, Respons
     /// - Returns: The serialized response.
     func getResponse() -> ResponseType
 
-    /// - Returns: The operation output.
-    func getOutput() -> OutputType
+    /// - Returns: The operation result.
+    func getResult() -> Result<OutputType, Error>
 }
 
 /// Context given to interceptor hooks called after each attempt at sending the request.
@@ -115,8 +115,8 @@ public protocol AfterAttempt<InputType, OutputType, RequestType, ResponseType, A
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation output.
-    func getOutput() -> OutputType
+    /// - Returns: The operation result.
+    func getResult() -> Result<OutputType, Error>
 }
 
 /// Context given to interceptor hooks that can mutate the operation output, called after each attempt at sending the request.
@@ -131,12 +131,12 @@ public protocol MutableOutputAfterAttempt<InputType, OutputType, RequestType, Re
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation output.
-    func getOutput() -> OutputType
+    /// - Returns: The operation result.
+    func getResult() -> Result<OutputType, Error>
 
-    /// Mutates the operation output.
-    /// - Parameter updated: The updated output.
-    func updateOutput(updated: OutputType)
+    /// Mutates the operation result.
+    /// - Parameter updated: The updated result.
+    func updateResult(updated: Result<OutputType, Error>)
 }
 
 /// Context given to interceptor hooks called after execution.
@@ -150,8 +150,8 @@ public protocol Finalization<InputType, OutputType, RequestType, ResponseType, A
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation output.
-    func getOutput() -> OutputType
+    /// - Returns: The operation result.
+    func getResult() -> Result<OutputType, Error>
 }
 
 /// Context given to interceptor hooks that can mutate the operation output, called after execution.
@@ -167,10 +167,10 @@ public protocol MutableOutputFinalization<InputType, OutputType, RequestType, Re
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation output.
-    func getOutput() -> OutputType
+    /// - Returns: The operation result.
+    func getResult() -> Result<OutputType, Error>
 
-    /// Mutates the operation output.
-    /// - Parameter updated: The updated output.
-    func updateOutput(updated: OutputType)
+    /// Mutates the operation result.
+    /// - Parameter updated: The updated result.
+    func updateResult(updated: Result<OutputType, Error>)
 }

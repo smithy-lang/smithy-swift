@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-public struct MutateHeadersMiddleware<OperationStackOutput>: Middleware {
+public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "MutateHeaders"
 
@@ -24,26 +24,42 @@ public struct MutateHeadersMiddleware<OperationStackOutput>: Middleware {
     Self.MInput == H.Input,
     Self.MOutput == H.Output,
     Self.Context == H.Context {
+        mutateHeaders(builder: input)
+        return try await next.handle(context: context, input: input)
+    }
+
+    private func mutateHeaders(builder: SdkHttpRequestBuilder) {
         if !additional.dictionary.isEmpty {
-            input.withHeaders(additional)
+            builder.withHeaders(additional)
         }
 
         if !overrides.dictionary.isEmpty {
             for header in overrides.headers {
-                input.updateHeader(name: header.name, value: header.value)
+                builder.updateHeader(name: header.name, value: header.value)
             }
         }
 
         if !conditionallySet.dictionary.isEmpty {
-            for header in conditionallySet.headers where !input.headers.exists(name: header.name) {
-                input.headers.add(name: header.name, values: header.value)
+            for header in conditionallySet.headers where !builder.headers.exists(name: header.name) {
+                builder.headers.add(name: header.name, values: header.value)
             }
         }
-
-        return try await next.handle(context: context, input: input)
     }
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+}
+
+extension MutateHeadersMiddleware: HttpInterceptor {
+    public typealias InputType = OperationStackInput
+    public typealias OutputType = OperationStackOutput
+
+    public func modifyBeforeTransmit(
+        context: some MutableRequest<InputType, RequestType, AttributesType>
+    ) async throws {
+        let builder = context.getRequest().toBuilder()
+        mutateHeaders(builder: builder)
+        context.updateRequest(updated: builder.build())
+    }
 }

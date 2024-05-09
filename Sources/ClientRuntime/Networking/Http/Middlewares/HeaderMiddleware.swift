@@ -21,11 +21,21 @@ public struct HeaderMiddleware<OperationStackInput, OperationStackOutput>: Middl
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              input.builder.withHeaders(headerProvider(input.operationInput))
+              try apply(input: input.operationInput, builder: input.builder, attributes: context)
               return try await next.handle(context: context, input: input)
           }
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+}
+
+extension HeaderMiddleware: RequestMessageSerializer {
+    public typealias InputType = OperationStackInput
+    public typealias RequestType = SdkHttpRequest
+    public typealias AttributesType = HttpContext
+
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+        builder.withHeaders(headerProvider(input))
+    }
 }

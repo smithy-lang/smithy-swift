@@ -4,7 +4,7 @@
  */
 
 /// this class will implement Handler per new middleware implementation
-public class SdkHttpClient {
+public class SdkHttpClient: ExecuteRequest {
 
     let engine: HTTPClient
 
@@ -12,10 +12,18 @@ public class SdkHttpClient {
         self.engine = engine
     }
 
+    public func execute(request: SdkHttpRequest, attributes: HttpContext) async throws -> HttpResponse {
+        if attributes.shouldForceH2(), let crtEngine = engine as? CRTClientEngine {
+            return try await crtEngine.executeHTTP2Request(request: request)
+        } else {
+            return try await engine.send(request: request)
+        }
+    }
+
     public func getHandler<OperationStackOutput>()
         -> AnyHandler<SdkHttpRequest, OperationOutput<OperationStackOutput>, HttpContext> {
 
-        let clientHandler = ClientHandler<OperationStackOutput>(engine: engine)
+        let clientHandler = ClientHandler<OperationStackOutput>(client: self)
         return clientHandler.eraseToAnyHandler()
     }
 
@@ -25,16 +33,10 @@ public class SdkHttpClient {
 }
 
 private struct ClientHandler<OperationStackOutput>: Handler {
-    let engine: HTTPClient
+    let client: SdkHttpClient
+
     func handle(context: HttpContext, input: SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput> {
-        let httpResponse: HttpResponse
-
-        if context.shouldForceH2(), let crtEngine = engine as? CRTClientEngine {
-            httpResponse = try await crtEngine.executeHTTP2Request(request: input)
-        } else {
-            httpResponse = try await engine.send(request: input)
-        }
-
+        let httpResponse = try await client.execute(request: input, attributes: context)
         return OperationOutput<OperationStackOutput>(httpResponse: httpResponse)
     }
 
