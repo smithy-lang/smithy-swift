@@ -6,8 +6,8 @@
 //
 
 public struct CredentialScope {
-    let region: String?
-    let serviceId: String?
+    public let region: String?
+    public let serviceId: String?
 
     public init(region: String? = nil, serviceId: String? = nil) {
         self.region = region
