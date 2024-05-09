@@ -20,9 +20,9 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesTypes
 
 class RetryMiddleware(
-        val model: Model,
-        val symbolProvider: SymbolProvider,
-        val retryErrorInfoProviderSymbol: Symbol,
+    val model: Model,
+    val symbolProvider: SymbolProvider,
+    val retryErrorInfoProviderSymbol: Symbol,
 ) : MiddlewareRenderable {
 
     override val name = "RetryMiddleware"
@@ -40,14 +40,14 @@ class RetryMiddleware(
             val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
             writer.addImport(SwiftDependency.SMITHY_RETRIES.target)
             writer.write(
-                    "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(options: config.retryStrategyOptions))",
-                    operationStackName,
-                    middlewareStep.stringValue(),
-                    position.stringValue(),
-                    ClientRuntimeTypes.Middleware.RetryMiddleware,
-                    SmithyRetriesTypes.DefaultRetryStrategy,
-                    retryErrorInfoProviderSymbol,
-                    output
+                "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(options: config.retryStrategyOptions))",
+                operationStackName,
+                middlewareStep.stringValue(),
+                position.stringValue(),
+                ClientRuntimeTypes.Middleware.RetryMiddleware,
+                SmithyRetriesTypes.DefaultRetryStrategy,
+                retryErrorInfoProviderSymbol,
+                output
             )
         }
     }
