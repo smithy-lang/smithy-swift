@@ -33,7 +33,8 @@ class RetryMiddleware(
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
         if (ctx.settings.useInterceptors) {
-            writer.write("builder.retryStrategy(\$N(options: config.retryStrategyOptions))", ClientRuntimeTypes.Core.DefaultRetryStrategy)
+            writer.addImport(SwiftDependency.SMITHY_RETRIES.target)
+            writer.write("builder.retryStrategy(\$N(options: config.retryStrategyOptions))", SmithyRetriesTypes.DefaultRetryStrategy)
             writer.write("builder.retryErrorInfoProvider(\$N.errorInfo(for:))", retryErrorInfoProviderSymbol)
         } else {
             val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
