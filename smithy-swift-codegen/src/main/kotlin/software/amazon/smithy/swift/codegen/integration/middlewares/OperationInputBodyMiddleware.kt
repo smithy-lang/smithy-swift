@@ -166,7 +166,7 @@ class OperationInputBodyMiddleware(
             keyPath,
             defaultBody,
             payloadSymbol,
-            if (sendInitialRequest) ", initialRequestMessage: try input.makeInitialRequestMessage(encoder: encoder)" else ""
+            if (sendInitialRequest) ", initialRequestMessage: try input.makeInitialRequestMessage()" else ""
         )
     }
 
