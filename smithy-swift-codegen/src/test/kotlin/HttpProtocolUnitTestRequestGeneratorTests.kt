@@ -86,13 +86,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SmokeTestInput, SmokeTestOutput>(SmokeTestInput.headerProvider(_:)))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.QueryItemMiddleware<SmokeTestInput, SmokeTestOutput>(SmokeTestInput.queryItemProvider(_:)))
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SmokeTestInput, SmokeTestOutput>(contentType: "application/json"))
-<<<<<<< HEAD
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SmokeTestInput, SmokeTestOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: SmokeTestInput.write(value:to:)))
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
-=======
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SmokeTestInput, SmokeTestOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<SmokeTestInput, SmokeTestOutput>())
->>>>>>> origin/main
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<SmokeTestOutput>(
@@ -273,13 +268,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>(SimpleScalarPropertiesInput.headerProvider(_:)))
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>(contentType: "application/json"))
-<<<<<<< HEAD
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: SimpleScalarPropertiesInput.write(value:to:)))
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
-=======
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>())
->>>>>>> origin/main
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<SimpleScalarPropertiesOutput>(
@@ -472,13 +462,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutput>(contentType: "application/json"))
-<<<<<<< HEAD
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<JsonUnionsInput, JsonUnionsOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: JsonUnionsInput.write(value:to:)))
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
-=======
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<JsonUnionsInput, JsonUnionsOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<JsonUnionsInput, JsonUnionsOutput>())
->>>>>>> origin/main
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<JsonUnionsOutput>(
@@ -565,13 +550,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutput>(contentType: "application/json"))
-<<<<<<< HEAD
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<RecursiveShapesInput, RecursiveShapesOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: RecursiveShapesInput.write(value:to:)))
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
-=======
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<RecursiveShapesInput, RecursiveShapesOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<RecursiveShapesInput, RecursiveShapesOutput>())
->>>>>>> origin/main
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<RecursiveShapesOutput>(
@@ -627,7 +607,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 {
                     "foo": "bar"
                 }
-<<<<<<< HEAD
             ""${'"'}.utf8))
             ,
             stringValue: "string"
@@ -644,55 +623,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
             input.withHost(host)
             return try await next.handle(context: context, input: input)
-=======
-                ""${'"'}.data(using: .utf8)!)
-                ,
-                stringValue: "string"
-            )
-            let encoder = ClientRuntime.JSONEncoder()
-            encoder.dateEncodingStrategy = .secondsSince1970
-            encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-            let context = HttpContextBuilder()
-                          .withEncoder(value: encoder)
-                          .withMethod(value: .put)
-                          .build()
-            var operationStack = OperationStack<InlineDocumentInput, InlineDocumentOutput>(id: "InlineDocumentInput")
-            operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<InlineDocumentInput, InlineDocumentOutput>(urlPrefix: urlPrefix, InlineDocumentInput.urlPathProvider(_:)))
-            operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<InlineDocumentInput, InlineDocumentOutput>(host: hostOnly))
-            operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<InlineDocumentOutput> in
-                input.withMethod(context.getMethod())
-                input.withPath(context.getPath())
-                let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-                input.withHost(host)
-                return try await next.handle(context: context, input: input)
-            }
-            operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutput>(contentType: "application/json"))
-            operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<InlineDocumentInput, InlineDocumentOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
-            operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<InlineDocumentInput, InlineDocumentOutput>())
-            operationStack.deserializeStep.intercept(
-                position: .after,
-                middleware: MockDeserializeMiddleware<InlineDocumentOutput>(
-                    id: "TestDeserializeMiddleware",
-                    responseClosure: responseClosure(decoder: decoder),
-                    callback: { context, actual in
-                        try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                            XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
-                            XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
-                            try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: .json)
-                        })
-                        return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: InlineDocumentOutput())
-                    }
-                )
-            )
-            _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler() { (context, request) in
-                XCTFail("Deserialize was mocked out, this should fail")
-                throw SmithyTestUtilError("Mock handler unexpectedly failed")
-            })
->>>>>>> origin/main
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutput>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<InlineDocumentInput, InlineDocumentOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: InlineDocumentInput.write(value:to:)))
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<InlineDocumentInput, InlineDocumentOutput>())
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<InlineDocumentOutput>(
@@ -747,7 +681,6 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 }
             ""${'"'}.utf8))
 
-<<<<<<< HEAD
         )
         let context = HttpContextBuilder()
                       .withMethod(value: .put)
@@ -761,52 +694,10 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
             input.withHost(host)
             return try await next.handle(context: context, input: input)
-=======
-            )
-            let encoder = ClientRuntime.JSONEncoder()
-            encoder.dateEncodingStrategy = .secondsSince1970
-            encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-            let context = HttpContextBuilder()
-                          .withEncoder(value: encoder)
-                          .withMethod(value: .put)
-                          .build()
-            var operationStack = OperationStack<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>(id: "InlineDocumentAsPayloadInput")
-            operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>(urlPrefix: urlPrefix, InlineDocumentAsPayloadInput.urlPathProvider(_:)))
-            operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>(host: hostOnly))
-            operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<InlineDocumentAsPayloadOutput> in
-                input.withMethod(context.getMethod())
-                input.withPath(context.getPath())
-                let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
-                input.withHost(host)
-                return try await next.handle(context: context, input: input)
-            }
-            operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>(contentType: "application/json"))
-            operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.PayloadBodyMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput, ClientRuntime.Document, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure(), keyPath: \.documentValue, defaultBody: "{}"))
-            operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>())
-            operationStack.deserializeStep.intercept(
-                position: .after,
-                middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutput>(
-                    id: "TestDeserializeMiddleware",
-                    responseClosure: responseClosure(decoder: decoder),
-                    callback: { context, actual in
-                        try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in
-                            XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
-                            XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
-                            try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: .json)
-                        })
-                        return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: InlineDocumentAsPayloadOutput())
-                    }
-                )
-            )
-            _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler() { (context, request) in
-                XCTFail("Deserialize was mocked out, this should fail")
-                throw SmithyTestUtilError("Mock handler unexpectedly failed")
-            })
->>>>>>> origin/main
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.PayloadBodyMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput, SmithyReadWrite.Document, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: SmithyReadWrite.Document.write(value:to:), keyPath: \.documentValue, defaultBody: "{}"))
-        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware())
+        operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>())
         operationStack.deserializeStep.intercept(
             position: .after,
             middleware: MockDeserializeMiddleware<InlineDocumentAsPayloadOutput>(
