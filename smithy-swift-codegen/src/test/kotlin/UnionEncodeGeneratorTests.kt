@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
+import software.amazon.smithy.swift.codegen.model.NeedsReaderWriterTransformer
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 
@@ -23,6 +24,7 @@ class UnionEncodeGeneratorTests {
         resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
         resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
         resolvedModel = NestedShapeTransformer.transform(resolvedModel, settings.getService(resolvedModel))
+        resolvedModel = NeedsReaderWriterTransformer.transform(resolvedModel, settings.getService(resolvedModel))
         return resolvedModel
     }
     val newTestContext = newTestContext()

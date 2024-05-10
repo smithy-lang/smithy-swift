@@ -7,6 +7,7 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
+import software.amazon.smithy.swift.codegen.model.NeedsReaderWriterTransformer
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 
 class StructEncodeGenerationTests {
@@ -15,6 +16,7 @@ class StructEncodeGenerationTests {
         val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         model = RecursiveShapeBoxer.transform(model)
+        model = NeedsReaderWriterTransformer.transform(model, settings.getService(model))
         return model.newTestContext()
     }
     val newTestContext = newTestContext()
@@ -148,13 +150,6 @@ extension NestedEnum {
     static func write(value: NestedEnum?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
         try writer["myEnum"].write(value.myEnum)
-    }
-
-    static func read(from reader: SmithyJSON.Reader) throws -> NestedEnum {
-        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
-        var value = NestedEnum()
-        value.myEnum = try reader["myEnum"].readIfPresent()
-        return value
     }
 }
 """

@@ -7,6 +7,7 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
+import software.amazon.smithy.swift.codegen.model.NeedsReaderWriterTransformer
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 
 class UnionDecodeGeneratorTests {
@@ -15,6 +16,7 @@ class UnionDecodeGeneratorTests {
         val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         model = NestedShapeTransformer.transform(model, settings.getService(model))
+        model = NeedsReaderWriterTransformer.transform(model, settings.getService(model))
         return model.newTestContext()
     }
     val newTestContext = newTestContext()

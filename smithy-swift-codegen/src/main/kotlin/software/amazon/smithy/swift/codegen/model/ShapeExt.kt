@@ -119,7 +119,7 @@ fun ServiceShape.nestedNamespaceType(symbolProvider: SymbolProvider): Symbol {
 
 fun Model.getNestedShapes(serviceShape: ServiceShape): Set<Shape> {
     return Selector
-        .parse("service [id=${serviceShape.id }] ~> :is(structure, union, string [trait|enum]) :not(<-[input, output, error]-)")
+        .parse("service [id=${serviceShape.id}] ~> :is(structure, union, string [trait|enum]) :not(<-[input, output, error]-)")
         .select(this)
 }
 
@@ -133,6 +133,24 @@ fun Model.getNestedShapes(shape: Shape): Set<Shape> {
     return Selector
         .parse("operation [id='${shape.id}'] ~> *")
         .select(this)
+}
+
+fun Model.getNestedShapes(structureShape: StructureShape): Set<Shape> {
+    return Selector
+        .parse("structure[id='${structureShape.id}'] ~> *")
+        .select(this)
+}
+
+fun Model.getOperations(serviceShape: ServiceShape): Set<OperationShape> {
+    return Selector
+        .parse("service[id='${serviceShape.id}'] ~> :is(operation)")
+        .select(this) as Set<OperationShape>
+}
+
+fun Model.getErrorShapes(serviceShape: ServiceShape): Set<StructureShape> {
+    return Selector
+        .parse("service[id=${serviceShape.id}] ~> :is(structure[trait|error])")
+        .select(this) as Set<StructureShape>
 }
 
 /**
