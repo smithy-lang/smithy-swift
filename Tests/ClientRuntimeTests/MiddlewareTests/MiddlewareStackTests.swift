@@ -53,7 +53,7 @@ class MiddlewareStackTests: XCTestCase {
         stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> OperationOutput<MockOutput> in
             return try await next.handle(context: context, input: requestBuilder)
         }
-        stack.finalizeStep.intercept(position: .before, middleware: ContentLengthMiddleware())
+        stack.finalizeStep.intercept(position: .before, middleware: ContentLengthMiddleware<MockInput, MockOutput>())
         stack.deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware<MockOutput>(MockOutput.responseClosure(_:), MockMiddlewareError.responseErrorClosure(_:)))
         let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(),
                                             next: MockHandler(handleCallback: { (_, input) in

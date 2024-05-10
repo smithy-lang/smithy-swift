@@ -28,20 +28,24 @@ class OperationInputQueryItemMiddleware(
         op: OperationShape,
         operationStackName: String,
     ) {
+        if (MiddlewareShapeUtils.hasQueryItems(model, op)) {
+            super.renderSpecific(ctx, writer, op, operationStackName, "serialize")
+        }
+    }
+
+    override fun renderMiddlewareInit(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape
+    ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-        val hasQueryItems = MiddlewareShapeUtils.hasQueryItems(model, op)
-        if (hasQueryItems) {
-            writer.write(
-                "\$L.\$L.intercept(position: \$L, middleware: \$N<\$L, \$L>(\$L.queryItemProvider(_:)))",
-                operationStackName,
-                middlewareStep.stringValue(),
-                position.stringValue(),
-                ClientRuntimeTypes.Middleware.QueryItemMiddleware,
-                inputShapeName,
-                outputShapeName,
-                inputShapeName,
-            )
-        }
+        writer.write(
+            "\$N<\$L, \$L>(\$L.queryItemProvider(_:))",
+            ClientRuntimeTypes.Middleware.QueryItemMiddleware,
+            inputShapeName,
+            outputShapeName,
+            inputShapeName
+        )
     }
 }

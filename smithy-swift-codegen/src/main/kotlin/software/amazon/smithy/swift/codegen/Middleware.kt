@@ -39,5 +39,11 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol, 
         writer.write("return try await next.handle(context: context, input: input)")
     }
 
+    /**
+     * Called after rendering the middleware struct, used for writing extensions
+     * (although you can technically put anything here)
+     */
+    open fun renderExtensions() {}
+
     abstract fun generateMiddlewareClosure()
 }

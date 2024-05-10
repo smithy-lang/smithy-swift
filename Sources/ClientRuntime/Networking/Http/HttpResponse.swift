@@ -8,7 +8,7 @@
 import protocol SmithyReadWrite.WireDataProviding
 import AwsCommonRuntimeKit
 
-public class HttpResponse: HttpUrlResponse {
+public class HttpResponse: HttpUrlResponse, ResponseMessage {
 
     public var headers: Headers
     public var body: ByteStream

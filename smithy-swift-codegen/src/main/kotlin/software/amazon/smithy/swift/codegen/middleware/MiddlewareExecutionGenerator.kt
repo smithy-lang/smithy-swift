@@ -35,22 +35,44 @@ class MiddlewareExecutionGenerator(
         onError: (SwiftWriter, String) -> Unit,
     ) {
         val operationErrorName = "${op.toUpperCamelCase()}OutputError"
-        val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op).name
-        val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op).name
+        val inputShape = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op)
+        val outputShape = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op)
         writer.write("let context = \$N()", ClientRuntimeTypes.Http.HttpContextBuilder)
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op, flowType)
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
-        writer.write(
-            "var \$L = \$N<\$L, \$L>(id: \$S)",
-            operationStackName,
-            OperationStack,
-            inputShapeName,
-            outputShapeName,
-            op.toLowerCamelCase(),
-        )
+        if (!ctx.settings.useInterceptors) {
+            writer.write(
+                "var \$L = \$N<\$L, \$L>(id: \$S)",
+                operationStackName,
+                OperationStack,
+                inputShape.name,
+                outputShape.name,
+                op.toLowerCamelCase(),
+            )
+        } else {
+            writer.write(
+                "let builder = OrchestratorBuilder<\$N, \$N, \$N, \$N, \$N>()",
+                inputShape,
+                outputShape,
+                ClientRuntimeTypes.Http.SdkHttpRequest,
+                ClientRuntimeTypes.Http.HttpResponse,
+                ClientRuntimeTypes.Http.HttpContext
+            )
+        }
+
         renderMiddlewares(ctx, op, operationStackName)
+
+        if (ctx.settings.useInterceptors) {
+            writer.write(
+                """
+                let op = builder.attributes(context)
+                    .executeRequest(client)
+                    .build()
+                """.trimIndent()
+            )
+        }
     }
 
     private fun renderContextAttributes(op: OperationShape, flowType: ContextAttributeCodegenFlowType) {

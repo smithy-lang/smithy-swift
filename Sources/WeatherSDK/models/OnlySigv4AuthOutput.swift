@@ -2,7 +2,7 @@
 
 import SmithyReadWrite
 
-public struct OnlySigv4AuthOutput: Swift.Equatable {
+public struct OnlySigv4AuthOutput {
 
     public init() { }
 }

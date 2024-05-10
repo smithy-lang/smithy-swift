@@ -7,7 +7,7 @@
 
 public struct NodeInfo: Equatable {
 
-    /// The name for this JSON node, or an empty string if none.
+    /// The name for this FormURL node, or an empty string if none.
     public let name: String
 
     public init(_ name: String) {

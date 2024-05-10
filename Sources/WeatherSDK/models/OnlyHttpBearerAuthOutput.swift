@@ -2,7 +2,7 @@
 
 import SmithyReadWrite
 
-public struct OnlyHttpBearerAuthOutput: Swift.Equatable {
+public struct OnlyHttpBearerAuthOutput {
 
     public init() { }
 }

@@ -87,7 +87,7 @@ public extension DefaultSDKRuntimeConfiguration {
         let socketTimeout = UInt32(httpClientConfiguration.socketTimeout)
         let config = CRTClientEngineConfig(
           connectTimeoutMs: connectTimeoutMs,
-          crtTlsOptions: httpClientConfiguration.tlsOptions?.crtTLSOptions,
+          crtTlsOptions: httpClientConfiguration.tlsConfiguration as? CRTClientTLSOptions,
           socketTimeout: socketTimeout
         )
         return CRTClientEngine(config: config)
@@ -137,3 +137,6 @@ public class DefaultAuthSchemeResolver: AuthSchemeResolver {
         return DefaultAuthSchemeResolverParameters(operation: opName)
     }
 }
+
+public typealias ClientConfigurationDefaults
+    = DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>

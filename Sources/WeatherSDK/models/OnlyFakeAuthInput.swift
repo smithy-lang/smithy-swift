@@ -2,7 +2,7 @@
 
 import SmithyReadWrite
 
-public struct OnlyFakeAuthInput: Swift.Equatable {
+public struct OnlyFakeAuthInput {
 
     public init() { }
 }

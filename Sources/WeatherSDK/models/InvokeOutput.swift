@@ -3,7 +3,7 @@
 import ClientRuntime
 import SmithyReadWrite
 
-public struct InvokeOutput: Swift.Equatable {
+public struct InvokeOutput {
     public var payload: ClientRuntime.Data?
 
     public init(

@@ -39,25 +39,35 @@ public struct PayloadBodyMiddleware<OperationStackInput,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,
           Self.Context == H.Context {
-              do {
-                  if let payload = input.operationInput[keyPath: keyPath] {
-                      let data = try Writer.write(
-                        payload,
-                        rootNodeInfo: rootNodeInfo,
-                        with: inputWritingClosure
-                      )
-                      let body = ByteStream.data(data)
-                      input.builder.withBody(body)
-                  } else if let defaultBody {
-                      input.builder.withBody(ByteStream.data(Data(defaultBody.utf8)))
-                  }
-              } catch {
-                  throw ClientError.serializationFailed(error.localizedDescription)
-              }
+              try apply(input: input.operationInput, builder: input.builder, attributes: context)
               return try await next.handle(context: context, input: input)
           }
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = HttpContext
+}
+
+extension PayloadBodyMiddleware: RequestMessageSerializer {
+    public typealias InputType = OperationStackInput
+    public typealias RequestType = SdkHttpRequest
+    public typealias AttributesType = HttpContext
+
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+        do {
+            if let payload = input[keyPath: keyPath] {
+                let data = try Writer.write(
+                    payload,
+                    rootNodeInfo: rootNodeInfo,
+                    with: inputWritingClosure
+                )
+                let body = ByteStream.data(data)
+                builder.withBody(body)
+            } else if let defaultBody {
+                builder.withBody(.data(Data(defaultBody.utf8)))
+            }
+        } catch {
+            throw ClientError.serializationFailed(error.localizedDescription)
+        }
+    }
 }

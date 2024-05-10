@@ -2,7 +2,7 @@
 
 import SmithyReadWrite
 
-public struct OnlyHttpApiKeyAuthOptionalInput: Swift.Equatable {
+public struct OnlyHttpApiKeyAuthOptionalInput {
 
     public init() { }
 }

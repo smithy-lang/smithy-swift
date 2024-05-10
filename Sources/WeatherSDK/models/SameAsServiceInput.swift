@@ -2,7 +2,7 @@
 
 import SmithyReadWrite
 
-public struct SameAsServiceInput: Swift.Equatable {
+public struct SameAsServiceInput {
 
     public init() { }
 }

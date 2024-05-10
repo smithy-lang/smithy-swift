@@ -15,7 +15,7 @@ import struct Foundation.URLRequest
 
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
-public class SdkHttpRequest {
+public final class SdkHttpRequest: RequestMessage {
     public var body: ByteStream
     public let endpoint: Endpoint
     public let method: HttpMethodType
@@ -189,9 +189,9 @@ extension SdkHttpRequestBuilder {
     }
 }
 
-public class SdkHttpRequestBuilder {
+public class SdkHttpRequestBuilder: RequestMessageBuilder {
 
-    public init() {}
+    required public init() {}
 
     var headers: Headers = Headers()
     var methodType: HttpMethodType = .get

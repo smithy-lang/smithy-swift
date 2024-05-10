@@ -18,7 +18,7 @@ class InterceptorTests: XCTestCase {
         public var property: String?
     }
 
-    struct AddAttributeInterceptor<T, InputType, OutputType, RequestType, ResponseType, AttributesType: HasAttributes>: Interceptor {
+    struct AddAttributeInterceptor<T, InputType, OutputType, RequestType: RequestMessage, ResponseType: ResponseMessage, AttributesType: HasAttributes>: Interceptor {
         private let key: AttributeKey<T>
         private let value: T
 
@@ -27,13 +27,13 @@ class InterceptorTests: XCTestCase {
             self.value = value
         }
 
-        public func modifyBeforeSerialization(context: some MutableInput<Self.InputType, Self.AttributesType>) async throws {
+        public func modifyBeforeSerialization(context: some MutableInput<InputType, AttributesType>) async throws {
             let attributes = context.getAttributes()
             attributes.set(key: self.key, value: self.value)
         }
     }
 
-    struct ModifyInputInterceptor<InputType, OutputType, RequestType, ResponseType, AttributesType: HasAttributes>: Interceptor {
+    struct ModifyInputInterceptor<InputType, OutputType, RequestType: RequestMessage, ResponseType: ResponseMessage, AttributesType: HasAttributes>: Interceptor {
         private let keyPath: WritableKeyPath<InputType, String?>
         private let value: String
 
@@ -98,8 +98,8 @@ class InterceptorTests: XCTestCase {
         let modifyMultipleInterceptor = ModifyMultipleInterceptor<TestOutput>(newInputValue: 1)
 
         let interceptors: [AnyInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>] = [
-            addAttributeInterceptor.erase(), 
-            modifyInputInterceptor.erase(), 
+            addAttributeInterceptor.erase(),
+            modifyInputInterceptor.erase(),
             addHeaderInterceptor.erase(),
             modifyMultipleInterceptor.erase()
         ]
