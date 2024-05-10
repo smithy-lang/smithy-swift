@@ -32,7 +32,7 @@ class HttpProtocolTestGenerator(
     private val requestTestBuilder: HttpProtocolUnitTestRequestGenerator.Builder,
     private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
     private val errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
-    private val httpProtocolCustomizable: HttpProtocolCustomizable,
+    private val httpProtocolCustomizable: HTTPProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware,
     private val httpBindingResolver: HttpBindingResolver,
     private val imports: List<String> = listOf(),

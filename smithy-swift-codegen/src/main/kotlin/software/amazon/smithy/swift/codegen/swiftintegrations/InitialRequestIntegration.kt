@@ -13,8 +13,10 @@ import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.DocumentWritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 class InitialRequestIntegration : SwiftIntegration {
@@ -39,15 +41,19 @@ class InitialRequestIntegration : SwiftIntegration {
                 .build()
             protocolGenerationContext.delegator.useShapeWriter(inputStruct) { writer ->
                 writer.apply {
-                    addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                    openBlock("extension ${symbol.fullName} {", "}") {
+                    addImport(protocolGenerationContext.service.writerSymbol.namespace)
+                    openBlock("extension \$N {", "}", symbol) {
+                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                         openBlock(
-                            "func makeInitialRequestMessage(encoder: ClientRuntime.RequestEncoder) throws -> EventStream.Message {",
+                            "func makeInitialRequestMessage() throws -> EventStream.Message {",
                             "}"
                         ) {
-                            val documentWritingClosure = DocumentWritingClosureUtils(protocolGenerationContext, writer).closure(it)
+                            val nodeInfoUtils = NodeInfoUtils(protocolGenerationContext, writer, protocolGenerationContext.service.requestWireProtocol)
+                            val rootNodeInfo = nodeInfoUtils.nodeInfo(it, true)
                             val valueWritingClosure = WritingClosureUtils(protocolGenerationContext, writer).writingClosure(it)
-                            write("let initialRequestPayload = try \$L(self, \$L)", documentWritingClosure, valueWritingClosure)
+                            writer.write("let writer = \$N(nodeInfo: \$L)", protocolGenerationContext.service.writerSymbol, rootNodeInfo)
+                            writer.write("try writer.write(self, with: \$L)", valueWritingClosure)
+                            writer.write("let initialRequestPayload = try writer.data()")
                             openBlock(
                                 "let initialRequestMessage = EventStream.Message(",
                                 ")"

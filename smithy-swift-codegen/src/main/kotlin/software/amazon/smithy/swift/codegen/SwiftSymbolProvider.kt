@@ -242,8 +242,8 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
     }
 
     override fun documentShape(shape: DocumentShape): Symbol {
-        return createSymbolBuilder(shape, "Document", "ClientRuntime", true)
-            .addDependency(SwiftDependency.CLIENT_RUNTIME)
+        return createSymbolBuilder(shape, "Document", "SmithyReadWrite", true)
+            .addDependency(SwiftDependency.SMITHY_READ_WRITE)
             .build()
     }
 

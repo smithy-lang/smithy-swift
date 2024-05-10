@@ -95,9 +95,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val hasIdempotencyTokenTrait = idempotentMember != null
             val httpMethod = resolveHttpMethod(operation)
             writer.swiftFunctionParameterIndent {
-                if (ctx.service.requestWireProtocol != WireProtocol.XML) {
-                    writer.write("  .withEncoder(value: encoder)")
-                }
                 writer.write("  .withMethod(value: .$httpMethod)")
                 if (hasIdempotencyTokenTrait) {
                     writer.write("  .withIdempotencyTokenGenerator(value: QueryIdempotencyTestTokenGenerator())")

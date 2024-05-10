@@ -20,10 +20,12 @@ import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.DocumentWritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
@@ -59,15 +61,15 @@ class OperationInputBodyMiddleware(
         op: OperationShape
     ) {
         val writingClosureUtils = WritingClosureUtils(ctx, writer)
-        val documentWritingClosureUtils = DocumentWritingClosureUtils(ctx, writer)
+        val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol)
         val inputShape = MiddlewareShapeUtils.inputShape(model, op)
         val inputSymbol = symbolProvider.toSymbol(inputShape)
         val outputSymbol = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
-        val writerSymbol = documentWritingClosureUtils.writerSymbol()
+        val writerSymbol = ctx.service.writerSymbol
         var payloadShape = inputShape
         var keyPath = "\\.self"
         var payloadWritingClosure = writingClosureUtils.writingClosure(payloadShape)
-        var documentWritingClosure = documentWritingClosureUtils.closure(payloadShape)
+        var rootNodeInfo = nodeInfoUtils.nodeInfo(payloadShape, true)
         var isPayloadMember = false
         val defaultBody = "\"{}\"".takeIf { ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>() || ctx.service.hasTrait<RestJson1Trait>() } ?: "nil"
         var payloadMember = inputShape.members().find { it.hasTrait<HttpPayloadTrait>() }
@@ -85,23 +87,24 @@ class OperationInputBodyMiddleware(
             val memberName = ctx.symbolProvider.toMemberName(it)
             keyPath = writer.format("\\.\$L", memberName)
             payloadWritingClosure = writingClosureUtils.writingClosure(it)
-            documentWritingClosure = documentWritingClosureUtils.closure(it)
+            rootNodeInfo = nodeInfoUtils.nodeInfo(it, true)
             isPayloadMember = true
         }
         val isStreaming = payloadShape.hasTrait<StreamingTrait>()
         val payloadSymbol = ctx.symbolProvider.toSymbol(payloadShape)
         val requestWireProtocol = ctx.service.requestWireProtocol
 
+        writer.addImports(ctx.service.requestWireProtocol)
         when (payloadShape) {
             is UnionShape -> {
                 if (isStreaming) {
                     addEventStreamMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, keyPath, defaultBody, requestWireProtocol, sendInitialRequest)
                 } else {
-                    addAggregateMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
+                    addAggregateMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
                 }
             }
             is StructureShape, is DocumentShape -> {
-                addAggregateMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
+                addAggregateMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
             }
             is BlobShape -> {
                 addBlobStreamMiddleware(writer, inputSymbol, outputSymbol, keyPath, isStreaming)
@@ -118,35 +121,35 @@ class OperationInputBodyMiddleware(
         }
     }
 
-    private fun addAggregateMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, writerSymbol: Symbol, documentWritingClosure: String, payloadWritingClosure: String, keyPath: String, defaultBody: String, isPayloadMember: Boolean) {
+    private fun addAggregateMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, writerSymbol: Symbol, rootNodeInfo: String, payloadWritingClosure: String, keyPath: String, defaultBody: String, isPayloadMember: Boolean) {
         if (isPayloadMember) {
-            addPayloadBodyMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure, keyPath, defaultBody)
+            addPayloadBodyMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure, keyPath, defaultBody)
         } else {
-            addBodyMiddleware(writer, inputSymbol, outputSymbol, writerSymbol, documentWritingClosure, payloadWritingClosure)
+            addBodyMiddleware(writer, inputSymbol, outputSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure)
         }
     }
 
-    private fun addBodyMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, writerSymbol: Symbol, documentWritingClosure: String, payloadWritingClosure: String) {
+    private fun addBodyMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, writerSymbol: Symbol, rootNodeInfo: String, payloadWritingClosure: String) {
         writer.write(
-            "\$N<\$N, \$N, \$N>(documentWritingClosure: \$L, inputWritingClosure: \$L)",
+            "\$N<\$N, \$N, \$N>(rootNodeInfo: \$L, inputWritingClosure: \$L)",
             ClientRuntimeTypes.Middleware.BodyMiddleware,
             inputSymbol,
             outputSymbol,
             writerSymbol,
-            documentWritingClosure,
+            rootNodeInfo,
             payloadWritingClosure,
         )
     }
 
-    private fun addPayloadBodyMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, writerSymbol: Symbol, documentWritingClosure: String, payloadWritingClosure: String, keyPath: String, defaultBody: String) {
+    private fun addPayloadBodyMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, writerSymbol: Symbol, rootNodeInfo: String, payloadWritingClosure: String, keyPath: String, defaultBody: String) {
         writer.write(
-            "\$N<\$N, \$N, \$N, \$N>(documentWritingClosure: \$L, inputWritingClosure: \$L, keyPath: \$L, defaultBody: \$L)",
+            "\$N<\$N, \$N, \$N, \$N>(rootNodeInfo: \$L, inputWritingClosure: \$L, keyPath: \$L, defaultBody: \$L)",
             ClientRuntimeTypes.Middleware.PayloadBodyMiddleware,
             inputSymbol,
             outputSymbol,
             payloadSymbol,
             writerSymbol,
-            documentWritingClosure,
+            rootNodeInfo,
             payloadWritingClosure,
             keyPath,
             defaultBody
@@ -154,21 +157,16 @@ class OperationInputBodyMiddleware(
     }
 
     private fun addEventStreamMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String, requestWireProtocol: WireProtocol, sendInitialRequest: Boolean) {
-        val marshalClosure = when (requestWireProtocol) {
-            WireProtocol.XML -> ", marshalClosure: $payloadSymbol.marshal"
-            WireProtocol.JSON -> ", marshalClosure: jsonMarshalClosure(requestEncoder: encoder)"
-            else -> ""
-        }
         writer.write(
-            "\$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L\$L\$L)",
+            "\$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L, marshalClosure: \$N.marshal\$L)",
             ClientRuntimeTypes.Middleware.EventStreamBodyMiddleware,
             inputSymbol,
             outputSymbol,
             payloadSymbol,
             keyPath,
             defaultBody,
-            marshalClosure,
-            if (sendInitialRequest) ", initialRequestMessage: try input.makeInitialRequestMessage(encoder: encoder)" else ""
+            payloadSymbol,
+            if (sendInitialRequest) ", initialRequestMessage: try input.makeInitialRequestMessage()" else ""
         )
     }
 

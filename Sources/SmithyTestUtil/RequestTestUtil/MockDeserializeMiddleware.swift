@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyReadWrite
 import ClientRuntime
 
 public struct MockDeserializeMiddleware<OperationStackOutput>: Middleware {
@@ -13,10 +14,10 @@ public struct MockDeserializeMiddleware<OperationStackOutput>: Middleware {
         (Context, SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput>?
 
     public var id: String
-    let responseClosure: HTTPResponseOutputClosure<OperationStackOutput>
+    let responseClosure: WireResponseOutputClosure<HttpResponse, OperationStackOutput>
     let callback: MockDeserializeMiddlewareCallback?
 
-    public init(id: String, responseClosure: @escaping HTTPResponseOutputClosure<OperationStackOutput>, callback: MockDeserializeMiddlewareCallback? = nil) {
+    public init(id: String, responseClosure: @escaping WireResponseOutputClosure<HttpResponse, OperationStackOutput>, callback: MockDeserializeMiddlewareCallback? = nil) {
         self.id = id
         self.responseClosure = responseClosure
         self.callback = callback

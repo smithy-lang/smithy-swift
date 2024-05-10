@@ -5,7 +5,7 @@
 
 package serde.xml
 
-import MockHttpRestXMLProtocolGenerator
+import MockHTTPRestXMLProtocolGenerator
 import TestContext
 import defaultSettings
 import getFileContents
@@ -16,11 +16,12 @@ class StructEncodeXMLGenerationTests {
     @Test
     fun `simpleScalar serialization`() {
         val context = setupTests("Isolated/Restxml/xml-scalar.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesInput+Encodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/SimpleScalarPropertiesInput+Write.swift")
         val expectedContents = """
 extension SimpleScalarPropertiesInput {
-    static func writingClosure(_ value: SimpleScalarPropertiesInput?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
+
+    static func write(value: SimpleScalarPropertiesInput?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
         try writer["byteValue"].write(value.byteValue)
         try writer["DoubleDribble"].write(value.doubleValue)
         try writer["falseBooleanValue"].write(value.falseBooleanValue)
@@ -40,24 +41,22 @@ extension SimpleScalarPropertiesInput {
     @Test
     fun `008 structure xmlName`() {
         val context = setupTests("Isolated/Restxml/xml-lists-structure.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/StructureListMember+Codable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/StructureListMember+ReadWrite.swift")
         val expectedContents = """
 extension RestXmlProtocolClientTypes.StructureListMember {
 
-    static func writingClosure(_ value: RestXmlProtocolClientTypes.StructureListMember?, to writer: SmithyXML.Writer) throws {
-        guard let value else { writer.detach(); return }
+    static func write(value: RestXmlProtocolClientTypes.StructureListMember?, to writer: SmithyXML.Writer) throws {
+        guard let value else { return }
         try writer["value"].write(value.a)
         try writer["other"].write(value.b)
     }
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<RestXmlProtocolClientTypes.StructureListMember, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
-            var value = RestXmlProtocolClientTypes.StructureListMember()
-            value.a = try reader["value"].readIfPresent()
-            value.b = try reader["other"].readIfPresent()
-            return value
-        }
+    static func read(from reader: SmithyXML.Reader) throws -> RestXmlProtocolClientTypes.StructureListMember {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
+        var value = RestXmlProtocolClientTypes.StructureListMember()
+        value.a = try reader["value"].readIfPresent()
+        value.b = try reader["other"].readIfPresent()
+        return value
     }
 }
 """
@@ -65,7 +64,7 @@ extension RestXmlProtocolClientTypes.StructureListMember {
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
         }
         context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)

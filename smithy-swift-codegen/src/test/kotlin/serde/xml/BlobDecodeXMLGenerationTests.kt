@@ -5,7 +5,7 @@
 
 package serde.xml
 
-import MockHttpRestXMLProtocolGenerator
+import MockHTTPRestXMLProtocolGenerator
 import TestContext
 import defaultSettings
 import getFileContents
@@ -17,17 +17,17 @@ class BlobDecodeXMLGenerationTests {
     @Test
     fun `decode blob`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlBlobsOutputBody {
+extension XmlBlobsOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlBlobsOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
-            var value = XmlBlobsOutput()
-            value.data = try reader["data"].readIfPresent()
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlBlobsOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlBlobsOutput()
+        value.data = try reader["data"].readIfPresent()
+        return value
     }
 }
 """
@@ -37,24 +37,24 @@ extension XmlBlobsOutputBody {
     @Test
     fun `decode blob nested`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlBlobsNestedOutputBody {
+extension XmlBlobsNestedOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlBlobsNestedOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
-            var value = XmlBlobsNestedOutput()
-            value.nestedBlobList = try reader["nestedBlobList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: ClientRuntime.Data.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlBlobsNestedOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlBlobsNestedOutput()
+        value.nestedBlobList = try reader["nestedBlobList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: ClientRuntime.Data.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        return value
     }
 }
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
         }
         context.generator.generateDeserializers(context.generationCtx)

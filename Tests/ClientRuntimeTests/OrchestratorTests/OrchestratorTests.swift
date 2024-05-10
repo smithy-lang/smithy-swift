@@ -8,8 +8,12 @@
 import XCTest
 
 @testable import ClientRuntime
+<<<<<<< HEAD
 import SmithyRetriesAPI
 import SmithyRetries
+=======
+import SmithyJSON
+>>>>>>> main
 
 class OrchestratorTests: XCTestCase {
     struct TestInput {
@@ -18,6 +22,21 @@ class OrchestratorTests: XCTestCase {
 
     struct TestOutput: Equatable {
         let bar: String
+    }
+
+    struct TestBaseError: BaseError {
+        var code: String { "TestBaseError" }
+        let message: String? = nil
+        let requestID: String? = nil
+        public var errorBodyReader: Reader { responseReader }
+
+        public let httpResponse: HttpResponse
+        private let responseReader: Reader
+
+        public init(httpResponse: HttpResponse, responseReader: Reader, noErrorWrapping: Bool) throws {
+            self.httpResponse = httpResponse
+            self.responseReader = responseReader
+        }
     }
 
     struct TestError: Error, Equatable, LocalizedError {
@@ -186,8 +205,6 @@ class OrchestratorTests: XCTestCase {
         let attributes = HttpContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
-            .withEncoder(value: JSONEncoder())
-            .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test")
             .build()
         let traceInterceptor = TraceInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(trace: trace)
@@ -209,7 +226,9 @@ class OrchestratorTests: XCTestCase {
                     let bar = try! JSONDecoder().decode(String.self, from: data!)
                     return .success(TestOutput(bar: bar))
                 } else {
-                    return .failure(try await UnknownHTTPServiceError.makeError(httpResponse: response))
+                    let responseReader = try SmithyJSON.Reader.from(data: try await response.data())
+                    let baseError = try TestBaseError(httpResponse: response, responseReader: responseReader, noErrorWrapping: true)
+                    return .failure(try UnknownHTTPServiceError.makeError(baseError: baseError))
                 }
             })
             .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())))

@@ -19,18 +19,10 @@ class GetCityRequestTest: HttpRequestTestBase {
             resolvedHost: ""
         )
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-
         let input = GetCityInput(
             cityId: "123"
         )
-        let encoder = ClientRuntime.JSONEncoder()
-        encoder.dateEncodingStrategy = .secondsSince1970
-        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
         let context = HttpContextBuilder()
-                      .withEncoder(value: encoder)
                       .withMethod(value: .get)
                       .build()
         var operationStack = OperationStack<GetCityInput, GetCityOutput>(id: "WriteGetCityAssertions")
@@ -48,7 +40,7 @@ class GetCityRequestTest: HttpRequestTestBase {
             position: .after,
             middleware: MockDeserializeMiddleware<GetCityOutput>(
                 id: "TestDeserializeMiddleware",
-                responseClosure: responseClosure(decoder: decoder),
+                responseClosure: GetCityOutput.httpOutput(from:),
                 callback: { context, actual in
                     try await self.assertEqual(expected, actual)
                     return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: GetCityOutput())

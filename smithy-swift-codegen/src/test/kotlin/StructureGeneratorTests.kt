@@ -241,7 +241,7 @@ public struct RecursiveShapesInputOutputLists {
     }
 
     @Test
-    fun `it renders error structures along with proper import statement`() {
+    fun `it renders error structures`() {
 
         val struct: StructureShape = createStructureWithOptionalErrorMessage()
         val model: Model = createModelWithStructureShape(struct)
@@ -254,38 +254,34 @@ public struct RecursiveShapesInputOutputLists {
         val contents = writer.toString()
 
         contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
-        val expectedGeneratedStructure =
-            """
-                import ClientRuntime
+        val expectedGeneratedStructure = """
+public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError, Swift.Error {
 
-                /// This is documentation about the shape.
-                public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError, Swift.Error {
+    public struct Properties {
+        /// This is documentation about the member.
+        public internal(set) var baz: Swift.Int? = nil
+        public internal(set) var message: Swift.String? = nil
+    }
 
-                    public struct Properties {
-                        /// This is documentation about the member.
-                        public internal(set) var baz: Swift.Int? = nil
-                        public internal(set) var message: Swift.String? = nil
-                    }
-                
-                    public internal(set) var properties = Properties()
-                    public static var typeName: Swift.String { "MyError" }
-                    public static var fault: ErrorFault { .client }
-                    public static var isRetryable: Swift.Bool { true }
-                    public static var isThrottling: Swift.Bool { false }
-                    public internal(set) var httpResponse = HttpResponse()
-                    public internal(set) var message: Swift.String?
-                    public internal(set) var requestID: Swift.String?
-                
-                    public init(
-                        baz: Swift.Int? = nil,
-                        message: Swift.String? = nil
-                    )
-                    {
-                        self.properties.baz = baz
-                        self.properties.message = message
-                    }
-                }
-            """.trimIndent()
+    public internal(set) var properties = Properties()
+    public static var typeName: Swift.String { "MyError" }
+    public static var fault: ErrorFault { .client }
+    public static var isRetryable: Swift.Bool { true }
+    public static var isThrottling: Swift.Bool { false }
+    public internal(set) var httpResponse = HttpResponse()
+    public internal(set) var message: Swift.String?
+    public internal(set) var requestID: Swift.String?
+
+    public init(
+        baz: Swift.Int? = nil,
+        message: Swift.String? = nil
+    )
+    {
+        self.properties.baz = baz
+        self.properties.message = message
+    }
+}
+"""
 
         contents.shouldContain(expectedGeneratedStructure)
     }

@@ -51,10 +51,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: SmokeTestOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: SmokeTestOutput = try await SmokeTestOutput.httpOutput(from:)(httpResponse)
 
         let expected = SmokeTestOutput(
             boolHeader: false,
@@ -94,10 +91,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: HttpPrefixHeadersOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: HttpPrefixHeadersOutput = try await HttpPrefixHeadersOutput.httpOutput(from:)(httpResponse)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo",
@@ -131,10 +125,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: HttpPrefixHeadersOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: HttpPrefixHeadersOutput = try await HttpPrefixHeadersOutput.httpOutput(from:)(httpResponse)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo"
@@ -170,10 +161,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: JsonUnionsOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: JsonUnionsOutput = try await JsonUnionsOutput.httpOutput(from:)(httpResponse)
 
         let expected = JsonUnionsOutput(
             contents: MyUnion.stringvalue("foo")
@@ -219,10 +207,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: RecursiveShapesOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: RecursiveShapesOutput = try await RecursiveShapesOutput.httpOutput(from:)(httpResponse)
 
         let expected = RecursiveShapesOutput(
             nested: RecursiveShapesInputOutputNested1(
@@ -251,8 +236,6 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val contents = getTestFileContents("example", "InlineDocumentResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class InlineDocumentResponseTest: HttpResponseTestBase {
-    /// Serializes inline documents as part of the JSON response payload with no escaping.
     func testInlineDocumentOutput() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
@@ -272,25 +255,20 @@ class InlineDocumentResponseTest: HttpResponseTestBase {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: InlineDocumentOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: InlineDocumentOutput = try await InlineDocumentOutput.httpOutput(from:)(httpResponse)
 
         let expected = InlineDocumentOutput(
-            documentValue: try decoder.decode(Document.self, from:
-                ""${'"'}
+            documentValue: try SmithyReadWrite.Document.make(from: Data(""${'"'}
                 {
                     "foo": "bar"
                 }
-                ""${'"'}.data(using: .utf8)!)
-                ,
-                stringValue: "string"
-            )
+            ""${'"'}.utf8))
+            ,
+            stringValue: "string"
+        )
 
-            XCTAssertEqual(actual, expected)
+        XCTAssertEqual(actual, expected)
 
-        }
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -317,24 +295,19 @@ class InlineDocumentResponseTest: HttpResponseTestBase {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: InlineDocumentAsPayloadOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: InlineDocumentAsPayloadOutput = try await InlineDocumentAsPayloadOutput.httpOutput(from:)(httpResponse)
 
         let expected = InlineDocumentAsPayloadOutput(
-            documentValue: try decoder.decode(Document.self, from:
-                ""${'"'}
+            documentValue: try SmithyReadWrite.Document.make(from: Data(""${'"'}
                 {
                     "foo": "bar"
                 }
-                ""${'"'}.data(using: .utf8)!)
+            ""${'"'}.utf8))
 
-            )
+        )
 
-            XCTAssertEqual(actual, expected)
+        XCTAssertEqual(actual, expected)
 
-        }
     }
 """
         contents.shouldContainOnlyOnce(expectedContents)

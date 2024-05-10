@@ -3,6 +3,8 @@
 import ClientRuntime
 import Foundation
 import Logging
+import SmithyJSON
+import SmithyReadWrite
 import SmithyRetries
 import SmithyRetriesAPI
 
@@ -11,19 +13,9 @@ public class WeatherClient: Client {
     let client: ClientRuntime.SdkHttpClient
     let config: WeatherClient.WeatherClientConfiguration
     let serviceName = "Weather"
-    let encoder: ClientRuntime.RequestEncoder
-    let decoder: ClientRuntime.ResponseDecoder
 
     public required init(config: WeatherClient.WeatherClientConfiguration) {
         client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
-        let encoder = ClientRuntime.JSONEncoder()
-        encoder.dateEncodingStrategy = .secondsSince1970
-        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        self.encoder = encoder
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        self.decoder = decoder
         self.config = config
     }
 
@@ -70,7 +62,7 @@ extension WeatherClient {
         }
 
         public convenience init(telemetryProvider: ClientRuntime.TelemetryProvider? = nil, retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil, clientLogMode: ClientRuntime.ClientLogMode? = nil, endpoint: Swift.String? = nil, idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator? = nil, httpClientEngine: ClientRuntime.HTTPClient? = nil, httpClientConfiguration: ClientRuntime.HttpClientConfiguration? = nil, authSchemes: [ClientRuntime.AuthScheme]? = nil, authSchemeResolver: ClientRuntime.AuthSchemeResolver? = nil) throws {
-            self.init(telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider, retryStrategyOptions ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultRetryStrategyOptions, clientLogMode ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultClientLogMode, endpoint, idempotencyTokenGenerator ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultIdempotencyTokenGenerator, httpClientEngine ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.makeClient(), httpClientConfiguration ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultHttpClientConfiguration, authSchemes, authSchemeResolver ?? DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>.defaultAuthSchemeResolver)
+            self.init(telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider, retryStrategyOptions ?? ClientConfigurationDefaults.defaultRetryStrategyOptions, clientLogMode ?? ClientConfigurationDefaults.defaultClientLogMode, endpoint, idempotencyTokenGenerator ?? ClientConfigurationDefaults.defaultIdempotencyTokenGenerator, httpClientEngine ?? ClientConfigurationDefaults.makeClient(httpClientConfiguration: httpClientConfiguration ?? ClientConfigurationDefaults.defaultHttpClientConfiguration), httpClientConfiguration ?? ClientConfigurationDefaults.defaultHttpClientConfiguration, authSchemes, authSchemeResolver ?? ClientConfigurationDefaults.defaultAuthSchemeResolver)
         }
 
         public convenience required init() async throws {
@@ -111,8 +103,6 @@ extension WeatherClient {
     /// - Returns: `CreateCityOutput` : [no documentation found]
     public func createCity(input: CreateCityInput) async throws -> CreateCityOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .put)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "createCity")
@@ -129,11 +119,11 @@ extension WeatherClient {
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<CreateCityInput, CreateCityOutput>())
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<CreateCityOutput>())
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<CreateCityInput, CreateCityOutput>(contentType: "application/json"))
-        operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<CreateCityInput, CreateCityOutput, ClientRuntime.JSONWriter>(documentWritingClosure: ClientRuntime.JSONReadWrite.documentWritingClosure(encoder: encoder), inputWritingClosure: JSONReadWrite.writingClosure()))
+        operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<CreateCityInput, CreateCityOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: CreateCityInput.write(value:to:)))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<CreateCityInput, CreateCityOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, CreateCityOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<CreateCityOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<CreateCityOutput>(responseClosure(decoder: decoder), responseErrorClosure(CreateCityOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<CreateCityOutput>(CreateCityOutput.httpOutput(from:), CreateCityOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<CreateCityInput, CreateCityOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -152,8 +142,6 @@ extension WeatherClient {
     /// - `NoSuchResource` : Error encountered when no resource could be found.
     public func getCity(input: GetCityInput) async throws -> GetCityOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getCity")
@@ -172,7 +160,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<GetCityOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, GetCityOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<GetCityOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<GetCityOutput>(responseClosure(decoder: decoder), responseErrorClosure(GetCityOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<GetCityOutput>(GetCityOutput.httpOutput(from:), GetCityOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<GetCityInput, GetCityOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -191,8 +179,6 @@ extension WeatherClient {
     /// - `NoSuchResource` : Error encountered when no resource could be found.
     public func getCityAnnouncements(input: GetCityAnnouncementsInput) async throws -> GetCityAnnouncementsOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getCityAnnouncements")
@@ -210,7 +196,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<GetCityAnnouncementsOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, GetCityAnnouncementsOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<GetCityAnnouncementsOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<GetCityAnnouncementsOutput>(responseClosure(decoder: decoder), responseErrorClosure(GetCityAnnouncementsOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<GetCityAnnouncementsOutput>(GetCityAnnouncementsOutput.httpOutput(from:), GetCityAnnouncementsOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<GetCityAnnouncementsInput, GetCityAnnouncementsOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -229,8 +215,6 @@ extension WeatherClient {
     /// - `NoSuchResource` : Error encountered when no resource could be found.
     public func getCityImage(input: GetCityImageInput) async throws -> GetCityImageOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getCityImage")
@@ -248,7 +232,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<GetCityImageOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, GetCityImageOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<GetCityImageOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<GetCityImageOutput>(responseClosure(decoder: decoder), responseErrorClosure(GetCityImageOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<GetCityImageOutput>(GetCityImageOutput.httpOutput(from:), GetCityImageOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<GetCityImageInput, GetCityImageOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -262,8 +246,6 @@ extension WeatherClient {
     /// - Returns: `GetCurrentTimeOutput` : [no documentation found]
     public func getCurrentTime(input: GetCurrentTimeInput) async throws -> GetCurrentTimeOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getCurrentTime")
@@ -281,7 +263,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<GetCurrentTimeOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, GetCurrentTimeOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<GetCurrentTimeOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<GetCurrentTimeOutput>(responseClosure(decoder: decoder), responseErrorClosure(GetCurrentTimeOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<GetCurrentTimeOutput>(GetCurrentTimeOutput.httpOutput(from:), GetCurrentTimeOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<GetCurrentTimeInput, GetCurrentTimeOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -295,8 +277,6 @@ extension WeatherClient {
     /// - Returns: `GetForecastOutput` : [no documentation found]
     public func getForecast(input: GetForecastInput) async throws -> GetForecastOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getForecast")
@@ -314,7 +294,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<GetForecastOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, GetForecastOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<GetForecastOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<GetForecastOutput>(responseClosure(decoder: decoder), responseErrorClosure(GetForecastOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<GetForecastOutput>(GetForecastOutput.httpOutput(from:), GetForecastOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<GetForecastInput, GetForecastOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -328,8 +308,6 @@ extension WeatherClient {
     /// - Returns: `InvokeOutput` : [no documentation found]
     public func invoke(input: InvokeInput) async throws -> InvokeOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "invoke")
@@ -350,7 +328,7 @@ extension WeatherClient {
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<InvokeInput, InvokeOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, InvokeOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<InvokeOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<InvokeOutput>(responseClosure(decoder: decoder), responseErrorClosure(InvokeOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<InvokeOutput>(InvokeOutput.httpOutput(from:), InvokeOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<InvokeInput, InvokeOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -369,8 +347,6 @@ extension WeatherClient {
     /// - `NoSuchResource` : Error encountered when no resource could be found.
     public func listCities(input: ListCitiesInput) async throws -> ListCitiesOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "listCities")
@@ -389,7 +365,7 @@ extension WeatherClient {
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.QueryItemMiddleware<ListCitiesInput, ListCitiesOutput>(ListCitiesInput.queryItemProvider(_:)))
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, ListCitiesOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<ListCitiesOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<ListCitiesOutput>(responseClosure(decoder: decoder), responseErrorClosure(ListCitiesOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<ListCitiesOutput>(ListCitiesOutput.httpOutput(from:), ListCitiesOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<ListCitiesInput, ListCitiesOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -403,8 +379,6 @@ extension WeatherClient {
     /// - Returns: `OnlyFakeAuthOutput` : [no documentation found]
     public func onlyFakeAuth(input: OnlyFakeAuthInput) async throws -> OnlyFakeAuthOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyFakeAuth")
@@ -422,7 +396,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyFakeAuthOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyFakeAuthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyFakeAuthOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyFakeAuthOutput>(responseClosure(decoder: decoder), responseErrorClosure(OnlyFakeAuthOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyFakeAuthOutput>(OnlyFakeAuthOutput.httpOutput(from:), OnlyFakeAuthOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<OnlyFakeAuthInput, OnlyFakeAuthOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -436,8 +410,6 @@ extension WeatherClient {
     /// - Returns: `OnlyFakeAuthOptionalOutput` : [no documentation found]
     public func onlyFakeAuthOptional(input: OnlyFakeAuthOptionalInput) async throws -> OnlyFakeAuthOptionalOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyFakeAuthOptional")
@@ -455,7 +427,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyFakeAuthOptionalOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyFakeAuthOptionalOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyFakeAuthOptionalOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyFakeAuthOptionalOutput>(responseClosure(decoder: decoder), responseErrorClosure(OnlyFakeAuthOptionalOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyFakeAuthOptionalOutput>(OnlyFakeAuthOptionalOutput.httpOutput(from:), OnlyFakeAuthOptionalOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<OnlyFakeAuthOptionalInput, OnlyFakeAuthOptionalOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -469,8 +441,6 @@ extension WeatherClient {
     /// - Returns: `OnlyHttpApiKeyAndBearerAuthOutput` : [no documentation found]
     public func onlyHttpApiKeyAndBearerAuth(input: OnlyHttpApiKeyAndBearerAuthInput) async throws -> OnlyHttpApiKeyAndBearerAuthOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpApiKeyAndBearerAuth")
@@ -488,7 +458,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpApiKeyAndBearerAuthOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpApiKeyAndBearerAuthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpApiKeyAndBearerAuthOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpApiKeyAndBearerAuthOutput>(responseClosure(decoder: decoder), responseErrorClosure(OnlyHttpApiKeyAndBearerAuthOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpApiKeyAndBearerAuthOutput>(OnlyHttpApiKeyAndBearerAuthOutput.httpOutput(from:), OnlyHttpApiKeyAndBearerAuthOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<OnlyHttpApiKeyAndBearerAuthInput, OnlyHttpApiKeyAndBearerAuthOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -502,8 +472,6 @@ extension WeatherClient {
     /// - Returns: `OnlyHttpApiKeyAndBearerAuthReversedOutput` : [no documentation found]
     public func onlyHttpApiKeyAndBearerAuthReversed(input: OnlyHttpApiKeyAndBearerAuthReversedInput) async throws -> OnlyHttpApiKeyAndBearerAuthReversedOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpApiKeyAndBearerAuthReversed")
@@ -521,7 +489,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpApiKeyAndBearerAuthReversedOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpApiKeyAndBearerAuthReversedOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpApiKeyAndBearerAuthReversedOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpApiKeyAndBearerAuthReversedOutput>(responseClosure(decoder: decoder), responseErrorClosure(OnlyHttpApiKeyAndBearerAuthReversedOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpApiKeyAndBearerAuthReversedOutput>(OnlyHttpApiKeyAndBearerAuthReversedOutput.httpOutput(from:), OnlyHttpApiKeyAndBearerAuthReversedOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<OnlyHttpApiKeyAndBearerAuthReversedInput, OnlyHttpApiKeyAndBearerAuthReversedOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -535,8 +503,6 @@ extension WeatherClient {
     /// - Returns: `OnlyHttpApiKeyAuthOutput` : [no documentation found]
     public func onlyHttpApiKeyAuth(input: OnlyHttpApiKeyAuthInput) async throws -> OnlyHttpApiKeyAuthOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpApiKeyAuth")
@@ -554,7 +520,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpApiKeyAuthOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpApiKeyAuthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpApiKeyAuthOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpApiKeyAuthOutput>(responseClosure(decoder: decoder), responseErrorClosure(OnlyHttpApiKeyAuthOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpApiKeyAuthOutput>(OnlyHttpApiKeyAuthOutput.httpOutput(from:), OnlyHttpApiKeyAuthOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<OnlyHttpApiKeyAuthInput, OnlyHttpApiKeyAuthOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -568,8 +534,6 @@ extension WeatherClient {
     /// - Returns: `OnlyHttpApiKeyAuthOptionalOutput` : [no documentation found]
     public func onlyHttpApiKeyAuthOptional(input: OnlyHttpApiKeyAuthOptionalInput) async throws -> OnlyHttpApiKeyAuthOptionalOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpApiKeyAuthOptional")
@@ -587,7 +551,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpApiKeyAuthOptionalOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpApiKeyAuthOptionalOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpApiKeyAuthOptionalOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpApiKeyAuthOptionalOutput>(responseClosure(decoder: decoder), responseErrorClosure(OnlyHttpApiKeyAuthOptionalOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpApiKeyAuthOptionalOutput>(OnlyHttpApiKeyAuthOptionalOutput.httpOutput(from:), OnlyHttpApiKeyAuthOptionalOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<OnlyHttpApiKeyAuthOptionalInput, OnlyHttpApiKeyAuthOptionalOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -601,8 +565,6 @@ extension WeatherClient {
     /// - Returns: `OnlyHttpBearerAuthOutput` : [no documentation found]
     public func onlyHttpBearerAuth(input: OnlyHttpBearerAuthInput) async throws -> OnlyHttpBearerAuthOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpBearerAuth")
@@ -620,7 +582,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpBearerAuthOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpBearerAuthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpBearerAuthOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpBearerAuthOutput>(responseClosure(decoder: decoder), responseErrorClosure(OnlyHttpBearerAuthOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpBearerAuthOutput>(OnlyHttpBearerAuthOutput.httpOutput(from:), OnlyHttpBearerAuthOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<OnlyHttpBearerAuthInput, OnlyHttpBearerAuthOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -634,8 +596,6 @@ extension WeatherClient {
     /// - Returns: `OnlyHttpBearerAuthOptionalOutput` : [no documentation found]
     public func onlyHttpBearerAuthOptional(input: OnlyHttpBearerAuthOptionalInput) async throws -> OnlyHttpBearerAuthOptionalOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpBearerAuthOptional")
@@ -653,7 +613,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlyHttpBearerAuthOptionalOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlyHttpBearerAuthOptionalOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlyHttpBearerAuthOptionalOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpBearerAuthOptionalOutput>(responseClosure(decoder: decoder), responseErrorClosure(OnlyHttpBearerAuthOptionalOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlyHttpBearerAuthOptionalOutput>(OnlyHttpBearerAuthOptionalOutput.httpOutput(from:), OnlyHttpBearerAuthOptionalOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<OnlyHttpBearerAuthOptionalInput, OnlyHttpBearerAuthOptionalOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -667,8 +627,6 @@ extension WeatherClient {
     /// - Returns: `OnlySigv4AuthOutput` : [no documentation found]
     public func onlySigv4Auth(input: OnlySigv4AuthInput) async throws -> OnlySigv4AuthOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlySigv4Auth")
@@ -686,7 +644,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlySigv4AuthOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlySigv4AuthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlySigv4AuthOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlySigv4AuthOutput>(responseClosure(decoder: decoder), responseErrorClosure(OnlySigv4AuthOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlySigv4AuthOutput>(OnlySigv4AuthOutput.httpOutput(from:), OnlySigv4AuthOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<OnlySigv4AuthInput, OnlySigv4AuthOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -700,8 +658,6 @@ extension WeatherClient {
     /// - Returns: `OnlySigv4AuthOptionalOutput` : [no documentation found]
     public func onlySigv4AuthOptional(input: OnlySigv4AuthOptionalInput) async throws -> OnlySigv4AuthOptionalOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlySigv4AuthOptional")
@@ -719,7 +675,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<OnlySigv4AuthOptionalOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, OnlySigv4AuthOptionalOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<OnlySigv4AuthOptionalOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlySigv4AuthOptionalOutput>(responseClosure(decoder: decoder), responseErrorClosure(OnlySigv4AuthOptionalOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<OnlySigv4AuthOptionalOutput>(OnlySigv4AuthOptionalOutput.httpOutput(from:), OnlySigv4AuthOptionalOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<OnlySigv4AuthOptionalInput, OnlySigv4AuthOptionalOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result
@@ -733,8 +689,6 @@ extension WeatherClient {
     /// - Returns: `SameAsServiceOutput` : [no documentation found]
     public func sameAsService(input: SameAsServiceInput) async throws -> SameAsServiceOutput {
         let context = ClientRuntime.HttpContextBuilder()
-                      .withEncoder(value: encoder)
-                      .withDecoder(value: decoder)
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "sameAsService")
@@ -752,7 +706,7 @@ extension WeatherClient {
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<SameAsServiceOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, SameAsServiceOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<SameAsServiceOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<SameAsServiceOutput>(responseClosure(decoder: decoder), responseErrorClosure(SameAsServiceOutputError.self, decoder: decoder)))
+        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<SameAsServiceOutput>(SameAsServiceOutput.httpOutput(from:), SameAsServiceOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<SameAsServiceInput, SameAsServiceOutput>(clientLogMode: config.clientLogMode))
         let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
         return result

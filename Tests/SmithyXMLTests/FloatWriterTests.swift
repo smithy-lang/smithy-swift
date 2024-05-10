@@ -7,6 +7,7 @@
 
 import XCTest
 import SmithyXML
+import SmithyReadWrite
 
 class FloatWriterTests: XCTestCase {
 
@@ -23,11 +24,10 @@ class FloatWriterTests: XCTestCase {
 
     func test_serializesInfinity() throws {
         let fp = HasFPElements(f: .infinity, d: .infinity)
-        let actualData = try SmithyXML.XMLReadWrite.documentWritingClosure(
-            rootNodeInfo: .init("fp")
-        )(
+        let actualData = try Writer.write(
             fp,
-            HasFPElements.write(_:to:)
+            rootNodeInfo: .init("fp"),
+            with: HasFPElements.write(_:to:)
         )
         let expectedData = Data("<fp><f>Infinity</f><d>Infinity</d></fp>".utf8)
         XCTAssertEqual(actualData, expectedData)
@@ -35,11 +35,10 @@ class FloatWriterTests: XCTestCase {
 
     func test_serializesNegativeInfinity() throws {
         let fp = HasFPElements(f: -.infinity, d: -.infinity)
-        let actualData = try SmithyXML.XMLReadWrite.documentWritingClosure(
-            rootNodeInfo: .init("fp")
-        )(
+        let actualData = try Writer.write(
             fp,
-            HasFPElements.write(_:to:)
+            rootNodeInfo: .init("fp"),
+            with: HasFPElements.write(_:to:)
         )
         let expectedData = Data("<fp><f>-Infinity</f><d>-Infinity</d></fp>".utf8)
         XCTAssertEqual(actualData, expectedData)
@@ -47,11 +46,10 @@ class FloatWriterTests: XCTestCase {
 
     func test_serializesNaN() throws {
         let fp = HasFPElements(f: .nan, d: .nan)
-        let actualData = try SmithyXML.XMLReadWrite.documentWritingClosure(
-            rootNodeInfo: .init("fp")
-        )(
+        let actualData = try Writer.write(
             fp,
-            HasFPElements.write(_:to:)
+            rootNodeInfo: .init("fp"),
+            with: HasFPElements.write(_:to:)
         )
         let expectedData = Data("<fp><f>NaN</f><d>NaN</d></fp>".utf8)
         XCTAssertEqual(actualData, expectedData)

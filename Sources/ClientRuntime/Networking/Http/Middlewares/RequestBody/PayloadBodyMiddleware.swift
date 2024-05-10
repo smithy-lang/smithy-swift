@@ -6,27 +6,27 @@
 //
 
 import struct Foundation.Data
-import typealias SmithyReadWrite.DocumentWritingClosure
+import protocol SmithyReadWrite.SmithyWriter
 import typealias SmithyReadWrite.WritingClosure
 
 public struct PayloadBodyMiddleware<OperationStackInput,
                                     OperationStackOutput,
                                     OperationStackInputPayload,
-                                    Writer>: Middleware {
+                                    Writer: SmithyWriter>: Middleware {
     public let id: Swift.String = "PayloadBodyMiddleware"
 
-    let documentWritingClosure: DocumentWritingClosure<OperationStackInputPayload, Writer>
+    let rootNodeInfo: Writer.NodeInfo
     let inputWritingClosure: WritingClosure<OperationStackInputPayload, Writer>
     let keyPath: KeyPath<OperationStackInput, OperationStackInputPayload?>
     let defaultBody: String?
 
     public init(
-        documentWritingClosure: @escaping DocumentWritingClosure<OperationStackInputPayload, Writer>,
+        rootNodeInfo: Writer.NodeInfo,
         inputWritingClosure: @escaping WritingClosure<OperationStackInputPayload, Writer>,
         keyPath: KeyPath<OperationStackInput, OperationStackInputPayload?>,
         defaultBody: String?
     ) {
-        self.documentWritingClosure = documentWritingClosure
+        self.rootNodeInfo = rootNodeInfo
         self.inputWritingClosure = inputWritingClosure
         self.keyPath = keyPath
         self.defaultBody = defaultBody
@@ -48,21 +48,6 @@ public struct PayloadBodyMiddleware<OperationStackInput,
     public typealias Context = HttpContext
 }
 
-public extension PayloadBodyMiddleware {
-    func apply(input: OperationStackInput, request: SdkHttpRequestBuilder, attributes: HttpContext) throws {
-        do {
-            if let payload = input[keyPath: keyPath] {
-                let data = try documentWritingClosure(payload, inputWritingClosure)
-                request.withBody(.data(data))
-            } else if let defaultBody {
-                request.withBody(.data(Data(defaultBody.utf8)))
-            }
-        } catch {
-            throw ClientError.serializationFailed(error.localizedDescription)
-        }
-    }
-}
-
 extension PayloadBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = SdkHttpRequest
@@ -71,8 +56,13 @@ extension PayloadBodyMiddleware: RequestMessageSerializer {
     public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
         do {
             if let payload = input[keyPath: keyPath] {
-                let data = try documentWritingClosure(payload, inputWritingClosure)
-                builder.withBody(.data(data))
+                let data = try Writer.write(
+                    payload,
+                    rootNodeInfo: rootNodeInfo,
+                    with: inputWritingClosure
+                )
+                let body = ByteStream.data(data)
+                builder.withBody(body)
             } else if let defaultBody {
                 builder.withBody(.data(Data(defaultBody.utf8)))
             }

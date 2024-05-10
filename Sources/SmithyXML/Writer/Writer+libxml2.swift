@@ -13,7 +13,7 @@ extension Writer {
 
     /// Translates this Writer and its children into XML ready to be sent.
     /// - Returns: A `Data` value containing this writer's UTF-8 XML representation.
-    func xmlString() -> Data {
+    public func data() throws -> Data {
         // Create a libxml document
         let doc = xmlNewDoc(nil)
 
@@ -50,7 +50,8 @@ extension Writer {
 
         // Expose the node name and content as C strings
         nodeInfo.name.utf8CString.withUnsafeBytes { unsafeName in
-            content.utf8CString.withUnsafeBytes { unsafeContent in
+            guard content != nil || !children.isEmpty || isCollection else { return nil }
+            return (content ?? "").utf8CString.withUnsafeBytes { unsafeContent in
 
                 // libxml uses C strings with its own xmlChar data type
                 // Recast the C strings to libxml-typed strings
@@ -62,9 +63,11 @@ extension Writer {
                 node?.pointee.type = nodeInfo.location.xmlElementType
 
                 // Encode the content string, set it on the node, then free it
-                let encoded = xmlEncodeEntitiesReentrant(doc, content)
-                xmlNodeSetContent(node, encoded)
-                xmlFree(encoded)
+                if self.content != nil {
+                    let encoded = xmlEncodeEntitiesReentrant(doc, content)
+                    xmlNodeSetContent(node, encoded)
+                    xmlFree(encoded)
+                }
 
                 // Add the child node to its parent
                 xmlAddChild(parentNode, node)

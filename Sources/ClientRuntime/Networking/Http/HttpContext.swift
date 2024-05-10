@@ -37,14 +37,6 @@ public class HttpContext: MiddlewareContext {
         return attributes.get(key: AttributeKeys.isChunkedEligibleStream)
     }
 
-    public func getDecoder() -> ResponseDecoder {
-        return attributes.get(key: AttributeKeys.decoder)!
-    }
-
-    public func getEncoder() -> RequestEncoder {
-        return attributes.get(key: AttributeKeys.encoder)!
-    }
-
     public func getExpiration() -> TimeInterval {
         return attributes.get(key: AttributeKeys.expiration) ?? 0
     }
@@ -175,18 +167,6 @@ public class HttpContextBuilder {
         for scheme in value {
             self.withAuthScheme(value: scheme)
         }
-        return self
-    }
-
-    @discardableResult
-    public func withDecoder(value: ResponseDecoder) -> HttpContextBuilder {
-        self.attributes.set(key: AttributeKeys.decoder, value: value)
-        return self
-    }
-
-    @discardableResult
-    public func withEncoder(value: RequestEncoder) -> HttpContextBuilder {
-        self.attributes.set(key: AttributeKeys.encoder, value: value)
         return self
     }
 
@@ -329,8 +309,6 @@ public enum AttributeKeys {
     public static let authSchemeResolver = AttributeKey<AuthSchemeResolver>(name: "AuthSchemeResolver")
     public static let authSchemes = AttributeKey<Attributes>(name: "AuthSchemes")
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
-    public static let decoder = AttributeKey<ResponseDecoder>(name: "Decoder")
-    public static let encoder = AttributeKey<RequestEncoder>(name: "Encoder")
     public static let flowType = AttributeKey<FlowType>(name: "FlowType")
     public static let host = AttributeKey<String>(name: "Host")
     public static let hostPrefix = AttributeKey<String>(name: "HostPrefix")

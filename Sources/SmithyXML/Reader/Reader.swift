@@ -5,18 +5,22 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyReadWrite.SmithyReader
+import enum SmithyReadWrite.Document
 import typealias SmithyReadWrite.ReadingClosure
 import struct Foundation.Date
 import struct Foundation.Data
 import enum SmithyTimestamps.TimestampFormat
 import struct SmithyTimestamps.TimestampFormatter
 
-public class Reader {
-    public internal(set) var content: String?
+public final class Reader: SmithyReader {
+    public typealias ReaderNodeInfo = NodeInfo
     public internal(set) var children: [Reader] = []
     public internal(set) weak var parent: Reader?
     public let nodeInfo: NodeInfo
     public var nodeInfoPath: [NodeInfo] { (parent?.nodeInfoPath ?? []) + [nodeInfo] }
+    public var hasContent: Bool { content != nil }
+    var content: String?
 
     // MARK: - init & deinit
 
@@ -70,30 +74,8 @@ public class Reader {
 
     // MARK: - Reading values
 
-    public func readIfPresent<T>(readingClosure: ReadingClosure<T, Reader>) throws -> T? {
-        // This guard stops infinite recursion when decoding recursive structs or unions.
-        guard content != nil || !children.isEmpty else { return nil }
-        return try readingClosure(self)
-    }
-
-    public func read<T>(readingClosure: ReadingClosure<T, Reader>) throws -> T {
-        if let value = try readingClosure(self) {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
-    }
-
     public func readIfPresent() throws -> String? {
         return content
-    }
-
-    public func read() throws -> String {
-        if let value: String = try readIfPresent() {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
     }
 
     public func readIfPresent() throws -> Int8? {
@@ -101,25 +83,9 @@ public class Reader {
         return Int8(content)
     }
 
-    public func read() throws -> Int8 {
-        if let value: Int8 = try readIfPresent() {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
-    }
-
     public func readIfPresent() throws -> Int16? {
         guard let content else { return nil }
         return Int16(content)
-    }
-
-    public func read() throws -> Int16 {
-        if let value: Int16 = try readIfPresent() {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
     }
 
     public func readIfPresent() throws -> Int? {
@@ -127,25 +93,9 @@ public class Reader {
         return Int(content)
     }
 
-    public func read() throws -> Int {
-        if let value: Int = try readIfPresent() {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
-    }
-
     public func readIfPresent() throws -> Float? {
         guard let content else { return nil }
         return Float(content)
-    }
-
-    public func read() throws -> Float {
-        if let value: Float = try readIfPresent() {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
     }
 
     public func readIfPresent() throws -> Double? {
@@ -153,25 +103,9 @@ public class Reader {
         return Double(content)
     }
 
-    public func read() throws -> Double {
-        if let value: Double = try readIfPresent() {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
-    }
-
     public func readIfPresent() throws -> Bool? {
         guard let content else { return nil }
         return Bool(content)
-    }
-
-    public func read() throws -> Bool {
-        if let value: Bool = try readIfPresent() {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
     }
 
     public func readIfPresent() throws -> Data? {
@@ -179,12 +113,9 @@ public class Reader {
         return Data(base64Encoded: Data(content.utf8))
     }
 
-    public func read() throws -> Data {
-        if let value: Data = try readIfPresent() {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
+    public func readIfPresent() throws -> Document? {
+        // No operation.  Smithy document not supported in XML
+        return nil
     }
 
     public func readTimestampIfPresent(format: TimestampFormat) throws -> Date? {
@@ -192,25 +123,9 @@ public class Reader {
         return TimestampFormatter(format: format).date(from: content)
     }
 
-    public func readTimestamp(format: TimestampFormat) throws -> Date {
-        if let value: Date = try readTimestampIfPresent(format: format) {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
-    }
-
     public func readIfPresent<T: RawRepresentable>() throws -> T? where T.RawValue == Int {
         guard let rawValue: Int = try readIfPresent() else { return nil }
         return T(rawValue: rawValue)
-    }
-
-    public func read<T: RawRepresentable>() throws -> T where T.RawValue == Int {
-        if let value: T = try readIfPresent() {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
     }
 
     public func readIfPresent<T: RawRepresentable>() throws -> T? where T.RawValue == String {
@@ -218,16 +133,8 @@ public class Reader {
         return T(rawValue: rawValue)
     }
 
-    public func read<T: RawRepresentable>() throws -> T where T.RawValue == String {
-        if let value: T = try readIfPresent() {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
-    }
-
     public func readMapIfPresent<T>(
-        valueReadingClosure: ReadingClosure<T?, Reader>,
+        valueReadingClosure: ReadingClosure<T, Reader>,
         keyNodeInfo: NodeInfo,
         valueNodeInfo: NodeInfo,
         isFlattened: Bool
@@ -237,38 +144,20 @@ public class Reader {
             let entries = (parent?.children ?? []).filter { $0.nodeInfo.name == nodeInfo.name }
             guard !entries.isEmpty else { return nil }
             for entry in entries {
-                guard let key = entry[keyNodeInfo].content,
-                      let value = try valueReadingClosure(entry[valueNodeInfo]) else { continue }
+                guard let key = entry[keyNodeInfo].content else { continue }
+                let value = try valueReadingClosure(entry[valueNodeInfo])
                 dict[key] = value
             }
         } else {
             if content == nil { return nil }
             let entries = children.filter { $0.nodeInfo.name == "entry" }
             for entry in entries {
-                guard let key = entry[keyNodeInfo].content,
-                      let value = try valueReadingClosure(entry[valueNodeInfo]) else { continue }
+                guard let key = entry[keyNodeInfo].content else { continue }
+                let value = try valueReadingClosure(entry[valueNodeInfo])
                 dict[key] = value
             }
         }
         return dict
-    }
-
-    public func readMap<T>(
-        valueReadingClosure: ReadingClosure<T?, Reader>,
-        keyNodeInfo: NodeInfo,
-        valueNodeInfo: NodeInfo,
-        isFlattened: Bool
-    ) throws -> [String: T] {
-        if let value: [String: T] = try readMapIfPresent(
-            valueReadingClosure: valueReadingClosure,
-            keyNodeInfo: keyNodeInfo,
-            valueNodeInfo: valueNodeInfo,
-            isFlattened: isFlattened
-        ) {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
     }
 
     public func readListIfPresent<Member>(
@@ -281,37 +170,22 @@ public class Reader {
             let members = (parent?.children ?? []).filter { $0.nodeInfo.name == nodeInfo.name }
             guard !members.isEmpty else { return nil }
             for member in members {
-                guard let value = try memberReadingClosure(member) else { continue }
+                let value = try memberReadingClosure(member)
                 list.append(value)
             }
         } else {
             if content == nil { return nil }
             let members = children.filter { $0.nodeInfo.name == memberNodeInfo.name }
             for member in members {
-                guard let value = try memberReadingClosure(member) else { continue }
+                let value = try memberReadingClosure(member)
                 list.append(value)
             }
         }
         return list
     }
 
-    public func readList<T>(
-        memberReadingClosure: ReadingClosure<T, Reader>,
-        memberNodeInfo: NodeInfo,
-        isFlattened: Bool
-    ) throws -> [T] {
-        if let value: [T] = try readListIfPresent(
-            memberReadingClosure: memberReadingClosure,
-            memberNodeInfo: memberNodeInfo,
-            isFlattened: isFlattened
-        ) {
-            return value
-        } else {
-            throw ReaderError.requiredValueNotPresent
-        }
+    public func readNullIfPresent() throws -> Bool? {
+        // Since null is not currently used in XML protocols, this method returns a default value.
+        return nil
     }
-}
-
-public enum ReaderError: Error {
-    case requiredValueNotPresent
 }

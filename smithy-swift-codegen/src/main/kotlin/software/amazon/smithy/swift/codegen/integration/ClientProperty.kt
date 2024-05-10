@@ -6,7 +6,6 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 /**
@@ -103,22 +102,5 @@ abstract class HttpResponseDecoder(private val requestDecoder: Symbol, private v
 
     override fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {
         writer.write("self.decoder = \$L", name)
-    }
-}
-
-class DefaultRequestEncoder(private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpRequestEncoder(ClientRuntimeTypes.Serde.RequestEncoder, requestEncoderOptions) {
-    override fun renderInstantiation(writer: SwiftWriter) {
-        // render nothing as we are relying on an encoder passed via the config object
-    }
-    override fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {
-        writer.write("self.encoder = \$L.encoder", nameOfConfigObject)
-    }
-}
-class DefaultResponseDecoder(private val responseDecoderOptions: MutableMap<String, String> = mutableMapOf()) : HttpResponseDecoder(ClientRuntimeTypes.Serde.ResponseDecoder, responseDecoderOptions) {
-    override fun renderInstantiation(writer: SwiftWriter) {
-        // render nothing as we are relying on an encoder passed via the config object
-    }
-    override fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {
-        writer.write("self.decoder = \$L.decoder", nameOfConfigObject)
     }
 }

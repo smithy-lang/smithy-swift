@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
+import software.amazon.smithy.swift.codegen.model.NeedsReaderWriterTransformer
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 
@@ -23,6 +24,7 @@ class UnionEncodeGeneratorTests {
         resolvedModel = AddOperationShapes.execute(resolvedModel, settings.getService(resolvedModel), settings.moduleName)
         resolvedModel = RecursiveShapeBoxer.transform(resolvedModel)
         resolvedModel = NestedShapeTransformer.transform(resolvedModel, settings.getService(resolvedModel))
+        resolvedModel = NeedsReaderWriterTransformer.transform(resolvedModel, settings.getService(resolvedModel))
         return resolvedModel
     }
     val newTestContext = newTestContext()
@@ -34,208 +36,131 @@ class UnionEncodeGeneratorTests {
 
     @Test
     fun `it creates encodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/JsonUnionsInput+Encodable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/JsonUnionsInput+Write.swift"))
     }
 
     @Test
     fun `it creates encodable conformance for nested structures`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/MyUnion+Codable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/MyUnion+ReadWrite.swift"))
     }
 
     @Test
     fun `it encodes a union member in an operation`() {
-        val contents = getModelFileContents("example", "JsonUnionsInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "JsonUnionsInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension JsonUnionsInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case contents
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let contents = self.contents {
-                        try encodeContainer.encode(contents, forKey: .contents)
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension JsonUnionsInput {
+
+    static func write(value: JsonUnionsInput?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["contents"].write(value.contents, with: ExampleClientTypes.MyUnion.write(value:to:))
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `it encodes a union with various member shape types`() {
-        val contents = getModelFileContents("example", "MyUnion+Codable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "MyUnion+ReadWrite.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-            extension ExampleClientTypes.MyUnion: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case blobvalue = "blobValue"
-                    case booleanvalue = "booleanValue"
-                    case enumvalue = "enumValue"
-                    case inheritedtimestamp = "inheritedTimestamp"
-                    case listvalue = "listValue"
-                    case mapvalue = "mapValue"
-                    case numbervalue = "numberValue"
-                    case sdkUnknown
-                    case stringvalue = "stringValue"
-                    case structurevalue = "structureValue"
-                    case timestampvalue = "timestampValue"
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
-                    switch self {
-                        case let .blobvalue(blobvalue):
-                            try container.encode(blobvalue.base64EncodedString(), forKey: .blobvalue)
-                        case let .booleanvalue(booleanvalue):
-                            try container.encode(booleanvalue, forKey: .booleanvalue)
-                        case let .enumvalue(enumvalue):
-                            try container.encode(enumvalue.rawValue, forKey: .enumvalue)
-                        case let .inheritedtimestamp(inheritedtimestamp):
-                            try container.encodeTimestamp(inheritedtimestamp, format: .httpDate, forKey: .inheritedtimestamp)
-                        case let .listvalue(listvalue):
-                            var listvalueContainer = container.nestedUnkeyedContainer(forKey: .listvalue)
-                            for string0 in listvalue {
-                                try listvalueContainer.encode(string0)
-                            }
-                        case let .mapvalue(mapvalue):
-                            var mapvalueContainer = container.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .mapvalue)
-                            for (dictKey0, stringMap0) in mapvalue {
-                                try mapvalueContainer.encode(stringMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-                            }
-                        case let .numbervalue(numbervalue):
-                            try container.encode(numbervalue, forKey: .numbervalue)
-                        case let .stringvalue(stringvalue):
-                            try container.encode(stringvalue, forKey: .stringvalue)
-                        case let .structurevalue(structurevalue):
-                            try container.encode(structurevalue, forKey: .structurevalue)
-                        case let .timestampvalue(timestampvalue):
-                            try container.encodeTimestamp(timestampvalue, format: .dateTime, forKey: .timestampvalue)
-                        case let .sdkUnknown(sdkUnknown):
-                            try container.encode(sdkUnknown, forKey: .sdkUnknown)
-                    }
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let values = try decoder.container(keyedBy: CodingKeys.self)
-                    let stringvalueDecoded = try values.decodeIfPresent(Swift.String.self, forKey: .stringvalue)
-                    if let stringvalue = stringvalueDecoded {
-                        self = .stringvalue(stringvalue)
-                        return
-                    }
-                    let booleanvalueDecoded = try values.decodeIfPresent(Swift.Bool.self, forKey: .booleanvalue)
-                    if let booleanvalue = booleanvalueDecoded {
-                        self = .booleanvalue(booleanvalue)
-                        return
-                    }
-                    let numbervalueDecoded = try values.decodeIfPresent(Swift.Int.self, forKey: .numbervalue)
-                    if let numbervalue = numbervalueDecoded {
-                        self = .numbervalue(numbervalue)
-                        return
-                    }
-                    let blobvalueDecoded = try values.decodeIfPresent(ClientRuntime.Data.self, forKey: .blobvalue)
-                    if let blobvalue = blobvalueDecoded {
-                        self = .blobvalue(blobvalue)
-                        return
-                    }
-                    let timestampvalueDecoded = try values.decodeTimestampIfPresent(.dateTime, forKey: .timestampvalue)
-                    if let timestampvalue = timestampvalueDecoded {
-                        self = .timestampvalue(timestampvalue)
-                        return
-                    }
-                    let inheritedtimestampDecoded = try values.decodeTimestampIfPresent(.httpDate, forKey: .inheritedtimestamp)
-                    if let inheritedtimestamp = inheritedtimestampDecoded {
-                        self = .inheritedtimestamp(inheritedtimestamp)
-                        return
-                    }
-                    let enumvalueDecoded = try values.decodeIfPresent(ExampleClientTypes.FooEnum.self, forKey: .enumvalue)
-                    if let enumvalue = enumvalueDecoded {
-                        self = .enumvalue(enumvalue)
-                        return
-                    }
-                    let listvalueContainer = try values.decodeIfPresent([Swift.String?].self, forKey: .listvalue)
-                    var listvalueDecoded0:[Swift.String]? = nil
-                    if let listvalueContainer = listvalueContainer {
-                        listvalueDecoded0 = [Swift.String]()
-                        for string0 in listvalueContainer {
-                            if let string0 = string0 {
-                                listvalueDecoded0?.append(string0)
-                            }
-                        }
-                    }
-                    if let listvalue = listvalueDecoded0 {
-                        self = .listvalue(listvalue)
-                        return
-                    }
-                    let mapvalueContainer = try values.decodeIfPresent([Swift.String: Swift.String?].self, forKey: .mapvalue)
-                    var mapvalueDecoded0: [Swift.String:Swift.String]? = nil
-                    if let mapvalueContainer = mapvalueContainer {
-                        mapvalueDecoded0 = [Swift.String:Swift.String]()
-                        for (key0, string0) in mapvalueContainer {
-                            if let string0 = string0 {
-                                mapvalueDecoded0?[key0] = string0
-                            }
-                        }
-                    }
-                    if let mapvalue = mapvalueDecoded0 {
-                        self = .mapvalue(mapvalue)
-                        return
-                    }
-                    let structurevalueDecoded = try values.decodeIfPresent(ExampleClientTypes.GreetingWithErrorsOutput.self, forKey: .structurevalue)
-                    if let structurevalue = structurevalueDecoded {
-                        self = .structurevalue(structurevalue)
-                        return
-                    }
-                    self = .sdkUnknown("")
-                }
-            }
-        """.trimIndent()
+extension ExampleClientTypes.MyUnion {
+
+    static func write(value: ExampleClientTypes.MyUnion?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        switch value {
+            case let .blobvalue(blobvalue):
+                try writer["blobValue"].write(blobvalue)
+            case let .booleanvalue(booleanvalue):
+                try writer["booleanValue"].write(booleanvalue)
+            case let .enumvalue(enumvalue):
+                try writer["enumValue"].write(enumvalue)
+            case let .inheritedtimestamp(inheritedtimestamp):
+                try writer["inheritedTimestamp"].writeTimestamp(inheritedtimestamp, format: .httpDate)
+            case let .listvalue(listvalue):
+                try writer["listValue"].writeList(listvalue, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+            case let .mapvalue(mapvalue):
+                try writer["mapValue"].writeMap(mapvalue, valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+            case let .numbervalue(numbervalue):
+                try writer["numberValue"].write(numbervalue)
+            case let .stringvalue(stringvalue):
+                try writer["stringValue"].write(stringvalue)
+            case let .structurevalue(structurevalue):
+                try writer["structureValue"].write(structurevalue, with: ExampleClientTypes.GreetingWithErrorsOutput.write(value:to:))
+            case let .timestampvalue(timestampvalue):
+                try writer["timestampValue"].writeTimestamp(timestampvalue, format: .epochSeconds)
+            case let .sdkUnknown(sdkUnknown):
+                try writer["sdkUnknown"].write(sdkUnknown)
+        }
+    }
+
+    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.MyUnion {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
+        let name = reader.children.filter { ${'$'}0.hasContent && ${'$'}0.nodeInfo.name != "__type" }.first?.nodeInfo.name
+        switch name {
+            case "stringValue":
+                return .stringvalue(try reader["stringValue"].read())
+            case "booleanValue":
+                return .booleanvalue(try reader["booleanValue"].read())
+            case "numberValue":
+                return .numbervalue(try reader["numberValue"].read())
+            case "blobValue":
+                return .blobvalue(try reader["blobValue"].read())
+            case "timestampValue":
+                return .timestampvalue(try reader["timestampValue"].readTimestamp(format: .epochSeconds))
+            case "inheritedTimestamp":
+                return .inheritedtimestamp(try reader["inheritedTimestamp"].readTimestamp(format: .httpDate))
+            case "enumValue":
+                return .enumvalue(try reader["enumValue"].read())
+            case "listValue":
+                return .listvalue(try reader["listValue"].readList(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false))
+            case "mapValue":
+                return .mapvalue(try reader["mapValue"].readMap(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false))
+            case "structureValue":
+                return .structurevalue(try reader["structureValue"].read(with: ExampleClientTypes.GreetingWithErrorsOutput.read(from:)))
+            default:
+                return .sdkUnknown(name ?? "")
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `it generates codable conformance for a recursive union`() {
-        val contents = getModelFileContents("example", "IndirectEnum+Codable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "IndirectEnum+ReadWrite.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension ExampleClientTypes.IndirectEnum: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case other
-                    case sdkUnknown
-                    case some
-                }
+        val expectedContents = """
+extension ExampleClientTypes.IndirectEnum {
 
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
-                    switch self {
-                        case let .other(other):
-                            try container.encode(other, forKey: .other)
-                        case let .some(some):
-                            try container.encode(some, forKey: .some)
-                        case let .sdkUnknown(sdkUnknown):
-                            try container.encode(sdkUnknown, forKey: .sdkUnknown)
-                    }
-                }
+    static func write(value: ExampleClientTypes.IndirectEnum?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        switch value {
+            case let .other(other):
+                try writer["other"].write(other)
+            case let .some(some):
+                try writer["some"].write(some, with: ExampleClientTypes.IndirectEnum.write(value:to:))
+            case let .sdkUnknown(sdkUnknown):
+                try writer["sdkUnknown"].write(sdkUnknown)
+        }
+    }
 
-                public init(from decoder: Swift.Decoder) throws {
-                    let values = try decoder.container(keyedBy: CodingKeys.self)
-                    let someDecoded = try values.decodeIfPresent(ExampleClientTypes.IndirectEnum.self, forKey: .some)
-                    if let some = someDecoded {
-                        self = .some(some)
-                        return
-                    }
-                    let otherDecoded = try values.decodeIfPresent(Swift.String.self, forKey: .other)
-                    if let other = otherDecoded {
-                        self = .other(other)
-                        return
-                    }
-                    self = .sdkUnknown("")
-                }
-            }
-            """.trimIndent()
+    static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.IndirectEnum {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
+        let name = reader.children.filter { ${'$'}0.hasContent && ${'$'}0.nodeInfo.name != "__type" }.first?.nodeInfo.name
+        switch name {
+            case "some":
+                return .some(try reader["some"].read(with: ExampleClientTypes.IndirectEnum.read(from:)))
+            case "other":
+                return .other(try reader["other"].read())
+            default:
+                return .sdkUnknown(name ?? "")
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }
