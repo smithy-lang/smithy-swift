@@ -6,32 +6,6 @@ import SmithyReadWrite
 
 extension WeatherClientTypes.Precipitation {
 
-    static func write(value: WeatherClientTypes.Precipitation?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { return }
-        switch value {
-            case let .baz(baz):
-                try writer["baz"].write(baz, with: WeatherClientTypes.Baz.write(value:to:))
-            case let .blob(blob):
-                try writer["blob"].write(blob)
-            case let .foo(foo):
-                try writer["foo"].write(foo, with: WeatherClientTypes.Foo.write(value:to:))
-            case let .hail(hail):
-                try writer["hail"].writeMap(hail, valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-            case let .mixed(mixed):
-                try writer["mixed"].write(mixed)
-            case let .other(other):
-                try writer["other"].write(other, with: WeatherClientTypes.OtherStructure.write(value:to:))
-            case let .rain(rain):
-                try writer["rain"].write(rain)
-            case let .sleet(sleet):
-                try writer["sleet"].write(sleet)
-            case let .snow(snow):
-                try writer["snow"].write(snow)
-            case let .sdkUnknown(sdkUnknown):
-                try writer["sdkUnknown"].write(sdkUnknown)
-        }
-    }
-
     static func read(from reader: SmithyJSON.Reader) throws -> WeatherClientTypes.Precipitation {
         guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
         let name = reader.children.filter { $0.hasContent && $0.nodeInfo.name != "__type" }.first?.nodeInfo.name
