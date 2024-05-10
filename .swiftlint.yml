@@ -2,17 +2,7 @@ excluded:
   - .build
   - Sources/SmithyTestUtil/*
   - Sources/WeatherSDK/*
-<<<<<<< HEAD
   - Tests/*
-=======
-  - Tests/ClientRuntimeTests/*
-  - Tests/SmithyTestUtilTests/*
-  - Tests/SmithyXMLTests/*
-  - Tests/SmithyJSONTests/*
-  - Tests/SmithyFormURLTests/*
-  - Tests/SmithyTimestampsTests/*
-  - Tests/WeatherSDKTests/*
->>>>>>> main
   - smithy-swift-codegen-test/build/*
 
 analyzer_rules:
