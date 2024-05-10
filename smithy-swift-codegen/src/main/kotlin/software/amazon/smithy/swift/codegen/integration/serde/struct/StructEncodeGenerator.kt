@@ -22,7 +22,6 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestW
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.isError
-import java.lang.Exception
 
 class StructEncodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,

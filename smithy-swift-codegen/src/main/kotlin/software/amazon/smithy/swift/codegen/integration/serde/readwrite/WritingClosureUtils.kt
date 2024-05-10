@@ -8,6 +8,7 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtils
@@ -32,6 +33,7 @@ class WritingClosureUtils(
     }
 
     private fun makeWritingClosure(shape: Shape, memberTimestampFormatTrait: TimestampFormatTrait?, isSparse: Boolean): String {
+        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         val base = when (shape) {
             is MapShape -> {
                 val keyNodeInfo = nodeInfoUtils.nodeInfo(shape.key)
