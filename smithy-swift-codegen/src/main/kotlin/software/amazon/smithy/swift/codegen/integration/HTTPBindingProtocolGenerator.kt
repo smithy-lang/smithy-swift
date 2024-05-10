@@ -37,6 +37,8 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.customtraits.NeedsReaderTrait
+import software.amazon.smithy.swift.codegen.customtraits.NeedsWriterTrait
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.AuthSchemeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
@@ -67,8 +69,6 @@ import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
-import software.amazon.smithy.swift.codegen.customtraits.NeedsReaderTrait
-import software.amazon.smithy.swift.codegen.customtraits.NeedsWriterTrait
 
 private val Shape.isStreaming: Boolean
     get() = hasTrait<StreamingTrait>() && isUnionShape

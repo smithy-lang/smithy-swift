@@ -15,12 +15,12 @@ import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 import software.amazon.smithy.swift.codegen.model.EquatableConformanceTransformer
+import software.amazon.smithy.swift.codegen.model.NeedsReaderWriterTransformer
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.UnionIndirectivizer
 import java.util.ServiceLoader
 import java.util.logging.Logger
-import software.amazon.smithy.swift.codegen.model.NeedsReaderWriterTransformer
 
 /**
  * Plugin to trigger Swift code generation.

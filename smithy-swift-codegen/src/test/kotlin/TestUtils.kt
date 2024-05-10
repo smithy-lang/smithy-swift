@@ -29,6 +29,7 @@ import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGener
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
+import software.amazon.smithy.swift.codegen.model.NeedsReaderWriterTransformer
 import software.amazon.smithy.swift.codegen.model.NestedShapeTransformer
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import java.net.URL
@@ -292,6 +293,7 @@ class TestContext(
             model = AddOperationShapes.execute(model, swiftSettings.getService(model), swiftSettings.moduleName)
             model = RecursiveShapeBoxer.transform(model)
             model = NestedShapeTransformer.transform(model, swiftSettings.getService(model))
+            model = NeedsReaderWriterTransformer.transform(model, swiftSettings.getService(model))
             val protocolGenerator = httpBindingProtocolGenerator ?: MockHTTPRestJsonProtocolGenerator()
             return model.newTestContext(manifest, serviceShapeId, swiftSettings, protocolGenerator, integrations)
         }
