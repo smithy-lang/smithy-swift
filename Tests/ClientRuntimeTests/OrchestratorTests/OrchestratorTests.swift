@@ -8,12 +8,9 @@
 import XCTest
 
 @testable import ClientRuntime
-<<<<<<< HEAD
 import SmithyRetriesAPI
 import SmithyRetries
-=======
 import SmithyJSON
->>>>>>> main
 
 class OrchestratorTests: XCTestCase {
     struct TestInput {

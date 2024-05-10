@@ -8,6 +8,7 @@
 import protocol SmithyRetriesAPI.RetryStrategy
 import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 import struct SmithyRetriesAPI.RetryStrategyOptions
+import struct SmithyRetries.DefaultRetryStrategy
 import struct SmithyRetries.ExponentialBackoffStrategy
 
 /// Provides configuration options for a Smithy-based service.
