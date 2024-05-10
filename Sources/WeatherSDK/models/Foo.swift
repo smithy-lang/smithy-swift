@@ -4,7 +4,7 @@ import ClientRuntime
 import SmithyReadWrite
 
 extension WeatherClientTypes {
-    public struct Foo: Swift.Equatable {
+    public struct Foo {
         public var bar: Swift.String?
         public var baz: Swift.String?
 

@@ -34,7 +34,7 @@ extension WeatherClientTypes.Precipitation {
 
     static func read(from reader: SmithyJSON.Reader) throws -> WeatherClientTypes.Precipitation {
         guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
-        let name = reader.children.filter { $0.hasContent }.first { $0.nodeInfo.name != "__type" }?.nodeInfo.name
+        let name = reader.children.filter { $0.hasContent && $0.nodeInfo.name != "__type" }.first?.nodeInfo.name
         switch name {
             case "rain":
                 return .rain(try reader["rain"].read() ?? false)

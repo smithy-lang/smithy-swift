@@ -3,7 +3,7 @@
 import ClientRuntime
 import SmithyReadWrite
 
-public struct GetCityOutput: Swift.Equatable {
+public struct GetCityOutput {
     public var city: WeatherClientTypes.CitySummary?
     /// This member is required.
     public var coordinates: WeatherClientTypes.CityCoordinates?

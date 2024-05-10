@@ -4,7 +4,7 @@ import ClientRuntime
 import SmithyReadWrite
 
 extension WeatherClientTypes {
-    public struct CityCoordinates: Swift.Equatable {
+    public struct CityCoordinates {
         /// This member is required.
         public var latitude: Swift.Float?
         /// This member is required.

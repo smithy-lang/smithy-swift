@@ -2,7 +2,7 @@
 
 import SmithyReadWrite
 
-public struct GetCurrentTimeInput: Swift.Equatable {
+public struct GetCurrentTimeInput {
 
     public init() { }
 }

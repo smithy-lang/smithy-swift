@@ -35,8 +35,7 @@ class ListCitiesNoSuchResourceTest: HttpResponseTestBase {
                     resourceType: "City"
                 )
                 XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: 404))
-                XCTAssertEqual(expected.properties.resourceType, actual.properties.resourceType)
-                XCTAssertEqual(expected.properties.message, actual.properties.message)
+                XCTAssertEqual(actual, expected)
             } else {
                 XCTFail("The deserialized error type does not match expected type")
             }

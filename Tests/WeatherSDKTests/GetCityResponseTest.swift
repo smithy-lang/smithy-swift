@@ -48,9 +48,7 @@ class GetCityResponseTest: HttpResponseTestBase {
             name: "Seattle"
         )
 
-        XCTAssertEqual(expected.name, actual.name)
-        XCTAssertEqual(expected.coordinates, actual.coordinates)
-        XCTAssertEqual(expected.city, actual.city)
+        XCTAssertEqual(actual, expected)
 
     }
 }

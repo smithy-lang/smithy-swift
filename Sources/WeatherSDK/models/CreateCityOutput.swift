@@ -3,7 +3,7 @@
 import ClientRuntime
 import SmithyReadWrite
 
-public struct CreateCityOutput: Swift.Equatable {
+public struct CreateCityOutput {
     /// This member is required.
     public var cityId: Swift.String?
 
