@@ -28,15 +28,13 @@ extension UnknownHTTPServiceError {
 
 extension UnknownHTTPServiceError {
 
-    public static func makeError(
-        httpResponse: HttpResponse,
-        message: String? = nil,
-        typeName: String? = nil
-    ) async throws -> Error {
+    public static func makeError<Base: BaseError>(
+        baseError: Base
+    ) throws -> Error {
         UnknownHTTPServiceError(
-            httpResponse: httpResponse,
-            message: message,
-            typeName: typeName
+            httpResponse: baseError.httpResponse,
+            message: baseError.message,
+            typeName: baseError.code
         )
     }
 }

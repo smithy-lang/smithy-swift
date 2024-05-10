@@ -25,7 +25,7 @@ open class HttpProtocolClientGenerator(
     serviceConfig: ServiceConfig,
     private val httpBindingResolver: HttpBindingResolver,
     private val defaultContentType: String,
-    private val httpProtocolCustomizable: HttpProtocolCustomizable,
+    private val httpProtocolCustomizable: HTTPProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware
 ) {
     private val model: Model = ctx.model

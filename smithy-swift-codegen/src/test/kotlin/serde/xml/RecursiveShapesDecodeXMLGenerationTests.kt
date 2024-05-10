@@ -5,7 +5,7 @@
 
 package serde.xml
 
-import MockHttpRestXMLProtocolGenerator
+import MockHTTPRestXMLProtocolGenerator
 import TestContext
 import defaultSettings
 import getFileContents
@@ -16,17 +16,17 @@ class RecursiveShapesDecodeXMLGenerationTests {
     @Test
     fun `decode recursive shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlRecursiveShapesOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlRecursiveShapesOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlRecursiveShapesOutputBody {
+extension XmlRecursiveShapesOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlRecursiveShapesOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
-            var value = XmlRecursiveShapesOutput()
-            value.nested = try reader["nested"].readIfPresent(readingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.readingClosure)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlRecursiveShapesOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlRecursiveShapesOutput()
+        value.nested = try reader["nested"].readIfPresent(with: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.read(from:))
+        return value
     }
 }
 """
@@ -36,17 +36,17 @@ extension XmlRecursiveShapesOutputBody {
     @Test
     fun `decode recursive nested shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlNestedRecursiveShapesOutputBody {
+extension XmlNestedRecursiveShapesOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlNestedRecursiveShapesOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
-            var value = XmlNestedRecursiveShapesOutput()
-            value.nestedRecursiveList = try reader["nestedRecursiveList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlNestedRecursiveShapesOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlNestedRecursiveShapesOutput()
+        value.nestedRecursiveList = try reader["nestedRecursiveList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        return value
     }
 }
 """
@@ -54,7 +54,7 @@ extension XmlNestedRecursiveShapesOutputBody {
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
         }
         context.generator.generateDeserializers(context.generationCtx)

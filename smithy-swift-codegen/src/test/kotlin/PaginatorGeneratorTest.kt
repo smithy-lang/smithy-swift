@@ -175,7 +175,7 @@ class PaginatorGeneratorTest {
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestJsonProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "Test", "2019-12-16", "Test")
         }
         context.generator.generateProtocolClient(context.generationCtx)

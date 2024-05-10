@@ -30,12 +30,6 @@ open class HttpProtocolServiceClient(
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
             writer.write("let config: \$L", serviceConfig.typeName)
             writer.write("let serviceName = \$S", serviceName)
-            if (properties.any { it is HttpRequestEncoder }) {
-                writer.write("let encoder: \$N", ClientRuntimeTypes.Serde.RequestEncoder)
-            }
-            if (properties.any { it is HttpResponseDecoder }) {
-                writer.write("let decoder: \$N", ClientRuntimeTypes.Serde.ResponseDecoder)
-            }
             writer.write("")
             properties.forEach { prop ->
                 prop.addImportsAndDependencies(writer)

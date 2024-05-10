@@ -5,6 +5,8 @@ excluded:
   - Tests/ClientRuntimeTests/*
   - Tests/SmithyTestUtilTests/*
   - Tests/SmithyXMLTests/*
+  - Tests/SmithyJSONTests/*
+  - Tests/SmithyFormURLTests/*
   - Tests/SmithyTimestampsTests/*
   - Tests/WeatherSDKTests/*
   - smithy-swift-codegen-test/build/*

@@ -52,6 +52,7 @@ class StructureGenerator(
     }
 
     fun render() {
+        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         writer.putContext("struct.name", structSymbol.name.toUpperCamelCase())
         if (!shape.isError) {
             renderNonErrorStructure()
@@ -142,8 +143,7 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
                     val terminator = if (index == membersSortedByName.size - 1) "" else ","
-                    val symbolToUse = memberSymbol
-                    writer.write("\$L: \$D$terminator", memberName, symbolToUse)
+                    writer.write("\$L: \$D$terminator", memberName, memberSymbol)
                 }
             }
             writer.openBlock("{", "}") {

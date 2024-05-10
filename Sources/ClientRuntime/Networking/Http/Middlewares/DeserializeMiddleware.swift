@@ -5,17 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyReadWrite
+
 public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
     public var id: String = "Deserialize"
-    let httpResponseClosure: HTTPResponseOutputClosure<OperationStackOutput>
-    let httpResponseErrorClosure: HTTPResponseErrorClosure
+    let wireResponseClosure: WireResponseOutputClosure<HttpResponse, OperationStackOutput>
+    let wireResponseErrorClosure: WireResponseErrorClosure<HttpResponse>
 
     public init(
-        _ httpResponseClosure: @escaping HTTPResponseOutputClosure<OperationStackOutput>,
-        _ httpResponseErrorClosure: @escaping HTTPResponseErrorClosure
+        _ wireResponseClosure: @escaping WireResponseOutputClosure<HttpResponse, OperationStackOutput>,
+        _ wireResponseErrorClosure: @escaping WireResponseErrorClosure<HttpResponse>
     ) {
-        self.httpResponseClosure = httpResponseClosure
-        self.httpResponseErrorClosure = httpResponseErrorClosure
+        self.wireResponseClosure = wireResponseClosure
+        self.wireResponseErrorClosure = wireResponseErrorClosure
     }
     public func handle<H>(context: HttpContext,
                           input: SdkHttpRequest,
@@ -61,7 +63,7 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
 
         let copiedResponse = response
         if (200..<300).contains(response.statusCode.rawValue) {
-            return .success(try await httpResponseClosure(copiedResponse))
+            return .success(try await wireResponseClosure(copiedResponse))
         } else {
             // if the response is a stream, we need to cache the stream so that it can be read again
             // error deserialization reads the stream multiple times to first deserialize the protocol error
@@ -69,7 +71,7 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
             // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
             let bodyData = try await copiedResponse.body.readData()
             copiedResponse.body = .data(bodyData)
-            return .failure(try await httpResponseErrorClosure(copiedResponse))
+            return .failure(try await wireResponseErrorClosure(copiedResponse))
         }
     }
 }

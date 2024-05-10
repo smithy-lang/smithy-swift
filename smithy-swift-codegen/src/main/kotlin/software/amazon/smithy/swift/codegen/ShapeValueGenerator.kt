@@ -86,12 +86,13 @@ class ShapeValueGenerator(
     }
 
     private fun documentDecl(writer: SwiftWriter, node: Node) {
-        writer.writeInline("try decoder.decode(Document.self, from:")
-            .write("")
-            .indent()
-            .write("\"\"\"")
-            .write(Node.prettyPrintJson(node))
-            .write("\"\"\".data(using: .utf8)!)")
+        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
+        writer.openBlock(
+            "try \$N.make(from: Data(\"\"\"", "\"\"\".utf8))",
+            SmithyReadWriteTypes.Document,
+        ) {
+            writer.write(Node.prettyPrintJson(node))
+        }
     }
 
     private fun mapDecl(writer: SwiftWriter, block: () -> Unit) {

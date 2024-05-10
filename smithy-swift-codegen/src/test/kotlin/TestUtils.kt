@@ -25,7 +25,7 @@ import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
-import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.AddOperationShapes
@@ -261,7 +261,7 @@ class TestContext(
         fun initContextFrom(
             smithyFile: String,
             serviceShapeId: String,
-            httpBindingProtocolGenerator: HttpBindingProtocolGenerator? = null,
+            httpBindingProtocolGenerator: HTTPBindingProtocolGenerator? = null,
             swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null
         ): TestContext {
             return initContextFrom(listOf(smithyFile), serviceShapeId, httpBindingProtocolGenerator, swiftSettingCallback)
@@ -269,7 +269,7 @@ class TestContext(
         fun initContextFrom(
             smithyFiles: List<String>,
             serviceShapeId: String,
-            httpBindingProtocolGenerator: HttpBindingProtocolGenerator? = null,
+            httpBindingProtocolGenerator: HTTPBindingProtocolGenerator? = null,
             swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null,
             integrations: List<SwiftIntegration> = emptyList()
         ): TestContext {
@@ -292,7 +292,7 @@ class TestContext(
             model = AddOperationShapes.execute(model, swiftSettings.getService(model), swiftSettings.moduleName)
             model = RecursiveShapeBoxer.transform(model)
             model = NestedShapeTransformer.transform(model, swiftSettings.getService(model))
-            val protocolGenerator = httpBindingProtocolGenerator ?: MockHttpRestJsonProtocolGenerator()
+            val protocolGenerator = httpBindingProtocolGenerator ?: MockHTTPRestJsonProtocolGenerator()
             return model.newTestContext(manifest, serviceShapeId, swiftSettings, protocolGenerator, integrations)
         }
     }
@@ -305,7 +305,7 @@ fun TestContext.expectShape(shapeId: String): Shape =
 fun Model.newTestContext(
     serviceShapeId: String = "com.test#Example",
     settings: SwiftSettings = this.defaultSettings(),
-    generator: ProtocolGenerator = MockHttpRestJsonProtocolGenerator()
+    generator: ProtocolGenerator = MockHTTPRestJsonProtocolGenerator()
 ): TestContext {
     return newTestContext(MockManifest(), serviceShapeId, settings, generator)
 }

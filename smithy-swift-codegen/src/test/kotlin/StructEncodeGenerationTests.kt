@@ -26,278 +26,138 @@ class StructEncodeGenerationTests {
 
     @Test
     fun `it creates encodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestInput+Encodable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/SmokeTestInput+Write.swift"))
     }
 
     @Test
     fun `it creates encodable conformance for nested structures`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested+Codable.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested2+Codable.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested3+Codable.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested4+Codable.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested2+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested3+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/Nested4+ReadWrite.swift"))
     }
 
     @Test
     fun `it creates smoke test request encodable conformance`() {
-        val contents = getModelFileContents("example", "SmokeTestInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "SmokeTestInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension SmokeTestInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case payload1
-                    case payload2
-                    case payload3
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let payload1 = self.payload1 {
-                        try encodeContainer.encode(payload1, forKey: .payload1)
-                    }
-                    if let payload2 = self.payload2 {
-                        try encodeContainer.encode(payload2, forKey: .payload2)
-                    }
-                    if let payload3 = self.payload3 {
-                        try encodeContainer.encode(payload3, forKey: .payload3)
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension SmokeTestInput {
+
+    static func write(value: SmokeTestInput?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["payload1"].write(value.payload1)
+        try writer["payload2"].write(value.payload2)
+        try writer["payload3"].write(value.payload3, with: Nested.write(value:to:))
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `it encodes nested documents with aggregate shapes`() {
-        val contents = getModelFileContents("example", "Nested4+Codable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "Nested4+ReadWrite.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-            extension Nested4: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case intList
-                    case intMap
-                    case member1
-                    case stringMap
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let intList = intList {
-                        var intListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .intList)
-                        for integer0 in intList {
-                            try intListContainer.encode(integer0)
-                        }
-                    }
-                    if let intMap = intMap {
-                        var intMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .intMap)
-                        for (dictKey0, intMap0) in intMap {
-                            try intMapContainer.encode(intMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-                        }
-                    }
-                    if let member1 = self.member1 {
-                        try encodeContainer.encode(member1, forKey: .member1)
-                    }
-                    if let stringMap = stringMap {
-                        var stringMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .stringMap)
-                        for (dictKey0, nestedStringMap0) in stringMap {
-                            var nestedStringMap0Container = stringMapContainer.nestedUnkeyedContainer(forKey: ClientRuntime.Key(stringValue: dictKey0))
-                            for string1 in nestedStringMap0 {
-                                try nestedStringMap0Container.encode(string1)
-                            }
-                        }
-                    }
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let member1Decoded = try containerValues.decodeIfPresent(Swift.Int.self, forKey: .member1)
-                    member1 = member1Decoded
-                    let intListContainer = try containerValues.decodeIfPresent([Swift.Int?].self, forKey: .intList)
-                    var intListDecoded0:[Swift.Int]? = nil
-                    if let intListContainer = intListContainer {
-                        intListDecoded0 = [Swift.Int]()
-                        for integer0 in intListContainer {
-                            if let integer0 = integer0 {
-                                intListDecoded0?.append(integer0)
-                            }
-                        }
-                    }
-                    intList = intListDecoded0
-                    let intMapContainer = try containerValues.decodeIfPresent([Swift.String: Swift.Int?].self, forKey: .intMap)
-                    var intMapDecoded0: [Swift.String:Swift.Int]? = nil
-                    if let intMapContainer = intMapContainer {
-                        intMapDecoded0 = [Swift.String:Swift.Int]()
-                        for (key0, integer0) in intMapContainer {
-                            if let integer0 = integer0 {
-                                intMapDecoded0?[key0] = integer0
-                            }
-                        }
-                    }
-                    intMap = intMapDecoded0
-                    let stringMapContainer = try containerValues.decodeIfPresent([Swift.String: [Swift.String?]?].self, forKey: .stringMap)
-                    var stringMapDecoded0: [Swift.String:[Swift.String]]? = nil
-                    if let stringMapContainer = stringMapContainer {
-                        stringMapDecoded0 = [Swift.String:[Swift.String]]()
-                        for (key0, stringlist0) in stringMapContainer {
-                            var stringlist0Decoded0: [Swift.String]? = nil
-                            if let stringlist0 = stringlist0 {
-                                stringlist0Decoded0 = [Swift.String]()
-                                for string1 in stringlist0 {
-                                    if let string1 = string1 {
-                                        stringlist0Decoded0?.append(string1)
-                                    }
-                                }
-                            }
-                            stringMapDecoded0?[key0] = stringlist0Decoded0
-                        }
-                    }
-                    stringMap = stringMapDecoded0
-                }
-            }
-        """.trimIndent()
+extension Nested4 {
+
+    static func write(value: Nested4?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["intList"].writeList(value.intList, memberWritingClosure: Swift.Int.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+        try writer["intMap"].writeMap(value.intMap, valueWritingClosure: Swift.Int.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["member1"].write(value.member1)
+        try writer["stringMap"].writeMap(value.stringMap, valueWritingClosure: listWritingClosure(memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+    }
+
+    static func read(from reader: SmithyJSON.Reader) throws -> Nested4 {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
+        var value = Nested4()
+        value.member1 = try reader["member1"].readIfPresent()
+        value.intList = try reader["intList"].readListIfPresent(memberReadingClosure: Swift.Int.read(from:), memberNodeInfo: "member", isFlattened: false)
+        value.intMap = try reader["intMap"].readMapIfPresent(valueReadingClosure: Swift.Int.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        value.stringMap = try reader["stringMap"].readMapIfPresent(valueReadingClosure: listReadingClosure(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        return value
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `it provides encodable conformance to operation inputs with timestamps`() {
-        val contents = getModelFileContents("example", "TimestampInputInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "TimestampInputInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-            extension TimestampInputInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case dateTime
-                    case epochSeconds
-                    case httpDate
-                    case inheritedTimestamp
-                    case normal
-                    case timestampList
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let dateTime = self.dateTime {
-                        try encodeContainer.encodeTimestamp(dateTime, format: .dateTime, forKey: .dateTime)
-                    }
-                    if let epochSeconds = self.epochSeconds {
-                        try encodeContainer.encodeTimestamp(epochSeconds, format: .epochSeconds, forKey: .epochSeconds)
-                    }
-                    if let httpDate = self.httpDate {
-                        try encodeContainer.encodeTimestamp(httpDate, format: .httpDate, forKey: .httpDate)
-                    }
-                    if let inheritedTimestamp = self.inheritedTimestamp {
-                        try encodeContainer.encodeTimestamp(inheritedTimestamp, format: .httpDate, forKey: .inheritedTimestamp)
-                    }
-                    if let normal = self.normal {
-                        try encodeContainer.encodeTimestamp(normal, format: .dateTime, forKey: .normal)
-                    }
-                    if let timestampList = timestampList {
-                        var timestampListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .timestampList)
-                        for timestamp0 in timestampList {
-                            try timestampListContainer.encodeTimestamp(timestamp0, format: .dateTime)
-                        }
-                    }
-                }
-            }
-        """.trimIndent()
+extension TimestampInputInput {
+
+    static func write(value: TimestampInputInput?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["dateTime"].writeTimestamp(value.dateTime, format: .dateTime)
+        try writer["epochSeconds"].writeTimestamp(value.epochSeconds, format: .epochSeconds)
+        try writer["httpDate"].writeTimestamp(value.httpDate, format: .httpDate)
+        try writer["inheritedTimestamp"].writeTimestamp(value.inheritedTimestamp, format: .httpDate)
+        try writer["normal"].writeTimestamp(value.normal, format: .epochSeconds)
+        try writer["timestampList"].writeList(value.timestampList, memberWritingClosure: timestampWritingClosure(format: .dateTime), memberNodeInfo: "member", isFlattened: false)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `it encodes maps correctly`() {
-        val contents = getModelFileContents("example", "MapInputInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "MapInputInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-            extension MapInputInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case blobMap
-                    case dateMap
-                    case enumMap
-                    case intMap
-                    case structMap
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let blobMap = blobMap {
-                        var blobMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .blobMap)
-                        for (dictKey0, blobMap0) in blobMap {
-                            try blobMapContainer.encode(blobMap0.base64EncodedString(), forKey: ClientRuntime.Key(stringValue: dictKey0))
-                        }
-                    }
-                    if let dateMap = dateMap {
-                        var dateMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .dateMap)
-                        for (dictKey0, dateMap0) in dateMap {
-                            try dateMapContainer.encodeTimestamp(dateMap0, format: .dateTime, forKey: ClientRuntime.Key(stringValue: dictKey0))
-                        }
-                    }
-                    if let enumMap = enumMap {
-                        var enumMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .enumMap)
-                        for (dictKey0, enumMap0) in enumMap {
-                            try enumMapContainer.encode(enumMap0.rawValue, forKey: ClientRuntime.Key(stringValue: dictKey0))
-                        }
-                    }
-                    if let intMap = intMap {
-                        var intMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .intMap)
-                        for (dictKey0, intMap0) in intMap {
-                            try intMapContainer.encode(intMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-                        }
-                    }
-                    if let structMap = structMap {
-                        var structMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .structMap)
-                        for (dictKey0, structMap0) in structMap {
-                            try structMapContainer.encode(structMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-                        }
-                    }
-                }
-            }
-        """.trimIndent()
+extension MapInputInput {
+
+    static func write(value: MapInputInput?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["blobMap"].writeMap(value.blobMap, valueWritingClosure: ClientRuntime.Data.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["dateMap"].writeMap(value.dateMap, valueWritingClosure: timestampWritingClosure(format: .httpDate), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["enumMap"].writeMap(value.enumMap, valueWritingClosure: MyEnum.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["intMap"].writeMap(value.intMap, valueWritingClosure: Swift.Int.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["structMap"].writeMap(value.structMap, valueWritingClosure: ReachableOnlyThroughMap.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `it encodes nested enums correctly`() {
-        val contents = getModelFileContents("example", "EnumInputInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "EnumInputInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension EnumInputInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case nestedWithEnum
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let nestedWithEnum = self.nestedWithEnum {
-                        try encodeContainer.encode(nestedWithEnum, forKey: .nestedWithEnum)
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension EnumInputInput {
+
+    static func write(value: EnumInputInput?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["nestedWithEnum"].write(value.nestedWithEnum, with: NestedEnum.write(value:to:))
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
 
-        val contents2 = getModelFileContents("example", "NestedEnum+Codable.swift", newTestContext.manifest)
+        val contents2 = getModelFileContents("example", "NestedEnum+ReadWrite.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents2 =
-            """
-            extension NestedEnum: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case myEnum
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let myEnum = self.myEnum {
-                        try encodeContainer.encode(myEnum.rawValue, forKey: .myEnum)
-                    }
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let myEnumDecoded = try containerValues.decodeIfPresent(MyEnum.self, forKey: .myEnum)
-                    myEnum = myEnumDecoded
-                }
-            }
-            """.trimIndent()
+        val expectedContents2 = """
+extension NestedEnum {
+
+    static func write(value: NestedEnum?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["myEnum"].write(value.myEnum)
+    }
+
+    static func read(from reader: SmithyJSON.Reader) throws -> NestedEnum {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
+        var value = NestedEnum()
+        value.myEnum = try reader["myEnum"].readIfPresent()
+        return value
+    }
+}
+"""
         contents2.shouldContainOnlyOnce(expectedContents2)
     }
 
@@ -305,37 +165,28 @@ class StructEncodeGenerationTests {
     fun `it encodes recursive boxed types correctly`() {
         val contents = getModelFileContents(
             "example",
-            "RecursiveShapesInputOutputNested1+Codable.swift",
+            "RecursiveShapesInputOutputNested1+ReadWrite.swift",
             newTestContext.manifest
         )
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension RecursiveShapesInputOutputNested1: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case foo
-                    case nested
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let foo = self.foo {
-                        try encodeContainer.encode(foo, forKey: .foo)
-                    }
-                    if let nested = self.nested {
-                        try encodeContainer.encode(nested, forKey: .nested)
-                    }
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let fooDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .foo)
-                    foo = fooDecoded
-                    let nestedDecoded = try containerValues.decodeIfPresent(RecursiveShapesInputOutputNested2.self, forKey: .nested)
-                    nested = nestedDecoded
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension RecursiveShapesInputOutputNested1 {
+
+    static func write(value: RecursiveShapesInputOutputNested1?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["foo"].write(value.foo)
+        try writer["nested"].write(value.nested, with: RecursiveShapesInputOutputNested2.write(value:to:))
+    }
+
+    static func read(from reader: SmithyJSON.Reader) throws -> RecursiveShapesInputOutputNested1 {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
+        var value = RecursiveShapesInputOutputNested1()
+        value.foo = try reader["foo"].readIfPresent()
+        value.nested = try reader["nested"].readIfPresent(with: RecursiveShapesInputOutputNested2.read(from:))
+        return value
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -343,277 +194,103 @@ class StructEncodeGenerationTests {
     fun `it encodes one side of the recursive shape`() {
         val contents = getModelFileContents(
             "example",
-            "RecursiveShapesInputOutputNested2+Codable.swift",
+            "RecursiveShapesInputOutputNested2+ReadWrite.swift",
             newTestContext.manifest
         )
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension RecursiveShapesInputOutputNested2: Swift.Codable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case bar
-                    case recursiveMember
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let bar = self.bar {
-                        try encodeContainer.encode(bar, forKey: .bar)
-                    }
-                    if let recursiveMember = self.recursiveMember {
-                        try encodeContainer.encode(recursiveMember, forKey: .recursiveMember)
-                    }
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let barDecoded = try containerValues.decodeIfPresent(Swift.String.self, forKey: .bar)
-                    bar = barDecoded
-                    let recursiveMemberDecoded = try containerValues.decodeIfPresent(RecursiveShapesInputOutputNested1.self, forKey: .recursiveMember)
-                    recursiveMember = recursiveMemberDecoded
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension RecursiveShapesInputOutputNested2 {
+
+    static func write(value: RecursiveShapesInputOutputNested2?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["bar"].write(value.bar)
+        try writer["recursiveMember"].write(value.recursiveMember, with: RecursiveShapesInputOutputNested1.write(value:to:))
+    }
+
+    static func read(from reader: SmithyJSON.Reader) throws -> RecursiveShapesInputOutputNested2 {
+        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
+        var value = RecursiveShapesInputOutputNested2()
+        value.bar = try reader["bar"].readIfPresent()
+        value.recursiveMember = try reader["recursiveMember"].readIfPresent(with: RecursiveShapesInputOutputNested1.read(from:))
+        return value
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `it encodes structure with sparse list`() {
-        val contents = getModelFileContents("example", "JsonListsInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "JsonListsInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-extension JsonListsInput: Swift.Encodable {
-    enum CodingKeys: Swift.String, Swift.CodingKey {
-        case booleanList
-        case integerList
-        case nestedStringList
-        case sparseStringList
-        case stringList
-        case stringSet
-        case timestampList
-    }
+extension JsonListsInput {
 
-    public func encode(to encoder: Swift.Encoder) throws {
-        var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-        if let booleanList = booleanList {
-            var booleanListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .booleanList)
-            for boolean0 in booleanList {
-                try booleanListContainer.encode(boolean0)
-            }
-        }
-        if let integerList = integerList {
-            var integerListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .integerList)
-            for integer0 in integerList {
-                try integerListContainer.encode(integer0)
-            }
-        }
-        if let nestedStringList = nestedStringList {
-            var nestedStringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .nestedStringList)
-            for stringlist0 in nestedStringList {
-                var stringlist0Container = nestedStringListContainer.nestedUnkeyedContainer()
-                for string1 in stringlist0 {
-                    try stringlist0Container.encode(string1)
-                }
-            }
-        }
-        if let sparseStringList = sparseStringList {
-            var sparseStringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .sparseStringList)
-            for string0 in sparseStringList {
-                guard let string0 = string0 else {
-                    try sparseStringListContainer.encodeNil()
-                    continue
-                }
-                try sparseStringListContainer.encode(string0)
-            }
-        }
-        if let stringList = stringList {
-            var stringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .stringList)
-            for string0 in stringList {
-                try stringListContainer.encode(string0)
-            }
-        }
-        if let stringSet = stringSet {
-            var stringSetContainer = encodeContainer.nestedUnkeyedContainer(forKey: .stringSet)
-            for string0 in stringSet {
-                try stringSetContainer.encode(string0)
-            }
-        }
-        if let timestampList = timestampList {
-            var timestampListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .timestampList)
-            for timestamp0 in timestampList {
-                try timestampListContainer.encodeTimestamp(timestamp0, format: .dateTime)
-            }
-        }
+    static func write(value: JsonListsInput?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["booleanList"].writeList(value.booleanList, memberWritingClosure: Swift.Bool.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+        try writer["integerList"].writeList(value.integerList, memberWritingClosure: Swift.Int.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+        try writer["nestedStringList"].writeList(value.nestedStringList, memberWritingClosure: listWritingClosure(memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        try writer["sparseStringList"].writeList(value.sparseStringList, memberWritingClosure: sparseFormOf(writingClosure: Swift.String.write(value:to:)), memberNodeInfo: "member", isFlattened: false)
+        try writer["stringList"].writeList(value.stringList, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+        try writer["stringSet"].writeList(value.stringSet, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+        try writer["timestampList"].writeList(value.timestampList, memberWritingClosure: timestampWritingClosure(format: .dateTime), memberNodeInfo: "member", isFlattened: false)
     }
 }
-        """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `it encodes structure with sparse map`() {
-        val contents = getModelFileContents("example", "JsonMapsInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "JsonMapsInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-extension JsonMapsInput: Swift.Encodable {
-    enum CodingKeys: Swift.String, Swift.CodingKey {
-        case denseBooleanMap
-        case denseNumberMap
-        case denseStringMap
-        case denseStructMap
-        case sparseBooleanMap
-        case sparseNumberMap
-        case sparseStringMap
-        case sparseStructMap
-    }
+extension JsonMapsInput {
 
-    public func encode(to encoder: Swift.Encoder) throws {
-        var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-        if let denseBooleanMap = denseBooleanMap {
-            var denseBooleanMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .denseBooleanMap)
-            for (dictKey0, denseBooleanMap0) in denseBooleanMap {
-                try denseBooleanMapContainer.encode(denseBooleanMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-            }
-        }
-        if let denseNumberMap = denseNumberMap {
-            var denseNumberMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .denseNumberMap)
-            for (dictKey0, denseNumberMap0) in denseNumberMap {
-                try denseNumberMapContainer.encode(denseNumberMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-            }
-        }
-        if let denseStringMap = denseStringMap {
-            var denseStringMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .denseStringMap)
-            for (dictKey0, denseStringMap0) in denseStringMap {
-                try denseStringMapContainer.encode(denseStringMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-            }
-        }
-        if let denseStructMap = denseStructMap {
-            var denseStructMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .denseStructMap)
-            for (dictKey0, denseStructMap0) in denseStructMap {
-                try denseStructMapContainer.encode(denseStructMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-            }
-        }
-        if let sparseBooleanMap = sparseBooleanMap {
-            var sparseBooleanMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .sparseBooleanMap)
-            for (dictKey0, sparseBooleanMap0) in sparseBooleanMap {
-                guard let sparseBooleanMap0 = sparseBooleanMap0 else {
-                    try sparseBooleanMapContainer.encodeNil(forKey: ClientRuntime.Key(stringValue: dictKey0))
-                    continue
-                }
-                try sparseBooleanMapContainer.encode(sparseBooleanMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-            }
-        }
-        if let sparseNumberMap = sparseNumberMap {
-            var sparseNumberMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .sparseNumberMap)
-            for (dictKey0, sparseNumberMap0) in sparseNumberMap {
-                guard let sparseNumberMap0 = sparseNumberMap0 else {
-                    try sparseNumberMapContainer.encodeNil(forKey: ClientRuntime.Key(stringValue: dictKey0))
-                    continue
-                }
-                try sparseNumberMapContainer.encode(sparseNumberMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-            }
-        }
-        if let sparseStringMap = sparseStringMap {
-            var sparseStringMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .sparseStringMap)
-            for (dictKey0, sparseStringMap0) in sparseStringMap {
-                guard let sparseStringMap0 = sparseStringMap0 else {
-                    try sparseStringMapContainer.encodeNil(forKey: ClientRuntime.Key(stringValue: dictKey0))
-                    continue
-                }
-                try sparseStringMapContainer.encode(sparseStringMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-            }
-        }
-        if let sparseStructMap = sparseStructMap {
-            var sparseStructMapContainer = encodeContainer.nestedContainer(keyedBy: ClientRuntime.Key.self, forKey: .sparseStructMap)
-            for (dictKey0, sparseStructMap0) in sparseStructMap {
-                guard let sparseStructMap0 = sparseStructMap0 else {
-                    try sparseStructMapContainer.encodeNil(forKey: ClientRuntime.Key(stringValue: dictKey0))
-                    continue
-                }
-                try sparseStructMapContainer.encode(sparseStructMap0, forKey: ClientRuntime.Key(stringValue: dictKey0))
-            }
-        }
+    static func write(value: JsonMapsInput?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["denseBooleanMap"].writeMap(value.denseBooleanMap, valueWritingClosure: Swift.Bool.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["denseNumberMap"].writeMap(value.denseNumberMap, valueWritingClosure: Swift.Int.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["denseStringMap"].writeMap(value.denseStringMap, valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["denseStructMap"].writeMap(value.denseStructMap, valueWritingClosure: GreetingStruct.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["sparseBooleanMap"].writeMap(value.sparseBooleanMap, valueWritingClosure: sparseFormOf(writingClosure: Swift.Bool.write(value:to:)), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["sparseNumberMap"].writeMap(value.sparseNumberMap, valueWritingClosure: sparseFormOf(writingClosure: Swift.Int.write(value:to:)), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["sparseStringMap"].writeMap(value.sparseStringMap, valueWritingClosure: sparseFormOf(writingClosure: Swift.String.write(value:to:)), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["sparseStructMap"].writeMap(value.sparseStructMap, valueWritingClosure: sparseFormOf(writingClosure: GreetingStruct.write(value:to:)), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }
-        """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `encode checks for 0 or false for primitive types`() {
-        val contents = getModelFileContents("example", "PrimitiveTypesInput+Encodable.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example", "PrimitiveTypesInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-extension PrimitiveTypesInput: Swift.Encodable {
-    enum CodingKeys: Swift.String, Swift.CodingKey {
-        case booleanVal
-        case byteVal
-        case doubleVal
-        case floatVal
-        case intVal
-        case longVal
-        case primitiveBooleanVal
-        case primitiveByteVal
-        case primitiveDoubleVal
-        case primitiveFloatVal
-        case primitiveIntVal
-        case primitiveLongVal
-        case primitiveShortVal
-        case shortVal
-        case str
-    }
+        val expectedContents = """
+extension PrimitiveTypesInput {
 
-    public func encode(to encoder: Swift.Encoder) throws {
-        var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-        if let booleanVal = self.booleanVal {
-            try encodeContainer.encode(booleanVal, forKey: .booleanVal)
-        }
-        if let byteVal = self.byteVal {
-            try encodeContainer.encode(byteVal, forKey: .byteVal)
-        }
-        if let doubleVal = self.doubleVal {
-            try encodeContainer.encode(doubleVal, forKey: .doubleVal)
-        }
-        if let floatVal = self.floatVal {
-            try encodeContainer.encode(floatVal, forKey: .floatVal)
-        }
-        if let intVal = self.intVal {
-            try encodeContainer.encode(intVal, forKey: .intVal)
-        }
-        if let longVal = self.longVal {
-            try encodeContainer.encode(longVal, forKey: .longVal)
-        }
-        if primitiveBooleanVal != false {
-            try encodeContainer.encode(primitiveBooleanVal, forKey: .primitiveBooleanVal)
-        }
-        if primitiveByteVal != 0 {
-            try encodeContainer.encode(primitiveByteVal, forKey: .primitiveByteVal)
-        }
-        if primitiveDoubleVal != 0.0 {
-            try encodeContainer.encode(primitiveDoubleVal, forKey: .primitiveDoubleVal)
-        }
-        if primitiveFloatVal != 0.0 {
-            try encodeContainer.encode(primitiveFloatVal, forKey: .primitiveFloatVal)
-        }
-        if primitiveIntVal != 0 {
-            try encodeContainer.encode(primitiveIntVal, forKey: .primitiveIntVal)
-        }
-        if primitiveLongVal != 0 {
-            try encodeContainer.encode(primitiveLongVal, forKey: .primitiveLongVal)
-        }
-        if primitiveShortVal != 0 {
-            try encodeContainer.encode(primitiveShortVal, forKey: .primitiveShortVal)
-        }
-        if let shortVal = self.shortVal {
-            try encodeContainer.encode(shortVal, forKey: .shortVal)
-        }
-        if let str = self.str {
-            try encodeContainer.encode(str, forKey: .str)
-        }
+    static func write(value: PrimitiveTypesInput?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["booleanVal"].write(value.booleanVal)
+        try writer["byteVal"].write(value.byteVal)
+        try writer["doubleVal"].write(value.doubleVal)
+        try writer["floatVal"].write(value.floatVal)
+        try writer["intVal"].write(value.intVal)
+        try writer["longVal"].write(value.longVal)
+        try writer["primitiveBooleanVal"].write(value.primitiveBooleanVal)
+        try writer["primitiveByteVal"].write(value.primitiveByteVal)
+        try writer["primitiveDoubleVal"].write(value.primitiveDoubleVal)
+        try writer["primitiveFloatVal"].write(value.primitiveFloatVal)
+        try writer["primitiveIntVal"].write(value.primitiveIntVal)
+        try writer["primitiveLongVal"].write(value.primitiveLongVal)
+        try writer["primitiveShortVal"].write(value.primitiveShortVal)
+        try writer["shortVal"].write(value.shortVal)
+        try writer["str"].write(value.str)
     }
 }
-            """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }

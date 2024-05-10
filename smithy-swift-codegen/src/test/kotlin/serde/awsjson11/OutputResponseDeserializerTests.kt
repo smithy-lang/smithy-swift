@@ -37,22 +37,20 @@ class OutputDeserializerTests {
             newTestContext.manifest
         )
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension SimpleStructureOutput: ClientRuntime.HttpResponseBinding {
-                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-                    if let data = try await httpResponse.body.readData(),
-                        let responseDecoder = decoder {
-                        let output: SimpleStructureOutputBody = try responseDecoder.decode(responseBody: data)
-                        self.name = output.name
-                        self.number = output.number
-                    } else {
-                        self.name = nil
-                        self.number = nil
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension SimpleStructureOutput {
+
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> SimpleStructureOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let reader = responseReader
+        var value = SimpleStructureOutput()
+        value.name = try reader["name"].readIfPresent()
+        value.number = try reader["number"].readIfPresent()
+        return value
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -64,21 +62,23 @@ class OutputDeserializerTests {
             newTestContext.manifest
         )
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension DataStreamingOutput: ClientRuntime.HttpResponseBinding {
-                public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-                    switch httpResponse.body {
-                    case .data(let data):
-                        self.streamingData = .data(data)
-                    case .stream(let stream):
-                        self.streamingData = .stream(stream)
-                    case .noStream:
-                        self.streamingData = nil
-                    }
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension DataStreamingOutput {
+
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> DataStreamingOutput {
+        var value = DataStreamingOutput()
+        switch httpResponse.body {
+        case .data(let data):
+            value.streamingData = .data(data)
+        case .stream(let stream):
+            value.streamingData = .stream(stream)
+        case .noStream:
+            value.streamingData = nil
+        }
+        return value
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -91,15 +91,16 @@ class OutputDeserializerTests {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-extension EventStreamingOutput: ClientRuntime.HttpResponseBinding {
-    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-        if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {
-            let messageDecoder: ClientRuntime.MessageDecoder? = nil
-            let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: jsonUnmarshalClosure(responseDecoder: responseDecoder))
-            self.eventStream = decoderStream.toAsyncStream()
-        } else {
-            self.eventStream = nil
+extension EventStreamingOutput {
+
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> EventStreamingOutput {
+        var value = EventStreamingOutput()
+        if case let .stream(stream) = httpResponse.body {
+            let messageDecoder = ClientRuntime.MessageDecoder()
+            let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: EventStream.unmarshal)
+            value.eventStream = decoderStream.toAsyncStream()
         }
+        return value
     }
 }
 """

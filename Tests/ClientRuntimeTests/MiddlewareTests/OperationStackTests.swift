@@ -17,8 +17,6 @@ class OperationStackTests: HttpRequestTestBase {
         let addContextValues = HttpContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
-            .withEncoder(value: JSONEncoder())
-            .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
         let builtContext = addContextValues.build()
 

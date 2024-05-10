@@ -15,7 +15,7 @@ interface HttpProtocolClientGeneratorFactory {
         writer: SwiftWriter,
         serviceName: String,
         defaultContentType: String,
-        httpProtocolCustomizable: HttpProtocolCustomizable,
+        httpProtocolCustomizable: HTTPProtocolCustomizable,
         operationMiddleware: OperationMiddleware
     ): HttpProtocolClientGenerator
 }

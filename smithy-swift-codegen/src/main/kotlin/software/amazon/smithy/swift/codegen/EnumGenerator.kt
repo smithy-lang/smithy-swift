@@ -129,6 +129,7 @@ class EnumGenerator(
         if (isNestedType) {
             val service = model.expectShape<ServiceShape>(settings.service)
             writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
+                writer.write("")
                 renderEnum()
             }
         } else {
@@ -140,24 +141,29 @@ class EnumGenerator(
     private fun renderEnum() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(null, shape)
-        writer.openBlock("public enum \$enum.name:L: \$N, \$N, \$N, \$N, \$N {", "}", SwiftTypes.Protocols.Equatable, SwiftTypes.Protocols.RawRepresentable, SwiftTypes.Protocols.CaseIterable, SwiftTypes.Protocols.Codable, SwiftTypes.Protocols.Hashable) {
+        writer.openBlock(
+            "public enum \$enum.name:L: \$N, \$N, \$N, \$N {",
+            "}",
+            SwiftTypes.Protocols.Equatable,
+            SwiftTypes.Protocols.RawRepresentable,
+            SwiftTypes.Protocols.CaseIterable,
+            SwiftTypes.Protocols.Hashable
+        ) {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
             writer.write("case sdkUnknown(\$N)", SwiftTypes.String)
-
             writer.write("")
 
             // Generate allCases static array
             generateAllCasesBlock()
+            writer.write("")
 
             // Generate initializer from rawValue
             generateInitFromRawValueBlock()
+            writer.write("")
 
             // Generate rawValue internal enum
             generateRawValueEnumBlock()
-
-            // Generate deserializer
-            generateInitFromDecoderBlock()
         }
     }
 
@@ -208,14 +214,6 @@ class EnumGenerator(
             writer.write("switch self {")
             writer.write(rawValuesBuilder.joinToString("\n"))
             writer.write("}")
-        }
-    }
-
-    fun generateInitFromDecoderBlock() {
-        writer.openBlock("public init(from decoder: \$N) throws {", "}", SwiftTypes.Decoder) {
-            writer.write("let container = try decoder.singleValueContainer()")
-            writer.write("let rawValue = try container.decode(RawValue.self)")
-            writer.write("self = \$enum.name:L(rawValue: rawValue) ?? \$enum.name:L.sdkUnknown(rawValue)")
         }
     }
 

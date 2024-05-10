@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import SmithyReadWrite
+import SmithyJSON
 import SmithyTestUtil
 import ClientRuntime
 import XCTest
@@ -94,15 +96,31 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
     struct SayHelloInputBodyMiddleware<StackOutput>: Middleware {
         var id: String = "SayHelloInputBodyMiddleware"
 
-        func handle<H>(context: HttpContext,
-                       input: MInput,
-                       next: H) async throws -> MOutput where H: Handler,
-                                                                Self.Context == H.Context,
-                                                                Self.MInput == H.Input,
-                                                                Self.MOutput == H.Output {
+        let rootNodeInfo: SmithyJSON.Writer.NodeInfo
+        let inputWritingClosure: WritingClosure<SayHelloInput, SmithyJSON.Writer>
 
-            let encoder = context.getEncoder()
-            let body = ByteStream.data(try encoder.encode(input.operationInput))
+        public init(
+            rootNodeInfo: SmithyJSON.Writer.NodeInfo,
+            inputWritingClosure: @escaping WritingClosure<SayHelloInput, SmithyJSON.Writer>
+        ) {
+            self.rootNodeInfo = rootNodeInfo
+            self.inputWritingClosure = inputWritingClosure
+        }
+
+        func handle<H>(
+            context: HttpContext,
+            input: MInput,
+            next: H
+        ) async throws -> MOutput where
+            H: Handler,
+            Self.Context == H.Context,
+            Self.MInput == H.Input,
+            Self.MOutput == H.Output {
+
+
+            let writer = SmithyJSON.Writer(nodeInfo: rootNodeInfo)
+            try writer.write(input.operationInput, with: inputWritingClosure)
+            let body = ByteStream.data(try writer.data())
             input.builder.withBody(body)
             return try await next.handle(context: context, input: input)
 
@@ -123,11 +141,11 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         let forbiddenHeader: String?
         let requiredHeader: String?
 
-        init(greeting: String?,
-             forbiddenQuery: String?,
-             requiredQuery: String?,
-             forbiddenHeader: String?,
-             requiredHeader: String?) {
+        init(greeting: String? = nil,
+             forbiddenQuery: String? = nil,
+             requiredQuery: String? = nil,
+             forbiddenHeader: String? = nil,
+             requiredHeader: String? = nil) {
             self.greeting = greeting
             self.forbiddenQuery = forbiddenQuery
             self.requiredQuery = requiredQuery
@@ -138,18 +156,9 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         private enum CodingKeys: String, CodingKey {
             case greeting
         }
-    }
 
-    struct SayHelloInputBody: Decodable, Equatable {
-        public let greeting: String?
-
-        private enum CodingKeys: String, CodingKey {
-            case greeting
-        }
-        public init (from decoder: Decoder) throws {
-            let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-            let greetingDecoded = try containerValues.decodeIfPresent(String.self, forKey: .greeting)
-            greeting = greetingDecoded
+        static func write(value: SayHelloInput, to writer: SmithyJSON.Writer) throws {
+            try writer["greeting"].write(value.greeting)
         }
     }
 
@@ -180,9 +189,9 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         }
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputQueryItemMiddleware())
         operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputHeaderMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware())
+        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware(rootNodeInfo: "", inputWritingClosure: SayHelloInput.write(value:to:)))
         operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput>(
-            id: "TestDeserializeMiddleware", responseClosure: { _ in try MockOutput() }) { _, actual in
+            id: "TestDeserializeMiddleware", responseClosure: { _ in MockOutput() }) { _, actual in
 
             let forbiddenQueryParams = ["ForbiddenQuery"]
             for forbiddenQueryParam in forbiddenQueryParams {
@@ -222,13 +231,12 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
            })
 
         let context = HttpContextBuilder()
-            .withEncoder(value: JSONEncoder())
             .withMethod(value: .post)
             .build()
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler { (_, _) in
             XCTFail("Deserialize was mocked out, this should fail")
             let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
-            let mockServiceError = try await MockMiddlewareError.makeError(httpResponse: httpResponse, decoder: context.getDecoder())
+            let mockServiceError = MockMiddlewareError.responseErrorClosure(httpResponse)
             throw mockServiceError
         })
     }

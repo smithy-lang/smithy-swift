@@ -5,7 +5,7 @@
 
 package serde.xml
 
-import MockHttpRestXMLProtocolGenerator
+import MockHTTPRestXMLProtocolGenerator
 import TestContext
 import defaultSettings
 import getFileContents
@@ -16,17 +16,17 @@ class SetDecodeXMLGenerationTests {
     @Test
     fun `XmlEnumSetOutputBody decodable`() {
         val context = setupTests("Isolated/Restxml/xml-sets.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumSetOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumSetOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlEnumSetOutputBody {
+extension XmlEnumSetOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlEnumSetOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
-            var value = XmlEnumSetOutput()
-            value.fooEnumSet = try reader["fooEnumSet"].readListIfPresent(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.readingClosure, memberNodeInfo: "member", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlEnumSetOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlEnumSetOutput()
+        value.fooEnumSet = try reader["fooEnumSet"].readListIfPresent(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.read(from:), memberNodeInfo: "member", isFlattened: false)
+        return value
     }
 }
 """
@@ -36,17 +36,17 @@ extension XmlEnumSetOutputBody {
     @Test
     fun `XmlEnumNestedSetOutputBody nested decodable`() {
         val context = setupTests("Isolated/Restxml/xml-sets-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumNestedSetOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumNestedSetOutput+HttpResponseBinding.swift")
         val expectedContents = """
-extension XmlEnumNestedSetOutputBody {
+extension XmlEnumNestedSetOutput {
 
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlEnumNestedSetOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
-            var value = XmlEnumNestedSetOutput()
-            value.fooEnumSet = try reader["fooEnumSet"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlEnumNestedSetOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlEnumNestedSetOutput()
+        value.fooEnumSet = try reader["fooEnumSet"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        return value
     }
 }
 """
@@ -54,7 +54,7 @@ extension XmlEnumNestedSetOutputBody {
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
         }
         context.generator.generateDeserializers(context.generationCtx)
