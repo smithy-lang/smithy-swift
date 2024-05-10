@@ -144,13 +144,6 @@ extension RestJsonProtocolClientTypes.RenamedGreeting {
         guard let value else { return }
         try writer["salutation"].write(value.salutation)
     }
-
-    static func read(from reader: SmithyJSON.Reader) throws -> RestJsonProtocolClientTypes.RenamedGreeting {
-        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
-        var value = RestJsonProtocolClientTypes.RenamedGreeting()
-        value.salutation = try reader["salutation"].readIfPresent()
-        return value
-    }
 }
 """
         contents.shouldContainOnlyOnce(expectedContents)
