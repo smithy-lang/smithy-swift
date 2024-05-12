@@ -32,3 +32,8 @@ jobs:
 
       - name: Clean and Build
         run: ./gradlew clean build -Plog-tests
+
+      - name: Ensure there are no changes after building (e.g. the Weather SDK)
+        run: |
+          git diff
+          test -z "$(git diff)"

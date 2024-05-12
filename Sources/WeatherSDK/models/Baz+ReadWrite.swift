@@ -6,12 +6,6 @@ import SmithyReadWrite
 
 extension WeatherClientTypes.Baz {
 
-    static func write(value: WeatherClientTypes.Baz?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { return }
-        try writer["bar"].write(value.bar)
-        try writer["baz"].write(value.baz)
-    }
-
     static func read(from reader: SmithyJSON.Reader) throws -> WeatherClientTypes.Baz {
         guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
         var value = WeatherClientTypes.Baz()
