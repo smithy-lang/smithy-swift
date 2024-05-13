@@ -11,7 +11,10 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.AuthSchemeResolverGenerator
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SmithyTestUtilTypes
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.endpoints.EndpointResolverGenerator
+import software.amazon.smithy.swift.codegen.middleware.EndpointResolverMiddleware
 
 abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
     override fun serviceClient(
@@ -33,6 +36,11 @@ abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
 
     override fun renderInternals(ctx: ProtocolGenerator.GenerationContext) {
         AuthSchemeResolverGenerator().render(ctx)
+        EndpointResolverGenerator(
+            partitionDefinition = ClientRuntimeTypes.Core.PartitionDefinition,
+            dependency = SwiftDependency.CLIENT_RUNTIME,
+            endpointResolverMiddleware = { w, i, o, oe -> EndpointResolverMiddleware(w, i, o, oe) }
+        ).render(ctx)
     }
 
     override val messageDecoderSymbol: Symbol = ClientRuntimeTypes.EventStream.MessageDecoder
