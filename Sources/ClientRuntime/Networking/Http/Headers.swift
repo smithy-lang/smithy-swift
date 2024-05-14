@@ -159,6 +159,10 @@ public struct Headers {
             return first + last
         }
     }
+
+    public var isEmpty: Bool {
+        return self.headers.isEmpty
+    }
 }
 
 extension Headers: Equatable {

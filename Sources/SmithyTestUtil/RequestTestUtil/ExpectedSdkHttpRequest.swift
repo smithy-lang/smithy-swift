@@ -12,7 +12,7 @@ public struct ExpectedSdkHttpRequest {
     public var headers: Headers?
     public var forbiddenHeaders: [String]?
     public var requiredHeaders: [String]?
-    public var queryItems: [SDKURLQueryItem] { endpoint.queryItems }
+    public var queryItems: [SDKURLQueryItem] { endpoint.uri.query }
     public let forbiddenQueryItems: [SDKURLQueryItem]?
     public let requiredQueryItems: [SDKURLQueryItem]?
     public let endpoint: Endpoint
@@ -137,8 +137,14 @@ public class ExpectedSdkHttpRequestBuilder {
     }
 
     public func build() -> ExpectedSdkHttpRequest {
-        let uri = URI(scheme: protocolType.rawValue, path: path, host: host, port: port, query: queryItems)
-        let endpoint = Endpoint(uri: uri, protocolType: protocolType)
+        let uri = URIBuilder()
+            .withScheme(protocolType)
+            .withPath(path)
+            .withHost(host)
+            .withPort(port)
+            .withQueryItems(queryItems)
+            .build()
+        let endpoint = Endpoint(uri: uri, headers: headers)
         let forbiddenQueryItems = !forbiddenQueryItems.isEmpty ? forbiddenQueryItems : nil
         let requiredQueryItems = !requiredQueryItems.isEmpty ? requiredQueryItems : nil
 

@@ -52,7 +52,7 @@ class NetworkingTestUtils: XCTestCase {
         let endpoint: Endpoint!
 
         queryItems.append(SDKURLQueryItem(name: "qualifier", value: "qualifier-value"))
-        endpoint = Endpoint(host: host, path: path, queryItems: queryItems, headers: headers)
+        endpoint = try? Endpoint(host: host, path: path, queryItems: queryItems, headers: headers)
         return endpoint
     }
 

@@ -19,7 +19,7 @@ class EndpointTests: XCTestCase {
             SDKURLQueryItem(name: "ghi", value: "jkl"),
             SDKURLQueryItem(name: "mno", value: "pqr")
         ]
-        XCTAssertEqual(endpoint.queryItems, expectedQueryItems)
+        XCTAssertEqual(endpoint.uri.query, expectedQueryItems)
     }
 
     func test_hashableAndEquatable_hashesMatchWhenURLQueryItemsAreEqual() throws {
@@ -30,23 +30,23 @@ class EndpointTests: XCTestCase {
     }
 
     func test_path_percentEncodedInput() throws {
-        let endpoint = Endpoint(
+        let endpoint = try Endpoint(
             host: "xctest.amazonaws.com",
             path: "/abc%2Bdef",
             protocolType: .https
         )
-        let foundationURL = try XCTUnwrap(endpoint.url)
+        let foundationURL = try XCTUnwrap(endpoint.uri.url)
         let absoluteString = foundationURL.absoluteString
         XCTAssertEqual(absoluteString, "https://xctest.amazonaws.com/abc%2Bdef")
     }
 
     func test_path_unencodedInput() throws {
-        let endpoint = Endpoint(
+        let endpoint = try Endpoint(
             host: "xctest.amazonaws.com",
             path: "/abc+def",
             protocolType: .https
         )
-        let foundationURL = try XCTUnwrap(endpoint.url)
+        let foundationURL = try XCTUnwrap(endpoint.uri.url)
         let absoluteString = foundationURL.absoluteString
         XCTAssertEqual(absoluteString, "https://xctest.amazonaws.com/abc+def")
     }

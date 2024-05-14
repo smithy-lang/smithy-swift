@@ -61,7 +61,7 @@ class InterceptorTests: XCTestCase {
         public func modifyBeforeTransmit(context: some MutableRequest<Self.InputType, Self.RequestType, Self.AttributesType>) async throws {
             let builder = context.getRequest().toBuilder()
             builder.withHeader(name: headerName, value: headerValue)
-            context.updateRequest(updated: builder.build())
+            context.updateRequest(updated: try builder.build())
         }
     }
 
@@ -84,7 +84,7 @@ class InterceptorTests: XCTestCase {
             let input: TestInput = try XCTUnwrap(context.getInput())
             let builder = context.getRequest().toBuilder()
             builder.withHeader(name: "otherProperty", value: "\(input.otherProperty)")
-            context.updateRequest(updated: builder.build())
+            context.updateRequest(updated: try builder.build())
         }
     }
 
@@ -106,7 +106,7 @@ class InterceptorTests: XCTestCase {
         for i in interceptors {
             try await i.modifyBeforeSerialization(context: interceptorContext)
         }
-        interceptorContext.updateRequest(updated: SdkHttpRequestBuilder().build())
+        interceptorContext.updateRequest(updated: try SdkHttpRequestBuilder().build())
         for i in interceptors {
             try await i.modifyBeforeTransmit(context: interceptorContext)
         }

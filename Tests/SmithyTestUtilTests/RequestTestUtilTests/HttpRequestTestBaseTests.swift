@@ -164,7 +164,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
 
     // Mocks the code-generated unit test which includes testing for forbidden/required headers/queries
     func testSayHello() async throws {
-        let expected = buildExpectedHttpRequest(method: .post,
+        let expected = try buildExpectedHttpRequest(method: .post,
                                                 path: "/",
                                                 headers: ["Content-Type": "application/json",
                                                           "RequiredHeader": "required header"],
@@ -196,7 +196,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             let forbiddenQueryParams = ["ForbiddenQuery"]
             for forbiddenQueryParam in forbiddenQueryParams {
                 XCTAssertFalse(
-                    self.queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),
+                    self.queryItemExists(forbiddenQueryParam, in: actual.destination.query),
                     "Forbidden Query:\(forbiddenQueryParam) exists in query items"
                 )
             }
@@ -208,7 +208,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
 
             let requiredQueryParams = ["RequiredQuery"]
             for requiredQueryParam in requiredQueryParams {
-                XCTAssertTrue(self.queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),
+                XCTAssertTrue(self.queryItemExists(requiredQueryParam, in: actual.destination.query),
                               "Required Query:\(requiredQueryParam) does not exist in query items")
             }
 

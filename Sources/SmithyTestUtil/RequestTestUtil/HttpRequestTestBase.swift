@@ -214,8 +214,8 @@ open class HttpRequestTestBase: XCTestCase {
 
         assertQueryItems(expected.queryItems, actual.queryItems, file: file, line: line)
 
-        XCTAssertEqual(expected.endpoint.path, actual.path, file: file, line: line)
-        XCTAssertEqual(expected.endpoint.host, actual.host, file: file, line: line)
+        XCTAssertEqual(expected.endpoint.uri.path, actual.destination.path, file: file, line: line)
+        XCTAssertEqual(expected.endpoint.uri.host, actual.destination.host, file: file, line: line)
         XCTAssertEqual(expected.method, actual.method, file: file, line: line)
         assertForbiddenQueryItems(expected.forbiddenQueryItems, actual.queryItems, file: file, line: line)
 

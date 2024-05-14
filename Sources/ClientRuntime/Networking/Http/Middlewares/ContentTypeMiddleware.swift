@@ -42,6 +42,6 @@ extension ContentTypeMiddleware: HttpInterceptor {
     ) async throws {
         let builder = context.getRequest().toBuilder()
         addHeaders(builder: builder)
-        context.updateRequest(updated: builder.build())
+        context.updateRequest(updated: try builder.build())
     }
 }

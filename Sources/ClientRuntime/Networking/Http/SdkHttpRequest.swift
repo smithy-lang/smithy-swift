@@ -17,20 +17,30 @@ import struct Foundation.URLRequest
 // in the CRT engine so that is why it's a class
 public final class SdkHttpRequest: RequestMessage {
     public var body: ByteStream
-    public var endpoint: Endpoint
+    public var destination: URI
+    public var headers: Headers
     public let method: HttpMethodType
-    public var destination: URI { endpoint.uri }
-    public var headers: Headers { endpoint.headers }
-    public var path: String { endpoint.path }
-    public var host: String { endpoint.host }
-    public var queryItems: [SDKURLQueryItem]? { endpoint.queryItems }
+    public var host: String { destination.host }
+    public var path: String { destination.path }
+    public var queryItems: [SDKURLQueryItem]? { destination.query }
     public var trailingHeaders: Headers = Headers()
+    public var endpoint: Endpoint {
+        return Endpoint(uri: self.destination, headers: self.headers)
+    }
+
+    public convenience init(method: HttpMethodType,
+                            endpoint: Endpoint,
+                            body: ByteStream = ByteStream.noStream) {
+        self.init(method: method, uri: endpoint.uri, headers: endpoint.headers, body: body)
+    }
 
     public init(method: HttpMethodType,
-                endpoint: Endpoint,
+                uri: URI,
+                headers: Headers,
                 body: ByteStream = ByteStream.noStream) {
         self.method = method
-        self.endpoint = endpoint
+        self.destination = uri
+        self.headers = headers
         self.body = body
     }
 
@@ -40,22 +50,20 @@ public final class SdkHttpRequest: RequestMessage {
             .withMethod(self.method)
             .withHeaders(self.headers)
             .withTrailers(self.trailingHeaders)
-            .withPath(self.path)
-            .withHost(self.host)
-            .withPort(self.endpoint.port)
-            .withProtocol(self.endpoint.protocolType ?? .https)
-        if let qItems = self.queryItems {
-            builder.withQueryItems(qItems)
-        }
+            .withPath(self.destination.path)
+            .withHost(self.destination.host)
+            .withPort(self.destination.port)
+            .withProtocol(self.destination.scheme)
+            .withQueryItems(self.destination.query)
         return builder
     }
 
     public func withHeader(name: String, value: String) {
-        self.endpoint.headers.add(name: name, value: value)
+        self.headers.add(name: name, value: value)
     }
 
     public func withoutHeader(name: String) {
-        self.endpoint.headers.remove(name: name)
+        self.headers.remove(name: name)
     }
 
     public func withBody(_ body: ByteStream) {
@@ -88,7 +96,8 @@ extension SdkHttpRequest {
     public func toHttpRequest() throws -> HTTPRequest {
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        httpRequest.path = [endpoint.path, endpoint.query].compactMap { $0 }.joined(separator: "?")
+        httpRequest.path = [self.destination.path, self.destination.queryString]
+            .compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
         httpRequest.body = isChunked ? nil : StreamableHttpBody(body: body) // body needs to be nil to use writeChunk()
         return httpRequest
@@ -100,7 +109,8 @@ extension SdkHttpRequest {
     public func toHttp2Request() throws -> HTTPRequestBase {
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        httpRequest.path = [endpoint.path, endpoint.query].compactMap { $0 }.joined(separator: "?")
+        httpRequest.path = [self.destination.path, self.destination.queryString]
+            .compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
 
         // Remove the "Transfer-Encoding" header if it exists since h2 does not support it
@@ -116,7 +126,7 @@ extension SdkHttpRequest {
 public extension URLRequest {
     init(sdkRequest: SdkHttpRequest) async throws {
         // Set URL
-        guard let url = sdkRequest.endpoint.url else {
+        guard let url = sdkRequest.destination.url else {
             throw ClientError.dataNotFound("Failed to construct URLRequest due to missing URL.")
         }
         self.init(url: url)
@@ -151,9 +161,11 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
 
     public var description: String {
         let method = method.rawValue.uppercased()
-        let protocolType = endpoint.protocolType ?? ProtocolType.https
-        let query = String(describing: queryItems)
-        return "\(method) \(protocolType):\(endpoint.port) \n Path: \(endpoint.path) \n \(headers) \n \(query)"
+        let protocolType = self.destination.scheme
+        let query = self.destination.queryString ?? ""
+        let port = self.destination.port
+        return "\(method) \(protocolType):\(port) \n " +
+               "Path: \(endpoint.uri.path) \n Headers: \(headers) \n Query: \(query)"
     }
 }
 
@@ -285,9 +297,14 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
     }
 
     public func build() -> SdkHttpRequest {
-        let uri = URI(scheme: protocolType.rawValue, path: path, host: host, port: port, query: queryItems)
-        let endpoint = Endpoint(uri: uri, protocolType: protocolType, headers: headers)
-        return SdkHttpRequest(method: methodType, endpoint: endpoint, body: body)
+        let uri = URIBuilder()
+            .withScheme(protocolType)
+            .withPath(path)
+            .withHost(host)
+            .withPort(port)
+            .withQueryItems(queryItems)
+            .build()
+        return SdkHttpRequest(method: methodType, uri: uri, headers: headers, body: body)
     }
 }
 

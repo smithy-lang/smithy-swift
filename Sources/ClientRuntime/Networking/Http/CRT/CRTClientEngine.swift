@@ -25,9 +25,9 @@ public class CRTClientEngine: HTTPClient {
             private let port: Int16
 
             init(endpoint: Endpoint) {
-                self.protocolType = endpoint.protocolType
-                self.host = endpoint.host
-                self.port = endpoint.port
+                self.protocolType = endpoint.uri.scheme
+                self.host = endpoint.uri.host
+                self.port = endpoint.uri.port
             }
         }
 
@@ -72,9 +72,9 @@ public class CRTClientEngine: HTTPClient {
         }
 
         private func createConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
-            let tlsConnectionOptions = endpoint.protocolType == .https ? TLSConnectionOptions(
+            let tlsConnectionOptions = endpoint.uri.scheme == .https ? TLSConnectionOptions(
                 context: self.crtTLSOptions?.resolveContext() ?? sharedDefaultIO.tlsContext,
-                serverName: endpoint.host
+                serverName: endpoint.uri.host
             ) : nil
 
             var socketOptions = SocketOptions(socketType: .stream)
@@ -93,9 +93,9 @@ public class CRTClientEngine: HTTPClient {
 
             let options = HTTPClientConnectionOptions(
                 clientBootstrap: sharedDefaultIO.clientBootstrap,
-                hostName: endpoint.host,
+                hostName: endpoint.uri.host,
                 initialWindowSize: windowSize,
-                port: UInt32(endpoint.port),
+                port: UInt32(endpoint.uri.port),
                 proxyOptions: nil,
                 socketOptions: socketOptions,
                 tlsOptions: tlsConnectionOptions,
@@ -104,7 +104,7 @@ public class CRTClientEngine: HTTPClient {
                 enableManualWindowManagement: false
             ) // not using backpressure yet
             logger.debug("""
-            Creating connection pool for \(String(describing: endpoint.host)) \
+            Creating connection pool for \(String(describing: endpoint.uri.host)) \
             with max connections: \(maxConnectionsPerEndpoint)
             """)
             return try HTTPClientConnectionManager(options: options)
@@ -122,20 +122,20 @@ public class CRTClientEngine: HTTPClient {
             let tlsConnectionOptions = TLSConnectionOptions(
                 context: self.crtTLSOptions?.resolveContext() ?? sharedDefaultIO.tlsContext,
                 alpnList: [ALPNProtocol.http2.rawValue],
-                serverName: endpoint.host
+                serverName: endpoint.uri.host
             )
 
             let options = HTTP2StreamManagerOptions(
                 clientBootstrap: sharedDefaultIO.clientBootstrap,
-                hostName: endpoint.host,
-                port: UInt32(endpoint.port),
+                hostName: endpoint.uri.host,
+                port: UInt32(endpoint.uri.port),
                 maxConnections: maxConnectionsPerEndpoint,
                 socketOptions: socketOptions,
                 tlsOptions: tlsConnectionOptions,
                 enableStreamManualWindowManagement: false
             )
             logger.debug("""
-            Creating connection pool for \(String(describing: endpoint.host)) \
+            Creating connection pool for \(String(describing: endpoint.uri.host)) \
             with max connections: \(maxConnectionsPerEndpoint)
             """)
 
@@ -164,7 +164,7 @@ public class CRTClientEngine: HTTPClient {
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
 
-        self.logger.debug("Connection was acquired to: \(String(describing: request.endpoint.url?.absoluteString))")
+        self.logger.debug("Connection was acquired to: \(String(describing: request.destination.url?.absoluteString))")
         switch connection.httpVersion {
         case .version_1_1:
             self.logger.debug("Using HTTP/1.1 connection")

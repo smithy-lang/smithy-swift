@@ -495,7 +495,7 @@ class OrchestratorTests: XCTestCase {
             let b = self.traceOrchestrator(trace: partitionIdTrace)
             // We can force a getPartitionId to fail by explicitly setting the host to ''
             b.interceptors.addModifyBeforeRetryLoop({ context in
-                context.updateRequest(updated: context.getRequest().toBuilder().withHost("").build())
+                context.updateRequest(updated: try context.getRequest().toBuilder().withHost("").build())
             })
             return try await b.build().execute(input: TestInput(foo: ""))
         }
