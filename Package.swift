@@ -108,7 +108,8 @@ let package = Package(
         ),
         .testTarget(
             name: "ClientRuntimeTests",
-            dependencies: ["ClientRuntime", "SmithyTestUtil"]
+            dependencies: ["ClientRuntime", "SmithyTestUtil"],
+            resources: [ .process("Resources") ]
         ),
         .testTarget(
             name: "SmithyXMLTests",

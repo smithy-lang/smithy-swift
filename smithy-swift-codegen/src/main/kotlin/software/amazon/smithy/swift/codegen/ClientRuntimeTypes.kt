@@ -94,6 +94,12 @@ object ClientRuntimeTypes {
         val DefaultRetryErrorInfoProvider = runtimeSymbol("DefaultRetryErrorInfoProvider")
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")
+        val EndpointsRuleEngine = runtimeSymbol("EndpointsRuleEngine")
+        val EndpointsRequestContext = runtimeSymbol("EndpointsRequestContext")
+        val PartitionDefinition = runtimeSymbol("partitionJSON")
+        val EndpointsAuthSchemeResolver = runtimeSymbol("EndpointsAuthSchemeResolver")
+        val DefaultEndpointsAuthSchemeResolver = runtimeSymbol("DefaultEndpointsAuthSchemeResolver")
+        val EndpointsAuthScheme = runtimeSymbol("EndpointsAuthScheme")
     }
 }
 
