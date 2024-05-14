@@ -8,7 +8,7 @@
 public extension DefaultRetryStrategy {
 
     /// Errors that may be thrown when an operation is retried unsuccessfully.
-    public enum Error: Swift.Error {
+    enum Error: Swift.Error {
         
         /// The number and frequency of retries being attempted has exceeded the
         /// current limits.

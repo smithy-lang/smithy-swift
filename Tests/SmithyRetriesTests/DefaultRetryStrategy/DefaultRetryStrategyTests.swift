@@ -118,7 +118,7 @@ final class DefaultRetryStrategyTests: XCTestCase {
         do {
             try await subject.refreshRetryTokenForRetry(tokenToRenew: token1, errorInfo: retryableInfo)
             XCTFail("Should have failed")
-        } catch RetryError.insufficientQuota {
+        } catch DefaultRetryStrategy.Error.insufficientQuota {
             // success
         } catch {
             XCTFail("Unexpected error thrown")

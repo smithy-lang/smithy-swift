@@ -47,7 +47,7 @@ public struct DefaultRetryStrategy: RetryStrategy {
         if let capacityAmount = await tokenToRenew.quota.hasRetryQuota(isTimeout: errorInfo.isTimeout) {
             tokenToRenew.capacityAmount = capacityAmount
         } else {
-            throw RetryError.insufficientQuota
+            throw Error.insufficientQuota
         }
         let isThrottling = errorInfo.errorType == .throttling
         await tokenToRenew.quota.updateClientSendingRate(isThrottling: isThrottling)
