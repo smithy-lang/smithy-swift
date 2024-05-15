@@ -34,10 +34,6 @@ interface HTTPProtocolCustomizable {
         op: OperationShape
     )
 
-    fun getClientProperties(): List<ClientProperty> {
-        return emptyList()
-    }
-
     fun serviceClient(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,

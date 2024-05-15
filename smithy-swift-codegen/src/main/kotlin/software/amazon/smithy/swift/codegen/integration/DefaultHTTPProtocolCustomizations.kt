@@ -22,8 +22,7 @@ abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
         writer: SwiftWriter,
         serviceConfig: ServiceConfig
     ): HttpProtocolServiceClient {
-        val clientProperties = getClientProperties()
-        return HttpProtocolServiceClient(ctx, writer, clientProperties, serviceConfig)
+        return HttpProtocolServiceClient(ctx, writer, serviceConfig)
     }
 
     override fun renderEventStreamAttributes(
