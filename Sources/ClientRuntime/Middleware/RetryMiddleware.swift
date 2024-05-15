@@ -61,7 +61,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
             do {
                 try await strategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
             } catch {
-                // TODO: log token error here
+                context.getLogger()!.error("Failed to refresh retry token!")
                 throw operationError
             }
             var estimatedSkew = context.attributes.get(key: AttributeKeys.estimatedSkew)
