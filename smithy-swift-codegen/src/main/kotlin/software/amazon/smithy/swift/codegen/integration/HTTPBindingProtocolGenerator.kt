@@ -499,7 +499,6 @@ abstract class HTTPBindingProtocolGenerator(
                 streamingShapes[targetType.id] = it
             }
         }
-
         return streamingShapes.values.toMutableSet()
     }
 

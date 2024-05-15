@@ -55,14 +55,6 @@ class MockHTTPRestJsonProtocolGenerator : HTTPBindingProtocolGenerator(MockRestJ
         // Intentionally empty
     }
 
-    override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext) {
-        TODO("Not yet implemented")
-    }
-
-    override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext) {
-        TODO("Not yet implemented")
-    }
-
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
         val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
