@@ -12,7 +12,7 @@ public struct Endpoint: Hashable {
     public var queryItems: [SDKURLQueryItem] { uri.queryItems }
     public var path: String { uri.path }
     public var host: String { uri.host }
-    public var port: Int16 { uri.port }
+    public var port: Int16? { uri.port }
     public var url: URL? { uri.url }
     private let properties: [String: AnyHashable]
 
@@ -40,8 +40,8 @@ public struct Endpoint: Hashable {
             .withScheme(protocolType)
             .withPath(url.path)
             .withHost(host)
-            .withPort(Int16(url.port ?? protocolType.port))
-            .withQueryItems(url.toQueryItems() ?? [])
+            .withPort(url.port)
+            .withQueryItems(url.getQueryItems() ?? [])
             .build()
 
         self.init(uri: uri,

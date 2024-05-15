@@ -462,7 +462,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// - Returns: A `URLRequest` ready to be transmitted by `URLSession` for this operation.
     private func makeURLRequest(from request: SdkHttpRequest, httpBodyStream: InputStream?) throws -> URLRequest {
         var components = URLComponents()
-        components.scheme = config.protocolType?.rawValue ?? request.destination.scheme.rawValue ?? "https"
+        components.scheme = config.protocolType?.rawValue ?? request.destination.scheme.rawValue
         components.host = request.endpoint.uri.host
         components.port = port(for: request)
         components.percentEncodedPath = request.destination.path
@@ -489,7 +489,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             // Don't set port explicitly if it's the default port for the scheme
             return nil
         default:
-            return Int(request.destination.port)
+            return request.destination.port.map { Int($0) }
         }
     }
 }

@@ -10,7 +10,10 @@ public struct URI: Hashable {
     public let scheme: Scheme
     public let path: String
     public let host: String
-    public let port: Int16
+    public let port: Int16?
+    public var defaultPort: Int16 {
+        Int16(scheme.port)
+    }
     public let queryItems: [SDKURLQueryItem]
     public let username: String?
     public let password: String?
@@ -18,13 +21,13 @@ public struct URI: Hashable {
         self.toBuilder().getUrl()
     }
     public var queryString: String? {
-        return self.queryItems.queryString
+        self.queryItems.queryString
     }
 
     fileprivate init(scheme: Scheme,
                      path: String,
                      host: String,
-                     port: Int16,
+                     port: Int16?,
                      queryItems: [SDKURLQueryItem],
                      username: String? = nil,
                      password: String? = nil) {
@@ -56,7 +59,6 @@ public final class URIBuilder {
 
     public init() {
         self.urlComponents = URLComponents()
-        self.urlComponents.port = Scheme.https.port
         self.urlComponents.percentEncodedPath = "/"
         self.urlComponents.scheme = Scheme.https.rawValue
         self.urlComponents.host = ""
@@ -85,18 +87,20 @@ public final class URIBuilder {
     }
 
     @discardableResult
-    public func withPort(_ value: Int16) -> URIBuilder {
-        self.urlComponents.port = Int(value)
+    public func withPort(_ value: Int16?) -> URIBuilder {
+        self.urlComponents.port = value.map { Int($0) }
+        return self
+    }
+
+    @discardableResult
+    public func withPort(_ value: Int?) -> URIBuilder {
+        self.urlComponents.port = value
         return self
     }
 
     @discardableResult
     public func withQueryItems(_ value: [SDKURLQueryItem]) -> URIBuilder {
-        if value.isEmpty {
-            self.urlComponents.percentEncodedQueryItems = nil
-        } else {
-            self.urlComponents.percentEncodedQueryItems = value.toURLQueryItems
-        }
+        self.urlComponents.percentEncodedQueryItems = value.isEmpty ? nil : value.toURLQueryItems
         return self
     }
 
@@ -133,9 +137,9 @@ public final class URIBuilder {
         return URI(scheme: Scheme(rawValue: self.urlComponents.scheme!)!,
                    path: self.urlComponents.percentEncodedPath,
                    host: self.urlComponents.host!,
-                   port: Int16(self.urlComponents.port!),
-                   queryItems: self.urlComponents.percentEncodedQueryItems?.map { item in
-                       return SDKURLQueryItem(name: item.name, value: item.value)
+                   port: self.urlComponents.port.map { Int16($0) },
+                   queryItems: self.urlComponents.percentEncodedQueryItems?.map {
+                        SDKURLQueryItem(name: $0.name, value: $0.value)
                    } ?? [],
                    username: self.urlComponents.user,
                    password: self.urlComponents.password)
@@ -161,14 +165,16 @@ extension Array where Element == SDKURLQueryItem {
         if self.isEmpty {
             return nil
         }
-        return self.map {
-            return [$0.name, $0.value].compactMap { $0 }.joined(separator: "=")
-        }.joined(separator: "&")
+        return self.map { [$0.name, $0.value].compactMap { $0 }.joined(separator: "=") }.joined(separator: "&")
     }
 
     public var toURLQueryItems: [URLQueryItem] {
-        return self.map {
-            URLQueryItem(name: $0.name, value: $0.value)
-        }
+        return self.map { URLQueryItem(name: $0.name, value: $0.value) }
+    }
+}
+
+extension Array where Element == URLQueryItem {
+    public var toSDKURLQueryItems: [SDKURLQueryItem] {
+        return self.map { SDKURLQueryItem(name: $0.name, value: $0.value) }
     }
 }

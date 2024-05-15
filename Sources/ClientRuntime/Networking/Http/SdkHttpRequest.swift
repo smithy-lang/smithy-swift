@@ -207,7 +207,7 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
     var path: String = "/"
     var body: ByteStream = .noStream
     var queryItems: [SDKURLQueryItem] = []
-    var port: Int16 = 443
+    var port: Int16?
     var protocolType: ProtocolType = .https
     var trailingHeaders: Headers = Headers()
 
@@ -285,7 +285,7 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
     }
 
     @discardableResult
-    public func withPort(_ value: Int16) -> SdkHttpRequestBuilder {
+    public func withPort(_ value: Int16?) -> SdkHttpRequestBuilder {
         self.port = value
         return self
     }
