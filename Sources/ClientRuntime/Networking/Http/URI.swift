@@ -10,18 +10,18 @@ public struct URI: Hashable {
     public let path: String
     public let host: String
     public let port: Int16
-    public let query: [SDKURLQueryItem]
+    public let queryItems: [SDKURLQueryItem]
     public let username: String?
     public let password: String?
     public var url: URL? {
         self.toBuilder().getUrl()
     }
     public var queryString: String? {
-        if self.query.isEmpty {
+        if self.queryItems.isEmpty {
             return nil
         }
 
-        return self.query.map { queryItem in
+        return self.queryItems.map { queryItem in
             return [queryItem.name, queryItem.value].compactMap { $0 }.joined(separator: "=")
         }.joined(separator: "&")
     }
@@ -30,14 +30,14 @@ public struct URI: Hashable {
                      path: String,
                      host: String,
                      port: Int16,
-                     query: [SDKURLQueryItem],
+                     queryItems: [SDKURLQueryItem],
                      username: String? = nil,
                      password: String? = nil) {
         self.scheme = scheme
         self.path = path
         self.host = host
         self.port = port
-        self.query = query
+        self.queryItems = queryItems
         self.username = username
         self.password = password
     }
@@ -48,7 +48,7 @@ public struct URI: Hashable {
            .withPath(self.path)
            .withHost(self.host)
            .withPort(self.port)
-           .withQueryItems(self.query)
+           .withQueryItems(self.queryItems)
     }
 }
 
@@ -58,7 +58,7 @@ public class URIBuilder {
     var path: String = "/"
     var host: String = ""
     var port: Int16 = Int16(Scheme.https.port)
-    var query: [SDKURLQueryItem] = []
+    var queryItems: [SDKURLQueryItem] = []
     var username: String?
     var password: String?
 
@@ -102,9 +102,9 @@ public class URIBuilder {
 
     @discardableResult
     public func withQueryItems(_ value: [SDKURLQueryItem]) -> URIBuilder {
-        self.query.append(contentsOf: value)
-        if !self.query.isEmpty {
-            self.urlComponents.percentEncodedQuery = self.query.map { queryItem in
+        self.queryItems.append(contentsOf: value)
+        if !self.queryItems.isEmpty {
+            self.urlComponents.percentEncodedQuery = self.queryItems.map { queryItem in
                             return [queryItem.name, queryItem.value].compactMap { $0 }.joined(separator: "=")
                         }.joined(separator: "&")
         }
@@ -135,7 +135,7 @@ public class URIBuilder {
                    path: self.path,
                    host: self.host,
                    port: self.port,
-                   query: self.query,
+                   queryItems: self.queryItems,
                    username: self.username,
                    password: self.password)
     }
