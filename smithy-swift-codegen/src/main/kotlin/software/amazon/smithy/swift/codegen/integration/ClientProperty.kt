@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 /**
@@ -57,50 +56,4 @@ interface ClientProperty {
      * Register any imports or dependencies that will be needed to use this property at runtime
      */
     fun addImportsAndDependencies(writer: SwiftWriter) {}
-}
-
-/**
- * `HttpRequestEncoder` property to help instantiate RequestEncoder
- * @property requestEncoderName The name of the request encoder (e.g. JSONEncoder)
- * @property requestEncoderOptions Map of options to set on the request encoder instance
- */
-abstract class HttpRequestEncoder(private val requestEncoder: Symbol, private val requestEncoderOptions: MutableMap<String, String> = mutableMapOf()) : ClientProperty {
-    override val name: String = "encoder"
-    override fun renderInstantiation(writer: SwiftWriter) {
-        writer.write("let \$L = \$N()", name, requestEncoder)
-    }
-
-    override fun renderConfiguration(writer: SwiftWriter) {
-        requestEncoderOptions.forEach {
-            requestEncoderOptionName, requestEncoderOptionValue ->
-            writer.write("encoder.$requestEncoderOptionName = $requestEncoderOptionValue")
-        }
-    }
-
-    override fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {
-        writer.write("self.encoder = \$L", name)
-    }
-}
-
-/**
- * `HttpRequestDecoder` property to help instantiate RequestDecoder
- * @property requestDecoderName The name of the request decoder (e.g. JSONDecoder)
- * @property requestDecoderOptions Map of options to set on the request decoder instance
- */
-abstract class HttpResponseDecoder(private val requestDecoder: Symbol, private val requestDecoderOptions: MutableMap<String, String> = mutableMapOf()) : ClientProperty {
-    override val name: String = "decoder"
-    override fun renderInstantiation(writer: SwiftWriter) {
-        writer.write("let \$L = \$N()", name, requestDecoder)
-    }
-
-    override fun renderConfiguration(writer: SwiftWriter) {
-        requestDecoderOptions.forEach {
-            requestDecoderOptionName, requestDecoderOptionValue ->
-            writer.write("decoder.$requestDecoderOptionName = $requestDecoderOptionValue")
-        }
-    }
-
-    override fun renderInitialization(writer: SwiftWriter, nameOfConfigObject: String) {
-        writer.write("self.decoder = \$L", name)
-    }
 }
