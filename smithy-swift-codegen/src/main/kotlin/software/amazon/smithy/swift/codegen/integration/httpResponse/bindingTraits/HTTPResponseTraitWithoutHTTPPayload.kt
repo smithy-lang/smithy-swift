@@ -9,7 +9,6 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
-import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -29,10 +28,7 @@ class HTTPResponseTraitWithoutHTTPPayload(
     val customizations: HTTPProtocolCustomizable,
 ) : HTTPResponseBindingRenderable {
     override fun render() {
-        val bodyMembers = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }
-        val bodyMembersWithoutQueryTrait = bodyMembers
-            .filter { !it.member.hasTrait(HttpQueryTrait::class.java) }
-            .toMutableSet()
+        val bodyMembers = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }.toSet()
         val streamingMember = bodyMembers.firstOrNull { it.member.targetOrSelf(ctx.model).hasTrait(StreamingTrait::class.java) }
         if (streamingMember != null) {
             val initialResponseMembers = bodyMembers.filter {
@@ -40,8 +36,8 @@ class HTTPResponseTraitWithoutHTTPPayload(
                 targetShape?.hasTrait(StreamingTrait::class.java) == false
             }.toSet()
             writeStreamingMember(streamingMember, initialResponseMembers)
-        } else if (bodyMembersWithoutQueryTrait.isNotEmpty()) {
-            writeNonStreamingMembers(bodyMembersWithoutQueryTrait)
+        } else {
+            writeNonStreamingMembers(bodyMembers)
         }
     }
 
