@@ -12,7 +12,6 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.ErrorTrait
-import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
@@ -152,7 +151,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 writer.openBlock("public static func ==(lhs: \$L, rhs: \$L) -> Bool {", "}", symbol.fullName, symbol.fullName) {
                     when (shape) {
                         is StructureShape -> {
-                            shape.members().filter { !it.hasTrait<HttpQueryTrait>() }.forEach { member ->
+                            shape.members().forEach { member ->
                                 val propertyName = ctx.symbolProvider.toMemberName(member)
                                 val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
                                 val propertyAccessor = "$path$propertyName"
