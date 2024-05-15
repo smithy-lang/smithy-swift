@@ -39,6 +39,8 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.NeedsReaderTrait
 import software.amazon.smithy.swift.codegen.customtraits.NeedsWriterTrait
+import software.amazon.smithy.swift.codegen.events.MessageMarshallableGenerator
+import software.amazon.smithy.swift.codegen.events.MessageUnmarshallableGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.AuthSchemeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
@@ -59,8 +61,6 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.providers.Ht
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionEncodeGenerator
-import software.amazon.smithy.swift.codegen.events.MessageMarshallableGenerator
-import software.amazon.smithy.swift.codegen.events.MessageUnmarshallableGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.findStreamingMember
