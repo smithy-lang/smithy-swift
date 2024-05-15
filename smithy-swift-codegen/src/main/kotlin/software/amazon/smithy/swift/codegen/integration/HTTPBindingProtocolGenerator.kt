@@ -59,11 +59,15 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.providers.Ht
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionEncodeGenerator
+import software.amazon.smithy.swift.codegen.events.MessageMarshallableGenerator
+import software.amazon.smithy.swift.codegen.events.MessageUnmarshallableGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddlewareGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.findStreamingMember
 import software.amazon.smithy.swift.codegen.model.hasEventStreamMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.isInputEventStream
+import software.amazon.smithy.swift.codegen.model.isOutputEventStream
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.utils.OptionalUtils
@@ -484,9 +488,50 @@ abstract class HTTPBindingProtocolGenerator(
         return containedOperations
     }
 
-    abstract override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext)
+    fun outputStreamingShapes(ctx: ProtocolGenerator.GenerationContext): MutableSet<MemberShape> {
+        val streamingShapes = mutableMapOf<ShapeId, MemberShape>()
+        val streamingOperations = getHttpBindingOperations(ctx).filter { it.isOutputEventStream(ctx.model) }
+        streamingOperations.forEach { operation ->
+            val input = operation.output.get()
+            val streamingMember = ctx.model.expectShape(input).findStreamingMember(ctx.model)
+            streamingMember?.let {
+                val targetType = ctx.model.expectShape(it.target)
+                streamingShapes[targetType.id] = it
+            }
+        }
 
-    abstract override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext)
+        return streamingShapes.values.toMutableSet()
+    }
+
+    fun inputStreamingShapes(ctx: ProtocolGenerator.GenerationContext): MutableSet<UnionShape> {
+        val streamingShapes = mutableSetOf<UnionShape>()
+        val streamingOperations = getHttpBindingOperations(ctx).filter { it.isInputEventStream(ctx.model) }
+        streamingOperations.forEach { operation ->
+            val input = operation.input.get()
+            val streamingMember = ctx.model.expectShape(input).findStreamingMember(ctx.model)
+            streamingMember?.let {
+                val targetType = ctx.model.expectShape(it.target)
+                streamingShapes.add(targetType as UnionShape)
+            }
+        }
+        return streamingShapes
+    }
+
+    override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext) {
+        var streamingShapes = inputStreamingShapes(ctx)
+        val messageMarshallableGenerator = MessageMarshallableGenerator(ctx, defaultContentType)
+        streamingShapes.forEach { streamingMember ->
+            messageMarshallableGenerator.render(streamingMember)
+        }
+    }
+
+    override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext) {
+        var streamingShapes = outputStreamingShapes(ctx)
+        val messageUnmarshallableGenerator = MessageUnmarshallableGenerator(ctx, customizations)
+        streamingShapes.forEach { streamingMember ->
+            messageUnmarshallableGenerator.render(streamingMember)
+        }
+    }
 }
 
 class DefaultServiceConfig(writer: SwiftWriter, serviceName: String) :
