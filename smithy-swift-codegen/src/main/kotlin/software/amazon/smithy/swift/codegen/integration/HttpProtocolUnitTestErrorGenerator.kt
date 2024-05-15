@@ -36,11 +36,6 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
 
     private fun renderInitOperationError(test: HttpResponseTestCase, operationErrorType: String) {
         val operationErrorVariableName = operationErrorType.decapitalize()
-        val needsResponseDecoder = needsResponseDecoder(test)
-        if (needsResponseDecoder) {
-            renderResponseDecoder()
-        }
-
         val responseErrorClosure = ResponseErrorClosureUtils(ctx, writer, operation).render()
         writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         writer.write(
