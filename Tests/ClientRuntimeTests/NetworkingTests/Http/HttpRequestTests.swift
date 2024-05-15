@@ -132,7 +132,7 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testPathInInHttpRequestIsNotAltered() throws {
-        let path = "/space /colon:/dollar$/tilde~/dash-/underscore_/period."
+        let path = "/space%20/colon:/dollar$/tilde~/dash-/underscore_/period."
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "xctest.amazon.com")
             .withPath(path)

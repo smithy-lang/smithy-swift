@@ -5,7 +5,7 @@
 
 import Foundation
 
-/// Universal Resource Identifier component used to construct target location for a Request.
+/// A representation of the RFC 3986 Universal Resource Identifier
 public struct URI: Hashable {
     public let scheme: Scheme
     public let path: String
@@ -54,14 +54,12 @@ public struct URI: Hashable {
 public final class URIBuilder {
     var urlComponents: URLComponents
     var port: Int16
-    var path: String
 
     public init() {
         self.port = Int16(Scheme.https.port)
-        self.path = "/"
         self.urlComponents = URLComponents()
+        self.urlComponents.percentEncodedPath = "/"
         self.urlComponents.scheme = Scheme.https.rawValue
-        self.urlComponents.path = self.path
         self.urlComponents.host = ""
     }
 
@@ -78,7 +76,6 @@ public final class URIBuilder {
         } else {
             self.urlComponents.path = value
         }
-        self.path = value
         return self
     }
 
@@ -133,7 +130,7 @@ public final class URIBuilder {
 
     public func build() -> URI {
         return URI(scheme: Scheme(rawValue: self.urlComponents.scheme!)!,
-                   path: self.path,
+                   path: self.urlComponents.percentEncodedPath,
                    host: self.urlComponents.host!,
                    port: self.port,
                    queryItems: self.urlComponents.percentEncodedQueryItems?.map { item in
