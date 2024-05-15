@@ -31,7 +31,7 @@ class HTTPResponseTraitWithoutHTTPPayload(
     override fun render() {
         val bodyMembers = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }
         val bodyMembersWithoutQueryTrait = bodyMembers
-            .filter { !it.member.hasTrait(HttpQueryTrait::class.java) }
+//            .filter { !it.member.hasTrait(HttpQueryTrait::class.java) }
             .toMutableSet()
         val streamingMember = bodyMembers.firstOrNull { it.member.targetOrSelf(ctx.model).hasTrait(StreamingTrait::class.java) }
         if (streamingMember != null) {

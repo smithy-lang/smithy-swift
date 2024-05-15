@@ -24,7 +24,7 @@ class HTTPResponseTraitQueryParams(
             .map { ctx.symbolProvider.toMemberName(it.member) }
             .toMutableSet()
         bodyMembersWithQueryTrait.sorted().forEach {
-            writer.write("value.$it = nil")
+//            writer.write("value.$it = nil")
         }
     }
 }

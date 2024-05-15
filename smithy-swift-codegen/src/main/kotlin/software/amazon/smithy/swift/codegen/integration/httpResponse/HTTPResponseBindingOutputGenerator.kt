@@ -4,6 +4,10 @@ import software.amazon.smithy.aws.traits.customizations.S3UnwrappedXmlOutputTrai
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.UnionShape
+import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
@@ -83,7 +87,14 @@ class HTTPResponseBindingOutputGenerator(
     private fun needsAReader(ctx: ProtocolGenerator.GenerationContext, responseBindings: List<HttpBindingDescriptor>): Boolean {
         return responseBindings
             .filter { !ctx.model.expectShape(it.member.target).hasTrait<StreamingTrait>() }
-            .any { it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT }
+            .any { hasPayloadThatNeedsReader(ctx, it) || it.location == HttpBinding.Location.DOCUMENT }
+    }
+
+    private fun hasPayloadThatNeedsReader(ctx: ProtocolGenerator.GenerationContext, binding: HttpBindingDescriptor): Boolean {
+        val targetShape = ctx.model.expectShape(binding.member.target)
+        return binding.location == HttpBinding.Location.PAYLOAD
+                && (targetShape is StructureShape || targetShape is UnionShape)
+                && !targetShape.members().isEmpty()
     }
 
     private fun reader(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: SwiftWriter): String {

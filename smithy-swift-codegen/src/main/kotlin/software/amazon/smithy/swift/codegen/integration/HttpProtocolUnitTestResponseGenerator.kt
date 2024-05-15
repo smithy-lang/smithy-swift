@@ -172,7 +172,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 writer.openBlock("public static func ==(lhs: \$L, rhs: \$L) -> Bool {", "}", symbol.fullName, symbol.fullName) {
                     when (shape) {
                         is StructureShape -> {
-                            shape.members().filter { !it.hasTrait<HttpQueryTrait>() }.forEach { member ->
+                            shape.members().forEach { member ->
                                 val propertyName = ctx.symbolProvider.toMemberName(member)
                                 val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
                                 val propertyAccessor = "$path$propertyName"
