@@ -22,7 +22,7 @@ public final class SdkHttpRequest: RequestMessage {
     public let method: HttpMethodType
     public var host: String { destination.host }
     public var path: String { destination.path }
-    public var queryItems: [SDKURLQueryItem]? { destination.query }
+    public var queryItems: [SDKURLQueryItem]? { destination.queryItems }
     public var trailingHeaders: Headers = Headers()
     public var endpoint: Endpoint {
         return Endpoint(uri: self.destination, headers: self.headers)
@@ -54,7 +54,7 @@ public final class SdkHttpRequest: RequestMessage {
             .withHost(self.destination.host)
             .withPort(self.destination.port)
             .withProtocol(self.destination.scheme)
-            .withQueryItems(self.destination.query)
+            .withQueryItems(self.destination.queryItems)
         return builder
     }
 

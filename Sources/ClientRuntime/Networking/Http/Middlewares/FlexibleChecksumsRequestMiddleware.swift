@@ -109,6 +109,6 @@ extension FlexibleChecksumsRequestMiddleware: HttpInterceptor {
     ) async throws {
         let builder = context.getRequest().toBuilder()
         try await addHeaders(builder: builder, attributes: context.getAttributes())
-        context.updateRequest(updated: try builder.build())
+        context.updateRequest(updated: builder.build())
     }
 }

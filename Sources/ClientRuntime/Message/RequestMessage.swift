@@ -17,6 +17,9 @@ public protocol RequestMessage {
     /// The body of the request.
     var body: ByteStream { get }
 
+    // The uri of the request
+    var destination: URI { get }
+
     /// - Returns: A new builder for this request message, with all properties copied.
     func toBuilder() -> RequestBuilderType
 }

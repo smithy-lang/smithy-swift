@@ -19,7 +19,7 @@ class EndpointTests: XCTestCase {
             SDKURLQueryItem(name: "ghi", value: "jkl"),
             SDKURLQueryItem(name: "mno", value: "pqr")
         ]
-        XCTAssertEqual(endpoint.uri.query, expectedQueryItems)
+        XCTAssertEqual(endpoint.uri.queryItems, expectedQueryItems)
     }
 
     func test_hashableAndEquatable_hashesMatchWhenURLQueryItemsAreEqual() throws {

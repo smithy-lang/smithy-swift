@@ -12,7 +12,7 @@ public struct ExpectedSdkHttpRequest {
     public var headers: Headers?
     public var forbiddenHeaders: [String]?
     public var requiredHeaders: [String]?
-    public var queryItems: [SDKURLQueryItem] { endpoint.uri.query }
+    public var queryItems: [SDKURLQueryItem] { endpoint.uri.queryItems }
     public let forbiddenQueryItems: [SDKURLQueryItem]?
     public let requiredQueryItems: [SDKURLQueryItem]?
     public let endpoint: Endpoint

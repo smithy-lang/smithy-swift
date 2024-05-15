@@ -9,7 +9,7 @@ public struct Endpoint: Hashable {
     public let uri: URI
     public let headers: Headers
     public var protocolType: ProtocolType? { uri.scheme }
-    public var queryItems: [SDKURLQueryItem] { uri.query }
+    public var queryItems: [SDKURLQueryItem] { uri.queryItems }
     public var path: String { uri.path }
     public var host: String { uri.host }
     public var port: Int16 { uri.port }
@@ -57,7 +57,7 @@ public struct Endpoint: Hashable {
                 protocolType: ProtocolType? = .https) {
 
         let uri = URIBuilder()
-            .withScheme(protocolType)
+            .withScheme(protocolType ?? .https)
             .withPath(path)
             .withHost(host)
             .withPort(port)
