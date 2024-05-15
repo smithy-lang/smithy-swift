@@ -13,7 +13,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitPayload
-import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitQueryParams
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitResponseCode
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
@@ -66,7 +65,6 @@ class HTTPResponseBindingErrorInitGenerator(
                     HTTPResponseHeaders(ctx, true, headerBindings, customizations.defaultTimestampFormat, writer).render()
                     HTTPResponsePrefixHeaders(ctx, responseBindings, writer).render()
                     httpResponseTraitPayload(ctx, responseBindings, structureShape, writer)
-                    HTTPResponseTraitQueryParams(ctx, responseBindings, writer).render()
                     HTTPResponseTraitResponseCode(ctx, responseBindings, writer).render()
                     writer.write("value.httpResponse = baseError.httpResponse")
                     writer.write("value.requestID = baseError.requestID")

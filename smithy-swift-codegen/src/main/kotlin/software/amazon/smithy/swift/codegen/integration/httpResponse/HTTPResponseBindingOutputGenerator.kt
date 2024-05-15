@@ -4,10 +4,8 @@ import software.amazon.smithy.aws.traits.customizations.S3UnwrappedXmlOutputTrai
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
-import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
@@ -18,7 +16,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitPayload
-import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitQueryParams
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitResponseCode
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
@@ -74,7 +71,6 @@ class HTTPResponseBindingOutputGenerator(
                         HTTPResponseHeaders(ctx, false, headerBindings, defaultTimestampFormat, writer).render()
                         HTTPResponsePrefixHeaders(ctx, responseBindings, writer).render()
                         HTTPResponseTraitPayload(ctx, responseBindings, outputShape, writer, customizations).render()
-                        HTTPResponseTraitQueryParams(ctx, responseBindings, writer).render()
                         HTTPResponseTraitResponseCode(ctx, responseBindings, writer).render()
                         writer.write("return value")
                     }
@@ -92,9 +88,9 @@ class HTTPResponseBindingOutputGenerator(
 
     private fun hasPayloadThatNeedsReader(ctx: ProtocolGenerator.GenerationContext, binding: HttpBindingDescriptor): Boolean {
         val targetShape = ctx.model.expectShape(binding.member.target)
-        return binding.location == HttpBinding.Location.PAYLOAD
-                && (targetShape is StructureShape || targetShape is UnionShape)
-                && !targetShape.members().isEmpty()
+        return binding.location == HttpBinding.Location.PAYLOAD &&
+            (targetShape is StructureShape || targetShape is UnionShape) &&
+            !targetShape.members().isEmpty()
     }
 
     private fun reader(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: SwiftWriter): String {
