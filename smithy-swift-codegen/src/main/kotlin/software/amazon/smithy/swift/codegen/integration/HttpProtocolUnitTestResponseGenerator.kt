@@ -103,29 +103,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         }
     }
 
-    protected fun needsResponseDecoder(test: HttpResponseTestCase): Boolean {
-        var needsDecoder = true
-        test.body.ifPresent { body ->
-            if (body.isNotBlank() && body.isNotEmpty()) {
-                needsDecoder = true
-            }
-        }
-        return needsDecoder
-    }
-
     private fun renderActualOutput(test: HttpResponseTestCase, outputStruct: Symbol) {
-        val needsResponseDecoder = needsResponseDecoder(test)
-        if (needsResponseDecoder) {
-            renderResponseDecoder()
-        }
         val responseClosure = ResponseClosureUtils(ctx, writer, operation).render()
         writer.write("let actual: \$N = try await \$L(httpResponse)", outputStruct, responseClosure)
-    }
-
-    protected fun renderResponseDecoder() {
-        val decoderProperty = httpProtocolCustomizable.getClientProperties().filterIsInstance<HttpResponseDecoder>().firstOrNull()
-        decoderProperty?.renderInstantiation(writer)
-        decoderProperty?.renderConfiguration(writer)
     }
 
     protected fun renderExpectedOutput(test: HttpResponseTestCase, outputShape: Shape) {
