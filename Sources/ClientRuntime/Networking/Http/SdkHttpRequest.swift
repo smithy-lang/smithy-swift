@@ -17,7 +17,7 @@ import struct Foundation.URLRequest
 // in the CRT engine so that is why it's a class
 public final class SdkHttpRequest: RequestMessage {
     public var body: ByteStream
-    public var destination: URI
+    public let destination: URI
     public var headers: Headers
     public let method: HttpMethodType
     public var host: String { destination.host }
