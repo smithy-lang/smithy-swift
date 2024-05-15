@@ -37,7 +37,7 @@ class EndpointTests: XCTestCase {
         )
         let foundationURL = try XCTUnwrap(endpoint.uri.url)
         let absoluteString = foundationURL.absoluteString
-        XCTAssertEqual(absoluteString, "https://xctest.amazonaws.com/abc%2Bdef")
+        XCTAssertEqual(absoluteString, "https://xctest.amazonaws.com:443/abc%2Bdef")
     }
 
     func test_path_unencodedInput() throws {
@@ -48,6 +48,6 @@ class EndpointTests: XCTestCase {
         )
         let foundationURL = try XCTUnwrap(endpoint.uri.url)
         let absoluteString = foundationURL.absoluteString
-        XCTAssertEqual(absoluteString, "https://xctest.amazonaws.com/abc+def")
+        XCTAssertEqual(absoluteString, "https://xctest.amazonaws.com:443/abc+def")
     }
 }

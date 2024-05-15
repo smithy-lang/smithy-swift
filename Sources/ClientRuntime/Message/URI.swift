@@ -53,11 +53,10 @@ public struct URI: Hashable {
 /// The builder performs validation to conform with RFC 3986
 public final class URIBuilder {
     var urlComponents: URLComponents
-    var port: Int16
 
     public init() {
-        self.port = Int16(Scheme.https.port)
         self.urlComponents = URLComponents()
+        self.urlComponents.port = Scheme.https.port
         self.urlComponents.percentEncodedPath = "/"
         self.urlComponents.scheme = Scheme.https.rawValue
         self.urlComponents.host = ""
@@ -87,13 +86,15 @@ public final class URIBuilder {
 
     @discardableResult
     public func withPort(_ value: Int16) -> URIBuilder {
-        self.port = value
+        self.urlComponents.port = Int(value)
         return self
     }
 
     @discardableResult
     public func withQueryItems(_ value: [SDKURLQueryItem]) -> URIBuilder {
-        if !value.isEmpty {
+        if value.isEmpty {
+            self.urlComponents.percentEncodedQueryItems = nil
+        } else {
             self.urlComponents.percentEncodedQueryItems = value.toURLQueryItems
         }
         return self
@@ -132,7 +133,7 @@ public final class URIBuilder {
         return URI(scheme: Scheme(rawValue: self.urlComponents.scheme!)!,
                    path: self.urlComponents.percentEncodedPath,
                    host: self.urlComponents.host!,
-                   port: self.port,
+                   port: Int16(self.urlComponents.port!),
                    queryItems: self.urlComponents.percentEncodedQueryItems?.map { item in
                        return SDKURLQueryItem(name: item.name, value: item.value)
                    } ?? [],
