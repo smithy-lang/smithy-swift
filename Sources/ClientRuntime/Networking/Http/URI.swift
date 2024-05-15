@@ -5,6 +5,7 @@
 
 import Foundation
 
+/// Universal Resource Identifier component used to construct target location for a Request.
 public struct URI: Hashable {
     public let scheme: Scheme
     public let path: String
@@ -17,13 +18,7 @@ public struct URI: Hashable {
         self.toBuilder().getUrl()
     }
     public var queryString: String? {
-        if self.queryItems.isEmpty {
-            return nil
-        }
-
-        return self.queryItems.map { queryItem in
-            return [queryItem.name, queryItem.value].compactMap { $0 }.joined(separator: "=")
-        }.joined(separator: "&")
+        return self.queryItems.queryString
     }
 
     fileprivate init(scheme: Scheme,
@@ -49,48 +44,47 @@ public struct URI: Hashable {
            .withHost(self.host)
            .withPort(self.port)
            .withQueryItems(self.queryItems)
+           .withUsername(self.username)
+           .withPassword(self.password)
     }
 }
 
-public class URIBuilder {
+/// A builder class for URI
+/// The builder performs validation to conform with RFC 3986
+public final class URIBuilder {
     var urlComponents: URLComponents
-    var scheme: Scheme = Scheme.https
-    var path: String = "/"
-    var host: String = ""
-    var port: Int16 = Int16(Scheme.https.port)
-    var queryItems: [SDKURLQueryItem] = []
-    var username: String?
-    var password: String?
+    var port: Int16
+    var path: String
 
-    required public init() {
+    public init() {
+        self.port = Int16(Scheme.https.port)
+        self.path = "/"
         self.urlComponents = URLComponents()
-        self.urlComponents.scheme = self.scheme.rawValue
+        self.urlComponents.scheme = Scheme.https.rawValue
         self.urlComponents.path = self.path
-        self.urlComponents.host = self.host
+        self.urlComponents.host = ""
     }
 
     @discardableResult
-    public func withScheme(_ value: Scheme?) -> URIBuilder {
-        self.scheme = value ?? Scheme.https
-        self.urlComponents.scheme = self.scheme.rawValue
+    public func withScheme(_ value: Scheme) -> URIBuilder {
+        self.urlComponents.scheme = value.rawValue
         return self
     }
 
     @discardableResult
     public func withPath(_ value: String) -> URIBuilder {
-        self.path = value
-        if self.path.contains("%") {
-            self.urlComponents.percentEncodedPath = self.path
+        if value.isPercentEncoded {
+            self.urlComponents.percentEncodedPath = value
         } else {
-            self.urlComponents.path = self.path
+            self.urlComponents.path = value
         }
+        self.path = value
         return self
     }
 
     @discardableResult
     public func withHost(_ value: String) -> URIBuilder {
-        self.host = value
-        self.urlComponents.host = self.host
+        self.urlComponents.host = value
         return self
     }
 
@@ -102,47 +96,81 @@ public class URIBuilder {
 
     @discardableResult
     public func withQueryItems(_ value: [SDKURLQueryItem]) -> URIBuilder {
-        self.queryItems.append(contentsOf: value)
-        if !self.queryItems.isEmpty {
-            self.urlComponents.percentEncodedQuery = self.queryItems.map { queryItem in
-                            return [queryItem.name, queryItem.value].compactMap { $0 }.joined(separator: "=")
-                        }.joined(separator: "&")
+        if !value.isEmpty {
+            self.urlComponents.percentEncodedQueryItems = value.toURLQueryItems
         }
         return self
     }
 
     @discardableResult
-    public func withQueryItem(_ value: SDKURLQueryItem) -> URIBuilder {
-        withQueryItems([value])
-    }
-
-    @discardableResult
-    public func withUsername(_ value: String) -> URIBuilder {
-        self.username = value
-        self.urlComponents.user = self.username
+    public func appendQueryItems(_ items: [SDKURLQueryItem]) -> URIBuilder {
+        guard !items.isEmpty else {
+            return self
+        }
+        var queryItems = self.urlComponents.percentEncodedQueryItems ?? []
+        queryItems += items.toURLQueryItems
+        self.urlComponents.percentEncodedQueryItems = queryItems
         return self
     }
 
     @discardableResult
-    public func withPassword(_ value: String) -> URIBuilder {
-        self.password = value
-        self.urlComponents.password = self.password
+    public func appendQueryItem(_ item: SDKURLQueryItem) -> URIBuilder {
+        self.appendQueryItems([item])
+        return self
+    }
+
+    @discardableResult
+    public func withUsername(_ value: String?) -> URIBuilder {
+        self.urlComponents.user = value
+        return self
+    }
+
+    @discardableResult
+    public func withPassword(_ value: String?) -> URIBuilder {
+        self.urlComponents.password = value
         return self
     }
 
     public func build() -> URI {
-        return URI(scheme: self.scheme,
+        return URI(scheme: Scheme(rawValue: self.urlComponents.scheme!)!,
                    path: self.path,
-                   host: self.host,
+                   host: self.urlComponents.host!,
                    port: self.port,
-                   queryItems: self.queryItems,
-                   username: self.username,
-                   password: self.password)
+                   queryItems: self.urlComponents.percentEncodedQueryItems?.map { item in
+                       return SDKURLQueryItem(name: item.name, value: item.value)
+                   } ?? [],
+                   username: self.urlComponents.user,
+                   password: self.urlComponents.password)
     }
 
     // We still have to keep 'url' as an optional, since we're
     // dealing with dynamic components that could be invalid.
     fileprivate func getUrl() -> URL? {
-        return self.path.isEmpty && self.host.isEmpty ? nil : self.urlComponents.url
+        let isInvalidHost = self.urlComponents.host?.isEmpty ?? false
+        return isInvalidHost && self.urlComponents.path.isEmpty ? nil : self.urlComponents.url
+    }
+}
+
+extension String {
+    var isPercentEncoded: Bool {
+        let decoded = self.removingPercentEncoding
+        return decoded != nil && decoded != self
+    }
+}
+
+extension Array where Element == SDKURLQueryItem {
+    public var queryString: String? {
+        if self.isEmpty {
+            return nil
+        }
+        return self.map {
+            return [$0.name, $0.value].compactMap { $0 }.joined(separator: "=")
+        }.joined(separator: "&")
+    }
+
+    public var toURLQueryItems: [URLQueryItem] {
+        return self.map {
+            URLQueryItem(name: $0.name, value: $0.value)
+        }
     }
 }
