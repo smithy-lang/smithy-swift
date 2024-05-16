@@ -431,7 +431,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             // that URLSession can stream its request body from.
             // Allow 16kb of in-memory buffer for request body streaming
             let streamBridge = requestStream.map {
-                FoundationStreamBridge(readableStream: $0, bridgeBufferSize: 16_384, logger: logger)
+                FoundationStreamBridge(readableStream: $0, bridgeBufferSize: 1024, logger: logger)
             }
 
             // Create the request (with a streaming body when needed.)
