@@ -442,11 +442,11 @@ abstract class HTTPBindingProtocolGenerator(
     private fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
-        shapeMetaData: Map<ShapeMetadata, Any>,
+        shapeMetadata: Map<ShapeMetadata, Any>,
         members: List<MemberShape>,
         writer: SwiftWriter,
     ) {
-        StructDecodeGenerator(ctx, shapeContainingMembers, members, shapeMetaData, writer).render()
+        StructDecodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
     }
 
     protected abstract fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
