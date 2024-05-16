@@ -5,11 +5,8 @@
 
 package software.amazon.smithy.swift.codegen.test.utils
 
-import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.DefaultServiceConfig
@@ -23,10 +20,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequ
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceConfig
-import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
-import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 
 class TestCustomizations : DefaultHTTPProtocolCustomizations()
 /**
@@ -37,29 +31,6 @@ class TestProtocolGenerator : HTTPBindingProtocolGenerator(TestCustomizations())
     override val protocol: ShapeId = ShapeId.from("common#fakeProtocol")
     override val httpProtocolClientGeneratorFactory = HttpProtocolClientGeneratorFactory()
     override val shouldRenderEncodableConformance = false
-
-    override fun renderStructEncode(
-        ctx: ProtocolGenerator.GenerationContext,
-        shapeContainingMembers: Shape,
-        shapeMetadata: Map<ShapeMetadata, Any>,
-        members: List<MemberShape>,
-        writer: SwiftWriter,
-        defaultTimestampFormat: TimestampFormatTrait.Format,
-        path: String?
-    ) {
-        StructEncodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
-    }
-    override fun renderStructDecode(
-        ctx: ProtocolGenerator.GenerationContext,
-        shapeContainingMembers: Shape,
-        shapeMetadata: Map<ShapeMetadata, Any>,
-        members: List<MemberShape>,
-        writer: SwiftWriter,
-        defaultTimestampFormat: TimestampFormatTrait.Format,
-        path: String
-    ) {
-        StructDecodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
-    }
 
     override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
         // Intentionally empty

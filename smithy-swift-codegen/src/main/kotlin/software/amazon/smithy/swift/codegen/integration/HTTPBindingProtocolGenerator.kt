@@ -57,6 +57,8 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.SignerMiddle
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
+import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionEncodeGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddlewareGenerator
@@ -180,8 +182,7 @@ abstract class HTTPBindingProtocolGenerator(
                     ) {
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                         writer.write("")
-                        val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: null
-                        renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, customizations.defaultTimestampFormat, path)
+                        renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer)
                     }
                 }
             }
@@ -225,27 +226,11 @@ abstract class HTTPBindingProtocolGenerator(
                         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
                         if (shape.hasTrait<NeedsWriterTrait>()) {
                             writer.write("")
-                            renderStructEncode(
-                                ctx,
-                                shape,
-                                mapOf(),
-                                httpBodyMembers,
-                                writer,
-                                customizations.defaultTimestampFormat,
-                                path
-                            )
+                            renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer)
                         }
                         if (shape.hasTrait<NeedsReaderTrait>()) {
                             writer.write("")
-                            renderStructDecode(
-                                ctx,
-                                shape,
-                                mapOf(),
-                                httpBodyMembers,
-                                writer,
-                                customizations.defaultTimestampFormat,
-                                path
-                            )
+                            renderStructDecode(ctx, shape, mapOf(), httpBodyMembers, writer)
                         }
                     }
                     is UnionShape -> {
@@ -439,26 +424,31 @@ abstract class HTTPBindingProtocolGenerator(
     override val operationMiddleware = OperationMiddlewareGenerator()
 
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
+
     protected val httpResponseGenerator = HTTPResponseGenerator(customizations)
+
     protected abstract val shouldRenderEncodableConformance: Boolean
-    protected abstract fun renderStructEncode(
+
+    private fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
         shapeMetadata: Map<ShapeMetadata, Any>,
         members: List<MemberShape>,
         writer: SwiftWriter,
-        defaultTimestampFormat: TimestampFormatTrait.Format,
-        path: String? = null,
-    )
-    protected abstract fun renderStructDecode(
+    ) {
+        StructEncodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
+    }
+
+    private fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
-        shapeMetadata: Map<ShapeMetadata, Any>,
+        shapeMetaData: Map<ShapeMetadata, Any>,
         members: List<MemberShape>,
         writer: SwiftWriter,
-        defaultTimestampFormat: TimestampFormatTrait.Format,
-        path: String,
-    )
+    ) {
+        StructDecodeGenerator(ctx, shapeContainingMembers, members, shapeMetaData, writer).render()
+    }
+
     protected abstract fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
 
     /**
