@@ -48,7 +48,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// pair as they become available.
     ///
     /// Only access this stream from the serial queue.
-    let readableStream: ReadableStream
+    var readableStream: ReadableStream
 
     /// A Foundation stream that will carry the bytes read from the readableStream as they become available.
     ///
@@ -143,6 +143,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
             if readableStream.isSeekable {
                 try? readableStream.seek(toOffset: 0)
+            } else if let bufferedStream = readableStream as? BufferedStream {
+                readableStream = BufferedStream(data: bufferedStream.originalData, isClosed: true)
             }
 
             // Call the completion block.  When this method is called from `urlSession(_:task:needNewBodyStream:)`,
@@ -271,6 +273,12 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         }
     }
 
+    /// Writes the contents of the buffer to the Foundation output stream.
+    ///
+    /// If the buffer is emptied by the write, attempt to read more from the `ReadableStream`.
+    ///
+    /// If the buffer is empty and the `ReadableStream` is closed, close the Foundation output stream.
+    /// - Returns: <#description#>
     private func writeToOutputOnQueue() -> Error? {
         // Call this function only from the output stream's serial queue.
         //
@@ -294,6 +302,9 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
         // If the buffer is empty after the write, either read more data from the readable stream,
         // or if the readable stream is closed, close the output stream.
+        //
+        // If the buffer is not empty after writing, then take no action.  The output stream will post a
+        // `.hasSpaceAvailable` event once it can accept more data.
         if buffer.isEmpty {
             if readableStreamIsClosed {
                 // Close the output stream and unschedule this bridge from receiving stream delegate callbacks.

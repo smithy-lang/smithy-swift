@@ -15,6 +15,8 @@ import class Foundation.NSRecursiveLock
 ///       or reach the maximum size of a `Data` object.
 public class BufferedStream: Stream {
 
+    var originalData: Data
+
     /// Returns the cumulative length of all data so far written to the stream, if known.
     /// For a buffered stream, the length will only be known if the stream has closed.
     public var length: Int? {
@@ -107,6 +109,7 @@ public class BufferedStream: Stream {
     ///   - isClosed: Whether the stream is closed.
     public init(data: Data? = nil, isClosed: Bool = false) {
         self._buffer = data ?? Data()
+        self.originalData = data ?? Data()
         self._position = _buffer.startIndex
         self._dataCount = _buffer.count
         self._isClosed = isClosed
