@@ -5,7 +5,7 @@
 
 import Foundation
 
-/// A representation of the RFC 3986 Universal Resource Identifier
+/// A representation of the RFC 3986 Uniform Resource Identifier
 public struct URI: Hashable {
     public let scheme: Scheme
     public let path: String

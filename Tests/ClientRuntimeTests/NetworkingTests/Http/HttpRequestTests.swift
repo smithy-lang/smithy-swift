@@ -126,9 +126,9 @@ class HttpRequestTests: NetworkingTestUtils {
 
         XCTAssert(updatedRequest.path == "/hello")
         XCTAssert(updatedRequest.queryItems.count == 3)
-        XCTAssert(updatedRequest.queryItems.contains(queryItem1) ?? false)
-        XCTAssert(updatedRequest.queryItems.contains(queryItem2) ?? false)
-        XCTAssert(updatedRequest.queryItems.contains(SDKURLQueryItem(name: "signedthing", value: "signed")) ?? false)
+        XCTAssert(updatedRequest.queryItems.contains(queryItem1))
+        XCTAssert(updatedRequest.queryItems.contains(queryItem2))
+        XCTAssert(updatedRequest.queryItems.contains(SDKURLQueryItem(name: "signedthing", value: "signed")))
     }
 
     func testPathInInHttpRequestIsNotAltered() throws {
