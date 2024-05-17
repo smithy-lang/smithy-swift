@@ -19,7 +19,6 @@ import software.amazon.smithy.utils.CodeSection
 open class HttpProtocolServiceClient(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    private val properties: List<ClientProperty>,
     private val serviceConfig: ServiceConfig
 ) {
     private val serviceName: String = ctx.settings.sdkId
@@ -31,10 +30,7 @@ open class HttpProtocolServiceClient(
             writer.write("let config: \$L", serviceConfig.typeName)
             writer.write("let serviceName = \$S", serviceName)
             writer.write("")
-            properties.forEach { prop ->
-                prop.addImportsAndDependencies(writer)
-            }
-            renderInitFunction(properties)
+            renderInitFunction()
             writer.write("")
             renderConvenienceInitFunctions(serviceSymbol)
         }
@@ -44,21 +40,12 @@ open class HttpProtocolServiceClient(
         renderServiceSpecificPlugins()
     }
 
-    open fun renderInitFunction(properties: List<ClientProperty>) {
+    open fun renderInitFunction() {
         writer.openBlock("public required init(config: \$L) {", "}", serviceConfig.typeName) {
             writer.write(
                 "client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)",
                 ClientRuntimeTypes.Http.SdkHttpClient
             )
-
-            properties.forEach { prop ->
-                prop.renderInstantiation(writer)
-                if (prop.needsConfigure) {
-                    prop.renderConfiguration(writer)
-                }
-                prop.renderInitialization(writer, "config")
-            }
-
             writer.write("self.config = config")
         }
         writer.write("")

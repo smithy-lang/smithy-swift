@@ -39,6 +39,8 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.NeedsReaderTrait
 import software.amazon.smithy.swift.codegen.customtraits.NeedsWriterTrait
+import software.amazon.smithy.swift.codegen.events.MessageMarshallableGenerator
+import software.amazon.smithy.swift.codegen.events.MessageUnmarshallableGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.AuthSchemeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
@@ -57,6 +59,8 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.SignerMiddle
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
+import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionEncodeGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddlewareGenerator
@@ -64,6 +68,8 @@ import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.findStreamingMember
 import software.amazon.smithy.swift.codegen.model.hasEventStreamMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.isInputEventStream
+import software.amazon.smithy.swift.codegen.model.isOutputEventStream
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.utils.OptionalUtils
@@ -180,8 +186,7 @@ abstract class HTTPBindingProtocolGenerator(
                     ) {
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                         writer.write("")
-                        val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: null
-                        renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer, customizations.defaultTimestampFormat, path)
+                        renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer)
                     }
                 }
             }
@@ -225,27 +230,11 @@ abstract class HTTPBindingProtocolGenerator(
                         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
                         if (shape.hasTrait<NeedsWriterTrait>()) {
                             writer.write("")
-                            renderStructEncode(
-                                ctx,
-                                shape,
-                                mapOf(),
-                                httpBodyMembers,
-                                writer,
-                                customizations.defaultTimestampFormat,
-                                path
-                            )
+                            renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer)
                         }
                         if (shape.hasTrait<NeedsReaderTrait>()) {
                             writer.write("")
-                            renderStructDecode(
-                                ctx,
-                                shape,
-                                mapOf(),
-                                httpBodyMembers,
-                                writer,
-                                customizations.defaultTimestampFormat,
-                                path
-                            )
+                            renderStructDecode(ctx, shape, mapOf(), httpBodyMembers, writer)
                         }
                     }
                     is UnionShape -> {
@@ -439,26 +428,31 @@ abstract class HTTPBindingProtocolGenerator(
     override val operationMiddleware = OperationMiddlewareGenerator()
 
     protected abstract val httpProtocolClientGeneratorFactory: HttpProtocolClientGeneratorFactory
+
     protected val httpResponseGenerator = HTTPResponseGenerator(customizations)
+
     protected abstract val shouldRenderEncodableConformance: Boolean
-    protected abstract fun renderStructEncode(
+
+    private fun renderStructEncode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
         shapeMetadata: Map<ShapeMetadata, Any>,
         members: List<MemberShape>,
         writer: SwiftWriter,
-        defaultTimestampFormat: TimestampFormatTrait.Format,
-        path: String? = null,
-    )
-    protected abstract fun renderStructDecode(
+    ) {
+        StructEncodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
+    }
+
+    private fun renderStructDecode(
         ctx: ProtocolGenerator.GenerationContext,
         shapeContainingMembers: Shape,
         shapeMetadata: Map<ShapeMetadata, Any>,
         members: List<MemberShape>,
         writer: SwiftWriter,
-        defaultTimestampFormat: TimestampFormatTrait.Format,
-        path: String,
-    )
+    ) {
+        StructDecodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
+    }
+
     protected abstract fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
 
     /**
@@ -484,9 +478,49 @@ abstract class HTTPBindingProtocolGenerator(
         return containedOperations
     }
 
-    abstract override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext)
+    fun outputStreamingShapes(ctx: ProtocolGenerator.GenerationContext): MutableSet<MemberShape> {
+        val streamingShapes = mutableMapOf<ShapeId, MemberShape>()
+        val streamingOperations = getHttpBindingOperations(ctx).filter { it.isOutputEventStream(ctx.model) }
+        streamingOperations.forEach { operation ->
+            val input = operation.output.get()
+            val streamingMember = ctx.model.expectShape(input).findStreamingMember(ctx.model)
+            streamingMember?.let {
+                val targetType = ctx.model.expectShape(it.target)
+                streamingShapes[targetType.id] = it
+            }
+        }
+        return streamingShapes.values.toMutableSet()
+    }
 
-    abstract override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext)
+    fun inputStreamingShapes(ctx: ProtocolGenerator.GenerationContext): MutableSet<UnionShape> {
+        val streamingShapes = mutableSetOf<UnionShape>()
+        val streamingOperations = getHttpBindingOperations(ctx).filter { it.isInputEventStream(ctx.model) }
+        streamingOperations.forEach { operation ->
+            val input = operation.input.get()
+            val streamingMember = ctx.model.expectShape(input).findStreamingMember(ctx.model)
+            streamingMember?.let {
+                val targetType = ctx.model.expectShape(it.target)
+                streamingShapes.add(targetType as UnionShape)
+            }
+        }
+        return streamingShapes
+    }
+
+    override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext) {
+        var streamingShapes = inputStreamingShapes(ctx)
+        val messageMarshallableGenerator = MessageMarshallableGenerator(ctx, defaultContentType)
+        streamingShapes.forEach { streamingMember ->
+            messageMarshallableGenerator.render(streamingMember)
+        }
+    }
+
+    override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext) {
+        var streamingShapes = outputStreamingShapes(ctx)
+        val messageUnmarshallableGenerator = MessageUnmarshallableGenerator(ctx, customizations)
+        streamingShapes.forEach { streamingMember ->
+            messageUnmarshallableGenerator.render(streamingMember)
+        }
+    }
 }
 
 class DefaultServiceConfig(writer: SwiftWriter, serviceName: String) :

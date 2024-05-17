@@ -7,9 +7,6 @@ import SmithyReadWrite
 extension InvokeOutput {
 
     static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> InvokeOutput {
-        let data = try await httpResponse.data()
-        let responseReader = try SmithyJSON.Reader.from(data: data)
-        let reader = responseReader
         var value = InvokeOutput()
         switch httpResponse.body {
         case .data(let data):

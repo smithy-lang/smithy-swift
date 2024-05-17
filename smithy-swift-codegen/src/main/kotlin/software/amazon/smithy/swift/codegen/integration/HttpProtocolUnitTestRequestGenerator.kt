@@ -70,20 +70,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         operation.input.ifPresent { it ->
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
-
-            val decoderProperty = httpProtocolCustomizable.getClientProperties().filterIsInstance<HttpResponseDecoder>().firstOrNull()
-            decoderProperty?.renderInstantiation(writer)
-            decoderProperty?.renderConfiguration(writer)
-
             writer.writeInline("\nlet input = ")
                 .call {
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }
                 .write("")
-            val encoderProperty = httpProtocolCustomizable.getClientProperties().filterIsInstance<HttpRequestEncoder>().firstOrNull()
-            encoderProperty?.renderInstantiation(writer)
-            encoderProperty?.renderConfiguration(writer)
-
             val inputSymbol = symbolProvider.toSymbol(inputShape)
             val outputShapeId = operation.output.get()
             val outputShape = model.expectShape(outputShapeId)

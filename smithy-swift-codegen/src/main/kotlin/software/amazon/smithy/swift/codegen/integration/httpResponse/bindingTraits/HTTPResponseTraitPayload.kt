@@ -19,19 +19,13 @@ class HTTPResponseTraitPayload(
     val outputShape: Shape,
     val writer: SwiftWriter,
     val customizations: HTTPProtocolCustomizable,
-    val httpResponseTraitWithoutPayloadFactory: HTTPResponseTraitWithoutHTTPPayloadFactory? = null,
 ) : HTTPResponseBindingRenderable {
     override fun render() {
         val httpPayload = responseBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
             HTTPResponseTraitWithHTTPPayload(ctx, httpPayload, writer, outputShape, customizations).render()
         } else {
-            val httpResponseTraitWithoutPayload = httpResponseTraitWithoutPayloadFactory?.let {
-                it.construct(ctx, responseBindings, outputShape, writer)
-            } ?: run {
-                HTTPResponseTraitWithoutHTTPPayload(ctx, responseBindings, outputShape, writer, customizations)
-            }
-            httpResponseTraitWithoutPayload.render()
+            HTTPResponseTraitWithoutHTTPPayload(ctx, responseBindings, outputShape, writer, customizations).render()
         }
     }
 }

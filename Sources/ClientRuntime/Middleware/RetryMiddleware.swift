@@ -64,18 +64,18 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
             do {
                 try await strategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
             } catch {
-                // TODO: log token error here
+                context.getLogger()?.error("Failed to refresh retry token: \(errorInfo.errorType)")
                 throw operationError
             }
             var estimatedSkew = context.attributes.get(key: AttributeKeys.estimatedSkew)
             if estimatedSkew == nil {
                 estimatedSkew = 0
-                context.getLogger()!.info("Estimated skew not found; defaulting to zero.")
+                context.getLogger()?.info("Estimated skew not found; defaulting to zero.")
             }
             var socketTimeout = context.attributes.get(key: AttributeKeys.socketTimeout)
             if socketTimeout == nil {
                 socketTimeout = 60.0
-                context.getLogger()!.info("Socket timeout value not found; defaulting to 60 seconds.")
+                context.getLogger()?.info("Socket timeout value not found; defaulting to 60 seconds.")
             }
             let ttlDateUTCString = getTTL(now: Date(), estimatedSkew: estimatedSkew!, socketTimeout: socketTimeout!)
             input.headers.update(
