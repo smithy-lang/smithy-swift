@@ -100,7 +100,7 @@ public final class URIBuilder {
 
     @discardableResult
     public func withQueryItems(_ value: [SDKURLQueryItem]) -> URIBuilder {
-        self.urlComponents.percentEncodedQueryItems = value.isEmpty ? nil : value.toURLQueryItems
+        self.urlComponents.percentEncodedQueryItems = value.isEmpty ? nil : value.toURLQueryItems()
         return self
     }
 
@@ -110,7 +110,7 @@ public final class URIBuilder {
             return self
         }
         var queryItems = self.urlComponents.percentEncodedQueryItems ?? []
-        queryItems += items.toURLQueryItems
+        queryItems += items.toURLQueryItems()
         self.urlComponents.percentEncodedQueryItems = queryItems
         return self
     }
@@ -168,13 +168,13 @@ extension Array where Element == SDKURLQueryItem {
         return self.map { [$0.name, $0.value].compactMap { $0 }.joined(separator: "=") }.joined(separator: "&")
     }
 
-    public var toURLQueryItems: [URLQueryItem] {
+    public func toURLQueryItems() -> [URLQueryItem] {
         return self.map { URLQueryItem(name: $0.name, value: $0.value) }
     }
 }
 
 extension Array where Element == URLQueryItem {
-    public var toSDKURLQueryItems: [SDKURLQueryItem] {
+    public func toSDKURLQueryItems() -> [SDKURLQueryItem] {
         return self.map { SDKURLQueryItem(name: $0.name, value: $0.value) }
     }
 }
