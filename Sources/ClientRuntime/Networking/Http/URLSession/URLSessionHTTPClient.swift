@@ -285,7 +285,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         ) {
             storage.modify(task) { connection in
                 guard let streamBridge = connection.streamBridge else { completionHandler(nil); return }
-                Task { await streamBridge.replaceStreams(completion: completionHandler) }
+                streamBridge.replaceStreams(completion: completionHandler)
             }
         }
 

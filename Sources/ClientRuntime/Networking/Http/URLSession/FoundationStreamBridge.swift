@@ -131,20 +131,24 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         (inputStream, outputStream) = Self.makeStreams(boundStreamBufferSize: self.boundStreamBufferSize, queue: queue)
     }
 
-    func replaceStreams(completion: @escaping (InputStream?) -> Void) async {
-        // Close the current output stream, since it will accept no more data and is about to
-        // be replaced.
-        await close()
+    func replaceStreams(completion: @escaping (InputStream?) -> Void) {
+        queue.async { [self] in
+            // Close the current output stream, since it will accept no more data and is about to
+            // be replaced.
+            outputStream.close()
+            outputStream.delegate = nil
 
-        // Replace the bound stream pair with new bound streams.
-        (inputStream, outputStream) = Self.makeStreams(boundStreamBufferSize: boundStreamBufferSize, queue: queue)
+            // Replace the bound stream pair with new bound streams.
+            (inputStream, outputStream) = Self.makeStreams(boundStreamBufferSize: boundStreamBufferSize, queue: queue)
 
-        // Call the completion block.  When this method is called from `urlSession(_:task:needNewBodyStream:)`,
-        // the completion block will be that method's completion handler.
-        completion(inputStream)
+            // Call the completion block.  When this method is called from `urlSession(_:task:needNewBodyStream:)`,
+            // the completion block will be that method's completion handler.
+            completion(inputStream)
 
-        // Re-open the `OutputStream` for writing.
-        await open()
+            // Re-open the `OutputStream` for writing.
+            outputStream.delegate = self
+            outputStream.open()
+        }
     }
 
     private static func makeStreams(boundStreamBufferSize: Int, queue: DispatchQueue) -> (InputStream, OutputStream) {
