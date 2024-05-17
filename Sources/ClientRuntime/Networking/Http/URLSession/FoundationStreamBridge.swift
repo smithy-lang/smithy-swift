@@ -141,6 +141,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             // Replace the bound stream pair with new bound streams.
             (inputStream, outputStream) = Self.makeStreams(boundStreamBufferSize: boundStreamBufferSize, queue: queue)
 
+            if readableStream.isSeekable {
+                try? readableStream.seek(toOffset: 0)
+            }
+
             // Call the completion block.  When this method is called from `urlSession(_:task:needNewBodyStream:)`,
             // the completion block will be that method's completion handler.
             completion(inputStream)

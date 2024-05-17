@@ -283,6 +283,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             task: URLSessionTask,
             needNewBodyStream completionHandler: @escaping (InputStream?) -> Void
         ) {
+            fatalError("needsNewBodyStream")
             storage.modify(task) { connection in
                 guard let streamBridge = connection.streamBridge else { completionHandler(nil); return }
                 streamBridge.replaceStreams(completion: completionHandler)
