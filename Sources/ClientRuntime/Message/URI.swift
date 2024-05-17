@@ -17,6 +17,7 @@ public struct URI: Hashable {
     public let queryItems: [SDKURLQueryItem]
     public let username: String?
     public let password: String?
+    public let fragment: String?
     public var url: URL? {
         self.toBuilder().getUrl()
     }
@@ -30,7 +31,8 @@ public struct URI: Hashable {
                      port: Int16?,
                      queryItems: [SDKURLQueryItem],
                      username: String? = nil,
-                     password: String? = nil) {
+                     password: String? = nil,
+                     fragment: String? = nil) {
         self.scheme = scheme
         self.path = path
         self.host = host
@@ -38,6 +40,7 @@ public struct URI: Hashable {
         self.queryItems = queryItems
         self.username = username
         self.password = password
+        self.fragment = fragment
     }
 
     public func toBuilder() -> URIBuilder {
@@ -49,6 +52,7 @@ public struct URI: Hashable {
            .withQueryItems(self.queryItems)
            .withUsername(self.username)
            .withPassword(self.password)
+           .withFragment(self.fragment)
     }
 }
 
@@ -133,6 +137,18 @@ public final class URIBuilder {
         return self
     }
 
+    @discardableResult
+    public func withFragment(_ value: String?) -> URIBuilder {
+        if let fragment = value {
+            if fragment.isPercentEncoded {
+                self.urlComponents.percentEncodedFragment = fragment
+            } else {
+                self.urlComponents.fragment = fragment
+            }
+        }
+        return self
+    }
+
     public func build() -> URI {
         return URI(scheme: Scheme(rawValue: self.urlComponents.scheme!)!,
                    path: self.urlComponents.percentEncodedPath,
@@ -142,7 +158,8 @@ public final class URIBuilder {
                         SDKURLQueryItem(name: $0.name, value: $0.value)
                    } ?? [],
                    username: self.urlComponents.user,
-                   password: self.urlComponents.password)
+                   password: self.urlComponents.password,
+                   fragment: self.urlComponents.fragment)
     }
 
     // We still have to keep 'url' as an optional, since we're
