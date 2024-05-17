@@ -164,7 +164,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
 
     // Mocks the code-generated unit test which includes testing for forbidden/required headers/queries
     func testSayHello() async throws {
-        let expected = try buildExpectedHttpRequest(method: .post,
+        let expected = buildExpectedHttpRequest(method: .post,
                                                 path: "/",
                                                 headers: ["Content-Type": "application/json",
                                                           "RequiredHeader": "required header"],

@@ -30,7 +30,7 @@ class EndpointTests: XCTestCase {
     }
 
     func test_path_percentEncodedInput() throws {
-        let endpoint = try Endpoint(
+        let endpoint = Endpoint(
             host: "xctest.amazonaws.com",
             path: "/abc%2Bdef",
             protocolType: .https
@@ -41,7 +41,7 @@ class EndpointTests: XCTestCase {
     }
 
     func test_path_unencodedInput() throws {
-        let endpoint = try Endpoint(
+        let endpoint = Endpoint(
             host: "xctest.amazonaws.com",
             path: "/abc+def",
             protocolType: .https

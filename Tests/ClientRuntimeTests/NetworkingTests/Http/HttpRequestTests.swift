@@ -22,7 +22,7 @@ class HttpRequestTests: NetworkingTestUtils {
 
     func testSdkHttpRequestToHttpRequest() throws {
         let headers = Headers(["header-item-name": "header-item-value"])
-        let endpoint = try Endpoint(host: "host.com", path: "/", headers: headers)
+        let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
 
         let httpBody = ByteStream.data(expectedMockRequestData)
         let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
@@ -59,7 +59,7 @@ class HttpRequestTests: NetworkingTestUtils {
 
     func testSdkHttpRequestToURLRequest() async throws {
         let headers = Headers(["Testname-1": "testvalue-1", "Testname-2": "testvalue-2"])
-        let endpoint = try Endpoint(host: "host.com", path: "/", headers: headers)
+        let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
 
         let httpBody = ByteStream.data(expectedMockRequestData)
         let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
@@ -122,7 +122,7 @@ class HttpRequestTests: NetworkingTestUtils {
 
         let httpRequest = try builder.build().toHttpRequest()
         httpRequest.path = "/hello?foo=bar&quz=bar&signedthing=signed"
-        let updatedRequest = builder.update(from: httpRequest, originalRequest: try builder.build())
+        let updatedRequest = builder.update(from: httpRequest, originalRequest: builder.build())
 
         XCTAssert(updatedRequest.path == "/hello")
         XCTAssert(updatedRequest.queryItems.count == 3)
