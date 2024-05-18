@@ -144,7 +144,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             if readableStream.isSeekable {
                 try? readableStream.seek(toOffset: 0)
             } else if let bufferedStream = readableStream as? BufferedStream {
-                readableStream = BufferedStream(data: bufferedStream.originalData, isClosed: true)
+                readableStream = BufferedStream(data: bufferedStream.originalData, isClosed: readableStreamIsClosed)
             }
 
             // Call the completion block.  When this method is called from `urlSession(_:task:needNewBodyStream:)`,
@@ -197,6 +197,9 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                 continuation.resume()
             }
         }
+        if readableStreamTask == nil {
+            readableStreamTask = Task<Void, Error> { try await readFromReadableStream() }
+        }
     }
 
     /// Close the output stream and unschedule this bridge from receiving stream delegate callbacks.
@@ -215,12 +218,21 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     // MARK: - Writing to bridge
 
+    var readableStreamTask: Task<Void, Error>?
+
     /// Writes buffered data to the output stream.
     /// If the buffer is empty, the `ReadableStream` will be read first to replenish the buffer.
     ///
     /// If the buffer is empty and the readable stream is closed, there is no more data to bridge, and the output stream is closed.
-    private func writeToOutput() async throws {
-
+    private func readFromReadableStream() async throws {
+        var keepGoing = true
+        while keepGoing {
+            let data = try await readableStream.readAsync(upToCount: bridgeBufferSize)
+            if Task.isCancelled { keepGoing = false; continue }
+            let streamError = await writeToOutputStream(data: data)
+            if let streamError { throw streamError }
+            if data == nil || Task.isCancelled { keepGoing = false }
+        }
         // Perform the write on the `WriteCoordinator` to ensure that writes happen in-order
         // and one at a time.
         //
@@ -228,19 +240,19 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         // from inside the block passed to `perform()` because this is the only place
         // these instance vars are accessed, and the code in the `perform()` block runs
         // in series with any other calls to `perform()`.
-        try await writeCoordinator.perform { [self] in
+//        try await writeCoordinator.perform { [self] in
 
             // Attempt to read the stream.  Otherwise, skip reading the `ReadableStream` and
             // write what's in the buffer immediately.
-            let data = try await readableStream.readAsync(upToCount: bridgeBufferSize - buffer.count)
+//            let data = try await readableStream.readAsync(upToCount: bridgeBufferSize - buffer.count)
 
             // Write the previously buffered data and/or newly read data, if any, to the Foundation `OutputStream`.
             // Capture the error from the stream write, if any.
-            let streamError = await writeToOutputStream(data: data)
+//            let streamError = await writeToOutputStream(data: data)
 
             // If the output stream write produced an error, throw it now, else just return.
-            if let streamError { throw streamError }
-        }
+//            if let streamError { throw streamError }
+//        }
     }
 
     /// Using the output stream's callback queue, write the buffered data to the Foundation `OutputStream`.
@@ -313,7 +325,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             } else {
                 // If the buffer is now emptied and the readable stream has not already been closed,
                 // try to read from the readable stream again.
-                Task { try await writeToOutput() }
+//                Task { try await writeToOutput() }
             }
         }
 
