@@ -18,6 +18,7 @@ import class Foundation.RunLoop
 import class Foundation.Timer
 import struct Foundation.TimeInterval
 import protocol Foundation.StreamDelegate
+import class Foundation.DispatchWorkItem
 
 /// Reads data from a smithy-swift native `ReadableStream` and streams the data through to a Foundation `InputStream`.
 ///
@@ -225,6 +226,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     ///
     /// If the buffer is empty and the readable stream is closed, there is no more data to bridge, and the output stream is closed.
     private func readFromReadableStream() async throws {
+        replaceWatchdogWorkItem()
+
         var keepGoing = true
         while keepGoing {
             let data = try await readableStream.readAsync(upToCount: bridgeBufferSize)
@@ -253,6 +256,23 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             // If the output stream write produced an error, throw it now, else just return.
 //            if let streamError { throw streamError }
 //        }
+    }
+
+    var watchdogWorkItem: DispatchWorkItem?
+
+    func newWatchdogWorkItem() -> DispatchWorkItem {
+        return DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            _ = writeToOutputOnQueue()
+            replaceWatchdogWorkItem()
+        }
+    }
+
+    func replaceWatchdogWorkItem() {
+        watchdogWorkItem?.cancel()
+        let newWorkItem = newWatchdogWorkItem()
+        queue.asyncAfter(deadline: .now().advanced(by: .milliseconds(100)), execute: newWorkItem)
+        watchdogWorkItem = newWorkItem
     }
 
     /// Using the output stream's callback queue, write the buffered data to the Foundation `OutputStream`.
@@ -297,7 +317,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         // If there are any bytes to be written currently in the buffer, then write them to the output stream.
         // It may not accept all data, so get the number of bytes it accepted in `writeCount`.
         let bufferCount = buffer.count
-        if bufferCount > 0 {
+        if bufferCount > 0 && outputStream.hasSpaceAvailable {
             var writeCount = 0
             buffer.withUnsafeBytes { bufferPtr in
                 guard let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress else { return }
@@ -328,6 +348,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 //                Task { try await writeToOutput() }
             }
         }
+
+        replaceWatchdogWorkItem()
 
         // Return any stream error to the caller.
         return outputStream.streamError
