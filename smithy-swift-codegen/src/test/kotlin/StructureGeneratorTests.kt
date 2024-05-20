@@ -456,7 +456,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
         Assertions.assertNotNull(structWithDeprecatedTrait)
         structContainsDeprecatedTrait = """
         extension ExampleClientTypes {
-            @available(*, deprecated, message: " API deprecated since 2019-03-21")
+            @available(*, deprecated, message: "API deprecated since 2019-03-21")
             public struct StructSincePropertySet {
         """.trimIndent()
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
@@ -480,7 +480,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
             public var intVal: Swift.Int?
             @available(*, deprecated)
             public var string: Swift.String?
-            @available(*, deprecated, message: " API deprecated since 2019-03-21")
+            @available(*, deprecated, message: "API deprecated since 2019-03-21")
             public var structSincePropertySet: ExampleClientTypes.StructSincePropertySet?
             @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
             public var structWithDeprecatedTrait: ExampleClientTypes.StructWithDeprecatedTrait?

@@ -79,7 +79,7 @@ class ServiceGenerator() {
                 writer.writeSingleLineDocs { write("- Throws: One of the exceptions listed below __Possible Exceptions__.") }
                 writeEmptyLine()
                 writer.writeSingleLineDocs { write("__Possible Exceptions:__") }
-                op.getErrors(service).forEach { error ->
+                op.getErrors(service).sorted().forEach { error ->
                     writer.writeDocs("\\- \\`${error.name}\\` : ${retrieveMemberShapeDoc(error.toShapeId(), model)}")
                 }
             }
