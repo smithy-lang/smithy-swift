@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseErrorClosureUtils
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 
@@ -35,12 +36,8 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
 
     private fun renderInitOperationError(test: HttpResponseTestCase, operationErrorType: String) {
         val operationErrorVariableName = operationErrorType.decapitalize()
-        val needsResponseDecoder = needsResponseDecoder(test)
-        if (needsResponseDecoder) {
-            renderResponseDecoder()
-        }
-
         val responseErrorClosure = ResponseErrorClosureUtils(ctx, writer, operation).render()
+        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         writer.write(
             "let \$L = try await \$L(httpResponse)",
             operationErrorVariableName,

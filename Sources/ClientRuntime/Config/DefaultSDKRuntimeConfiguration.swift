@@ -15,16 +15,6 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
     /// The name of the client this config configures.
     public var clientName: String
 
-    /// The encoder to be used for encoding models.
-    ///
-    /// If none is provided, a default encoder will be used.
-    public var encoder: RequestEncoder?
-
-    /// The decoder to be used for decoding models.
-    ///
-    /// If none is provided, a default decoder will be used.
-    public var decoder: ResponseDecoder?
-
     /// The HTTP client to be used for HTTP connections.
     ///
     /// If none is provided, the AWS CRT HTTP client will be used.
@@ -70,8 +60,6 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
     ) throws {
         self.serviceName = clientName
         self.clientName = clientName
-        self.encoder = nil
-        self.decoder = nil
         self.httpClientConfiguration = Self.defaultHttpClientConfiguration
         self.httpClientEngine = Self.makeClient(httpClientConfiguration: self.httpClientConfiguration)
         self.idempotencyTokenGenerator = Self.defaultIdempotencyTokenGenerator
@@ -149,3 +137,6 @@ public class DefaultAuthSchemeResolver: AuthSchemeResolver {
         return DefaultAuthSchemeResolverParameters(operation: opName)
     }
 }
+
+public typealias ClientConfigurationDefaults
+    = DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>

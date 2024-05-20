@@ -96,7 +96,7 @@ class AuthSchemeResolverGeneratorTests {
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestJsonProtocolGenerator()) { model ->
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestJsonProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "Example", "2023-11-02", "Example")
         }
         context.generator.initializeMiddleware(context.generationCtx)

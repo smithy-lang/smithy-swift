@@ -76,4 +76,20 @@ extension Endpoint {
             return [queryItem.name, queryItem.value].compactMap { $0 }.joined(separator: "=")
         }.joined(separator: "&")
     }
+
+    /// Returns list of auth schemes
+    /// This is an internal API and subject to change without notice
+    /// - Returns: list of auth schemes if present
+    public func authSchemes() -> [[String: Any]]? {
+        guard let schemes = properties[AuthSchemeKeys.authSchemes] as? [[String: Any]] else {
+            return nil
+        }
+
+        return schemes
+    }
+}
+
+/// Keys used to access auth scheme container and auth scheme properties
+private enum AuthSchemeKeys {
+    static let authSchemes = "authSchemes"
 }

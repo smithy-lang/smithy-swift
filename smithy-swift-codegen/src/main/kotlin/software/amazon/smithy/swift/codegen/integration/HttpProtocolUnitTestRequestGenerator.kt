@@ -70,20 +70,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         operation.input.ifPresent { it ->
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
-
-            val decoderProperty = httpProtocolCustomizable.getClientProperties().filterIsInstance<HttpResponseDecoder>().firstOrNull()
-            decoderProperty?.renderInstantiation(writer)
-            decoderProperty?.renderConfiguration(writer)
-
             writer.writeInline("\nlet input = ")
                 .call {
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }
                 .write("")
-            val encoderProperty = httpProtocolCustomizable.getClientProperties().filterIsInstance<HttpRequestEncoder>().firstOrNull()
-            encoderProperty?.renderInstantiation(writer)
-            encoderProperty?.renderConfiguration(writer)
-
             val inputSymbol = symbolProvider.toSymbol(inputShape)
             val outputShapeId = operation.output.get()
             val outputShape = model.expectShape(outputShapeId)
@@ -95,9 +86,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val hasIdempotencyTokenTrait = idempotentMember != null
             val httpMethod = resolveHttpMethod(operation)
             writer.swiftFunctionParameterIndent {
-                if (ctx.service.requestWireProtocol != WireProtocol.XML) {
-                    writer.write("  .withEncoder(value: encoder)")
-                }
                 writer.write("  .withMethod(value: .$httpMethod)")
                 if (hasIdempotencyTokenTrait) {
                     writer.write("  .withIdempotencyTokenGenerator(value: QueryIdempotencyTestTokenGenerator())")

@@ -24,8 +24,6 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         builtContext = HttpContextBuilder()
                   .withMethod(value: .get)
                   .withPath(value: "/")
-                  .withEncoder(value: JSONEncoder())
-                  .withDecoder(value: JSONDecoder())
                   .withOperation(value: "Test Operation")
                   .withLogger(value: testLogger)
                   .build()

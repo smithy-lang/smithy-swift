@@ -11,20 +11,20 @@ class StructEncodeGenerationIsolatedTests {
     @Test
     fun `BlobInput`() {
         val context = setupTests("Isolated/BlobInput.smithy", "com.test#Example")
-        Assertions.assertTrue(context.manifest.hasFile("/example/models/BlobInputInput+Encodable.swift"))
+        Assertions.assertTrue(context.manifest.hasFile("/example/models/BlobInputInput+Write.swift"))
     }
 
     @Test
     fun `BlobInput Contents`() {
         val context = setupTests("Isolated/BlobInput.smithy", "com.test#Example")
-        val contents = getModelFileContents("example", "BlobInputInput+Encodable.swift", context.manifest)
+        val contents = getModelFileContents("example", "BlobInputInput+Write.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
     }
 
     @Test
     fun `EnumInput`() {
         val testContext = setupTests("Isolated/EnumInput.smithy", "com.test#Example")
-        Assertions.assertTrue(testContext.manifest.hasFile("/example/models/EnumInputInput+Encodable.swift"))
+        Assertions.assertTrue(testContext.manifest.hasFile("/example/models/EnumInputInput+Write.swift"))
     }
 
     @Test
@@ -41,95 +41,23 @@ class StructEncodeGenerationIsolatedTests {
         contents.shouldContainOnlyOnce(expectedContents)
     }
     @Test
-    fun `NestedNested Contents`() {
-        val context = setupTests("Isolated/NestedNested-List.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/example/models/NestedNestedJsonListInputBody+Decodable.swift")
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension NestedNestedJsonListInputBody: Swift.Decodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case nestedNestedStringList
-                }
-            
-                public init(from decoder: Swift.Decoder) throws {
-                    let containerValues = try decoder.container(keyedBy: CodingKeys.self)
-                    let nestedNestedStringListContainer = try containerValues.decodeIfPresent([[[Swift.String?]?]?].self, forKey: .nestedNestedStringList)
-                    var nestedNestedStringListDecoded0:[[[Swift.String]]]? = nil
-                    if let nestedNestedStringListContainer = nestedNestedStringListContainer {
-                        nestedNestedStringListDecoded0 = [[[Swift.String]]]()
-                        for list0 in nestedNestedStringListContainer {
-                            var list0Decoded0: [[Swift.String]]? = nil
-                            if let list0 = list0 {
-                                list0Decoded0 = [[Swift.String]]()
-                                for list1 in list0 {
-                                    var list1Decoded1: [Swift.String]? = nil
-                                    if let list1 = list1 {
-                                        list1Decoded1 = [Swift.String]()
-                                        for string2 in list1 {
-                                            if let string2 = string2 {
-                                                list1Decoded1?.append(string2)
-                                            }
-                                        }
-                                    }
-                                    if let list1Decoded1 = list1Decoded1 {
-                                        list0Decoded0?.append(list1Decoded1)
-                                    }
-                                }
-                            }
-                            if let list0Decoded0 = list0Decoded0 {
-                                nestedNestedStringListDecoded0?.append(list0Decoded0)
-                            }
-                        }
-                    }
-                    nestedNestedStringList = nestedNestedStringListDecoded0
-                }
-            }
-            """.trimIndent()
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
     fun `it can handle nested string lists`() {
         val context = setupTests("Isolated/NestedStringList.smithy", "com.test#Example")
-
-        val contents = getFileContents(context.manifest, "/example/models/JsonListsInput+Encodable.swift")
+        print(context.manifest.files)
+        val contents = getFileContents(context.manifest, "/example/models/JsonListsInput+Write.swift")
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents = """
-            extension JsonListsInput: Swift.Encodable {
-                enum CodingKeys: Swift.String, Swift.CodingKey {
-                    case nestedStringList
-                    case stringList
-                    case stringSet
-                }
-            
-                public func encode(to encoder: Swift.Encoder) throws {
-                    var encodeContainer = encoder.container(keyedBy: CodingKeys.self)
-                    if let nestedStringList = nestedStringList {
-                        var nestedStringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .nestedStringList)
-                        for stringlist0 in nestedStringList {
-                            var stringlist0Container = nestedStringListContainer.nestedUnkeyedContainer()
-                            for string1 in stringlist0 {
-                                try stringlist0Container.encode(string1)
-                            }
-                        }
-                    }
-                    if let stringList = stringList {
-                        var stringListContainer = encodeContainer.nestedUnkeyedContainer(forKey: .stringList)
-                        for string0 in stringList {
-                            try stringListContainer.encode(string0)
-                        }
-                    }
-                    if let stringSet = stringSet {
-                        var stringSetContainer = encodeContainer.nestedUnkeyedContainer(forKey: .stringSet)
-                        for string0 in stringSet {
-                            try stringSetContainer.encode(string0)
-                        }
-                    }
-                }
-            }
-        """.trimIndent()
+extension JsonListsInput {
+
+    static func write(value: JsonListsInput?, to writer: SmithyJSON.Writer) throws {
+        guard let value else { return }
+        try writer["nestedStringList"].writeList(value.nestedStringList, memberWritingClosure: listWritingClosure(memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        try writer["stringList"].writeList(value.stringList, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+        try writer["stringSet"].writeList(value.stringSet, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

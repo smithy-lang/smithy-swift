@@ -1,6 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import SmithyReadWrite
 import XCTest
 import SmithyTestUtil
 @testable import ClientRuntime
@@ -10,8 +11,6 @@ class MiddlewareStackTests: XCTestCase {
         let builtContext = HttpContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
-            .withEncoder(value: JSONEncoder())
-            .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
             .build()
         var stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")
@@ -36,8 +35,6 @@ class MiddlewareStackTests: XCTestCase {
         let builtContext = HttpContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
-            .withEncoder(value: JSONEncoder())
-            .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
             .build()
         var stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")
@@ -57,7 +54,7 @@ class MiddlewareStackTests: XCTestCase {
             return try await next.handle(context: context, input: requestBuilder)
         }
         stack.finalizeStep.intercept(position: .before, middleware: ContentLengthMiddleware<MockInput, MockOutput>())
-        stack.deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware<MockOutput>(MockOutput.responseClosure(_:), responseErrorClosure(MockMiddlewareError.self, decoder: JSONDecoder())))
+        stack.deserializeStep.intercept(position: .after, middleware: DeserializeMiddleware<MockOutput>(MockOutput.responseClosure(_:), MockMiddlewareError.responseErrorClosure(_:)))
         let result = try await stack.handleMiddleware(context: builtContext, input: MockInput(),
                                             next: MockHandler(handleCallback: { (_, input) in
                                                 XCTAssert(input.headers.value(for: "TestHeaderName2") == "TestHeaderValue2")
@@ -82,8 +79,6 @@ class MiddlewareStackTests: XCTestCase {
         let builtContext = HttpContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/headers")
-            .withEncoder(value: JSONEncoder())
-            .withDecoder(value: JSONDecoder())
             .withOperation(value: "Test Operation")
             .build()
         var stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")

@@ -12,7 +12,6 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.ErrorTrait
-import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
@@ -103,29 +102,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         }
     }
 
-    protected fun needsResponseDecoder(test: HttpResponseTestCase): Boolean {
-        var needsDecoder = true
-        test.body.ifPresent { body ->
-            if (body.isNotBlank() && body.isNotEmpty()) {
-                needsDecoder = true
-            }
-        }
-        return needsDecoder
-    }
-
     private fun renderActualOutput(test: HttpResponseTestCase, outputStruct: Symbol) {
-        val needsResponseDecoder = needsResponseDecoder(test)
-        if (needsResponseDecoder) {
-            renderResponseDecoder()
-        }
         val responseClosure = ResponseClosureUtils(ctx, writer, operation).render()
         writer.write("let actual: \$N = try await \$L(httpResponse)", outputStruct, responseClosure)
-    }
-
-    protected fun renderResponseDecoder() {
-        val decoderProperty = httpProtocolCustomizable.getClientProperties().filterIsInstance<HttpResponseDecoder>().firstOrNull()
-        decoderProperty?.renderInstantiation(writer)
-        decoderProperty?.renderConfiguration(writer)
     }
 
     protected fun renderExpectedOutput(test: HttpResponseTestCase, outputShape: Shape) {
@@ -172,7 +151,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 writer.openBlock("public static func ==(lhs: \$L, rhs: \$L) -> Bool {", "}", symbol.fullName, symbol.fullName) {
                     when (shape) {
                         is StructureShape -> {
-                            shape.members().filter { !it.hasTrait<HttpQueryTrait>() }.forEach { member ->
+                            shape.members().forEach { member ->
                                 val propertyName = ctx.symbolProvider.toMemberName(member)
                                 val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
                                 val propertyAccessor = "$path$propertyName"

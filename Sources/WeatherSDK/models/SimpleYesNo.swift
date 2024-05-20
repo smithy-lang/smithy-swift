@@ -3,7 +3,8 @@
 
 
 extension WeatherClientTypes {
-    public enum SimpleYesNo: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Codable, Swift.Hashable {
+
+    public enum SimpleYesNo: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Hashable {
         case no
         case yes
         case sdkUnknown(Swift.String)
@@ -15,21 +16,18 @@ extension WeatherClientTypes {
                 .sdkUnknown("")
             ]
         }
+
         public init?(rawValue: Swift.String) {
             let value = Self.allCases.first(where: { $0.rawValue == rawValue })
             self = value ?? Self.sdkUnknown(rawValue)
         }
+
         public var rawValue: Swift.String {
             switch self {
             case .no: return "NO"
             case .yes: return "YES"
             case let .sdkUnknown(s): return s
             }
-        }
-        public init(from decoder: Swift.Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            let rawValue = try container.decode(RawValue.self)
-            self = SimpleYesNo(rawValue: rawValue) ?? SimpleYesNo.sdkUnknown(rawValue)
         }
     }
 }

@@ -10,7 +10,12 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 
-class ContentLengthMiddleware(val model: Model, private val alwaysIntercept: Boolean, private val requiresLength: Boolean, private val unsignedPayload: Boolean) : MiddlewareRenderable {
+class ContentLengthMiddleware(
+    val model: Model,
+    private val alwaysIntercept: Boolean,
+    private val requiresLength: Boolean,
+    private val unsignedPayload: Boolean
+) : MiddlewareRenderable {
 
     override val name = "ContentLengthMiddleware"
 

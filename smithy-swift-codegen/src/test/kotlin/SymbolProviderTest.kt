@@ -59,7 +59,7 @@ class SymbolProviderTest {
         "PrimitiveDouble, Double, 0.0, false, Swift",
         "Boolean, Bool, nil, true, Swift",
         "PrimitiveBoolean, Bool, false, false, Swift",
-        "Document, Document, nil, true, ClientRuntime"
+        "Document, Document, nil, true, SmithyReadWrite"
     )
     fun `creates primitives`(primitiveType: String, swiftType: String, expectedDefault: String, boxed: Boolean, namespace: String?) {
         val model = """

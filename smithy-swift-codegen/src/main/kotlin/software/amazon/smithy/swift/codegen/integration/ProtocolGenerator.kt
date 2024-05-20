@@ -51,8 +51,6 @@ interface ProtocolGenerator {
 
         val DefaultServiceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Core.ServiceError
 
-        val DefaultUnknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
-
         val DefaultRetryErrorInfoProviderSymbol: Symbol = ClientRuntimeTypes.Core.DefaultRetryErrorInfoProvider
     }
 
@@ -85,9 +83,6 @@ interface ProtocolGenerator {
      * Symbol that should be used when the deserialized service error type cannot be determined
      * It defaults to the UnknownServiceError available in smithy-swift's client-runtime.
      */
-    val unknownServiceErrorSymbol: Symbol
-        get() = DefaultUnknownServiceErrorSymbol
-
     val retryErrorInfoProviderSymbol: Symbol
         get() = DefaultRetryErrorInfoProviderSymbol
 
@@ -133,7 +128,7 @@ interface ProtocolGenerator {
         HttpTraitResolver(ctx, defaultContentType)
 
     val operationMiddleware: OperationMiddleware
-    val httpProtocolCustomizable: HttpProtocolCustomizable
+    val customizations: HTTPProtocolCustomizable
     val defaultContentType: String
 
     /**

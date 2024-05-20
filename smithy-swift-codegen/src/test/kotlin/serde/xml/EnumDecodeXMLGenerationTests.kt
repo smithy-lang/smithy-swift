@@ -5,7 +5,7 @@
 
 package serde.xml
 
-import MockHttpRestXMLProtocolGenerator
+import MockHTTPRestXMLProtocolGenerator
 import TestContext
 import defaultSettings
 import getFileContents
@@ -17,27 +17,20 @@ class EnumDecodeXMLGenerationTests {
     @Test
     fun `decode enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutput+HttpResponseBinding.swift")
         val expectedContents = """
-struct XmlEnumsOutputBody {
-    let fooEnum1: RestXmlProtocolClientTypes.FooEnum?
-    let fooEnum2: RestXmlProtocolClientTypes.FooEnum?
-    let fooEnum3: RestXmlProtocolClientTypes.FooEnum?
-    let fooEnumList: [RestXmlProtocolClientTypes.FooEnum]?
-}
+extension XmlEnumsOutput {
 
-extension XmlEnumsOutputBody {
-
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlEnumsOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
-            var value = XmlEnumsOutput()
-            value.fooEnum1 = try reader["fooEnum1"].readIfPresent()
-            value.fooEnum2 = try reader["fooEnum2"].readIfPresent()
-            value.fooEnum3 = try reader["fooEnum3"].readIfPresent()
-            value.fooEnumList = try reader["fooEnumList"].readListIfPresent(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.readingClosure, memberNodeInfo: "member", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlEnumsOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlEnumsOutput()
+        value.fooEnum1 = try reader["fooEnum1"].readIfPresent()
+        value.fooEnum2 = try reader["fooEnum2"].readIfPresent()
+        value.fooEnum3 = try reader["fooEnum3"].readIfPresent()
+        value.fooEnumList = try reader["fooEnumList"].readListIfPresent(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.read(from:), memberNodeInfo: "member", isFlattened: false)
+        return value
     }
 }
 """
@@ -47,28 +40,24 @@ extension XmlEnumsOutputBody {
     @Test
     fun `decode enum nested`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedOutputBody+Decodable.swift")
+        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
-struct XmlEnumsNestedOutputBody {
-    let nestedEnumsList: [[RestXmlProtocolClientTypes.FooEnum]]?
-}
+extension XmlEnumsNestedOutput {
 
-extension XmlEnumsNestedOutputBody {
-
-    static var readingClosure: SmithyReadWrite.ReadingClosure<XmlEnumsNestedOutput, SmithyXML.Reader> {
-        return { reader in
-            guard reader.content != nil else { return nil }
-            var value = XmlEnumsNestedOutput()
-            value.nestedEnumsList = try reader["nestedEnumsList"].readListIfPresent(memberReadingClosure: SmithyXML.listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.readingClosure, memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
-            return value
-        }
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlEnumsNestedOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyXML.Reader.from(data: data)
+        let reader = responseReader
+        var value = XmlEnumsNestedOutput()
+        value.nestedEnumsList = try reader["nestedEnumsList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        return value
     }
 }
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHttpRestXMLProtocolGenerator()) { model ->
+        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestXMLProtocolGenerator()) { model ->
             model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
         }
         context.generator.generateDeserializers(context.generationCtx)

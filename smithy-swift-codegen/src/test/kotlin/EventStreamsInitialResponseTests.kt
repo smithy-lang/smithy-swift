@@ -4,9 +4,9 @@
  */
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import mocks.MockHttpAWSJson11ProtocolGenerator
+import mocks.MockHTTPAWSJson11ProtocolGenerator
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.integration.HttpBindingProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
 
 class EventStreamsInitialResponseTests {
     @Test
@@ -14,7 +14,7 @@ class EventStreamsInitialResponseTests {
         val context = setupInitialMessageTests(
             "event-stream-initial-request-response.smithy",
             "com.test#Example",
-            MockHttpAWSJson11ProtocolGenerator()
+            MockHTTPAWSJson11ProtocolGenerator()
         )
         val contents = getFileContents(
             context.manifest,
@@ -22,30 +22,24 @@ class EventStreamsInitialResponseTests {
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-extension TestStreamOperationWithInitialRequestResponseOutput: ClientRuntime.HttpResponseBinding {
-    public init(httpResponse: ClientRuntime.HttpResponse, decoder: ClientRuntime.ResponseDecoder? = nil) async throws {
-        if case let .stream(stream) = httpResponse.body, let responseDecoder = decoder {
-            let messageDecoder: ClientRuntime.MessageDecoder? = nil
-            let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<InitialMessageEventStreamsClientTypes.TestStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: jsonUnmarshalClosure(responseDecoder: responseDecoder))
-            self.value = decoderStream.toAsyncStream()
+extension TestStreamOperationWithInitialRequestResponseOutput {
+
+    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> TestStreamOperationWithInitialRequestResponseOutput {
+        let data = try await httpResponse.data()
+        let responseReader = try SmithyJSON.Reader.from(data: data)
+        let reader = responseReader
+        var value = TestStreamOperationWithInitialRequestResponseOutput()
+        if case let .stream(stream) = httpResponse.body {
+            let messageDecoder = ClientRuntime.MessageDecoder()
+            let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<InitialMessageEventStreamsClientTypes.TestStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: InitialMessageEventStreamsClientTypes.TestStream.unmarshal)
+            value.value = decoderStream.toAsyncStream()
             if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {
-                let decoder = JSONDecoder()
-                do {
-                    let response = try decoder.decode([String: String].self, from: initialDataWithoutHttp)
-                    self.initial1 = response["initial1"]
-                    self.initial2 = response["initial2"]
-                } catch {
-                    print("Error decoding JSON: \(error)")
-                    self.initial1 = nil
-                    self.initial2 = nil
-                }
-            } else {
-                self.initial1 = nil
-                self.initial2 = nil
+                let payloadReader = try Reader.from(data: initialDataWithoutHttp)
+                value.initial1 = try payloadReader["initial1"].readIfPresent()
+                value.initial2 = try payloadReader["initial2"].readIfPresent()
             }
-        } else {
-            self.value = nil
         }
+        return value
     }
 }
 """
@@ -55,7 +49,7 @@ extension TestStreamOperationWithInitialRequestResponseOutput: ClientRuntime.Htt
     private fun setupInitialMessageTests(
         smithyFile: String,
         serviceShapeId: String,
-        protocolGenerator: HttpBindingProtocolGenerator
+        protocolGenerator: HTTPBindingProtocolGenerator
     ): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId, protocolGenerator) { model ->
             model.defaultSettings(serviceShapeId, "InitialMessageEventStreams", "123", "InitialMessageEventStreams")

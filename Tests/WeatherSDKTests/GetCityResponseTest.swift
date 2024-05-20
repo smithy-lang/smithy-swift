@@ -32,10 +32,7 @@ class GetCityResponseTest: HttpResponseTestBase {
             return
         }
 
-        let decoder = ClientRuntime.JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(positiveInfinity: "Infinity", negativeInfinity: "-Infinity", nan: "NaN")
-        let actual: GetCityOutput = try await responseClosure(decoder: decoder)(httpResponse)
+        let actual: GetCityOutput = try await GetCityOutput.httpOutput(from:)(httpResponse)
 
         let expected = GetCityOutput(
             city: WeatherClientTypes.CitySummary(
@@ -51,9 +48,7 @@ class GetCityResponseTest: HttpResponseTestBase {
             name: "Seattle"
         )
 
-        XCTAssertEqual(expected.name, actual.name)
-        XCTAssertEqual(expected.coordinates, actual.coordinates)
-        XCTAssertEqual(expected.city, actual.city)
+        XCTAssertEqual(actual, expected)
 
     }
 }
