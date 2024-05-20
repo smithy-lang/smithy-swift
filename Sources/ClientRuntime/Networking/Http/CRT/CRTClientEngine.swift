@@ -282,7 +282,7 @@ public class CRTClientEngine: HTTPClient {
                 continuation: wrappedContinuation,
                 http2ManualDataWrites: true
             )
-            Task {
+            Task { [logger] in
                 let stream: HTTP2Stream
                 do {
                     stream = try await connectionMgr.acquireStream(requestOptions: requestOptions)
@@ -295,12 +295,10 @@ public class CRTClientEngine: HTTPClient {
                 // At this point, continuation is resumed when the initial headers are received
                 // it is now safe to write the body
                 // writing is done in a separate task to avoid blocking the continuation
-                Task { [logger] in
-                    do {
-                        try await stream.write(body: request.body)
-                    } catch {
-                        logger.error(error.localizedDescription)
-                    }
+                do {
+                    try await stream.write(body: request.body)
+                } catch {
+                    logger.error(error.localizedDescription)
                 }
             }
         }
