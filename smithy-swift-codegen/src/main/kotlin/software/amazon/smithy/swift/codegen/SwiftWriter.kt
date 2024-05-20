@@ -228,7 +228,8 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
                 message.append(deprecatedTrait.message.get())
             }
             if (sincePresent) {
-                message.append(" API deprecated since ${deprecatedTrait.since.get()}")
+                val conditionalSpace = if (messagePresent) " " else ""
+                message.append("${conditionalSpace}API deprecated since ${deprecatedTrait.since.get()}")
             }
 
             if (messagePresent || sincePresent) {
