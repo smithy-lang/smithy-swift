@@ -160,7 +160,6 @@ public class CRTClientEngine: HTTPClient {
         self.serialExecutor = SerialExecutor(config: config)
     }
 
-    // swiftlint:disable function_body_length
     public func send(request: SdkHttpRequest) async throws -> HttpResponse {
         let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
         let connection = try await connectionMgr.acquireConnection()
@@ -267,7 +266,6 @@ public class CRTClientEngine: HTTPClient {
             fatalError("Unknown HTTP version")
         }
     }
-    // swiftlint:enable function_body_length
 
     // Forces an Http2 request that uses CRT's `HTTP2StreamManager`.
     // This may be removed or improved as part of SRA work and CRT adapting to SRA for HTTP.
