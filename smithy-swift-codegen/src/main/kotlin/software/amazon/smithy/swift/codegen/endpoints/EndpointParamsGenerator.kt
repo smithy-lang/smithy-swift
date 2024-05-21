@@ -86,7 +86,7 @@ fun Parameter.toSymbol(): Symbol {
     val swiftType = when (type) {
         ParameterType.STRING -> SwiftTypes.String
         ParameterType.BOOLEAN -> SwiftTypes.Bool
-        else -> throw CodegenException("Unsupported parameter type: $type")
+        ParameterType.STRING_ARRAY -> SwiftTypes.StringArray
     }
     var builder = Symbol.builder().name(swiftType.fullName)
     if (!isRequired) {
