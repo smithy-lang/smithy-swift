@@ -6,6 +6,7 @@
 import Foundation
 
 /// A representation of the RFC 3986 Uniform Resource Identifier
+/// Note: URIBuilder returns an URI instance with all components percent encoded
 public struct URI: Hashable {
     public let scheme: Scheme
     public let path: String
@@ -58,6 +59,7 @@ public struct URI: Hashable {
 
 /// A builder class for URI
 /// The builder performs validation to conform with RFC 3986
+/// Note: URIBuilder returns an URI instance with all components percent encoded
 public final class URIBuilder {
     var urlComponents: URLComponents
 
@@ -159,7 +161,7 @@ public final class URIBuilder {
                    } ?? [],
                    username: self.urlComponents.user,
                    password: self.urlComponents.password,
-                   fragment: self.urlComponents.fragment)
+                   fragment: self.urlComponents.percentEncodedFragment)
     }
 
     // We still have to keep 'url' as an optional, since we're

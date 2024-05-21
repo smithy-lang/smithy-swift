@@ -69,4 +69,26 @@ class URITests: XCTestCase {
             .build()
         XCTAssertEqual(uri.url?.absoluteString, "https://xctest.amazonaws.com:443/abc+def")
     }
+
+    func test_modifyURI() throws {
+        var uri = URIBuilder()
+            .withScheme(Scheme(rawValue: url.scheme!)!)
+            .withPath(url.path)
+            .withHost(url.host!)
+            .withPort(url.port)
+            .withQueryItems(url.getQueryItems()!)
+            .build()
+
+        uri = uri.toBuilder()
+            .withPath("/x%2Dy%2Dz")
+            .withHost("xctest2.amazonaws.com")
+            .appendQueryItem(SDKURLQueryItem(name: "test", value: "1%2B2"))
+            .withFragment("fragment%21")
+            .withUsername("dan")
+            .withPassword("008")
+            .build()
+
+        XCTAssertEqual(uri.url?.absoluteString,
+           "https://dan:008@xctest2.amazonaws.com/x%2Dy%2Dz?abc=def&ghi=jkl&mno=pqr&test=1%2B2#fragment%21")
+    }
 }
