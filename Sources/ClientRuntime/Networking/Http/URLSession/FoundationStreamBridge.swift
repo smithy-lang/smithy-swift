@@ -263,7 +263,6 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     func newWatchdogWorkItem() -> DispatchWorkItem {
         return DispatchWorkItem { [weak self] in
             _ = self?.writeToOutputOnQueue()
-            self?.replaceWatchdogWorkItem()
         }
     }
 
