@@ -23,29 +23,29 @@ jobs:
           - macos-14-xlarge
         xcode:
           - Xcode_14.1
-          - Xcode_15.3
+          - Xcode_15.4
         destination:
           - 'platform=iOS Simulator,OS=16.1,name=iPhone 14'
-          - 'platform=iOS Simulator,OS=17.4,name=iPhone 15'
+          - 'platform=iOS Simulator,OS=17.5,name=iPhone 15'
           - 'platform=tvOS Simulator,OS=16.1,name=Apple TV 4K (3rd generation) (at 1080p)'
-          - 'platform=tvOS Simulator,OS=17.4,name=Apple TV 4K (3rd generation) (at 1080p)'
+          - 'platform=tvOS Simulator,OS=17.5,name=Apple TV 4K (3rd generation) (at 1080p)'
           - 'platform=OS X'
         exclude:
           # Don't run old macOS with new Xcode
           - runner: macos-13-xlarge
-            xcode: Xcode_15.3
+            xcode: Xcode_15.4
           # Don't run new macOS with old Xcode
           - runner: macos-14-xlarge
             xcode: Xcode_14.1
           # Don't run old iOS/tvOS simulator with new Xcode
           - destination: 'platform=iOS Simulator,OS=16.1,name=iPhone 14'
-            xcode: Xcode_15.3
+            xcode: Xcode_15.4
           - destination: 'platform=tvOS Simulator,OS=16.1,name=Apple TV 4K (3rd generation) (at 1080p)'
-            xcode: Xcode_15.3
+            xcode: Xcode_15.4
           # Don't run new iOS/tvOS simulator with old Xcode
-          - destination: 'platform=iOS Simulator,OS=17.4,name=iPhone 15'
+          - destination: 'platform=iOS Simulator,OS=17.5,name=iPhone 15'
             xcode: Xcode_14.1
-          - destination: 'platform=tvOS Simulator,OS=17.4,name=Apple TV 4K (3rd generation) (at 1080p)'
+          - destination: 'platform=tvOS Simulator,OS=17.5,name=Apple TV 4K (3rd generation) (at 1080p)'
             xcode: Xcode_14.1
     steps:
       - name: Checkout smithy-swift
@@ -102,7 +102,7 @@ jobs:
             -scheme smithy-swift-Package \
             -destination '${{ matrix.destination }}' \
             test 2>&1 \
-            | xcpretty
+            | xcbeautify
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
         run: |
           cd ../aws-sdk-swift
@@ -115,7 +115,7 @@ jobs:
             -scheme aws-sdk-swift \
             -destination '${{ matrix.destination }}' \
             test 2>&1 \
-            | xcpretty
+            | xcbeautify
 
   linux:
     runs-on: ubuntu-latest
