@@ -17,7 +17,7 @@ extension URLSessionConfiguration {
         config.httpShouldSetCookies = false
         config.httpCookieAcceptPolicy = .never
         config.httpCookieStorage = nil
-        config.tlsMaximumSupportedProtocolVersion = .TLSv12
+//        config.tlsMaximumSupportedProtocolVersion = .TLSv12
         return config
     }
 }
