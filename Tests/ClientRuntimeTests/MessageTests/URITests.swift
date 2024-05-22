@@ -88,12 +88,7 @@ class URITests: XCTestCase {
             .withPassword("%24008")
             .build()
 
-        #if os(Linux)
-            XCTAssertEqual(uri.url?.absoluteString,
-               "https://dan%21:%24008@%2Bxctest2.com/x%2Dy%2Dz?abc=def&ghi=jkl&mno=pqr&test=1%2B2#fragment%21")
-       #else
-            XCTAssertEqual(uri.url?.absoluteString,
-               "https://dan%21:%24008@+xctest2.com/x%2Dy%2Dz?abc=def&ghi=jkl&mno=pqr&test=1%2B2#fragment%21")
-       #endif
+        XCTAssertEqual(uri.url?.absoluteString,
+           "https://dan%21:%24008@+xctest2.com/x%2Dy%2Dz?abc=def&ghi=jkl&mno=pqr&test=1%2B2#fragment%21")
     }
 }

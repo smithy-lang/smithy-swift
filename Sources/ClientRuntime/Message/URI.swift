@@ -89,7 +89,15 @@ public final class URIBuilder {
     @discardableResult
     public func withHost(_ value: String) -> URIBuilder {
         if value.isPercentEncoded {
-            self.urlComponents.percentEncodedHost = value
+            // URLComponents.percentEncodedHost follows RFC 3986
+            // and returns a decoded value if it is set with a percent encoded value
+            // However on Linux platform, it returns a percent encoded value.
+            // To ensure consistent behaviour, we will decode it ourselves on Linux platform
+            if currentOS == .linux {
+                self.urlComponents.host = value.removingPercentEncoding!
+            } else {
+                self.urlComponents.percentEncodedHost = value
+            }
         } else {
             self.urlComponents.host = value
         }
