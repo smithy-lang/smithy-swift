@@ -16,6 +16,8 @@ object SwiftTypes {
     val Double = builtInSymbol("Double")
     val Bool = builtInSymbol("Bool")
 
+    val StringArray = builtInSymbol("Array<Swift.String>")
+
     val List = builtInSymbol("List")
     val Set = builtInSymbol("Set")
     val Map = builtInSymbol("Map")
