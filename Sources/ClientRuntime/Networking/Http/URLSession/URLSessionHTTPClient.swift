@@ -421,6 +421,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             let body: Body
             var streamBridge: FoundationStreamBridge?
 
+            // Convert the HTTP request body into a URLSession `Body`.
             switch request.body {
             case .data(let data):
                 body = .data(data)
@@ -438,14 +439,17 @@ public final class URLSessionHTTPClient: HTTPClient {
             do {
                 // Create a data task for the request, and store it as a Connection along with its continuation.
                 let urlRequest = try self.makeURLRequest(from: request, body: body)
-                // Create the data task and associated connection object, then place them in storage.
                 let dataTask = session.dataTask(with: urlRequest)
+
+                // Create a Connection and store it, keyed by its data task for retrieval on future
+                // delegate callbacks.
                 let connection = Connection(streamBridge: streamBridge, continuation: continuation)
                 delegate.storage.set(connection, for: dataTask)
 
-                // Start the HTTP connection and start streaming the request body data
-                dataTask.resume()
+                // Start the HTTP connection and start streaming the request body data, if needed
                 logger.info("start URLRequest(\(urlRequest.url?.absoluteString ?? "")) called")
+                logger.info("  body is \(streamBridge != nil ? "InputStream" : "Data")")
+                dataTask.resume()
                 Task { [streamBridge] in
                     await streamBridge?.open()
                 }
