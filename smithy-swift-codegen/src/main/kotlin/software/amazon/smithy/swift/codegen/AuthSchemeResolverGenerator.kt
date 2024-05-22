@@ -3,7 +3,6 @@ package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.shapes.OperationShape
@@ -285,7 +284,7 @@ fun Parameter.toSymbol(): Symbol {
     val swiftType = when (type) {
         ParameterType.STRING -> SwiftTypes.String
         ParameterType.BOOLEAN -> SwiftTypes.Bool
-        else -> throw CodegenException("Unsupported parameter type: $type")
+        ParameterType.STRING_ARRAY -> SwiftTypes.StringArray
     }
     var builder = Symbol.builder().name(swiftType.fullName)
     if (!isRequired) {
