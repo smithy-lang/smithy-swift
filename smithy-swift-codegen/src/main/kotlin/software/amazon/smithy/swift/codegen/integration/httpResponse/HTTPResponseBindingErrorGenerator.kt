@@ -34,7 +34,7 @@ class HTTPResponseBindingErrorGenerator(
         ctx.delegator.useFileWriter(fileName) { writer ->
             with(writer) {
                 addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                addImport(customizations.baseErrorSymbol.namespace)
+                addImport(customizations.baseErrorSymbol)
                 openBlock(
                     "func httpServiceError(baseError: \$N) throws -> \$N? {",
                     "}",
@@ -78,7 +78,7 @@ class HTTPResponseBindingErrorGenerator(
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addImport(customizations.baseErrorSymbol.namespace)
+            writer.addImport(customizations.baseErrorSymbol)
             writer.addImports(ctx.service.responseWireProtocol)
             writer.openBlock("enum \$L {", "}", operationErrorName) {
                 writer.write("")
