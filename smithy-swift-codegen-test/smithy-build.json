@@ -13,6 +13,20 @@
                     "swiftVersion": "5.7.0"
                 }
             }
+        },
+        "weather-interceptors": {
+            "plugins": {
+                "swift-codegen": {
+                    "service": "example.weather#Weather",
+                    "module": "WeatherInterceptorsSDK",
+                    "moduleVersion": "1.0",
+                    "gitRepo": "https://github.com/smithy-lang/smithy-swift.git",
+                    "author": "Amazon Web Services",
+                    "homepage": "https://docs.amplify.aws/",
+                    "swiftVersion": "5.7.0",
+                    "useInterceptors": true
+                }
+            }
         }
     }
 }
