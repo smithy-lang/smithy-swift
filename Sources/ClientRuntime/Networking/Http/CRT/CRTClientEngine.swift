@@ -306,9 +306,8 @@ public class CRTClientEngine: HTTPClient {
 
     /// Creates a `HTTPRequestOptions` object that can be used to make a HTTP request
     /// - Parameters:
-    ///   - continuationFlag: The actor that wraps the boolean flag used to track continuation resume status
     ///   - request: The `HTTPRequestBase` object that contains the request information
-    ///   - continuation: The continuation that will be resumed when the request is complete
+    ///   - continuation: The wrapped continuation that will be resumed when the request is complete
     ///   - http2ManualDataWrites: Whether or not the request is using HTTP/2 manual data writes, defaults to `false`
     ///     If set to false, HTTP/2 manual data writes will be disabled and result in a runtime error on writing on the
     ///     HTTP/2 stream
@@ -375,7 +374,7 @@ public class CRTClientEngine: HTTPClient {
     class ContinuationWrapper {
         private var continuation: StreamContinuation?
 
-        public init(_ continuation: StreamContinuation? = nil) {
+        public init(_ continuation: StreamContinuation) {
             self.continuation = continuation
         }
 
