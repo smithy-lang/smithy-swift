@@ -88,7 +88,11 @@ public final class URIBuilder {
 
     @discardableResult
     public func withHost(_ value: String) -> URIBuilder {
-        self.urlComponents.host = value
+        if value.isPercentEncoded {
+            self.urlComponents.percentEncodedHost = value
+        } else {
+            self.urlComponents.host = value
+        }
         return self
     }
 
@@ -129,13 +133,25 @@ public final class URIBuilder {
 
     @discardableResult
     public func withUsername(_ value: String?) -> URIBuilder {
-        self.urlComponents.user = value
+        if let username = value {
+            if username.isPercentEncoded {
+                self.urlComponents.percentEncodedUser = username
+            } else {
+                self.urlComponents.user = username
+            }
+        }
         return self
     }
 
     @discardableResult
     public func withPassword(_ value: String?) -> URIBuilder {
-        self.urlComponents.password = value
+        if let password = value {
+            if password.isPercentEncoded {
+                self.urlComponents.percentEncodedPassword = password
+            } else {
+                self.urlComponents.password = password
+            }
+        }
         return self
     }
 
@@ -154,13 +170,13 @@ public final class URIBuilder {
     public func build() -> URI {
         return URI(scheme: Scheme(rawValue: self.urlComponents.scheme!)!,
                    path: self.urlComponents.percentEncodedPath,
-                   host: self.urlComponents.host!,
+                   host: self.urlComponents.percentEncodedHost!,
                    port: self.urlComponents.port.map { Int16($0) },
                    queryItems: self.urlComponents.percentEncodedQueryItems?.map {
                         SDKURLQueryItem(name: $0.name, value: $0.value)
                    } ?? [],
-                   username: self.urlComponents.user,
-                   password: self.urlComponents.password,
+                   username: self.urlComponents.percentEncodedUser,
+                   password: self.urlComponents.percentEncodedPassword,
                    fragment: self.urlComponents.percentEncodedFragment)
     }
 

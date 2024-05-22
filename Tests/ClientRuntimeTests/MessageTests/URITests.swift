@@ -81,14 +81,19 @@ class URITests: XCTestCase {
 
         uri = uri.toBuilder()
             .withPath("/x%2Dy%2Dz")
-            .withHost("xctest2.amazonaws.com")
+            .withHost("%2Bxctest2.com")
             .appendQueryItem(SDKURLQueryItem(name: "test", value: "1%2B2"))
             .withFragment("fragment%21")
-            .withUsername("dan")
-            .withPassword("008")
+            .withUsername("dan%21")
+            .withPassword("%24008")
             .build()
 
-        XCTAssertEqual(uri.url?.absoluteString,
-           "https://dan:008@xctest2.amazonaws.com/x%2Dy%2Dz?abc=def&ghi=jkl&mno=pqr&test=1%2B2#fragment%21")
+        #if os(Linux)
+            XCTAssertEqual(uri.url?.absoluteString,
+               "https://dan%21:%24008@%2Bxctest2.com/x%2Dy%2Dz?abc=def&ghi=jkl&mno=pqr&test=1%2B2#fragment%21")
+       #else
+            XCTAssertEqual(uri.url?.absoluteString,
+               "https://dan%21:%24008@+xctest2.com/x%2Dy%2Dz?abc=def&ghi=jkl&mno=pqr&test=1%2B2#fragment%21")
+       #endif
     }
 }
