@@ -18,6 +18,7 @@ import class Foundation.RunLoop
 import class Foundation.Timer
 import struct Foundation.TimeInterval
 import protocol Foundation.StreamDelegate
+import class Foundation.DispatchWorkItem
 
 /// Reads data from a smithy-swift native `ReadableStream` and streams the data through to a Foundation `InputStream`.
 ///
@@ -38,12 +39,17 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// A buffer to hold data that has been read from the `ReadableStream` but not yet written to the
     /// Foundation `OutputStream`.  At most, it will contain `bridgeBufferSize` bytes.
+    ///
+    /// Only access this buffer from the serial queue.
     private var buffer: Data
 
     /// The `ReadableStream` that will serve as the input to this bridge.
+    ///
     /// The bridge will read bytes from this stream and dump them to the Foundation stream
     /// pair as they become available.
-    let readableStream: ReadableStream
+    ///
+    /// Only access this stream from the serial queue.
+    var readableStream: ReadableStream
 
     /// A Foundation stream that will carry the bytes read from the readableStream as they become available.
     ///
@@ -95,7 +101,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// `true` if the readable stream has been closed, `false` otherwise.  Will be flipped to `true` once the readable stream is read,
     /// and `nil` is returned.
     ///
-    /// Access this variable only during a write operation to ensure exclusive access.
+    /// Only access this variable from the serial queue.
     private var readableStreamIsClosed = false
 
     // MARK: - init & deinit
@@ -126,20 +132,30 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         (inputStream, outputStream) = Self.makeStreams(boundStreamBufferSize: self.boundStreamBufferSize, queue: queue)
     }
 
-    func replaceStreams(completion: @escaping (InputStream?) -> Void) async {
-        // Close the current output stream, since it will accept no more data and is about to
-        // be replaced.
-        await close()
+    func replaceStreams(completion: @escaping (InputStream?) -> Void) {
+        queue.async { [self] in
+            // Close the current output stream, since it will accept no more data and is about to
+            // be replaced.
+            outputStream.close()
+            outputStream.delegate = nil
 
-        // Replace the bound stream pair with new bound streams.
-        (inputStream, outputStream) = Self.makeStreams(boundStreamBufferSize: boundStreamBufferSize, queue: queue)
+            // Replace the bound stream pair with new bound streams.
+            (inputStream, outputStream) = Self.makeStreams(boundStreamBufferSize: boundStreamBufferSize, queue: queue)
 
-        // Call the completion block.  When this method is called from `urlSession(_:task:needNewBodyStream:)`,
-        // the completion block will be that method's completion handler.
-        completion(inputStream)
+            if readableStream.isSeekable {
+                try? readableStream.seek(toOffset: 0)
+            } else if let bufferedStream = readableStream as? BufferedStream {
+                readableStream = BufferedStream(data: bufferedStream.originalData, isClosed: readableStreamIsClosed)
+            }
 
-        // Re-open the `OutputStream` for writing.
-        await open()
+            // Call the completion block.  When this method is called from `urlSession(_:task:needNewBodyStream:)`,
+            // the completion block will be that method's completion handler.
+            completion(inputStream)
+
+            // Re-open the `OutputStream` for writing.
+            outputStream.delegate = self
+            outputStream.open()
+        }
     }
 
     private static func makeStreams(boundStreamBufferSize: Int, queue: DispatchQueue) -> (InputStream, OutputStream) {
@@ -182,6 +198,9 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                 continuation.resume()
             }
         }
+        if readableStreamTask == nil {
+            readableStreamTask = Task<Void, Error> { try await readFromReadableStream() }
+        }
     }
 
     /// Close the output stream and unschedule this bridge from receiving stream delegate callbacks.
@@ -200,12 +219,23 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     // MARK: - Writing to bridge
 
+    var readableStreamTask: Task<Void, Error>?
+
     /// Writes buffered data to the output stream.
     /// If the buffer is empty, the `ReadableStream` will be read first to replenish the buffer.
     ///
     /// If the buffer is empty and the readable stream is closed, there is no more data to bridge, and the output stream is closed.
-    private func writeToOutput() async throws {
+    private func readFromReadableStream() async throws {
+        replaceWatchdogWorkItem()
 
+        var keepGoing = true
+        while keepGoing {
+            let data = try await readableStream.readAsync(upToCount: bridgeBufferSize)
+            if Task.isCancelled { keepGoing = false; continue }
+            let streamError = await writeToOutputStream(data: data)
+            if let streamError { throw streamError }
+            if data == nil || Task.isCancelled { keepGoing = false }
+        }
         // Perform the write on the `WriteCoordinator` to ensure that writes happen in-order
         // and one at a time.
         //
@@ -213,42 +243,43 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         // from inside the block passed to `perform()` because this is the only place
         // these instance vars are accessed, and the code in the `perform()` block runs
         // in series with any other calls to `perform()`.
-        try await writeCoordinator.perform { [self] in
+//        try await writeCoordinator.perform { [self] in
 
-            // If there is no data in the buffer and the `ReadableStream` is still open,
-            // attempt to read the stream.  Otherwise, skip reading the `ReadableStream` and
+            // Attempt to read the stream.  Otherwise, skip reading the `ReadableStream` and
             // write what's in the buffer immediately.
-            if !readableStreamIsClosed && buffer.isEmpty {
-                if let newData = try await readableStream.readAsync(upToCount: bridgeBufferSize - buffer.count) {
-                    buffer.append(newData)
-                } else {
-                    readableStreamIsClosed = true
-                }
-            }
+//            let data = try await readableStream.readAsync(upToCount: bridgeBufferSize - buffer.count)
 
             // Write the previously buffered data and/or newly read data, if any, to the Foundation `OutputStream`.
             // Capture the error from the stream write, if any.
-            var streamError: Error?
-            if !buffer.isEmpty {
-                streamError = await writeToOutputStream()
-            }
-
-            // If the readable stream has closed and there is no data in the buffer,
-            // there is nothing left to forward to the output stream, so close it.
-            if readableStreamIsClosed && buffer.isEmpty {
-                await close()
-            }
+//            let streamError = await writeToOutputStream(data: data)
 
             // If the output stream write produced an error, throw it now, else just return.
-            if let streamError { throw streamError }
+//            if let streamError { throw streamError }
+//        }
+    }
+
+    var watchdogWorkItem: DispatchWorkItem?
+
+    func newWatchdogWorkItem() -> DispatchWorkItem {
+        return DispatchWorkItem { [weak self] in
+            _ = self?.writeToOutputOnQueue()
         }
     }
 
+    func replaceWatchdogWorkItem() {
+        watchdogWorkItem?.cancel()
+        let newWorkItem = newWatchdogWorkItem()
+        queue.asyncAfter(deadline: .now().advanced(by: .milliseconds(100)), execute: newWorkItem)
+        watchdogWorkItem = newWorkItem
+    }
+
     /// Using the output stream's callback queue, write the buffered data to the Foundation `OutputStream`.
-    ///
+    /// 
     /// After writing, remove the written data from the buffer.
     /// - Returns: The error resulting from the write to the Foundation `OutputStream`, or `nil` if no error occurred.
-    private func writeToOutputStream() async -> Error? {
+    /// - Parameters:
+    ///   - data: The data that was read from the readable stream, or `nil` if the readable stream is closed.
+    private func writeToOutputStream(data: Data?) async -> Error? {
 
         // Suspend the caller while the write is performed on the Foundation `OutputStream`'s queue.
         await withCheckedContinuation { continuation in
@@ -256,25 +287,70 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
             // Perform the write to the Foundation `OutputStream` on its queue.
             queue.async { [self] in
 
-                // Write to the output stream.  It may not accept all data, so get the number of bytes
-                // it accepted in `writeCount`.
-                var writeCount = 0
-                buffer.withUnsafeBytes { bufferPtr in
-                    guard let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress else { return }
-                    writeCount = outputStream.write(bytePtr, maxLength: buffer.count)
+                // Add the read data to the buffer, or set the stream closed flag if necessary.
+                if let data {
+                    buffer.append(data)
+                } else {
+                    readableStreamIsClosed = true
                 }
 
-                // `writeCount` will be a positive number if bytes were written.
-                // Remove the written bytes from the front of the buffer.
-                if writeCount > 0 {
-                    logger.info("FoundationStreamBridge: wrote \(writeCount) bytes to request body")
-                    buffer.removeFirst(writeCount)
-                }
+                // Attempt to write buffered data to the output stream.
+                let error = writeToOutputOnQueue()
 
                 // Resume the caller now that the write is complete, returning the stream error, if any.
-                continuation.resume(returning: outputStream.streamError)
+                continuation.resume(returning: error)
             }
         }
+    }
+
+    /// Writes the contents of the buffer to the Foundation output stream.
+    ///
+    /// If the buffer is emptied by the write, attempt to read more from the `ReadableStream`.
+    ///
+    /// If the buffer is empty and the `ReadableStream` is closed, close the Foundation output stream.
+    /// - Returns: <#description#>
+    private func writeToOutputOnQueue() -> Error? {
+        // Call this function only from the output stream's serial queue.
+        //
+        // If there are any bytes to be written currently in the buffer, then write them to the output stream.
+        // It may not accept all data, so get the number of bytes it accepted in `writeCount`.
+        let bufferCount = buffer.count
+        if bufferCount > 0 && outputStream.hasSpaceAvailable {
+            var writeCount = 0
+            buffer.withUnsafeBytes { bufferPtr in
+                guard let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress else { return }
+                writeCount = outputStream.write(bytePtr, maxLength: bufferCount)
+            }
+
+            // `writeCount` will be a positive number if bytes were written.
+            // Remove the written bytes from the front of the buffer.
+            if writeCount > 0 {
+                logger.info("FoundationStreamBridge: wrote \(writeCount) bytes to request body")
+                buffer.removeFirst(writeCount)
+            }
+        }
+
+        // If the buffer is empty after the write, either read more data from the readable stream,
+        // or if the readable stream is closed, close the output stream.
+        //
+        // If the buffer is not empty after writing, then take no action.  The output stream will post a
+        // `.hasSpaceAvailable` event once it can accept more data.
+        if buffer.isEmpty {
+            if readableStreamIsClosed {
+                // Close the output stream and unschedule this bridge from receiving stream delegate callbacks.
+                self.outputStream.close()
+                self.outputStream.delegate = nil
+            } else {
+                // If the buffer is now emptied and the readable stream has not already been closed,
+                // try to read from the readable stream again.
+//                Task { try await writeToOutput() }
+            }
+        }
+
+        replaceWatchdogWorkItem()
+
+        // Return any stream error to the caller.
+        return outputStream.streamError
     }
 
     // MARK: - StreamDelegate protocol
@@ -298,10 +374,8 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         case .hasBytesAvailable:
             break
         case .hasSpaceAvailable:
-            // Since space is available, try and read from the ReadableStream and
-            // transfer the data to the Foundation stream pair.
-            // Use a `Task` to perform the operation within Swift concurrency.
-            Task { try await writeToOutput() }
+            // Since space is available, try and write buffered data to the output queue.
+            _ = writeToOutputOnQueue()
         case .errorOccurred:
             logger.info("FoundationStreamBridge: .errorOccurred event")
             logger.info("FoundationStreamBridge: Stream error: \(aStream.streamError.debugDescription)")
