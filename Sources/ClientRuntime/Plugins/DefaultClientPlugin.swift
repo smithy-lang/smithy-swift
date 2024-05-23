@@ -15,7 +15,7 @@ public class DefaultClientPlugin: Plugin {
         }
 
         if var config = clientConfiguration as? DefaultHttpClientConfiguration {
-            var httpClientConfiguration =
+            let httpClientConfiguration =
                 DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
                     .defaultHttpClientConfiguration
             config.httpClientConfiguration = httpClientConfiguration
