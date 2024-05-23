@@ -14,6 +14,21 @@ public struct PlatformOperationSystemVersion {
         return "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
     }
 }
+#elseif os(Linux)
+import Glibc
+public struct PlatformOperationSystemVersion {
+    static public func operatingSystemVersion() -> String? {
+        var sysInfo = utsname()
+        uname(&sysInfo)
+        var local = sysInfo
+        let releaseVersion = withUnsafePointer(to: &local.release) {
+            $0.withMemoryRebound(to: CChar.self, capacity: MemoryLayout.size(ofValue: sysInfo.release)) {
+                String(cString: $0)
+            }
+        }
+        return releaseVersion
+    }
+}
 #else
 // TODO: Implement for Linux & Windows
 public struct PlatformOperationSystemVersion {
