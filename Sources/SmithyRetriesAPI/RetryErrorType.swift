@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+/// This enum is a general classification that is assigned to errors that resulted from a failed attempt to perform
+/// an operation.
+///
+/// The retry strategy uses this classification to decide whether and when to retry a failed attempt.
 public enum RetryErrorType: Equatable {
 
     /// This is a connection level error such as a socket timeout, socket connect error, tls negotiation timeout etc...
