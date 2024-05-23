@@ -176,7 +176,6 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
 
     func testAlgorithmSelectionCase2() async throws -> () {
         let colA = ["sha256", "crc32"]
-        let colB = ["crc32", "sha256"]
         let validationMode = true
         var colBHeaders = Headers()
         // Add only sha256 header in response
@@ -209,7 +208,6 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
 
     func testAlgorithmSelectionCase4() async throws -> () {
         let colA = ["crc32", "crc32c"]
-        let colB = ["crc32c", "crc32"]
         let validationMode = false
         var colBHeaders = Headers()
         // crc64 is not modeled in the service so no validation should be perforemd, but we shouldnt error
