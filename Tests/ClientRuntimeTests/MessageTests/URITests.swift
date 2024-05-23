@@ -12,6 +12,10 @@ import XCTest
 class URITests: XCTestCase {
     let url = URL(string: "https://xctest.amazonaws.com?abc=def&ghi=jkl&mno=pqr")!
 
+    let unencodedReservedCharacters: String = "!$&'()*+,;="
+
+    let encodedReservedCharacters: String = "%21%24%26%27%28%29%2A%2B%2C%3B%3D"
+
     func test_queryItems_setsQueryItemsFromURLInOrder() throws {
         let uri = URIBuilder()
             .withScheme(Scheme(rawValue: url.scheme!)!)
@@ -90,5 +94,106 @@ class URITests: XCTestCase {
 
         XCTAssertEqual(uri.url?.absoluteString,
            "https://dan%21:%24008@+xctest2.com/x%2Dy%2Dz?abc=def&ghi=jkl&mno=pqr&test=1%2B2#fragment%21")
+    }
+
+    func test_host_unencodedReservedCharacters() throws {
+        let uri = URIBuilder()
+            .withScheme(.https)
+            .withHost("xctest.\(unencodedReservedCharacters).com")
+            .withPath("/")
+            .build()
+        XCTAssertEqual(uri.url?.absoluteString, "https://xctest.!$&\'()*+,;=.com/")
+    }
+
+    func test_host_encodedReservedCharacters() throws {
+        let uri = URIBuilder()
+            .withScheme(.https)
+            .withHost("xctest.\(encodedReservedCharacters).com")
+            .withPath("/")
+            .build()
+        XCTAssertEqual(uri.url?.absoluteString, "https://xctest.!$&\'()*+,;=.com/")
+    }
+
+    func test_host_encodedAndUnencodedReservedCharacters() throws {
+        let uri = URIBuilder()
+            .withScheme(.https)
+            .withHost("xctest.\(unencodedReservedCharacters)\(encodedReservedCharacters).com")
+            .withPath("/")
+            .build()
+        XCTAssertEqual(uri.url?.absoluteString, "https://xctest.!$&\'()*+,;=!$&\'()*+,;=.com/")
+    }
+
+    func test_path_unencodedReservedCharacters() throws {
+        let uri = URIBuilder()
+            .withScheme(.https)
+            .withHost("xctest.com")
+            .withPath("/:@\(unencodedReservedCharacters)")
+            .build()
+        XCTAssertEqual(uri.url?.absoluteString, "https://xctest.com/:@!$&\'()*+,%3B=")
+    }
+
+    func test_path_encodedReservedCharacters() throws {
+        let uri = URIBuilder()
+            .withScheme(.https)
+            .withHost("xctest.com")
+            .withPath("/\(encodedReservedCharacters)")
+            .build()
+        XCTAssertEqual(uri.url?.absoluteString, "https://xctest.com/%21%24%26%27%28%29%2A%2B%2C%3B%3D")
+    }
+
+    func test_path_encodedAndUnencodedReservedCharacters() throws {
+        let uri = URIBuilder()
+            .withScheme(.https)
+            .withHost("xctest.com")
+            .withPath("/:@\(unencodedReservedCharacters)\(encodedReservedCharacters)")
+            .build()
+        XCTAssertEqual(uri.url?.absoluteString, "https://xctest.com/:@!$&\'()*+,%3B=%21%24%26%27%28%29%2A%2B%2C%3B%3D")
+    }
+
+    func test_query_unencodedReservedCharacters() throws {
+        let uri = URIBuilder()
+            .withScheme(.https)
+            .withHost("xctest.com")
+            .withPath("/")
+            .withQueryItems([
+                SDKURLQueryItem(
+                    name: "key:@\(unencodedReservedCharacters))",
+                    value: "value:@\(unencodedReservedCharacters)"
+                ),
+            ])
+            .build()
+        XCTAssertEqual(uri.url?.absoluteString, "https://xctest.com/?key:@!$%26\'()*+,;%3D)=value:@!$%26\'()*+,;%3D")
+    }
+
+    func test_query_encodedReservedCharacters() throws {
+        let uri = URIBuilder()
+            .withScheme(.https)
+            .withHost("xctest.com")
+            .withPath("/")
+            .withQueryItems([
+                SDKURLQueryItem(
+                    name: "key:@\(encodedReservedCharacters))",
+                    value: "value:@\(encodedReservedCharacters)"
+                ),
+            ])
+            .build()
+        XCTAssertEqual(uri.url?.absoluteString,
+            "https://xctest.com/?key:@%21%24%26%27%28%29%2A%2B%2C%3B%3D)=value:@%21%24%26%27%28%29%2A%2B%2C%3B%3D")
+    }
+
+    func test_query_unencodedAndEncodedReservedCharacters() throws {
+        let uri = URIBuilder()
+            .withScheme(.https)
+            .withHost("xctest.com")
+            .withPath("/")
+            .withQueryItems([
+                SDKURLQueryItem(
+                    name: "key:@\(encodedReservedCharacters))",
+                    value: "value:@\(unencodedReservedCharacters)"
+                ),
+            ])
+            .build()
+        XCTAssertEqual(uri.url?.absoluteString,
+            "https://xctest.com/?key:@%21%24%26%27%28%29%2A%2B%2C%3B%3D)=value:@!$&\'()*+,;=")
     }
 }

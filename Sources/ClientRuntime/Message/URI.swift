@@ -76,12 +76,29 @@ public final class URIBuilder {
         return self
     }
 
+    /// According to https://developer.apple.com/documentation/foundation/nsurlcomponents/1408161-percentencodedpath
+    /// "Although an unencoded semicolon is a valid character in a percent-encoded path,
+    ///  for compatibility with the NSURL class, you should always percent-encode it."
+    ///
+    /// URI also always return a percent-encoded path.
+    /// If an percent-encoded path is provided, we will replace the semicolon with %3B in the path.
+    /// If an unencoded path is provided, we should percent-encode the path including semicolon.
     @discardableResult
     public func withPath(_ value: String) -> URIBuilder {
         if value.isPercentEncoded {
-            self.urlComponents.percentEncodedPath = value
+            if value.contains(";") {
+                let encodedPath = value.replacingOccurrences(
+                    of: ";", with: "%3B", options: NSString.CompareOptions.literal, range: nil)
+                self.urlComponents.percentEncodedPath = encodedPath
+            } else {
+                self.urlComponents.percentEncodedPath = value
+            }
         } else {
-            self.urlComponents.path = value
+            if value.contains(";") {
+                self.urlComponents.percentEncodedPath = value.percentEncodePathIncludingSemicolon()
+            } else {
+                self.urlComponents.path = value
+            }
         }
         return self
     }
@@ -118,7 +135,14 @@ public final class URIBuilder {
 
     @discardableResult
     public func withQueryItems(_ value: [SDKURLQueryItem]) -> URIBuilder {
-        self.urlComponents.percentEncodedQueryItems = value.isEmpty ? nil : value.toURLQueryItems()
+        if value.isEmpty {
+            return self
+        }
+        if value.containsPercentEncode() {
+            self.urlComponents.percentEncodedQueryItems = value.toURLQueryItems()
+        } else {
+            self.urlComponents.queryItems = value.toURLQueryItems()
+        }
         return self
     }
 
@@ -129,7 +153,13 @@ public final class URIBuilder {
         }
         var queryItems = self.urlComponents.percentEncodedQueryItems ?? []
         queryItems += items.toURLQueryItems()
-        self.urlComponents.percentEncodedQueryItems = queryItems
+
+        if queryItems.containsPercentEncode() {
+            self.urlComponents.percentEncodedQueryItems = queryItems
+        } else {
+            self.urlComponents.queryItems = queryItems
+        }
+
         return self
     }
 
@@ -201,6 +231,18 @@ extension String {
         let decoded = self.removingPercentEncoding
         return decoded != nil && decoded != self
     }
+
+    public func percentEncodePathIncludingSemicolon() -> String {
+        let allowed =
+            // swiftlint:disable:next force_cast
+            (CharacterSet.urlPathAllowed as NSCharacterSet).mutableCopy() as! NSMutableCharacterSet
+        allowed.removeCharacters(in: ";")
+        return self.addingPercentEncoding(withAllowedCharacters: allowed as CharacterSet)!
+    }
+
+    public func percentEncodeQuery() -> String {
+        return self.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed as CharacterSet)!
+    }
 }
 
 extension Array where Element == SDKURLQueryItem {
@@ -214,10 +256,18 @@ extension Array where Element == SDKURLQueryItem {
     public func toURLQueryItems() -> [URLQueryItem] {
         return self.map { URLQueryItem(name: $0.name, value: $0.value) }
     }
+
+    public func containsPercentEncode() -> Bool {
+        return self.contains { item in
+            return item.name.isPercentEncoded || (item.value?.isPercentEncoded ?? false)
+        }
+    }
 }
 
 extension Array where Element == URLQueryItem {
-    public func toSDKURLQueryItems() -> [SDKURLQueryItem] {
-        return self.map { SDKURLQueryItem(name: $0.name, value: $0.value) }
+    public func containsPercentEncode() -> Bool {
+        return self.contains { item in
+            return item.name.isPercentEncoded || (item.value?.isPercentEncoded ?? false)
+        }
     }
 }
