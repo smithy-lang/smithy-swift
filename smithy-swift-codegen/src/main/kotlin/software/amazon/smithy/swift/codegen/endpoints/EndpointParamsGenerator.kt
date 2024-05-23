@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.swift.codegen.endpoints
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
@@ -86,7 +85,7 @@ fun Parameter.toSymbol(): Symbol {
     val swiftType = when (type) {
         ParameterType.STRING -> SwiftTypes.String
         ParameterType.BOOLEAN -> SwiftTypes.Bool
-        else -> throw CodegenException("Unsupported parameter type: $type")
+        ParameterType.STRING_ARRAY -> SwiftTypes.StringArray
     }
     var builder = Symbol.builder().name(swiftType.fullName)
     if (!isRequired) {
