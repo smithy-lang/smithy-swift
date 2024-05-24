@@ -6,6 +6,6 @@
 //
 
 extension AttributeKeys {
-    // Keys used to store/retrieve AWSSigningConfig fields in/from signingProperties passed to AWSSigV4Signer
-    public static let signingAlgorithm = AttributeKey<AWSSigningAlgorithm>(name: "SigningAlgorithm")
+    // Keys used to store/retrieve SigningConfig fields in/from signingProperties passed to Signer
+    public static let signingAlgorithm = AttributeKey<SigningAlgorithm>(name: "SigningAlgorithm")
 }

@@ -7,6 +7,7 @@
 
 import SmithyStreamsAPI
 import SmithyEventStreamsAPI
+import SmithyEventStreamsAuthAPI
 import struct Foundation.Data
 
 // Code left indented to prevent Git diff from being blown up by whitespace changes.

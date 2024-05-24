@@ -100,7 +100,7 @@ open class EndpointResolverMiddleware(
                     }
                     
                     if let signingAlgorithm = signingAlgorithm {
-                        attributes.set(key: AttributeKeys.signingAlgorithm, value: AWSSigningAlgorithm(rawValue: signingAlgorithm))
+                        attributes.set(key: AttributeKeys.signingAlgorithm, value: SigningAlgorithm(rawValue: signingAlgorithm))
                     }
                     
                     if let headers = endpoint.headers {

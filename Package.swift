@@ -38,6 +38,7 @@ let package = Package(
         .library(name: "SmithyStreamsAPI", targets: ["SmithyStreamsAPI"]),
         .library(name: "SmithyEventStreamsAPI", targets: ["SmithyEventStreamsAPI"]),
         .library(name: "SmithyEventStreamsAuthAPI", targets: ["SmithyEventStreamsAuthAPI"]),
+        .library(name: "SmithyEventStreams", targets: ["SmithyEventStreams"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: [
