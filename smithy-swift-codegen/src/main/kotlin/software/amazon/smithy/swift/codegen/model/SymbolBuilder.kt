@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftKind
 
 @DslMarker
 annotation class SymbolDsl
@@ -112,8 +113,11 @@ fun Symbol.isInternalSPI(): Boolean {
     return this.getProperty("isInternalSPI").orElse(false) as Boolean
 }
 
-fun Symbol.toInternalSPI(): Symbol {
-    return this.toBuilder().putProperty("isInternalSPI", true).build()
+fun Symbol.toInternalSPI(kind: SwiftKind): Symbol {
+    return this.toBuilder()
+        .putProperty("isInternalSPI", true)
+        .putProperty("kind", kind.kind)
+        .build()
 }
 
 fun Symbol.toOptional(): Symbol {

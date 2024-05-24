@@ -99,7 +99,11 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
     fun addImport(symbol: Symbol) {
         if (symbol.isBuiltIn || symbol.isServiceNestedNamespace || symbol.namespace.isEmpty()) return
         if (symbol.isInternalSPI()) {
-            addImport(symbol.namespace, internalSPIName = "Internal")
+            val kind = symbol.getProperty("kind").orElseThrow()
+            addImport(
+                "$kind ${symbol.namespace}.${symbol.name}",
+                internalSPIName = "Internal"
+            )
         } else {
             addImport(symbol.namespace)
         }
@@ -116,8 +120,8 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
 
     // Adds an import statement that imports the individual type from the specified module
     // Example: addIndividualTypeImport("struct", "Foundation", "Date") -> "import struct Foundation.Date"
-    fun addIndividualTypeImport(kind: String, module: String, type: String) {
-        importContainer.addImport("$kind $module.$type", false)
+    fun addIndividualTypeImport(kind: SwiftKind, module: String, type: String) {
+        importContainer.addImport("${kind.kind} $module.$type", false)
     }
 
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
@@ -282,4 +286,15 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         putFormatter('T', SwiftSymbolFormatter(shouldSetDefault = false, shouldRenderOptional = true))
         putFormatter('N', SwiftSymbolFormatter(shouldSetDefault = false, shouldRenderOptional = false))
     }
+}
+
+enum class SwiftKind(val kind: String) {
+    STRUCT("struct"),
+    CLASS("class"),
+    ENUM("enum"),
+    PROTOCOL("protocol"),
+    TYPEALIAS("typealias"),
+    FUNC("func"),
+    LET("let"),
+    VAR("var")
 }
