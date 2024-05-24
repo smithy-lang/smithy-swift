@@ -19,7 +19,7 @@ import func CoreFoundation.CFGetTypeID
 import func CoreFoundation.CFBooleanGetTypeID
 
 public final class Reader: SmithyReader {
-    public typealias NodeInfo = SmithyJSON.NodeInfo
+    public typealias NodeInfo = String
 
     public let nodeInfo: NodeInfo
     let jsonNode: JSONNode?
@@ -72,7 +72,7 @@ public final class Reader: SmithyReader {
 public extension Reader {
 
     subscript(nodeInfo: NodeInfo) -> Reader {
-        if let match = children.first(where: { nodeInfo.name == $0.nodeInfo.name }) {
+        if let match = children.first(where: { nodeInfo == $0.nodeInfo }) {
             return match
         } else {
             // The queried node doesn't exist.  Return one that has nil content.
@@ -180,11 +180,11 @@ public extension Reader {
         isFlattened: Bool
     ) throws -> [String: Value]? {
         if jsonNode != .object { return nil }
-        var dict = [String: Value]()
+        var dict = [NodeInfo: Value]()
         for mapEntry in children {
             do {
                 let value = try valueReadingClosure(mapEntry)
-                dict.updateValue(value, forKey: mapEntry.nodeInfo.name)
+                dict.updateValue(value, forKey: mapEntry.nodeInfo)
             } catch ReaderError.requiredValueNotPresent {
                 // This catch will "tolerate" a JSON null value in a map.
                 // Any other unreadable value is still an error
@@ -224,7 +224,7 @@ public extension Reader {
         case .array:
             return children.compactMap { $0.jsonObject }
         case .object:
-            return Dictionary(uniqueKeysWithValues: children.map { ($0.nodeInfo.name, $0.jsonObject) })
+            return Dictionary(uniqueKeysWithValues: children.map { ($0.nodeInfo, $0.jsonObject) })
         }
     }
 }

@@ -77,3 +77,30 @@ extension NodeInfo: ExpressibleByStringLiteral {
         self.init(value)
     }
 }
+
+extension NodeInfo: CustomStringConvertible {
+
+    /// When converted to string, `NodeInfo` returns its name.
+    public var description: String { name }
+}
+
+public extension NodeInfo {
+    
+    /// Compares a `NodeInfo`'s `name` to a string.
+    /// - Parameters:
+    ///   - lhs: The `NodeInfo` to be compared
+    ///   - rhs: The string to be compared.
+    /// - Returns: `true` if the `NodeInfo`'s `name` is equal to the string, `false` otherwise.
+    static func ==(lhs: NodeInfo, rhs: String) -> Bool {
+        return lhs.name == rhs
+    }
+
+    /// Compares a `NodeInfo`'s `name` to a string.
+    /// - Parameters:
+    ///   - lhs: The string to be compared.
+    ///   - rhs: The `NodeInfo` to be compared
+    /// - Returns: `true` if the `NodeInfo`'s `name` is equal to the string, `false` otherwise.
+    static func ==(lhs: String, rhs: NodeInfo) -> Bool {
+        return lhs == rhs.name
+    }
+}

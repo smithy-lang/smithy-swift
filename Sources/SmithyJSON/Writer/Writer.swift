@@ -14,7 +14,7 @@ import struct Foundation.Date
 import class Foundation.NSNumber
 
 public final class Writer: SmithyWriter {
-    public typealias NodeInfo = SmithyJSON.NodeInfo
+    public typealias NodeInfo = String
 
     let nodeInfo: NodeInfo
     var jsonNode: JSONNode?

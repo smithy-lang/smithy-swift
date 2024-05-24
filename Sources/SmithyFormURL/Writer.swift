@@ -14,7 +14,7 @@ import struct Foundation.Date
 import struct Foundation.CharacterSet
 
 public final class Writer: SmithyWriter {
-    public typealias NodeInfo = SmithyFormURL.NodeInfo
+    public typealias NodeInfo = String
 
     let nodeInfo: NodeInfo
     var content: String?
@@ -40,7 +40,7 @@ public extension Writer {
 
     private var query: String? {
         var subqueries = [String]()
-        if !nodeInfo.name.isEmpty && !((content ?? "").isEmpty && !children.isEmpty) {
+        if !nodeInfo.isEmpty && !((content ?? "").isEmpty && !children.isEmpty) {
             self.subqueryString.map { subqueries.append($0) }
         }
         children.forEach { child in
@@ -52,7 +52,7 @@ public extension Writer {
 
     private var subqueryString: String? {
         guard let content else { return nil }
-        let queryName = nodeInfoPath.map(\.name).filter { !$0.isEmpty }.joined(separator: ".")
+        let queryName = nodeInfoPath.filter { !$0.isEmpty }.joined(separator: ".")
         return "\(queryName.urlPercentEncodedForQuery)=\(content.urlPercentEncodedForQuery)"
     }
 
