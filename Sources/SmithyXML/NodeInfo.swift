@@ -85,7 +85,7 @@ extension NodeInfo: CustomStringConvertible {
 }
 
 public extension NodeInfo {
-    
+
     /// Compares a `NodeInfo`'s `name` to a string.
     /// - Parameters:
     ///   - lhs: The `NodeInfo` to be compared

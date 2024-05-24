@@ -180,7 +180,7 @@ public extension Reader {
         isFlattened: Bool
     ) throws -> [String: Value]? {
         if jsonNode != .object { return nil }
-        var dict = [NodeInfo: Value]()
+        var dict = [String: Value]()
         for mapEntry in children {
             do {
                 let value = try valueReadingClosure(mapEntry)
