@@ -7,6 +7,10 @@
 
 import struct Foundation.TimeInterval
 
+/// A set of information fields that are derived from an error thrown when connecting to a service.
+///
+/// The `RetryErrorInfoProvider` creates an instance of this structure, which is then used by the
+/// `RetryStrategy` to determine whether & how to retry a failed attempt.
 public struct RetryErrorInfo: Equatable {
 
     /// The general nature of the cause of this retryable error.

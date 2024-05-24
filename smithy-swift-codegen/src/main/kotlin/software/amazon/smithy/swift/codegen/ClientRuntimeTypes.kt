@@ -91,8 +91,6 @@ object ClientRuntimeTypes {
         val SDKLogLevel = runtimeSymbol("SDKLogLevel")
         val ClientLogMode = runtimeSymbol("ClientLogMode")
         val IdempotencyTokenGenerator = runtimeSymbol("IdempotencyTokenGenerator")
-        val DefaultRetryStrategy = runtimeSymbol("DefaultRetryStrategy")
-        val RetryStrategyOptions = runtimeSymbol("RetryStrategyOptions")
         val DefaultRetryErrorInfoProvider = runtimeSymbol("DefaultRetryErrorInfoProvider")
         val PaginateToken = runtimeSymbol("PaginateToken")
         val PaginatorSequence = runtimeSymbol("PaginatorSequence")

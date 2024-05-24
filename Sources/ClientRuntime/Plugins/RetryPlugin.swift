@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct SmithyRetriesAPI.RetryStrategyOptions
+
 public class RetryPlugin: Plugin {
 
     private var retryStrategyOptions: RetryStrategyOptions

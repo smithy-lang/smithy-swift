@@ -8,6 +8,7 @@
 import Foundation
 import XCTest
 @testable import ClientRuntime
+@testable import SmithyRetries
 
 final class RetryQuotaTests: XCTestCase {
 
