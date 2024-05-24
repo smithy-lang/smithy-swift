@@ -7,6 +7,7 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
+import protocol SmithyStreamsAPI.ReadableStream
 import class Foundation.Bundle
 import class Foundation.InputStream
 import class Foundation.NSObject

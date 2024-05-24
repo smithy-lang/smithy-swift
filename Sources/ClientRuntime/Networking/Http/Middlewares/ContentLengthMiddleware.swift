@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import enum SmithyStreamsAPI.StreamError
+
 public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "ContentLength"
 

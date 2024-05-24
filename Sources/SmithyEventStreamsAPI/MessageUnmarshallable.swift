@@ -5,4 +5,4 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public typealias MarshalClosure<T> = (T) throws -> (EventStream.Message)
+public typealias UnmarshalClosure<T> = (Message) throws -> T

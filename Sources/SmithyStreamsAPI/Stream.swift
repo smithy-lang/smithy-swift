@@ -7,8 +7,6 @@
 
 import struct Foundation.Data
 
-import AwsCommonRuntimeKit
-
 /// Protocol that provides reading data from a stream
 public protocol ReadableStream: AnyObject {
     /// Returns the current position in the stream
@@ -78,7 +76,7 @@ extension Stream {
 /*
  * Chunk size used by 'aws-chunked' encoding
  */
-let CHUNK_SIZE_BYTES: Int = 65_536
+public let CHUNK_SIZE_BYTES: Int = 65_536
 
 /*
  * The minimum size of a streaming body before the SDK will begin using aws-chunked content encoding

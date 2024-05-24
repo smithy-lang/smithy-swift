@@ -5,7 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-extension EventStream {
+import SmithyStreamsAPI
+import SmithyEventStreamsAPI
+import struct Foundation.Data
+
+// Code left indented to prevent Git diff from being blown up by whitespace changes.
+// Will fix after event stream modularizaion has been reviewed.
 
     /// Stream adapter that decodes input data into `EventStream.Message` objects.
     public struct DefaultMessageDecoderStream<Event>: MessageDecoderStream {
@@ -72,4 +77,3 @@ extension EventStream {
             )
         }
     }
-}

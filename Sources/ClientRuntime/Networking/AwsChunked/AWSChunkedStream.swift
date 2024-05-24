@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyStreamsAPI.Stream
 import AwsCommonRuntimeKit
 
 /// Reads data from the input stream, chunks it, and passes it out through its output stream.

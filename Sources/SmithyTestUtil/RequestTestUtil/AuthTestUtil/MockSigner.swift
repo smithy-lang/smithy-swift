@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyEventStreamsAPI
 import ClientRuntime
 import Foundation
 
@@ -24,7 +25,7 @@ public struct MockSigner: ClientRuntime.Signer {
         payload: Data,
         previousSignature: String,
         signingProperties: Attributes
-    ) async throws -> SigningResult<EventStream.Message> {
-        return SigningResult(output: EventStream.Message(), signature: "")
+    ) async throws -> SigningResult<Message> {
+        return SigningResult(output: Message(), signature: "")
     }
 }

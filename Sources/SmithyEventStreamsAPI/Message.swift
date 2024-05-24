@@ -7,25 +7,25 @@
 
 import struct Foundation.Data
 
-extension EventStream {
+// Code left indented to prevent Git diff from being blown up by whitespace changes.
+// Will fix after event stream modularizaion has been reviewed.
 
     /// A message in an event stream that can be sent or received.
     public struct Message: Equatable {
 
         /// The headers associated with the message.
-        public let headers: [EventStream.Header]
+        public let headers: [Header]
 
         /// The payload associated with the message.
         public let payload: Data
 
-        public init(headers: [EventStream.Header] = [], payload: Data = .init()) {
+        public init(headers: [Header] = [], payload: Data = .init()) {
             self.headers = headers
             self.payload = payload
         }
     }
-}
 
-extension EventStream.Message: CustomDebugStringConvertible {
+extension Message: CustomDebugStringConvertible {
     public var debugDescription: String {
         let headers = self.headers.map { "\($0.name): \($0.value)" }.joined(separator: "\n")
         return """
@@ -39,10 +39,10 @@ extension EventStream.Message: CustomDebugStringConvertible {
     }
 }
 
-extension Array where Element == EventStream.Header {
+extension Array where Element == Header {
     /// Returns the value of the header with the given name if it exists.
     /// - Parameter name: The name of the header to retrieve.
-    public func value(name: String) -> EventStream.HeaderValue? {
+    public func value(name: String) -> HeaderValue? {
         return self.first(where: { $0.name == name })?.value
     }
 }

@@ -6,23 +6,29 @@
 //
 
 import struct Foundation.Data
+import SmithyStreamsAPI
+import SmithyEventStreamsAPI
+import SmithyEventStreamsAuthAPI
 
-extension EventStream {
+// Code left indented to prevent Git diff from being blown up by whitespace changes.
+// Will fix after event stream modularizaion has been reviewed.
+
     /// Stream adapter that encodes input into `Data` objects.
     public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream {
+
         let stream: AsyncThrowingStream<Event, Error>
         let messageEncoder: MessageEncoder
         let messageSigner: MessageSigner
         let marshalClosure: MarshalClosure<Event>
         var readAsyncIterator: AsyncIterator?
-        let initialRequestMessage: EventStream.Message?
+        let initialRequestMessage: Message?
 
-        public init(
+        public required init(
             stream: AsyncThrowingStream<Event, Error>,
             messageEncoder: MessageEncoder,
             marshalClosure: @escaping MarshalClosure<Event>,
             messageSigner: MessageSigner,
-            initialRequestMessage: EventStream.Message? = nil
+            initialRequestMessage: Message? = nil
         ) {
             self.stream = stream
             self.messageEncoder = messageEncoder
@@ -37,7 +43,7 @@ extension EventStream {
             let messageEncoder: MessageEncoder
             var messageSigner: MessageSigner
             let marshalClosure: MarshalClosure<Event>
-            let initialRequestMessage: EventStream.Message?
+            let initialRequestMessage: Message?
 
             private var lastMessageSent: Bool = false
             private var streamIterator: AsyncThrowingStream<Event, Error>.Iterator
@@ -48,7 +54,7 @@ extension EventStream {
                 messageEncoder: MessageEncoder,
                 marshalClosure: @escaping MarshalClosure<Event>,
                 messageSigner: MessageSigner,
-                initialRequestMessage: EventStream.Message? = nil
+                initialRequestMessage: Message? = nil
             ) {
                 self.stream = stream
                 self.streamIterator = stream.makeAsyncIterator()
@@ -103,7 +109,7 @@ extension EventStream {
         // MARK: Stream
 
         /// Returns the current position in the stream
-        public var position: ClientRuntime.Data.Index = 0
+        public var position: Data.Index = 0
 
         /// Returns nil because the length of async stream is not known
         public var length: Int?
@@ -118,15 +124,15 @@ extension EventStream {
         /// Internal buffer to store excess data read from async stream
         var buffer = Data()
 
-        public func read(upToCount count: Int) throws -> ClientRuntime.Data? {
+        public func read(upToCount count: Int) throws -> Data? {
             fatalError("read(upToCount:) is not supported by AsyncStream backed streams")
         }
 
-        public func readToEnd() throws -> ClientRuntime.Data? {
+        public func readToEnd() throws -> Data? {
             fatalError("readToEnd() is not supported by AsyncStream backed streams")
         }
 
-        public func readToEndAsync() async throws -> ClientRuntime.Data? {
+        public func readToEndAsync() async throws -> Data? {
             var data = Data()
             while let moreData = try await readAsync(upToCount: Int.max) {
                 data.append(moreData)
@@ -179,7 +185,7 @@ extension EventStream {
             return data
         }
 
-        public func write(contentsOf data: ClientRuntime.Data) throws {
+        public func write(contentsOf data: Data) throws {
             fatalError("write(contentsOf:) is not supported by AsyncStream backed streams")
         }
 
@@ -192,4 +198,3 @@ extension EventStream {
             // no-op
         }
     }
-}

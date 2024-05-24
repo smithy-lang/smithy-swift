@@ -1,6 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import let SmithyStreamsAPI.CHUNK_SIZE_BYTES
 import AwsCommonRuntimeKit
 
 public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: Middleware {

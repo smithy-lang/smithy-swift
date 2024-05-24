@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyEventStreamsAPI
+
 public protocol Signer {
     func signRequest<IdentityT: Identity>(
         requestBuilder: SdkHttpRequestBuilder,
@@ -16,7 +18,7 @@ public protocol Signer {
         payload: Data,
         previousSignature: String,
         signingProperties: Attributes
-    ) async throws -> SigningResult<EventStream.Message>
+    ) async throws -> SigningResult<Message>
 }
 
 public struct SigningResult<T> {

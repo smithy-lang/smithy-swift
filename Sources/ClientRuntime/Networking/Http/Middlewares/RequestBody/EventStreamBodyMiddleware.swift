@@ -5,25 +5,28 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyEventStreamsAPI
+import SmithyEventStreamsAuthAPI
 import struct Foundation.Data
 import typealias SmithyReadWrite.WritingClosure
 
 public struct EventStreamBodyMiddleware<OperationStackInput,
                                         OperationStackOutput,
-                                        OperationStackInputPayload>:
-                                        Middleware {
+                                        OperationStackInputPayload,
+                                        MessageEncoderStream: SmithyEventStreamsAuthAPI.MessageEncoderStream>:
+                                            Middleware where OperationStackInputPayload == MessageEncoderStream.Event {
     public let id: Swift.String = "EventStreamBodyMiddleware"
 
     let keyPath: KeyPath<OperationStackInput, AsyncThrowingStream<OperationStackInputPayload, Swift.Error>?>
     let defaultBody: String?
     let marshalClosure: MarshalClosure<OperationStackInputPayload>
-    let initialRequestMessage: EventStream.Message?
+    let initialRequestMessage: Message?
 
     public init(
         keyPath: KeyPath<OperationStackInput, AsyncThrowingStream<OperationStackInputPayload, Swift.Error>?>,
         defaultBody: String? = nil,
         marshalClosure: @escaping MarshalClosure<OperationStackInputPayload>,
-        initialRequestMessage: EventStream.Message? = nil
+        initialRequestMessage: Message? = nil
     ) {
         self.keyPath = keyPath
         self.defaultBody = defaultBody
@@ -60,7 +63,7 @@ extension EventStreamBodyMiddleware: RequestMessageSerializer {
             guard let messageSigner = attributes.getMessageSigner() else {
                 fatalError("Message signer is required for streaming payload")
             }
-            let encoderStream = EventStream.DefaultMessageEncoderStream(
+            let encoderStream = MessageEncoderStream(
               stream: eventStream,
               messageEncoder: messageEncoder,
               marshalClosure: marshalClosure,

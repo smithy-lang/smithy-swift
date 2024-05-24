@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import protocol SmithyEventStreamsAPI.MessageEncoder
+import protocol SmithyEventStreamsAuthAPI.MessageSigner
 import struct Foundation.TimeInterval
 
 /// this struct implements middleware context and will serve as the context for all http middleware operations

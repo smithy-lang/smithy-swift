@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyStreamsAPI.Stream
 import class Foundation.FileHandle
 import class Foundation.NSRecursiveLock
 

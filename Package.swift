@@ -33,6 +33,9 @@ let package = Package(
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyJSON", targets: ["SmithyJSON"]),
         .library(name: "SmithyFormURL", targets: ["SmithyFormURL"]),
+        .library(name: "SmithyStreamsAPI", targets: ["SmithyStreamsAPI"]),
+        .library(name: "SmithyEventStreamsAPI", targets: ["SmithyEventStreamsAPI"]),
+        .library(name: "SmithyEventStreamsAuthAPI", targets: ["SmithyEventStreamsAuthAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: [
@@ -46,6 +49,9 @@ let package = Package(
                 "SmithyXML",
                 "SmithyJSON",
                 "SmithyFormURL",
+                "SmithyStreamsAPI",
+                "SmithyEventStreamsAPI",
+                "SmithyEventStreamsAuthAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "Logging", package: "swift-log"),
             ],
@@ -89,6 +95,20 @@ let package = Package(
             name: "SmithyTestUtil",
             dependencies: ["ClientRuntime"]
         ),
+        .target(
+            name: "SmithyStreamsAPI"
+        ),
+        .target(
+            name: "SmithyEventStreamsAPI"
+        ),
+        .target(
+            name: "SmithyEventStreamsAuthAPI",
+            dependencies: ["SmithyStreamsAPI", "SmithyEventStreamsAPI"]
+        ),
+        .target(
+            name: "SmithyEventStreams",
+            dependencies: ["SmithyStreamsAPI", "SmithyEventStreamsAPI", "SmithyEventStreamsAuthAPI"]
+        ),
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: ["ClientRuntime", "SmithyTestUtil"],
@@ -113,6 +133,10 @@ let package = Package(
         .testTarget(
             name: "SmithyTestUtilTests",
             dependencies: ["SmithyTestUtil"]
+        ),
+        .testTarget(
+            name: "SmithyEventStreamsTests",
+            dependencies: ["SmithyEventStreams"]
         ),
     ].compactMap { $0 }
 )

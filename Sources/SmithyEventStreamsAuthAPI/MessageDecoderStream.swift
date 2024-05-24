@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// Stream adapter that decodes input data into `EventStream.Message` objects.
+/// Stream adapter that decodes input data into `Message` objects.
 public protocol MessageDecoderStream: AsyncSequence where Event == Element {
     associatedtype Event
 }

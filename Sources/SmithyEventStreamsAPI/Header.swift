@@ -7,7 +7,8 @@
 
 import Foundation
 
-extension EventStream {
+// Code left indented to prevent Git diff from being blown up by whitespace changes.
+// Will fix after event stream modularizaion has been reviewed.
 
     /// A header in an event stream message.
     /// Headers are used to convey metadata about the message.
@@ -24,9 +25,9 @@ extension EventStream {
             self.value = value
         }
     }
-}
 
-extension EventStream {
+// Code left indented to prevent Git diff from being blown up by whitespace changes.
+// Will fix after event stream modularizaion has been reviewed.
 
     /// The value of a header in an event stream message.
     /// Encoders and decoders may use this to determine how to encode or decode the header.
@@ -41,4 +42,3 @@ extension EventStream {
         case timestamp(Date)
         case uuid(UUID)
     }
-}

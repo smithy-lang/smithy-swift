@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
+
 /// Decodes a `Data` object into a `Message` object.
 public protocol MessageDecoder {
 
@@ -18,5 +20,5 @@ public protocol MessageDecoder {
 
     /// Returns the next message in the decoder's buffer
     /// and removes it from the buffer.
-    func message() throws -> EventStream.Message?
+    func message() throws -> Message?
 }
