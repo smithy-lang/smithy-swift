@@ -4,8 +4,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-import AwsCommonRuntimeKit
 
+/// This enum is a general classification that is assigned to errors that resulted from a failed attempt to perform
+/// an operation.
+///
+/// The retry strategy uses this classification to decide whether and when to retry a failed attempt.
 public enum RetryErrorType: Equatable {
 
     /// This is a connection level error such as a socket timeout, socket connect error, tls negotiation timeout etc...
@@ -21,16 +24,4 @@ public enum RetryErrorType: Equatable {
 
     /// Doesn’t count against any budgets.  This could be something like a 401 challenge in HTTP.
     case clientError
-}
-
-public extension RetryErrorType {
-
-    func toCRTType() -> AwsCommonRuntimeKit.RetryError {
-        switch self {
-        case .transient: return .transient
-        case .throttling: return .throttling
-        case .serverError: return .serverError
-        case .clientError: return .clientError
-        }
-    }
 }

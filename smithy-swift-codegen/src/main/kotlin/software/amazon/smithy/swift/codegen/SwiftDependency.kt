@@ -26,6 +26,22 @@ enum class SwiftDependency(
         Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
         "smithy-swift"
     ),
+    SMITHY_RETRIES_API(
+        "SmithyRetriesAPI",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
+    SMITHY_RETRIES(
+        "SmithyRetries",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
     XCTest("XCTest", null, "", "", "", ""),
     SMITHY_TEST_UTIL(
         "SmithyTestUtil",

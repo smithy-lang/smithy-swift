@@ -10,6 +10,9 @@ import struct Foundation.Locale
 import struct Foundation.TimeInterval
 import struct Foundation.TimeZone
 import struct Foundation.UUID
+import protocol SmithyRetriesAPI.RetryStrategy
+import protocol SmithyRetriesAPI.RetryErrorInfoProvider
+import struct SmithyRetriesAPI.RetryStrategyOptions
 
 public struct RetryMiddleware<Strategy: RetryStrategy,
                               ErrorInfoProvider: RetryErrorInfoProvider,
@@ -64,17 +67,15 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
                 context.getLogger()?.error("Failed to refresh retry token: \(errorInfo.errorType)")
                 throw operationError
             }
-            var estimatedSkew = context.attributes.get(key: AttributeKeys.estimatedSkew)
-            if estimatedSkew == nil {
-                estimatedSkew = 0
+            var estimatedSkew = context.attributes.get(key: AttributeKeys.estimatedSkew) ?? {
                 context.getLogger()?.info("Estimated skew not found; defaulting to zero.")
-            }
-            var socketTimeout = context.attributes.get(key: AttributeKeys.socketTimeout)
-            if socketTimeout == nil {
-                socketTimeout = 60.0
+                return 0
+            }()
+            var socketTimeout = context.attributes.get(key: AttributeKeys.socketTimeout) ?? {
                 context.getLogger()?.info("Socket timeout value not found; defaulting to 60 seconds.")
-            }
-            let ttlDateUTCString = getTTL(now: Date(), estimatedSkew: estimatedSkew!, socketTimeout: socketTimeout!)
+                return 60.0
+            }()
+            let ttlDateUTCString = getTTL(now: Date(), estimatedSkew: estimatedSkew, socketTimeout: socketTimeout)
             input.headers.update(
                 name: "amz-sdk-request",
                 value: "ttl=\(ttlDateUTCString); attempt=\(attemptNumber + 1); max=\(maxRetries)"

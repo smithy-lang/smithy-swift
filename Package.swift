@@ -29,6 +29,8 @@ let package = Package(
     ],
     products: [
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
+        .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
+        .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
         .library(name: "SmithyReadWrite", targets: ["SmithyReadWrite"]),
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyJSON", targets: ["SmithyJSON"]),
@@ -46,6 +48,8 @@ let package = Package(
         .target(
             name: "ClientRuntime",
             dependencies: [
+                "SmithyRetriesAPI",
+                "SmithyRetries",
                 "SmithyXML",
                 "SmithyJSON",
                 "SmithyFormURL",
@@ -58,6 +62,19 @@ let package = Package(
             resources: [
                 .copy("PrivacyInfo.xcprivacy")
             ]
+        ),
+        .target(
+            name: "SmithyRetriesAPI"
+        ),
+        .target(
+            name: "SmithyRetries",
+            dependencies: [
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+            ]
+        ),
+        .testTarget(
+            name: "SmithyRetriesTests",
+            dependencies: ["ClientRuntime", "SmithyRetriesAPI", "SmithyRetries"]
         ),
         .target(
             name: "SmithyReadWrite",
@@ -145,11 +162,11 @@ func addTestServiceTargets() {
     package.targets += [
         .target(
             name: "WeatherSDK",
-            dependencies: ["SmithyTestUtil", "ClientRuntime"]
+            dependencies: ["SmithyTestUtil", "ClientRuntime", "SmithyRetriesAPI", "SmithyRetries"]
         ),
         .testTarget(
             name: "WeatherSDKTests",
-            dependencies: ["WeatherSDK"]
+            dependencies: ["WeatherSDK", "SmithyTestUtil"]
         )
     ]
 }
