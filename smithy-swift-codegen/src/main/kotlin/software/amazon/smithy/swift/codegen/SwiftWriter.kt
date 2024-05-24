@@ -25,6 +25,7 @@ import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.isBuiltIn
 import software.amazon.smithy.swift.codegen.model.isGeneric
+import software.amazon.smithy.swift.codegen.model.isInternalSPI
 import software.amazon.smithy.swift.codegen.model.isOptional
 import software.amazon.smithy.swift.codegen.model.isServiceNestedNamespace
 import java.util.function.BiFunction
@@ -97,7 +98,11 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
 
     fun addImport(symbol: Symbol) {
         if (symbol.isBuiltIn || symbol.isServiceNestedNamespace || symbol.namespace.isEmpty()) return
-        addImport(symbol.namespace)
+        if (symbol.isInternalSPI()) {
+            addImport(symbol.namespace, internalSPIName = "Internal")
+        } else {
+            addImport(symbol.namespace)
+        }
     }
 
     fun addImport(

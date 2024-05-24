@@ -78,6 +78,7 @@ class HTTPResponseBindingErrorGenerator(
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            writer.addImport(unknownServiceErrorSymbol)
             writer.addImport(customizations.baseErrorSymbol.namespace)
             writer.addImports(ctx.service.responseWireProtocol)
             writer.openBlock("enum \$L {", "}", operationErrorName) {
