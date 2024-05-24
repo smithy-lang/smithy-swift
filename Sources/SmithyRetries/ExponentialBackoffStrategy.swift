@@ -7,6 +7,7 @@
 
 import func Foundation.pow
 import struct Foundation.TimeInterval
+import protocol SmithyRetriesAPI.RetryBackoffStrategy
 
 public struct ExponentialBackoffStrategy: RetryBackoffStrategy {
     let options: ExponentialBackoffStrategyOptions

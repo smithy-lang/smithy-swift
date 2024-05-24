@@ -8,6 +8,8 @@
 import SmithyReadWrite
 import SmithyXML
 import XCTest
+import SmithyRetriesAPI
+@testable import SmithyRetries
 @testable import ClientRuntime
 
 // This test class reproduces the "Standard Mode" test cases defined in "Retry Behavior 2.0"

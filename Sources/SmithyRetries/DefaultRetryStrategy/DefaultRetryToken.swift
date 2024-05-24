@@ -6,6 +6,7 @@
 //
 
 import struct Foundation.TimeInterval
+import protocol SmithyRetriesAPI.RetryToken
 
 /// A token that is used to track retry of operations.
 ///

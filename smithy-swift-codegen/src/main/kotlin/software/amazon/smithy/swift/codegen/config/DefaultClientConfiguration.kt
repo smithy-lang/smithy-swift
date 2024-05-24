@@ -12,6 +12,7 @@ import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.config.ClientConfiguration.Companion.runtimeSymbol
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.toOptional
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesAPITypes
 
 class DefaultClientConfiguration : ClientConfiguration {
     override val swiftProtocolName: Symbol
@@ -25,7 +26,7 @@ class DefaultClientConfiguration : ClientConfiguration {
         ),
         ConfigProperty(
             "retryStrategyOptions",
-            ClientRuntimeTypes.Core.RetryStrategyOptions,
+            SmithyRetriesAPITypes.RetryStrategyOptions,
             "ClientConfigurationDefaults.defaultRetryStrategyOptions"
         ),
         ConfigProperty(

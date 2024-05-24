@@ -36,12 +36,12 @@ public struct RetryStrategyOptions {
     /// Sets the initial available capacity for this retry strategy's quotas.
     ///
     /// Used only during testing, production uses the default values.
-    let availableCapacity: Int
+    public let availableCapacity: Int
 
     /// Sets the maximum capacity for this retry strategy's quotas.
     ///
     /// Used only during testing, production uses the default values.
-    let maxCapacity: Int
+    public let maxCapacity: Int
 
     /// Creates a new set of retry strategy options
     /// - Parameters:
@@ -50,7 +50,7 @@ public struct RetryStrategyOptions {
     ///   - availableCapacity: The number of available tokens in a retry quota.  Defaults to 500.
     ///   - maxCapacity: The max number of tokens in a retry quota.  Defaults to 500.
     public init(
-        backoffStrategy: RetryBackoffStrategy = ExponentialBackoffStrategy(),
+        backoffStrategy: RetryBackoffStrategy,
         maxRetriesBase: Int = 2,
         availableCapacity: Int = 500,
         maxCapacity: Int = 500,
