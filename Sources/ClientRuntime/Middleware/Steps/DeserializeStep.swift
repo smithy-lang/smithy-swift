@@ -1,6 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import class SmithyAPI.OperationContext
+import class SmithyHTTPAPI.SdkHttpRequest
+import class SmithyHTTPAPI.HttpResponse
+
 /// Reacts to the handler's response returned by the recipient of the request
 /// message. Deserializes the response into a structured type or error above
 /// stacks can react to.
@@ -10,14 +14,14 @@
 /// Takes Request, and returns result or error.
 ///
 /// Receives raw response, or error from underlying handler.
-public typealias DeserializeStep<OperationStackOutput> = MiddlewareStep<HttpContext,
+public typealias DeserializeStep<OperationStackOutput> = MiddlewareStep<OperationContext,
                                                                         SdkHttpRequest,
                                                                         OperationOutput<OperationStackOutput>>
 
 public let DeserializeStepId = "Deserialize"
 
 public struct DeserializeStepHandler<OperationStackOutput, H: Handler>: Handler
-    where H.Context == HttpContext,
+    where H.Context == OperationContext,
           H.Input == SdkHttpRequest,
           H.Output == OperationOutput<OperationStackOutput> {
 
@@ -31,7 +35,7 @@ public struct DeserializeStepHandler<OperationStackOutput, H: Handler>: Handler
         self.handler = handler
     }
 
-    public func handle(context: HttpContext, input: Input) async throws -> Output {
+    public func handle(context: OperationContext, input: Input) async throws -> Output {
        return try await handler.handle(context: context, input: input)
     }
 }

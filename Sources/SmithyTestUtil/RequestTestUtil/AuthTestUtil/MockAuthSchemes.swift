@@ -5,48 +5,50 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyAPI
+import SmithyHTTPAuthAPI
 import ClientRuntime
 
-public struct MockAuthSchemeA: ClientRuntime.AuthScheme {
+public struct MockAuthSchemeA: AuthScheme {
     public let schemeID: String = "MockAuthSchemeA"
-    public let signer: ClientRuntime.Signer = MockSigner()
+    public let signer: Signer = MockSigner()
 
     public init() {}
 
-    public func customizeSigningProperties(signingProperties: ClientRuntime.Attributes, context: ClientRuntime.HttpContext) -> ClientRuntime.Attributes {
+    public func customizeSigningProperties(signingProperties: Attributes, context: OperationContext) -> Attributes {
         return signingProperties
     }
 }
 
-public struct MockAuthSchemeB: ClientRuntime.AuthScheme {
+public struct MockAuthSchemeB: AuthScheme {
     public let schemeID: String = "MockAuthSchemeB"
-    public let signer: ClientRuntime.Signer = MockSigner()
+    public let signer: Signer = MockSigner()
 
     public init() {}
 
-    public func customizeSigningProperties(signingProperties: ClientRuntime.Attributes, context: ClientRuntime.HttpContext) -> ClientRuntime.Attributes {
+    public func customizeSigningProperties(signingProperties: Attributes, context: OperationContext) -> Attributes {
         return signingProperties
     }
 }
 
-public struct MockAuthSchemeC: ClientRuntime.AuthScheme {
+public struct MockAuthSchemeC: AuthScheme {
     public let schemeID: String = "MockAuthSchemeC"
-    public let signer: ClientRuntime.Signer = MockSigner()
+    public let signer: Signer = MockSigner()
 
     public init() {}
 
-    public func customizeSigningProperties(signingProperties: ClientRuntime.Attributes, context: ClientRuntime.HttpContext) -> ClientRuntime.Attributes {
+    public func customizeSigningProperties(signingProperties: Attributes, context: OperationContext) -> Attributes {
         return signingProperties
     }
 }
 
-public struct MockNoAuth: ClientRuntime.AuthScheme {
+public struct MockNoAuth: AuthScheme {
     public let schemeID: String = "smithy.api#noAuth"
-    public let signer: ClientRuntime.Signer = MockSigner()
+    public let signer: Signer = MockSigner()
 
     public init() {}
 
-    public func customizeSigningProperties(signingProperties: ClientRuntime.Attributes, context: ClientRuntime.HttpContext) -> ClientRuntime.Attributes {
+    public func customizeSigningProperties(signingProperties: Attributes, context: OperationContext) -> Attributes {
         return signingProperties
     }
 }

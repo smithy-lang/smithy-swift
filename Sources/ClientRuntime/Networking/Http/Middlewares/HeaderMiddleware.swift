@@ -5,6 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyAPI.RequestMessageSerializer
+import class SmithyHTTPAPI.SdkHttpRequest
+import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyAPI.OperationContext
+
 public struct HeaderMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))HeadersMiddleware"
 
@@ -27,15 +32,15 @@ public struct HeaderMiddleware<OperationStackInput, OperationStackOutput>: Middl
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension HeaderMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = HttpContext
+    public typealias AttributesType = OperationContext
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: OperationContext) throws {
         builder.withHeaders(headerProvider(input))
     }
 }

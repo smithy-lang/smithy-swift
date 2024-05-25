@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyAPI.RequestMessage
+import protocol SmithyAPI.ResponseMessage
+import protocol SmithyAPI.HasAttributes
+
 /// Default implementation for all interceptor context types.
 ///
 /// This object will be created before operation execution, and passed through each interceptor

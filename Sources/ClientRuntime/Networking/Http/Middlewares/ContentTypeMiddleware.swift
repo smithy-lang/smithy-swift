@@ -1,6 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import class SmithyAPI.OperationContext
+@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+
 public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "ContentType"
@@ -30,7 +33,7 @@ public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput>: 
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension ContentTypeMiddleware: HttpInterceptor {

@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class SmithyAPI.OperationContext
+
 public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutput>: ClientRuntime.Middleware {
     public let id: Swift.String = "IdempotencyTokenMiddleware"
     private let keyPath: WritableKeyPath<OperationStackInput, String?>
@@ -21,7 +23,7 @@ public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutp
         return try await next.handle(context: context, input: withToken)
     }
 
-    private func addToken(input: OperationStackInput, attributes: HttpContext) -> OperationStackInput {
+    private func addToken(input: OperationStackInput, attributes: OperationContext) -> OperationStackInput {
         var copiedInput = input
         if input[keyPath: keyPath] == nil {
             let idempotencyTokenGenerator = attributes.getIdempotencyTokenGenerator()
@@ -32,7 +34,7 @@ public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutp
 
     public typealias MInput = OperationStackInput
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension IdempotencyTokenMiddleware: HttpInterceptor {

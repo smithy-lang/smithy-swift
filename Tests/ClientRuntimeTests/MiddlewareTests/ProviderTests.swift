@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyAPI
+import SmithyStreamsAPI
+import SmithyHTTPAPI
 import XCTest
 import ClientRuntime
 import SmithyTestUtil
@@ -22,7 +25,7 @@ class ProviderTests: HttpRequestTestBase {
         var mockInput = MockInput()
         mockInput.value = 3
 
-        let context = HttpContextBuilder().build()
+        let context = OperationContextBuilder().build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
         operationStack.initializeStep.intercept(position: .after, middleware: URLPathMiddleware<MockInput, MockOutput>(MockInput.urlPathProvider(_:)))
@@ -42,7 +45,7 @@ class ProviderTests: HttpRequestTestBase {
         var mockInput = MockInput()
         mockInput.value = 3
 
-        let context = HttpContextBuilder().build()
+        let context = OperationContextBuilder().build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
         operationStack.serializeStep.intercept(position: .after, middleware: QueryItemMiddleware(MockInput.queryItemProvider(_:)))
@@ -72,7 +75,7 @@ class ProviderTests: HttpRequestTestBase {
         var mockInput = MockInput()
         mockInput.value = 3
 
-        let context = HttpContextBuilder().build()
+        let context = OperationContextBuilder().build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
         operationStack.serializeStep.intercept(position: .after, middleware: HeaderMiddleware(MockInput.headerProvider(_:)))

@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class SmithyAPI.OperationContext
+import SmithyAPI
+
 public struct URLHostMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))URLHostMiddleware"
 
@@ -27,7 +30,7 @@ public struct URLHostMiddleware<OperationStackInput, OperationStackOutput>: Midd
               return try await next.handle(context: context, input: input)
           }
 
-    private func updateAttributes(attributes: HttpContext) {
+    private func updateAttributes(attributes: OperationContext) {
         if let host = host {
             attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
         }
@@ -38,7 +41,7 @@ public struct URLHostMiddleware<OperationStackInput, OperationStackOutput>: Midd
 
     public typealias MInput = OperationStackInput
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension URLHostMiddleware: HttpInterceptor {

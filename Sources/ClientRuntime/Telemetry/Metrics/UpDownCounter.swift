@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct SmithyAPI.Attributes
+
 /// An UpDownCounter measures a value that goes up or down.
 ///
 /// Examples include: queue length

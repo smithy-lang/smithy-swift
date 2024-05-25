@@ -5,10 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyAPI.RequestMessageSerializer
+import class SmithyAPI.OperationContext
 import SmithyEventStreamsAPI
 import SmithyEventStreamsAuthAPI
 import struct Foundation.Data
 import typealias SmithyReadWrite.WritingClosure
+import SmithyHTTPAPI
 
 public struct EventStreamBodyMiddleware<OperationStackInput,
                                         OperationStackOutput,
@@ -47,15 +50,15 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension EventStreamBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = HttpContext
+    public typealias AttributesType = OperationContext
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: OperationContext) throws {
         if let eventStream = input[keyPath: keyPath] {
             guard let messageEncoder = attributes.getMessageEncoder() else {
                 fatalError("Message encoder is required for streaming payload")

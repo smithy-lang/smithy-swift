@@ -3,7 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import protocol SmithyAPI.LogAgent
 import enum SmithyStreamsAPI.StreamError
+import enum SmithyStreamsAPI.ByteStreamError
+import protocol SmithyHTTPAPI.HTTPClient
+import struct SmithyHTTPAPI.Headers
+import struct SmithyHTTPAPI.Endpoint
+import enum SmithyHTTPAPI.ProtocolType
+import enum SmithyHTTPAPI.ALPNProtocol
+import class SmithyHTTPAPI.SdkHttpRequest
+import class SmithyHTTPAPI.HttpResponse
+import enum SmithyHTTPAPI.HttpStatusCode
 import AwsCommonRuntimeKit
 #if os(Linux)
 import Glibc

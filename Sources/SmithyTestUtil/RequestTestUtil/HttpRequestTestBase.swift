@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyHTTPAPI
+import SmithyStreamsAPI
 import AwsCommonRuntimeKit
 import ClientRuntime
 import XCTest
@@ -90,7 +92,7 @@ open class HttpRequestTestBase: XCTestCase {
     func deconflictHost(host: String, resolvedHost: String?) -> String? {
         var deconflictedHost: String?
         if !host.isEmpty,
-           let urlFromHost = ClientRuntime.URL(string: "http://\(host)"),
+           let urlFromHost = URL(string: "http://\(host)"),
            let parsedHost = urlFromHost.host {
             deconflictedHost = parsedHost
         }

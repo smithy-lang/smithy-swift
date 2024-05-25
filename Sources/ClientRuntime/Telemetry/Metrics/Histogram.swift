@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct SmithyAPI.Attributes
+
 /// A Histogram measures a value where the statistics are likely meaningful.
 ///
 /// Examples include: request latency, HTTP response times

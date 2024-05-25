@@ -1,7 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import struct SmithyAPI.AttributeKey
+import class SmithyAPI.OperationContext
 import enum SmithyStreamsAPI.StreamError
+@_spi(SdkHttpRequestBuilder) import class SmithyHTTPAPI.SdkHttpRequestBuilder
 
 public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "ContentLength"
@@ -34,7 +37,7 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
         return try await next.handle(context: context, input: input)
     }
 
-    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: OperationContext) throws {
         switch builder.body {
         case .data(let data):
             let contentLength = data?.count ?? 0
@@ -66,7 +69,7 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension ContentLengthMiddleware: HttpInterceptor {

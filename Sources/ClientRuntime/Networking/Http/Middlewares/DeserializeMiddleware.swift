@@ -5,7 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class SmithyAPI.OperationContext
+import protocol SmithyAPI.ResponseMessageDeserializer
 import SmithyReadWrite
+import SmithyHTTPAPI
 
 public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
     public var id: String = "Deserialize"
@@ -19,7 +22,7 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
         self.wireResponseClosure = wireResponseClosure
         self.wireResponseErrorClosure = wireResponseErrorClosure
     }
-    public func handle<H>(context: HttpContext,
+    public func handle<H>(context: OperationContext,
                           input: SdkHttpRequest,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
@@ -31,7 +34,7 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
 
             if let responseDateString = response.httpResponse.headers.value(for: "Date") {
                 let estimatedSkew = getEstimatedSkew(now: Date(), responseDateString: responseDateString)
-                context.attributes.set(key: AttributeKeys.estimatedSkew, value: estimatedSkew)
+                context.estimatedSkew = estimatedSkew
             }
 
             let result = try await deserialize(response: response.httpResponse, attributes: context)
@@ -48,16 +51,16 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
 
     public typealias MInput = SdkHttpRequest
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension DeserializeMiddleware: ResponseMessageDeserializer {
     public func deserialize(
         response: HttpResponse,
-        attributes: HttpContext
+        attributes: OperationContext
     ) async throws -> Result<OperationStackOutput, Error> {
         // check if the response body was effected by a previous middleware
-        if let contextBody = attributes.response?.body {
+        if let contextBody = attributes.httpResponse?.body {
             response.body = contextBody
         }
 

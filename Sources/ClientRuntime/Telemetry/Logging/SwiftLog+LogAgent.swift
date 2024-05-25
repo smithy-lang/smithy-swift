@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import protocol SmithyAPI.LogAgent
+import enum SmithyAPI.LogAgentLevel
 import Logging
 
 public struct SwiftLogger: LogAgent {

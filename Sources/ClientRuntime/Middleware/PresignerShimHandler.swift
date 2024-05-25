@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class SmithyAPI.OperationContext
+import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HttpResponse
+
 typealias PresignerShimHandler = (SdkHttpRequestBuilder) -> Void
 
 struct PresignerShim<OperationStackOutput>: Middleware {
@@ -20,9 +24,9 @@ struct PresignerShim<OperationStackOutput>: Middleware {
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 
-    public func handle<H>(context: HttpContext,
+    public func handle<H>(context: OperationContext,
                           input: SdkHttpRequestBuilder,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,

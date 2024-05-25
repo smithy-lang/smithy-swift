@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import protocol SmithyAPI.MiddlewareContext
+
 /// used to wrap a handler function as a handler
 struct WrappedHandler<MInput, MOutput, Context: MiddlewareContext, MError: Error>: Handler {
     let _handler: HandlerFunction<MInput, MOutput, Context, MError>

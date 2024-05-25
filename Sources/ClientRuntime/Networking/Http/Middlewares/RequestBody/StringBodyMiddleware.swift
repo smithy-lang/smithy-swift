@@ -5,7 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyAPI.RequestMessageSerializer
+import class SmithyAPI.OperationContext
 import struct Foundation.Data
+import SmithyHTTPAPI
 
 public struct StringBodyMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: Swift.String = "\(OperationStackInput.self)StringBodyMiddleware"
@@ -29,15 +32,15 @@ public struct StringBodyMiddleware<OperationStackInput, OperationStackOutput>: M
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension StringBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = HttpContext
+    public typealias AttributesType = OperationContext
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: OperationContext) throws {
         builder.withBody(.data(Data((input[keyPath: keyPath] ?? "").utf8)))
     }
 }

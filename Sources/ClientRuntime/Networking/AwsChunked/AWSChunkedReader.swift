@@ -7,7 +7,9 @@
 
 import let SmithyStreamsAPI.CHUNK_SIZE_BYTES
 import protocol SmithyStreamsAPI.ReadableStream
+import struct SmithyHTTPAPI.Headers
 import AwsCommonRuntimeKit
+import struct Foundation.Data
 
 public class AWSChunkedReader {
     private var stream: ReadableStream

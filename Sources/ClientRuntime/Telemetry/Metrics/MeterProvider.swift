@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct SmithyAPI.Attributes
+
 /// A Meter Provider provides implementations of Meters.
 public protocol MeterProvider {
 

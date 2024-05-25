@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum SmithyStreamsAPI.ByteStream
 import enum SmithyStreamsAPI.StreamError
+import struct Foundation.Data
 import AwsCommonRuntimeKit
 
 /// A class that implements the `IStreamable` protocol for `ByteStream`.

@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyAPI.RequestMessage
+import protocol SmithyAPI.HasAttributes
+import struct SmithyHTTPAuthAPI.SelectedAuthScheme
+
 /// Component used by an Orchestrator to modify a request message with the endpoint
 /// the request should be sent to.
 public protocol ApplyEndpoint<RequestType, AttributesType> {

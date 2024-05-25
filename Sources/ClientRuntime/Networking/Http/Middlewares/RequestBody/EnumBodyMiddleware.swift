@@ -5,7 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class SmithyAPI.OperationContext
 import struct Foundation.Data
+import SmithyAPI
+import SmithyHTTPAPI
 
 public struct EnumBodyMiddleware<OperationStackInput,
                                  OperationStackOutput,
@@ -31,15 +34,15 @@ public struct EnumBodyMiddleware<OperationStackInput,
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension EnumBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = HttpContext
+    public typealias AttributesType = OperationContext
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: OperationContext) throws {
         let bodyString = input[keyPath: keyPath]?.rawValue ?? ""
         let bodyData = Data(bodyString.utf8)
         builder.withBody(.data(bodyData))

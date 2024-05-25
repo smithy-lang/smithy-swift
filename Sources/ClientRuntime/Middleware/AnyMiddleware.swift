@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import protocol SmithyAPI.MiddlewareContext
+
 /// type erase the Middleware protocol
 public struct AnyMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middleware {
 

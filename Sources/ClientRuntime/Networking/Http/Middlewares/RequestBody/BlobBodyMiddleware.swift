@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyAPI.RequestMessageSerializer
+import class SmithyAPI.OperationContext
+import class SmithyHTTPAPI.SdkHttpRequest
+import class SmithyHTTPAPI.SdkHttpRequestBuilder
 import struct Foundation.Data
 
 public struct BlobBodyMiddleware<OperationStackInput,
@@ -30,15 +34,15 @@ public struct BlobBodyMiddleware<OperationStackInput,
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension BlobBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = HttpContext
+    public typealias AttributesType = OperationContext
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: OperationContext) throws {
         builder.withBody(.data(input[keyPath: keyPath]))
     }
 }

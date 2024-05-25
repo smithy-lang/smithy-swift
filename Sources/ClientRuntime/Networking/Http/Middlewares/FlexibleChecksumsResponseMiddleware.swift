@@ -1,6 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import SmithyAPI
+import SmithyHTTPAPI
+import SmithyStreamsAPI
+
 public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "FlexibleChecksumsResponseMiddleware"
@@ -45,7 +49,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, Operation
         return output
     }
 
-    private func validateChecksum(response: HttpResponse, logger: any LogAgent, attributes: HttpContext) async throws {
+    private func validateChecksum(response: HttpResponse, logger: any LogAgent, attributes: OperationContext) async throws {
         // Exit if validation should not be performed
         if !validationMode {
             logger.info("Checksum validation should not be performed! Skipping workflow...")
@@ -100,8 +104,8 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, Operation
             )
 
             // Set the response to a validating stream
-            attributes.response = response
-            attributes.response?.body = validatingStream
+            attributes.httpResponse = response
+            attributes.httpResponse?.body = validatingStream
         case .noStream:
             throw ClientError.dataNotFound("Cannot calculate the checksum of an empty body!")
         }
@@ -109,7 +113,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, Operation
 
     public typealias MInput = SdkHttpRequest
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension FlexibleChecksumsResponseMiddleware: HttpInterceptor {

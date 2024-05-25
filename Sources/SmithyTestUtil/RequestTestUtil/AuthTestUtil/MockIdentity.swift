@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyAPI
+import SmithyIdentityAPI
 import ClientRuntime
 
 public struct MockIdentity: Identity {
@@ -15,7 +17,7 @@ public struct MockIdentity: Identity {
 public struct MockIdentityResolver: IdentityResolver {
     public typealias IdentityT = MockIdentity
     public init() {}
-    public func getIdentity(identityProperties: ClientRuntime.Attributes?) async throws -> MockIdentity {
+    public func getIdentity(identityProperties: Attributes?) async throws -> MockIdentity {
         return MockIdentity()
     }
 }

@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import SmithyAPI
+import SmithyStreamsAPI
+import SmithyHTTPAPI
 import SmithyReadWrite
 import SmithyJSON
 import SmithyTestUtil
@@ -12,7 +15,7 @@ import XCTest
 class HttpRequestTestBaseTests: HttpRequestTestBase {
     static let host = "myapi.host.com"
 
-    public struct SayHelloInputURLHostMiddleware: ClientRuntime.Middleware {
+    public struct SayHelloInputURLHostMiddleware: Middleware {
         public let id: Swift.String = "SayHelloInputURLHostMiddleware"
 
         let host: Swift.String?
@@ -37,14 +40,14 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
 
         public typealias MInput = SayHelloInput
         public typealias MOutput = ClientRuntime.OperationOutput<MockOutput>
-        public typealias Context = ClientRuntime.HttpContext
+        public typealias Context = OperationContext
     }
 
     struct SayHelloInputQueryItemMiddleware<StackOutput>: Middleware {
 
         var id: String = "SayHelloInputQueryItemMiddleware"
 
-        func handle<H>(context: HttpContext,
+        func handle<H>(context: OperationContext,
                        input: SerializeStepInput<SayHelloInput>,
                        next: H) async throws -> MOutput where H: Handler,
                                                                 Self.Context == H.Context,
@@ -65,13 +68,13 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
 
         typealias MOutput = OperationOutput<StackOutput>
 
-        typealias Context = HttpContext
+        typealias Context = OperationContext
     }
 
     struct SayHelloInputHeaderMiddleware<StackOutput>: Middleware {
         var id: String = "SayHelloInputHeaderMiddleware"
 
-        func handle<H>(context: HttpContext,
+        func handle<H>(context: OperationContext,
                        input: MInput,
                        next: H) async throws -> MOutput where H: Handler,
                                                                 Self.Context == H.Context,
@@ -90,7 +93,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
 
         typealias MOutput = OperationOutput<StackOutput>
 
-        typealias Context = HttpContext
+        typealias Context = OperationContext
     }
 
     struct SayHelloInputBodyMiddleware<StackOutput>: Middleware {
@@ -108,7 +111,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         }
 
         func handle<H>(
-            context: HttpContext,
+            context: OperationContext,
             input: MInput,
             next: H
         ) async throws -> MOutput where
@@ -130,7 +133,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
 
         typealias MOutput = OperationOutput<StackOutput>
 
-        typealias Context = HttpContext
+        typealias Context = OperationContext
     }
 
     struct SayHelloInput: Encodable {
@@ -230,7 +233,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             return output
            })
 
-        let context = HttpContextBuilder()
+        let context = OperationContextBuilder()
             .withMethod(value: .post)
             .build()
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler { (_, _) in

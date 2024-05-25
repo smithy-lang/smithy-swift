@@ -5,6 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyAPI.RequestMessage
+import protocol SmithyAPI.ResponseMessage
+import protocol SmithyAPI.HasAttributes
+import protocol SmithyAPI.RequestMessageSerializer
+import protocol SmithyAPI.ResponseMessageDeserializer
+import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryErrorInfo
 

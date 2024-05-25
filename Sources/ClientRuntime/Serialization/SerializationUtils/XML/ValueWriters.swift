@@ -6,6 +6,7 @@
 //
 
 import protocol SmithyReadWrite.SmithyWriter
+import enum SmithyStreamsAPI.ByteStream
 
 extension SmithyWriter {
 

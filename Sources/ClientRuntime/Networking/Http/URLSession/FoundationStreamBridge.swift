@@ -7,6 +7,7 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
+import protocol SmithyAPI.LogAgent
 import protocol SmithyStreamsAPI.ReadableStream
 import func Foundation.CFWriteStreamSetDispatchQueue
 import class Foundation.DispatchQueue
@@ -18,6 +19,7 @@ import class Foundation.Thread
 import class Foundation.RunLoop
 import class Foundation.Timer
 import struct Foundation.TimeInterval
+import struct Foundation.Data
 import protocol Foundation.StreamDelegate
 
 /// Reads data from a smithy-swift native `ReadableStream` and streams the data through to a Foundation `InputStream`.

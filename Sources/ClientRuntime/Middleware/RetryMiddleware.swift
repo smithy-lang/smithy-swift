@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class SmithyAPI.OperationContext
 import class Foundation.DateFormatter
 import struct Foundation.Locale
 import struct Foundation.TimeInterval
@@ -13,6 +14,7 @@ import struct Foundation.UUID
 import protocol SmithyRetriesAPI.RetryStrategy
 import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 import struct SmithyRetriesAPI.RetryStrategyOptions
+@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
 
 public struct RetryMiddleware<Strategy: RetryStrategy,
                               ErrorInfoProvider: RetryErrorInfoProvider,
@@ -20,7 +22,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 
     public var id: String { "Retry" }
     public var strategy: Strategy
@@ -67,11 +69,11 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
                 context.getLogger()?.error("Failed to refresh retry token: \(errorInfo.errorType)")
                 throw operationError
             }
-            var estimatedSkew = context.attributes.get(key: AttributeKeys.estimatedSkew) ?? {
+            var estimatedSkew = context.estimatedSkew ?? {
                 context.getLogger()?.info("Estimated skew not found; defaulting to zero.")
                 return 0
             }()
-            var socketTimeout = context.attributes.get(key: AttributeKeys.socketTimeout) ?? {
+            var socketTimeout = context.socketTimeout ?? {
                 context.getLogger()?.info("Socket timeout value not found; defaulting to 60 seconds.")
                 return 60.0
             }()

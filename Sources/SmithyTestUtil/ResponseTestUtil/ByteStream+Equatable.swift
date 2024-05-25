@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum ClientRuntime.ByteStream
+import enum SmithyStreamsAPI.ByteStream
 
 extension ByteStream: Equatable {
     public static func ==(lhs: ByteStream, rhs: ByteStream) -> Bool {

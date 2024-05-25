@@ -8,6 +8,7 @@
 import protocol SmithyStreamsAPI.Stream
 import class Foundation.FileHandle
 import class Foundation.NSRecursiveLock
+import struct Foundation.Data
 
 /// A `Stream` that wraps a `FileHandle` for reading the file.
 ///

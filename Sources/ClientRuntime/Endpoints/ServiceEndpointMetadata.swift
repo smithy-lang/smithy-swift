@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum SmithyHTTPAPI.ProtocolType
+import struct SmithyHTTPAPI.Endpoint
+
 public struct ServiceEndpointMetadata {
     public let defaultProtocol = ProtocolType.https.rawValue
     public let defaultSigner = "v4"

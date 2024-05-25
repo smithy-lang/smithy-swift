@@ -5,8 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyAPI.RequestMessage
+import protocol SmithyAPI.ResponseMessage
+import protocol SmithyAPI.HasAttributes
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryErrorInfo
+import SmithyHTTPAPI
 
 /// Orchestrates operation execution
 ///
@@ -202,7 +206,7 @@ public struct Orchestrator<
     }
 
     private func getPartitionId(context: InterceptorContextType) throws -> String {
-        if let customId = context.getAttributes().get(key: AttributeKeys.partitionId), !customId.isEmpty {
+        if let customId = context.getAttributes().partitionID, !customId.isEmpty {
             return customId
         } else if !context.getRequest().host.isEmpty {
             return context.getRequest().host

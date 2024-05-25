@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import protocol SmithyAPI.MiddlewareContext
+
 // handler chain, used to decorate a handler with middleware
 public struct ComposedHandler<MInput, MOutput, Context: MiddlewareContext> {
     // the next handler to call

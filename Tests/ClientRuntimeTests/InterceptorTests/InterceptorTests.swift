@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyAPI
+import SmithyHTTPAPI
 import XCTest
 @testable import ClientRuntime
 
@@ -89,15 +91,15 @@ class InterceptorTests: XCTestCase {
     }
 
     func test_mutation() async throws {
-        let httpContext = HttpContext(attributes: Attributes())
+        let httpContext = OperationContext(attributes: Attributes())
         let input = TestInput(property: "foo")
-        let interceptorContext = DefaultInterceptorContext<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(input: input, attributes: httpContext)
-        let addAttributeInterceptor = AddAttributeInterceptor<String, TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(key: AttributeKey(name: "foo"), value: "bar")
-        let modifyInputInterceptor = ModifyInputInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(keyPath: \.property, value: "bar")
+        let interceptorContext = DefaultInterceptorContext<TestInput, TestOutput, SdkHttpRequest, HttpResponse, OperationContext>(input: input, attributes: httpContext)
+        let addAttributeInterceptor = AddAttributeInterceptor<String, TestInput, TestOutput, SdkHttpRequest, HttpResponse, OperationContext>(key: AttributeKey(name: "foo"), value: "bar")
+        let modifyInputInterceptor = ModifyInputInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, OperationContext>(keyPath: \.property, value: "bar")
         let addHeaderInterceptor = AddHeaderInterceptor<TestInput, TestOutput>(headerName: "foo", headerValue: "bar")
         let modifyMultipleInterceptor = ModifyMultipleInterceptor<TestOutput>(newInputValue: 1)
 
-        let interceptors: [AnyInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>] = [
+        let interceptors: [AnyInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, OperationContext>] = [
             addAttributeInterceptor.erase(),
             modifyInputInterceptor.erase(),
             addHeaderInterceptor.erase(),

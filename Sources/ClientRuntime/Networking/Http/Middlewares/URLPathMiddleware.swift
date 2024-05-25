@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class SmithyAPI.OperationContext
+import SmithyHTTPAPI
+import SmithyAPI
+
 public struct URLPathMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))URLPathMiddleware"
 
@@ -27,7 +31,7 @@ public struct URLPathMiddleware<OperationStackInput, OperationStackOutput>: Midd
               return try await next.handle(context: context, input: input)
           }
 
-    private func updateAttributes(input: OperationStackInput, attributes: HttpContext) throws {
+    private func updateAttributes(input: OperationStackInput, attributes: OperationContext) throws {
         guard var urlPath = urlPathProvider(input) else {
            let message = "Creating the url path failed, a required property in the path was nil"
            throw ClientError.pathCreationFailed(message)
@@ -40,7 +44,7 @@ public struct URLPathMiddleware<OperationStackInput, OperationStackOutput>: Midd
 
     public typealias MInput = OperationStackInput
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension URLPathMiddleware: HttpInterceptor {

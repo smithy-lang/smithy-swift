@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyAPI.RequestMessage
+import protocol SmithyAPI.ResponseMessage
+import protocol SmithyAPI.HasAttributes
+
 /// Container for 0 or more interceptors that supports adding concrete interceptor
 /// implementations and closures that act as single-hook interceptors.
 public struct Interceptors<
@@ -316,7 +320,7 @@ extension Interceptors {
     }
 
     private func logError(error: Error, context: InterceptorType.InterceptorContextType) {
-        guard let logger = context.getAttributes().get(key: AttributeKeys.logger) else {
+        guard let logger = context.getAttributes().logger else {
             return
         }
         logger.error(error.localizedDescription)

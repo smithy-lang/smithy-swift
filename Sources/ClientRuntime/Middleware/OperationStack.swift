@@ -1,6 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import class SmithyAPI.OperationContext
+import class SmithyHTTPAPI.SdkHttpRequest
+import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import enum SmithyHTTPAPI.ClientError
+
 public struct OperationStack<OperationStackInput, OperationStackOutput> {
 
     /// returns the unique id for the operation stack as middleware
@@ -21,12 +26,12 @@ public struct OperationStack<OperationStackInput, OperationStackOutput> {
     }
 
     /// This execute will execute the stack and use your next as the last closure in the chain
-    public func handleMiddleware<H: Handler>(context: HttpContext,
+    public func handleMiddleware<H: Handler>(context: OperationContext,
                                              input: OperationStackInput,
                                              next: H) async throws -> OperationStackOutput
     where H.Input == SdkHttpRequest,
           H.Output == OperationOutput<OperationStackOutput>,
-          H.Context == HttpContext {
+          H.Context == OperationContext {
 
               let deserialize = compose(next: DeserializeStepHandler(handler: next), with: deserializeStep)
               let finalize = compose(next: FinalizeStepHandler(handler: deserialize), with: finalizeStep)
@@ -46,14 +51,14 @@ public struct OperationStack<OperationStackInput, OperationStackOutput> {
           }
 
     mutating public func presignedRequest<H: Handler>(
-        context: HttpContext,
+        context: OperationContext,
         input: OperationStackInput,
         output: OperationStackOutput,
         next: H
     ) async throws -> SdkHttpRequestBuilder? where
     H.Input == SdkHttpRequest,
     H.Output == OperationOutput<OperationStackOutput>,
-    H.Context == HttpContext {
+    H.Context == OperationContext {
         var builder: SdkHttpRequestBuilder?
         self.finalizeStep.intercept(
             position: .after,

@@ -1,8 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import class SmithyAPI.OperationContext
 import let SmithyStreamsAPI.CHUNK_SIZE_BYTES
 import AwsCommonRuntimeKit
+@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
 
 public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "ContentMD5"
@@ -22,7 +24,7 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
         return try await next.handle(context: context, input: input)
     }
 
-    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: HttpContext) async throws {
+    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: OperationContext) async throws {
         // Skip MD5 hash if using checksums
         if builder.headers.exists(name: "x-amz-sdk-checksum-algorithm") {
             return
@@ -65,7 +67,7 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension ContentMD5Middleware: HttpInterceptor {

@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import protocol SmithyAPI.MiddlewareContext
+
 /// Type erased Handler
 public struct AnyHandler<MInput, MOutput, Context: MiddlewareContext>: Handler {
     private let _handle: (Context, MInput) async throws -> MOutput

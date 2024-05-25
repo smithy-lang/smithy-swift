@@ -6,6 +6,7 @@
 //
 
 import protocol SmithyStreamsAPI.Stream
+import struct Foundation.Data
 import AwsCommonRuntimeKit
 
 class ValidatingBufferedStream {

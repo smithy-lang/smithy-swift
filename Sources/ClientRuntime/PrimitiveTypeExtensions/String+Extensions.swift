@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import enum SmithyHTTPAPI.ClientError
+import struct Foundation.Data
 import AwsCommonRuntimeKit
 
 extension StringProtocol where Self.Index == String.Index {

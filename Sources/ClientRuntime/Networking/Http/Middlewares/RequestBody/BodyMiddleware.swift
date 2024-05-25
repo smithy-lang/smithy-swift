@@ -5,9 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class SmithyAPI.OperationContext
+
 import struct Foundation.Data
 import protocol SmithyReadWrite.SmithyWriter
 import typealias SmithyReadWrite.WritingClosure
+import SmithyAPI
+import SmithyHTTPAPI
+import SmithyStreamsAPI
 
 public struct BodyMiddleware<OperationStackInput,
                              OperationStackOutput,
@@ -38,15 +43,15 @@ public struct BodyMiddleware<OperationStackInput,
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension BodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = HttpContext
+    public typealias AttributesType = OperationContext
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: HttpContext) throws {
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: OperationContext) throws {
         do {
             let data = try Writer.write(
                 input,

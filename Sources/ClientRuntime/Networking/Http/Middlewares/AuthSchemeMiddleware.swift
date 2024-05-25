@@ -5,7 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+import struct SmithyAPI.Attributes
+import struct SmithyAPI.AttributeKey
+import class SmithyAPI.OperationContext
+import enum SmithyHTTPAPI.ClientError
+import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import struct SmithyHTTPAuthAPI.SelectedAuthScheme
+import protocol SmithyHTTPAuthAPI.AuthScheme
 
 public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
     public let id: String = "AuthSchemeMiddleware"
@@ -14,9 +20,9 @@ public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 
-    public func handle<H>(context: HttpContext,
+    public func handle<H>(context: OperationContext,
                           input: SdkHttpRequestBuilder,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
@@ -29,7 +35,9 @@ public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
 }
 
 extension AuthSchemeMiddleware: SelectAuthScheme {
-    public func select(attributes: HttpContext) async throws -> SelectedAuthScheme? {
+    public typealias AttributesType = OperationContext
+    
+    public func select(attributes: OperationContext) async throws -> SelectedAuthScheme? {
         // Get auth scheme resolver from middleware context
         guard let resolver = attributes.getAuthSchemeResolver() else {
             throw ClientError.authError("No auth scheme resolver has been configured on the service.")
@@ -106,7 +114,7 @@ extension AuthSchemeMiddleware: SelectAuthScheme {
         }
 
         // Set the selected auth scheme in context for subsequent middleware access
-        attributes.set(key: AttributeKeys.selectedAuthScheme, value: selectedAuthScheme)
+        attributes.setSelectedAuthScheme(selectedAuthScheme)
 
         return selectedAuthScheme
     }

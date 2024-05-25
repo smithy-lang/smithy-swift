@@ -1,6 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import class SmithyAPI.OperationContext
+import struct SmithyHTTPAPI.Headers
+@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+
 public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "MutateHeaders"
@@ -48,7 +52,7 @@ public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension MutateHeadersMiddleware: HttpInterceptor {

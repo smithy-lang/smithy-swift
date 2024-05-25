@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct SmithyAPI.Attributes
+import struct SmithyAPI.AttributeKey
+
 /// A Trace Span represents a single unit of work which has a beginning and end time, and may be connected to other
 /// spans as part of a parent / child relationship.
 ///

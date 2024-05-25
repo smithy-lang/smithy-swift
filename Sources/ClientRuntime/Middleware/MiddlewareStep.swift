@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import protocol SmithyAPI.MiddlewareContext
+
 /// An instance of MiddlewareStep will be contained in the operation stack, and recognized as a single
 /// step (initialize, build, etc..) that contains an ordered list of middlewares. This class is
 /// responsible for ordering these middlewares so that they are executed in the correct order.

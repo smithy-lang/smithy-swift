@@ -5,6 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyAPI.LogAgent
+import class SmithyAPI.OperationContext
+import class SmithyHTTPAPI.SdkHttpRequest
+import class SmithyHTTPAPI.HttpResponse
+
 public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "Logger"
@@ -54,7 +59,7 @@ public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middl
 
     public typealias MInput = SdkHttpRequest
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension LoggerMiddleware: HttpInterceptor {

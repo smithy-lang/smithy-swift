@@ -5,13 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyAPI
 import ClientRuntime
 
 public struct MockSerializeMiddleware: Middleware {
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
     public typealias MInput = SerializeStepInput<MockInput>
     public typealias MOutput = OperationOutput<MockOutput>
-    public typealias MockSerializeMiddlewareCallback = (HttpContext, MInput) -> Void
+    public typealias MockSerializeMiddlewareCallback = (OperationContext, MInput) -> Void
     public let id: String
     let headerName: String
     let headerValue: String
@@ -27,7 +28,7 @@ public struct MockSerializeMiddleware: Middleware {
         self.callback = callback
     }
 
-    public func handle<H>(context: HttpContext, input: MInput, next: H) async throws -> MOutput
+    public func handle<H>(context: OperationContext, input: MInput, next: H) async throws -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
           Self.MOutput == H.Output,

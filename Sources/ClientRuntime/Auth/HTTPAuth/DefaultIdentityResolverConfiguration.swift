@@ -5,6 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct SmithyAPI.Attributes
+import struct SmithyAPI.AttributeKey
+import protocol SmithyIdentityAPI.IdentityResolver
+import protocol SmithyIdentityAPI.IdentityResolverConfiguration
+
 public struct DefaultIdentityResolverConfiguration: IdentityResolverConfiguration {
     let identityResolvers: Attributes
 
@@ -12,7 +17,7 @@ public struct DefaultIdentityResolverConfiguration: IdentityResolverConfiguratio
         self.identityResolvers = configuredIdResolvers
     }
 
-    func getIdentityResolver(schemeID: String) throws -> (any IdentityResolver)? {
+    public func getIdentityResolver(schemeID: String) throws -> (any IdentityResolver)? {
         return self.identityResolvers.get(key: AttributeKey<any IdentityResolver>(name: schemeID))
     }
 }

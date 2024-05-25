@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class SmithyAPI.OperationContext
 import AwsCommonRuntimeKit
+@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
 
 public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
@@ -28,9 +30,9 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
         return try await next.handle(context: context, input: input)
     }
 
-    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: HttpContext) async throws {
+    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: OperationContext) async throws {
         if case(.stream(let stream)) = builder.body {
-            attributes.set(key: AttributeKeys.isChunkedEligibleStream, value: stream.isEligibleForAwsChunkedStreaming())
+            attributes.isChunkedEligibleStream = stream.isEligibleForAwsChunkedStreaming()
             if stream.isEligibleForAwsChunkedStreaming() {
                 try builder.setAwsChunkedHeaders() // x-amz-decoded-content-length
             }
@@ -88,7 +90,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             builder.updateHeader(name: headerName, value: [hash])
         case .stream:
             // Will handle calculating checksum and setting header later
-            attributes.set(key: AttributeKeys.checksum, value: checksumHashFunction)
+            attributes.checksum = checksumHashFunction
             builder.updateHeader(name: "x-amz-trailer", value: [headerName])
         case .noStream:
             throw ClientError.dataNotFound("Cannot calculate the checksum of an empty body!")
@@ -97,7 +99,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = OperationContext
 }
 
 extension FlexibleChecksumsRequestMiddleware: HttpInterceptor {

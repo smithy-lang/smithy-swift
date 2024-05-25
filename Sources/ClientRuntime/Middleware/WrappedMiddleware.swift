@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import protocol SmithyAPI.MiddlewareContext
+
 /// used to create middleware from a middleware function
 struct WrappedMiddleware<MInput, MOutput, Context: MiddlewareContext>: Middleware {
     let _middleware: MiddlewareFunction<MInput, MOutput, Context>

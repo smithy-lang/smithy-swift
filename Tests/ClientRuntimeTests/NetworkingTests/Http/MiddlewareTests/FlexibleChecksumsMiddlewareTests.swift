@@ -5,13 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyAPI
+import SmithyStreamsAPI
+@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
 import XCTest
 import AwsCommonRuntimeKit
 import SmithyTestUtil
 @testable import ClientRuntime
 
 class FlexibleChecksumsMiddlewareTests: XCTestCase {
-    private var builtContext: HttpContext!
+    private var builtContext: OperationContext!
     private var stack: OperationStack<MockInput, MockOutput>!
     private let testLogger = TestLogger()
 
@@ -21,7 +24,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         // Initialize function needs to be called before interacting with CRT
         CommonRuntimeKit.initialize()
 
-        builtContext = HttpContextBuilder()
+        builtContext = OperationContextBuilder()
                   .withMethod(value: .get)
                   .withPath(value: "/")
                   .withOperation(value: "Test Operation")
@@ -254,11 +257,11 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         _ = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: mockHandler)
 
         XCTAssertEqual(
-            self.builtContext.attributes.get(key: AttributeKeys.checksum),
+            self.builtContext.checksum,
             expectedChecksumAlgorithm, file: file, line: line
         )
         XCTAssertTrue(
-            self.builtContext.attributes.get(key: AttributeKeys.isChunkedEligibleStream) ?? false,
+            self.builtContext.isChunkedEligibleStream ?? false,
             "Stream is not 'chunked eligible'",
             file: file, line: line
         )
@@ -387,15 +390,15 @@ class TestLogger: LogAgent {
 
     var messages: [(level: LogAgentLevel, message: String)] = []
 
-    var level: ClientRuntime.LogAgentLevel
+    var level: LogAgentLevel
 
-    init(name: String = "Test", messages: [(level: LogAgentLevel, message: String)] = [], level: ClientRuntime.LogAgentLevel = .info) {
+    init(name: String = "Test", messages: [(level: LogAgentLevel, message: String)] = [], level: LogAgentLevel = .info) {
         self.name = name
         self.messages = messages
         self.level = level
     }
 
-    func log(level: ClientRuntime.LogAgentLevel = .info, message: String, metadata: [String : String]? = nil, source: String = "ChecksumUnitTests", file: String = #file, function: String = #function, line: UInt = #line) {
+    func log(level: LogAgentLevel = .info, message: String, metadata: [String : String]? = nil, source: String = "ChecksumUnitTests", file: String = #file, function: String = #function, line: UInt = #line) {
         messages.append((level: level, message: message))
     }
 }

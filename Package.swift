@@ -28,6 +28,7 @@ let package = Package(
         .watchOS(.v6)
     ],
     products: [
+        .library(name: "SmithyAPI", targets: ["SmithyAPI"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
@@ -35,6 +36,9 @@ let package = Package(
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyJSON", targets: ["SmithyJSON"]),
         .library(name: "SmithyFormURL", targets: ["SmithyFormURL"]),
+        .library(name: "SmithyIdentityAPI", targets: ["SmithyIdentityAPI"]),
+        .library(name: "SmithyHTTPAPI", targets: ["SmithyHTTPAPI"]),
+        .library(name: "SmithyHTTPAuthAPI", targets: ["SmithyHTTPAuthAPI"]),
         .library(name: "SmithyStreamsAPI", targets: ["SmithyStreamsAPI"]),
         .library(name: "SmithyEventStreamsAPI", targets: ["SmithyEventStreamsAPI"]),
         .library(name: "SmithyEventStreamsAuthAPI", targets: ["SmithyEventStreamsAuthAPI"]),
@@ -47,13 +51,21 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "SmithyAPI",
+            dependencies: ["SmithyStreamsAPI"]
+        ),
+        .target(
             name: "ClientRuntime",
             dependencies: [
+                "SmithyAPI",
                 "SmithyRetriesAPI",
                 "SmithyRetries",
                 "SmithyXML",
                 "SmithyJSON",
                 "SmithyFormURL",
+                "SmithyIdentityAPI",
+                "SmithyHTTPAPI",
+                "SmithyHTTPAuthAPI",
                 "SmithyStreamsAPI",
                 "SmithyEventStreamsAPI",
                 "SmithyEventStreamsAuthAPI",
@@ -112,6 +124,18 @@ let package = Package(
         .target(
             name: "SmithyTestUtil",
             dependencies: ["ClientRuntime"]
+        ),
+        .target(
+            name: "SmithyIdentityAPI",
+            dependencies: ["SmithyAPI"]
+        ),
+        .target(
+            name: "SmithyHTTPAPI",
+            dependencies: ["SmithyAPI", "SmithyStreamsAPI"]
+        ),
+        .target(
+            name: "SmithyHTTPAuthAPI",
+            dependencies: ["SmithyHTTPAPI"]
         ),
         .target(
             name: "SmithyStreamsAPI"

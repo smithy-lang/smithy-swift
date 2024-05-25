@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum SmithyStreamsAPI.ByteStream
 import AwsCommonRuntimeKit
 
 extension HTTP2Stream {

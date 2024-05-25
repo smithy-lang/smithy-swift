@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import struct Foundation.Data
 import AwsCommonRuntimeKit
 
 public enum HashError: Error {
