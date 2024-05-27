@@ -5,9 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.RequestMessage
-import protocol SmithyAPI.RequestMessageBuilder
-import enum SmithyStreamsAPI.ByteStream
+import Smithy
+//import SmithyChecksumsAPI
+import protocol Smithy.RequestMessage
+import protocol Smithy.RequestMessageBuilder
+import enum Smithy.ByteStream
 import struct Foundation.CharacterSet
 import struct Foundation.URLQueryItem
 import struct Foundation.URLComponents
@@ -69,29 +71,6 @@ public final class SdkHttpRequest: RequestMessage {
 
     public func withBody(_ body: ByteStream) {
         self.body = body
-    }
-}
-
-extension SdkHttpRequest {
-
-    public var isChunked: Bool {
-
-        // Check if body is a stream
-        let isStreamBody: Bool
-        switch body {
-        case .stream(let stream):
-            if stream.isEligibleForAwsChunkedStreaming() {
-                isStreamBody = true
-            } else {
-                isStreamBody = false
-            }
-        default:
-            isStreamBody = false
-        }
-
-        let isTransferEncodingChunked = headers.value(for: "Transfer-Encoding")?.lowercased() == "chunked"
-
-        return isStreamBody && isTransferEncodingChunked
     }
 }
 

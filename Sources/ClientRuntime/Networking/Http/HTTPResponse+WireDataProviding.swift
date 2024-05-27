@@ -6,7 +6,7 @@
 //
 
 import class SmithyHTTPAPI.HttpResponse
-import enum SmithyStreamsAPI.ByteStream
+import enum Smithy.ByteStream
 import protocol SmithyReadWrite.WireDataProviding
 import struct Foundation.Data
 

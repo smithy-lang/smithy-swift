@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyAPI
+import Smithy
 import SmithyHTTPAuthAPI
 import SmithyHTTPAPI
 
@@ -49,7 +49,7 @@ public struct DefaultMockAuthSchemeResolver: MockAuthSchemeResolver {
         return validAuthOptions
     }
 
-    public func constructParameters(context: OperationContext) throws -> AuthSchemeResolverParameters {
+    public func constructParameters(context: Context) throws -> AuthSchemeResolverParameters {
         guard let opName = context.getOperation() else {
             throw ClientError.dataNotFound("Operation name not configured in middleware context for auth scheme resolver params construction.")
         }

@@ -37,3 +37,26 @@ extension SdkHttpRequest {
         return httpRequest
     }
 }
+
+extension SdkHttpRequest {
+
+    var isChunked: Bool {
+
+        // Check if body is a stream
+        let isStreamBody: Bool
+        switch body {
+        case .stream(let stream):
+            if stream.isEligibleForAwsChunkedStreaming {
+                isStreamBody = true
+            } else {
+                isStreamBody = false
+            }
+        default:
+            isStreamBody = false
+        }
+
+        let isTransferEncodingChunked = headers.value(for: "Transfer-Encoding")?.lowercased() == "chunked"
+
+        return isStreamBody && isTransferEncodingChunked
+    }
+}

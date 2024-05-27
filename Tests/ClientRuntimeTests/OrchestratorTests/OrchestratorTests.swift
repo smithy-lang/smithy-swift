@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyAPI
+import Smithy
 import SmithyHTTPAPI
 import XCTest
 
@@ -175,7 +175,7 @@ class OrchestratorTests: XCTestCase {
             self.trace = trace
         }
 
-        public func execute(request: SdkHttpRequest, attributes: OperationContext) async throws -> HttpResponse {
+        public func execute(request: SdkHttpRequest, attributes: Context) async throws -> HttpResponse {
             trace.append("executeRequest")
             if succeedAfter <= 0 {
                 return HttpResponse(body: request.body, statusCode: .ok)
@@ -200,14 +200,14 @@ class OrchestratorTests: XCTestCase {
 
     func traceOrchestrator(
         trace: Trace
-    ) -> OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse, OperationContext> {
-        let attributes = OperationContextBuilder()
+    ) -> OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse> {
+        let attributes = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
             .withOperation(value: "Test")
             .build()
-        let traceInterceptor = TraceInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, OperationContext>(trace: trace)
-        let builder = OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse, OperationContext>()
+        let traceInterceptor = TraceInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, Context>(trace: trace)
+        let builder = OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse>()
             .attributes(attributes)
             .serialize({ input, builder, _ in
                 trace.append("serialize")

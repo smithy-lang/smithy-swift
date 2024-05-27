@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyAPI
+import Smithy
 import Foundation
 import XCTest
 import ClientRuntime

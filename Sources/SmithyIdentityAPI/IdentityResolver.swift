@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.Attributes
+import struct Smithy.Attributes
 
 // Base protocol for all identity provider types
 public protocol IdentityResolver {

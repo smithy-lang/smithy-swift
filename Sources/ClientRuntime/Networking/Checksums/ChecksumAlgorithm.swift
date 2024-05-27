@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import protocol SmithyChecksumsAPI.Checksum
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
+import enum SmithyChecksumsAPI.HashResult
 import struct Foundation.Data
 import AwsCommonRuntimeKit
 
@@ -11,8 +14,7 @@ public enum HashError: Error {
     case hashingFailed(reason: String)
 }
 
-public enum ChecksumAlgorithm {
-    case crc32, crc32c, sha1, sha256, md5
+extension ChecksumAlgorithm {
 
     static func from(string: String) -> (ChecksumAlgorithm)? {
         switch string.lowercased() {

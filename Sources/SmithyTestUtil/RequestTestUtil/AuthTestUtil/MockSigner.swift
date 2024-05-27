@@ -5,10 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyAPI
+import Smithy
 import SmithyHTTPAuthAPI
 import SmithyHTTPAPI
 import SmithyEventStreamsAPI
+import SmithyEventStreamsAuthAPI
 import ClientRuntime
 import Foundation
 import SmithyIdentityAPI

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.Attributes
+import struct Smithy.Attributes
 
 /// A Tracer is the entry point for creating spans.
 ///

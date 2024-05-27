@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.AttributeKey
-import protocol SmithyAPI.HasAttributes
+import struct Smithy.AttributeKey
+import protocol Smithy.HasAttributes
 import class SmithyHTTPAPI.HttpResponse
 
 extension HasAttributes {

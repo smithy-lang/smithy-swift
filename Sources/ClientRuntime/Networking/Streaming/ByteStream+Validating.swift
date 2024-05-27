@@ -5,8 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyStreamsAPI.Stream
-import enum SmithyStreamsAPI.ByteStream
+import protocol Smithy.Stream
+import enum Smithy.ByteStream
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
 
 extension ByteStream {
 

@@ -5,19 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.Attributes
-import struct SmithyAPI.AttributeKey
-import class SmithyAPI.OperationContext
-import class SmithyAPI.OperationContextBuilder
+import struct Smithy.Attributes
+import struct Smithy.AttributeKey
+import class Smithy.Context
+import class Smithy.ContextBuilder
 
-extension OperationContext {
+extension Context {
 
     public func getIdentityResolvers() -> Attributes? {
         return attributes.get(key: identityResolversKey)
     }
 }
 
-extension OperationContextBuilder {
+extension ContextBuilder {
 
     @discardableResult
     public func removeIdentityResolvers() -> Self {

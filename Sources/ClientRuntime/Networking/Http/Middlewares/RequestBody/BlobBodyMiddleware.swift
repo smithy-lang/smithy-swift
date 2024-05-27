@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.RequestMessageSerializer
-import class SmithyAPI.OperationContext
+import protocol Smithy.RequestMessageSerializer
+import class Smithy.Context
 import class SmithyHTTPAPI.SdkHttpRequest
 import class SmithyHTTPAPI.SdkHttpRequestBuilder
 import struct Foundation.Data
@@ -21,28 +21,27 @@ public struct BlobBodyMiddleware<OperationStackInput,
         self.keyPath = keyPath
     }
 
-    public func handle<H>(context: Context,
+    public func handle<H>(context: Smithy.Context,
                           input: SerializeStepInput<OperationStackInput>,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
           Self.MInput == H.Input,
-          Self.MOutput == H.Output,
-          Self.Context == H.Context {
+          Self.MOutput == H.Output {
               try apply(input: input.operationInput, builder: input.builder, attributes: context)
               return try await next.handle(context: context, input: input)
           }
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = OperationContext
+    public typealias Context = Smithy.Context
 }
 
 extension BlobBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = OperationContext
+    public typealias AttributesType = Smithy.Context
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: OperationContext) throws {
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
         builder.withBody(.data(input[keyPath: keyPath]))
     }
 }

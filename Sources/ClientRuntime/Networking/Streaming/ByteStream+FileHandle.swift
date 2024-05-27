@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum SmithyStreamsAPI.ByteStream
+import enum Smithy.ByteStream
 import class Foundation.FileHandle
 
 extension ByteStream {

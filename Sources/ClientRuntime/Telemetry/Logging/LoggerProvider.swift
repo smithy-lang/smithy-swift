@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.LogAgent
+import protocol Smithy.LogAgent
 
 /// A Logger Provider provides implementations of LogAgents.
 public protocol LoggerProvider {

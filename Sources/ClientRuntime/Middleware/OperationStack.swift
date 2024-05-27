@@ -1,10 +1,14 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0.
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
-import class SmithyAPI.OperationContext
+import class Smithy.Context
+import enum Smithy.ClientError
 import class SmithyHTTPAPI.SdkHttpRequest
 import class SmithyHTTPAPI.SdkHttpRequestBuilder
-import enum SmithyHTTPAPI.ClientError
 
 public struct OperationStack<OperationStackInput, OperationStackOutput> {
 
@@ -26,12 +30,11 @@ public struct OperationStack<OperationStackInput, OperationStackOutput> {
     }
 
     /// This execute will execute the stack and use your next as the last closure in the chain
-    public func handleMiddleware<H: Handler>(context: OperationContext,
+    public func handleMiddleware<H: Handler>(context: Smithy.Context,
                                              input: OperationStackInput,
                                              next: H) async throws -> OperationStackOutput
     where H.Input == SdkHttpRequest,
-          H.Output == OperationOutput<OperationStackOutput>,
-          H.Context == OperationContext {
+          H.Output == OperationOutput<OperationStackOutput> {
 
               let deserialize = compose(next: DeserializeStepHandler(handler: next), with: deserializeStep)
               let finalize = compose(next: FinalizeStepHandler(handler: deserialize), with: finalizeStep)
@@ -51,14 +54,13 @@ public struct OperationStack<OperationStackInput, OperationStackOutput> {
           }
 
     mutating public func presignedRequest<H: Handler>(
-        context: OperationContext,
+        context: Smithy.Context,
         input: OperationStackInput,
         output: OperationStackOutput,
         next: H
     ) async throws -> SdkHttpRequestBuilder? where
     H.Input == SdkHttpRequest,
-    H.Output == OperationOutput<OperationStackOutput>,
-    H.Context == OperationContext {
+    H.Output == OperationOutput<OperationStackOutput> {
         var builder: SdkHttpRequestBuilder?
         self.finalizeStep.intercept(
             position: .after,
@@ -71,12 +73,9 @@ public struct OperationStack<OperationStackInput, OperationStackOutput> {
 
     /// Compose (wrap) the handler with the given middleware or essentially build out the linked list of middleware
     private func compose<H: Handler, M: Middleware>(next handler: H,
-                                                    with middlewares: M...) -> AnyHandler<H.Input,
-                                                                                          H.Output,
-                                                                                          H.Context>
+                                                    with middlewares: M...) -> AnyHandler<H.Input, H.Output>
     where M.MOutput == H.Output,
-          M.MInput == H.Input,
-          H.Context == M.Context {
+          M.MInput == H.Input {
         guard !middlewares.isEmpty,
               let lastMiddleware = middlewares.last else {
             return handler.eraseToAnyHandler()

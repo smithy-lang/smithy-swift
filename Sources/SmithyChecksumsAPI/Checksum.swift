@@ -6,7 +6,6 @@
 //
 
 import struct Foundation.Data
-import AwsCommonRuntimeKit
 
 /**
  * An object that provides a checksum of data provided in chunks to `update`.

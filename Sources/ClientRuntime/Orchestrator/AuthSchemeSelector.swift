@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.HasAttributes
+import protocol Smithy.HasAttributes
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 
 /// Component used by an Orchestrator to select an auth scheme to use for the operation.

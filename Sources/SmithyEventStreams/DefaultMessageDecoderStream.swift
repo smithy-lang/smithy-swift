@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyStreamsAPI
+import Smithy
 import SmithyEventStreamsAPI
 import SmithyEventStreamsAuthAPI
 import struct Foundation.Data

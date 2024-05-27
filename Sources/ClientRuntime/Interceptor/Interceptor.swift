@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.RequestMessage
-import protocol SmithyAPI.ResponseMessage
-import protocol SmithyAPI.HasAttributes
+import protocol Smithy.RequestMessage
+import protocol Smithy.ResponseMessage
+import protocol Smithy.HasAttributes
 
 /// An interceptor allows injecting code into the SDK's request execution pipeline.
 public protocol Interceptor<InputType, OutputType, RequestType, ResponseType, AttributesType> {

@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public class OperationContext: MiddlewareContext {
+public class Context {
     public var attributes: Attributes
 
     public init(attributes: Attributes) {
         self.attributes = attributes
     }
 
-    public func toBuilder() -> OperationContextBuilder {
-        let builder = OperationContextBuilder()
+    public func toBuilder() -> ContextBuilder {
+        let builder = ContextBuilder()
         builder.attributes = self.attributes
         return builder
     }
@@ -23,7 +23,8 @@ public class OperationContext: MiddlewareContext {
     }
 }
 
-extension OperationContext: HasAttributes {
+extension Context: HasAttributes {
+
     public func get<T>(key: AttributeKey<T>) -> T? {
         self.attributes.get(key: key)
     }
@@ -41,7 +42,7 @@ extension OperationContext: HasAttributes {
     }
 }
 
-public class OperationContextBuilder {
+public class ContextBuilder {
     public init() {}
 
     public var attributes: Attributes = Attributes()
@@ -51,19 +52,19 @@ public class OperationContextBuilder {
     // @discardableResult attribute we won't get warnings if we
     // don't end up doing any chaining.
     @discardableResult
-    public func with<T>(key: AttributeKey<T>, value: T) -> OperationContextBuilder {
+    public func with<T>(key: AttributeKey<T>, value: T) -> Self {
         self.attributes.set(key: key, value: value)
         return self
     }
 
     @discardableResult
-    public func withLogger(value: LogAgent) -> OperationContextBuilder {
+    public func withLogger(value: LogAgent) -> Self {
         self.attributes.set(key: AttributeKeys.logger, value: value)
         return self
     }
 
-    public func build() -> OperationContext {
-        return OperationContext(attributes: attributes)
+    public func build() -> Context {
+        return Context(attributes: attributes)
     }
 }
 

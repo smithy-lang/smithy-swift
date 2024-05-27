@@ -5,20 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.Attributes
-import struct SmithyAPI.AttributeKey
-import class SmithyAPI.OperationContext
-import class SmithyAPI.OperationContextBuilder
-import enum SmithyHTTPAPI.AttributeKeys
+import struct Smithy.Attributes
+import struct Smithy.AttributeKey
+import class Smithy.Context
+import class Smithy.ContextBuilder
 
-extension OperationContext {
+extension Context {
 
     public func getIdempotencyTokenGenerator() -> IdempotencyTokenGenerator {
         return attributes.get(key: idempotencyTokenGeneratorKey)!
     }
 }
 
-extension OperationContextBuilder {
+extension ContextBuilder {
 
     @discardableResult
     public func withIdempotencyTokenGenerator(value: IdempotencyTokenGenerator) -> Self {

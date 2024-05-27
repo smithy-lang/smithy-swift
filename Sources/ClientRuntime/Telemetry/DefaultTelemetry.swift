@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.LogAgent
-import struct SmithyAPI.Attributes
-import struct SmithyAPI.AttributeKey
+import protocol Smithy.LogAgent
+import struct Smithy.Attributes
+import struct Smithy.AttributeKey
 
 /// Namespace for the Default SDK Telemetry implementations.
 public enum DefaultTelemetry {

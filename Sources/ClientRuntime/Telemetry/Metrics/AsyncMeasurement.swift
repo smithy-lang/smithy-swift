@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.Attributes
+import struct Smithy.Attributes
 
 /// Handle to stop recording values of an AsyncMeasurement.
 public protocol AsyncMeasurementHandle {

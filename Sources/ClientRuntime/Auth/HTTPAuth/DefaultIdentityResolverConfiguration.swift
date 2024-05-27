@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.Attributes
-import struct SmithyAPI.AttributeKey
+import struct Smithy.Attributes
+import struct Smithy.AttributeKey
 import protocol SmithyIdentityAPI.IdentityResolver
 import protocol SmithyIdentityAPI.IdentityResolverConfiguration
 

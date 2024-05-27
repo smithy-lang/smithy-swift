@@ -1,8 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-import SmithyAPI
-import SmithyStreamsAPI
+import Smithy
 @_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
 import SmithyReadWrite
 import XCTest
@@ -11,7 +10,7 @@ import SmithyTestUtil
 
 class MiddlewareStackTests: XCTestCase {
     func testMiddlewareStackSuccessInterceptAfter() async throws {
-        let builtContext = OperationContextBuilder()
+        let builtContext = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
             .withOperation(value: "Test Operation")
@@ -35,7 +34,7 @@ class MiddlewareStackTests: XCTestCase {
     }
 
     func testMiddlewareStackConvenienceFunction() async throws {
-        let builtContext = OperationContextBuilder()
+        let builtContext = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
             .withOperation(value: "Test Operation")
@@ -79,7 +78,7 @@ class MiddlewareStackTests: XCTestCase {
         let clientEngine = CRTClientEngine()
         let httpClient = SdkHttpClient(engine: clientEngine, config: httpClientConfiguration)
 
-        let builtContext = OperationContextBuilder()
+        let builtContext = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/headers")
             .withOperation(value: "Test Operation")

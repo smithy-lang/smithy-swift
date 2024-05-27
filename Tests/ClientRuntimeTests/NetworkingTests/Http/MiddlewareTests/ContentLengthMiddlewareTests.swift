@@ -1,20 +1,19 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-import SmithyAPI
-import SmithyStreamsAPI
+import Smithy
 @_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
 import XCTest
 import SmithyTestUtil
 @testable import ClientRuntime
 
 class ContentLengthMiddlewareTests: XCTestCase {
-    private var builtContext: OperationContext!
+    private var builtContext: Context!
     private var stack: OperationStack<MockInput, MockOutput>!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        builtContext = OperationContextBuilder()
+        builtContext = ContextBuilder()
                   .withMethod(value: .get)
                   .withPath(value: "/")
                   .withOperation(value: "Test Operation")

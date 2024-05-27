@@ -5,9 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum SmithyStreamsAPI.ByteStream
+import enum Smithy.ByteStream
 import struct SmithyHTTPAPI.Headers
-import enum SmithyHTTPAPI.ClientError
+import enum Smithy.ClientError
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
 @_spi(SdkHttpRequestBuilder) import class SmithyHTTPAPI.SdkHttpRequestBuilder
 
 import AwsCommonRuntimeKit

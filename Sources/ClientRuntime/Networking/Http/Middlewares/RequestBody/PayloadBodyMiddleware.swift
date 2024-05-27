@@ -5,13 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.RequestMessageSerializer
-import class SmithyAPI.OperationContext
+import enum Smithy.ByteStream
+import enum Smithy.ClientError
+import protocol Smithy.RequestMessageSerializer
+import class Smithy.Context
 import struct Foundation.Data
 import protocol SmithyReadWrite.SmithyWriter
 import typealias SmithyReadWrite.WritingClosure
 import SmithyHTTPAPI
-import SmithyStreamsAPI
 
 public struct PayloadBodyMiddleware<OperationStackInput,
                                     OperationStackOutput,
@@ -41,23 +42,21 @@ public struct PayloadBodyMiddleware<OperationStackInput,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
           Self.MInput == H.Input,
-          Self.MOutput == H.Output,
-          Self.Context == H.Context {
+          Self.MOutput == H.Output {
               try apply(input: input.operationInput, builder: input.builder, attributes: context)
               return try await next.handle(context: context, input: input)
           }
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = OperationContext
+    public typealias Context = Smithy.Context
 }
 
 extension PayloadBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = OperationContext
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: OperationContext) throws {
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
         do {
             if let payload = input[keyPath: keyPath] {
                 let data = try Writer.write(

@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-import class SmithyAPI.OperationContext
+import class Smithy.Context
 
 /// Initialize Prepares the input, and sets any default parameters as
 /// needed, (e.g. idempotency token, and presigned URLs).
@@ -10,13 +10,12 @@ import class SmithyAPI.OperationContext
 ///
 /// Receives result or error from Serialize step.
 public typealias InitializeStep<OperationStackInput, OperationStackOutput> =
-    MiddlewareStep<OperationContext, OperationStackInput, OperationOutput<OperationStackOutput>>
+    MiddlewareStep<OperationStackInput, OperationOutput<OperationStackOutput>>
 
 public let InitializeStepId = "Initialize"
 
 public struct InitializeStepHandler<OperationStackInput, OperationStackOutput, H: Handler>: Handler
-    where H.Context == OperationContext,
-          H.Input == SerializeStepInput<OperationStackInput>,
+    where H.Input == SerializeStepInput<OperationStackInput>,
           H.Output == OperationOutput<OperationStackOutput> {
 
     public typealias Input = OperationStackInput
@@ -29,7 +28,7 @@ public struct InitializeStepHandler<OperationStackInput, OperationStackOutput, H
         self.handler = handler
     }
 
-    public func handle(context: OperationContext, input: Input) async throws -> Output {
+    public func handle(context: Smithy.Context, input: Input) async throws -> Output {
         let serializeInput = SerializeStepInput<OperationStackInput>(operationInput: input)
 
         return try await handler.handle(context: context, input: serializeInput)

@@ -6,8 +6,6 @@
 //
 
 public enum ClientError: Error {
-    case pathCreationFailed(String)
-    case queryItemCreationFailed(String)
     case serializationFailed(String)
     case dataNotFound(String)
     case unknownError(String)

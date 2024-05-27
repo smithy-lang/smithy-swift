@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyAPI.OperationContext
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
+import enum Smithy.ClientError
+import class Smithy.Context
 import AwsCommonRuntimeKit
 @_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
 
@@ -24,16 +26,15 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
     Self.MInput == H.Input,
-    Self.MOutput == H.Output,
-    Self.Context == H.Context {
+    Self.MOutput == H.Output {
         try await addHeaders(builder: input.builder, attributes: context)
         return try await next.handle(context: context, input: input)
     }
 
-    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: OperationContext) async throws {
+    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: Context) async throws {
         if case(.stream(let stream)) = builder.body {
-            attributes.isChunkedEligibleStream = stream.isEligibleForAwsChunkedStreaming()
-            if stream.isEligibleForAwsChunkedStreaming() {
+            attributes.isChunkedEligibleStream = stream.isEligibleForAwsChunkedStreaming
+            if stream.isEligibleForAwsChunkedStreaming {
                 try builder.setAwsChunkedHeaders() // x-amz-decoded-content-length
             }
         }
@@ -99,7 +100,6 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = OperationContext
 }
 
 extension FlexibleChecksumsRequestMiddleware: HttpInterceptor {

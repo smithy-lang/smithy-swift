@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.RequestMessageSerializer
-import class SmithyAPI.OperationContext
+import protocol Smithy.RequestMessageSerializer
+import class Smithy.Context
 import SmithyHTTPAPI
 
 public struct QueryItemMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
@@ -23,23 +23,22 @@ public struct QueryItemMiddleware<OperationStackInput, OperationStackOutput>: Mi
                           next: H) async throws -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
-          Self.MOutput == H.Output,
-          Self.Context == H.Context {
+          Self.MOutput == H.Output {
               try apply(input: input.operationInput, builder: input.builder, attributes: context)
               return try await next.handle(context: context, input: input)
           }
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = OperationContext
+    public typealias Context = Smithy.Context
 }
 
 extension QueryItemMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = OperationContext
+    public typealias AttributesType = Smithy.Context
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: OperationContext) throws {
+    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
         for queryItem in try queryItemProvider(input) {
             builder.withQueryItem(queryItem)
         }

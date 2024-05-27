@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyAPI
+import Smithy
 import SmithyHTTPAuthAPI
 import ClientRuntime
 
@@ -15,7 +15,7 @@ public struct MockAuthSchemeA: AuthScheme {
 
     public init() {}
 
-    public func customizeSigningProperties(signingProperties: Attributes, context: OperationContext) -> Attributes {
+    public func customizeSigningProperties(signingProperties: Attributes, context: Context) -> Attributes {
         return signingProperties
     }
 }
@@ -26,7 +26,7 @@ public struct MockAuthSchemeB: AuthScheme {
 
     public init() {}
 
-    public func customizeSigningProperties(signingProperties: Attributes, context: OperationContext) -> Attributes {
+    public func customizeSigningProperties(signingProperties: Attributes, context: Context) -> Attributes {
         return signingProperties
     }
 }
@@ -37,7 +37,7 @@ public struct MockAuthSchemeC: AuthScheme {
 
     public init() {}
 
-    public func customizeSigningProperties(signingProperties: Attributes, context: OperationContext) -> Attributes {
+    public func customizeSigningProperties(signingProperties: Attributes, context: Context) -> Attributes {
         return signingProperties
     }
 }
@@ -48,7 +48,7 @@ public struct MockNoAuth: AuthScheme {
 
     public init() {}
 
-    public func customizeSigningProperties(signingProperties: Attributes, context: OperationContext) -> Attributes {
+    public func customizeSigningProperties(signingProperties: Attributes, context: Context) -> Attributes {
         return signingProperties
     }
 }

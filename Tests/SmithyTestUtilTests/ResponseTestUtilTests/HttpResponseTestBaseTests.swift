@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import SmithyStreamsAPI
+import Smithy
 import SmithyHTTPAPI
 @testable import SmithyTestUtil
 import ClientRuntime

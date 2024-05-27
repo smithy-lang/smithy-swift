@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.RequestMessage
-import protocol SmithyAPI.HasAttributes
+import protocol Smithy.RequestMessage
+import protocol Smithy.HasAttributes
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 
 /// Component used by an Orchestrator to sign a request.

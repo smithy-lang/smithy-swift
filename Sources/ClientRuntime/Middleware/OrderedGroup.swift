@@ -1,7 +1,9 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0.
-
-import protocol SmithyAPI.MiddlewareContext
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
 struct RelativeOrder {
     var order: [String] = []
@@ -48,15 +50,15 @@ struct RelativeOrder {
     }
 }
 
-public struct OrderedGroup<Input, Output, Context: MiddlewareContext> {
+public struct OrderedGroup<Input, Output> {
     // order of the keys
     var order = RelativeOrder()
     // key here is name of the middleware aka the id property of the middleware
-    private var _items: [String: AnyMiddleware<Input, Output, Context>] = [:]
+    private var _items: [String: AnyMiddleware<Input, Output>] = [:]
 
-    var orderedItems: [(key: String, value: AnyMiddleware<Input, Output, Context>)] {
+    var orderedItems: [(key: String, value: AnyMiddleware<Input, Output>)] {
 
-        var sorted = [(key: String, value: AnyMiddleware<Input, Output, Context>)]()
+        var sorted = [(key: String, value: AnyMiddleware<Input, Output>)]()
         for key in order.order {
             guard let value = _items[key] else {
                 continue
@@ -69,7 +71,7 @@ public struct OrderedGroup<Input, Output, Context: MiddlewareContext> {
 
     public init() {}
 
-    mutating func add(middleware: AnyMiddleware<Input, Output, Context>,
+    mutating func add(middleware: AnyMiddleware<Input, Output>,
                       position: Position) {
         if !middleware.id.isEmpty {
             _items[middleware.id] = middleware
@@ -77,14 +79,14 @@ public struct OrderedGroup<Input, Output, Context: MiddlewareContext> {
         }
     }
 
-    mutating func insert(middleware: AnyMiddleware<Input, Output, Context>,
+    mutating func insert(middleware: AnyMiddleware<Input, Output>,
                          relativeTo: String,
                          position: Position) {
         _items[middleware.id] = middleware
         order.insert(relativeTo: relativeTo, position: position, ids: middleware.id)
     }
 
-    func get(id: String) -> AnyMiddleware<Input, Output, Context>? {
+    func get(id: String) -> AnyMiddleware<Input, Output>? {
         return _items[id]
     }
 }

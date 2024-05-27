@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyAPI
+import Smithy
 import SmithyHTTPAPI
 import SmithyHTTPAuthAPI
 import XCTest
@@ -13,12 +13,12 @@ import SmithyTestUtil
 @testable import ClientRuntime
 
 class SignerMiddlewareTests: XCTestCase {
-    private var contextBuilder: OperationContextBuilder!
+    private var contextBuilder: ContextBuilder!
     private var operationStack: OperationStack<MockInput, MockOutput>!
 
     override func setUp() async throws {
         try await super.setUp()
-        contextBuilder = OperationContextBuilder()
+        contextBuilder = ContextBuilder()
         operationStack = OperationStack<MockInput, MockOutput>(id: "auth scheme middleware test stack")
     }
     
@@ -102,7 +102,7 @@ class SignerMiddlewareTests: XCTestCase {
     }
 
     private func AssertRequestWasSigned(
-        builtContext: OperationContext,
+        builtContext: Context,
         file: StaticString = #file,
         line: UInt = #line
     ) async throws {

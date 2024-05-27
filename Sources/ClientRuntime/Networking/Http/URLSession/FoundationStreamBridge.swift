@@ -7,8 +7,8 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
-import protocol SmithyAPI.LogAgent
-import protocol SmithyStreamsAPI.ReadableStream
+import protocol Smithy.LogAgent
+import protocol Smithy.ReadableStream
 import func Foundation.CFWriteStreamSetDispatchQueue
 import class Foundation.DispatchQueue
 import class Foundation.NSObject

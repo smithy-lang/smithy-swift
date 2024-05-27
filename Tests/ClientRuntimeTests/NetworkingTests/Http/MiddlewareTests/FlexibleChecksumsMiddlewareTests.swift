@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyAPI
-import SmithyStreamsAPI
+import Smithy
+import SmithyChecksumsAPI
 @_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
 import XCTest
 import AwsCommonRuntimeKit
@@ -14,7 +14,7 @@ import SmithyTestUtil
 @testable import ClientRuntime
 
 class FlexibleChecksumsMiddlewareTests: XCTestCase {
-    private var builtContext: OperationContext!
+    private var builtContext: Context!
     private var stack: OperationStack<MockInput, MockOutput>!
     private let testLogger = TestLogger()
 
@@ -24,7 +24,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         // Initialize function needs to be called before interacting with CRT
         CommonRuntimeKit.initialize()
 
-        builtContext = OperationContextBuilder()
+        builtContext = ContextBuilder()
                   .withMethod(value: .get)
                   .withPath(value: "/")
                   .withOperation(value: "Test Operation")

@@ -1,9 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-import struct SmithyAPI.AttributeKey
-import class SmithyAPI.OperationContext
-import enum SmithyStreamsAPI.StreamError
+import struct Smithy.AttributeKey
+import class Smithy.Context
+import enum Smithy.StreamError
 @_spi(SdkHttpRequestBuilder) import class SmithyHTTPAPI.SdkHttpRequestBuilder
 
 public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
@@ -31,20 +31,19 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
                           next: H) async throws -> MOutput
     where H: Handler,
     Self.MInput == H.Input,
-    Self.MOutput == H.Output,
-    Self.Context == H.Context {
+    Self.MOutput == H.Output {
         try addHeaders(builder: input, attributes: context)
         return try await next.handle(context: context, input: input)
     }
 
-    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: OperationContext) throws {
+    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: Context) throws {
         switch builder.body {
         case .data(let data):
             let contentLength = data?.count ?? 0
             builder.headers.update(name: "Content-Length", value: String(contentLength))
         case .stream(let stream):
             if let length = stream.length {
-                if !stream.isEligibleForAwsChunkedStreaming()
+                if !stream.isEligibleForAwsChunkedStreaming
                     && !(builder.headers.value(for: "Transfer-Encoding") == "chunked") {
                     builder.headers.update(name: "Content-Length", value: String(length))
                 }
@@ -69,7 +68,6 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = OperationContext
 }
 
 extension ContentLengthMiddleware: HttpInterceptor {

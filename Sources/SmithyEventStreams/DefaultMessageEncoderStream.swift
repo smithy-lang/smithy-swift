@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.Data
-import SmithyStreamsAPI
+import Smithy
 import SmithyEventStreamsAPI
 import SmithyEventStreamsAuthAPI
+import struct Foundation.Data
 
 // Code left indented to prevent Git diff from being blown up by whitespace changes.
 // Will fix after event stream modularizaion has been reviewed.

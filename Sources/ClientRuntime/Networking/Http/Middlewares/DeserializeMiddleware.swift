@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyAPI.OperationContext
-import protocol SmithyAPI.ResponseMessageDeserializer
+import class Smithy.Context
+import protocol Smithy.ResponseMessageDeserializer
 import SmithyReadWrite
 import SmithyHTTPAPI
 
@@ -22,13 +22,12 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
         self.wireResponseClosure = wireResponseClosure
         self.wireResponseErrorClosure = wireResponseErrorClosure
     }
-    public func handle<H>(context: OperationContext,
+    public func handle<H>(context: Context,
                           input: SdkHttpRequest,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
             Self.MInput == H.Input,
-            Self.MOutput == H.Output,
-            Self.Context == H.Context {
+            Self.MOutput == H.Output {
 
             var response = try await next.handle(context: context, input: input) // call handler to get http response
 
@@ -51,13 +50,12 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
 
     public typealias MInput = SdkHttpRequest
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = OperationContext
 }
 
 extension DeserializeMiddleware: ResponseMessageDeserializer {
     public func deserialize(
         response: HttpResponse,
-        attributes: OperationContext
+        attributes: Context
     ) async throws -> Result<OperationStackOutput, Error> {
         // check if the response body was effected by a previous middleware
         if let contextBody = attributes.httpResponse?.body {

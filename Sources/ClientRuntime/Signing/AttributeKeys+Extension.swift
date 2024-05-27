@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.AttributeKey
+import struct Smithy.AttributeKey
 
 enum AttributeKeys {
     // Keys used to store/retrieve SigningConfig fields in/from signingProperties passed to Signer

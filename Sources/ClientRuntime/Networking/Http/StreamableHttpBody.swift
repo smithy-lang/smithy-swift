@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum SmithyStreamsAPI.ByteStream
-import enum SmithyStreamsAPI.StreamError
+import enum Smithy.ByteStream
+import enum Smithy.StreamError
 import struct Foundation.Data
 import AwsCommonRuntimeKit
 

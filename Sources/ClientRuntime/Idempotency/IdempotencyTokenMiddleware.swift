@@ -5,9 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyAPI.OperationContext
+import protocol Smithy.HasAttributes
+import class Smithy.Context
 
-public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutput>: ClientRuntime.Middleware {
+public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: Swift.String = "IdempotencyTokenMiddleware"
     private let keyPath: WritableKeyPath<OperationStackInput, String?>
 
@@ -15,15 +16,15 @@ public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutp
         self.keyPath = keyPath
     }
 
-    public func handle<H>(context: Context,
+    public func handle<H>(context: Smithy.Context,
                           input: MInput,
                           next: H) async throws -> MOutput
-    where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output, Self.Context == H.Context {
+    where H: Handler, Self.MInput == H.Input, Self.MOutput == H.Output {
         let withToken = addToken(input: input, attributes: context)
         return try await next.handle(context: context, input: withToken)
     }
 
-    private func addToken(input: OperationStackInput, attributes: OperationContext) -> OperationStackInput {
+    private func addToken(input: OperationStackInput, attributes: Smithy.Context) -> OperationStackInput {
         var copiedInput = input
         if input[keyPath: keyPath] == nil {
             let idempotencyTokenGenerator = attributes.getIdempotencyTokenGenerator()
@@ -34,7 +35,7 @@ public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutp
 
     public typealias MInput = OperationStackInput
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = OperationContext
+    public typealias Context = Smithy.Context
 }
 
 extension IdempotencyTokenMiddleware: HttpInterceptor {

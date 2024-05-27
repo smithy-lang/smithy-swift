@@ -28,7 +28,7 @@ let package = Package(
         .watchOS(.v6)
     ],
     products: [
-        .library(name: "SmithyAPI", targets: ["SmithyAPI"]),
+        .library(name: "Smithy", targets: ["Smithy"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
@@ -39,10 +39,10 @@ let package = Package(
         .library(name: "SmithyIdentityAPI", targets: ["SmithyIdentityAPI"]),
         .library(name: "SmithyHTTPAPI", targets: ["SmithyHTTPAPI"]),
         .library(name: "SmithyHTTPAuthAPI", targets: ["SmithyHTTPAuthAPI"]),
-        .library(name: "SmithyStreamsAPI", targets: ["SmithyStreamsAPI"]),
         .library(name: "SmithyEventStreamsAPI", targets: ["SmithyEventStreamsAPI"]),
         .library(name: "SmithyEventStreamsAuthAPI", targets: ["SmithyEventStreamsAuthAPI"]),
         .library(name: "SmithyEventStreams", targets: ["SmithyEventStreams"]),
+        .library(name: "SmithyChecksumsAPI", targets: ["SmithyChecksumsAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: [
@@ -50,14 +50,11 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
-        .target(
-            name: "SmithyAPI",
-            dependencies: ["SmithyStreamsAPI"]
-        ),
+        .target(name: "Smithy"),
         .target(
             name: "ClientRuntime",
             dependencies: [
-                "SmithyAPI",
+                "Smithy",
                 "SmithyRetriesAPI",
                 "SmithyRetries",
                 "SmithyXML",
@@ -66,9 +63,9 @@ let package = Package(
                 "SmithyIdentityAPI",
                 "SmithyHTTPAPI",
                 "SmithyHTTPAuthAPI",
-                "SmithyStreamsAPI",
                 "SmithyEventStreamsAPI",
                 "SmithyEventStreamsAuthAPI",
+                "SmithyChecksumsAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "Logging", package: "swift-log"),
             ],
@@ -91,9 +88,7 @@ let package = Package(
         ),
         .target(
             name: "SmithyReadWrite",
-            dependencies: [
-                "SmithyTimestamps"
-            ]
+            dependencies: ["SmithyTimestamps"]
         ),
         .target(
             name: "SmithyXML",
@@ -127,29 +122,31 @@ let package = Package(
         ),
         .target(
             name: "SmithyIdentityAPI",
-            dependencies: ["SmithyAPI"]
+            dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyHTTPAPI",
-            dependencies: ["SmithyAPI", "SmithyStreamsAPI"]
+            dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyHTTPAuthAPI",
-            dependencies: ["SmithyHTTPAPI"]
+            dependencies: ["Smithy", "SmithyHTTPAPI"]
         ),
         .target(
-            name: "SmithyStreamsAPI"
-        ),
-        .target(
-            name: "SmithyEventStreamsAPI"
+            name: "SmithyEventStreamsAPI",
+            dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyEventStreamsAuthAPI",
-            dependencies: ["SmithyStreamsAPI", "SmithyEventStreamsAPI"]
+            dependencies: ["Smithy", "SmithyEventStreamsAPI"]
         ),
         .target(
             name: "SmithyEventStreams",
-            dependencies: ["SmithyStreamsAPI", "SmithyEventStreamsAPI", "SmithyEventStreamsAuthAPI"]
+            dependencies: ["Smithy", "SmithyEventStreamsAPI", "SmithyEventStreamsAuthAPI"]
+        ),
+        .target(
+            name: "SmithyChecksumsAPI",
+            dependencies: ["Smithy"]
         ),
         .testTarget(
             name: "ClientRuntimeTests",

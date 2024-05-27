@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
+@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+import SmithyHTTPAuthAPI
 import SmithyReadWrite
 import SmithyXML
 import XCTest
@@ -17,17 +20,17 @@ final class RetryIntegrationTests: XCTestCase {
     private let partitionIDKey = AttributeKey<String>(name: "PartitionID")
     private let partitionID = "partition"
 
-    private var context: HttpContext!
+    private var context: Context!
     private var next: TestOutputHandler!
     private var subject: RetryMiddleware<DefaultRetryStrategy, DefaultRetryErrorInfoProvider, TestOutputResponse>!
     private var quota: RetryQuota { get async { await subject.strategy.quotaRepository.quota(partitionID: partitionID) } }
 
     private func setUp(availableCapacity: Int, maxCapacity: Int, maxRetriesBase: Int, maxBackoff: TimeInterval) async {
         // Setup the HTTP context, used by the retry middleware
-        context = HttpContext(attributes: Attributes())
+        context = Context(attributes: Attributes())
         context.attributes.set(key: partitionIDKey, value: partitionID)
-        context.attributes.set(key: AttributeKeys.socketTimeout, value: 60.0)
-        context.attributes.set(key: AttributeKeys.estimatedSkew, value: 30.0)
+        context.socketTimeout = 60.0
+        context.estimatedSkew = 30.0
 
         // Create the test output handler, which is the "next" middleware called by the retry middleware
         next = TestOutputHandler()
@@ -203,7 +206,6 @@ private class TestOutputHandler: Handler {
 
     typealias Input = SdkHttpRequestBuilder
     typealias Output = OperationOutput<TestOutputResponse>
-    typealias Context = HttpContext
 
     var index = 0
     fileprivate var testSteps = [TestStep]()
@@ -214,7 +216,7 @@ private class TestOutputHandler: Handler {
     var invocationID = ""
     var prevAttemptNum = 0
 
-    func handle(context: ClientRuntime.HttpContext, input: SdkHttpRequestBuilder) async throws -> OperationOutput<TestOutputResponse> {
+    func handle(context: Context, input: SdkHttpRequestBuilder) async throws -> OperationOutput<TestOutputResponse> {
         if index == testSteps.count { throw RetryIntegrationTestError.maxAttemptsExceeded }
 
         // Verify the results of the previous test step, if there was one.
@@ -303,7 +305,7 @@ private class TestOutputHandler: Handler {
 
 // Thrown during a test to simulate a server response with a given HTTP status code.
 private struct TestHTTPError: HTTPError, Error {
-    var httpResponse: ClientRuntime.HttpResponse
+    var httpResponse: HttpResponse
 
     init(statusCode: Int) {
         guard let statusCodeValue = HttpStatusCode(rawValue: statusCode) else { fatalError("Unrecognized HTTP code") }

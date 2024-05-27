@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyAPI
+import Smithy
 import SmithyHTTPAPI
 import SmithyHTTPAuthAPI
 import SmithyIdentityAPI
@@ -14,12 +14,12 @@ import SmithyTestUtil
 @testable import ClientRuntime
 
 class AuthSchemeMiddlewareTests: XCTestCase {
-    private var contextBuilder: OperationContextBuilder!
+    private var contextBuilder: ContextBuilder!
     private var operationStack: OperationStack<MockInput, MockOutput>!
 
     override func setUp() async throws {
         try await super.setUp()
-        contextBuilder = OperationContextBuilder()
+        contextBuilder = ContextBuilder()
             .withAuthSchemeResolver(value: DefaultMockAuthSchemeResolver())
             .withAuthScheme(value: MockNoAuth())
             .withIdentityResolver(value: MockIdentityResolver(), schemeID: "MockAuthSchemeA")
@@ -128,7 +128,7 @@ class AuthSchemeMiddlewareTests: XCTestCase {
     }
 
     private func AssertSelectedAuthSchemeMatches(
-        builtContext: OperationContext,
+        builtContext: Context,
         expectedAuthScheme: String,
         file: StaticString = #file,
         line: UInt = #line
@@ -136,7 +136,7 @@ class AuthSchemeMiddlewareTests: XCTestCase {
         operationStack.buildStep.intercept(position: .before, middleware: AuthSchemeMiddleware<MockOutput>())
 
         let mockHandler = MockHandler<MockOutput>(handleCallback: { (context, input) in
-            let selectedAuthScheme = context.getSelectedAuthScheme()
+            let selectedAuthScheme = context.selectedAuthScheme
             XCTAssertEqual(expectedAuthScheme, selectedAuthScheme?.schemeID, file: file, line: line)
             let httpResponse = HttpResponse(body: .noStream, statusCode: HttpStatusCode.ok)
             let mockOutput = MockOutput()

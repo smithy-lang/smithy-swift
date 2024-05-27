@@ -1,13 +1,13 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-import protocol SmithyAPI.MiddlewareContext
+import class Smithy.Context
 
 /// used to wrap a handler function as a handler
-struct WrappedHandler<MInput, MOutput, Context: MiddlewareContext, MError: Error>: Handler {
-    let _handler: HandlerFunction<MInput, MOutput, Context, MError>
+struct WrappedHandler<MInput, MOutput, MError: Error>: Handler {
+    let _handler: HandlerFunction<MInput, MOutput, MError>
 
-    init(_ handler: @escaping HandlerFunction<MInput, MOutput, Context, MError>) {
+    init(_ handler: @escaping HandlerFunction<MInput, MOutput, MError>) {
         self._handler = handler
     }
 

@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.Attributes
-import struct SmithyAPI.AttributeKey
-import class SmithyAPI.OperationContext
-import enum SmithyHTTPAPI.ClientError
+import enum Smithy.ClientError
+import struct Smithy.Attributes
+import struct Smithy.AttributeKey
+import class Smithy.Context
 import class SmithyHTTPAPI.SdkHttpRequestBuilder
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 import protocol SmithyHTTPAuthAPI.AuthScheme
@@ -20,13 +20,11 @@ public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = OperationContext
 
-    public func handle<H>(context: OperationContext,
+    public func handle<H>(context: Context,
                           input: SdkHttpRequestBuilder,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
-    Self.Context == H.Context,
     Self.MInput == H.Input,
     Self.MOutput == H.Output {
         _ = try await select(attributes: context)
@@ -35,9 +33,8 @@ public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
 }
 
 extension AuthSchemeMiddleware: SelectAuthScheme {
-    public typealias AttributesType = OperationContext
-    
-    public func select(attributes: OperationContext) async throws -> SelectedAuthScheme? {
+
+    public func select(attributes: Context) async throws -> SelectedAuthScheme? {
         // Get auth scheme resolver from middleware context
         guard let resolver = attributes.getAuthSchemeResolver() else {
             throw ClientError.authError("No auth scheme resolver has been configured on the service.")

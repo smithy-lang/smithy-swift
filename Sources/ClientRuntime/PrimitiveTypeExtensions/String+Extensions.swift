@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import enum SmithyHTTPAPI.ClientError
+import enum Smithy.ClientError
 import struct Foundation.Data
 import AwsCommonRuntimeKit
 

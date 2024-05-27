@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.RequestMessage
-import protocol SmithyAPI.ResponseMessage
-import protocol SmithyAPI.HasAttributes
+import protocol Smithy.RequestMessage
+import protocol Smithy.ResponseMessage
+import protocol Smithy.HasAttributes
 
 /// Container for 0 or more interceptors that supports adding concrete interceptor
 /// implementations and closures that act as single-hook interceptors.

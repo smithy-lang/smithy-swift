@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import protocol SmithyAPI.LogAgent
-import enum SmithyStreamsAPI.StreamError
-import enum SmithyStreamsAPI.ByteStreamError
+import protocol Smithy.LogAgent
+import enum Smithy.StreamError
+import enum Smithy.ByteStreamError
 import protocol SmithyHTTPAPI.HTTPClient
 import struct SmithyHTTPAPI.Headers
 import struct SmithyHTTPAPI.Endpoint
@@ -199,7 +199,7 @@ public class CRTClientEngine: HTTPClient {
                                 }
                                 let body = request.body
 
-                                guard case .stream(let stream) = body, stream.isEligibleForAwsChunkedStreaming() else {
+                                guard case .stream(let stream) = body, stream.isEligibleForAwsChunkedStreaming else {
                                     throw ByteStreamError.invalidStreamTypeForChunkedBody(
                                         "The stream is not eligible for AWS chunked streaming or is not a stream type!"
                                     )

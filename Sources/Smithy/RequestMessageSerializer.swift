@@ -10,7 +10,7 @@
 /// Implementations do not necessarily have to perform complete serialization, but
 /// may serialize parts of the input. This allows for serializers to be composed
 /// together (which should be done by `Orchestrator`).
-public protocol RequestMessageSerializer<InputType, RequestType, AttributesType> {
+public protocol RequestMessageSerializer<InputType, RequestType> {
 
     /// The type of the modeled operation input.
     associatedtype InputType
@@ -18,13 +18,10 @@ public protocol RequestMessageSerializer<InputType, RequestType, AttributesType>
     /// The type of the serialized request message.
     associatedtype RequestType: RequestMessage
 
-    /// The type of the attributes the serializer requires.
-    associatedtype AttributesType: HasAttributes
-
     /// Applies the serializer to the given input, modifying the builder.
     /// - Parameters:
     ///   - input: The modeled operation input to serialize.
     ///   - builder: The builder for the serialized message.
     ///   - attributes: The attributes available to the serializer.
-    func apply(input: InputType, builder: RequestType.RequestBuilderType, attributes: AttributesType) throws
+    func apply(input: InputType, builder: RequestType.RequestBuilderType, attributes: Context) throws
 }

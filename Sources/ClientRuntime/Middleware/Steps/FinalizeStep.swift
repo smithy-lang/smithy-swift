@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-import class SmithyAPI.OperationContext
+import class Smithy.Context
 import class SmithyHTTPAPI.SdkHttpRequest
 import class SmithyHTTPAPI.SdkHttpRequestBuilder
 import class SmithyHTTPAPI.HttpResponse
@@ -14,15 +14,13 @@ import class SmithyHTTPAPI.HttpResponse
 // Takes Request, and returns result or error.
 //
 // Receives result or error from Deserialize step.
-public typealias FinalizeStep<OperationStackOutput> = MiddlewareStep<OperationContext,
-                                                                     SdkHttpRequestBuilder,
+public typealias FinalizeStep<OperationStackOutput> = MiddlewareStep<SdkHttpRequestBuilder,
                                                                      OperationOutput<OperationStackOutput>>
 
 public let FinalizeStepId = "Finalize"
 
 public struct FinalizeStepHandler<OperationStackOutput, H: Handler>: Handler
-    where H.Context == OperationContext,
-          H.Input == SdkHttpRequest,
+    where H.Input == SdkHttpRequest,
           H.Output == OperationOutput<OperationStackOutput> {
 
     public typealias Input = SdkHttpRequestBuilder
@@ -35,7 +33,7 @@ public struct FinalizeStepHandler<OperationStackOutput, H: Handler>: Handler
         self.handler = handler
     }
 
-    public func handle(context: OperationContext, input: Input) async throws -> Output {
+    public func handle(context: Smithy.Context, input: Input) async throws -> Output {
         return try await handler.handle(context: context, input: input.build())
     }
 }

@@ -5,7 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyAPI.OperationContext
+import class Smithy.Context
+import enum Smithy.ClientError
 import class Foundation.DateFormatter
 import struct Foundation.Locale
 import struct Foundation.TimeInterval
@@ -22,7 +23,6 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = OperationContext
 
     public var id: String { "Retry" }
     public var strategy: Strategy
@@ -39,7 +39,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
 
     public func handle<H>(context: Context, input: SdkHttpRequestBuilder, next: H) async throws ->
         OperationOutput<OperationStackOutput>
-        where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
+        where H: Handler, MInput == H.Input, MOutput == H.Output {
 
         input.headers.add(name: "amz-sdk-invocation-id", value: invocationID)
 
@@ -56,7 +56,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
         input: MInput, next: H
     ) async throws ->
         OperationOutput<OperationStackOutput>
-        where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
+        where H: Handler, MInput == H.Input, MOutput == H.Output {
         do {
             let serviceResponse = try await next.handle(context: context, input: input)
             await strategy.recordSuccess(token: token)

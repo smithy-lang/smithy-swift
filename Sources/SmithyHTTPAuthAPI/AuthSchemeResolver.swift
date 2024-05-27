@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyAPI.OperationContext
+import class Smithy.Context
 
 public protocol AuthSchemeResolver {
     func resolveAuthScheme(params: AuthSchemeResolverParameters) throws -> [AuthOption]
-    func constructParameters(context: OperationContext) throws -> AuthSchemeResolverParameters
+    func constructParameters(context: Context) throws -> AuthSchemeResolverParameters
 }

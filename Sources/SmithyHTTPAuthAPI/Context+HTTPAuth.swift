@@ -5,19 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.Attributes
-import struct SmithyAPI.AttributeKey
-import class SmithyAPI.OperationContext
-import class SmithyAPI.OperationContextBuilder
+import struct Smithy.Attributes
+import struct Smithy.AttributeKey
+import class Smithy.Context
+import class Smithy.ContextBuilder
 
-public extension OperationContext {
+public extension Context {
 
     func getAuthSchemes() -> Attributes? {
         return attributes.get(key: authSchemesKey)
     }
 
-    func getSelectedAuthScheme() -> SelectedAuthScheme? {
-        return attributes.get(key: selectedAuthSchemeKey)
+    var selectedAuthScheme: SelectedAuthScheme? {
+        get { attributes.get(key: selectedAuthSchemeKey) }
+        set { attributes.set(key: selectedAuthSchemeKey, value: newValue) }
     }
 
     func setSelectedAuthScheme(_ value: SelectedAuthScheme?) {
@@ -29,16 +30,16 @@ public extension OperationContext {
     }
 }
 
-extension OperationContextBuilder {
+extension ContextBuilder {
 
     @discardableResult
-    public func withAuthSchemeResolver(value: AuthSchemeResolver?) -> OperationContextBuilder {
+    public func withAuthSchemeResolver(value: AuthSchemeResolver?) -> ContextBuilder {
         self.attributes.set(key: authSchemeResolverKey, value: value)
         return self
     }
 
     @discardableResult
-    public func withAuthScheme(value: AuthScheme) -> OperationContextBuilder {
+    public func withAuthScheme(value: AuthScheme) -> ContextBuilder {
         var authSchemes: Attributes = self.attributes.get(key: authSchemesKey) ?? Attributes()
         authSchemes.set(key: AttributeKey<AuthScheme>(name: "\(value.schemeID)"), value: value)
         self.attributes.set(key: authSchemesKey, value: authSchemes)
@@ -46,7 +47,7 @@ extension OperationContextBuilder {
     }
 
     @discardableResult
-    public func withAuthSchemes(value: [AuthScheme]) -> OperationContextBuilder {
+    public func withAuthSchemes(value: [AuthScheme]) -> ContextBuilder {
         for scheme in value {
             self.withAuthScheme(value: scheme)
         }
@@ -54,7 +55,7 @@ extension OperationContextBuilder {
     }
 
     @discardableResult
-    public func withSelectedAuthScheme(value: SelectedAuthScheme) -> OperationContextBuilder {
+    public func withSelectedAuthScheme(value: SelectedAuthScheme) -> ContextBuilder {
         self.attributes.set(key: selectedAuthSchemeKey, value: value)
         return self
     }

@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.RequestMessage
-import protocol SmithyAPI.ResponseMessage
-import protocol SmithyAPI.HasAttributes
+import protocol Smithy.RequestMessage
+import protocol Smithy.ResponseMessage
+import protocol Smithy.HasAttributes
 
 /// The base type of all context objects passed to `Interceptor` methods.
 public protocol InterceptorContext: AnyObject {

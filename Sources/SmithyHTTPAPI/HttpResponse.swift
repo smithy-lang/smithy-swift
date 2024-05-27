@@ -5,10 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyAPI.ResponseMessage
-import protocol SmithyStreamsAPI.Stream
-import enum SmithyStreamsAPI.ByteStream
-import protocol SmithyReadWrite.WireDataProviding
+import protocol Smithy.ResponseMessage
+import protocol Smithy.Stream
+import enum Smithy.ByteStream
 
 public class HttpResponse: HttpUrlResponse, ResponseMessage {
 

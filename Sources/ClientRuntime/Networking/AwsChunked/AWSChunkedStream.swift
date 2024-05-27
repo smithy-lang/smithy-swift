@@ -5,8 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyStreamsAPI.Stream
+import protocol Smithy.Stream
 import struct SmithyHTTPAPI.Headers
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import struct Foundation.Data
 import AwsCommonRuntimeKit
 

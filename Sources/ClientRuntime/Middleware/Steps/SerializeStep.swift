@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-import class SmithyAPI.OperationContext
+import class Smithy.Context
 import class SmithyHTTPAPI.SdkHttpRequestBuilder
 
 /// Serializes the prepared input into a data structure that can be consumed
@@ -11,13 +11,12 @@ import class SmithyHTTPAPI.SdkHttpRequestBuilder
 ///
 /// Receives result or error from Build step.
 public typealias SerializeStep<OperationStackInput, OperationStackOutput> =
-    MiddlewareStep<OperationContext, SerializeStepInput<OperationStackInput>, OperationOutput<OperationStackOutput>>
+    MiddlewareStep<SerializeStepInput<OperationStackInput>, OperationOutput<OperationStackOutput>>
 
 public let SerializeStepId = "Serialize"
 
 public struct SerializeStepHandler<OperationStackInput, OperationStackOutput, H: Handler>: Handler
-    where H.Context == OperationContext,
-          H.Input == SdkHttpRequestBuilder,
+    where H.Input == SdkHttpRequestBuilder,
           H.Output == OperationOutput<OperationStackOutput> {
 
     public typealias Input = SerializeStepInput<OperationStackInput>
@@ -30,7 +29,7 @@ public struct SerializeStepHandler<OperationStackInput, OperationStackOutput, H:
         self.handler = handler
     }
 
-    public func handle(context: OperationContext, input: Input) async throws -> Output {
+    public func handle(context: Smithy.Context, input: Input) async throws -> Output {
         return try await handler.handle(context: context, input: input.builder)
     }
 }

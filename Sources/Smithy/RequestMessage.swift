@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum SmithyStreamsAPI.ByteStream
-
 /// Message that is sent from client to service.
 public protocol RequestMessage {
 

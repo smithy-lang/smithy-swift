@@ -5,31 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.Attributes
+import struct Smithy.Attributes
 import class SmithyHTTPAPI.SdkHttpRequestBuilder
 import protocol SmithyIdentityAPI.Identity
-import struct Foundation.Data
 
 public protocol Signer {
+
     func signRequest<IdentityT: Identity>(
         requestBuilder: SdkHttpRequestBuilder,
         identity: IdentityT,
         signingProperties: Attributes
     ) async throws -> SdkHttpRequestBuilder
-
-//    func signEvent(
-//        payload: Data,
-//        previousSignature: String,
-//        signingProperties: Attributes
-//    ) async throws -> SigningResult<Message>
-}
-
-public struct SigningResult<T> {
-    public let output: T
-    public let signature: String
-
-    public init(output: T, signature: String) {
-        self.output = output
-        self.signature = signature
-    }
 }

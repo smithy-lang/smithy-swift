@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyAPI
+import Smithy
 import XCTest
 @testable import ClientRuntime
 import SmithyTestUtil
@@ -14,13 +14,13 @@ class MutateHeaderMiddlewareTests: XCTestCase {
     var httpClientConfiguration: HttpClientConfiguration! = nil
     var clientEngine: MockHttpClientEngine! = nil
     var httpClient: SdkHttpClient! = nil
-    var builtContext: OperationContext! = nil
+    var builtContext: Context! = nil
     var stack: OperationStack<MockInput, MockOutput>! = nil
     override func setUp() {
         httpClientConfiguration = HttpClientConfiguration()
         clientEngine = MockHttpClientEngine()
         httpClient = SdkHttpClient(engine: clientEngine, config: httpClientConfiguration)
-        builtContext = OperationContextBuilder()
+        builtContext = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/headers")
             .withOperation(value: "Test Operation")

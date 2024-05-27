@@ -5,16 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyAPI.Attributes
-import struct SmithyAPI.AttributeKey
-import class SmithyAPI.OperationContext
-import class SmithyAPI.OperationContextBuilder
-import protocol SmithyEventStreamsAPI.MessageEncoder
-import protocol SmithyEventStreamsAuthAPI.MessageSigner
+import struct Smithy.Attributes
+import struct Smithy.AttributeKey
+import class Smithy.Context
+import class Smithy.ContextBuilder
 import struct Foundation.TimeInterval
 
 /// This extends `OperationContext` for all http middleware operations
-extension OperationContext {
+extension Context {
 
     public var httpResponse: HttpResponse? {
         get { attributes.get(key: httpResponseKey) }
@@ -22,35 +20,23 @@ extension OperationContext {
     }
 
     public func getExpiration() -> TimeInterval {
-        return attributes.get(key: AttributeKeys.expiration) ?? 0
-    }
-
-    public func getFlowType() -> FlowType {
-        return attributes.get(key: AttributeKeys.flowType) ?? .NORMAL
+        return attributes.get(key: SmithyHTTPAPIKeys.expiration) ?? 0
     }
 
     public func getHost() -> String? {
-        return attributes.get(key: AttributeKeys.host)
+        return attributes.get(key: SmithyHTTPAPIKeys.host)
     }
 
     public func getHostPrefix() -> String? {
-        return attributes.get(key: AttributeKeys.hostPrefix)
-    }
-
-    public func getMessageEncoder() -> MessageEncoder? {
-        return attributes.get(key: AttributeKeys.messageEncoder)
-    }
-
-    public func getMessageSigner() -> MessageSigner? {
-        return attributes.get(key: AttributeKeys.messageSigner)
+        return attributes.get(key: SmithyHTTPAPIKeys.hostPrefix)
     }
 
     public func getMethod() -> HttpMethodType {
-        return attributes.get(key: AttributeKeys.method)!
+        return attributes.get(key: SmithyHTTPAPIKeys.method)!
     }
 
     public func getOperation() -> String? {
-        return attributes.get(key: AttributeKeys.operation)
+        return attributes.get(key: SmithyHTTPAPIKeys.operation)
     }
 
     /// The partition ID to be used for this context.
@@ -58,44 +44,45 @@ extension OperationContext {
     /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
     /// If no partition ID is provided, requests will be partitioned based on the hostname.
     public func getPartitionID() -> String? {
-        return attributes.get(key: AttributeKeys.partitionId)
+        return attributes.get(key: SmithyHTTPAPIKeys.partitionId)
     }
 
     public func getPath() -> String {
-        return attributes.get(key: AttributeKeys.path)!
+        return attributes.get(key: SmithyHTTPAPIKeys.path)!
     }
 
     public func getRegion() -> String? {
-        return attributes.get(key: AttributeKeys.region)
+        return attributes.get(key: SmithyHTTPAPIKeys.region)
     }
 
     public func getServiceName() -> String {
-        return attributes.get(key: AttributeKeys.serviceName)!
+        return attributes.get(key: SmithyHTTPAPIKeys.serviceName)!
     }
 
     public func getSigningName() -> String? {
-        return attributes.get(key: AttributeKeys.signingName)
+        return attributes.get(key: SmithyHTTPAPIKeys.signingName)
     }
 
     public func getSigningRegion() -> String? {
-        return attributes.get(key: AttributeKeys.signingRegion)
+        return attributes.get(key: SmithyHTTPAPIKeys.signingRegion)
     }
 
     public func hasUnsignedPayloadTrait() -> Bool {
-        return attributes.get(key: AttributeKeys.hasUnsignedPayloadTrait) ?? false
+        return attributes.get(key: SmithyHTTPAPIKeys.hasUnsignedPayloadTrait) ?? false
     }
 
-    public func isBidirectionalStreamingEnabled() -> Bool {
-        return attributes.get(key: AttributeKeys.bidirectionalStreaming) ?? false
+    public var isBidirectionalStreamingEnabled: Bool {
+        get { attributes.get(key: bidirectionalStreamingKey) ?? false }
+        set { attributes.set(key: bidirectionalStreamingKey, value: newValue) }
     }
 
     /// Returns `true` if the request should use `http2` and only `http2` without falling back to `http1`
     public func shouldForceH2() -> Bool {
-        return isBidirectionalStreamingEnabled()
+        return isBidirectionalStreamingEnabled
     }
 }
 
-extension OperationContextBuilder {
+extension ContextBuilder {
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -109,37 +96,31 @@ extension OperationContextBuilder {
 
     @discardableResult
     public func withExpiration(value: TimeInterval) -> Self {
-        self.attributes.set(key: AttributeKeys.expiration, value: value)
-        return self
-    }
-
-    @discardableResult
-    public func withFlowType(value: FlowType) -> Self {
-        self.attributes.set(key: AttributeKeys.flowType, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.expiration, value: value)
         return self
     }
 
     @discardableResult
     public func withHost(value: String) -> Self {
-        self.attributes.set(key: AttributeKeys.host, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.host, value: value)
         return self
     }
 
     @discardableResult
     public func withHostPrefix(value: String) -> Self {
-        self.attributes.set(key: AttributeKeys.hostPrefix, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.hostPrefix, value: value)
         return self
     }
 
     @discardableResult
     public func withMethod(value: HttpMethodType) -> Self {
-        self.attributes.set(key: AttributeKeys.method, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.method, value: value)
         return self
     }
 
     @discardableResult
     public func withOperation(value: String) -> Self {
-        self.attributes.set(key: AttributeKeys.operation, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.operation, value: value)
         return self
     }
 
@@ -151,54 +132,56 @@ extension OperationContextBuilder {
     /// - Returns: `self`, after the partition ID is set as specified.
     @discardableResult
     public func withPartitionID(value: String?) -> Self {
-        self.attributes.set(key: AttributeKeys.partitionId, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.partitionId, value: value)
         return self
     }
 
     @discardableResult
     public func withPath(value: String) -> Self {
-        self.attributes.set(key: AttributeKeys.path, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.path, value: value)
         return self
     }
 
     @discardableResult
     public func withRegion(value: String?) -> Self {
-        self.attributes.set(key: AttributeKeys.region, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.region, value: value)
         return self
     }
 
     @discardableResult
     public func withServiceName(value: String) -> Self {
-        self.attributes.set(key: AttributeKeys.serviceName, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.serviceName, value: value)
         return self
     }
 
     @discardableResult
     public func withSigningName(value: String) -> Self {
-        self.attributes.set(key: AttributeKeys.signingName, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.signingName, value: value)
         return self
     }
 
     @discardableResult
     public func withSigningRegion(value: String?) -> Self {
-        self.attributes.set(key: AttributeKeys.signingRegion, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.signingRegion, value: value)
         return self
     }
 
     @discardableResult
     public func withUnsignedPayloadTrait(value: Bool) -> Self {
-        self.attributes.set(key: AttributeKeys.hasUnsignedPayloadTrait, value: value)
+        self.attributes.set(key: SmithyHTTPAPIKeys.hasUnsignedPayloadTrait, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func withBidirectionalStreamingEnabled(value: Bool) -> Self {
+        self.attributes.set(key: bidirectionalStreamingKey, value: value)
         return self
     }
 }
 
-public enum AttributeKeys {
-    public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
-    public static let flowType = AttributeKey<FlowType>(name: "FlowType")
+public enum SmithyHTTPAPIKeys {
     public static let host = AttributeKey<String>(name: "Host")
     public static let hostPrefix = AttributeKey<String>(name: "HostPrefix")
-    public static let messageEncoder = AttributeKey<MessageEncoder>(name: "MessageEncoder")
-    public static let messageSigner = AttributeKey<MessageSigner>(name: "MessageSigner")
     public static let method = AttributeKey<HttpMethodType>(name: "Method")
     public static let operation = AttributeKey<String>(name: "Operation")
     public static let partitionId = AttributeKey<String>(name: "PartitionID")
@@ -215,8 +198,4 @@ public enum AttributeKeys {
 }
 
 private let httpResponseKey = AttributeKey<HttpResponse>(name: "httpResponseKey")
-
-// The type of flow the mdidleware context is being constructed for
-public enum FlowType {
-    case NORMAL, PRESIGN_REQUEST, PRESIGN_URL
-}
+private let bidirectionalStreamingKey = AttributeKey<Bool>(name: "BidirectionalStreamingKey")
