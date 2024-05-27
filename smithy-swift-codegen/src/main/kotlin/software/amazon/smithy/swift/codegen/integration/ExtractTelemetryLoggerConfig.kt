@@ -5,11 +5,12 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolServiceClient.ConfigClassVariablesCustomization
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolServiceClient.ConfigInitializerCustomization
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.utils.CodeInterceptor
 import software.amazon.smithy.utils.CodeSection
 
@@ -24,7 +25,7 @@ class ExtractTelemetryLoggerConfig : SwiftIntegration {
         }
 
         override fun append(writer: SwiftWriter, section: ConfigClassVariablesCustomization) {
-            writer.write("internal let logger: \$N", ClientRuntimeTypes.Core.Logger)
+            writer.write("internal let logger: \$N", SmithyTypes.LogAgent)
             writer.write("")
         }
     }

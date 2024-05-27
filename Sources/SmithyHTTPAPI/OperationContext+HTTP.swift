@@ -59,8 +59,14 @@ extension Context {
         return attributes.get(key: SmithyHTTPAPIKeys.serviceName)!
     }
 
-    public func getSigningName() -> String? {
-        return attributes.get(key: SmithyHTTPAPIKeys.signingName)
+    public var signingName: String? {
+        get { attributes.get(key: SmithyHTTPAPIKeys.signingName) }
+        set { attributes.set(key: SmithyHTTPAPIKeys.signingName, value: newValue) }
+    }
+
+    public var signingAlgorithm: String? {
+        get { attributes.get(key: SmithyHTTPAPIKeys.signingAlgorithm) }
+        set { attributes.set(key: SmithyHTTPAPIKeys.signingAlgorithm, value: newValue) }
     }
 
     public func getSigningRegion() -> String? {
@@ -189,6 +195,7 @@ public enum SmithyHTTPAPIKeys {
     public static let region = AttributeKey<String>(name: "Region")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
     public static let signingName = AttributeKey<String>(name: "SigningName")
+    public static let signingAlgorithm = AttributeKey<String>(name: "SigningAlgorithm")
     public static let signingRegion = AttributeKey<String>(name: "SigningRegion")
 
     // Flags stored in signingProperties passed to signers for presigner customizations.

@@ -6,7 +6,7 @@
 package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -53,13 +53,16 @@ open class EndpointResolverMiddleware(
     }
 
     override fun renderExtensions() {
+        writer.addImport(SwiftDependency.SMITHY.target)
+        writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
+        writer.addImport(SwiftDependency.SMITHY_HTTP_AUTH_API.target)
         writer.write(
             """
             extension EndpointResolverMiddleware: ApplyEndpoint {
                 public func apply(
                     request: SdkHttpRequest,
                     selectedAuthScheme: SelectedAuthScheme?,
-                    attributes: HttpContext) async throws -> SdkHttpRequest
+                    attributes: Smithy.Context) async throws -> SdkHttpRequest
                 {
                     let builder = request.toBuilder()
                     
@@ -95,12 +98,12 @@ open class EndpointResolverMiddleware(
                     }
                     
                     if let signingName = signingName {
-                       attributes.set(key: AttributeKeys.signingName, value: signingName) 
-                       attributes.set(key: AttributeKeys.selectedAuthScheme, value: selectedAuthScheme?.getCopyWithUpdatedSigningProperty(key: AttributeKeys.signingName, value: signingName))
+                       attributes.signingName = signingName 
+                       attributes.selectedAuthScheme = selectedAuthScheme?.getCopyWithUpdatedSigningProperty(key: SmithyHTTPAPIKeys.signingName, value: signingName)
                     }
                     
                     if let signingAlgorithm = signingAlgorithm {
-                        attributes.set(key: AttributeKeys.signingAlgorithm, value: SigningAlgorithm(rawValue: signingAlgorithm))
+                        attributes.signingAlgorithm = signingAlgorithm
                     }
                     
                     if let headers = endpoint.headers {
@@ -123,7 +126,7 @@ open class EndpointResolverMiddleware(
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
         writer.write(
             """
-            let selectedAuthScheme = context.getSelectedAuthScheme()
+            let selectedAuthScheme = context.selectedAuthScheme
             let request = input.build()
             let updatedRequest = try await apply(request: request, selectedAuthScheme: selectedAuthScheme, attributes: context)
             """.trimIndent()

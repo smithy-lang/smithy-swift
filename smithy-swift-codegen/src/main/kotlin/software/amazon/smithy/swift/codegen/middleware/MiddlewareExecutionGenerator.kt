@@ -4,8 +4,9 @@ import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes.Middleware.OperationStack
+import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes.Middleware.OperationStack
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
@@ -14,6 +15,8 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 typealias HttpMethodCallback = (OperationShape) -> String
 class MiddlewareExecutionGenerator(
@@ -34,10 +37,11 @@ class MiddlewareExecutionGenerator(
         flowType: ContextAttributeCodegenFlowType = ContextAttributeCodegenFlowType.NORMAL,
         onError: (SwiftWriter, String) -> Unit,
     ) {
+        writer.addImport(SwiftDependency.SMITHY.target)
         val operationErrorName = "${op.toUpperCamelCase()}OutputError"
         val inputShape = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op)
         val outputShape = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op)
-        writer.write("let context = \$N()", ClientRuntimeTypes.Http.HttpContextBuilder)
+        writer.write("let context = \$N()", SmithyTypes.ContextBuilder)
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op, flowType)
         }
@@ -56,9 +60,9 @@ class MiddlewareExecutionGenerator(
                 "let builder = OrchestratorBuilder<\$N, \$N, \$N, \$N, \$N>()",
                 inputShape,
                 outputShape,
-                ClientRuntimeTypes.Http.SdkHttpRequest,
-                ClientRuntimeTypes.Http.HttpResponse,
-                ClientRuntimeTypes.Http.HttpContext
+                SmithyHTTPAPITypes.SdkHttpRequest,
+                SmithyHTTPAPITypes.HttpResponse,
+                SmithyTypes.Context
             )
         }
 

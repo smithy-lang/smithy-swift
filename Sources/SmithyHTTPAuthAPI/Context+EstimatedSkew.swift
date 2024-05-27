@@ -7,6 +7,7 @@
 
 import struct Smithy.AttributeKey
 import class Smithy.Context
+import class Smithy.ContextBuilder
 import struct Foundation.TimeInterval
 
 public extension Context {
@@ -19,6 +20,15 @@ public extension Context {
     var socketTimeout: TimeInterval? {
         get { attributes.get(key: socketTimeoutKey) }
         set { attributes.set(key: socketTimeoutKey, value: newValue) }
+    }
+}
+
+public extension ContextBuilder {
+
+    @discardableResult
+    func withSocketTimeout(value newValue: TimeInterval) -> Self {
+        attributes.set(key: socketTimeoutKey, value: newValue)
+        return self
     }
 }
 

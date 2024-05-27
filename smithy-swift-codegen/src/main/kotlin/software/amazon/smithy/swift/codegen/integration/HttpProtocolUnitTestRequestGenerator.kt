@@ -11,6 +11,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
@@ -80,8 +81,8 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputShape = model.expectShape(outputShapeId)
             val outputSymbol = symbolProvider.toSymbol(outputShape)
             val outputErrorName = "${operation.toUpperCamelCase()}OutputError"
-
-            writer.write("let context = HttpContextBuilder()")
+            writer.addImport(SwiftDependency.SMITHY.target)
+            writer.write("let context = ContextBuilder()")
             val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
             val hasIdempotencyTokenTrait = idempotentMember != null
             val httpMethod = resolveHttpMethod(operation)
@@ -96,6 +97,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             if (!ctx.settings.useInterceptors) {
                 writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol>(id: \"${test.id}\")")
             } else {
+                writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
                 writer.write("let builder = OrchestratorBuilder<$inputSymbol, $outputSymbol, SdkHttpRequest, HttpResponse, HttpContext>()")
             }
 
@@ -153,6 +155,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("responseClosure: \$L,", responseClosure)
                 writer.openBlock("callback: { context, actual in", "}") {
                     renderBodyAssert(test, inputSymbol, inputShape)
+                    writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
                     writer.write("return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: \$N())", outputSymbol)
                 }
             }

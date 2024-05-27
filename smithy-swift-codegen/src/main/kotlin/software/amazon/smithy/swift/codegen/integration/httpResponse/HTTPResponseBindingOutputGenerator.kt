@@ -8,7 +8,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
@@ -24,6 +24,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProto
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 
 class HTTPResponseBindingOutputGenerator(
     val customizations: HTTPProtocolCustomizable,
@@ -50,13 +51,14 @@ class HTTPResponseBindingOutputGenerator(
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
             writer.addImports(ctx.service.responseWireProtocol)
             writer.openBlock("extension \$N {", "}", outputSymbol) {
                 writer.write("")
                 writer.openBlock(
                     "static func httpOutput(from httpResponse: \$N) async throws -> \$N {",
                     "}",
-                    ClientRuntimeTypes.Http.HttpResponse,
+                    SmithyHTTPAPITypes.HttpResponse,
                     outputSymbol,
                 ) {
                     if (responseBindings.isEmpty()) {

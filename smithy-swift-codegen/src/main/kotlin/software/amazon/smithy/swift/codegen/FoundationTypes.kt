@@ -8,6 +8,8 @@ package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 
 object FoundationTypes {
+    val Data = builtInSymbol("Data")
+    val Date = builtInSymbol("Date")
     val TimeInterval = builtInSymbol("TimeInterval")
 }
 

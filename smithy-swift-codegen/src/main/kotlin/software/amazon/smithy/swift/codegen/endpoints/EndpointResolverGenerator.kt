@@ -9,7 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Dependency
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
@@ -17,6 +17,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.middleware.EndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 /**
@@ -52,6 +53,7 @@ class EndpointResolverGenerator(
             val outputSymbol = Symbol.builder().name("OperationStackOutput").build()
             val outputErrorSymbol = Symbol.builder().name("OperationStackError").build()
             it.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            it.addImport(SwiftDependency.SMITHY_HTTP_API.target)
             it.write("")
             MiddlewareGenerator(it, endpointResolverMiddleware(it, inputSymbol, outputSymbol, outputErrorSymbol))
                 .generate()
@@ -60,7 +62,7 @@ class EndpointResolverGenerator(
 
     private fun renderResolverProtocol(writer: SwiftWriter) {
         writer.openBlock("public protocol \$L {", "}", EndpointTypes.EndpointResolver) {
-            writer.write("func resolve(params: EndpointParams) throws -> \$L", ClientRuntimeTypes.Core.Endpoint)
+            writer.write("func resolve(params: EndpointParams) throws -> \$L", SmithyHTTPAPITypes.Endpoint)
         }
     }
 
@@ -79,7 +81,7 @@ class EndpointResolverGenerator(
             }
             writer.write("")
             writer.openBlock(
-                "public func resolve(params: EndpointParams) throws -> \$L {", "}", ClientRuntimeTypes.Core.Endpoint
+                "public func resolve(params: EndpointParams) throws -> \$L {", "}", SmithyHTTPAPITypes.Endpoint
             ) {
                 endpointRules?.let {
                     writer.write("let context = try \$L()", ClientRuntimeTypes.Core.EndpointsRequestContext)

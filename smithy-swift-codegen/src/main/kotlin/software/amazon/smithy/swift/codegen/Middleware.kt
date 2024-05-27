@@ -6,6 +6,7 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol, step: OperationStep) {
     open val id: String get() = typeName

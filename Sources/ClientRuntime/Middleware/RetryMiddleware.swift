@@ -69,11 +69,11 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
                 context.getLogger()?.error("Failed to refresh retry token: \(errorInfo.errorType)")
                 throw operationError
             }
-            var estimatedSkew = context.estimatedSkew ?? {
+            let estimatedSkew = context.estimatedSkew ?? {
                 context.getLogger()?.info("Estimated skew not found; defaulting to zero.")
                 return 0
             }()
-            var socketTimeout = context.socketTimeout ?? {
+            let socketTimeout = context.socketTimeout ?? {
                 context.getLogger()?.info("Socket timeout value not found; defaulting to 60 seconds.")
                 return 60.0
             }()

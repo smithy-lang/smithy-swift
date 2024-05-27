@@ -6,11 +6,13 @@
 package software.amazon.smithy.swift.codegen.config
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.config.ClientConfiguration.Companion.runtimeSymbol
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.toOptional
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthAPITypes
 
 class DefaultHttpClientConfiguration : ClientConfiguration {
     override val swiftProtocolName: Symbol
@@ -19,7 +21,7 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
     override fun getProperties(ctx: ProtocolGenerator.GenerationContext): Set<ConfigProperty> = setOf(
         ConfigProperty(
             "httpClientEngine",
-            ClientRuntimeTypes.Http.HttpClient,
+            SmithyHTTPAPITypes.HttpClient,
             "ClientConfigurationDefaults.makeClient(httpClientConfiguration: " +
                 "httpClientConfiguration ?? ClientConfigurationDefaults.defaultHttpClientConfiguration" +
                 ")"
@@ -29,10 +31,10 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
             ClientRuntimeTypes.Http.HttpClientConfiguration,
             "ClientConfigurationDefaults.defaultHttpClientConfiguration"
         ),
-        ConfigProperty("authSchemes", ClientRuntimeTypes.Auth.AuthSchemes.toOptional()),
+        ConfigProperty("authSchemes", SmithyHTTPAuthAPITypes.AuthSchemes.toOptional()),
         ConfigProperty(
             "authSchemeResolver",
-            ClientRuntimeTypes.Auth.AuthSchemeResolver,
+            SmithyHTTPAuthAPITypes.AuthSchemeResolver,
             "ClientConfigurationDefaults.defaultAuthSchemeResolver"
         )
     )

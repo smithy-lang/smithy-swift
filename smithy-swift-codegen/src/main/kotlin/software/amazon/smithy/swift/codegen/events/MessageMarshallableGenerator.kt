@@ -7,7 +7,8 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EventHeaderTrait
 import software.amazon.smithy.model.traits.EventPayloadTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.FoundationTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -44,7 +45,7 @@ class MessageMarshallableGenerator(
                                 "var headers: [\$N] = [.init(name: \":message-type\", value: .string(\"event\"))]",
                                 ClientRuntimeTypes.EventStream.Header
                             )
-                            write("var payload: \$D", ClientRuntimeTypes.Core.Data)
+                            write("var payload: \$D", FoundationTypes.Data)
                             write("switch self {")
                             streamShape.eventStreamEvents(ctx.model).forEach { member ->
                                 val memberName = ctx.symbolProvider.toMemberName(member)
