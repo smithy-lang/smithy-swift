@@ -7,7 +7,7 @@
 
 import Smithy
 import SmithyChecksumsAPI
-@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+import SmithyHTTPAPI
 import XCTest
 import AwsCommonRuntimeKit
 import SmithyTestUtil
@@ -118,7 +118,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
     private func setNormalPayload(payload: ByteStream) {
         // Set normal payload data
         stack.serializeStep.intercept(position: .before, id: "set normal payload") { (context, input, next) -> OperationOutput<MockOutput> in
-            input.builder.body = payload // Set the payload data here
+            input.builder.withBody(payload) // Set the payload data here
             return try await next.handle(context: context, input: input)
         }
     }
@@ -128,7 +128,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         stack.serializeStep.intercept(position: .before, id: "set streaming payload") { (context, input, next) -> OperationOutput<MockOutput> in
             input.builder.withHeader(name: "x-amz-checksum-algorithm", value: "\(checksum.uppercased())")
             input.builder.withHeader(name: "Transfer-encoding", value: "chunked")
-            input.builder.body = payload // Set the payload data here
+            input.builder.withBody(payload) // Set the payload data here
             return try await next.handle(context: context, input: input)
         }
     }
@@ -365,7 +365,7 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
             context.attributes.set(key: AttributeKey<SigningConfig>(name: "SigningConfig"), value: signingConfig)
             input.builder.withHeader(name: "x-amz-content-sha256", value: "UNSIGNED-PAYLOAD")
             input.builder.withHeader(name: "x-amz-checksum-sha256", value: checksumSHA256)
-            input.builder.body = payload // Set the payload data here
+            input.builder.withBody(payload) // Set the payload data here
             return try await next.handle(context: context, input: input)
         }
     }

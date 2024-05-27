@@ -5,7 +5,7 @@ import class Smithy.Context
 import let SmithyChecksumsAPI.CHUNK_SIZE_BYTES
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import AwsCommonRuntimeKit
-@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+import SmithyHTTPAPI
 
 public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "ContentMD5"
@@ -37,7 +37,7 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
             }
             let md5Hash = try data.computeMD5()
             let base64Encoded = md5Hash.base64EncodedString()
-            builder.headers.update(name: "Content-MD5", value: base64Encoded)
+            builder.updateHeader(name: "Content-MD5", value: base64Encoded)
         case .stream(let stream):
             let checksumAlgorithm: ChecksumAlgorithm = .md5
             let md5Hasher = checksumAlgorithm.createChecksum()
@@ -50,7 +50,7 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
 
                 // Finalize the hash after reading all chunks.
                 let hashResult = try md5Hasher.digest().toBase64String()
-                builder.headers.update(name: "Content-MD5", value: hashResult)
+                builder.updateHeader(name: "Content-MD5", value: hashResult)
             } catch {
                 guard let logger = attributes.getLogger() else {
                     return

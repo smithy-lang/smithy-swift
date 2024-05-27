@@ -9,7 +9,7 @@ import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import enum Smithy.ClientError
 import class Smithy.Context
 import AwsCommonRuntimeKit
-@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+import SmithyHTTPAPI
 
 public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 

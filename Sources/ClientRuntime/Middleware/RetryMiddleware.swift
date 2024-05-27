@@ -15,7 +15,7 @@ import struct Foundation.UUID
 import protocol SmithyRetriesAPI.RetryStrategy
 import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 import struct SmithyRetriesAPI.RetryStrategyOptions
-@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+import SmithyHTTPAPI
 
 public struct RetryMiddleware<Strategy: RetryStrategy,
                               ErrorInfoProvider: RetryErrorInfoProvider,
@@ -41,11 +41,11 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
         OperationOutput<OperationStackOutput>
         where H: Handler, MInput == H.Input, MOutput == H.Output {
 
-        input.headers.add(name: "amz-sdk-invocation-id", value: invocationID)
+        input.withHeader(name: "amz-sdk-invocation-id", value: invocationID)
 
         let partitionID = try getPartitionID(context: context, input: input)
         let token = try await strategy.acquireInitialRetryToken(tokenScope: partitionID)
-        input.headers.add(name: "amz-sdk-request", value: "attempt=1; max=\(maxRetries)")
+        input.withHeader(name: "amz-sdk-request", value: "attempt=1; max=\(maxRetries)")
         return try await sendRequest(attemptNumber: 1, token: token, context: context, input: input, next: next)
     }
 
@@ -78,7 +78,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
                 return 60.0
             }()
             let ttlDateUTCString = getTTL(now: Date(), estimatedSkew: estimatedSkew, socketTimeout: socketTimeout)
-            input.headers.update(
+            input.updateHeader(
                 name: "amz-sdk-request",
                 value: "ttl=\(ttlDateUTCString); attempt=\(attemptNumber + 1); max=\(maxRetries)"
             )

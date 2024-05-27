@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 import Smithy
-@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+import SmithyHTTPAPI
 import SmithyReadWrite
 import XCTest
 import SmithyTestUtil
@@ -49,7 +49,7 @@ class MiddlewareStackTests: XCTestCase {
         }
 
         stack.buildStep.intercept(position: .before, id: "add a header") { (context, input, next) -> OperationOutput<MockOutput> in
-            input.headers.add(name: "TestHeaderName2", value: "TestHeaderValue2")
+            input.withHeader(name: "TestHeaderName2", value: "TestHeaderValue2")
             return try await next.handle(context: context, input: input)
         }
         stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> OperationOutput<MockOutput> in

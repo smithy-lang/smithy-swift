@@ -6,7 +6,6 @@
 //
 
 import Smithy
-//import SmithyChecksumsAPI
 import protocol Smithy.RequestMessage
 import protocol Smithy.RequestMessageBuilder
 import enum Smithy.ByteStream
@@ -122,25 +121,15 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
 
     required public init() {}
 
-    @_spi(SdkHttpRequestBuilder)
-    public var headers: Headers = Headers()
-    @_spi(SdkHttpRequestBuilder)
-    public var methodType: HttpMethodType = .get
-    @_spi(SdkHttpRequestBuilder)
-    public var host: String = ""
-    @_spi(SdkHttpRequestBuilder)
-    public var path: String = "/"
-    @_spi(SdkHttpRequestBuilder)
-    public var body: ByteStream = .noStream
-    @_spi(SdkHttpRequestBuilder)
-    public var queryItems: [SDKURLQueryItem]?
-    var port: Int16 = 443
-    var protocolType: ProtocolType = .https
-    var trailingHeaders: Headers = Headers()
-
-    public var currentQueryItems: [SDKURLQueryItem]? {
-        return queryItems
-    }
+    public private(set) var headers: Headers = Headers()
+    public private(set) var methodType: HttpMethodType = .get
+    public private(set) var host: String = ""
+    public private(set) var path: String = "/"
+    public private(set) var body: ByteStream = .noStream
+    public private(set) var queryItems: [SDKURLQueryItem]?
+    public private(set) var port: Int16 = 443
+    public private(set) var protocolType: ProtocolType = .https
+    public private(set) var trailingHeaders: Headers = Headers()
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -155,6 +144,12 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
     @discardableResult
     public func withHeader(name: String, value: String) -> SdkHttpRequestBuilder {
         self.headers.add(name: name, value: value)
+        return self
+    }
+
+    @discardableResult
+    public func updateHeader(name: String, value: String) -> SdkHttpRequestBuilder {
+        self.headers.update(name: name, value: value)
         return self
     }
 
@@ -210,6 +205,12 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
     @discardableResult
     public func withQueryItem(_ value: SDKURLQueryItem) -> SdkHttpRequestBuilder {
         withQueryItems([value])
+    }
+
+    @discardableResult
+    public func replacingQueryItems(_ value: [SDKURLQueryItem]) -> SdkHttpRequestBuilder {
+        self.queryItems = value
+        return self
     }
 
     @discardableResult

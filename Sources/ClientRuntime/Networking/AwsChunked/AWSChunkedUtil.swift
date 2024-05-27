@@ -9,7 +9,7 @@ import enum Smithy.ByteStream
 import struct SmithyHTTPAPI.Headers
 import enum Smithy.ClientError
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
-@_spi(SdkHttpRequestBuilder) import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import SmithyHTTPAPI
 
 import AwsCommonRuntimeKit
 

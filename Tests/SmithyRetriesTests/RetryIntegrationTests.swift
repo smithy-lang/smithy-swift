@@ -6,7 +6,7 @@
 //
 
 import Smithy
-@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+import SmithyHTTPAPI
 import SmithyHTTPAuthAPI
 import SmithyReadWrite
 import SmithyXML

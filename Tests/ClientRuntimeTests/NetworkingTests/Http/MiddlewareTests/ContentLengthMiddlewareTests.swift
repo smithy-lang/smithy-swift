@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 import Smithy
-@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+import SmithyHTTPAPI
 import XCTest
 import SmithyTestUtil
 @testable import ClientRuntime
@@ -71,7 +71,7 @@ class ContentLengthMiddlewareTests: XCTestCase {
     private func forceEmptyStream() {
         // Force stream length to be nil
         stack.finalizeStep.intercept(position: .before, id: "set nil stream length") { (context, input, next) -> OperationOutput<MockOutput> in
-            input.body = .stream(BufferedStream()) // Set the stream length to nil
+            input.withBody(.stream(BufferedStream())) // Set the stream length to nil
             return try await next.handle(context: context, input: input)
         }
     }

@@ -4,7 +4,7 @@
 import struct Smithy.AttributeKey
 import class Smithy.Context
 import enum Smithy.StreamError
-@_spi(SdkHttpRequestBuilder) import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import SmithyHTTPAPI
 
 public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "ContentLength"
@@ -40,19 +40,19 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
         switch builder.body {
         case .data(let data):
             let contentLength = data?.count ?? 0
-            builder.headers.update(name: "Content-Length", value: String(contentLength))
+            builder.updateHeader(name: "Content-Length", value: String(contentLength))
         case .stream(let stream):
             if let length = stream.length {
                 if !stream.isEligibleForAwsChunkedStreaming
                     && !(builder.headers.value(for: "Transfer-Encoding") == "chunked") {
-                    builder.headers.update(name: "Content-Length", value: String(length))
+                    builder.updateHeader(name: "Content-Length", value: String(length))
                 }
             } else if (requiresLength == false && unsignedPayload == true) ||
                         (requiresLength == nil && unsignedPayload == nil) {
                 // Transfer-Encoding can be sent on all Event Streams where length cannot be determined
                 // or on blob Data Streams where requiresLength is true and unsignedPayload is false
                 // Only for HTTP/1.1 requests, will be removed in all HTTP/2 requests
-                builder.headers.update(name: "Transfer-Encoding", value: "chunked")
+                builder.updateHeader(name: "Transfer-Encoding", value: "chunked")
             } else {
                 let operation = attributes.get(key: AttributeKey<String>(name: "Operation"))
                              ?? "Error getting operation name"
@@ -62,7 +62,7 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
                 throw StreamError.notSupported(errorMessage)
             }
         case .noStream:
-            builder.headers.update(name: "Content-Length", value: "0")
+            builder.updateHeader(name: "Content-Length", value: "0")
         }
     }
 

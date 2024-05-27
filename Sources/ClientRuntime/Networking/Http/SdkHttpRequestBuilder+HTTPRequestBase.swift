@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@_spi(SdkHttpRequestBuilder) import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import SmithyHTTPAPI
 import class SmithyHTTPAPI.SdkHttpRequest
 import struct SmithyHTTPAPI.SDKURLQueryItem
 import struct SmithyHTTPAPI.Headers
@@ -20,13 +20,14 @@ extension SdkHttpRequestBuilder {
     ///   - originalRequest: the SDK request that is used to hold the original values
     /// - Returns: the builder
     public func update(from crtRequest: HTTPRequestBase, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
-        headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
-        methodType = originalRequest.method
-        host = originalRequest.host
+        withHeaders(convertSignedHeadersToHeaders(crtRequest: crtRequest))
+        withMethod(originalRequest.method)
+        withHost(originalRequest.host)
         if let crtRequest = crtRequest as? HTTPRequest, let components = URLComponents(string: crtRequest.path) {
-            path = components.percentEncodedPath
-            queryItems = components.percentEncodedQueryItems?.map { SDKURLQueryItem(name: $0.name, value: $0.value) }
-                ?? [SDKURLQueryItem]()
+            withPath(components.percentEncodedPath)
+            replacingQueryItems(components.percentEncodedQueryItems?.map {
+                SDKURLQueryItem(name: $0.name, value: $0.value)
+            } ?? [SDKURLQueryItem]())
         } else if crtRequest as? HTTP2Request != nil {
             assertionFailure("HTTP2Request not supported")
         } else {

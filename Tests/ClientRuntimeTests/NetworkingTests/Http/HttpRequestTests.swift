@@ -4,7 +4,7 @@
  */
 
 import Smithy
-@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+import SmithyHTTPAPI
 import XCTest
 import AwsCommonRuntimeKit
 import struct Foundation.URLQueryItem
@@ -120,14 +120,14 @@ class HttpRequestTests: NetworkingTestUtils {
             .withQueryItem(queryItem2)
             .withHeader(name: "Content-Length", value: "6")
 
-        XCTAssert(builder.queryItems?.count == 2)
+        XCTAssertEqual(builder.queryItems?.count, 2)
 
         let httpRequest = try builder.build().toHttpRequest()
         httpRequest.path = "/hello?foo=bar&quz=bar&signedthing=signed"
         let updatedRequest = builder.update(from: httpRequest, originalRequest: builder.build())
 
-        XCTAssert(updatedRequest.path == "/hello")
-        XCTAssert(updatedRequest.queryItems?.count == 3)
+        XCTAssertEqual(updatedRequest.path, "/hello")
+        XCTAssertEqual(updatedRequest.queryItems?.count, 3)
         XCTAssert(updatedRequest.queryItems?.contains(queryItem1) ?? false)
         XCTAssert(updatedRequest.queryItems?.contains(queryItem2) ?? false)
         XCTAssert(updatedRequest.queryItems?.contains(SDKURLQueryItem(name: "signedthing", value: "signed")) ?? false)

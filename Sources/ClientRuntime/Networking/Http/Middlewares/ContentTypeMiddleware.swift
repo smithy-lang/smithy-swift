@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 import class Smithy.Context
-@_spi(SdkHttpRequestBuilder) import SmithyHTTPAPI
+import SmithyHTTPAPI
 
 public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
