@@ -19,6 +19,8 @@ import software.amazon.smithy.swift.codegen.model.eventStreamErrors
 import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 class MessageUnmarshallableGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -39,12 +41,12 @@ class MessageUnmarshallableGenerator(
 
         ctx.delegator.useShapeWriter(streamMember) { writer ->
 
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
             writer.addImport(customizations.unknownServiceErrorSymbol.namespace)
             writer.openBlock("extension \$L {", "}", streamSymbol.fullName) {
                 writer.openBlock(
                     "static var unmarshal: \$N<\$N> {", "}",
-                    ClientRuntimeTypes.EventStream.UnmarshalClosure,
+                    SmithyEventStreamsAPITypes.UnmarshalClosure,
                     streamSymbol,
                 ) {
                     writer.openBlock("{ message in", "}") {
@@ -68,8 +70,8 @@ class MessageUnmarshallableGenerator(
                         writer.indent {
                             writer.write(
                                 "let makeError: (\$N, \$N) throws -> \$N = { message, params in",
-                                ClientRuntimeTypes.EventStream.Message,
-                                ClientRuntimeTypes.EventStream.ExceptionParams,
+                                SmithyEventStreamsAPITypes.Message,
+                                SmithyEventStreamsAPITypes.ExceptionParams,
                                 SwiftTypes.Error
                             )
                             writer.indent {
@@ -108,8 +110,8 @@ class MessageUnmarshallableGenerator(
                         writer.indent {
                             // this is a client exception because we failed to parse it
                             writer.write(
-                                "throw \$L(\"unrecognized event stream message ':message-type': \\(messageType)\")",
-                                ClientRuntimeTypes.Core.UnknownClientError
+                                "throw \$L.unknownError(\"unrecognized event stream message ':message-type': \\(messageType)\")",
+                                SmithyTypes.ClientError,
                             )
                         }
                         writer.write("}")

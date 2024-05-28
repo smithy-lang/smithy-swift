@@ -38,7 +38,7 @@ public struct URLPathMiddleware<OperationStackInput, OperationStackOutput>: Midd
         if let urlPrefix = urlPrefix, !urlPrefix.isEmpty {
             urlPath = "\(urlPrefix)\(urlPath)"
         }
-        attributes.set(key: AttributeKey<String>(name: "Path"), value: urlPath)
+        attributes.path = urlPath
     }
 
     public typealias MInput = OperationStackInput

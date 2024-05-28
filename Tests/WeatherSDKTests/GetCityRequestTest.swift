@@ -32,9 +32,9 @@ class GetCityRequestTest: HttpRequestTestBase {
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<GetCityInput, GetCityOutput>(host: hostOnly))
         operationStack.buildStep.intercept(position: .before, middleware: ClientRuntime.ContentMD5Middleware<GetCityInput, GetCityOutput>())
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<GetCityOutput> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
-            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withMethod(context.method)
+            input.withPath(context.path)
+            let host = "\(context.hostPrefix ?? "")\(context.host ?? "")"
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }

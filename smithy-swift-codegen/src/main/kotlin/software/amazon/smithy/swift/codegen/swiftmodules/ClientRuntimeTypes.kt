@@ -18,17 +18,6 @@ object ClientRuntimeTypes {
         val UnknownHttpServiceError = runtimeSymbol("UnknownHTTPServiceError")
     }
 
-    object EventStream {
-        val MessageDecoder = runtimeSymbol("MessageDecoder")
-        val ExceptionParams = runtimeSymbol("EventStream.MessageType.ExceptionParams")
-        val Header = runtimeSymbol("EventStream.Header")
-        val Message = runtimeSymbol("EventStream.Message")
-        val MessageEncoderStream = runtimeSymbol("EventStream.DefaultMessageEncoderStream")
-        val MessageDecoderStream = runtimeSymbol("EventStream.DefaultMessageDecoderStream")
-        val UnmarshalClosure = runtimeSymbol("UnmarshalClosure")
-        val MarshalClosure = runtimeSymbol("MarshalClosure")
-    }
-
     object Middleware {
         val OperationOutput = runtimeSymbol("OperationOutput")
         val Middleware = runtimeSymbol("Middleware")
@@ -64,7 +53,6 @@ object ClientRuntimeTypes {
 
     object Core {
         val ModeledError = runtimeSymbol("ModeledError")
-        val UnknownClientError = runtimeSymbol("ClientError.unknownError")
         val ServiceError = runtimeSymbol("ServiceError")
         val TelemetryProvider = runtimeSymbol("TelemetryProvider")
         val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory")

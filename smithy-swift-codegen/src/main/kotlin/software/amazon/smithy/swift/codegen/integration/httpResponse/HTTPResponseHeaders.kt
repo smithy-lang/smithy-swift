@@ -127,6 +127,7 @@ class HTTPResponseHeaders(
                                     splitFn = "splitHttpDateHeaderListValues"
                                 }
                                 invalidHeaderListErrorName = "invalidTimestampHeaderList"
+                                writer.addImport("Foundation")
                                 "(${stringToDate("\$0", tsFormat)} ?? ${FoundationTypes.Date}())"
                             }
                             is StringShape -> {

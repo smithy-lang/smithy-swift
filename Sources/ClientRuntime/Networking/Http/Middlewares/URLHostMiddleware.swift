@@ -31,10 +31,10 @@ public struct URLHostMiddleware<OperationStackInput, OperationStackOutput>: Midd
 
     private func updateAttributes(attributes: Smithy.Context) {
         if let host = host {
-            attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
+            attributes.host = host
         }
         if let hostPrefix = hostPrefix {
-            attributes.set(key: AttributeKey<String>(name: "HostPrefix"), value: hostPrefix)
+            attributes.hostPrefix = hostPrefix
         }
     }
 

@@ -24,9 +24,9 @@ class RequestTestEndpointResolverMiddleware(private val model: Model, private va
                 """
                 builder.applyEndpoint({ (request, scheme, attributes) in
                     return request.toBuilder()
-                        .withMethod(attributes.getMethod())
-                        .withPath(attributes.getPath())
-                        .withHost("\(attributes.getHostPrefix() ?? "")\(attributes.getHost() ?? "")")
+                        .withMethod(attributes.method)
+                        .withPath(attributes.path)
+                        .withHost("\(attributes.hostPrefix ?? "")\(attributes.host ?? "")")
                         .build()
                 })
                 """.trimMargin()
@@ -36,9 +36,9 @@ class RequestTestEndpointResolverMiddleware(private val model: Model, private va
                 "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, id: \"${name}\") { (context, input, next) -> \$N<$outputShapeName> in", "}",
                 ClientRuntimeTypes.Middleware.OperationOutput
             ) {
-                writer.write("input.withMethod(context.getMethod())")
-                writer.write("input.withPath(context.getPath())")
-                writer.write("let host = \"\\(context.getHostPrefix() ?? \"\")\\(context.getHost() ?? \"\")\"")
+                writer.write("input.withMethod(context.method)")
+                writer.write("input.withPath(context.path)")
+                writer.write("let host = \"\\(context.hostPrefix ?? \"\")\\(context.host ?? \"\")\"")
                 writer.write("input.withHost(host)")
                 writer.write("return try await next.handle(context: context, input: input)")
             }

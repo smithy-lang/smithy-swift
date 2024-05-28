@@ -11,6 +11,7 @@ object FoundationTypes {
     val Data = builtInSymbol("Data")
     val Date = builtInSymbol("Date")
     val TimeInterval = builtInSymbol("TimeInterval")
+    val URL = builtInSymbol("URL")
 }
 
 private fun builtInSymbol(symbol: String) = buildSymbol {

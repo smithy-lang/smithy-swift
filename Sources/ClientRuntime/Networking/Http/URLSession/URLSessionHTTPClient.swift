@@ -7,6 +7,7 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
+import struct Smithy.SwiftLogger
 import protocol Smithy.LogAgent
 import protocol SmithyHTTPAPI.HTTPClient
 import struct SmithyHTTPAPI.Headers

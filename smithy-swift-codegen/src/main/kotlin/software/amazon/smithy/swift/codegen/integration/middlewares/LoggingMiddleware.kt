@@ -8,6 +8,7 @@ package software.amazon.smithy.swift.codegen.integration.middlewares
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -32,13 +33,15 @@ class LoggingMiddleware(
         writer: SwiftWriter,
         op: OperationShape
     ) {
+        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
         val input = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, model, op)
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         writer.write(
-            "\$N<\$N, \$N>(${middlewareParamsString()})",
+            "\$N<\$N, \$N>(\$L)",
             ClientRuntimeTypes.Middleware.LoggerMiddleware,
             input,
-            output
+            output,
+            middlewareParamsString(),
         )
     }
 

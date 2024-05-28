@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
 import protocol Smithy.LogAgent
 import struct Smithy.Attributes
 import struct Smithy.AttributeKey

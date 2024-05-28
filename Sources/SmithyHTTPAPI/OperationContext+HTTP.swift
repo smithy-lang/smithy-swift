@@ -19,20 +19,24 @@ extension Context {
         set { attributes.set(key: httpResponseKey, value: newValue) }
     }
 
-    public func getExpiration() -> TimeInterval {
-        return attributes.get(key: SmithyHTTPAPIKeys.expiration) ?? 0
+    public var expiration: TimeInterval {
+        get { attributes.get(key: expirationKey) ?? 0 }
+        set { attributes.set(key: expirationKey, value: newValue) }
     }
 
-    public func getHost() -> String? {
-        return attributes.get(key: SmithyHTTPAPIKeys.host)
+    public var host: String? {
+        get { attributes.get(key: hostKey) }
+        set { attributes.set(key: hostKey, value: newValue) }
     }
 
-    public func getHostPrefix() -> String? {
-        return attributes.get(key: SmithyHTTPAPIKeys.hostPrefix)
+    public var hostPrefix: String? {
+        get { attributes.get(key: hostPrefixKey) }
+        set { attributes.set(key: hostPrefixKey, value: newValue) }
     }
 
-    public func getMethod() -> HttpMethodType {
-        return attributes.get(key: SmithyHTTPAPIKeys.method)!
+    public var method: HttpMethodType {
+        get { attributes.get(key: methodKey) ?? .get }
+        set { attributes.set(key: methodKey, value: newValue) }
     }
 
     public func getOperation() -> String? {
@@ -47,8 +51,9 @@ extension Context {
         return attributes.get(key: SmithyHTTPAPIKeys.partitionId)
     }
 
-    public func getPath() -> String {
-        return attributes.get(key: SmithyHTTPAPIKeys.path)!
+    public var path: String {
+        get { attributes.get(key: pathKey)! }
+        set { attributes.set(key: pathKey, value: newValue) }
     }
 
     public func getRegion() -> String? {
@@ -60,17 +65,18 @@ extension Context {
     }
 
     public var signingName: String? {
-        get { attributes.get(key: SmithyHTTPAPIKeys.signingName) }
-        set { attributes.set(key: SmithyHTTPAPIKeys.signingName, value: newValue) }
+        get { attributes.get(key: signingNameKey) }
+        set { attributes.set(key: signingNameKey, value: newValue) }
     }
 
     public var signingAlgorithm: String? {
-        get { attributes.get(key: SmithyHTTPAPIKeys.signingAlgorithm) }
-        set { attributes.set(key: SmithyHTTPAPIKeys.signingAlgorithm, value: newValue) }
+        get { attributes.get(key: signingAlgorithmKey) }
+        set { attributes.set(key: signingAlgorithmKey, value: newValue) }
     }
 
-    public func getSigningRegion() -> String? {
-        return attributes.get(key: SmithyHTTPAPIKeys.signingRegion)
+    public var signingRegion: String? {
+        get { attributes.get(key: signingRegionKey) }
+        set { attributes.set(key: signingRegionKey, value: newValue) }
     }
 
     public func hasUnsignedPayloadTrait() -> Bool {
@@ -78,8 +84,8 @@ extension Context {
     }
 
     public var isBidirectionalStreamingEnabled: Bool {
-        get { attributes.get(key: bidirectionalStreamingKey) ?? false }
-        set { attributes.set(key: bidirectionalStreamingKey, value: newValue) }
+        get { attributes.get(key: isBidirectionalStreamingEnabledKey) ?? false }
+        set { attributes.set(key: isBidirectionalStreamingEnabledKey, value: newValue) }
     }
 
     /// Returns `true` if the request should use `http2` and only `http2` without falling back to `http1`
@@ -102,25 +108,25 @@ extension ContextBuilder {
 
     @discardableResult
     public func withExpiration(value: TimeInterval) -> Self {
-        self.attributes.set(key: SmithyHTTPAPIKeys.expiration, value: value)
+        self.attributes.set(key: expirationKey, value: value)
         return self
     }
 
     @discardableResult
     public func withHost(value: String) -> Self {
-        self.attributes.set(key: SmithyHTTPAPIKeys.host, value: value)
+        self.attributes.set(key: hostKey, value: value)
         return self
     }
 
     @discardableResult
     public func withHostPrefix(value: String) -> Self {
-        self.attributes.set(key: SmithyHTTPAPIKeys.hostPrefix, value: value)
+        self.attributes.set(key: hostPrefixKey, value: value)
         return self
     }
 
     @discardableResult
     public func withMethod(value: HttpMethodType) -> Self {
-        self.attributes.set(key: SmithyHTTPAPIKeys.method, value: value)
+        self.attributes.set(key: methodKey, value: value)
         return self
     }
 
@@ -144,7 +150,7 @@ extension ContextBuilder {
 
     @discardableResult
     public func withPath(value: String) -> Self {
-        self.attributes.set(key: SmithyHTTPAPIKeys.path, value: value)
+        self.attributes.set(key: pathKey, value: value)
         return self
     }
 
@@ -162,13 +168,13 @@ extension ContextBuilder {
 
     @discardableResult
     public func withSigningName(value: String) -> Self {
-        self.attributes.set(key: SmithyHTTPAPIKeys.signingName, value: value)
+        self.attributes.set(key: signingNameKey, value: value)
         return self
     }
 
     @discardableResult
     public func withSigningRegion(value: String?) -> Self {
-        self.attributes.set(key: SmithyHTTPAPIKeys.signingRegion, value: value)
+        self.attributes.set(key: signingRegionKey, value: value)
         return self
     }
 
@@ -180,29 +186,29 @@ extension ContextBuilder {
 
     @discardableResult
     public func withBidirectionalStreamingEnabled(value: Bool) -> Self {
-        self.attributes.set(key: bidirectionalStreamingKey, value: value)
+        self.attributes.set(key: isBidirectionalStreamingEnabledKey, value: value)
         return self
     }
 }
 
 public enum SmithyHTTPAPIKeys {
-    public static let host = AttributeKey<String>(name: "Host")
-    public static let hostPrefix = AttributeKey<String>(name: "HostPrefix")
-    public static let method = AttributeKey<HttpMethodType>(name: "Method")
     public static let operation = AttributeKey<String>(name: "Operation")
     public static let partitionId = AttributeKey<String>(name: "PartitionID")
-    public static let path = AttributeKey<String>(name: "Path")
     public static let region = AttributeKey<String>(name: "Region")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
-    public static let signingName = AttributeKey<String>(name: "SigningName")
-    public static let signingAlgorithm = AttributeKey<String>(name: "SigningAlgorithm")
-    public static let signingRegion = AttributeKey<String>(name: "SigningRegion")
 
     // Flags stored in signingProperties passed to signers for presigner customizations.
     public static let hasUnsignedPayloadTrait = AttributeKey<Bool>(name: "HasUnsignedPayloadTrait")
     public static let forceUnsignedBody = AttributeKey<Bool>(name: "ForceUnsignedBody")
-    public static let expiration = AttributeKey<TimeInterval>(name: "Expiration")
 }
 
+private let methodKey = AttributeKey<HttpMethodType>(name: "MethodKey")
+private let hostKey = AttributeKey<String>(name: "HostKey")
+private let hostPrefixKey = AttributeKey<String>(name: "HostPrefixKey")
 private let httpResponseKey = AttributeKey<HttpResponse>(name: "httpResponseKey")
-private let bidirectionalStreamingKey = AttributeKey<Bool>(name: "BidirectionalStreamingKey")
+private let isBidirectionalStreamingEnabledKey = AttributeKey<Bool>(name: "isBidirectionalStreamingEnabledKey")
+private let pathKey = AttributeKey<String>(name: "PathKey")
+private let signingNameKey = AttributeKey<String>(name: "SigningNameKey")
+private let signingAlgorithmKey = AttributeKey<String>(name: "SigningAlgorithmKey")
+private let signingRegionKey = AttributeKey<String>(name: "SigningRegionKey")
+private let expirationKey = AttributeKey<TimeInterval>(name: "ExpirationKey")

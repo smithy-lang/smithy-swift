@@ -59,6 +59,7 @@ class HttpHeaderProvider(
                     .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
                     val headerMiddleware = HttpHeaderProvider(writer, ctx, inputSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat)
                     headerMiddleware.renderProvider(writer)
                 }

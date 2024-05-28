@@ -10,6 +10,7 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
@@ -19,6 +20,7 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPRespons
 import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.isRPCBound
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsTypes
 
 class HTTPResponseTraitWithoutHTTPPayload(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -49,10 +51,11 @@ class HTTPResponseTraitWithoutHTTPPayload(
             ShapeType.UNION -> {
                 writer.openBlock("if case let .stream(stream) = httpResponse.body {", "}") {
                     writer.addImport(customizations.messageDecoderSymbol.namespace)
+                    writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS.target)
                     writer.write("let messageDecoder = \$N()", customizations.messageDecoderSymbol)
                     writer.write(
                         "let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
-                        ClientRuntimeTypes.EventStream.MessageDecoderStream,
+                        SmithyEventStreamsTypes.DefaultMessageDecoderStream,
                         symbol,
                         symbol,
                     )

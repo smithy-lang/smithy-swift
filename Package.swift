@@ -50,7 +50,12 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
-        .target(name: "Smithy"),
+        .target(
+            name: "Smithy",
+            dependencies: [
+                .product(name: "Logging", package: "swift-log"),
+            ]
+        ),
         .target(
             name: "ClientRuntime",
             dependencies: [
@@ -67,7 +72,6 @@ let package = Package(
                 "SmithyEventStreamsAuthAPI",
                 "SmithyChecksumsAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
-                .product(name: "Logging", package: "swift-log"),
             ],
             resources: [
                 .copy("PrivacyInfo.xcprivacy")
@@ -142,7 +146,12 @@ let package = Package(
         ),
         .target(
             name: "SmithyEventStreams",
-            dependencies: ["Smithy", "SmithyEventStreamsAPI", "SmithyEventStreamsAuthAPI"]
+            dependencies: [
+                "Smithy",
+                "SmithyEventStreamsAPI",
+                "SmithyEventStreamsAuthAPI",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
         ),
         .target(
             name: "SmithyChecksumsAPI",

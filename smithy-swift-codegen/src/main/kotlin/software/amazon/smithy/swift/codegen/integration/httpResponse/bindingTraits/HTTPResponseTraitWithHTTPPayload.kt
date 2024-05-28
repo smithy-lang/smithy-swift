@@ -21,6 +21,7 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPRespons
 import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isEnum
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsTypes
 
 class HTTPResponseTraitWithHTTPPayload(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -87,10 +88,11 @@ class HTTPResponseTraitWithHTTPPayload(
                 if (target.hasTrait<StreamingTrait>()) {
                     writer.openBlock("if case .stream(let stream) = httpResponse.body {", "}") {
                         writer.addImport(customizations.messageDecoderSymbol.namespace)
+                        writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS.target)
                         writer.write("let messageDecoder = \$N()", customizations.messageDecoderSymbol)
                         writer.write(
                             "let decoderStream = \$N(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
-                            ClientRuntimeTypes.EventStream.MessageDecoderStream,
+                            SmithyEventStreamsTypes.DefaultMessageDecoderStream,
                             symbol,
                         )
                         writer.write("value.\$L = decoderStream.toAsyncStream()", memberName)

@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import Smithy
 import protocol Smithy.LogAgent
 import enum Smithy.StreamError
 import enum Smithy.ByteStreamError

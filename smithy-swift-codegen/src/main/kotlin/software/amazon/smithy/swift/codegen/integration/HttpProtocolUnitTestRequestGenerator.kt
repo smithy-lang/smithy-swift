@@ -98,7 +98,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol>(id: \"${test.id}\")")
             } else {
                 writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
-                writer.write("let builder = OrchestratorBuilder<$inputSymbol, $outputSymbol, SdkHttpRequest, HttpResponse, HttpContext>()")
+                writer.write("let builder = OrchestratorBuilder<$inputSymbol, $outputSymbol, SdkHttpRequest, HttpResponse>()")
             }
 
             operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.INITIALIZESTEP)

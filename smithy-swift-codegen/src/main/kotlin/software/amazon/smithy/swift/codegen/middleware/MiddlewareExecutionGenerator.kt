@@ -57,12 +57,11 @@ class MiddlewareExecutionGenerator(
             )
         } else {
             writer.write(
-                "let builder = OrchestratorBuilder<\$N, \$N, \$N, \$N, \$N>()",
+                "let builder = OrchestratorBuilder<\$N, \$N, \$N, \$N>()",
                 inputShape,
                 outputShape,
                 SmithyHTTPAPITypes.SdkHttpRequest,
                 SmithyHTTPAPITypes.HttpResponse,
-                SmithyTypes.Context
             )
         }
 

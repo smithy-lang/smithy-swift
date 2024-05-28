@@ -34,8 +34,8 @@ public struct MockSerializeMiddleware: Middleware {
         if let callback = self.callback {
             callback(context, input)
         }
-        let path = context.getPath()
-        let method = context.getMethod()
+        let path = context.path
+        let method = context.method
         let host = "httpbin.org"
         input.builder.withHost(host)
             .withHeader(name: "Content-type", value: "application/json")

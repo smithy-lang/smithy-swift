@@ -114,10 +114,10 @@ extension EndpointResolverMiddleware: ApplyEndpoint {
         let smithyEndpoint = SmithyEndpoint(endpoint: endpoint, signingName: signingName)
 
         var host = ""
-        if let hostOverride = attributes.getHost() {
+        if let hostOverride = attributes.host {
             host = hostOverride
         } else {
-            host = "\(attributes.getHostPrefix() ?? "")\(smithyEndpoint.endpoint.host)"
+            host = "\(attributes.hostPrefix ?? "")\(smithyEndpoint.endpoint.host)"
         }
 
         if let protocolType = smithyEndpoint.endpoint.protocolType {
@@ -126,7 +126,7 @@ extension EndpointResolverMiddleware: ApplyEndpoint {
 
         if let signingName = signingName {
            attributes.signingName = signingName
-           attributes.selectedAuthScheme = selectedAuthScheme?.getCopyWithUpdatedSigningProperty(key: SmithyHTTPAPIKeys.signingName, value: signingName)
+           attributes.selectedAuthScheme = selectedAuthScheme?.getCopyWithUpdatedSigningProperty(key: SigningPropertyKeys.signingName, value: signingName)
         }
 
         if let signingAlgorithm = signingAlgorithm {
@@ -137,10 +137,10 @@ extension EndpointResolverMiddleware: ApplyEndpoint {
             builder.withHeaders(headers)
         }
 
-        return builder.withMethod(attributes.getMethod())
+        return builder.withMethod(attributes.method)
             .withHost(host)
             .withPort(smithyEndpoint.endpoint.port)
-            .withPath(smithyEndpoint.endpoint.path.appendingPathComponent(attributes.getPath()))
+            .withPath(smithyEndpoint.endpoint.path.appendingPathComponent(attributes.path))
             .withHeader(name: "Host", value: host)
             .build()
     }

@@ -31,7 +31,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         Self.MOutput == H.Output
         {
             if let host = host {
-                context.attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
+                context.host = host
             }
             return try await next.handle(context: context, input: input)
         }
@@ -170,8 +170,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         var operationStack = OperationStack<SayHelloInput, MockOutput>(id: "SayHelloInputRequest")
         operationStack.initializeStep.intercept(position: .before, middleware: SayHelloInputURLHostMiddleware(host: HttpRequestTestBaseTests.host))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<MockOutput> in
-            input.withMethod(context.getMethod())
-            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withMethod(context.method)
+            let host = "\(context.hostPrefix ?? "")\(context.host ?? "")"
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }

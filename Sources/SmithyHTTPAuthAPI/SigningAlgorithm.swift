@@ -4,11 +4,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-import AwsCommonRuntimeKit
 
 /// Type of signing algorithm
 /// String raw value used for serialization and deserialization
 public enum SigningAlgorithm: String {
-    case undefined
+    ///  Signature Version 4
+    case sigv4
+    ///  Signature Version 4 Asymmetric
+    case sigv4a
 }
-

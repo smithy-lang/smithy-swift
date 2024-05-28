@@ -15,8 +15,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes.Core.UnknownClientError
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -31,6 +29,7 @@ import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 class HttpQueryItemProvider(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -153,7 +152,8 @@ class HttpQueryItemProvider(
                         "let message = \"Creating a URL Query Item failed. \$L is required and must not be nil.\"",
                         memberName
                     )
-                    writer.write("throw \$L(message)", UnknownClientError)
+                    writer.addImport(SwiftDependency.SMITHY.target)
+                    writer.write("throw \$L.unknownError(message)", SmithyTypes.ClientError)
                 }
                 if (memberTarget is CollectionShape) {
                     renderListOrSet(memberTarget, bindingIndex, memberName, paramName)

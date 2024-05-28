@@ -15,6 +15,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.endpoints.EndpointResolverGenerator
 import software.amazon.smithy.swift.codegen.middleware.EndpointResolverMiddleware
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 
 abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
     override fun serviceClient(
@@ -42,7 +43,7 @@ abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
         ).render(ctx)
     }
 
-    override val messageDecoderSymbol: Symbol = ClientRuntimeTypes.EventStream.MessageDecoder
+    override val messageDecoderSymbol: Symbol = SmithyEventStreamsAPITypes.MessageDecoder
 
     override val baseErrorSymbol: Symbol = SmithyTestUtilTypes.TestBaseError
 

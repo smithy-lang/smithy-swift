@@ -13,7 +13,7 @@ import SmithyTestUtil
 
 class ProviderTests: HttpRequestTestBase {
 
-    func testURlPathProvider() {
+    func testURLPathProvider() {
         var mockInput = MockInput()
         mockInput.value = 3
 
@@ -33,7 +33,7 @@ class ProviderTests: HttpRequestTestBase {
                                         input: mockInput,
                                         next: MockHandler { (context, request) in
 
-            XCTAssert(context.getPath() == "/3")
+            XCTAssertEqual(context.path, "/3")
             let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
             return output

@@ -19,6 +19,8 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.response
 import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
 import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 class MessageMarshallableGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -33,17 +35,18 @@ class MessageMarshallableGenerator(
             .build()
         ctx.delegator.useShapeWriter(streamMember) { writer ->
             writer.apply {
-                addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                addImport(SwiftDependency.SMITHY.target)
+                addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
                 openBlock("extension \$L {", "}", streamSymbol.fullName) {
                     openBlock(
                         "static var marshal: \$N<\$N> {", "}",
-                        ClientRuntimeTypes.EventStream.MarshalClosure,
+                        SmithyEventStreamsAPITypes.MarshalClosure,
                         streamSymbol
                     ) {
                         openBlock("{ (self) in", "}") {
                             write(
                                 "var headers: [\$N] = [.init(name: \":message-type\", value: .string(\"event\"))]",
-                                ClientRuntimeTypes.EventStream.Header
+                                SmithyEventStreamsAPITypes.Header
                             )
                             write("var payload: \$D", FoundationTypes.Data)
                             write("switch self {")
@@ -91,14 +94,14 @@ class MessageMarshallableGenerator(
                             writer.write("case .sdkUnknown(_):")
                             writer.indent()
                             writer.write(
-                                "throw \$N(\"cannot serialize the unknown event type!\")",
-                                ClientRuntimeTypes.Core.UnknownClientError
+                                "throw \$N.unknownError(\"cannot serialize the unknown event type!\")",
+                                SmithyTypes.ClientError,
                             )
                             writer.dedent()
                             writer.write("}")
                             writer.write(
                                 "return \$N(headers: headers, payload: payload ?? .init())",
-                                ClientRuntimeTypes.EventStream.Message
+                                SmithyEventStreamsAPITypes.Message
                             )
                         }
                     }

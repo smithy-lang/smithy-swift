@@ -37,9 +37,9 @@ class ListCitiesRequestTest: HttpRequestTestBase {
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<ListCitiesInput, ListCitiesOutput>(urlPrefix: urlPrefix, ListCitiesInput.urlPathProvider(_:)))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<ListCitiesInput, ListCitiesOutput>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<ListCitiesOutput> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
-            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withMethod(context.method)
+            input.withPath(context.path)
+            let host = "\(context.hostPrefix ?? "")\(context.host ?? "")"
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }

@@ -10,15 +10,13 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
  *
  * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
  */
-object SmithyTypes {
-    val ClientError = runtimeSymbol("ClientError")
-    val Context = runtimeSymbol("Context")
-    val ContextBuilder = runtimeSymbol("ContextBuilder")
-    val LogAgent = runtimeSymbol("LogAgent")
+object SmithyEventStreamsTypes {
+    val DefaultMessageEncoderStream = runtimeSymbol("DefaultMessageEncoderStream")
+    val DefaultMessageDecoderStream = runtimeSymbol("DefaultMessageDecoderStream")
 }
 
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {
     this.name = name
-    this.namespace = SwiftDependency.SMITHY.target
-    this.dependency(SwiftDependency.SMITHY)
+    this.namespace = SwiftDependency.SMITHY_EVENT_STREAMS.target
+    this.dependency(SwiftDependency.SMITHY_EVENT_STREAMS)
 }
