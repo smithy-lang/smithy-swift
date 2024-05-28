@@ -6,10 +6,10 @@
 //
 
 import enum Smithy.ByteStream
-import struct SmithyHTTPAPI.Headers
 import enum Smithy.ClientError
+import struct SmithyHTTPAPI.Headers
+import class SmithyHTTPAPI.SdkHttpRequestBuilder
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
-import SmithyHTTPAPI
 
 import AwsCommonRuntimeKit
 

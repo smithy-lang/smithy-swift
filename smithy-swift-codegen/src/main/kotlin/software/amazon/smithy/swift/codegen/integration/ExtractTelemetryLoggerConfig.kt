@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolServiceClient.ConfigClassVariablesCustomization

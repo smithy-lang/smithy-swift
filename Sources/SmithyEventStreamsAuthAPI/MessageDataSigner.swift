@@ -5,10 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Smithy
-import SmithyEventStreamsAPI
+import struct Smithy.Attributes
+import struct SmithyEventStreamsAPI.Message
 import struct Foundation.Data
-
 
 /// Protocol for signing messages.
 public protocol MessageDataSigner {

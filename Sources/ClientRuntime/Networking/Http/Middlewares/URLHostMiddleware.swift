@@ -6,7 +6,6 @@
 //
 
 import class Smithy.Context
-import Smithy
 
 public struct URLHostMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))URLHostMiddleware"

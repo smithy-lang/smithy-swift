@@ -6,8 +6,8 @@
 //
 
 import class Smithy.Context
+import protocol Smithy.RequestMessageSerializer
 import struct Foundation.Data
-import Smithy
 import SmithyHTTPAPI
 
 public struct EnumBodyMiddleware<OperationStackInput,

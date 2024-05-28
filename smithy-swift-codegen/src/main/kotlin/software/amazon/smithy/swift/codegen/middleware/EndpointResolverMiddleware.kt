@@ -6,12 +6,12 @@
 package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.endpoints.EndpointTypes
 import software.amazon.smithy.swift.codegen.integration.steps.OperationBuildStep
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 const val ENDPOINT_RESOLVER = "endpointResolver"
 const val AUTH_SCHEME_RESOLVER = "authSchemeResolver"

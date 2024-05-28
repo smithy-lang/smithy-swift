@@ -6,8 +6,7 @@
 //
 
 import class Smithy.Context
-import SmithyHTTPAPI
-import Smithy
+import enum SmithyHTTPAPI.HTTPClientError
 
 public struct URLPathMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))URLPathMiddleware"

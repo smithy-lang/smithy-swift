@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Smithy
 import protocol Smithy.RequestMessage
 import protocol Smithy.RequestMessageBuilder
 import enum Smithy.ByteStream
+import enum Smithy.ClientError
 import struct Foundation.CharacterSet
 import struct Foundation.URLQueryItem
 import struct Foundation.URLComponents

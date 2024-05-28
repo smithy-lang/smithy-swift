@@ -5,7 +5,6 @@ import Smithy
 import SmithyHTTPAPI
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 
-
 public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "FlexibleChecksumsResponseMiddleware"

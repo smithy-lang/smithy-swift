@@ -6,7 +6,6 @@
 package software.amazon.smithy.swift.codegen.integration.steps
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.OperationStep
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 

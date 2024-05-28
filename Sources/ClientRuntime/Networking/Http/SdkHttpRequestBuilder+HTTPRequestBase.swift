@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyHTTPAPI
 import class SmithyHTTPAPI.SdkHttpRequest
+import class SmithyHTTPAPI.SdkHttpRequestBuilder
 import struct SmithyHTTPAPI.SDKURLQueryItem
 import struct SmithyHTTPAPI.Headers
 import struct Foundation.URLComponents

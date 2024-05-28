@@ -3,7 +3,7 @@
 
 import class Smithy.Context
 import struct SmithyHTTPAPI.Headers
-import SmithyHTTPAPI
+import class SmithyHTTPAPI.SdkHttpRequestBuilder
 
 public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 

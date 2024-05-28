@@ -9,7 +9,6 @@ import enum SmithyEventStreamsAPI.MessageType
 import struct SmithyEventStreamsAPI.Message
 import AwsCommonRuntimeKit
 
-
 extension Message {
     /// Parses the protocol level headers into a `MessageType`
     public func type() throws -> MessageType {
