@@ -163,7 +163,7 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
         let method = method.rawValue.uppercased()
         let protocolType = self.destination.scheme
         let query = self.destination.queryString ?? ""
-        let port = self.destination.port
+        let port = self.destination.port.map { String($0) } ?? ""
         return "\(method) \(protocolType):\(port) \n " +
                "Path: \(endpoint.uri.path) \n Headers: \(headers) \n Query: \(query)"
     }

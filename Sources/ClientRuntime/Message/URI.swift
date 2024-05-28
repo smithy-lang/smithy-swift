@@ -234,8 +234,9 @@ extension String {
 
     public func percentEncodePathIncludingSemicolon() -> String {
         let allowed =
-            // swiftlint:disable:next force_cast
+        // swiftlint:disable force_cast
             (CharacterSet.urlPathAllowed as NSCharacterSet).mutableCopy() as! NSMutableCharacterSet
+        // swiftlint:enable force_cast
         allowed.removeCharacters(in: ";")
         return self.addingPercentEncoding(withAllowedCharacters: allowed as CharacterSet)!
     }
