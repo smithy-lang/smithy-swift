@@ -8,7 +8,8 @@
 import SmithyEventStreamsAPI
 import XCTest
 
-final class AWSMessageTests: XCTestCase {
+final class MessageTypeTests: XCTestCase {
+
     func testType_NormalMessage() {
         let message = Message(headers: [.init(name: ":message-type", value: .string("event")),
                                         .init(name: ":event-type", value: .string("Foo")),

@@ -9,7 +9,7 @@ import enum SmithyEventStreamsAPI.EventStreamError
 import class SmithyEventStreams.DefaultMessageDecoder
 import XCTest
 
-final class AWSMessageDecoderTests: XCTestCase {
+final class DefaultMessageDecoderTests: XCTestCase {
 
     let sut = DefaultMessageDecoder()
 

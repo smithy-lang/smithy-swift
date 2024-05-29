@@ -8,7 +8,7 @@
 import SmithyEventStreams
 import XCTest
 
-final class AWSMessageEncoderTests: XCTestCase {
+final class DefaultMessageEncoderTests: XCTestCase {
 
     let sut = DefaultMessageEncoder()
 

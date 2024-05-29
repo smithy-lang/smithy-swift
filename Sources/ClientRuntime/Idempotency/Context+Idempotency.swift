@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.Attributes
 import struct Smithy.AttributeKey
 import class Smithy.Context
 import class Smithy.ContextBuilder
@@ -26,4 +25,4 @@ extension ContextBuilder {
     }
 }
 
-private let idempotencyTokenGeneratorKey = AttributeKey<IdempotencyTokenGenerator>(name: "IdempotencyTokenGenerator")
+private let idempotencyTokenGeneratorKey = AttributeKey<IdempotencyTokenGenerator>(name: "IdempotencyTokenGeneratorKey")
