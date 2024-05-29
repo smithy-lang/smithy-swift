@@ -12,7 +12,8 @@ class AuthSchemeResolverGeneratorTests {
         val context = setupTests("auth-scheme-resolver-generator-test.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/Example/AuthSchemeResolver.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce("""
+        contents.shouldContainOnlyOnce(
+            """
 public struct ExampleAuthSchemeResolverParameters: SmithyHTTPAuthAPI.AuthSchemeResolverParameters {
     public let operation: String
     // Region is used for SigV4 auth scheme

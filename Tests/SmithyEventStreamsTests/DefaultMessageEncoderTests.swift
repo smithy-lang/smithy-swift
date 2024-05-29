@@ -7,7 +7,6 @@
 
 import SmithyEventStreams
 import XCTest
-@testable import AWSClientRuntime
 
 final class AWSMessageEncoderTests: XCTestCase {
 

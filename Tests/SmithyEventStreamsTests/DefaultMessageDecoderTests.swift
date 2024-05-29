@@ -8,7 +8,6 @@
 import enum SmithyEventStreamsAPI.EventStreamError
 import class SmithyEventStreams.DefaultMessageDecoder
 import XCTest
-@testable import AWSClientRuntime
 
 final class AWSMessageDecoderTests: XCTestCase {
 

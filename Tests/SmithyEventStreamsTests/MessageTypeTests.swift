@@ -8,7 +8,6 @@
 import SmithyEventStreamsAPI
 import XCTest
 import ClientRuntime
-@testable import AWSClientRuntime
 
 final class AWSMessageTests: XCTestCase {
     func testType_NormalMessage() {
