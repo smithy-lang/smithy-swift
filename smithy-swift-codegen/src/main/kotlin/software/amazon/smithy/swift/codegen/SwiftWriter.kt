@@ -100,9 +100,10 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         if (symbol.isBuiltIn || symbol.isServiceNestedNamespace || symbol.namespace.isEmpty()) return
         if (symbol.isInternalSPI()) {
             val kind = symbol.getProperty("kind").orElseThrow()
+            val spiName = symbol.getProperty("spiName").orElseThrow()
             addImport(
                 "$kind ${symbol.namespace}.${symbol.name}",
-                internalSPIName = "Internal"
+                internalSPIName = "$spiName"
             )
         } else {
             addImport(symbol.namespace)

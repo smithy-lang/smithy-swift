@@ -113,9 +113,10 @@ fun Symbol.isInternalSPI(): Boolean {
     return this.getProperty("isInternalSPI").orElse(false) as Boolean
 }
 
-fun Symbol.toInternalSPI(kind: SwiftDeclaration): Symbol {
+fun Symbol.toInternalSPI(kind: SwiftDeclaration, spiName: String): Symbol {
     return this.toBuilder()
         .putProperty("isInternalSPI", true)
+        .putProperty("spiName", spiName)
         .putProperty("kind", kind.kind)
         .build()
 }
