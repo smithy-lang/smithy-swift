@@ -48,8 +48,7 @@ public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable,
     public static var allCases: [MyEnum] {
         return [
             .bar,
-            .fooBazXap,
-            .sdkUnknown("")
+            .fooBazXap
         ]
     }
 
@@ -108,8 +107,7 @@ public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable,
     public static var allCases: [MyEnum] {
         return [
             .t2Micro,
-            .t2Nano,
-            .sdkUnknown("")
+            .t2Nano
         ]
     }
 
@@ -155,8 +153,7 @@ extension ExampleClientTypes {
                 .club,
                 .diamond,
                 .heart,
-                .spade,
-                .sdkUnknown("")
+                .spade
             ]
         }
 

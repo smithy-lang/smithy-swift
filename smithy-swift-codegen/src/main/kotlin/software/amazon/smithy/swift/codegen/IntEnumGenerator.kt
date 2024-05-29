@@ -91,7 +91,6 @@ class IntEnumGenerator(
     }
 
     fun generateAllCasesBlock() {
-        allCasesBuilder.add(".sdkUnknown(0)")
         writer.openBlock("public static var allCases: [\$enum.name:L] {", "}") {
             writer.openBlock("return [", "]") {
                 writer.write(allCasesBuilder.joinToString(",\n"))
