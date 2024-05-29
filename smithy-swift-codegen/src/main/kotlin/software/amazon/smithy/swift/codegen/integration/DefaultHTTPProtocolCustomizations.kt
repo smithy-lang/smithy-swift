@@ -15,7 +15,6 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.endpoints.EndpointResolverGenerator
 import software.amazon.smithy.swift.codegen.middleware.EndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 
 abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
     override fun serviceClient(
