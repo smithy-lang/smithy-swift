@@ -9,7 +9,7 @@ public typealias URL = Foundation.URL
 
 extension URL {
 
-    func toQueryItems() -> [SDKURLQueryItem]? {
+    func getQueryItems() -> [SDKURLQueryItem]? {
         URLComponents(url: self, resolvingAgainstBaseURL: false)?
             .queryItems?
             .map { SDKURLQueryItem(name: $0.name, value: $0.value) }

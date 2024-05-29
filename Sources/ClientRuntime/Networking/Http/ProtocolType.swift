@@ -5,6 +5,8 @@
 
 import Foundation
 
+public typealias Scheme = ProtocolType
+
 public enum ProtocolType: String, CaseIterable {
     case http
     case https

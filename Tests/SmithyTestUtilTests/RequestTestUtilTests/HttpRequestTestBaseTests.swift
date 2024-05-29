@@ -196,7 +196,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             let forbiddenQueryParams = ["ForbiddenQuery"]
             for forbiddenQueryParam in forbiddenQueryParams {
                 XCTAssertFalse(
-                    self.queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),
+                    self.queryItemExists(forbiddenQueryParam, in: actual.destination.queryItems),
                     "Forbidden Query:\(forbiddenQueryParam) exists in query items"
                 )
             }
@@ -208,7 +208,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
 
             let requiredQueryParams = ["RequiredQuery"]
             for requiredQueryParam in requiredQueryParams {
-                XCTAssertTrue(self.queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),
+                XCTAssertTrue(self.queryItemExists(requiredQueryParam, in: actual.destination.queryItems),
                               "Required Query:\(requiredQueryParam) does not exist in query items")
             }
 
