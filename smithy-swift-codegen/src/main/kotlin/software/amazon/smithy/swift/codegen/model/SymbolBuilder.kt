@@ -8,8 +8,8 @@ package software.amazon.smithy.swift.codegen.model
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.codegen.core.SymbolReference
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftDeclaration
+import software.amazon.smithy.swift.codegen.SwiftDependency
 
 @DslMarker
 annotation class SymbolDsl
