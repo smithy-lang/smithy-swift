@@ -28,6 +28,10 @@ public extension Context {
     func getAuthSchemeResolver() -> AuthSchemeResolver? {
         return attributes.get(key: authSchemeResolverKey)
     }
+
+    func getSigningAlgorithm() -> SigningAlgorithm? {
+        return attributes.get(key: signingAlgorithmKey)
+    }
 }
 
 extension ContextBuilder {
@@ -59,8 +63,15 @@ extension ContextBuilder {
         self.attributes.set(key: selectedAuthSchemeKey, value: value)
         return self
     }
+
+    @discardableResult
+    public func withSigningAlgorithm(value: SigningAlgorithm) -> Self {
+        self.attributes.set(key: signingAlgorithmKey, value: value)
+        return self
+    }
 }
 
 private let authSchemesKey = AttributeKey<Attributes>(name: "AuthSchemes")
 private let authSchemeResolverKey = AttributeKey<AuthSchemeResolver>(name: "AuthSchemeResolver")
 private let selectedAuthSchemeKey = AttributeKey<SelectedAuthScheme>(name: "SelectedAuthScheme")
+private let signingAlgorithmKey = AttributeKey<SigningAlgorithm>(name: "SigningAlgorithmKey")
