@@ -7,22 +7,37 @@
 
 import protocol SmithyReadWrite.WireDataProviding
 import AwsCommonRuntimeKit
+import class Foundation.DispatchQueue
 
 public class HttpResponse: HttpUrlResponse, ResponseMessage {
 
     public var headers: Headers
     public var body: ByteStream
-    public var statusCode: HttpStatusCode
+
+    private var _statusCode: HttpStatusCode
+    private let statusCodeQueue = DispatchQueue(label: "statusCodeSerialQueue")
+    public var statusCode: HttpStatusCode {
+        get {
+            statusCodeQueue.sync {
+                return _statusCode
+            }
+        }
+        set {
+            statusCodeQueue.sync {
+                self._statusCode = newValue
+            }
+        }
+    }
 
     public init(headers: Headers = .init(), statusCode: HttpStatusCode = .processing, body: ByteStream = .noStream) {
         self.headers = headers
-        self.statusCode = statusCode
+        self._statusCode = statusCode
         self.body = body
     }
 
     public init(headers: Headers = .init(), body: ByteStream, statusCode: HttpStatusCode) {
         self.body = body
-        self.statusCode = statusCode
+        self._statusCode = statusCode
         self.headers = headers
     }
 }
