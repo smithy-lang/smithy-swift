@@ -7,7 +7,6 @@
 
 import SmithyEventStreamsAPI
 import XCTest
-import ClientRuntime
 
 final class AWSMessageTests: XCTestCase {
     func testType_NormalMessage() {
