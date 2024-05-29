@@ -45,6 +45,7 @@ class InitialRequestIntegration : SwiftIntegration {
                     addImport(protocolGenerationContext.service.writerSymbol.namespace)
                     openBlock("extension \$N {", "}", symbol) {
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                        writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
                         openBlock(
                             "func makeInitialRequestMessage() throws -> \$N {",
                             "}",

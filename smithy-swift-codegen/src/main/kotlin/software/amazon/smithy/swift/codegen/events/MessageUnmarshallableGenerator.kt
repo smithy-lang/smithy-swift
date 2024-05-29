@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 class MessageUnmarshallableGenerator(
@@ -84,7 +85,11 @@ class MessageUnmarshallableGenerator(
                                 }
                                 writer.write("default:")
                                 writer.indent {
-                                    writer.write("let httpResponse = HttpResponse(body: .data(message.payload), statusCode: .ok)")
+                                    writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
+                                    writer.write(
+                                        "let httpResponse = \$N(body: .data(message.payload), statusCode: .ok)",
+                                        SmithyHTTPAPITypes.HttpResponse,
+                                    )
                                     writer.write(
                                         "return \$L(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':exceptionType': \\(params.exceptionType); contentType: \\(params.contentType ?? \"nil\")\", requestID: nil, typeName: nil)",
                                         customizations.unknownServiceErrorSymbol,
@@ -99,7 +104,11 @@ class MessageUnmarshallableGenerator(
                         writer.write("case .error(let params):")
                         writer.indent {
                             // this is a service exception still, just un-modeled
-                            writer.write("let httpResponse = HttpResponse(body: .data(message.payload), statusCode: .ok)")
+                            writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
+                            writer.write(
+                                "let httpResponse = \$N(body: .data(message.payload), statusCode: .ok)",
+                                SmithyHTTPAPITypes.HttpResponse,
+                            )
                             writer.write(
                                 "throw \$L(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':errorType': \\(params.errorCode); message: \\(params.message ?? \"nil\")\", requestID: nil, typeName: nil)",
                                 customizations.unknownServiceErrorSymbol,
