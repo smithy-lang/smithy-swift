@@ -13,6 +13,8 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
 
     // filter duplicates in dependencies
     val distinctDependencies = dependencies.distinctBy { it.packageName }
+    val targetDependencies = dependencies
+        .distinctBy { it.packageName + "." + it.expectProperty("target", String::class.java) }
     val writer = CodeWriter().apply {
         trimBlankLines()
         trimTrailingSpaces()
@@ -40,7 +42,7 @@ fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, de
             writer.openBlock(".target(", "),") {
                 writer.write("name: \"${settings.moduleName}\",")
                 writer.openBlock("dependencies: [", "],") {
-                    for (dependency in distinctDependencies) {
+                    for (dependency in targetDependencies) {
                         writer.openBlock(".product(", "),") {
                             val target = dependency.expectProperty("target", String::class.java)
                             writer.write("name: \"${target}\",")

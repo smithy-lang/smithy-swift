@@ -37,3 +37,14 @@ jobs:
         run: |
           git diff
           test -z "$(git diff)"
+
+      - name: Log Swift version
+        if: ${{matrix.os}} == "macos-latest"
+        run: |
+          which swift
+          swift --version
+
+      - name: Build test projections (e.g. the Weather SDK)
+        if: ${{matrix.os}} == "macos-latest"
+        run: |
+          ./scripts/ci_steps/build_test_projections.sh

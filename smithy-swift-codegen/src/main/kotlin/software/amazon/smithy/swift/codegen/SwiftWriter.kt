@@ -98,6 +98,9 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
     fun addImport(symbol: Symbol) {
         if (symbol.isBuiltIn || symbol.isServiceNestedNamespace || symbol.namespace.isEmpty()) return
         addImport(symbol.namespace)
+        symbol.dependencies?.forEach {
+            addDependency(it)
+        }
     }
 
     fun addImport(
