@@ -116,7 +116,7 @@ extension MapInputInput {
 
     static func write(value: MapInputInput?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
-        try writer["blobMap"].writeMap(value.blobMap, valueWritingClosure: ClientRuntime.Data.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["blobMap"].writeMap(value.blobMap, valueWritingClosure: Foundation.Data.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["dateMap"].writeMap(value.dateMap, valueWritingClosure: timestampWritingClosure(format: .httpDate), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["enumMap"].writeMap(value.enumMap, valueWritingClosure: MyEnum.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["intMap"].writeMap(value.intMap, valueWritingClosure: Swift.Int.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)

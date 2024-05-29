@@ -61,7 +61,7 @@ class HTTPBindingProtocolGeneratorTests {
         val expectedContents = """
 extension ExplicitStructOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> ExplicitStructOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> ExplicitStructOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyJSON.Reader.from(data: data)
         let reader = responseReader
@@ -88,7 +88,7 @@ extension ExplicitStructOutput {
         val expectedContents = """
 extension HttpResponseCodeOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> HttpResponseCodeOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> HttpResponseCodeOutput {
         var value = HttpResponseCodeOutput()
         value.status = httpResponse.statusCode.rawValue
         return value
@@ -105,7 +105,7 @@ extension HttpResponseCodeOutput {
         val expectedContents = """
 extension InlineDocumentAsPayloadOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> InlineDocumentAsPayloadOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> InlineDocumentAsPayloadOutput {
         var value = InlineDocumentAsPayloadOutput()
         if let data = try await httpResponse.body.readData() {
             value.documentValue = try SmithyReadWrite.Document.make(from: data)
@@ -123,7 +123,7 @@ extension InlineDocumentAsPayloadOutput {
         val expectedContents = """
 extension HttpPrefixHeadersOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> HttpPrefixHeadersOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> HttpPrefixHeadersOutput {
         var value = HttpPrefixHeadersOutput()
         if let fooHeaderValue = httpResponse.headers.value(for: "X-Foo") {
             value.foo = fooHeaderValue
