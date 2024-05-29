@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingC
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 
 class InitialRequestIntegration : SwiftIntegration {
     override fun enabledForService(model: Model, settings: SwiftSettings): Boolean {
@@ -45,8 +46,9 @@ class InitialRequestIntegration : SwiftIntegration {
                     openBlock("extension \$N {", "}", symbol) {
                         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                         openBlock(
-                            "func makeInitialRequestMessage() throws -> EventStream.Message {",
-                            "}"
+                            "func makeInitialRequestMessage() throws -> \$N {",
+                            "}",
+                            SmithyEventStreamsAPITypes.Message,
                         ) {
                             val nodeInfoUtils = NodeInfoUtils(protocolGenerationContext, writer, protocolGenerationContext.service.requestWireProtocol)
                             val rootNodeInfo = nodeInfoUtils.nodeInfo(it, true)
@@ -55,16 +57,26 @@ class InitialRequestIntegration : SwiftIntegration {
                             writer.write("try writer.write(self, with: \$L)", valueWritingClosure)
                             writer.write("let initialRequestPayload = try writer.data()")
                             openBlock(
-                                "let initialRequestMessage = EventStream.Message(",
-                                ")"
+                                "let initialRequestMessage = \$N(",
+                                ")",
+                                SmithyEventStreamsAPITypes.Message,
                             ) {
                                 openBlock(
                                     "headers: [",
                                     "],"
                                 ) {
-                                    write("EventStream.Header(name: \":message-type\", value: .string(\"event\")),")
-                                    write("EventStream.Header(name: \":event-type\", value: .string(\"initial-request\")),")
-                                    write("EventStream.Header(name: \":content-type\", value: .string(\$S))", contentType)
+                                    write(
+                                        "\$N(name: \":message-type\", value: .string(\"event\")),",
+                                        SmithyEventStreamsAPITypes.Header,
+                                    )
+                                    write(
+                                        "\$N(name: \":event-type\", value: .string(\"initial-request\")),",
+                                        SmithyEventStreamsAPITypes.Header,
+                                    )
+                                    write(
+                                        "\$N(name: \":content-type\", value: .string(\$S))",
+                                        SmithyEventStreamsAPITypes.Header, contentType,
+                                    )
                                 }
                                 write("payload: initialRequestPayload")
                             }
