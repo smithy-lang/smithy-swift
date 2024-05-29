@@ -10,6 +10,7 @@ import SmithyJSON
 import SmithyReadWrite
 import SmithyRetries
 import SmithyRetriesAPI
+import Swift
 
 public class WeatherClient: Client {
     public static let clientName = "WeatherClient"
