@@ -13,6 +13,7 @@ public class HttpResponse: HttpUrlResponse, ResponseMessage {
 
     public var headers: Headers
     public var body: ByteStream
+    public var reason: String?
 
     private var _statusCode: HttpStatusCode
     private let statusCodeQueue = DispatchQueue(label: "statusCodeSerialQueue")
@@ -29,13 +30,17 @@ public class HttpResponse: HttpUrlResponse, ResponseMessage {
         }
     }
 
-    public init(headers: Headers = .init(), statusCode: HttpStatusCode = .processing, body: ByteStream = .noStream) {
+    public init(
+        headers: Headers = .init(),
+        statusCode: HttpStatusCode = .processing,
+        body: ByteStream = .noStream,
+        reason: String? = nil) {
         self.headers = headers
         self._statusCode = statusCode
         self.body = body
     }
 
-    public init(headers: Headers = .init(), body: ByteStream, statusCode: HttpStatusCode) {
+    public init(headers: Headers = .init(), body: ByteStream, statusCode: HttpStatusCode, reason: String? = nil) {
         self.body = body
         self._statusCode = statusCode
         self.headers = headers
