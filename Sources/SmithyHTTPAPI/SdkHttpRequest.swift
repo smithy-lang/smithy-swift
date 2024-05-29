@@ -121,7 +121,7 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
 
     required public init() {}
 
-    public private(set) var headers: Headers = Headers()
+    public var headers: Headers = Headers()
     public private(set) var methodType: HttpMethodType = .get
     public private(set) var host: String = ""
     public private(set) var path: String = "/"

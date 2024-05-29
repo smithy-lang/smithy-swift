@@ -47,8 +47,9 @@ extension Context {
     ///
     /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
     /// If no partition ID is provided, requests will be partitioned based on the hostname.
-    public func getPartitionID() -> String? {
-        return attributes.get(key: SmithyHTTPAPIKeys.partitionId)
+    public var partitionID: String? {
+        get { attributes.get(key: partitionIDKey) }
+        set { attributes.set(key: partitionIDKey, value: newValue) }
     }
 
     public var path: String {
@@ -144,7 +145,7 @@ extension ContextBuilder {
     /// - Returns: `self`, after the partition ID is set as specified.
     @discardableResult
     public func withPartitionID(value: String?) -> Self {
-        self.attributes.set(key: SmithyHTTPAPIKeys.partitionId, value: value)
+        self.attributes.set(key: partitionIDKey, value: value)
         return self
     }
 
@@ -193,7 +194,6 @@ extension ContextBuilder {
 
 public enum SmithyHTTPAPIKeys {
     public static let operation = AttributeKey<String>(name: "Operation")
-    public static let partitionId = AttributeKey<String>(name: "PartitionID")
     public static let region = AttributeKey<String>(name: "Region")
     public static let serviceName = AttributeKey<String>(name: "ServiceName")
 
@@ -207,6 +207,7 @@ private let hostKey = AttributeKey<String>(name: "HostKey")
 private let hostPrefixKey = AttributeKey<String>(name: "HostPrefixKey")
 private let httpResponseKey = AttributeKey<HttpResponse>(name: "httpResponseKey")
 private let isBidirectionalStreamingEnabledKey = AttributeKey<Bool>(name: "isBidirectionalStreamingEnabledKey")
+private let partitionIDKey = AttributeKey<String>(name: "PartitionIDKey")
 private let pathKey = AttributeKey<String>(name: "PathKey")
 private let signingNameKey = AttributeKey<String>(name: "SigningNameKey")
 private let signingAlgorithmKey = AttributeKey<String>(name: "SigningAlgorithmKey")

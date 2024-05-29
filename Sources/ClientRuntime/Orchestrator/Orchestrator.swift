@@ -10,6 +10,7 @@ import enum Smithy.ClientError
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
 import protocol Smithy.HasAttributes
+import SmithyHTTPAPI
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryErrorInfo
 

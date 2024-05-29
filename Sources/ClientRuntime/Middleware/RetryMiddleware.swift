@@ -98,7 +98,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
         //
         // This will be revisited when standard architecture for DNS is implemented, since
         // partitions may be set based on IPs in certain circumstances.
-        if let customPartitionID = context.getPartitionID(), !customPartitionID.isEmpty {
+        if let customPartitionID = context.partitionID, !customPartitionID.isEmpty {
             // use custom partition ID provided by context
             return customPartitionID
         } else if !input.host.isEmpty {

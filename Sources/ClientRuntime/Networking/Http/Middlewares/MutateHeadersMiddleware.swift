@@ -44,7 +44,7 @@ public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>
 
         if !conditionallySet.dictionary.isEmpty {
             for header in conditionallySet.headers where !builder.headers.exists(name: header.name) {
-                builder.updateHeader(name: header.name, value: header.value)
+                builder.headers.add(name: header.name, values: header.value)
             }
         }
     }

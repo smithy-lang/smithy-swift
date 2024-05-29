@@ -20,7 +20,7 @@ extension SdkHttpRequestBuilder {
     ///   - originalRequest: the SDK request that is used to hold the original values
     /// - Returns: the builder
     public func update(from crtRequest: HTTPRequestBase, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
-        withHeaders(convertSignedHeadersToHeaders(crtRequest: crtRequest))
+        headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
         withMethod(originalRequest.method)
         withHost(originalRequest.host)
         if let crtRequest = crtRequest as? HTTPRequest, let components = URLComponents(string: crtRequest.path) {
