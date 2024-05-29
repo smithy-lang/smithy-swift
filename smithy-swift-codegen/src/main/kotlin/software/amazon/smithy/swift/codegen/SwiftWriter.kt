@@ -120,7 +120,7 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
 
     // Adds an import statement that imports the individual type from the specified module
     // Example: addIndividualTypeImport("struct", "Foundation", "Date") -> "import struct Foundation.Date"
-    fun addIndividualTypeImport(kind: SwiftKind, module: String, type: String) {
+    fun addIndividualTypeImport(kind: SwiftDeclaration, module: String, type: String) {
         importContainer.addImport("${kind.kind} $module.$type", false)
     }
 
@@ -288,7 +288,7 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
     }
 }
 
-enum class SwiftKind(val kind: String) {
+enum class SwiftDeclaration(val kind: String) {
     STRUCT("struct"),
     CLASS("class"),
     ENUM("enum"),
