@@ -8,6 +8,7 @@
 import protocol Smithy.RequestMessageSerializer
 import class Smithy.Context
 import SmithyEventStreamsAPI
+import SmithyEventStreams
 import SmithyEventStreamsAuthAPI
 import struct Foundation.Data
 import typealias SmithyReadWrite.WritingClosure
@@ -15,9 +16,8 @@ import SmithyHTTPAPI
 
 public struct EventStreamBodyMiddleware<OperationStackInput,
                                         OperationStackOutput,
-                                        OperationStackInputPayload,
-                                        MessageEncoderStream: SmithyEventStreamsAuthAPI.MessageEncoderStream>:
-                                            Middleware where OperationStackInputPayload == MessageEncoderStream.Event {
+                                        OperationStackInputPayload>:
+                                            Middleware {
     public let id: Swift.String = "EventStreamBodyMiddleware"
 
     let keyPath: KeyPath<OperationStackInput, AsyncThrowingStream<OperationStackInputPayload, Swift.Error>?>
@@ -49,7 +49,6 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = Smithy.Context
 }
 
 extension EventStreamBodyMiddleware: RequestMessageSerializer {
@@ -65,7 +64,7 @@ extension EventStreamBodyMiddleware: RequestMessageSerializer {
             guard let messageSigner = attributes.messageSigner else {
                 fatalError("Message signer is required for streaming payload")
             }
-            let encoderStream = MessageEncoderStream(
+            let encoderStream = DefaultMessageEncoderStream(
               stream: eventStream,
               messageEncoder: messageEncoder,
               marshalClosure: marshalClosure,

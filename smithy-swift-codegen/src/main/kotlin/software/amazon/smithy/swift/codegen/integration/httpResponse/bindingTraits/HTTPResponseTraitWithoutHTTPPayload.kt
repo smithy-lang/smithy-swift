@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPRespons
 import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.isRPCBound
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsTypes
 
 class HTTPResponseTraitWithoutHTTPPayload(
@@ -49,9 +50,9 @@ class HTTPResponseTraitWithoutHTTPPayload(
         when (shape.type) {
             ShapeType.UNION -> {
                 writer.openBlock("if case let .stream(stream) = httpResponse.body {", "}") {
-                    writer.addImport(customizations.messageDecoderSymbol.namespace)
                     writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS.target)
-                    writer.write("let messageDecoder = \$N()", customizations.messageDecoderSymbol)
+                    writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
+                    writer.write("let messageDecoder = \$N()", SmithyEventStreamsTypes.DefaultMessageDecoder)
                     writer.write(
                         "let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
                         SmithyEventStreamsTypes.DefaultMessageDecoderStream,

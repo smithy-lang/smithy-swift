@@ -6,7 +6,7 @@
 //
 
 /// Event Stream Errors
-enum EventStreamError: Error {
+public enum EventStreamError: Error {
 
     /// Error thrown when decoding of event stream message fails
     case decoding(String)
@@ -17,6 +17,7 @@ enum EventStreamError: Error {
 }
 
 extension AsyncThrowingStream: Equatable where Element: Equatable {
+
     public static func == (lhs: AsyncThrowingStream, rhs: AsyncThrowingStream) -> Bool {
         // TODO: Remove as part of https://github.com/awslabs/aws-sdk-swift/issues/898
         return false

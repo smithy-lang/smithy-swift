@@ -108,6 +108,7 @@ class MessageUnmarshallableGenerator(
                         writer.write("case .unknown(messageType: let messageType):")
                         writer.indent {
                             // this is a client exception because we failed to parse it
+                            writer.addImport(SwiftDependency.SMITHY.target)
                             writer.write(
                                 "throw \$L.unknownError(\"unrecognized event stream message ':message-type': \\(messageType)\")",
                                 SmithyTypes.ClientError,

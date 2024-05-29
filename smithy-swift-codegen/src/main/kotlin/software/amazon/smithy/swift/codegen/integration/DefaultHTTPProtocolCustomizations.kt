@@ -43,8 +43,6 @@ abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
         ).render(ctx)
     }
 
-    override val messageDecoderSymbol: Symbol = SmithyEventStreamsAPITypes.MessageDecoder
-
     override val baseErrorSymbol: Symbol = SmithyTestUtilTypes.TestBaseError
 
     override val unknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError

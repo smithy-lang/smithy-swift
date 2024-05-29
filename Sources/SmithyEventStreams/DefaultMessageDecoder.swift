@@ -6,6 +6,7 @@
 //
 
 import Smithy
+import enum SmithyEventStreamsAPI.EventStreamError
 import struct SmithyEventStreamsAPI.Message
 import struct SmithyEventStreamsAPI.Header
 import protocol SmithyEventStreamsAPI.MessageDecoder

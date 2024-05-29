@@ -11,6 +11,8 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
  * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
  */
 object SmithyEventStreamsTypes {
+    val DefaultMessageEncoder = runtimeSymbol("DefaultMessageEncoder")
+    val DefaultMessageDecoder = runtimeSymbol("DefaultMessageDecoder")
     val DefaultMessageEncoderStream = runtimeSymbol("DefaultMessageEncoderStream")
     val DefaultMessageDecoderStream = runtimeSymbol("DefaultMessageDecoderStream")
 }

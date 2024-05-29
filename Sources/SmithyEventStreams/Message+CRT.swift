@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum SmithyEventStreamsAPI.EventStreamError
 import enum SmithyEventStreamsAPI.MessageType
 import struct SmithyEventStreamsAPI.Message
 import AwsCommonRuntimeKit
