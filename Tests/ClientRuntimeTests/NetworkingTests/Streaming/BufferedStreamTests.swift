@@ -69,6 +69,19 @@ final class BufferedStreamTests: XCTestCase {
         XCTAssertNil(readData2)
     }
 
+    func test_read_throwsErrorWhenStreamIsClosedWithError() throws {
+        let subject = BufferedStream()
+        try subject.write(contentsOf: testData)
+        subject.closeWithError(TestError.error)
+        do {
+            let readData1 = try subject.read(upToCount: Int.max)
+        } catch TestError.error {
+            // Test passes
+        } catch {
+            XCTFail("Unexpected error thrown: \(error.localizedDescription)")
+        }
+    }
+
     // MARK: - readToEnd()
 
     func test_readToEnd_readsToEnd() throws {
@@ -83,6 +96,19 @@ final class BufferedStreamTests: XCTestCase {
         XCTAssertNil(readData2)
     }
 
+    func test_readToEnd_throwsErrorWhenStreamIsClosedWithError() throws {
+        let subject = BufferedStream()
+        try subject.write(contentsOf: testData)
+        subject.closeWithError(TestError.error)
+        do {
+            let readData1 = try subject.readToEnd()
+        } catch TestError.error {
+            // Test passes
+        } catch {
+            XCTFail("Unexpected error thrown: \(error.localizedDescription)")
+        }
+    }
+
     // MARK: - readToEndAsync()
 
     func test_readToEndAsync_readsToEnd() async throws {
@@ -95,6 +121,19 @@ final class BufferedStreamTests: XCTestCase {
         // read again, should return nil
         let readData2 = try await subject.readToEndAsync()
         XCTAssertNil(readData2)
+    }
+
+    func test_readToEndAsync_throwsErrorWhenStreamIsClosedWithError() async throws {
+        let subject = BufferedStream()
+        try subject.write(contentsOf: testData)
+        subject.closeWithError(TestError.error)
+        do {
+            let readData1 = try await subject.readToEndAsync()
+        } catch TestError.error {
+            // Test passes
+        } catch {
+            XCTFail("Unexpected error thrown: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - readAsync(upToCount:)
@@ -140,6 +179,19 @@ final class BufferedStreamTests: XCTestCase {
         XCTAssertEqual(testData[4...], readData2)
         let readData3 = try await subject.readAsync(upToCount: Int.max)
         XCTAssertNil(readData3)
+    }
+
+    func test_readAsync_throwsErrorWhenStreamIsClosedWithError() async throws {
+        let subject = BufferedStream()
+        try subject.write(contentsOf: testData)
+        subject.closeWithError(TestError.error)
+        do {
+            let readData1 = try await subject.readAsync(upToCount: Int.max)
+        } catch TestError.error {
+            // Test passes
+        } catch {
+            XCTFail("Unexpected error thrown: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - write(contentsOf:)
@@ -188,4 +240,8 @@ final class BufferedStreamTests: XCTestCase {
 
         XCTAssertEqual(sut.length, testData.count)
     }
+}
+
+private enum TestError: Error, Equatable {
+    case error
 }

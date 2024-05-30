@@ -13,7 +13,7 @@ import class Foundation.NSRecursiveLock
 /// Note: This class is thread-safe and async-safe.
 /// Note: if data is not read from the stream, the buffer will grow indefinitely until the stream is closed.
 ///       or reach the maximum size of a `Data` object.
-public class BufferedStream: Stream {
+public class BufferedStream: Stream, @unchecked Sendable {
 
     /// Returns the cumulative length of all data so far written to the stream, if known.
     /// For a buffered stream, the length will only be known if the stream has closed.
