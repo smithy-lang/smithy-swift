@@ -130,6 +130,13 @@ public class BufferedStream: Stream, @unchecked Sendable {
 
     /// Call this function only while `lock` is locked, to prevent simultaneous access.
     private func _read(upToCount count: Int) throws -> Data? {
+
+        // throw any previously stored error, if there was one
+        // dispose of the error when throwing so it is only thrown once
+        if let error = _error {
+            _error = nil
+            throw error
+        }
         let toRead = min(count, _buffer.count)
         let endPosition = position.advanced(by: toRead)
         let chunk = _buffer[position..<endPosition]
@@ -143,7 +150,6 @@ public class BufferedStream: Stream, @unchecked Sendable {
         // if we're closed and there's no data left, return nil
         // this will signal the end of the stream
         if _isClosed && chunk.isEmpty == true {
-            if let error = _error { throw error }
             return nil
         }
 

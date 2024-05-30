@@ -75,6 +75,7 @@ final class BufferedStreamTests: XCTestCase {
         subject.closeWithError(TestError.error)
         do {
             let readData1 = try subject.read(upToCount: Int.max)
+            XCTFail("Error was expected to be thrown")
         } catch TestError.error {
             // Test passes
         } catch {
@@ -102,6 +103,7 @@ final class BufferedStreamTests: XCTestCase {
         subject.closeWithError(TestError.error)
         do {
             let readData1 = try subject.readToEnd()
+            XCTFail("Error was expected to be thrown")
         } catch TestError.error {
             // Test passes
         } catch {
@@ -129,6 +131,7 @@ final class BufferedStreamTests: XCTestCase {
         subject.closeWithError(TestError.error)
         do {
             let readData1 = try await subject.readToEndAsync()
+            XCTFail("Error was expected to be thrown")
         } catch TestError.error {
             // Test passes
         } catch {
@@ -187,6 +190,7 @@ final class BufferedStreamTests: XCTestCase {
         subject.closeWithError(TestError.error)
         do {
             let readData1 = try await subject.readAsync(upToCount: Int.max)
+            XCTFail("Error was expected to be thrown")
         } catch TestError.error {
             // Test passes
         } catch {
