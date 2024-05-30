@@ -25,10 +25,10 @@ import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.isBuiltIn
 import software.amazon.smithy.swift.codegen.model.isGeneric
-import software.amazon.smithy.swift.codegen.model.isInternalSPI
 import software.amazon.smithy.swift.codegen.model.isOptional
 import software.amazon.smithy.swift.codegen.model.isServiceNestedNamespace
 import java.util.function.BiFunction
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Handles indenting follow on params to a function that takes several params or a builder object
@@ -98,14 +98,11 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
 
     fun addImport(symbol: Symbol) {
         if (symbol.isBuiltIn || symbol.isServiceNestedNamespace || symbol.namespace.isEmpty()) return
-        if (symbol.isInternalSPI()) {
-            val kind = symbol.getProperty("kind").orElseThrow()
-            val spiName = symbol.getProperty("spiName").orElseThrow()
-            addImport(
-                "$kind ${symbol.namespace}.${symbol.name}",
-                internalSPIName = "$spiName"
-            )
-        } else {
+        val spiName = symbol.getProperty("spiName").getOrNull()?.toString()
+        val decl = symbol.getProperty("decl").getOrNull()?.toString()
+        decl?.let {
+            addImport("$it ${symbol.namespace}.${symbol.name}", internalSPIName = spiName)
+        } ?: run {
             addImport(symbol.namespace)
         }
     }
@@ -121,8 +118,8 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
 
     // Adds an import statement that imports the individual type from the specified module
     // Example: addIndividualTypeImport("struct", "Foundation", "Date") -> "import struct Foundation.Date"
-    fun addIndividualTypeImport(kind: SwiftDeclaration, module: String, type: String) {
-        importContainer.addImport("${kind.kind} $module.$type", false)
+    fun addIndividualTypeImport(decl: SwiftDeclaration, module: String, type: String) {
+        importContainer.addImport("${decl.keyword} $module.$type", false)
     }
 
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
@@ -142,10 +139,16 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         return GENERATED_FILE_HEADER + imports + contents
     }
 
-    private class SwiftSymbolFormatter(val shouldSetDefault: Boolean, val shouldRenderOptional: Boolean) : BiFunction<Any, String, String> {
+    private class SwiftSymbolFormatter(
+        val writer: SwiftWriter,
+        val shouldSetDefault: Boolean,
+        val shouldRenderOptional: Boolean,
+    ) : BiFunction<Any, String, String> {
+
         override fun apply(type: Any, indent: String): String {
             when (type) {
                 is Symbol -> {
+                    writer.addImport(type)
                     var formatted = type.fullName
                     if (type.isBoxed() && shouldRenderOptional) {
                         formatted += "?"
@@ -283,13 +286,13 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         // Default values and optionality can be configured for a symbol (See SymbolBuilder)
         // The following custom formatters will render symbols according to its configuration
         // See https://smithy.io/2.0/guides/building-codegen/generating-code.html#formatters
-        putFormatter('D', SwiftSymbolFormatter(shouldSetDefault = true, shouldRenderOptional = true))
-        putFormatter('T', SwiftSymbolFormatter(shouldSetDefault = false, shouldRenderOptional = true))
-        putFormatter('N', SwiftSymbolFormatter(shouldSetDefault = false, shouldRenderOptional = false))
+        putFormatter('D', SwiftSymbolFormatter(this, shouldSetDefault = true, shouldRenderOptional = true))
+        putFormatter('T', SwiftSymbolFormatter(this, shouldSetDefault = false, shouldRenderOptional = true))
+        putFormatter('N', SwiftSymbolFormatter(this, shouldSetDefault = false, shouldRenderOptional = false))
     }
 }
 
-enum class SwiftDeclaration(val kind: String) {
+enum class SwiftDeclaration(val keyword: String) {
     STRUCT("struct"),
     CLASS("class"),
     ENUM("enum"),
