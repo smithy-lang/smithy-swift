@@ -23,24 +23,30 @@ import struct Foundation.URLRequest
 // in the CRT engine so that is why it's a class
 public final class SdkHttpRequest: RequestMessage {
     public var body: ByteStream
-    public let endpoint: Endpoint
+    public let destination: URI
+    public var headers: Headers
     public let method: HttpMethodType
-    private var additionalHeaders: Headers = Headers()
-    public var headers: Headers {
-        var allHeaders = endpoint.headers ?? Headers()
-        allHeaders.addAll(headers: additionalHeaders)
-        return allHeaders
-    }
+    public var host: String { destination.host }
+    public var path: String { destination.path }
+    public var queryItems: [SDKURLQueryItem]? { destination.queryItems }
     public var trailingHeaders: Headers = Headers()
-    public var path: String { endpoint.path }
-    public var host: String { endpoint.host }
-    public var queryItems: [SDKURLQueryItem]? { endpoint.queryItems }
+    public var endpoint: Endpoint {
+        return Endpoint(uri: self.destination, headers: self.headers)
+    }
+
+    public convenience init(method: HttpMethodType,
+                            endpoint: Endpoint,
+                            body: ByteStream = ByteStream.noStream) {
+        self.init(method: method, uri: endpoint.uri, headers: endpoint.headers, body: body)
+    }
 
     public init(method: HttpMethodType,
-                endpoint: Endpoint,
+                uri: URI,
+                headers: Headers,
                 body: ByteStream = ByteStream.noStream) {
         self.method = method
-        self.endpoint = endpoint
+        self.destination = uri
+        self.headers = headers
         self.body = body
     }
 
@@ -50,22 +56,20 @@ public final class SdkHttpRequest: RequestMessage {
             .withMethod(self.method)
             .withHeaders(self.headers)
             .withTrailers(self.trailingHeaders)
-            .withPath(self.path)
-            .withHost(self.host)
-            .withPort(self.endpoint.port)
-            .withProtocol(self.endpoint.protocolType ?? .https)
-        if let qItems = self.queryItems {
-            builder.withQueryItems(qItems)
-        }
+            .withPath(self.destination.path)
+            .withHost(self.destination.host)
+            .withPort(self.destination.port)
+            .withProtocol(self.destination.scheme)
+            .withQueryItems(self.destination.queryItems)
         return builder
     }
 
     public func withHeader(name: String, value: String) {
-        self.additionalHeaders.add(name: name, value: value)
+        self.headers.add(name: name, value: value)
     }
 
     public func withoutHeader(name: String) {
-        self.additionalHeaders.remove(name: name)
+        self.headers.remove(name: name)
     }
 
     public func withBody(_ body: ByteStream) {
@@ -76,7 +80,7 @@ public final class SdkHttpRequest: RequestMessage {
 public extension URLRequest {
     init(sdkRequest: SdkHttpRequest) async throws {
         // Set URL
-        guard let url = sdkRequest.endpoint.url else {
+        guard let url = sdkRequest.destination.url else {
             throw ClientError.dataNotFound("Failed to construct URLRequest due to missing URL.")
         }
         self.init(url: url)
@@ -111,9 +115,11 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
 
     public var description: String {
         let method = method.rawValue.uppercased()
-        let protocolType = endpoint.protocolType ?? ProtocolType.https
-        let query = String(describing: queryItems)
-        return "\(method) \(protocolType):\(endpoint.port) \n Path: \(endpoint.path) \n \(headers) \n \(query)"
+        let protocolType = self.destination.scheme
+        let query = self.destination.queryString ?? ""
+        let port = self.destination.port.map { String($0) } ?? ""
+        return "\(method) \(protocolType):\(port) \n " +
+               "Path: \(endpoint.uri.path) \n Headers: \(headers) \n Query: \(query)"
     }
 }
 
@@ -121,6 +127,7 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
 
     required public init() {}
 
+<<<<<<< HEAD:Sources/SmithyHTTPAPI/SdkHttpRequest.swift
     public var headers: Headers = Headers()
     public private(set) var methodType: HttpMethodType = .get
     public private(set) var host: String = ""
@@ -130,6 +137,21 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
     public private(set) var port: Int16 = 443
     public private(set) var protocolType: ProtocolType = .https
     public private(set) var trailingHeaders: Headers = Headers()
+=======
+    var headers: Headers = Headers()
+    var methodType: HttpMethodType = .get
+    var host: String = ""
+    var path: String = "/"
+    var body: ByteStream = .noStream
+    var queryItems: [SDKURLQueryItem] = []
+    var port: Int16?
+    var protocolType: ProtocolType = .https
+    var trailingHeaders: Headers = Headers()
+
+    public var currentQueryItems: [SDKURLQueryItem]? {
+        return queryItems
+    }
+>>>>>>> main:Sources/ClientRuntime/Networking/Http/SdkHttpRequest.swift
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -197,8 +219,7 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
 
     @discardableResult
     public func withQueryItems(_ value: [SDKURLQueryItem]) -> SdkHttpRequestBuilder {
-        self.queryItems = self.queryItems ?? []
-        self.queryItems?.append(contentsOf: value)
+        self.queryItems.append(contentsOf: value)
         return self
     }
 
@@ -208,6 +229,7 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
     }
 
     @discardableResult
+<<<<<<< HEAD:Sources/SmithyHTTPAPI/SdkHttpRequest.swift
     public func replacingQueryItems(_ value: [SDKURLQueryItem]) -> SdkHttpRequestBuilder {
         self.queryItems = value
         return self
@@ -215,6 +237,9 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
 
     @discardableResult
     public func withPort(_ value: Int16) -> SdkHttpRequestBuilder {
+=======
+    public func withPort(_ value: Int16?) -> SdkHttpRequestBuilder {
+>>>>>>> main:Sources/ClientRuntime/Networking/Http/SdkHttpRequest.swift
         self.port = value
         return self
     }
@@ -226,15 +251,14 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
     }
 
     public func build() -> SdkHttpRequest {
-        let endpoint = Endpoint(host: host,
-                                path: path,
-                                port: port,
-                                queryItems: queryItems,
-                                protocolType: protocolType,
-                                headers: headers)
-        return SdkHttpRequest(method: methodType,
-                              endpoint: endpoint,
-                              body: body)
+        let uri = URIBuilder()
+            .withScheme(protocolType)
+            .withPath(path)
+            .withHost(host)
+            .withPort(port)
+            .withQueryItems(queryItems)
+            .build()
+        return SdkHttpRequest(method: methodType, uri: uri, headers: headers, body: body)
     }
 }
 

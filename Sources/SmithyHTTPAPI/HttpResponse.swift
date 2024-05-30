@@ -8,22 +8,42 @@
 import protocol Smithy.ResponseMessage
 import protocol Smithy.Stream
 import enum Smithy.ByteStream
+import class Foundation.DispatchQueue
 
 public class HttpResponse: HttpUrlResponse, ResponseMessage {
 
     public var headers: Headers
     public var body: ByteStream
-    public var statusCode: HttpStatusCode
+    public var reason: String?
 
-    public init(headers: Headers = .init(), statusCode: HttpStatusCode = .processing, body: ByteStream = .noStream) {
+    private var _statusCode: HttpStatusCode
+    private let statusCodeQueue = DispatchQueue(label: "statusCodeSerialQueue")
+    public var statusCode: HttpStatusCode {
+        get {
+            statusCodeQueue.sync {
+                return _statusCode
+            }
+        }
+        set {
+            statusCodeQueue.sync {
+                self._statusCode = newValue
+            }
+        }
+    }
+
+    public init(
+        headers: Headers = .init(),
+        statusCode: HttpStatusCode = .processing,
+        body: ByteStream = .noStream,
+        reason: String? = nil) {
         self.headers = headers
-        self.statusCode = statusCode
+        self._statusCode = statusCode
         self.body = body
     }
 
-    public init(headers: Headers = .init(), body: ByteStream, statusCode: HttpStatusCode) {
+    public init(headers: Headers = .init(), body: ByteStream, statusCode: HttpStatusCode, reason: String? = nil) {
         self.body = body
-        self.statusCode = statusCode
+        self._statusCode = statusCode
         self.headers = headers
     }
 }

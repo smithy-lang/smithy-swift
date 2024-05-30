@@ -12,8 +12,7 @@ extension WeatherClientTypes {
         public static var allCases: [SimpleYesNo] {
             return [
                 .no,
-                .yes,
-                .sdkUnknown("")
+                .yes
             ]
         }
 

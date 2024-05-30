@@ -84,6 +84,7 @@ let package = Package(
         .target(
             name: "SmithyRetries",
             dependencies: [
+                "SmithyRetriesAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ]
         ),

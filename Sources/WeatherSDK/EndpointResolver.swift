@@ -133,8 +133,8 @@ extension EndpointResolverMiddleware: ApplyEndpoint {
             attributes.signingAlgorithm = signingAlgorithm
         }
 
-        if let headers = endpoint.headers {
-            builder.withHeaders(headers)
+        if !endpoint.headers.isEmpty {
+            builder.withHeaders(endpoint.headers)
         }
 
         return builder.withMethod(attributes.method)

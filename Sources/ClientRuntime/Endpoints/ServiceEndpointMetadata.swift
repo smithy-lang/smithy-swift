@@ -55,7 +55,7 @@ extension ServiceEndpointMetadata {
 
         return SmithyEndpoint(endpoint: Endpoint(host: hostname,
                               path: "/",
-                              protocolType: ProtocolType(rawValue: transportProtocol)),
+                              protocolType: ProtocolType(rawValue: transportProtocol)!),
                               signingName: signingName)
     }
 

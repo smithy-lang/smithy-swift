@@ -472,10 +472,10 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// - Returns: A `URLRequest` ready to be transmitted by `URLSession` for this operation.
     private func makeURLRequest(from request: SdkHttpRequest, httpBodyStream: InputStream?) throws -> URLRequest {
         var components = URLComponents()
-        components.scheme = config.protocolType?.rawValue ?? request.endpoint.protocolType?.rawValue ?? "https"
-        components.host = request.endpoint.host
+        components.scheme = config.protocolType?.rawValue ?? request.destination.scheme.rawValue
+        components.host = request.endpoint.uri.host
         components.port = port(for: request)
-        components.percentEncodedPath = request.path
+        components.percentEncodedPath = request.destination.path
         if let queryItems = request.queryItems, !queryItems.isEmpty {
             components.percentEncodedQueryItems = queryItems.map {
                 Foundation.URLQueryItem(name: $0.name, value: $0.value)
@@ -494,12 +494,12 @@ public final class URLSessionHTTPClient: HTTPClient {
     }
 
     private func port(for request: SdkHttpRequest) -> Int? {
-        switch (request.endpoint.protocolType, request.endpoint.port) {
+        switch (request.destination.scheme, request.destination.port) {
         case (.https, 443), (.http, 80):
             // Don't set port explicitly if it's the default port for the scheme
             return nil
         default:
-            return Int(request.endpoint.port)
+            return request.destination.port.map { Int($0) }
         }
     }
 }

@@ -18,8 +18,8 @@ class SdkRequestBuilderTests: XCTestCase {
         crtRequest.path = pathToMatch
 
         let updatedRequest = SdkHttpRequestBuilder().update(from: crtRequest, originalRequest: originalRequest).build()
-        let updatedPath = [updatedRequest.endpoint.path, updatedRequest.endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
+        let updatedPath = [updatedRequest.destination.path, updatedRequest.destination.queryString].compactMap { $0 }.joined(separator: "?")
         XCTAssertEqual(pathToMatch, updatedPath)
-        XCTAssertEqual(url, updatedRequest.endpoint.url?.absoluteString)
+        XCTAssertEqual(url, updatedRequest.destination.url?.absoluteString)
     }
 }

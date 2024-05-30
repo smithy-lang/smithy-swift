@@ -42,6 +42,7 @@ class MessageUnmarshallableGenerator(
         ctx.delegator.useShapeWriter(streamMember) { writer ->
 
             writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
+            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.addImport(customizations.unknownServiceErrorSymbol.namespace)
             writer.openBlock("extension \$L {", "}", streamSymbol.fullName) {
                 writer.openBlock(
