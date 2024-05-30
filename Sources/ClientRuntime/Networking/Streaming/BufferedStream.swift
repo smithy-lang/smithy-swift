@@ -130,6 +130,10 @@ public class BufferedStream: Stream {
 
     /// Call this function only while `lock` is locked, to prevent simultaneous access.
     private func _read(upToCount count: Int) throws -> Data? {
+        guard _error == nil else {
+            throw _error!
+        }
+
         let toRead = min(count, _buffer.count)
         let endPosition = position.advanced(by: toRead)
         let chunk = _buffer[position..<endPosition]
@@ -143,7 +147,6 @@ public class BufferedStream: Stream {
         // if we're closed and there's no data left, return nil
         // this will signal the end of the stream
         if _isClosed && chunk.isEmpty == true {
-            if let error = _error { throw error }
             return nil
         }
 
