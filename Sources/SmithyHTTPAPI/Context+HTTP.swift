@@ -70,11 +70,6 @@ extension Context {
         set { attributes.set(key: signingNameKey, value: newValue) }
     }
 
-    public var signingAlgorithm: String? {
-        get { attributes.get(key: signingAlgorithmKey) }
-        set { attributes.set(key: signingAlgorithmKey, value: newValue) }
-    }
-
     public var signingRegion: String? {
         get { attributes.get(key: signingRegionKey) }
         set { attributes.set(key: signingRegionKey, value: newValue) }
@@ -210,6 +205,5 @@ private let isBidirectionalStreamingEnabledKey = AttributeKey<Bool>(name: "isBid
 private let partitionIDKey = AttributeKey<String>(name: "PartitionIDKey")
 private let pathKey = AttributeKey<String>(name: "PathKey")
 private let signingNameKey = AttributeKey<String>(name: "SigningNameKey")
-private let signingAlgorithmKey = AttributeKey<String>(name: "SigningAlgorithmKey")
 private let signingRegionKey = AttributeKey<String>(name: "SigningRegionKey")
 private let expirationKey = AttributeKey<TimeInterval>(name: "ExpirationKey")
