@@ -103,7 +103,7 @@ open class EndpointResolverMiddleware(
                     }
                     
                     if let signingAlgorithm = signingAlgorithm {
-                        attributes.signingAlgorithm = signingAlgorithm
+                        attributes.signingAlgorithm = SigningAlgorithm(rawValue: signingAlgorithm)
                     }
                     
                     if !endpoint.headers.isEmpty {

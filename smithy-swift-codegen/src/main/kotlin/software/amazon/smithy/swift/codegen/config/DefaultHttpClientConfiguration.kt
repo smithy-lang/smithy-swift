@@ -9,7 +9,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.config.ClientConfiguration.Companion.runtimeSymbol
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
