@@ -52,30 +52,31 @@ object ClientRuntimeTypes {
     }
 
     object Core {
-        val ModeledError = runtimeSymbol("ModeledError")
-        val ServiceError = runtimeSymbol("ServiceError")
-        val TelemetryProvider = runtimeSymbol("TelemetryProvider")
-        val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory")
-        val SDKLogLevel = runtimeSymbol("SDKLogLevel")
-        val ClientLogMode = runtimeSymbol("ClientLogMode")
-        val IdempotencyTokenGenerator = runtimeSymbol("IdempotencyTokenGenerator")
-        val DefaultRetryErrorInfoProvider =
-            runtimeSymbol("DefaultRetryErrorInfoProvider")
-        val PaginateToken = runtimeSymbol("PaginateToken")
-        val PaginatorSequence = runtimeSymbol("PaginatorSequence")
-        val EndpointsRuleEngine = runtimeSymbol("EndpointsRuleEngine")
-        val EndpointsRequestContext = runtimeSymbol("EndpointsRequestContext")
-        val PartitionDefinition = runtimeSymbol("partitionJSON")
-        val EndpointsAuthSchemeResolver =
-            runtimeSymbol("EndpointsAuthSchemeResolver")
-        val DefaultEndpointsAuthSchemeResolver =
-            runtimeSymbol("DefaultEndpointsAuthSchemeResolver")
-        val EndpointsAuthScheme = runtimeSymbol("EndpointsAuthScheme")
+        val SDKURLQueryItem = runtimeSymbol("SDKURLQueryItem", SwiftDeclaration.STRUCT)
+        val ModeledError = runtimeSymbol("ModeledError", SwiftDeclaration.PROTOCOL)
+        val UnknownClientError = runtimeSymbol("ClientError.unknownError")
+        val ServiceError = runtimeSymbol("ServiceError", SwiftDeclaration.PROTOCOL)
+        val Logger = runtimeSymbol("LogAgent", SwiftDeclaration.PROTOCOL)
+        val TelemetryProvider = runtimeSymbol("TelemetryProvider", SwiftDeclaration.PROTOCOL)
+        val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory", SwiftDeclaration.PROTOCOL)
+        val SDKLogLevel = runtimeSymbol("SDKLogLevel", SwiftDeclaration.ENUM)
+        val ClientLogMode = runtimeSymbol("ClientLogMode", SwiftDeclaration.ENUM)
+        val IdempotencyTokenGenerator = runtimeSymbol("IdempotencyTokenGenerator", SwiftDeclaration.PROTOCOL)
+        val DefaultRetryErrorInfoProvider = runtimeSymbol("DefaultRetryErrorInfoProvider", SwiftDeclaration.ENUM)
+        val PaginateToken = runtimeSymbol("PaginateToken", SwiftDeclaration.PROTOCOL)
+        val PaginatorSequence = runtimeSymbol("PaginatorSequence", SwiftDeclaration.STRUCT)
+        val EndpointsRuleEngine = runtimeSymbol("EndpointsRuleEngine", SwiftDeclaration.CLASS)
+        val EndpointsRequestContext = runtimeSymbol("EndpointsRequestContext", SwiftDeclaration.CLASS)
+        val PartitionDefinition = runtimeSymbol("partitionJSON", SwiftDeclaration.LET)
+        val EndpointsAuthSchemeResolver = runtimeSymbol("EndpointsAuthSchemeResolver", SwiftDeclaration.PROTOCOL)
+        val DefaultEndpointsAuthSchemeResolver = runtimeSymbol("DefaultEndpointsAuthSchemeResolver", SwiftDeclaration.STRUCT)
+        val EndpointsAuthScheme = runtimeSymbol("EndpointsAuthScheme", SwiftDeclaration.ENUM)
     }
 }
 
-private fun runtimeSymbol(name: String): Symbol = buildSymbol {
+private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = buildSymbol {
     this.name = name
     this.namespace = SwiftDependency.CLIENT_RUNTIME.target
+    declaration?.let { this.setProperty("decl", it.keyword) }
     dependency(SwiftDependency.CLIENT_RUNTIME)
 }

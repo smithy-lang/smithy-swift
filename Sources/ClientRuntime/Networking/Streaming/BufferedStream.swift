@@ -14,7 +14,7 @@ import class Foundation.NSRecursiveLock
 /// Note: This class is thread-safe and async-safe.
 /// Note: if data is not read from the stream, the buffer will grow indefinitely until the stream is closed.
 ///       or reach the maximum size of a `Data` object.
-public class BufferedStream: Stream {
+public class BufferedStream: Stream, @unchecked Sendable {
 
     /// Returns the cumulative length of all data so far written to the stream, if known.
     /// For a buffered stream, the length will only be known if the stream has closed.
@@ -131,6 +131,13 @@ public class BufferedStream: Stream {
 
     /// Call this function only while `lock` is locked, to prevent simultaneous access.
     private func _read(upToCount count: Int) throws -> Data? {
+
+        // throw any previously stored error, if there was one
+        // dispose of the error when throwing so it is only thrown once
+        if let error = _error {
+            _error = nil
+            throw error
+        }
         let toRead = min(count, _buffer.count)
         let endPosition = position.advanced(by: toRead)
         let chunk = _buffer[position..<endPosition]
@@ -144,7 +151,6 @@ public class BufferedStream: Stream {
         // if we're closed and there's no data left, return nil
         // this will signal the end of the stream
         if _isClosed && chunk.isEmpty == true {
-            if let error = _error { throw error }
             return nil
         }
 

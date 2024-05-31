@@ -2,6 +2,7 @@
 
 import ClientRuntime
 import SmithyHTTPAPI
+import struct ClientRuntime.SDKURLQueryItem
 
 extension ListCitiesInput {
 
