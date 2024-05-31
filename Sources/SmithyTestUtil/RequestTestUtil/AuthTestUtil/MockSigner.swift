@@ -5,17 +5,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
+import SmithyHTTPAuthAPI
+import SmithyHTTPAPI
+import SmithyEventStreamsAPI
+import SmithyEventStreamsAuthAPI
 import ClientRuntime
 import Foundation
+import SmithyIdentityAPI
 
-public struct MockSigner: ClientRuntime.Signer {
+public struct MockSigner: Signer {
     public init() {}
 
     public func signRequest<IdentityT: Identity>(
-        requestBuilder: ClientRuntime.SdkHttpRequestBuilder,
+        requestBuilder: SdkHttpRequestBuilder,
         identity: IdentityT,
-        signingProperties: ClientRuntime.Attributes
-    ) async throws -> ClientRuntime.SdkHttpRequestBuilder {
+        signingProperties: Attributes
+    ) async throws -> SdkHttpRequestBuilder {
         requestBuilder.withHeader(name: "Mock-Authorization", value: "Mock-Signed")
         return requestBuilder
     }
@@ -24,7 +30,7 @@ public struct MockSigner: ClientRuntime.Signer {
         payload: Data,
         previousSignature: String,
         signingProperties: Attributes
-    ) async throws -> SigningResult<EventStream.Message> {
-        return SigningResult(output: EventStream.Message(), signature: "")
+    ) async throws -> SigningResult<Message> {
+        return SigningResult(output: Message(), signature: "")
     }
 }

@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import Smithy
+import SmithyHTTPAPI
 import XCTest
 import AwsCommonRuntimeKit
 import struct Foundation.URLQueryItem
@@ -96,8 +98,8 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testSdkPathAndQueryItemsToCRTPathAndQueryItems() throws {
-        let queryItem1 = SDKURLQueryItem(name: "foo", value: "bar")
-        let queryItem2 = SDKURLQueryItem(name: "quz", value: "baz")
+        let queryItem1 = URIQueryItem(name: "foo", value: "bar")
+        let queryItem2 = URIQueryItem(name: "quz", value: "baz")
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
@@ -109,8 +111,8 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testCRTPathAndQueryItemsToSdkPathAndQueryItems() throws {
-        let queryItem1 = SDKURLQueryItem(name: "foo", value: "bar")
-        let queryItem2 = SDKURLQueryItem(name: "quz", value: "bar")
+        let queryItem1 = URIQueryItem(name: "foo", value: "bar")
+        let queryItem2 = URIQueryItem(name: "quz", value: "bar")
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
@@ -118,17 +120,17 @@ class HttpRequestTests: NetworkingTestUtils {
             .withQueryItem(queryItem2)
             .withHeader(name: "Content-Length", value: "6")
 
-        XCTAssert(builder.queryItems.count == 2)
+        XCTAssertEqual(builder.queryItems.count, 2)
 
         let httpRequest = try builder.build().toHttpRequest()
         httpRequest.path = "/hello?foo=bar&quz=bar&signedthing=signed"
         let updatedRequest = builder.update(from: httpRequest, originalRequest: builder.build())
 
-        XCTAssert(updatedRequest.path == "/hello")
-        XCTAssert(updatedRequest.queryItems.count == 3)
+        XCTAssertEqual(updatedRequest.path, "/hello")
+        XCTAssertEqual(updatedRequest.queryItems.count, 3)
         XCTAssert(updatedRequest.queryItems.contains(queryItem1))
         XCTAssert(updatedRequest.queryItems.contains(queryItem2))
-        XCTAssert(updatedRequest.queryItems.contains(SDKURLQueryItem(name: "signedthing", value: "signed")))
+        XCTAssert(updatedRequest.queryItems.contains(URIQueryItem(name: "signedthing", value: "signed")))
     }
 
     func testPathInInHttpRequestIsNotAltered() throws {

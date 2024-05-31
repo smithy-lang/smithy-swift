@@ -5,10 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum Smithy.URIScheme
+import struct SmithyHTTPAPI.Endpoint
+
 public struct ServiceEndpointMetadata {
-    public let defaultProtocol = ProtocolType.https.rawValue
+    public let defaultProtocol = URIScheme.https.rawValue
     public let defaultSigner = "v4"
-    public let protocolPriority = ProtocolType.allCases.map { $0.rawValue }
+    public let protocolPriority = URIScheme.allCases.map { $0.rawValue }
     public let signerPriority = ["v4"]
     /**
       A URI **template** used to resolve the hostname of the endpoint.
@@ -52,7 +55,7 @@ extension ServiceEndpointMetadata {
 
         return SmithyEndpoint(endpoint: Endpoint(host: hostname,
                               path: "/",
-                              protocolType: ProtocolType(rawValue: transportProtocol)!),
+                              protocolType: URIScheme(rawValue: transportProtocol)!),
                               signingName: signingName)
     }
 

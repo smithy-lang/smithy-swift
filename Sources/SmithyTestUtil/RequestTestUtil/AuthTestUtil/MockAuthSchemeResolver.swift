@@ -5,14 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-import ClientRuntime
+import Smithy
+import SmithyHTTPAuthAPI
+import SmithyHTTPAPI
 
-public struct MockAuthSchemeResolverParameters: ClientRuntime.AuthSchemeResolverParameters {
+
+public struct MockAuthSchemeResolverParameters: AuthSchemeResolverParameters {
     public let operation: String
 }
 
-public protocol MockAuthSchemeResolver: ClientRuntime.AuthSchemeResolver {
+public protocol MockAuthSchemeResolver: AuthSchemeResolver {
     // Intentionally empty.
     // This is the parent protocol that all auth scheme resolver implementations of
     // the service Mock must conform to.
@@ -21,7 +23,7 @@ public protocol MockAuthSchemeResolver: ClientRuntime.AuthSchemeResolver {
 public struct DefaultMockAuthSchemeResolver: MockAuthSchemeResolver {
     public init () {}
 
-    public func resolveAuthScheme(params: ClientRuntime.AuthSchemeResolverParameters) throws -> [AuthOption] {
+    public func resolveAuthScheme(params: AuthSchemeResolverParameters) throws -> [AuthOption] {
         var validAuthOptions = Array<AuthOption>()
         guard let serviceParams = params as? MockAuthSchemeResolverParameters else {
             throw ClientError.authError("Service specific auth scheme parameters type must be passed to auth scheme resolver.")
@@ -47,7 +49,7 @@ public struct DefaultMockAuthSchemeResolver: MockAuthSchemeResolver {
         return validAuthOptions
     }
 
-    public func constructParameters(context: HttpContext) throws -> ClientRuntime.AuthSchemeResolverParameters {
+    public func constructParameters(context: Context) throws -> AuthSchemeResolverParameters {
         guard let opName = context.getOperation() else {
             throw ClientError.dataNotFound("Operation name not configured in middleware context for auth scheme resolver params construction.")
         }

@@ -5,13 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
 import ClientRuntime
 
 public struct MockSerializeStreamMiddleware: Middleware {
-    public func handle<H>(context: HttpContext,
+    public func handle<H>(context: Context,
                           input: SerializeStepInput<MockStreamInput>,
                           next: H) async throws -> OperationOutput<MockOutput>
-    where H: Handler, HttpContext == H.Context,
+    where H: Handler,
           SerializeStepInput<MockStreamInput> == H.Input,
           OperationOutput<MockOutput> == H.Output {
               input.builder.withBody(input.operationInput.body)
@@ -23,8 +24,5 @@ public struct MockSerializeStreamMiddleware: Middleware {
     public var id: String = "MockSerializeStreamMiddleware"
 
     public typealias MInput = SerializeStepInput<MockStreamInput>
-
     public typealias MOutput = OperationOutput<MockOutput>
-
-    public typealias Context = HttpContext
 }

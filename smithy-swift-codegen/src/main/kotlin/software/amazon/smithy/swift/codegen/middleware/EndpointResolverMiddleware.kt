@@ -6,12 +6,12 @@
 package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.endpoints.EndpointTypes
 import software.amazon.smithy.swift.codegen.integration.steps.OperationBuildStep
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 const val ENDPOINT_RESOLVER = "endpointResolver"
 const val AUTH_SCHEME_RESOLVER = "authSchemeResolver"
@@ -53,13 +53,16 @@ open class EndpointResolverMiddleware(
     }
 
     override fun renderExtensions() {
+        writer.addImport(SwiftDependency.SMITHY.target)
+        writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
+        writer.addImport(SwiftDependency.SMITHY_HTTP_AUTH_API.target)
         writer.write(
             """
             extension EndpointResolverMiddleware: ApplyEndpoint {
                 public func apply(
                     request: SdkHttpRequest,
                     selectedAuthScheme: SelectedAuthScheme?,
-                    attributes: HttpContext) async throws -> SdkHttpRequest
+                    attributes: Smithy.Context) async throws -> SdkHttpRequest
                 {
                     let builder = request.toBuilder()
                     
@@ -84,10 +87,10 @@ open class EndpointResolverMiddleware(
                     let smithyEndpoint = SmithyEndpoint(endpoint: endpoint, signingName: signingName)
                     
                     var host = ""
-                    if let hostOverride = attributes.getHost() {
+                    if let hostOverride = attributes.host {
                         host = hostOverride
                     } else {
-                        host = "\(attributes.getHostPrefix() ?? "")\(smithyEndpoint.endpoint.host)"
+                        host = "\(attributes.hostPrefix ?? "")\(smithyEndpoint.endpoint.host)"
                     }
                     
                     if let protocolType = smithyEndpoint.endpoint.protocolType {
@@ -95,22 +98,22 @@ open class EndpointResolverMiddleware(
                     }
                     
                     if let signingName = signingName {
-                       attributes.set(key: AttributeKeys.signingName, value: signingName) 
-                       attributes.set(key: AttributeKeys.selectedAuthScheme, value: selectedAuthScheme?.getCopyWithUpdatedSigningProperty(key: AttributeKeys.signingName, value: signingName))
+                       attributes.signingName = signingName 
+                       attributes.selectedAuthScheme = selectedAuthScheme?.getCopyWithUpdatedSigningProperty(key: SigningPropertyKeys.signingName, value: signingName)
                     }
                     
                     if let signingAlgorithm = signingAlgorithm {
-                        attributes.set(key: AttributeKeys.signingAlgorithm, value: AWSSigningAlgorithm(rawValue: signingAlgorithm))
+                        attributes.signingAlgorithm = SigningAlgorithm(rawValue: signingAlgorithm)
                     }
                     
                     if !endpoint.headers.isEmpty {
                         builder.withHeaders(endpoint.headers)
                     }
                     
-                    return builder.withMethod(attributes.getMethod())
+                    return builder.withMethod(attributes.method)
                         .withHost(host)
                         .withPort(smithyEndpoint.endpoint.port)
-                        .withPath(smithyEndpoint.endpoint.path.appendingPathComponent(attributes.getPath()))
+                        .withPath(smithyEndpoint.endpoint.path.appendingPathComponent(attributes.path))
                         .withHeader(name: "Host", value: host)
                         .build()
                 }
@@ -123,7 +126,7 @@ open class EndpointResolverMiddleware(
         writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
         writer.write(
             """
-            let selectedAuthScheme = context.getSelectedAuthScheme()
+            let selectedAuthScheme = context.selectedAuthScheme
             let request = input.build()
             let updatedRequest = try await apply(request: request, selectedAuthScheme: selectedAuthScheme, attributes: context)
             """.trimIndent()

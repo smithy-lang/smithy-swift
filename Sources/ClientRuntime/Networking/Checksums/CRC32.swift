@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyChecksumsAPI.Checksum
+import enum SmithyChecksumsAPI.HashResult
+import struct Foundation.Data
 import AwsCommonRuntimeKit
 
 class CRC32 {

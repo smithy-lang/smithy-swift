@@ -103,7 +103,7 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         decl?.let {
             addImport("$it ${symbol.namespace}.${symbol.name}", internalSPIName = spiName)
         } ?: run {
-            addImport(symbol.namespace)
+            addImport(symbol.namespace, internalSPIName = spiName)
         }
     }
 

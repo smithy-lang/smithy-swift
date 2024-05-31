@@ -5,15 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyHTTPAuthAPI
+
 public class AuthSchemePlugin: Plugin {
 
-    private var authSchemes: [ClientRuntime.AuthScheme]?
+    private var authSchemes: [AuthScheme]?
 
-    private var authSchemeResolver: ClientRuntime.AuthSchemeResolver?
+    private var authSchemeResolver: AuthSchemeResolver?
 
     public init(
-        authSchemeResolver: ClientRuntime.AuthSchemeResolver? = nil,
-        authSchemes: [ClientRuntime.AuthScheme]? = nil
+        authSchemeResolver: AuthSchemeResolver? = nil,
+        authSchemes: [AuthScheme]? = nil
     ) {
         self.authSchemeResolver = authSchemeResolver
         self.authSchemes = authSchemes

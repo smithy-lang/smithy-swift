@@ -7,6 +7,15 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
+import struct Smithy.SwiftLogger
+import protocol Smithy.LogAgent
+import protocol SmithyHTTPAPI.HTTPClient
+import struct SmithyHTTPAPI.Headers
+import class SmithyHTTPAPI.HttpResponse
+import class SmithyHTTPAPI.SdkHttpRequest
+import enum SmithyHTTPAPI.HttpStatusCode
+import protocol Smithy.ReadableStream
+import enum Smithy.ByteStream
 import class Foundation.Bundle
 import class Foundation.InputStream
 import class Foundation.NSObject
@@ -26,6 +35,7 @@ import class Foundation.URLSessionConfiguration
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
+import struct Foundation.Data
 import Security
 import AwsCommonRuntimeKit
 

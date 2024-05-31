@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import ClientRuntime
+import SmithyHTTPAPI
 
 public struct MockOutput {
     public var value: Int = 0

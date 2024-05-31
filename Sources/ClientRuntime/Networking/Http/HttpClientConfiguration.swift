@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum Smithy.URIScheme
+import struct SmithyHTTPAPI.Headers
 import struct Foundation.TimeInterval
 import AwsCommonRuntimeKit
 
@@ -33,7 +35,7 @@ public class HttpClientConfiguration {
     /// The URL scheme to be used for HTTP requests.  Supported values are `http` and `https`.
     ///
     /// If none is provided, the default protocol for the operation will be used
-    public var protocolType: ProtocolType?
+    public var protocolType: URIScheme?
 
     /// Custom TLS configuration for HTTPS connections.
     ///
@@ -54,7 +56,7 @@ public class HttpClientConfiguration {
     public init(
         connectTimeout: TimeInterval? = nil,
         socketTimeout: TimeInterval = 60.0,
-        protocolType: ProtocolType = .https,
+        protocolType: URIScheme = .https,
         defaultHeaders: Headers = Headers(),
         tlsConfiguration: (any TLSConfiguration)? = nil
     ) {

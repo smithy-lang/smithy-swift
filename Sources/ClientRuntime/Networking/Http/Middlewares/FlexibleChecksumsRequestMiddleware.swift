@@ -5,7 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
+import enum Smithy.ClientError
+import class Smithy.Context
 import AwsCommonRuntimeKit
+import SmithyHTTPAPI
 
 public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
@@ -22,16 +26,15 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
     Self.MInput == H.Input,
-    Self.MOutput == H.Output,
-    Self.Context == H.Context {
+    Self.MOutput == H.Output {
         try await addHeaders(builder: input.builder, attributes: context)
         return try await next.handle(context: context, input: input)
     }
 
-    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: HttpContext) async throws {
+    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: Context) async throws {
         if case(.stream(let stream)) = builder.body {
-            attributes.set(key: AttributeKeys.isChunkedEligibleStream, value: stream.isEligibleForAwsChunkedStreaming())
-            if stream.isEligibleForAwsChunkedStreaming() {
+            attributes.isChunkedEligibleStream = stream.isEligibleForAwsChunkedStreaming
+            if stream.isEligibleForAwsChunkedStreaming {
                 try builder.setAwsChunkedHeaders() // x-amz-decoded-content-length
             }
         }
@@ -88,7 +91,7 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
             builder.updateHeader(name: headerName, value: [hash])
         case .stream:
             // Will handle calculating checksum and setting header later
-            attributes.set(key: AttributeKeys.checksum, value: checksumHashFunction)
+            attributes.checksum = checksumHashFunction
             builder.updateHeader(name: "x-amz-trailer", value: [headerName])
         case .noStream:
             throw ClientError.dataNotFound("Cannot calculate the checksum of an empty body!")
@@ -97,7 +100,6 @@ public struct FlexibleChecksumsRequestMiddleware<OperationStackInput, OperationS
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
 }
 
 extension FlexibleChecksumsRequestMiddleware: HttpInterceptor {

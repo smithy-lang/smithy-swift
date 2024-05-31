@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import class SmithyHTTPAPI.HttpResponse
+
 /// The protocol with response info for an error that was received over HTTP/HTTPS.
 ///
 /// Any error that is created or code-generated to be received over HTTP will conform

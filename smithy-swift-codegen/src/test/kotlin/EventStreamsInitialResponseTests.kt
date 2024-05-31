@@ -24,14 +24,14 @@ class EventStreamsInitialResponseTests {
         val expectedContents = """
 extension TestStreamOperationWithInitialRequestResponseOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> TestStreamOperationWithInitialRequestResponseOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> TestStreamOperationWithInitialRequestResponseOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyJSON.Reader.from(data: data)
         let reader = responseReader
         var value = TestStreamOperationWithInitialRequestResponseOutput()
         if case let .stream(stream) = httpResponse.body {
-            let messageDecoder = ClientRuntime.MessageDecoder()
-            let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<InitialMessageEventStreamsClientTypes.TestStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: InitialMessageEventStreamsClientTypes.TestStream.unmarshal)
+            let messageDecoder = SmithyEventStreams.DefaultMessageDecoder()
+            let decoderStream = SmithyEventStreams.DefaultMessageDecoderStream<InitialMessageEventStreamsClientTypes.TestStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: InitialMessageEventStreamsClientTypes.TestStream.unmarshal)
             value.value = decoderStream.toAsyncStream()
             if let initialDataWithoutHttp = await messageDecoder.awaitInitialResponse() {
                 let payloadReader = try Reader.from(data: initialDataWithoutHttp)

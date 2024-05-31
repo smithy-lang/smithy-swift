@@ -9,12 +9,12 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.AuthSchemeResolverGenerator
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SmithyTestUtilTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.endpoints.EndpointResolverGenerator
 import software.amazon.smithy.swift.codegen.middleware.EndpointResolverMiddleware
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
     override fun serviceClient(
@@ -41,8 +41,6 @@ abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
             endpointResolverMiddleware = { w, i, o, oe -> EndpointResolverMiddleware(w, i, o, oe) }
         ).render(ctx)
     }
-
-    override val messageDecoderSymbol: Symbol = ClientRuntimeTypes.EventStream.MessageDecoder
 
     override val baseErrorSymbol: Symbol = SmithyTestUtilTypes.TestBaseError
 

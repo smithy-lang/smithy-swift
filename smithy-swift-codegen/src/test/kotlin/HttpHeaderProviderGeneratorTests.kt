@@ -26,8 +26,8 @@ class HttpHeaderProviderGeneratorTests {
         val expectedContents = """
 extension SmokeTestInput {
 
-    static func headerProvider(_ value: SmokeTestInput) -> ClientRuntime.Headers {
-        var items = ClientRuntime.Headers()
+    static func headerProvider(_ value: SmokeTestInput) -> SmithyHTTPAPI.Headers {
+        var items = SmithyHTTPAPI.Headers()
         if let header1 = value.header1 {
             items.add(Header(name: "X-Header1", value: Swift.String(header1)))
         }
@@ -48,8 +48,8 @@ extension SmokeTestInput {
         val expectedContents = """
 extension EnumInputInput {
 
-    static func headerProvider(_ value: EnumInputInput) -> ClientRuntime.Headers {
-        var items = ClientRuntime.Headers()
+    static func headerProvider(_ value: EnumInputInput) -> SmithyHTTPAPI.Headers {
+        var items = SmithyHTTPAPI.Headers()
         if let enumHeader = value.enumHeader {
             items.add(Header(name: "X-EnumHeader", value: Swift.String(enumHeader.rawValue)))
         }
@@ -71,8 +71,8 @@ extension EnumInputInput {
         val expectedContents = """
 extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
 
-    static func headerProvider(_ value: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput) -> ClientRuntime.Headers {
-        var items = ClientRuntime.Headers()
+    static func headerProvider(_ value: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput) -> SmithyHTTPAPI.Headers {
+        var items = SmithyHTTPAPI.Headers()
         if let token = value.token {
             items.add(Header(name: "token", value: Swift.String(token)))
         }
@@ -91,8 +91,8 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
         val expectedContents = """
 extension TimestampInputInput {
 
-    static func headerProvider(_ value: TimestampInputInput) -> ClientRuntime.Headers {
-        var items = ClientRuntime.Headers()
+    static func headerProvider(_ value: TimestampInputInput) -> SmithyHTTPAPI.Headers {
+        var items = SmithyHTTPAPI.Headers()
         if let headerEpoch = value.headerEpoch {
             items.add(Header(name: "X-Epoch", value: Swift.String(TimestampFormatter(format: .epochSeconds).string(from: headerEpoch))))
         }

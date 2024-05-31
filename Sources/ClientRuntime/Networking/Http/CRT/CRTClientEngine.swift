@@ -3,6 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import enum Smithy.URIScheme
+import struct Smithy.SwiftLogger
+import protocol Smithy.LogAgent
+import enum Smithy.StreamError
+import enum Smithy.ByteStreamError
+import protocol SmithyHTTPAPI.HTTPClient
+import struct SmithyHTTPAPI.Headers
+import struct SmithyHTTPAPI.Endpoint
+import enum SmithyHTTPAPI.ALPNProtocol
+import class SmithyHTTPAPI.SdkHttpRequest
+import class SmithyHTTPAPI.HttpResponse
+import enum SmithyHTTPAPI.HttpStatusCode
 import AwsCommonRuntimeKit
 #if os(Linux)
 import Glibc
@@ -20,7 +32,7 @@ public class CRTClientEngine: HTTPClient {
         /// When a new request is made, a connection manager is reused if it matches the request's scheme,
         /// host, and port.
         private struct ConnectionPoolID: Hashable {
-            private let protocolType: ProtocolType?
+            private let protocolType: URIScheme?
             private let host: String
             private let port: Int16
 
@@ -188,7 +200,7 @@ public class CRTClientEngine: HTTPClient {
                                 }
                                 let body = request.body
 
-                                guard case .stream(let stream) = body, stream.isEligibleForAwsChunkedStreaming() else {
+                                guard case .stream(let stream) = body, stream.isEligibleForAwsChunkedStreaming else {
                                     throw ByteStreamError.invalidStreamTypeForChunkedBody(
                                         "The stream is not eligible for AWS chunked streaming or is not a stream type!"
                                     )

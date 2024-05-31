@@ -8,7 +8,6 @@ package software.amazon.smithy.swift.codegen.model
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.codegen.core.SymbolReference
-import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
 @DslMarker
@@ -109,11 +108,10 @@ fun Symbol.isOptional(): Boolean {
     return this.getProperty("isOptional").orElse(false) as Boolean
 }
 
-fun Symbol.toInternalSPI(decl: SwiftDeclaration, spiName: String): Symbol {
+fun Symbol.toInternalSPI(spiName: String): Symbol {
     return this.toBuilder()
         .putProperty("isInternalSPI", true)
         .putProperty("spiName", spiName)
-        .putProperty("decl", decl.keyword)
         .build()
 }
 
