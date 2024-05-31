@@ -43,7 +43,6 @@ class MessageUnmarshallableGenerator(
 
             writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addImport(customizations.unknownServiceErrorSymbol.namespace)
             writer.openBlock("extension \$L {", "}", streamSymbol.fullName) {
                 writer.openBlock(
                     "static var unmarshal: \$N<\$N> {", "}",
@@ -92,7 +91,7 @@ class MessageUnmarshallableGenerator(
                                         SmithyHTTPAPITypes.HttpResponse,
                                     )
                                     writer.write(
-                                        "return \$L(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':exceptionType': \\(params.exceptionType); contentType: \\(params.contentType ?? \"nil\")\", requestID: nil, typeName: nil)",
+                                        "return \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':exceptionType': \\(params.exceptionType); contentType: \\(params.contentType ?? \"nil\")\", requestID: nil, typeName: nil)",
                                         customizations.unknownServiceErrorSymbol,
                                     )
                                 }
@@ -111,7 +110,7 @@ class MessageUnmarshallableGenerator(
                                 SmithyHTTPAPITypes.HttpResponse,
                             )
                             writer.write(
-                                "throw \$L(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':errorType': \\(params.errorCode); message: \\(params.message ?? \"nil\")\", requestID: nil, typeName: nil)",
+                                "throw \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':errorType': \\(params.errorCode); message: \\(params.message ?? \"nil\")\", requestID: nil, typeName: nil)",
                                 customizations.unknownServiceErrorSymbol,
                             )
                         }
