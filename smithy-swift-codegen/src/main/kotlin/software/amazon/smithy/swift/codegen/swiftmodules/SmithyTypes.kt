@@ -1,6 +1,7 @@
 package software.amazon.smithy.swift.codegen.swiftmodules
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 
@@ -15,13 +16,12 @@ object SmithyTypes {
     val Context = runtimeSymbol("Context")
     val ContextBuilder = runtimeSymbol("ContextBuilder")
     val LogAgent = runtimeSymbol("LogAgent")
-    val URI = runtimeSymbol("URI")
-    val URIScheme = runtimeSymbol("URIScheme")
     val URIQueryItem = runtimeSymbol("URIQueryItem")
 }
 
-private fun runtimeSymbol(name: String): Symbol = buildSymbol {
+private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = buildSymbol {
     this.name = name
     this.namespace = SwiftDependency.SMITHY.target
-    this.dependency(SwiftDependency.SMITHY)
+    declaration?.let { this.setProperty("decl", it.keyword) }
+    dependency(SwiftDependency.SMITHY)
 }

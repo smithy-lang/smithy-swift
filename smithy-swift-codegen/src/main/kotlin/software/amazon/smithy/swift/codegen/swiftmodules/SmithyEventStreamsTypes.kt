@@ -1,6 +1,7 @@
 package software.amazon.smithy.swift.codegen.swiftmodules
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 
@@ -17,8 +18,9 @@ object SmithyEventStreamsTypes {
     val DefaultMessageDecoderStream = runtimeSymbol("DefaultMessageDecoderStream")
 }
 
-private fun runtimeSymbol(name: String): Symbol = buildSymbol {
+private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = buildSymbol {
     this.name = name
     this.namespace = SwiftDependency.SMITHY_EVENT_STREAMS.target
-    this.dependency(SwiftDependency.SMITHY_EVENT_STREAMS)
+    declaration?.let { this.setProperty("decl", it.keyword) }
+    dependency(SwiftDependency.SMITHY_EVENT_STREAMS)
 }
