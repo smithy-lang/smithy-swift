@@ -18,10 +18,10 @@ class HttpQueryItemProviderGeneratorTests {
         val expectedContents = """
 extension QueryIdempotencyTokenAutoFillInput {
 
-    static func queryItemProvider(_ value: QueryIdempotencyTokenAutoFillInput) throws -> [SmithyHTTPAPI.SDKURLQueryItem] {
-        var items = [SmithyHTTPAPI.SDKURLQueryItem]()
+    static func queryItemProvider(_ value: QueryIdempotencyTokenAutoFillInput) throws -> [Smithy.URIQueryItem] {
+        var items = [Smithy.URIQueryItem]()
         if let token = value.token {
-            let tokenQueryItem = SmithyHTTPAPI.SDKURLQueryItem(name: "token".urlPercentEncoding(), value: Swift.String(token).urlPercentEncoding())
+            let tokenQueryItem = Smithy.URIQueryItem(name: "token".urlPercentEncoding(), value: Swift.String(token).urlPercentEncoding())
             items.append(tokenQueryItem)
         }
         return items
@@ -39,15 +39,15 @@ extension QueryIdempotencyTokenAutoFillInput {
         val expectedContents = """
 extension TimestampInputInput {
 
-    static func queryItemProvider(_ value: TimestampInputInput) throws -> [SmithyHTTPAPI.SDKURLQueryItem] {
-        var items = [SmithyHTTPAPI.SDKURLQueryItem]()
+    static func queryItemProvider(_ value: TimestampInputInput) throws -> [Smithy.URIQueryItem] {
+        var items = [Smithy.URIQueryItem]()
         if let queryTimestamp = value.queryTimestamp {
-            let queryTimestampQueryItem = SmithyHTTPAPI.SDKURLQueryItem(name: "qtime".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryTimestamp)).urlPercentEncoding())
+            let queryTimestampQueryItem = Smithy.URIQueryItem(name: "qtime".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryTimestamp)).urlPercentEncoding())
             items.append(queryTimestampQueryItem)
         }
         if let queryTimestampList = value.queryTimestampList {
             queryTimestampList.forEach { queryItemValue in
-                let queryItem = SmithyHTTPAPI.SDKURLQueryItem(name: "qtimeList".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
+                let queryItem = Smithy.URIQueryItem(name: "qtimeList".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
                 items.append(queryItem)
             }
         }
@@ -66,10 +66,10 @@ extension TimestampInputInput {
         val expectedContents = """
 extension SmokeTestInput {
 
-    static func queryItemProvider(_ value: SmokeTestInput) throws -> [SmithyHTTPAPI.SDKURLQueryItem] {
-        var items = [SmithyHTTPAPI.SDKURLQueryItem]()
+    static func queryItemProvider(_ value: SmokeTestInput) throws -> [Smithy.URIQueryItem] {
+        var items = [Smithy.URIQueryItem]()
         if let query1 = value.query1 {
-            let query1QueryItem = SmithyHTTPAPI.SDKURLQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
+            let query1QueryItem = Smithy.URIQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
             items.append(query1QueryItem)
         }
         return items
@@ -96,23 +96,23 @@ extension SmokeTestInput {
         val expectedContents = """
 extension AllQueryStringTypesInput {
 
-    static func queryItemProvider(_ value: AllQueryStringTypesInput) throws -> [SmithyHTTPAPI.SDKURLQueryItem] {
-        var items = [SmithyHTTPAPI.SDKURLQueryItem]()
+    static func queryItemProvider(_ value: AllQueryStringTypesInput) throws -> [Smithy.URIQueryItem] {
+        var items = [Smithy.URIQueryItem]()
         if let queryStringList = value.queryStringList {
             queryStringList.forEach { queryItemValue in
-                let queryItem = SmithyHTTPAPI.SDKURLQueryItem(name: "StringList".urlPercentEncoding(), value: Swift.String(queryItemValue).urlPercentEncoding())
+                let queryItem = Smithy.URIQueryItem(name: "StringList".urlPercentEncoding(), value: Swift.String(queryItemValue).urlPercentEncoding())
                 items.append(queryItem)
             }
         }
         if let queryString = value.queryString {
-            let queryStringQueryItem = SmithyHTTPAPI.SDKURLQueryItem(name: "String".urlPercentEncoding(), value: Swift.String(queryString).urlPercentEncoding())
+            let queryStringQueryItem = Smithy.URIQueryItem(name: "String".urlPercentEncoding(), value: Swift.String(queryString).urlPercentEncoding())
             items.append(queryStringQueryItem)
         }
         if let queryParamsMapOfStrings = value.queryParamsMapOfStrings {
             let currentQueryItemNames = items.map({${'$'}0.name})
             queryParamsMapOfStrings.forEach { key0, value0 in
                 if !currentQueryItemNames.contains(key0) {
-                    let queryItem = SmithyHTTPAPI.SDKURLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
+                    let queryItem = Smithy.URIQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
                     items.append(queryItem)
                 }
             }
@@ -132,10 +132,10 @@ extension AllQueryStringTypesInput {
         val expectedContents = """
 extension QueryParamsAsStringListMapInput {
 
-    static func queryItemProvider(_ value: QueryParamsAsStringListMapInput) throws -> [SmithyHTTPAPI.SDKURLQueryItem] {
-        var items = [SmithyHTTPAPI.SDKURLQueryItem]()
+    static func queryItemProvider(_ value: QueryParamsAsStringListMapInput) throws -> [Smithy.URIQueryItem] {
+        var items = [Smithy.URIQueryItem]()
         if let qux = value.qux {
-            let quxQueryItem = SmithyHTTPAPI.SDKURLQueryItem(name: "corge".urlPercentEncoding(), value: Swift.String(qux).urlPercentEncoding())
+            let quxQueryItem = Smithy.URIQueryItem(name: "corge".urlPercentEncoding(), value: Swift.String(qux).urlPercentEncoding())
             items.append(quxQueryItem)
         }
         if let foo = value.foo {
@@ -143,7 +143,7 @@ extension QueryParamsAsStringListMapInput {
             foo.forEach { key0, value0 in
                 if !currentQueryItemNames.contains(key0) {
                     value0.forEach { value1 in
-                        let queryItem = SmithyHTTPAPI.SDKURLQueryItem(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())
+                        let queryItem = Smithy.URIQueryItem(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())
                         items.append(queryItem)
                     }
                 }
@@ -164,17 +164,17 @@ extension QueryParamsAsStringListMapInput {
         val expectedContents = """
 extension QueryPrecedenceInput {
 
-    static func queryItemProvider(_ value: QueryPrecedenceInput) throws -> [SmithyHTTPAPI.SDKURLQueryItem] {
-        var items = [SmithyHTTPAPI.SDKURLQueryItem]()
+    static func queryItemProvider(_ value: QueryPrecedenceInput) throws -> [Smithy.URIQueryItem] {
+        var items = [Smithy.URIQueryItem]()
         if let foo = value.foo {
-            let fooQueryItem = SmithyHTTPAPI.SDKURLQueryItem(name: "bar".urlPercentEncoding(), value: Swift.String(foo).urlPercentEncoding())
+            let fooQueryItem = Smithy.URIQueryItem(name: "bar".urlPercentEncoding(), value: Swift.String(foo).urlPercentEncoding())
             items.append(fooQueryItem)
         }
         if let baz = value.baz {
             let currentQueryItemNames = items.map({${'$'}0.name})
             baz.forEach { key0, value0 in
                 if !currentQueryItemNames.contains(key0) {
-                    let queryItem = SmithyHTTPAPI.SDKURLQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
+                    let queryItem = Smithy.URIQueryItem(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())
                     items.append(queryItem)
                 }
             }
@@ -194,27 +194,27 @@ extension QueryPrecedenceInput {
         val expectedContents = """
 extension RequiredHttpFieldsInput {
 
-    static func queryItemProvider(_ value: RequiredHttpFieldsInput) throws -> [SmithyHTTPAPI.SDKURLQueryItem] {
-        var items = [SmithyHTTPAPI.SDKURLQueryItem]()
+    static func queryItemProvider(_ value: RequiredHttpFieldsInput) throws -> [Smithy.URIQueryItem] {
+        var items = [Smithy.URIQueryItem]()
         guard let query1 = value.query1 else {
             let message = "Creating a URL Query Item failed. query1 is required and must not be nil."
             throw Smithy.ClientError.unknownError(message)
         }
-        let query1QueryItem = SmithyHTTPAPI.SDKURLQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
+        let query1QueryItem = Smithy.URIQueryItem(name: "Query1".urlPercentEncoding(), value: Swift.String(query1).urlPercentEncoding())
         items.append(query1QueryItem)
         guard let query2 = value.query2 else {
             let message = "Creating a URL Query Item failed. query2 is required and must not be nil."
             throw Smithy.ClientError.unknownError(message)
         }
         query2.forEach { queryItemValue in
-            let queryItem = SmithyHTTPAPI.SDKURLQueryItem(name: "Query2".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
+            let queryItem = Smithy.URIQueryItem(name: "Query2".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
             items.append(queryItem)
         }
         guard let query3 = value.query3 else {
             let message = "Creating a URL Query Item failed. query3 is required and must not be nil."
             throw Smithy.ClientError.unknownError(message)
         }
-        let query3QueryItem = SmithyHTTPAPI.SDKURLQueryItem(name: "Query3".urlPercentEncoding(), value: Swift.String(query3).urlPercentEncoding())
+        let query3QueryItem = Smithy.URIQueryItem(name: "Query3".urlPercentEncoding(), value: Swift.String(query3).urlPercentEncoding())
         items.append(query3QueryItem)
         return items
     }

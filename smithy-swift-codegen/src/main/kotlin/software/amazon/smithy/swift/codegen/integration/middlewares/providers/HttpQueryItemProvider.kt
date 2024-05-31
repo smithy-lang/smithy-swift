@@ -28,7 +28,6 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.model.toMemberNames
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 class HttpQueryItemProvider(
@@ -77,12 +76,12 @@ class HttpQueryItemProvider(
                 "static func queryItemProvider(_ value: \$N) throws -> [\$N] {",
                 "}",
                 inputSymbol,
-                SmithyHTTPAPITypes.SDKURLQueryItem
+                SmithyTypes.URIQueryItem,
             ) {
                 if (queryLiterals.isEmpty() && queryBindings.isEmpty()) {
                     writer.write("return []")
                 } else {
-                    writer.write("var items = [\$N]()", SmithyHTTPAPITypes.SDKURLQueryItem)
+                    writer.write("var items = [\$N]()", SmithyTypes.URIQueryItem)
                     generateQueryItems()
                     writer.write("return items")
                 }
@@ -93,7 +92,7 @@ class HttpQueryItemProvider(
     private fun generateQueryItems() {
         queryLiterals.forEach { (queryItemKey, queryItemValue) ->
             val queryValue = if (queryItemValue.isBlank()) "nil" else "\"${queryItemValue}\""
-            writer.write("items.append(\$N(name: \$S, value: \$L))", SmithyHTTPAPITypes.SDKURLQueryItem, queryItemKey, queryValue)
+            writer.write("items.append(\$N(name: \$S, value: \$L))", SmithyTypes.URIQueryItem, queryItemKey, queryValue)
         }
 
         var httpQueryParamBinding: HttpBindingDescriptor? = null
@@ -130,13 +129,13 @@ class HttpQueryItemProvider(
                     writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
                         val suffix = if (memberTarget.hasTrait<SparseTrait>()) "?" else ""
                         writer.openBlock("value0$suffix.forEach { value1 in", "}") {
-                            writer.write("let queryItem = \$N(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())", SmithyHTTPAPITypes.SDKURLQueryItem)
+                            writer.write("let queryItem = \$N(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())", SmithyTypes.URIQueryItem)
                             writer.write("items.append(queryItem)")
                         }
                     }
                 } else {
                     writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
-                        writer.write("let queryItem = \$N(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())", SmithyHTTPAPITypes.SDKURLQueryItem)
+                        writer.write("let queryItem = \$N(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())", SmithyTypes.URIQueryItem)
                         writer.write("items.append(queryItem)")
                     }
                 }
@@ -194,12 +193,12 @@ class HttpQueryItemProvider(
             if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider)) {
                 writer.openBlock("if value.$memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
                     val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                    writer.write("let $queryItemName = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($prefix$memberName).urlPercentEncoding())", SmithyHTTPAPITypes.SDKURLQueryItem, SwiftTypes.String)
+                    writer.write("let $queryItemName = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($prefix$memberName).urlPercentEncoding())", SmithyTypes.URIQueryItem, SwiftTypes.String)
                     writer.write("items.append($queryItemName)")
                 }
             } else {
                 val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                writer.write("let $queryItemName = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($prefix$memberName).urlPercentEncoding())", SmithyHTTPAPITypes.SDKURLQueryItem, SwiftTypes.String)
+                writer.write("let $queryItemName = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($prefix$memberName).urlPercentEncoding())", SmithyTypes.URIQueryItem, SwiftTypes.String)
                 writer.write("items.append($queryItemName)")
             }
         }
@@ -224,7 +223,7 @@ class HttpQueryItemProvider(
             if (requiresDoCatch) {
                 renderDoCatch(queryItemValue, paramName)
             } else {
-                writer.write("let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValue).urlPercentEncoding())", SmithyHTTPAPITypes.SDKURLQueryItem, SwiftTypes.String)
+                writer.write("let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValue).urlPercentEncoding())", SmithyTypes.URIQueryItem, SwiftTypes.String)
                 writer.write("items.append(queryItem)")
             }
         }
@@ -233,7 +232,7 @@ class HttpQueryItemProvider(
     private fun renderDoCatch(queryItemValueWithExtension: String, paramName: String) {
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let base64EncodedValue = $queryItemValueWithExtension")
-            writer.write("let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValueWithExtension).urlPercentEncoding())", SmithyHTTPAPITypes.SDKURLQueryItem, SwiftTypes.String)
+            writer.write("let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValueWithExtension).urlPercentEncoding())", SmithyTypes.URIQueryItem, SwiftTypes.String)
             writer.write("items.append(queryItem)")
         }
         writer.write("}")

@@ -8,14 +8,14 @@ import Foundation
 /// A representation of the RFC 3986 Uniform Resource Identifier
 /// Note: URIBuilder returns an URI instance with all components percent encoded
 public struct URI: Hashable {
-    public let scheme: Scheme
+    public let scheme: URIScheme
     public let path: String
     public let host: String
     public let port: Int16?
     public var defaultPort: Int16 {
         Int16(scheme.port)
     }
-    public let queryItems: [SDKURLQueryItem]
+    public let queryItems: [URIQueryItem]
     public let username: String?
     public let password: String?
     public let fragment: String?
@@ -26,11 +26,11 @@ public struct URI: Hashable {
         self.queryItems.queryString
     }
 
-    fileprivate init(scheme: Scheme,
+    fileprivate init(scheme: URIScheme,
                      path: String,
                      host: String,
                      port: Int16?,
-                     queryItems: [SDKURLQueryItem],
+                     queryItems: [URIQueryItem],
                      username: String? = nil,
                      password: String? = nil,
                      fragment: String? = nil) {
@@ -66,12 +66,12 @@ public final class URIBuilder {
     public init() {
         self.urlComponents = URLComponents()
         self.urlComponents.percentEncodedPath = "/"
-        self.urlComponents.scheme = Scheme.https.rawValue
+        self.urlComponents.scheme = URIScheme.https.rawValue
         self.urlComponents.host = ""
     }
 
     @discardableResult
-    public func withScheme(_ value: Scheme) -> URIBuilder {
+    public func withScheme(_ value: URIScheme) -> URIBuilder {
         self.urlComponents.scheme = value.rawValue
         return self
     }
@@ -110,11 +110,11 @@ public final class URIBuilder {
             // and returns a decoded value if it is set with a percent encoded value
             // However on Linux platform, it returns a percent encoded value.
             // To ensure consistent behaviour, we will decode it ourselves on Linux platform
-            if currentOS == .linux {
+            #if os(Linux)
                 self.urlComponents.host = value.removingPercentEncoding!
-            } else {
+            #else
                 self.urlComponents.percentEncodedHost = value
-            }
+            #endif
         } else {
             self.urlComponents.host = value
         }
@@ -134,7 +134,7 @@ public final class URIBuilder {
     }
 
     @discardableResult
-    public func withQueryItems(_ value: [SDKURLQueryItem]) -> URIBuilder {
+    public func withQueryItems(_ value: [URIQueryItem]) -> URIBuilder {
         if value.isEmpty {
             return self
         }
@@ -147,7 +147,7 @@ public final class URIBuilder {
     }
 
     @discardableResult
-    public func appendQueryItems(_ items: [SDKURLQueryItem]) -> URIBuilder {
+    public func appendQueryItems(_ items: [URIQueryItem]) -> URIBuilder {
         guard !items.isEmpty else {
             return self
         }
@@ -164,7 +164,7 @@ public final class URIBuilder {
     }
 
     @discardableResult
-    public func appendQueryItem(_ item: SDKURLQueryItem) -> URIBuilder {
+    public func appendQueryItem(_ item: URIQueryItem) -> URIBuilder {
         self.appendQueryItems([item])
         return self
     }
@@ -206,12 +206,12 @@ public final class URIBuilder {
     }
 
     public func build() -> URI {
-        return URI(scheme: Scheme(rawValue: self.urlComponents.scheme!)!,
+        return URI(scheme: URIScheme(rawValue: self.urlComponents.scheme!)!,
                    path: self.urlComponents.percentEncodedPath,
                    host: self.urlComponents.percentEncodedHost!,
                    port: self.urlComponents.port.map { Int16($0) },
                    queryItems: self.urlComponents.percentEncodedQueryItems?.map {
-                        SDKURLQueryItem(name: $0.name, value: $0.value)
+                        URIQueryItem(name: $0.name, value: $0.value)
                    } ?? [],
                    username: self.urlComponents.percentEncodedUser,
                    password: self.urlComponents.percentEncodedPassword,
@@ -246,7 +246,7 @@ extension String {
     }
 }
 
-extension Array where Element == SDKURLQueryItem {
+extension Array where Element == URIQueryItem {
     public var queryString: String? {
         if self.isEmpty {
             return nil

@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
+import func SmithyHTTPAPI.getQueryItems
 import Foundation
 import XCTest
 @testable import ClientRuntime
@@ -18,17 +20,17 @@ class URITests: XCTestCase {
 
     func test_queryItems_setsQueryItemsFromURLInOrder() throws {
         let uri = URIBuilder()
-            .withScheme(Scheme(rawValue: url.scheme!)!)
+            .withScheme(URIScheme(rawValue: url.scheme!)!)
             .withPath(url.path)
             .withHost(url.host!)
             .withPort(url.port)
-            .withQueryItems(url.getQueryItems()!)
+            .withQueryItems(getQueryItems(url: url)!)
             .build()
 
         let expectedQueryItems = [
-            SDKURLQueryItem(name: "abc", value: "def"),
-            SDKURLQueryItem(name: "ghi", value: "jkl"),
-            SDKURLQueryItem(name: "mno", value: "pqr")
+            URIQueryItem(name: "abc", value: "def"),
+            URIQueryItem(name: "ghi", value: "jkl"),
+            URIQueryItem(name: "mno", value: "pqr")
         ]
         XCTAssertEqual(uri.queryItems, expectedQueryItems)
         XCTAssertEqual(uri.queryString, "abc=def&ghi=jkl&mno=pqr")
@@ -36,18 +38,18 @@ class URITests: XCTestCase {
 
     func test_hashableAndEquatable_hashesMatch() throws {
         let uri1 = URIBuilder()
-            .withScheme(Scheme(rawValue: url.scheme!)!)
+            .withScheme(URIScheme(rawValue: url.scheme!)!)
             .withPath(url.path)
             .withHost(url.host!)
             .withPort(url.port)
-            .withQueryItems(url.getQueryItems()!)
+            .withQueryItems(getQueryItems(url: url)!)
             .build()
         let uri2 = URIBuilder()
-            .withScheme(Scheme(rawValue: url.scheme!)!)
+            .withScheme(URIScheme(rawValue: url.scheme!)!)
             .withPath(url.path)
             .withHost(url.host!)
             .withPort(url.port)
-            .withQueryItems(url.getQueryItems()!)
+            .withQueryItems(getQueryItems(url: url)!)
             .build()
         XCTAssertEqual(uri1, uri2)
         XCTAssertEqual(uri1.hashValue, uri2.hashValue)
@@ -55,11 +57,11 @@ class URITests: XCTestCase {
 
     func test_path_percentEncodedInput() throws {
         let uri = URIBuilder()
-            .withScheme(Scheme(rawValue: url.scheme!)!)
+            .withScheme(URIScheme(rawValue: url.scheme!)!)
             .withPath(url.path)
             .withHost(url.host!)
             .withPort(443)
-            .withQueryItems(url.getQueryItems()!)
+            .withQueryItems(getQueryItems(url: url)!)
             .build()
         XCTAssertEqual(uri.url?.absoluteString, "https://xctest.amazonaws.com:443?abc=def&ghi=jkl&mno=pqr")
     }
@@ -76,17 +78,17 @@ class URITests: XCTestCase {
 
     func test_modifyURI() throws {
         var uri = URIBuilder()
-            .withScheme(Scheme(rawValue: url.scheme!)!)
+            .withScheme(URIScheme(rawValue: url.scheme!)!)
             .withPath(url.path)
             .withHost(url.host!)
             .withPort(url.port)
-            .withQueryItems(url.getQueryItems()!)
+            .withQueryItems(getQueryItems(url: url)!)
             .build()
 
         uri = uri.toBuilder()
             .withPath("/x%2Dy%2Dz")
             .withHost("%2Bxctest2.com")
-            .appendQueryItem(SDKURLQueryItem(name: "test", value: "1%2B2"))
+            .appendQueryItem(URIQueryItem(name: "test", value: "1%2B2"))
             .withFragment("fragment%21")
             .withUsername("dan%21")
             .withPassword("%24008")
@@ -156,7 +158,7 @@ class URITests: XCTestCase {
             .withHost("xctest.com")
             .withPath("/")
             .withQueryItems([
-                SDKURLQueryItem(
+                URIQueryItem(
                     name: "key:@\(unencodedReservedCharacters))",
                     value: "value:@\(unencodedReservedCharacters)"
                 ),
@@ -171,7 +173,7 @@ class URITests: XCTestCase {
             .withHost("xctest.com")
             .withPath("/")
             .withQueryItems([
-                SDKURLQueryItem(
+                URIQueryItem(
                     name: "key:@\(encodedReservedCharacters))",
                     value: "value:@\(encodedReservedCharacters)"
                 ),
@@ -187,7 +189,7 @@ class URITests: XCTestCase {
             .withHost("xctest.com")
             .withPath("/")
             .withQueryItems([
-                SDKURLQueryItem(
+                URIQueryItem(
                     name: "key:@\(encodedReservedCharacters))",
                     value: "value:@\(unencodedReservedCharacters)"
                 ),

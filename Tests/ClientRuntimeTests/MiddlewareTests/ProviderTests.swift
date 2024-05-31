@@ -103,11 +103,11 @@ extension MockInput {
         return "/\(value)"
     }
 
-    static func queryItemProvider(_ mock: MockInput) -> [SDKURLQueryItem] {
-        var items = [SDKURLQueryItem]()
+    static func queryItemProvider(_ mock: MockInput) -> [URIQueryItem] {
+        var items = [URIQueryItem]()
 
         if let value = mock.value {
-            let valueQueryItem = SDKURLQueryItem(name: "test", value: "\(value)")
+            let valueQueryItem = URIQueryItem(name: "test", value: "\(value)")
             items.append(valueQueryItem)
         }
         return items

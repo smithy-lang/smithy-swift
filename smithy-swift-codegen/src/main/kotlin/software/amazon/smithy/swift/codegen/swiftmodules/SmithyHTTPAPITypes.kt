@@ -16,7 +16,6 @@ object SmithyHTTPAPITypes {
     val Headers = runtimeSymbol("Headers")
     val SdkHttpRequestBuilder = runtimeSymbol("SdkHttpRequestBuilder")
     val SdkHttpRequest = runtimeSymbol("SdkHttpRequest")
-    val SDKURLQueryItem = runtimeSymbol("SDKURLQueryItem")
     val HttpResponse = runtimeSymbol("HttpResponse")
     val HttpResponseBinding = runtimeSymbol("HttpResponseBinding")
 }

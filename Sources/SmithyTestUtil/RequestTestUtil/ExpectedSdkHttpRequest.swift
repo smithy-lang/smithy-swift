@@ -14,9 +14,9 @@ public struct ExpectedSdkHttpRequest {
     public var headers: Headers?
     public var forbiddenHeaders: [String]?
     public var requiredHeaders: [String]?
-    public var queryItems: [SDKURLQueryItem] { endpoint.uri.queryItems }
-    public let forbiddenQueryItems: [SDKURLQueryItem]?
-    public let requiredQueryItems: [SDKURLQueryItem]?
+    public var queryItems: [URIQueryItem] { endpoint.uri.queryItems }
+    public let forbiddenQueryItems: [URIQueryItem]?
+    public let requiredQueryItems: [URIQueryItem]?
     public let endpoint: Endpoint
     public let method: HttpMethodType
 
@@ -25,8 +25,8 @@ public struct ExpectedSdkHttpRequest {
                 headers: Headers? = nil,
                 forbiddenHeaders: [String]? = nil,
                 requiredHeaders: [String]? = nil,
-                forbiddenQueryItems: [SDKURLQueryItem]? = nil,
-                requiredQueryItems: [SDKURLQueryItem]? = nil,
+                forbiddenQueryItems: [URIQueryItem]? = nil,
+                requiredQueryItems: [URIQueryItem]? = nil,
                 body: ByteStream = ByteStream.noStream) {
         self.method = method
         self.endpoint = endpoint
@@ -50,11 +50,11 @@ public class ExpectedSdkHttpRequestBuilder {
     var host: String = ""
     var path: String = "/"
     var body: ByteStream = .noStream
-    var queryItems = [SDKURLQueryItem]()
-    var forbiddenQueryItems = [SDKURLQueryItem]()
-    var requiredQueryItems = [SDKURLQueryItem]()
+    var queryItems = [URIQueryItem]()
+    var forbiddenQueryItems = [URIQueryItem]()
+    var requiredQueryItems = [URIQueryItem]()
     var port: Int16 = 443
-    var protocolType: ProtocolType = .https
+    var protocolType: URIScheme = .https
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -109,19 +109,19 @@ public class ExpectedSdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withQueryItem(_ value: SDKURLQueryItem) -> ExpectedSdkHttpRequestBuilder {
+    public func withQueryItem(_ value: URIQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.queryItems.append(value)
         return self
     }
 
     @discardableResult
-    public func withForbiddenQueryItem(_ value: SDKURLQueryItem) -> ExpectedSdkHttpRequestBuilder {
+    public func withForbiddenQueryItem(_ value: URIQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.forbiddenQueryItems.append(value)
         return self
     }
 
     @discardableResult
-    public func withRequiredQueryItem(_ value: SDKURLQueryItem) -> ExpectedSdkHttpRequestBuilder {
+    public func withRequiredQueryItem(_ value: URIQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.requiredQueryItems.append(value)
         return self
     }
@@ -133,7 +133,7 @@ public class ExpectedSdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withProtocol(_ value: ProtocolType) -> ExpectedSdkHttpRequestBuilder {
+    public func withProtocol(_ value: URIScheme) -> ExpectedSdkHttpRequestBuilder {
         self.protocolType = value
         return self
     }

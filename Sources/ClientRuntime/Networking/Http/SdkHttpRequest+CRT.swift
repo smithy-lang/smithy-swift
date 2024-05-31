@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.URI
 import class SmithyHTTPAPI.SdkHttpRequest
 import AwsCommonRuntimeKit
 
@@ -13,7 +14,7 @@ extension SdkHttpRequest {
     public func toHttpRequest() throws -> HTTPRequest {
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        httpRequest.path = [endpoint.path, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
+        httpRequest.path = [endpoint.path, endpoint.uri.queryString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
         httpRequest.body = isChunked ? nil : StreamableHttpBody(body: body) // body needs to be nil to use writeChunk()
         return httpRequest
@@ -25,7 +26,7 @@ extension SdkHttpRequest {
     public func toHttp2Request() throws -> HTTPRequestBase {
         let httpRequest = try HTTPRequest()
         httpRequest.method = method.rawValue
-        httpRequest.path = [endpoint.path, endpoint.queryItemString].compactMap { $0 }.joined(separator: "?")
+        httpRequest.path = [endpoint.path, endpoint.uri.queryString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
 
         // Remove the "Transfer-Encoding" header if it exists since h2 does not support it

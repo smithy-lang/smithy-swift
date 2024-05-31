@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
 import SmithyHTTPAPI
 import Foundation
 import XCTest
@@ -16,9 +17,9 @@ class EndpointTests: XCTestCase {
     func test_queryItems_setsQueryItemsFromURLInOrder() throws {
         let endpoint = try Endpoint(url: url)
         let expectedQueryItems = [
-            SDKURLQueryItem(name: "abc", value: "def"),
-            SDKURLQueryItem(name: "ghi", value: "jkl"),
-            SDKURLQueryItem(name: "mno", value: "pqr")
+            URIQueryItem(name: "abc", value: "def"),
+            URIQueryItem(name: "ghi", value: "jkl"),
+            URIQueryItem(name: "mno", value: "pqr")
         ]
         XCTAssertEqual(endpoint.uri.queryItems, expectedQueryItems)
     }

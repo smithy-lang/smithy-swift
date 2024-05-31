@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.URIQueryItem
 import class SmithyHTTPAPI.SdkHttpRequest
 import class SmithyHTTPAPI.SdkHttpRequestBuilder
-import struct SmithyHTTPAPI.SDKURLQueryItem
 import struct SmithyHTTPAPI.Headers
 import struct Foundation.URLComponents
 import AwsCommonRuntimeKit
@@ -26,8 +26,8 @@ extension SdkHttpRequestBuilder {
         if let crtRequest = crtRequest as? HTTPRequest, let components = URLComponents(string: crtRequest.path) {
             withPath(components.percentEncodedPath)
             replacingQueryItems(components.percentEncodedQueryItems?.map {
-                SDKURLQueryItem(name: $0.name, value: $0.value)
-            } ?? [SDKURLQueryItem]())
+                URIQueryItem(name: $0.name, value: $0.value)
+            } ?? [URIQueryItem]())
         } else if crtRequest as? HTTP2Request != nil {
             assertionFailure("HTTP2Request not supported")
         } else {

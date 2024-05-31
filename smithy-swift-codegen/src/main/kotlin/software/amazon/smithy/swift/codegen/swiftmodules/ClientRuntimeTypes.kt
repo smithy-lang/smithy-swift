@@ -1,6 +1,7 @@
 package software.amazon.smithy.swift.codegen.swiftmodules
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 
@@ -52,11 +53,8 @@ object ClientRuntimeTypes {
     }
 
     object Core {
-        val SDKURLQueryItem = runtimeSymbol("SDKURLQueryItem", SwiftDeclaration.STRUCT)
         val ModeledError = runtimeSymbol("ModeledError", SwiftDeclaration.PROTOCOL)
-        val UnknownClientError = runtimeSymbol("ClientError.unknownError")
         val ServiceError = runtimeSymbol("ServiceError", SwiftDeclaration.PROTOCOL)
-        val Logger = runtimeSymbol("LogAgent", SwiftDeclaration.PROTOCOL)
         val TelemetryProvider = runtimeSymbol("TelemetryProvider", SwiftDeclaration.PROTOCOL)
         val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory", SwiftDeclaration.PROTOCOL)
         val SDKLogLevel = runtimeSymbol("SDKLogLevel", SwiftDeclaration.ENUM)

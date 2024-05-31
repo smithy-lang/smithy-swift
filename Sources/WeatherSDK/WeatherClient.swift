@@ -10,11 +10,11 @@ import SmithyJSON
 import SmithyReadWrite
 import SmithyRetries
 import SmithyRetriesAPI
+import Swift
 import enum ClientRuntime.ClientLogMode
 import enum ClientRuntime.DefaultRetryErrorInfoProvider
 import enum ClientRuntime.SDKLogLevel
 import protocol ClientRuntime.IdempotencyTokenGenerator
-import protocol ClientRuntime.LogAgent
 import protocol ClientRuntime.SDKLogHandlerFactory
 import protocol ClientRuntime.TelemetryProvider
 

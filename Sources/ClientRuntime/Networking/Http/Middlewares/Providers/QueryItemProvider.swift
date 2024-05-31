@@ -5,6 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyHTTPAPI.SDKURLQueryItem
+import struct Smithy.URIQueryItem
 
-public typealias QueryItemProvider<T> = (T) throws -> [SDKURLQueryItem]
+public typealias QueryItemProvider<T> = (T) throws -> [URIQueryItem]

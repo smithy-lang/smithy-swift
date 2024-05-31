@@ -49,10 +49,10 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                        next: H) async throws -> MOutput where H: Handler,
                                                                 Self.MInput == H.Input,
                                                                 Self.MOutput == H.Output {
-            var queryItems: [SDKURLQueryItem] = []
-            var queryItem: SDKURLQueryItem
+            var queryItems: [URIQueryItem] = []
+            var queryItem: URIQueryItem
             if let requiredQuery = input.operationInput.requiredQuery {
-                queryItem = SDKURLQueryItem(name: "RequiredQuery".urlPercentEncoding(), value: String(requiredQuery).urlPercentEncoding())
+                queryItem = URIQueryItem(name: "RequiredQuery".urlPercentEncoding(), value: String(requiredQuery).urlPercentEncoding())
                 queryItems.append(queryItem)
             }
 

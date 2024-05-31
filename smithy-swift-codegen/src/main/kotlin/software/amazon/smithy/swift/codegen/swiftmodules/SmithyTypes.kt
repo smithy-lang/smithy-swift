@@ -15,6 +15,9 @@ object SmithyTypes {
     val Context = runtimeSymbol("Context")
     val ContextBuilder = runtimeSymbol("ContextBuilder")
     val LogAgent = runtimeSymbol("LogAgent")
+    val URI = runtimeSymbol("URI")
+    val URIScheme = runtimeSymbol("URIScheme")
+    val URIQueryItem = runtimeSymbol("URIQueryItem")
 }
 
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {

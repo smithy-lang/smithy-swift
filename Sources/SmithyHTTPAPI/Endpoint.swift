@@ -11,8 +11,8 @@ import Foundation
 public struct Endpoint: Hashable {
     public let uri: URI
     public let headers: Headers
-    public var protocolType: ProtocolType? { uri.scheme }
-    public var queryItems: [SDKURLQueryItem] { uri.queryItems }
+    public var protocolType: URIScheme? { uri.scheme }
+    public var queryItems: [URIQueryItem] { uri.queryItems }
     public var path: String { uri.path }
     public var host: String { uri.host }
     public var port: Int16? { uri.port }
@@ -37,14 +37,14 @@ public struct Endpoint: Hashable {
             throw ClientError.unknownError("invalid host \(String(describing: url.host))")
         }
 
-        let protocolType = ProtocolType(rawValue: url.scheme ?? "") ?? .https
+        let protocolType = URIScheme(rawValue: url.scheme ?? "") ?? .https
 
         let uri = URIBuilder()
             .withScheme(protocolType)
             .withPath(url.path)
             .withHost(host)
             .withPort(url.port)
-            .withQueryItems(url.getQueryItems() ?? [])
+            .withQueryItems(getQueryItems(url: url) ?? [])
             .build()
 
         self.init(uri: uri,
@@ -55,9 +55,9 @@ public struct Endpoint: Hashable {
     public init(host: String,
                 path: String = "/",
                 port: Int16 = 443,
-                queryItems: [SDKURLQueryItem]? = nil,
+                queryItems: [URIQueryItem]? = nil,
                 headers: Headers = Headers(),
-                protocolType: ProtocolType? = .https) {
+                protocolType: URIScheme? = .https) {
 
         let uri = URIBuilder()
             .withScheme(protocolType ?? .https)

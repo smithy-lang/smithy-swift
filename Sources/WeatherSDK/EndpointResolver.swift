@@ -4,6 +4,8 @@ import ClientRuntime
 import Smithy
 import SmithyHTTPAPI
 import SmithyHTTPAuthAPI
+import protocol ClientRuntime.EndpointsAuthSchemeResolver
+import struct ClientRuntime.DefaultEndpointsAuthSchemeResolver
 
 public struct EndpointParams {
     /// docs

@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.URI
+import class Smithy.URIBuilder
+import enum Smithy.URIScheme
+import struct Smithy.URIQueryItem
 import protocol Smithy.RequestMessage
 import protocol Smithy.RequestMessageBuilder
 import enum Smithy.ByteStream
@@ -28,7 +32,7 @@ public final class SdkHttpRequest: RequestMessage {
     public let method: HttpMethodType
     public var host: String { destination.host }
     public var path: String { destination.path }
-    public var queryItems: [SDKURLQueryItem]? { destination.queryItems }
+    public var queryItems: [URIQueryItem]? { destination.queryItems }
     public var trailingHeaders: Headers = Headers()
     public var endpoint: Endpoint {
         return Endpoint(uri: self.destination, headers: self.headers)
@@ -127,31 +131,19 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
 
     required public init() {}
 
-<<<<<<< HEAD:Sources/SmithyHTTPAPI/SdkHttpRequest.swift
     public var headers: Headers = Headers()
     public private(set) var methodType: HttpMethodType = .get
     public private(set) var host: String = ""
     public private(set) var path: String = "/"
     public private(set) var body: ByteStream = .noStream
-    public private(set) var queryItems: [SDKURLQueryItem]?
-    public private(set) var port: Int16 = 443
-    public private(set) var protocolType: ProtocolType = .https
+    public private(set) var queryItems = [URIQueryItem]()
+    public private(set) var port: Int16?
+    public private(set) var protocolType: URIScheme = .https
     public private(set) var trailingHeaders: Headers = Headers()
-=======
-    var headers: Headers = Headers()
-    var methodType: HttpMethodType = .get
-    var host: String = ""
-    var path: String = "/"
-    var body: ByteStream = .noStream
-    var queryItems: [SDKURLQueryItem] = []
-    var port: Int16?
-    var protocolType: ProtocolType = .https
-    var trailingHeaders: Headers = Headers()
 
-    public var currentQueryItems: [SDKURLQueryItem]? {
+    public var currentQueryItems: [URIQueryItem]? {
         return queryItems
     }
->>>>>>> main:Sources/ClientRuntime/Networking/Http/SdkHttpRequest.swift
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -218,34 +210,30 @@ public class SdkHttpRequestBuilder: RequestMessageBuilder {
     }
 
     @discardableResult
-    public func withQueryItems(_ value: [SDKURLQueryItem]) -> SdkHttpRequestBuilder {
+    public func withQueryItems(_ value: [URIQueryItem]) -> SdkHttpRequestBuilder {
         self.queryItems.append(contentsOf: value)
         return self
     }
 
     @discardableResult
-    public func withQueryItem(_ value: SDKURLQueryItem) -> SdkHttpRequestBuilder {
+    public func withQueryItem(_ value: URIQueryItem) -> SdkHttpRequestBuilder {
         withQueryItems([value])
     }
 
     @discardableResult
-<<<<<<< HEAD:Sources/SmithyHTTPAPI/SdkHttpRequest.swift
-    public func replacingQueryItems(_ value: [SDKURLQueryItem]) -> SdkHttpRequestBuilder {
+    public func replacingQueryItems(_ value: [URIQueryItem]) -> SdkHttpRequestBuilder {
         self.queryItems = value
         return self
     }
 
     @discardableResult
-    public func withPort(_ value: Int16) -> SdkHttpRequestBuilder {
-=======
     public func withPort(_ value: Int16?) -> SdkHttpRequestBuilder {
->>>>>>> main:Sources/ClientRuntime/Networking/Http/SdkHttpRequest.swift
         self.port = value
         return self
     }
 
     @discardableResult
-    public func withProtocol(_ value: ProtocolType) -> SdkHttpRequestBuilder {
+    public func withProtocol(_ value: URIScheme) -> SdkHttpRequestBuilder {
         self.protocolType = value
         return self
     }
