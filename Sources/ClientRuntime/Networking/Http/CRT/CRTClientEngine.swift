@@ -355,14 +355,12 @@ public class CRTClientEngine: HTTPClient {
             switch result {
             case .success(let statusCode):
                 response.statusCode = makeStatusCode(statusCode)
+                stream.close()
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
                 continuation.safeResume(error: error)
+                stream.closeWithError(error)
             }
-
-            // closing the stream is required to signal to the caller that the response is complete
-            // and no more data will be received in this stream
-            stream.close()
         }
 
         requestOptions.http2ManualDataWrites = http2ManualDataWrites
