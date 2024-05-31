@@ -20,7 +20,7 @@ class TimeStampDecodeGenerationTests {
         val expectedContents = """
 extension XmlTimestampsOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlTimestampsOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlTimestampsOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -43,7 +43,7 @@ extension XmlTimestampsOutput {
         val expectedContents = """
 extension XmlTimestampsNestedOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlTimestampsNestedOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlTimestampsNestedOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -63,7 +63,7 @@ extension XmlTimestampsNestedOutput {
         val expectedContents = """
 extension XmlTimestampsNestedHTTPDateOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlTimestampsNestedHTTPDateOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlTimestampsNestedHTTPDateOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -83,7 +83,7 @@ extension XmlTimestampsNestedHTTPDateOutput {
         val expectedContents = """
 extension XmlTimestampsNestedXmlNameOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlTimestampsNestedXmlNameOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlTimestampsNestedXmlNameOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader

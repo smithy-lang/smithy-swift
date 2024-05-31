@@ -112,7 +112,7 @@ jobs:
           cd ../aws-sdk-swift
           set -o pipefail && \
           NSUnbufferedIO=YES xcodebuild \
-            -scheme aws-sdk-swift \
+            -scheme aws-sdk-swift-Package \
             -destination '${{ matrix.destination }}' \
             test 2>&1 \
             | xcbeautify

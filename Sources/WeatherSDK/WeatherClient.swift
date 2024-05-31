@@ -3,15 +3,18 @@
 import ClientRuntime
 import Foundation
 import Logging
+import Smithy
+import SmithyHTTPAPI
+import SmithyHTTPAuthAPI
 import SmithyJSON
 import SmithyReadWrite
 import SmithyRetries
 import SmithyRetriesAPI
+import Swift
 import enum ClientRuntime.ClientLogMode
 import enum ClientRuntime.DefaultRetryErrorInfoProvider
 import enum ClientRuntime.SDKLogLevel
 import protocol ClientRuntime.IdempotencyTokenGenerator
-import protocol ClientRuntime.LogAgent
 import protocol ClientRuntime.SDKLogHandlerFactory
 import protocol ClientRuntime.TelemetryProvider
 
@@ -45,17 +48,17 @@ extension WeatherClient {
 
         public var idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
 
-        public var httpClientEngine: ClientRuntime.HTTPClient
+        public var httpClientEngine: SmithyHTTPAPI.HTTPClient
 
         public var httpClientConfiguration: ClientRuntime.HttpClientConfiguration
 
-        public var authSchemes: [ClientRuntime.AuthScheme]?
+        public var authSchemes: [SmithyHTTPAuthAPI.AuthScheme]?
 
-        public var authSchemeResolver: ClientRuntime.AuthSchemeResolver
+        public var authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver
 
-        internal let logger: ClientRuntime.LogAgent
+        internal let logger: Smithy.LogAgent
 
-        private init(_ telemetryProvider: ClientRuntime.TelemetryProvider, _ retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions, _ clientLogMode: ClientRuntime.ClientLogMode, _ endpoint: Swift.String?, _ idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator, _ httpClientEngine: ClientRuntime.HTTPClient, _ httpClientConfiguration: ClientRuntime.HttpClientConfiguration, _ authSchemes: [ClientRuntime.AuthScheme]?, _ authSchemeResolver: ClientRuntime.AuthSchemeResolver) {
+        private init(_ telemetryProvider: ClientRuntime.TelemetryProvider, _ retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions, _ clientLogMode: ClientRuntime.ClientLogMode, _ endpoint: Swift.String?, _ idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator, _ httpClientEngine: SmithyHTTPAPI.HTTPClient, _ httpClientConfiguration: ClientRuntime.HttpClientConfiguration, _ authSchemes: [SmithyHTTPAuthAPI.AuthScheme]?, _ authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver) {
             self.telemetryProvider = telemetryProvider
             self.retryStrategyOptions = retryStrategyOptions
             self.clientLogMode = clientLogMode
@@ -68,7 +71,7 @@ extension WeatherClient {
             self.logger = telemetryProvider.loggerProvider.getLogger(name: WeatherClient.clientName)
         }
 
-        public convenience init(telemetryProvider: ClientRuntime.TelemetryProvider? = nil, retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil, clientLogMode: ClientRuntime.ClientLogMode? = nil, endpoint: Swift.String? = nil, idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator? = nil, httpClientEngine: ClientRuntime.HTTPClient? = nil, httpClientConfiguration: ClientRuntime.HttpClientConfiguration? = nil, authSchemes: [ClientRuntime.AuthScheme]? = nil, authSchemeResolver: ClientRuntime.AuthSchemeResolver? = nil) throws {
+        public convenience init(telemetryProvider: ClientRuntime.TelemetryProvider? = nil, retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil, clientLogMode: ClientRuntime.ClientLogMode? = nil, endpoint: Swift.String? = nil, idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator? = nil, httpClientEngine: SmithyHTTPAPI.HTTPClient? = nil, httpClientConfiguration: ClientRuntime.HttpClientConfiguration? = nil, authSchemes: [SmithyHTTPAuthAPI.AuthScheme]? = nil, authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver? = nil) throws {
             self.init(telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider, retryStrategyOptions ?? ClientConfigurationDefaults.defaultRetryStrategyOptions, clientLogMode ?? ClientConfigurationDefaults.defaultClientLogMode, endpoint, idempotencyTokenGenerator ?? ClientConfigurationDefaults.defaultIdempotencyTokenGenerator, httpClientEngine ?? ClientConfigurationDefaults.makeClient(httpClientConfiguration: httpClientConfiguration ?? ClientConfigurationDefaults.defaultHttpClientConfiguration), httpClientConfiguration ?? ClientConfigurationDefaults.defaultHttpClientConfiguration, authSchemes, authSchemeResolver ?? ClientConfigurationDefaults.defaultAuthSchemeResolver)
         }
 
@@ -109,7 +112,7 @@ extension WeatherClient {
     ///
     /// - Returns: `CreateCityOutput` : [no documentation found]
     public func createCity(input: CreateCityInput) async throws -> CreateCityOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .put)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "createCity")
@@ -148,7 +151,7 @@ extension WeatherClient {
     /// __Possible Exceptions:__
     /// - `NoSuchResource` : Error encountered when no resource could be found.
     public func getCity(input: GetCityInput) async throws -> GetCityOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getCity")
@@ -185,7 +188,7 @@ extension WeatherClient {
     /// __Possible Exceptions:__
     /// - `NoSuchResource` : Error encountered when no resource could be found.
     public func getCityAnnouncements(input: GetCityAnnouncementsInput) async throws -> GetCityAnnouncementsOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getCityAnnouncements")
@@ -221,7 +224,7 @@ extension WeatherClient {
     /// __Possible Exceptions:__
     /// - `NoSuchResource` : Error encountered when no resource could be found.
     public func getCityImage(input: GetCityImageInput) async throws -> GetCityImageOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getCityImage")
@@ -252,7 +255,7 @@ extension WeatherClient {
     ///
     /// - Returns: `GetCurrentTimeOutput` : [no documentation found]
     public func getCurrentTime(input: GetCurrentTimeInput) async throws -> GetCurrentTimeOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getCurrentTime")
@@ -283,7 +286,7 @@ extension WeatherClient {
     ///
     /// - Returns: `GetForecastOutput` : [no documentation found]
     public func getForecast(input: GetForecastInput) async throws -> GetForecastOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getForecast")
@@ -314,7 +317,7 @@ extension WeatherClient {
     ///
     /// - Returns: `InvokeOutput` : [no documentation found]
     public func invoke(input: InvokeInput) async throws -> InvokeOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "invoke")
@@ -353,7 +356,7 @@ extension WeatherClient {
     /// __Possible Exceptions:__
     /// - `NoSuchResource` : Error encountered when no resource could be found.
     public func listCities(input: ListCitiesInput) async throws -> ListCitiesOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "listCities")
@@ -385,7 +388,7 @@ extension WeatherClient {
     ///
     /// - Returns: `OnlyFakeAuthOutput` : [no documentation found]
     public func onlyFakeAuth(input: OnlyFakeAuthInput) async throws -> OnlyFakeAuthOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyFakeAuth")
@@ -416,7 +419,7 @@ extension WeatherClient {
     ///
     /// - Returns: `OnlyFakeAuthOptionalOutput` : [no documentation found]
     public func onlyFakeAuthOptional(input: OnlyFakeAuthOptionalInput) async throws -> OnlyFakeAuthOptionalOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyFakeAuthOptional")
@@ -447,7 +450,7 @@ extension WeatherClient {
     ///
     /// - Returns: `OnlyHttpApiKeyAndBearerAuthOutput` : [no documentation found]
     public func onlyHttpApiKeyAndBearerAuth(input: OnlyHttpApiKeyAndBearerAuthInput) async throws -> OnlyHttpApiKeyAndBearerAuthOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpApiKeyAndBearerAuth")
@@ -478,7 +481,7 @@ extension WeatherClient {
     ///
     /// - Returns: `OnlyHttpApiKeyAndBearerAuthReversedOutput` : [no documentation found]
     public func onlyHttpApiKeyAndBearerAuthReversed(input: OnlyHttpApiKeyAndBearerAuthReversedInput) async throws -> OnlyHttpApiKeyAndBearerAuthReversedOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpApiKeyAndBearerAuthReversed")
@@ -509,7 +512,7 @@ extension WeatherClient {
     ///
     /// - Returns: `OnlyHttpApiKeyAuthOutput` : [no documentation found]
     public func onlyHttpApiKeyAuth(input: OnlyHttpApiKeyAuthInput) async throws -> OnlyHttpApiKeyAuthOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpApiKeyAuth")
@@ -540,7 +543,7 @@ extension WeatherClient {
     ///
     /// - Returns: `OnlyHttpApiKeyAuthOptionalOutput` : [no documentation found]
     public func onlyHttpApiKeyAuthOptional(input: OnlyHttpApiKeyAuthOptionalInput) async throws -> OnlyHttpApiKeyAuthOptionalOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpApiKeyAuthOptional")
@@ -571,7 +574,7 @@ extension WeatherClient {
     ///
     /// - Returns: `OnlyHttpBearerAuthOutput` : [no documentation found]
     public func onlyHttpBearerAuth(input: OnlyHttpBearerAuthInput) async throws -> OnlyHttpBearerAuthOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpBearerAuth")
@@ -602,7 +605,7 @@ extension WeatherClient {
     ///
     /// - Returns: `OnlyHttpBearerAuthOptionalOutput` : [no documentation found]
     public func onlyHttpBearerAuthOptional(input: OnlyHttpBearerAuthOptionalInput) async throws -> OnlyHttpBearerAuthOptionalOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlyHttpBearerAuthOptional")
@@ -633,7 +636,7 @@ extension WeatherClient {
     ///
     /// - Returns: `OnlySigv4AuthOutput` : [no documentation found]
     public func onlySigv4Auth(input: OnlySigv4AuthInput) async throws -> OnlySigv4AuthOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlySigv4Auth")
@@ -664,7 +667,7 @@ extension WeatherClient {
     ///
     /// - Returns: `OnlySigv4AuthOptionalOutput` : [no documentation found]
     public func onlySigv4AuthOptional(input: OnlySigv4AuthOptionalInput) async throws -> OnlySigv4AuthOptionalOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "onlySigv4AuthOptional")
@@ -695,7 +698,7 @@ extension WeatherClient {
     ///
     /// - Returns: `SameAsServiceOutput` : [no documentation found]
     public func sameAsService(input: SameAsServiceInput) async throws -> SameAsServiceOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .get)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "sameAsService")

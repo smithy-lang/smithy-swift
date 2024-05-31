@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
+import SmithyHTTPAPI
 import XCTest
 
 @testable import ClientRuntime
@@ -173,7 +175,7 @@ class OrchestratorTests: XCTestCase {
             self.trace = trace
         }
 
-        public func execute(request: SdkHttpRequest, attributes: HttpContext) async throws -> HttpResponse {
+        public func execute(request: SdkHttpRequest, attributes: Context) async throws -> HttpResponse {
             trace.append("executeRequest")
             if succeedAfter <= 0 {
                 return HttpResponse(body: request.body, statusCode: .ok)
@@ -198,14 +200,14 @@ class OrchestratorTests: XCTestCase {
 
     func traceOrchestrator(
         trace: Trace
-    ) -> OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext> {
-        let attributes = HttpContextBuilder()
+    ) -> OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse> {
+        let attributes = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
             .withOperation(value: "Test")
             .build()
-        let traceInterceptor = TraceInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(trace: trace)
-        let builder = OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>()
+        let traceInterceptor = TraceInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, Context>(trace: trace)
+        let builder = OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse>()
             .attributes(attributes)
             .serialize({ input, builder, _ in
                 trace.append("serialize")
@@ -1273,7 +1275,7 @@ class OrchestratorTests: XCTestCase {
         let trace = Trace()
         let result = await asyncResult {
             let b = self.traceOrchestrator(trace: trace)
-            b.attributes?.set(key: AttributeKeys.logger, value: logger)
+            b.attributes?.logger = logger
             b.interceptors.addReadBeforeExecution({ _ in throw TestError(value: "firstError") })
             b.interceptors.addReadBeforeExecution({ _ in throw TestError(value: "secondError") })
             return try await b.build().execute(input: TestInput(foo: ""))

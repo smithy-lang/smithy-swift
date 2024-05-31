@@ -28,16 +28,16 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
             double: Swift.Double.nan,
             float: Swift.Float.nan
         )
-        let context = HttpContextBuilder()
+        let context = ContextBuilder()
                       .withMethod(value: .get)
                       .build()
         var operationStack = OperationStack<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(id: "RestJsonSupportsNaNFloatLabels")
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(urlPrefix: urlPrefix, HttpRequestWithFloatLabelsInput.urlPathProvider(_:)))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<HttpRequestWithFloatLabelsOutput> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
-            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withMethod(context.method)
+            input.withPath(context.path)
+            let host = "\(context.hostPrefix ?? "")\(context.host ?? "")"
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }
@@ -83,16 +83,16 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
             double: Swift.Double.infinity,
             float: Swift.Float.infinity
         )
-        let context = HttpContextBuilder()
+        let context = ContextBuilder()
                       .withMethod(value: .get)
                       .build()
         var operationStack = OperationStack<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(id: "RestJsonSupportsInfinityFloatLabels")
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(urlPrefix: urlPrefix, HttpRequestWithFloatLabelsInput.urlPathProvider(_:)))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<HttpRequestWithFloatLabelsOutput> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
-            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withMethod(context.method)
+            input.withPath(context.path)
+            let host = "\(context.hostPrefix ?? "")\(context.host ?? "")"
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }
@@ -137,16 +137,16 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
             double: -Swift.Double.infinity,
             float: -Swift.Float.infinity
         )
-        let context = HttpContextBuilder()
+        let context = ContextBuilder()
                       .withMethod(value: .get)
                       .build()
         var operationStack = OperationStack<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(id: "RestJsonSupportsNegativeInfinityFloatLabels")
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(urlPrefix: urlPrefix, HttpRequestWithFloatLabelsInput.urlPathProvider(_:)))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<HttpRequestWithFloatLabelsInput, HttpRequestWithFloatLabelsOutput>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<HttpRequestWithFloatLabelsOutput> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
-            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withMethod(context.method)
+            input.withPath(context.path)
+            let host = "\(context.hostPrefix ?? "")\(context.host ?? "")"
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }
@@ -270,16 +270,16 @@ class DocumentTypeRequestTest: HttpRequestTestBase {
             ,
             stringValue: "string"
         )
-        let context = HttpContextBuilder()
+        let context = ContextBuilder()
                       .withMethod(value: .put)
                       .build()
         var operationStack = OperationStack<DocumentTypeInput, DocumentTypeOutput>(id: "DocumentInputWithList")
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<DocumentTypeInput, DocumentTypeOutput>(urlPrefix: urlPrefix, DocumentTypeInput.urlPathProvider(_:)))
         operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<DocumentTypeInput, DocumentTypeOutput>(host: hostOnly))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<DocumentTypeOutput> in
-            input.withMethod(context.getMethod())
-            input.withPath(context.getPath())
-            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withMethod(context.method)
+            input.withPath(context.path)
+            let host = "\(context.hostPrefix ?? "")\(context.host ?? "")"
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }

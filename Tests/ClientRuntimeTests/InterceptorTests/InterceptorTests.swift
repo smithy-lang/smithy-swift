@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
+import SmithyHTTPAPI
 import XCTest
 @testable import ClientRuntime
 
@@ -89,15 +91,15 @@ class InterceptorTests: XCTestCase {
     }
 
     func test_mutation() async throws {
-        let httpContext = HttpContext(attributes: Attributes())
+        let httpContext = Context(attributes: Attributes())
         let input = TestInput(property: "foo")
-        let interceptorContext = DefaultInterceptorContext<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(input: input, attributes: httpContext)
-        let addAttributeInterceptor = AddAttributeInterceptor<String, TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(key: AttributeKey(name: "foo"), value: "bar")
-        let modifyInputInterceptor = ModifyInputInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(keyPath: \.property, value: "bar")
+        let interceptorContext = DefaultInterceptorContext<TestInput, TestOutput, SdkHttpRequest, HttpResponse, Context>(input: input, attributes: httpContext)
+        let addAttributeInterceptor = AddAttributeInterceptor<String, TestInput, TestOutput, SdkHttpRequest, HttpResponse, Context>(key: AttributeKey(name: "foo"), value: "bar")
+        let modifyInputInterceptor = ModifyInputInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, Context>(keyPath: \.property, value: "bar")
         let addHeaderInterceptor = AddHeaderInterceptor<TestInput, TestOutput>(headerName: "foo", headerValue: "bar")
         let modifyMultipleInterceptor = ModifyMultipleInterceptor<TestOutput>(newInputValue: 1)
 
-        let interceptors: [AnyInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>] = [
+        let interceptors: [AnyInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, Context>] = [
             addAttributeInterceptor.erase(),
             modifyInputInterceptor.erase(),
             addHeaderInterceptor.erase(),

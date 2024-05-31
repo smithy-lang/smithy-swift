@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyHTTPAPI
 import SmithyReadWrite
 import SmithyXML
 import SmithyReadWrite
@@ -80,7 +81,7 @@ public struct SimpleScalarPropertiesOutput: Swift.Equatable {
 
 extension SimpleScalarPropertiesOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> SimpleScalarPropertiesOutput {
+    static func httpOutput(from httpResponse: HttpResponse) async throws -> SimpleScalarPropertiesOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader

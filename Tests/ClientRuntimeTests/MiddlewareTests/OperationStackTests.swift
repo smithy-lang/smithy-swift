@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
+import SmithyHTTPAPI
 import XCTest
 import ClientRuntime
 import SmithyTestUtil
@@ -14,7 +16,7 @@ class OperationStackTests: HttpRequestTestBase {
     func testMiddlewareInjectableInit() async throws {
         var currExpectCount = 1
 
-        let addContextValues = HttpContextBuilder()
+        let addContextValues = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
             .withOperation(value: "Test Operation")

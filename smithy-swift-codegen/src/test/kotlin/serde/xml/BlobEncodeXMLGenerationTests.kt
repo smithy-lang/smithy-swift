@@ -38,7 +38,7 @@ extension XmlBlobsNestedInput {
 
     static func write(value: XmlBlobsNestedInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["nestedBlobList"].writeList(value.nestedBlobList, memberWritingClosure: listWritingClosure(memberWritingClosure: ClientRuntime.Data.write(value:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        try writer["nestedBlobList"].writeList(value.nestedBlobList, memberWritingClosure: listWritingClosure(memberWritingClosure: Foundation.Data.write(value:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """

@@ -5,6 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Context
+import protocol SmithyHTTPAPI.HTTPClient
+import enum Smithy.ClientError
+import struct SmithyHTTPAuthAPI.AuthOption
+import protocol SmithyHTTPAuthAPI.AuthSchemeResolver
+import protocol SmithyHTTPAuthAPI.AuthSchemeResolverParameters
 import protocol SmithyRetriesAPI.RetryStrategy
 import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 import struct SmithyRetriesAPI.RetryStrategyOptions
@@ -137,7 +143,7 @@ public class DefaultAuthSchemeResolver: AuthSchemeResolver {
         return []
     }
 
-    public func constructParameters(context: HttpContext) throws -> AuthSchemeResolverParameters {
+    public func constructParameters(context: Context) throws -> AuthSchemeResolverParameters {
         guard let opName = context.getOperation() else {
             throw ClientError.dataNotFound(
                 "Operation name not configured in middleware context for auth scheme resolver params construction.")
