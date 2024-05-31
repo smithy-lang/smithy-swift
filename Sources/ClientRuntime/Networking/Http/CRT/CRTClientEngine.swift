@@ -370,8 +370,15 @@ public class CRTClientEngine: HTTPClient {
                 stream.close()
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
+                let resumedAlready = continuation == nil
                 continuation.safeResume(error: error)
-                stream.closeWithError(error)
+                // If continuation was resumed already & therefore above resume was a no-op,
+                //    throw the error when closing stream. Otherwise, just close the stream.
+                if (resumedAlready) {
+                    stream.closeWithError(error)
+                } else {
+                    stream.close()
+                }
             }
         }
 
