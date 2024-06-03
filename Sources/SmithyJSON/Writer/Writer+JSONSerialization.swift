@@ -47,7 +47,7 @@ extension Writer {
         case .array:
             return children.compactMap { $0.jsonObject() }
         case .object:
-            return Dictionary(uniqueKeysWithValues: children.map { ($0.nodeInfo.name, $0.jsonObject()) })
+            return Dictionary(uniqueKeysWithValues: children.map { ($0.nodeInfo, $0.jsonObject()) })
         case nil:
             // This case will never happen since tree was trimmed of nils before this method is called
             return NSNull()

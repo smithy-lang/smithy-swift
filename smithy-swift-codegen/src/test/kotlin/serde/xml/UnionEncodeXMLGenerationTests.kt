@@ -43,8 +43,10 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
     }
 
     static func read(from reader: SmithyXML.Reader) throws -> RestXmlProtocolClientTypes.XmlUnionShape {
-        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
-        let name = reader.children.filter { ${'$'}0.hasContent && ${'$'}0.nodeInfo.name != "__type" }.first?.nodeInfo.name
+        guard let nodeInfo = reader.children.first(where: { ${'$'}0.hasContent && ${'$'}0.nodeInfo != "__type" })?.nodeInfo else {
+            throw SmithyReadWrite.ReaderError.requiredValueNotPresent
+        }
+        let name = "\(nodeInfo)"
         switch name {
             case "doubleValue":
                 return .doublevalue(try reader["doubleValue"].read())
@@ -61,7 +63,7 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
             case "timeStampValue":
                 return .timestampvalue(try reader["timeStampValue"].readTimestamp(format: .dateTime))
             default:
-                return .sdkUnknown(name ?? "")
+                return .sdkUnknown(name)
         }
     }
 }

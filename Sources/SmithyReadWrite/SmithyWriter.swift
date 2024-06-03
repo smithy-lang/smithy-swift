@@ -10,6 +10,10 @@ import struct Foundation.Date
 import enum SmithyTimestamps.TimestampFormat
 
 public protocol SmithyWriter: AnyObject {
+
+    // NodeInfo provides identifying info for the nodes of the encoding in use.
+    // NodeInfo should provide the node's member name via the Swift `CustomStringConvertible`
+    // property if NodeInfo is not itself a string.
     associatedtype NodeInfo
 
     init(nodeInfo: NodeInfo)

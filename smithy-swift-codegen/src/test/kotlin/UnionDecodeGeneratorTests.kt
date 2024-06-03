@@ -68,8 +68,10 @@ extension ExampleClientTypes.MyUnion {
     }
 
     static func read(from reader: SmithyJSON.Reader) throws -> ExampleClientTypes.MyUnion {
-        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
-        let name = reader.children.filter { ${'$'}0.hasContent && ${'$'}0.nodeInfo.name != "__type" }.first?.nodeInfo.name
+        guard let nodeInfo = reader.children.first(where: { ${'$'}0.hasContent && ${'$'}0.nodeInfo != "__type" })?.nodeInfo else {
+            throw SmithyReadWrite.ReaderError.requiredValueNotPresent
+        }
+        let name = "\(nodeInfo)"
         switch name {
             case "stringValue":
                 return .stringvalue(try reader["stringValue"].read())
@@ -92,7 +94,7 @@ extension ExampleClientTypes.MyUnion {
             case "structureValue":
                 return .structurevalue(try reader["structureValue"].read(with: ExampleClientTypes.GreetingWithErrorsOutput.read(from:)))
             default:
-                return .sdkUnknown(name ?? "")
+                return .sdkUnknown(name)
         }
     }
 }

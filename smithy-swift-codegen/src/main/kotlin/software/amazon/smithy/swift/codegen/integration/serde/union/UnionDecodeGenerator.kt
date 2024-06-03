@@ -34,11 +34,13 @@ class UnionDecodeGenerator(
             ctx.service.readerSymbol,
             symbol,
         ) {
-            writer.write(
-                "guard reader.hasContent else { throw \$N.requiredValueNotPresent }",
-                SmithyReadWriteTypes.ReaderError,
-            )
-            writer.write("let name = reader.children.filter { $$0.hasContent && $$0.nodeInfo.name != \"__type\" }.first?.nodeInfo.name")
+            writer.openBlock(
+                "guard let nodeInfo = reader.children.first(where: { \$\$0.hasContent && \$\$0.nodeInfo != \"__type\" })?.nodeInfo else {",
+                "}"
+            ) {
+                writer.write("throw \$N.requiredValueNotPresent", SmithyReadWriteTypes.ReaderError)
+            }
+            writer.write("let name = \"\\(nodeInfo)\"")
             writer.openBlock("switch name {", "}") {
                 members.forEach {
                     writer.write("case \$S:", memberName(it))
@@ -48,7 +50,7 @@ class UnionDecodeGenerator(
                 }
                 writer.write("default:")
                 writer.indent()
-                writer.write("return .sdkUnknown(name ?? \"\")")
+                writer.write("return .sdkUnknown(name)")
                 writer.dedent()
             }
         }

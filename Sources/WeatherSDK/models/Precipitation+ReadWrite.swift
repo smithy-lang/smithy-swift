@@ -7,8 +7,10 @@ import SmithyReadWrite
 extension WeatherClientTypes.Precipitation {
 
     static func read(from reader: SmithyJSON.Reader) throws -> WeatherClientTypes.Precipitation {
-        guard reader.hasContent else { throw SmithyReadWrite.ReaderError.requiredValueNotPresent }
-        let name = reader.children.filter { $0.hasContent && $0.nodeInfo.name != "__type" }.first?.nodeInfo.name
+        guard let nodeInfo = reader.children.first(where: { $0.hasContent && $0.nodeInfo != "__type" })?.nodeInfo else {
+            throw SmithyReadWrite.ReaderError.requiredValueNotPresent
+        }
+        let name = "\(nodeInfo)"
         switch name {
             case "rain":
                 return .rain(try reader["rain"].read() ?? false)
@@ -29,7 +31,7 @@ extension WeatherClientTypes.Precipitation {
             case "baz":
                 return .baz(try reader["baz"].read(with: WeatherClientTypes.Baz.read(from:)))
             default:
-                return .sdkUnknown(name ?? "")
+                return .sdkUnknown(name)
         }
     }
 }
