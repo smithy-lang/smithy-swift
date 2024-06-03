@@ -1,17 +1,21 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0.
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+import class Smithy.Context
 
 /// An instance of MiddlewareStep will be contained in the operation stack, and recognized as a single
 /// step (initialize, build, etc..) that contains an ordered list of middlewares. This class is
 /// responsible for ordering these middlewares so that they are executed in the correct order.
-public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Middleware {
-    public typealias Context = StepContext
+public struct MiddlewareStep<Input, Output>: Middleware {
     public typealias MInput = Input
     public typealias MOutput = Output
 
     var orderedMiddleware: OrderedGroup<MInput,
-                                        MOutput,
-                                        Context> = OrderedGroup<MInput, MOutput, Context>()
+                                        MOutput> = OrderedGroup<MInput, MOutput>()
 
     public let id: String
 
@@ -19,7 +23,7 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
         self.id = id
     }
 
-    func get(id: String) -> AnyMiddleware<MInput, MOutput, Context>? {
+    func get(id: String) -> AnyMiddleware<MInput, MOutput>? {
         return orderedMiddleware.get(id: id)
     }
 
@@ -27,7 +31,7 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
     public func handle<H: Handler>(context: Context,
                                    input: MInput,
                                    next: H) async throws -> MOutput
-    where H.Input == MInput, H.Output == MOutput, H.Context == Context {
+    where H.Input == MInput, H.Output == MOutput {
 
         var handler = next.eraseToAnyHandler()
         let order = orderedMiddleware.orderedItems
@@ -46,7 +50,7 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
     }
 
     public mutating func intercept<M: Middleware>(position: Position, middleware: M)
-    where M.MInput == MInput, M.MOutput == MOutput, M.Context == Context {
+    where M.MInput == MInput, M.MOutput == MOutput {
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }
 
@@ -58,7 +62,7 @@ public struct MiddlewareStep<StepContext: MiddlewareContext, Input, Output>: Mid
     ///
     public mutating func intercept(position: Position,
                                    id: String,
-                                   middleware: @escaping MiddlewareFunction<MInput, MOutput, Context>) {
+                                   middleware: @escaping MiddlewareFunction<MInput, MOutput>) {
         let middleware = WrappedMiddleware(middleware, id: id)
         orderedMiddleware.add(middleware: middleware.eraseToAnyMiddleware(), position: position)
     }

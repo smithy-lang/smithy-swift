@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import Smithy
+import SmithyHTTPAPI
 import XCTest
 import AwsCommonRuntimeKit
 import struct Foundation.URLQueryItem
@@ -77,7 +79,7 @@ class HttpRequestTests: NetworkingTestUtils {
         XCTAssertTrue(headersFromRequest.contains { $0.key == "Testname-2" && $0.value == "testvalue-2" })
         let expectedBody = try await httpBody.readData()
         XCTAssertEqual(urlRequest.httpBody, expectedBody)
-        XCTAssertEqual(urlRequest.url, endpoint.url)
+        XCTAssertEqual(urlRequest.url, endpoint.uri.url)
         XCTAssertEqual(urlRequest.httpMethod, mockHttpRequest.method.rawValue)
     }
 
@@ -96,8 +98,8 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testSdkPathAndQueryItemsToCRTPathAndQueryItems() throws {
-        let queryItem1 = SDKURLQueryItem(name: "foo", value: "bar")
-        let queryItem2 = SDKURLQueryItem(name: "quz", value: "baz")
+        let queryItem1 = URIQueryItem(name: "foo", value: "bar")
+        let queryItem2 = URIQueryItem(name: "quz", value: "baz")
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
@@ -109,8 +111,8 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testCRTPathAndQueryItemsToSdkPathAndQueryItems() throws {
-        let queryItem1 = SDKURLQueryItem(name: "foo", value: "bar")
-        let queryItem2 = SDKURLQueryItem(name: "quz", value: "bar")
+        let queryItem1 = URIQueryItem(name: "foo", value: "bar")
+        let queryItem2 = URIQueryItem(name: "quz", value: "bar")
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
@@ -118,21 +120,21 @@ class HttpRequestTests: NetworkingTestUtils {
             .withQueryItem(queryItem2)
             .withHeader(name: "Content-Length", value: "6")
 
-        XCTAssert(builder.queryItems?.count == 2)
+        XCTAssertEqual(builder.queryItems.count, 2)
 
         let httpRequest = try builder.build().toHttpRequest()
         httpRequest.path = "/hello?foo=bar&quz=bar&signedthing=signed"
         let updatedRequest = builder.update(from: httpRequest, originalRequest: builder.build())
 
-        XCTAssert(updatedRequest.path == "/hello")
-        XCTAssert(updatedRequest.queryItems?.count == 3)
-        XCTAssert(updatedRequest.queryItems?.contains(queryItem1) ?? false)
-        XCTAssert(updatedRequest.queryItems?.contains(queryItem2) ?? false)
-        XCTAssert(updatedRequest.queryItems?.contains(SDKURLQueryItem(name: "signedthing", value: "signed")) ?? false)
+        XCTAssertEqual(updatedRequest.path, "/hello")
+        XCTAssertEqual(updatedRequest.queryItems.count, 3)
+        XCTAssert(updatedRequest.queryItems.contains(queryItem1))
+        XCTAssert(updatedRequest.queryItems.contains(queryItem2))
+        XCTAssert(updatedRequest.queryItems.contains(URIQueryItem(name: "signedthing", value: "signed")))
     }
 
     func testPathInInHttpRequestIsNotAltered() throws {
-        let path = "/space /colon:/dollar$/tilde~/dash-/underscore_/period."
+        let path = "/space%20/colon:/dollar$/tilde~/dash-/underscore_/period."
         let builder = SdkHttpRequestBuilder()
             .withHeader(name: "Host", value: "xctest.amazon.com")
             .withPath(path)
@@ -143,7 +145,7 @@ class HttpRequestTests: NetworkingTestUtils {
     func testConversionToUrlRequestFailsWithInvalidEndpoint() {
         // Testing with an invalid endpoint where host is empty,
         // path is empty, and protocolType is nil.
-        let endpoint = Endpoint(host: "", path: "", protocolType: nil)
+        let endpoint = Endpoint(host: "", path: "")
         XCTAssertNil(endpoint.url, "An invalid endpoint should result in a nil URL.")
     }
 }

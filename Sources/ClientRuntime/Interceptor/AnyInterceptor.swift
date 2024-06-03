@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol Smithy.RequestMessage
+import protocol Smithy.ResponseMessage
+import protocol Smithy.HasAttributes
+
 /// Type-erased, concrete interceptor.
 ///
 /// In order to have multiple interceptors hooked into a single operation, we

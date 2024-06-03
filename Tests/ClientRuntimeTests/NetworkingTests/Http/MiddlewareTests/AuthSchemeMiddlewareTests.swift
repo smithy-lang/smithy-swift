@@ -5,17 +5,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
+import SmithyHTTPAPI
+import SmithyHTTPAuthAPI
+import SmithyIdentityAPI
 import XCTest
 import SmithyTestUtil
 @testable import ClientRuntime
 
 class AuthSchemeMiddlewareTests: XCTestCase {
-    private var contextBuilder: HttpContextBuilder!
+    private var contextBuilder: ContextBuilder!
     private var operationStack: OperationStack<MockInput, MockOutput>!
 
     override func setUp() async throws {
         try await super.setUp()
-        contextBuilder = HttpContextBuilder()
+        contextBuilder = ContextBuilder()
             .withAuthSchemeResolver(value: DefaultMockAuthSchemeResolver())
             .withAuthScheme(value: MockNoAuth())
             .withIdentityResolver(value: MockIdentityResolver(), schemeID: "MockAuthSchemeA")
@@ -26,7 +30,7 @@ class AuthSchemeMiddlewareTests: XCTestCase {
 
     // Test exception cases
     func testNoAuthSchemeResolverConfigured() async throws {
-        contextBuilder.attributes.remove(key: AttributeKeys.authSchemeResolver)
+        contextBuilder.withAuthSchemeResolver(value: nil)
         contextBuilder.withOperation(value: "fillerOp")
         do {
             try await AssertSelectedAuthSchemeMatches(builtContext: contextBuilder.build(), expectedAuthScheme: "")
@@ -39,7 +43,7 @@ class AuthSchemeMiddlewareTests: XCTestCase {
     }
 
     func testNoIdentityResolverConfigured() async throws {
-        contextBuilder.attributes.remove(key: AttributeKeys.identityResolvers)
+        contextBuilder.removeIdentityResolvers()
         contextBuilder.withOperation(value: "fillerOp")
         do {
             try await AssertSelectedAuthSchemeMatches(builtContext: contextBuilder.build(), expectedAuthScheme: "")
@@ -124,7 +128,7 @@ class AuthSchemeMiddlewareTests: XCTestCase {
     }
 
     private func AssertSelectedAuthSchemeMatches(
-        builtContext: HttpContext,
+        builtContext: Context,
         expectedAuthScheme: String,
         file: StaticString = #file,
         line: UInt = #line
@@ -132,7 +136,7 @@ class AuthSchemeMiddlewareTests: XCTestCase {
         operationStack.buildStep.intercept(position: .before, middleware: AuthSchemeMiddleware<MockOutput>())
 
         let mockHandler = MockHandler<MockOutput>(handleCallback: { (context, input) in
-            let selectedAuthScheme = context.getSelectedAuthScheme()
+            let selectedAuthScheme = context.selectedAuthScheme
             XCTAssertEqual(expectedAuthScheme, selectedAuthScheme?.schemeID, file: file, line: line)
             let httpResponse = HttpResponse(body: .noStream, statusCode: HttpStatusCode.ok)
             let mockOutput = MockOutput()

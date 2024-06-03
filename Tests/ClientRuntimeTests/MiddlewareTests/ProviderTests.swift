@@ -5,13 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
+import SmithyHTTPAPI
 import XCTest
 import ClientRuntime
 import SmithyTestUtil
 
 class ProviderTests: HttpRequestTestBase {
 
-    func testURlPathProvider() {
+    func testURLPathProvider() {
         var mockInput = MockInput()
         mockInput.value = 3
 
@@ -22,7 +24,7 @@ class ProviderTests: HttpRequestTestBase {
         var mockInput = MockInput()
         mockInput.value = 3
 
-        let context = HttpContextBuilder().build()
+        let context = ContextBuilder().build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
         operationStack.initializeStep.intercept(position: .after, middleware: URLPathMiddleware<MockInput, MockOutput>(MockInput.urlPathProvider(_:)))
@@ -31,7 +33,7 @@ class ProviderTests: HttpRequestTestBase {
                                         input: mockInput,
                                         next: MockHandler { (context, request) in
 
-            XCTAssert(context.getPath() == "/3")
+            XCTAssertEqual(context.path, "/3")
             let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
             return output
@@ -42,7 +44,7 @@ class ProviderTests: HttpRequestTestBase {
         var mockInput = MockInput()
         mockInput.value = 3
 
-        let context = HttpContextBuilder().build()
+        let context = ContextBuilder().build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
         operationStack.serializeStep.intercept(position: .after, middleware: QueryItemMiddleware(MockInput.queryItemProvider(_:)))
@@ -72,7 +74,7 @@ class ProviderTests: HttpRequestTestBase {
         var mockInput = MockInput()
         mockInput.value = 3
 
-        let context = HttpContextBuilder().build()
+        let context = ContextBuilder().build()
 
         var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
         operationStack.serializeStep.intercept(position: .after, middleware: HeaderMiddleware(MockInput.headerProvider(_:)))
@@ -101,11 +103,11 @@ extension MockInput {
         return "/\(value)"
     }
 
-    static func queryItemProvider(_ mock: MockInput) -> [SDKURLQueryItem] {
-        var items = [SDKURLQueryItem]()
+    static func queryItemProvider(_ mock: MockInput) -> [URIQueryItem] {
+        var items = [URIQueryItem]()
 
         if let value = mock.value {
-            let valueQueryItem = SDKURLQueryItem(name: "test", value: "\(value)")
+            let valueQueryItem = URIQueryItem(name: "test", value: "\(value)")
             items.append(valueQueryItem)
         }
         return items

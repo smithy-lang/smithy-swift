@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.URIQueryItem
+import SmithyHTTPAPI
 import XCTest
 import ClientRuntime
 
@@ -20,12 +22,12 @@ extension HttpRequestTestBase {
         assertQueryItems(expectedQueryItems, actualQueryItems, file: file, line: line)
     }
 
-    private func convertToQueryItems(data: Data) -> [SDKURLQueryItem] {
+    private func convertToQueryItems(data: Data) -> [URIQueryItem] {
         guard let queryString = String(data: data, encoding: .utf8) else {
             XCTFail("Failed to decode data")
             return []
         }
-        var queryItems: [SDKURLQueryItem] = []
+        var queryItems: [URIQueryItem] = []
         let sanitizedQueryString = queryString.replacingOccurrences(of: "\n", with: "")
         let keyValuePairs = sanitizedQueryString.components(separatedBy: "&")
         for keyValue in keyValuePairs {
@@ -36,7 +38,7 @@ extension HttpRequestTestBase {
             }
             let name: String = keyValueArray[0]
             let value = keyValueArray.count >= 2 ? sanitizeStringForNonConformingValues(keyValueArray[1]) : nil
-            queryItems.append(SDKURLQueryItem(name: name, value: value))
+            queryItems.append(URIQueryItem(name: name, value: value))
         }
         return queryItems
     }

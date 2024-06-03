@@ -1,6 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import class Smithy.Context
+import SmithyHTTPAPI
+
 public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "ContentType"
@@ -16,8 +19,7 @@ public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput>: 
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
     Self.MInput == H.Input,
-    Self.MOutput == H.Output,
-    Self.Context == H.Context {
+    Self.MOutput == H.Output {
         addHeaders(builder: input.builder)
         return try await next.handle(context: context, input: input)
     }
@@ -30,7 +32,6 @@ public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput>: 
 
     public typealias MInput = SerializeStepInput<OperationStackInput>
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
 }
 
 extension ContentTypeMiddleware: HttpInterceptor {

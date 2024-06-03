@@ -108,6 +108,13 @@ fun Symbol.isOptional(): Boolean {
     return this.getProperty("isOptional").orElse(false) as Boolean
 }
 
+fun Symbol.toInternalSPI(spiName: String): Symbol {
+    return this.toBuilder()
+        .putProperty("isInternalSPI", true)
+        .putProperty("spiName", spiName)
+        .build()
+}
+
 fun Symbol.toOptional(): Symbol {
     return this.toBuilder().putProperty("isOptional", true).name(name).build()
 }

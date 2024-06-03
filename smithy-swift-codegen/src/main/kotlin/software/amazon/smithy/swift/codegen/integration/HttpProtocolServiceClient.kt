@@ -6,13 +6,13 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.config.ConfigProperty
 import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlugin
 import software.amazon.smithy.swift.codegen.model.renderSwiftType
 import software.amazon.smithy.swift.codegen.model.toOptional
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.CodeSection
 
@@ -105,7 +105,7 @@ open class HttpProtocolServiceClient(
             val properties: List<ConfigProperty> = ctx.integrations
                 .flatMap { it.clientConfigurations(ctx).flatMap { it.getProperties(ctx) } }
                 .let { overrideConfigProperties(it) }
-            properties.forEach { writer.addImport(it.type) }
+            properties.forEach { writer.addImport(it.type.namespace) }
 
             renderConfigClassVariables(serviceSymbol, properties)
 

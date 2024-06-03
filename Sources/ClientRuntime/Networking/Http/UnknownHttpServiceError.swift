@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import SmithyHTTPAPI
+
 /// General Service Error structure used when exact error could not be deduced from the `HttpResponse`
 public struct UnknownHTTPServiceError: ServiceError, HTTPError, Error {
     public var typeName: String?

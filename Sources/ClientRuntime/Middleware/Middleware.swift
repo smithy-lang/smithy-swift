@@ -1,10 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import class Smithy.Context
+
 public protocol Middleware {
     associatedtype MInput
     associatedtype MOutput
-    associatedtype Context: MiddlewareContext
 
     /// The middleware ID
     var id: String { get }
@@ -12,11 +13,12 @@ public protocol Middleware {
     func handle<H: Handler>(context: Context,
                             input: MInput,
                             next: H) async throws -> MOutput
-    where H.Input == MInput, H.Output == MOutput, H.Context == Context
+    where H.Input == MInput, H.Output == MOutput
 }
 
 extension Middleware {
-    public func eraseToAnyMiddleware() -> AnyMiddleware<MInput, MOutput, Context> {
+
+    public func eraseToAnyMiddleware() -> AnyMiddleware<MInput, MOutput> {
         return AnyMiddleware(self)
     }
 }

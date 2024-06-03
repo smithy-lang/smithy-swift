@@ -58,8 +58,6 @@ interface HTTPProtocolCustomizable {
 
     val baseErrorSymbol: Symbol
 
-    val messageDecoderSymbol: Symbol
-
     val unknownServiceErrorSymbol: Symbol
 
     val defaultTimestampFormat: TimestampFormatTrait.Format

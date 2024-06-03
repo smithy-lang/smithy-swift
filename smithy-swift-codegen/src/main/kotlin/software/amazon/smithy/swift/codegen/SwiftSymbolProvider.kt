@@ -220,7 +220,7 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
     }
 
     override fun timestampShape(shape: TimestampShape): Symbol {
-        return createSymbolBuilder(shape, "Date", "ClientRuntime", true)
+        return createSymbolBuilder(shape, "Date", "Foundation", true)
             .build()
     }
 
@@ -235,9 +235,9 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
 
     override fun blobShape(shape: BlobShape): Symbol {
         if (shape.hasTrait<StreamingTrait>()) {
-            return createSymbolBuilder(shape, "ByteStream", "ClientRuntime", true).build()
+            return createSymbolBuilder(shape, "ByteStream", "Smithy", true).build()
         } else {
-            return createSymbolBuilder(shape, "Data", "ClientRuntime", true).build()
+            return createSymbolBuilder(shape, "Data", "Foundation", true).build()
         }
     }
 

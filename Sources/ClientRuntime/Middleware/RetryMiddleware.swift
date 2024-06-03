@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Context
+import enum Smithy.ClientError
 import class Foundation.DateFormatter
 import struct Foundation.Locale
 import struct Foundation.TimeInterval
@@ -13,6 +15,7 @@ import struct Foundation.UUID
 import protocol SmithyRetriesAPI.RetryStrategy
 import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 import struct SmithyRetriesAPI.RetryStrategyOptions
+import SmithyHTTPAPI
 
 public struct RetryMiddleware<Strategy: RetryStrategy,
                               ErrorInfoProvider: RetryErrorInfoProvider,
@@ -20,7 +23,6 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
 
     public var id: String { "Retry" }
     public var strategy: Strategy
@@ -37,13 +39,13 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
 
     public func handle<H>(context: Context, input: SdkHttpRequestBuilder, next: H) async throws ->
         OperationOutput<OperationStackOutput>
-        where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
+        where H: Handler, MInput == H.Input, MOutput == H.Output {
 
-        input.headers.add(name: "amz-sdk-invocation-id", value: invocationID)
+        input.withHeader(name: "amz-sdk-invocation-id", value: invocationID)
 
         let partitionID = try getPartitionID(context: context, input: input)
         let token = try await strategy.acquireInitialRetryToken(tokenScope: partitionID)
-        input.headers.add(name: "amz-sdk-request", value: "attempt=1; max=\(maxRetries)")
+        input.withHeader(name: "amz-sdk-request", value: "attempt=1; max=\(maxRetries)")
         return try await sendRequest(attemptNumber: 1, token: token, context: context, input: input, next: next)
     }
 
@@ -54,7 +56,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
         input: MInput, next: H
     ) async throws ->
         OperationOutput<OperationStackOutput>
-        where H: Handler, MInput == H.Input, MOutput == H.Output, Context == H.Context {
+        where H: Handler, MInput == H.Input, MOutput == H.Output {
         do {
             let serviceResponse = try await next.handle(context: context, input: input)
             await strategy.recordSuccess(token: token)
@@ -67,16 +69,16 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
                 context.getLogger()?.error("Failed to refresh retry token: \(errorInfo.errorType)")
                 throw operationError
             }
-            var estimatedSkew = context.attributes.get(key: AttributeKeys.estimatedSkew) ?? {
+            let estimatedSkew = context.estimatedSkew ?? {
                 context.getLogger()?.info("Estimated skew not found; defaulting to zero.")
                 return 0
             }()
-            var socketTimeout = context.attributes.get(key: AttributeKeys.socketTimeout) ?? {
+            let socketTimeout = context.socketTimeout ?? {
                 context.getLogger()?.info("Socket timeout value not found; defaulting to 60 seconds.")
                 return 60.0
             }()
             let ttlDateUTCString = getTTL(now: Date(), estimatedSkew: estimatedSkew, socketTimeout: socketTimeout)
-            input.headers.update(
+            input.updateHeader(
                 name: "amz-sdk-request",
                 value: "ttl=\(ttlDateUTCString); attempt=\(attemptNumber + 1); max=\(maxRetries)"
             )
@@ -96,7 +98,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
         //
         // This will be revisited when standard architecture for DNS is implemented, since
         // partitions may be set based on IPs in certain circumstances.
-        if let customPartitionID = context.getPartitionID(), !customPartitionID.isEmpty {
+        if let customPartitionID = context.partitionID, !customPartitionID.isEmpty {
             // use custom partition ID provided by context
             return customPartitionID
         } else if !input.host.isEmpty {

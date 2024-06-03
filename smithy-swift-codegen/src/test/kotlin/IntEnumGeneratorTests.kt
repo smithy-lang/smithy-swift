@@ -26,8 +26,7 @@ public enum Abcs: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, S
         return [
             .a,
             .b,
-            .c,
-            .sdkUnknown(0)
+            .c
         ]
     }
 
