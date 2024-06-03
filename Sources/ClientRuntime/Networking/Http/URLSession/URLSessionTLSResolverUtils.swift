@@ -8,6 +8,7 @@
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
 import class Foundation.Bundle
+import struct Foundation.Data
 import Security
 
 extension Bundle {

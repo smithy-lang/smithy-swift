@@ -1,10 +1,11 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0.
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
-public typealias MiddlewareFunction<MInput,
-                                    MOutput,
-                                    Context: MiddlewareContext> = (Context,
-                                                      MInput,
-                                                      AnyHandler<MInput,
-                                                                 MOutput,
-                                                                 Context>) async throws -> MOutput
+import class Smithy.Context
+
+public typealias MiddlewareFunction<MInput, MOutput> =
+    (Context, MInput, AnyHandler<MInput, MOutput>) async throws -> MOutput

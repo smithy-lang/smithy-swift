@@ -5,6 +5,8 @@
 
 package software.amazon.smithy.swift.codegen
 
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+
 /*
 Generates a swift middleware struct like the following:
 public struct {name}Middleware: Middleware {
@@ -44,22 +46,20 @@ class MiddlewareGenerator(
             middleware.generateInit()
             writer.write("")
 
-            writer.write("public func handle<H>(context: Context,")
+            writer.write("public func handle<H>(context: \$N,", SmithyTypes.Context)
             writer.swiftFunctionParameterIndent {
                 writer.write("  input: \$N,", middleware.inputType)
                 writer.write("  next: H) async throws -> \$L", middleware.outputType)
             }
             writer.write("where H: Handler,")
             writer.write("Self.MInput == H.Input,")
-            writer.write("Self.MOutput == H.Output,")
-            writer.write("Self.Context == H.Context").openBlock("{", "}") {
+            writer.write("Self.MOutput == H.Output").openBlock("{", "}") {
                 middleware.generateMiddlewareClosure()
                 middleware.renderReturn()
             }
             writer.write("")
             writer.write("public typealias MInput = \$N", middleware.inputType)
             writer.write("public typealias MOutput = \$L", middleware.outputType)
-            writer.write("public typealias Context = \$N", middleware.contextType)
         }
 
         middleware.renderExtensions()

@@ -1,6 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import Smithy
+import SmithyHTTPAPI
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
+
 public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
     public let id: String = "FlexibleChecksumsResponseMiddleware"
@@ -28,8 +32,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, Operation
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
     Self.MInput == H.Input,
-    Self.MOutput == H.Output,
-    Self.Context == H.Context {
+    Self.MOutput == H.Output {
 
         // The name of the checksum header which was validated. If `null`, validation was not performed.
         context.attributes.set(key: AttributeKey<String>(name: "ChecksumHeaderValidated"), value: nil)
@@ -45,7 +48,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, Operation
         return output
     }
 
-    private func validateChecksum(response: HttpResponse, logger: any LogAgent, attributes: HttpContext) async throws {
+    private func validateChecksum(response: HttpResponse, logger: any LogAgent, attributes: Context) async throws {
         // Exit if validation should not be performed
         if !validationMode {
             logger.info("Checksum validation should not be performed! Skipping workflow...")
@@ -100,8 +103,8 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, Operation
             )
 
             // Set the response to a validating stream
-            attributes.response = response
-            attributes.response?.body = validatingStream
+            attributes.httpResponse = response
+            attributes.httpResponse?.body = validatingStream
         case .noStream:
             throw ClientError.dataNotFound("Cannot calculate the checksum of an empty body!")
         }
@@ -109,7 +112,6 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, Operation
 
     public typealias MInput = SdkHttpRequest
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
 }
 
 extension FlexibleChecksumsResponseMiddleware: HttpInterceptor {

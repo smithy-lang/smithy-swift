@@ -68,7 +68,9 @@ class WritingClosureUtils(
                 )
             }
             else -> {
-                writer.format("\$N.write(value:to:)", ctx.symbolProvider.toSymbol(shape))
+                val symbol = ctx.symbolProvider.toSymbol(shape)
+                writer.addImport(symbol)
+                writer.format("\$N.write(value:to:)", symbol)
             }
         }
         return if (isSparse) {

@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Context
+
 public struct URLHostMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "\(String(describing: OperationStackInput.self))URLHostMiddleware"
 
@@ -21,24 +23,23 @@ public struct URLHostMiddleware<OperationStackInput, OperationStackOutput>: Midd
                           next: H) async throws -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
-          Self.MOutput == H.Output,
-          Self.Context == H.Context {
+          Self.MOutput == H.Output {
               updateAttributes(attributes: context)
               return try await next.handle(context: context, input: input)
           }
 
-    private func updateAttributes(attributes: HttpContext) {
+    private func updateAttributes(attributes: Smithy.Context) {
         if let host = host {
-            attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
+            attributes.host = host
         }
         if let hostPrefix = hostPrefix {
-            attributes.set(key: AttributeKey<String>(name: "HostPrefix"), value: hostPrefix)
+            attributes.hostPrefix = hostPrefix
         }
     }
 
     public typealias MInput = OperationStackInput
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = Smithy.Context
 }
 
 extension URLHostMiddleware: HttpInterceptor {

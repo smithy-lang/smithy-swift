@@ -40,7 +40,7 @@ class OutputDeserializerTests {
         val expectedContents = """
 extension SimpleStructureOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> SimpleStructureOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> SimpleStructureOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyJSON.Reader.from(data: data)
         let reader = responseReader
@@ -65,7 +65,7 @@ extension SimpleStructureOutput {
         val expectedContents = """
 extension DataStreamingOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> DataStreamingOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> DataStreamingOutput {
         var value = DataStreamingOutput()
         switch httpResponse.body {
         case .data(let data):
@@ -93,11 +93,11 @@ extension DataStreamingOutput {
         val expectedContents = """
 extension EventStreamingOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> EventStreamingOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> EventStreamingOutput {
         var value = EventStreamingOutput()
         if case let .stream(stream) = httpResponse.body {
-            let messageDecoder = ClientRuntime.MessageDecoder()
-            let decoderStream = ClientRuntime.EventStream.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: EventStream.unmarshal)
+            let messageDecoder = SmithyEventStreams.DefaultMessageDecoder()
+            let decoderStream = SmithyEventStreams.DefaultMessageDecoderStream<EventStream>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: EventStream.unmarshal)
             value.eventStream = decoderStream.toAsyncStream()
         }
         return value

@@ -9,13 +9,15 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesTypes
 
 class RetryMiddleware(
     val model: Model,
@@ -31,15 +33,19 @@ class RetryMiddleware(
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
         if (ctx.settings.useInterceptors) {
-            writer.write("builder.retryStrategy(\$N(options: config.retryStrategyOptions))", ClientRuntimeTypes.Core.DefaultRetryStrategy)
+            writer.addImport(SwiftDependency.SMITHY_RETRIES.target)
+            writer.write("builder.retryStrategy(\$N(options: config.retryStrategyOptions))", SmithyRetriesTypes.DefaultRetryStrategy)
             writer.write("builder.retryErrorInfoProvider(\$N.errorInfo(for:))", retryErrorInfoProviderSymbol)
         } else {
             val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
-            val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
+            writer.addImport(SwiftDependency.SMITHY_RETRIES.target)
             writer.write(
-                "$operationStackName.${middlewareStep.stringValue()}.intercept(position: ${position.stringValue()}, middleware: \$N<\$N, \$N, \$N>(options: config.retryStrategyOptions))",
+                "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(options: config.retryStrategyOptions))",
+                operationStackName,
+                middlewareStep.stringValue(),
+                position.stringValue(),
                 ClientRuntimeTypes.Middleware.RetryMiddleware,
-                ClientRuntimeTypes.Core.DefaultRetryStrategy,
+                SmithyRetriesTypes.DefaultRetryStrategy,
                 retryErrorInfoProviderSymbol,
                 output
             )

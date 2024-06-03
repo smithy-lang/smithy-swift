@@ -309,37 +309,36 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
         val contents = getModelFileContents("example", "JsonListsInput.swift", manifest)
         contents.shouldSyntacticSanityCheck()
 
-        val expectedContents =
-            """
-            public struct JsonListsInput {
-                public var booleanList: [Swift.Bool]?
-                public var integerList: [Swift.Int]?
-                public var nestedStringList: [[Swift.String]]?
-                public var sparseStringList: [Swift.String?]?
-                public var stringList: [Swift.String]?
-                public var stringSet: Swift.Set<Swift.String>?
-                public var timestampList: [ClientRuntime.Date]?
-            
-                public init(
-                    booleanList: [Swift.Bool]? = nil,
-                    integerList: [Swift.Int]? = nil,
-                    nestedStringList: [[Swift.String]]? = nil,
-                    sparseStringList: [Swift.String?]? = nil,
-                    stringList: [Swift.String]? = nil,
-                    stringSet: Swift.Set<Swift.String>? = nil,
-                    timestampList: [ClientRuntime.Date]? = nil
-                )
-                {
-                    self.booleanList = booleanList
-                    self.integerList = integerList
-                    self.nestedStringList = nestedStringList
-                    self.sparseStringList = sparseStringList
-                    self.stringList = stringList
-                    self.stringSet = stringSet
-                    self.timestampList = timestampList
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+public struct JsonListsInput {
+    public var booleanList: [Swift.Bool]?
+    public var integerList: [Swift.Int]?
+    public var nestedStringList: [[Swift.String]]?
+    public var sparseStringList: [Swift.String?]?
+    public var stringList: [Swift.String]?
+    public var stringSet: Swift.Set<Swift.String>?
+    public var timestampList: [Foundation.Date]?
+
+    public init(
+        booleanList: [Swift.Bool]? = nil,
+        integerList: [Swift.Int]? = nil,
+        nestedStringList: [[Swift.String]]? = nil,
+        sparseStringList: [Swift.String?]? = nil,
+        stringList: [Swift.String]? = nil,
+        stringSet: Swift.Set<Swift.String>? = nil,
+        timestampList: [Foundation.Date]? = nil
+    )
+    {
+        self.booleanList = booleanList
+        self.integerList = integerList
+        self.nestedStringList = nestedStringList
+        self.sparseStringList = sparseStringList
+        self.stringList = stringList
+        self.stringSet = stringSet
+        self.timestampList = timestampList
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

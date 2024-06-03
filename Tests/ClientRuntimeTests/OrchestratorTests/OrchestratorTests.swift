@@ -5,9 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
+import SmithyHTTPAPI
 import XCTest
 
 @testable import ClientRuntime
+import SmithyRetriesAPI
+import SmithyRetries
 import SmithyJSON
 
 class OrchestratorTests: XCTestCase {
@@ -171,7 +175,7 @@ class OrchestratorTests: XCTestCase {
             self.trace = trace
         }
 
-        public func execute(request: SdkHttpRequest, attributes: HttpContext) async throws -> HttpResponse {
+        public func execute(request: SdkHttpRequest, attributes: Context) async throws -> HttpResponse {
             trace.append("executeRequest")
             if succeedAfter <= 0 {
                 return HttpResponse(body: request.body, statusCode: .ok)
@@ -183,7 +187,7 @@ class OrchestratorTests: XCTestCase {
     }
 
     struct ThrowingRetryStrategy: RetryStrategy {
-        init(options: ClientRuntime.RetryStrategyOptions) {}
+        init(options: RetryStrategyOptions) {}
 
         public func acquireInitialRetryToken(tokenScope: String) async throws -> DefaultRetryToken {
             throw TestError(value: "1")
@@ -196,14 +200,14 @@ class OrchestratorTests: XCTestCase {
 
     func traceOrchestrator(
         trace: Trace
-    ) -> OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext> {
-        let attributes = HttpContextBuilder()
+    ) -> OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse> {
+        let attributes = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
             .withOperation(value: "Test")
             .build()
-        let traceInterceptor = TraceInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>(trace: trace)
-        let builder = OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse, HttpContext>()
+        let traceInterceptor = TraceInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, Context>(trace: trace)
+        let builder = OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse>()
             .attributes(attributes)
             .serialize({ input, builder, _ in
                 trace.append("serialize")
@@ -226,7 +230,7 @@ class OrchestratorTests: XCTestCase {
                     return .failure(try UnknownHTTPServiceError.makeError(baseError: baseError))
                 }
             })
-            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions()))
+            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())))
             .retryErrorInfoProvider({ e in
                 trace.append("errorInfo")
                 return DefaultRetryErrorInfoProvider.errorInfo(for: e)
@@ -520,7 +524,7 @@ class OrchestratorTests: XCTestCase {
         let initialTokenTrace = Trace()
         let initialToken = await asyncResult {
             return try await self.traceOrchestrator(trace: initialTokenTrace)
-                .retryStrategy(ThrowingRetryStrategy(options: RetryStrategyOptions()))
+                .retryStrategy(ThrowingRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())))
                 .build()
                 .execute(input: TestInput(foo: ""))
         }
@@ -1271,7 +1275,7 @@ class OrchestratorTests: XCTestCase {
         let trace = Trace()
         let result = await asyncResult {
             let b = self.traceOrchestrator(trace: trace)
-            b.attributes?.set(key: AttributeKeys.logger, value: logger)
+            b.attributes?.logger = logger
             b.interceptors.addReadBeforeExecution({ _ in throw TestError(value: "firstError") })
             b.interceptors.addReadBeforeExecution({ _ in throw TestError(value: "secondError") })
             return try await b.build().execute(input: TestInput(foo: ""))

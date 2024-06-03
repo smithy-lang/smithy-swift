@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum SmithyHTTPAPI.HttpStatusCode
+import struct SmithyRetriesAPI.RetryErrorInfo
+import enum SmithyRetriesAPI.RetryErrorType
+import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 import struct Foundation.TimeInterval
 
 public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider {

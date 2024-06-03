@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct SmithyRetriesAPI.RetryStrategyOptions
+
 public protocol DefaultClientConfiguration: ClientConfiguration {
     /// The configuration for retry of failed network requests.
     ///

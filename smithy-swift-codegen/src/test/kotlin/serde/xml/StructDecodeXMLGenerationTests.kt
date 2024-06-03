@@ -21,7 +21,7 @@ class StructDecodeXMLGenerationTests {
         val expectedContents = """
 extension XmlWrappedListOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlWrappedListOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlWrappedListOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -42,7 +42,7 @@ extension XmlWrappedListOutput {
         val expectedContents = """
 extension SimpleScalarPropertiesOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> SimpleScalarPropertiesOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> SimpleScalarPropertiesOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -74,7 +74,7 @@ extension SimpleScalarPropertiesOutput {
         val expectedContents = """
 extension XmlNestedNestedWrappedListOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlNestedNestedWrappedListOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlNestedNestedWrappedListOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -94,7 +94,7 @@ extension XmlNestedNestedWrappedListOutput {
         val expectedContents = """
 extension XmlEmptyListsOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlEmptyListsOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlEmptyListsOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader

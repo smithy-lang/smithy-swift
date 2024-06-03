@@ -1,13 +1,19 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0.
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+import class Smithy.Context
 
 /// Type erased Handler
-public struct AnyHandler<MInput, MOutput, Context: MiddlewareContext>: Handler {
+public struct AnyHandler<MInput, MOutput>: Handler {
     private let _handle: (Context, MInput) async throws -> MOutput
 
     public init<H: Handler> (_ realHandler: H)
-    where H.Input == MInput, H.Output == MOutput, H.Context == Context {
-        if let alreadyErased = realHandler as? AnyHandler<MInput, MOutput, Context> {
+    where H.Input == MInput, H.Output == MOutput {
+        if let alreadyErased = realHandler as? AnyHandler<MInput, MOutput> {
             self = alreadyErased
             return
         }

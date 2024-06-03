@@ -5,6 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyRetriesAPI.RetryStrategy
+import protocol SmithyRetriesAPI.RetryToken
+import struct SmithyRetriesAPI.RetryStrategyOptions
+import struct SmithyRetriesAPI.RetryErrorInfo
+import enum SmithyRetriesAPI.RetryError
+
 @testable import ClientRuntime
 
 public struct MockRetryStrategy: RetryStrategy {

@@ -5,6 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Context
+import enum Smithy.ClientError
+import protocol Smithy.RequestMessage
+import protocol Smithy.ResponseMessage
+import protocol Smithy.HasAttributes
+import SmithyHTTPAPI
+import protocol SmithyRetriesAPI.RetryStrategy
+import struct SmithyRetriesAPI.RetryErrorInfo
+
 /// Orchestrates operation execution
 ///
 /// Execution performs the following steps in order:
@@ -53,25 +62,24 @@ public struct Orchestrator<
     InputType,
     OutputType,
     RequestType: RequestMessage,
-    ResponseType: ResponseMessage,
-    AttributesType: HasAttributes
+    ResponseType: ResponseMessage
 > {
     internal typealias InterceptorContextType = DefaultInterceptorContext<
-        InputType, OutputType, RequestType, ResponseType, AttributesType
+        InputType, OutputType, RequestType, ResponseType, Context
     >
 
-    private let interceptors: Interceptors<InputType, OutputType, RequestType, ResponseType, AttributesType>
-    private let attributes: AttributesType
-    private let serialize: (InputType, RequestType.RequestBuilderType, AttributesType) throws -> Void
-    private let deserialize: (ResponseType, AttributesType) async throws -> Result<OutputType, Error>
+    private let interceptors: Interceptors<InputType, OutputType, RequestType, ResponseType, Context>
+    private let attributes: Context
+    private let serialize: (InputType, RequestType.RequestBuilderType, Context) throws -> Void
+    private let deserialize: (ResponseType, Context) async throws -> Result<OutputType, Error>
     private let retryStrategy: (any RetryStrategy)?
     private let retryErrorInfoProvider: (Error) -> RetryErrorInfo?
-    private let selectAuthScheme: any SelectAuthScheme<AttributesType>
-    private let applyEndpoint: any ApplyEndpoint<RequestType, AttributesType>
-    private let applySigner: any ApplySigner<RequestType, AttributesType>
-    private let executeRequest: any ExecuteRequest<RequestType, ResponseType, AttributesType>
+    private let selectAuthScheme: any SelectAuthScheme<Context>
+    private let applyEndpoint: any ApplyEndpoint<RequestType, Context>
+    private let applySigner: any ApplySigner<RequestType, Context>
+    private let executeRequest: any ExecuteRequest<RequestType, ResponseType, Context>
 
-    internal init(builder: OrchestratorBuilder<InputType, OutputType, RequestType, ResponseType, AttributesType>) {
+    internal init(builder: OrchestratorBuilder<InputType, OutputType, RequestType, ResponseType>) {
         self.interceptors = builder.interceptors
         self.attributes = builder.attributes!
         self.serialize = builder.serialize
@@ -113,7 +121,7 @@ public struct Orchestrator<
     /// - Parameter input: Operation input
     /// - Returns: Presigned request
     public func presignRequest(input: InputType) async throws -> RequestType {
-        let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType, AttributesType>(
+        let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType, Context>(
             input: input,
             attributes: attributes
         )
@@ -161,7 +169,7 @@ public struct Orchestrator<
     /// - Parameter input: Operation input
     /// - Returns: Operation output
     public func execute(input: InputType) async throws -> OutputType {
-        let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType, AttributesType>(
+        let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType, Context>(
             input: input,
             attributes: attributes
         )
@@ -199,7 +207,7 @@ public struct Orchestrator<
     }
 
     private func getPartitionId(context: InterceptorContextType) throws -> String {
-        if let customId = context.getAttributes().get(key: AttributeKeys.partitionId), !customId.isEmpty {
+        if let customId = context.getAttributes().partitionID, !customId.isEmpty {
             return customId
         } else if !context.getRequest().host.isEmpty {
             return context.getRequest().host

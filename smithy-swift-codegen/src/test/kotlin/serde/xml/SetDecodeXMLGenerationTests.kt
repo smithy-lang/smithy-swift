@@ -20,7 +20,7 @@ class SetDecodeXMLGenerationTests {
         val expectedContents = """
 extension XmlEnumSetOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlEnumSetOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlEnumSetOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -40,7 +40,7 @@ extension XmlEnumSetOutput {
         val expectedContents = """
 extension XmlEnumNestedSetOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlEnumNestedSetOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlEnumNestedSetOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader

@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
+import SmithyHTTPAPI
 import ClientRuntime
 
 public struct ExpectedSdkHttpRequest {
@@ -12,9 +14,9 @@ public struct ExpectedSdkHttpRequest {
     public var headers: Headers?
     public var forbiddenHeaders: [String]?
     public var requiredHeaders: [String]?
-    public let queryItems: [SDKURLQueryItem]?
-    public let forbiddenQueryItems: [SDKURLQueryItem]?
-    public let requiredQueryItems: [SDKURLQueryItem]?
+    public var queryItems: [URIQueryItem] { endpoint.uri.queryItems }
+    public let forbiddenQueryItems: [URIQueryItem]?
+    public let requiredQueryItems: [URIQueryItem]?
     public let endpoint: Endpoint
     public let method: HttpMethodType
 
@@ -23,16 +25,14 @@ public struct ExpectedSdkHttpRequest {
                 headers: Headers? = nil,
                 forbiddenHeaders: [String]? = nil,
                 requiredHeaders: [String]? = nil,
-                queryItems: [SDKURLQueryItem]? = nil,
-                forbiddenQueryItems: [SDKURLQueryItem]? = nil,
-                requiredQueryItems: [SDKURLQueryItem]? = nil,
+                forbiddenQueryItems: [URIQueryItem]? = nil,
+                requiredQueryItems: [URIQueryItem]? = nil,
                 body: ByteStream = ByteStream.noStream) {
         self.method = method
         self.endpoint = endpoint
         self.headers = headers
         self.forbiddenHeaders = forbiddenHeaders
         self.requiredHeaders = requiredHeaders
-        self.queryItems = queryItems
         self.forbiddenQueryItems = forbiddenQueryItems
         self.requiredQueryItems = requiredQueryItems
         self.body = body
@@ -50,11 +50,11 @@ public class ExpectedSdkHttpRequestBuilder {
     var host: String = ""
     var path: String = "/"
     var body: ByteStream = .noStream
-    var queryItems = [SDKURLQueryItem]()
-    var forbiddenQueryItems = [SDKURLQueryItem]()
-    var requiredQueryItems = [SDKURLQueryItem]()
+    var queryItems = [URIQueryItem]()
+    var forbiddenQueryItems = [URIQueryItem]()
+    var requiredQueryItems = [URIQueryItem]()
     var port: Int16 = 443
-    var protocolType: ProtocolType = .https
+    var protocolType: URIScheme = .https
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the
@@ -109,19 +109,19 @@ public class ExpectedSdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withQueryItem(_ value: SDKURLQueryItem) -> ExpectedSdkHttpRequestBuilder {
+    public func withQueryItem(_ value: URIQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.queryItems.append(value)
         return self
     }
 
     @discardableResult
-    public func withForbiddenQueryItem(_ value: SDKURLQueryItem) -> ExpectedSdkHttpRequestBuilder {
+    public func withForbiddenQueryItem(_ value: URIQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.forbiddenQueryItems.append(value)
         return self
     }
 
     @discardableResult
-    public func withRequiredQueryItem(_ value: SDKURLQueryItem) -> ExpectedSdkHttpRequestBuilder {
+    public func withRequiredQueryItem(_ value: URIQueryItem) -> ExpectedSdkHttpRequestBuilder {
         self.requiredQueryItems.append(value)
         return self
     }
@@ -133,18 +133,20 @@ public class ExpectedSdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withProtocol(_ value: ProtocolType) -> ExpectedSdkHttpRequestBuilder {
+    public func withProtocol(_ value: URIScheme) -> ExpectedSdkHttpRequestBuilder {
         self.protocolType = value
         return self
     }
 
     public func build() -> ExpectedSdkHttpRequest {
-        let endpoint = Endpoint(host: host,
-                                path: path,
-                                port: port,
-                                queryItems: queryItems,
-                                protocolType: protocolType)
-        let queryItems = !queryItems.isEmpty ? queryItems : nil
+        let uri = URIBuilder()
+            .withScheme(protocolType)
+            .withPath(path)
+            .withHost(host)
+            .withPort(port)
+            .withQueryItems(queryItems)
+            .build()
+        let endpoint = Endpoint(uri: uri, headers: headers)
         let forbiddenQueryItems = !forbiddenQueryItems.isEmpty ? forbiddenQueryItems : nil
         let requiredQueryItems = !requiredQueryItems.isEmpty ? requiredQueryItems : nil
 
@@ -156,7 +158,6 @@ public class ExpectedSdkHttpRequestBuilder {
                               headers: headers,
                               forbiddenHeaders: forbiddenHeaders,
                               requiredHeaders: requiredHeaders,
-                              queryItems: queryItems,
                               forbiddenQueryItems: forbiddenQueryItems,
                               requiredQueryItems: requiredQueryItems,
                               body: body)

@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if os(iOS) || os(watchOS) || os(macOS) || os(tvOS)
-import Foundation.NSProcessInfo
+import class Foundation.ProcessInfo
 
 public struct PlatformOperationSystemVersion {
     static public func operatingSystemVersion() -> String? {
@@ -14,11 +13,3 @@ public struct PlatformOperationSystemVersion {
         return "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
     }
 }
-#else
-// TODO: Implement for Linux & Windows
-public struct PlatformOperationSystemVersion {
-    static public func operatingSystemVersion() -> String? {
-        return nil
-    }
-}
-#endif

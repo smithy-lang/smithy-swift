@@ -7,7 +7,6 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EventHeaderTrait
 import software.amazon.smithy.model.traits.EventPayloadTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -19,6 +18,9 @@ import software.amazon.smithy.swift.codegen.model.eventStreamErrors
 import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 class MessageUnmarshallableGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -39,12 +41,12 @@ class MessageUnmarshallableGenerator(
 
         ctx.delegator.useShapeWriter(streamMember) { writer ->
 
+            writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
             writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addImport(customizations.unknownServiceErrorSymbol.namespace)
             writer.openBlock("extension \$L {", "}", streamSymbol.fullName) {
                 writer.openBlock(
                     "static var unmarshal: \$N<\$N> {", "}",
-                    ClientRuntimeTypes.EventStream.UnmarshalClosure,
+                    SmithyEventStreamsAPITypes.UnmarshalClosure,
                     streamSymbol,
                 ) {
                     writer.openBlock("{ message in", "}") {
@@ -68,8 +70,8 @@ class MessageUnmarshallableGenerator(
                         writer.indent {
                             writer.write(
                                 "let makeError: (\$N, \$N) throws -> \$N = { message, params in",
-                                ClientRuntimeTypes.EventStream.Message,
-                                ClientRuntimeTypes.EventStream.ExceptionParams,
+                                SmithyEventStreamsAPITypes.Message,
+                                SmithyEventStreamsAPITypes.ExceptionParams,
                                 SwiftTypes.Error
                             )
                             writer.indent {
@@ -83,9 +85,13 @@ class MessageUnmarshallableGenerator(
                                 }
                                 writer.write("default:")
                                 writer.indent {
-                                    writer.write("let httpResponse = HttpResponse(body: .data(message.payload), statusCode: .ok)")
+                                    writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
                                     writer.write(
-                                        "return \$L(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':exceptionType': \\(params.exceptionType); contentType: \\(params.contentType ?? \"nil\")\", requestID: nil, typeName: nil)",
+                                        "let httpResponse = \$N(body: .data(message.payload), statusCode: .ok)",
+                                        SmithyHTTPAPITypes.HttpResponse,
+                                    )
+                                    writer.write(
+                                        "return \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':exceptionType': \\(params.exceptionType); contentType: \\(params.contentType ?? \"nil\")\", requestID: nil, typeName: nil)",
                                         customizations.unknownServiceErrorSymbol,
                                     )
                                 }
@@ -98,18 +104,23 @@ class MessageUnmarshallableGenerator(
                         writer.write("case .error(let params):")
                         writer.indent {
                             // this is a service exception still, just un-modeled
-                            writer.write("let httpResponse = HttpResponse(body: .data(message.payload), statusCode: .ok)")
+                            writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
                             writer.write(
-                                "throw \$L(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':errorType': \\(params.errorCode); message: \\(params.message ?? \"nil\")\", requestID: nil, typeName: nil)",
+                                "let httpResponse = \$N(body: .data(message.payload), statusCode: .ok)",
+                                SmithyHTTPAPITypes.HttpResponse,
+                            )
+                            writer.write(
+                                "throw \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':errorType': \\(params.errorCode); message: \\(params.message ?? \"nil\")\", requestID: nil, typeName: nil)",
                                 customizations.unknownServiceErrorSymbol,
                             )
                         }
                         writer.write("case .unknown(messageType: let messageType):")
                         writer.indent {
                             // this is a client exception because we failed to parse it
+                            writer.addImport(SwiftDependency.SMITHY.target)
                             writer.write(
-                                "throw \$L(\"unrecognized event stream message ':message-type': \\(messageType)\")",
-                                ClientRuntimeTypes.Core.UnknownClientError
+                                "throw \$L.unknownError(\"unrecognized event stream message ':message-type': \\(messageType)\")",
+                                SmithyTypes.ClientError,
                             )
                         }
                         writer.write("}")

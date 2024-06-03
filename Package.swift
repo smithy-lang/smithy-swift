@@ -28,11 +28,21 @@ let package = Package(
         .watchOS(.v6)
     ],
     products: [
+        .library(name: "Smithy", targets: ["Smithy"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
+        .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
+        .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
         .library(name: "SmithyReadWrite", targets: ["SmithyReadWrite"]),
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyJSON", targets: ["SmithyJSON"]),
         .library(name: "SmithyFormURL", targets: ["SmithyFormURL"]),
+        .library(name: "SmithyIdentityAPI", targets: ["SmithyIdentityAPI"]),
+        .library(name: "SmithyHTTPAPI", targets: ["SmithyHTTPAPI"]),
+        .library(name: "SmithyHTTPAuthAPI", targets: ["SmithyHTTPAuthAPI"]),
+        .library(name: "SmithyEventStreamsAPI", targets: ["SmithyEventStreamsAPI"]),
+        .library(name: "SmithyEventStreamsAuthAPI", targets: ["SmithyEventStreamsAuthAPI"]),
+        .library(name: "SmithyEventStreams", targets: ["SmithyEventStreams"]),
+        .library(name: "SmithyChecksumsAPI", targets: ["SmithyChecksumsAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: [
@@ -41,23 +51,50 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "Smithy",
+            dependencies: [
+                .product(name: "Logging", package: "swift-log"),
+            ]
+        ),
+        .target(
             name: "ClientRuntime",
             dependencies: [
+                "Smithy",
+                "SmithyRetriesAPI",
+                "SmithyRetries",
                 "SmithyXML",
                 "SmithyJSON",
                 "SmithyFormURL",
+                "SmithyIdentityAPI",
+                "SmithyHTTPAPI",
+                "SmithyHTTPAuthAPI",
+                "SmithyEventStreamsAPI",
+                "SmithyEventStreams",
+                "SmithyEventStreamsAuthAPI",
+                "SmithyChecksumsAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
-                .product(name: "Logging", package: "swift-log"),
             ],
             resources: [
                 .copy("PrivacyInfo.xcprivacy")
             ]
         ),
         .target(
-            name: "SmithyReadWrite",
+            name: "SmithyRetriesAPI"
+        ),
+        .target(
+            name: "SmithyRetries",
             dependencies: [
-                "SmithyTimestamps"
+                "SmithyRetriesAPI",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ]
+        ),
+        .testTarget(
+            name: "SmithyRetriesTests",
+            dependencies: ["ClientRuntime", "SmithyRetriesAPI", "SmithyRetries"]
+        ),
+        .target(
+            name: "SmithyReadWrite",
+            dependencies: ["SmithyTimestamps"]
         ),
         .target(
             name: "SmithyXML",
@@ -89,6 +126,39 @@ let package = Package(
             name: "SmithyTestUtil",
             dependencies: ["ClientRuntime"]
         ),
+        .target(
+            name: "SmithyIdentityAPI",
+            dependencies: ["Smithy"]
+        ),
+        .target(
+            name: "SmithyHTTPAPI",
+            dependencies: ["Smithy"]
+        ),
+        .target(
+            name: "SmithyHTTPAuthAPI",
+            dependencies: ["Smithy", "SmithyHTTPAPI"]
+        ),
+        .target(
+            name: "SmithyEventStreamsAPI",
+            dependencies: ["Smithy"]
+        ),
+        .target(
+            name: "SmithyEventStreamsAuthAPI",
+            dependencies: ["Smithy", "SmithyEventStreamsAPI"]
+        ),
+        .target(
+            name: "SmithyEventStreams",
+            dependencies: [
+                "Smithy",
+                "SmithyEventStreamsAPI",
+                "SmithyEventStreamsAuthAPI",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .target(
+            name: "SmithyChecksumsAPI",
+            dependencies: ["Smithy"]
+        ),
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: ["ClientRuntime", "SmithyTestUtil"],
@@ -114,6 +184,10 @@ let package = Package(
             name: "SmithyTestUtilTests",
             dependencies: ["SmithyTestUtil"]
         ),
+        .testTarget(
+            name: "SmithyEventStreamsTests",
+            dependencies: ["SmithyEventStreams"]
+        ),
     ].compactMap { $0 }
 )
 
@@ -121,11 +195,11 @@ func addTestServiceTargets() {
     package.targets += [
         .target(
             name: "WeatherSDK",
-            dependencies: ["SmithyTestUtil", "ClientRuntime"]
+            dependencies: ["SmithyTestUtil", "ClientRuntime", "SmithyRetriesAPI", "SmithyRetries"]
         ),
         .testTarget(
             name: "WeatherSDKTests",
-            dependencies: ["WeatherSDK"]
+            dependencies: ["WeatherSDK", "SmithyTestUtil"]
         )
     ]
 }

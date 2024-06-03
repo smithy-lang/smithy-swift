@@ -5,6 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol Smithy.Stream
+import struct SmithyHTTPAPI.Headers
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
+import struct Foundation.Data
 import AwsCommonRuntimeKit
 
 /// Reads data from the input stream, chunks it, and passes it out through its output stream.

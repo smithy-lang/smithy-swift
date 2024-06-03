@@ -6,6 +6,7 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 abstract class OperationStep(outputType: Symbol, outputErrorType: Symbol) {
     abstract val inputType: Symbol

@@ -5,6 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum Smithy.ByteStream
+import enum Smithy.ClientError
+import struct SmithyHTTPAPI.Headers
+import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
+
 import AwsCommonRuntimeKit
 
 extension SigningConfig {

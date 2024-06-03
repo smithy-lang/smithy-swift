@@ -37,7 +37,7 @@ extension RestJsonProtocolClient {
     public class RestJsonProtocolClientConfiguration: DefaultClientConfiguration & DefaultHttpClientConfiguration {
         public var telemetryProvider: ClientRuntime.TelemetryProvider
 
-        public var retryStrategyOptions: ClientRuntime.RetryStrategyOptions
+        public var retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
 
         public var clientLogMode: ClientRuntime.ClientLogMode
 
@@ -45,15 +45,15 @@ extension RestJsonProtocolClient {
 
         public var idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
 
-        public var httpClientEngine: ClientRuntime.HTTPClient
+        public var httpClientEngine: SmithyHTTPAPI.HTTPClient
 
         public var httpClientConfiguration: ClientRuntime.HttpClientConfiguration
 
-        public var authSchemes: [ClientRuntime.AuthScheme]?
+        public var authSchemes: [SmithyHTTPAuthAPI.AuthScheme]?
 
-        public var authSchemeResolver: ClientRuntime.AuthSchemeResolver
+        public var authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver
 
-        private init(_ telemetryProvider: ClientRuntime.TelemetryProvider, _ retryStrategyOptions: ClientRuntime.RetryStrategyOptions, _ clientLogMode: ClientRuntime.ClientLogMode, _ endpoint: Swift.String?, _ idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator, _ httpClientEngine: ClientRuntime.HTTPClient, _ httpClientConfiguration: ClientRuntime.HttpClientConfiguration, _ authSchemes: [ClientRuntime.AuthScheme]?, _ authSchemeResolver: ClientRuntime.AuthSchemeResolver) {
+        private init(_ telemetryProvider: ClientRuntime.TelemetryProvider, _ retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions, _ clientLogMode: ClientRuntime.ClientLogMode, _ endpoint: Swift.String?, _ idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator, _ httpClientEngine: SmithyHTTPAPI.HTTPClient, _ httpClientConfiguration: ClientRuntime.HttpClientConfiguration, _ authSchemes: [SmithyHTTPAuthAPI.AuthScheme]?, _ authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver) {
             self.telemetryProvider = telemetryProvider
             self.retryStrategyOptions = retryStrategyOptions
             self.clientLogMode = clientLogMode
@@ -65,7 +65,7 @@ extension RestJsonProtocolClient {
             self.authSchemeResolver = authSchemeResolver
         }
 
-        public convenience init(telemetryProvider: ClientRuntime.TelemetryProvider? = nil, retryStrategyOptions: ClientRuntime.RetryStrategyOptions? = nil, clientLogMode: ClientRuntime.ClientLogMode? = nil, endpoint: Swift.String? = nil, idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator? = nil, httpClientEngine: ClientRuntime.HTTPClient? = nil, httpClientConfiguration: ClientRuntime.HttpClientConfiguration? = nil, authSchemes: [ClientRuntime.AuthScheme]? = nil, authSchemeResolver: ClientRuntime.AuthSchemeResolver? = nil) throws {
+        public convenience init(telemetryProvider: ClientRuntime.TelemetryProvider? = nil, retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil, clientLogMode: ClientRuntime.ClientLogMode? = nil, endpoint: Swift.String? = nil, idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator? = nil, httpClientEngine: SmithyHTTPAPI.HTTPClient? = nil, httpClientConfiguration: ClientRuntime.HttpClientConfiguration? = nil, authSchemes: [SmithyHTTPAuthAPI.AuthScheme]? = nil, authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver? = nil) throws {
             self.init(telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider, retryStrategyOptions ?? ClientConfigurationDefaults.defaultRetryStrategyOptions, clientLogMode ?? ClientConfigurationDefaults.defaultClientLogMode, endpoint, idempotencyTokenGenerator ?? ClientConfigurationDefaults.defaultIdempotencyTokenGenerator, httpClientEngine ?? ClientConfigurationDefaults.makeClient(httpClientConfiguration: httpClientConfiguration ?? ClientConfigurationDefaults.defaultHttpClientConfiguration), httpClientConfiguration ?? ClientConfigurationDefaults.defaultHttpClientConfiguration, authSchemes, authSchemeResolver ?? ClientConfigurationDefaults.defaultAuthSchemeResolver)
         }
 
@@ -100,13 +100,14 @@ public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandl
 """
         contents.shouldContainOnlyOnce(expected)
     }
+
     @Test
     fun `it renders host prefix with label in context correctly`() {
         val context = setupTests("host-prefix-operation.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getStatus")
@@ -135,7 +136,7 @@ public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandl
         contents.shouldSyntacticSanityCheck()
         val expected = """
     public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "allocateWidget")
@@ -155,7 +156,7 @@ public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandl
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(contentType: "application/json"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<AllocateWidgetInput, AllocateWidgetOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: AllocateWidgetInput.write(value:to:)))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<AllocateWidgetInput, AllocateWidgetOutput>())
-        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, AllocateWidgetOutput>(options: config.retryStrategyOptions))
+        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, AllocateWidgetOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<AllocateWidgetOutput>())
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<AllocateWidgetOutput>(AllocateWidgetOutput.httpOutput(from:), AllocateWidgetOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(clientLogMode: config.clientLogMode))
@@ -173,7 +174,7 @@ public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandl
         contents.shouldSyntacticSanityCheck()
         val expected = """
     public func unsignedFooBlobStream(input: UnsignedFooBlobStreamInput) async throws -> UnsignedFooBlobStreamOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "unsignedFooBlobStream")
@@ -192,7 +193,7 @@ public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandl
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(contentType: "application/json"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: UnsignedFooBlobStreamInput.write(value:to:)))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(requiresLength: false, unsignedPayload: true))
-        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, UnsignedFooBlobStreamOutput>(options: config.retryStrategyOptions))
+        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, UnsignedFooBlobStreamOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<UnsignedFooBlobStreamOutput>())
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<UnsignedFooBlobStreamOutput>(UnsignedFooBlobStreamOutput.httpOutput(from:), UnsignedFooBlobStreamOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(clientLogMode: config.clientLogMode))
@@ -210,7 +211,7 @@ public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandl
         contents.shouldSyntacticSanityCheck()
         val expected = """
     public func explicitBlobStreamWithLength(input: ExplicitBlobStreamWithLengthInput) async throws -> ExplicitBlobStreamWithLengthOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "explicitBlobStreamWithLength")
@@ -229,7 +230,7 @@ public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandl
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(contentType: "application/octet-stream"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BlobStreamBodyMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(keyPath: \.payload1))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(requiresLength: true, unsignedPayload: false))
-        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, ExplicitBlobStreamWithLengthOutput>(options: config.retryStrategyOptions))
+        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, ExplicitBlobStreamWithLengthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<ExplicitBlobStreamWithLengthOutput>())
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<ExplicitBlobStreamWithLengthOutput>(ExplicitBlobStreamWithLengthOutput.httpOutput(from:), ExplicitBlobStreamWithLengthOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(clientLogMode: config.clientLogMode))
@@ -247,7 +248,7 @@ public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandl
         contents.shouldSyntacticSanityCheck()
         val expected = """
     public func unsignedFooBlobStreamWithLength(input: UnsignedFooBlobStreamWithLengthInput) async throws -> UnsignedFooBlobStreamWithLengthOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "unsignedFooBlobStreamWithLength")
@@ -266,7 +267,7 @@ public struct RestJsonProtocolClientLogHandlerFactory: ClientRuntime.SDKLogHandl
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(contentType: "application/octet-stream"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.BlobStreamBodyMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(keyPath: \.payload1))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(requiresLength: true, unsignedPayload: true))
-        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, UnsignedFooBlobStreamWithLengthOutput>(options: config.retryStrategyOptions))
+        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, UnsignedFooBlobStreamWithLengthOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<UnsignedFooBlobStreamWithLengthOutput>())
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<UnsignedFooBlobStreamWithLengthOutput>(UnsignedFooBlobStreamWithLengthOutput.httpOutput(from:), UnsignedFooBlobStreamWithLengthOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(clientLogMode: config.clientLogMode))

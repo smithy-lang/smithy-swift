@@ -10,10 +10,10 @@ class EventStreamTests {
         val contents = getFileContents(context.manifest, "/Example/models/TestStream+MessageMarshallable.swift")
         val expected = """
 extension EventStreamTestClientTypes.TestStream {
-    static var marshal: ClientRuntime.MarshalClosure<EventStreamTestClientTypes.TestStream> {
+    static var marshal: SmithyEventStreamsAPI.MarshalClosure<EventStreamTestClientTypes.TestStream> {
         { (self) in
-            var headers: [ClientRuntime.EventStream.Header] = [.init(name: ":message-type", value: .string("event"))]
-            var payload: ClientRuntime.Data? = nil
+            var headers: [SmithyEventStreamsAPI.Header] = [.init(name: ":message-type", value: .string("event"))]
+            var payload: Foundation.Data? = nil
             switch self {
             case .messagewithblob(let value):
                 headers.append(.init(name: ":event-type", value: .string("MessageWithBlob")))
@@ -81,9 +81,9 @@ extension EventStreamTestClientTypes.TestStream {
                 try writer["unboundString"].write(value.unboundString, with: Swift.String.write(value:to:))
                 payload = try writer.data()
             case .sdkUnknown(_):
-                throw ClientRuntime.ClientError.unknownError("cannot serialize the unknown event type!")
+                throw Smithy.ClientError.unknownError("cannot serialize the unknown event type!")
             }
-            return ClientRuntime.EventStream.Message(headers: headers, payload: payload ?? .init())
+            return SmithyEventStreamsAPI.Message(headers: headers, payload: payload ?? .init())
         }
     }
 }
@@ -97,7 +97,7 @@ extension EventStreamTestClientTypes.TestStream {
         val contents = getFileContents(context.manifest, "/Example/models/TestStream+MessageUnmarshallable.swift")
         val expected = """
 extension EventStreamTestClientTypes.TestStream {
-    static var unmarshal: ClientRuntime.UnmarshalClosure<EventStreamTestClientTypes.TestStream> {
+    static var unmarshal: SmithyEventStreamsAPI.UnmarshalClosure<EventStreamTestClientTypes.TestStream> {
         { message in
             switch try message.type() {
             case .event(let params):
@@ -169,23 +169,23 @@ extension EventStreamTestClientTypes.TestStream {
                     return .sdkUnknown("error processing event stream, unrecognized event: \(params.eventType)")
                 }
             case .exception(let params):
-                let makeError: (ClientRuntime.EventStream.Message, ClientRuntime.EventStream.MessageType.ExceptionParams) throws -> Swift.Error = { message, params in
+                let makeError: (SmithyEventStreamsAPI.Message, SmithyEventStreamsAPI.MessageType.ExceptionParams) throws -> Swift.Error = { message, params in
                     switch params.exceptionType {
                     case "SomeError":
                         let value = try SmithyJSON.Reader.readFrom(message.payload, with: SomeError.read(from:))
                         return value
                     default:
-                        let httpResponse = HttpResponse(body: .data(message.payload), statusCode: .ok)
+                        let httpResponse = SmithyHTTPAPI.HttpResponse(body: .data(message.payload), statusCode: .ok)
                         return ClientRuntime.UnknownHTTPServiceError(httpResponse: httpResponse, message: "error processing event stream, unrecognized ':exceptionType': \(params.exceptionType); contentType: \(params.contentType ?? "nil")", requestID: nil, typeName: nil)
                     }
                 }
                 let error = try makeError(message, params)
                 throw error
             case .error(let params):
-                let httpResponse = HttpResponse(body: .data(message.payload), statusCode: .ok)
+                let httpResponse = SmithyHTTPAPI.HttpResponse(body: .data(message.payload), statusCode: .ok)
                 throw ClientRuntime.UnknownHTTPServiceError(httpResponse: httpResponse, message: "error processing event stream, unrecognized ':errorType': \(params.errorCode); message: \(params.message ?? "nil")", requestID: nil, typeName: nil)
             case .unknown(messageType: let messageType):
-                throw ClientRuntime.ClientError.unknownError("unrecognized event stream message ':message-type': \(messageType)")
+                throw Smithy.ClientError.unknownError("unrecognized event stream message ':message-type': \(messageType)")
             }
         }
     }
@@ -201,7 +201,7 @@ extension EventStreamTestClientTypes.TestStream {
         val contents = getFileContents(context.manifest, "/Example/EventStreamTestClient.swift")
         var expected = """
     public func testStreamOp(input: TestStreamOpInput) async throws -> TestStreamOpOutput {
-        let context = ClientRuntime.HttpContextBuilder()
+        let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "testStreamOp")
@@ -220,7 +220,7 @@ extension EventStreamTestClientTypes.TestStream {
         operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<TestStreamOpInput, TestStreamOpOutput>(contentType: "application/json"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.EventStreamBodyMiddleware<TestStreamOpInput, TestStreamOpOutput, EventStreamTestClientTypes.TestStream>(keyPath: \.value, defaultBody: "{}", marshalClosure: EventStreamTestClientTypes.TestStream.marshal))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<TestStreamOpInput, TestStreamOpOutput>())
-        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<ClientRuntime.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, TestStreamOpOutput>(options: config.retryStrategyOptions))
+        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, TestStreamOpOutput>(options: config.retryStrategyOptions))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<TestStreamOpOutput>())
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<TestStreamOpOutput>(TestStreamOpOutput.httpOutput(from:), TestStreamOpOutputError.httpError(from:)))
         operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<TestStreamOpInput, TestStreamOpOutput>(clientLogMode: config.clientLogMode))

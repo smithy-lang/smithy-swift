@@ -5,8 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol Smithy.Stream
 import class Foundation.FileHandle
 import class Foundation.NSRecursiveLock
+import struct Foundation.Data
 
 /// A `Stream` that wraps a `FileHandle` for reading the file.
 ///

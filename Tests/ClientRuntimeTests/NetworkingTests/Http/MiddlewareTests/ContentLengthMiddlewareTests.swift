@@ -1,17 +1,19 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import Smithy
+import SmithyHTTPAPI
 import XCTest
 import SmithyTestUtil
 @testable import ClientRuntime
 
 class ContentLengthMiddlewareTests: XCTestCase {
-    private var builtContext: HttpContext!
+    private var builtContext: Context!
     private var stack: OperationStack<MockInput, MockOutput>!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        builtContext = HttpContextBuilder()
+        builtContext = ContextBuilder()
                   .withMethod(value: .get)
                   .withPath(value: "/")
                   .withOperation(value: "Test Operation")
@@ -69,7 +71,7 @@ class ContentLengthMiddlewareTests: XCTestCase {
     private func forceEmptyStream() {
         // Force stream length to be nil
         stack.finalizeStep.intercept(position: .before, id: "set nil stream length") { (context, input, next) -> OperationOutput<MockOutput> in
-            input.body = .stream(BufferedStream()) // Set the stream length to nil
+            input.withBody(.stream(BufferedStream())) // Set the stream length to nil
             return try await next.handle(context: context, input: input)
         }
     }

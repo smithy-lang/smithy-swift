@@ -24,6 +24,7 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.utils.errorShapeName
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
@@ -228,6 +229,7 @@ class StructureGenerator(
     object AdditionalErrorMembers : SectionId
 
     private fun generateErrorStructMembers() {
+        writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
         if (membersSortedByName.isNotEmpty()) {
             writer.write("")
             writer.openBlock("public struct Properties {", "}") {

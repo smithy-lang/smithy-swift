@@ -26,6 +26,70 @@ enum class SwiftDependency(
         Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
         "smithy-swift"
     ),
+    SMITHY(
+        "Smithy",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
+    SMITHY_IDENTITY_API(
+        "SmithyIdentityAPI",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
+    SMITHY_RETRIES_API(
+        "SmithyRetriesAPI",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
+    SMITHY_RETRIES(
+        "SmithyRetries",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
+    SMITHY_HTTP_API(
+        "SmithyHTTPAPI",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
+    SMITHY_HTTP_AUTH_API(
+        "SmithyHTTPAuthAPI",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
+    SMITHY_EVENT_STREAMS_API(
+        "SmithyEventStreamsAPI",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
+    SMITHY_EVENT_STREAMS(
+        "SmithyEventStreams",
+        "main",
+        "0.1.0",
+        "https://github.com/smithy-lang/smithy-swift",
+        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
+        "smithy-swift"
+    ),
     XCTest("XCTest", null, "", "", "", ""),
     SMITHY_TEST_UTIL(
         "SmithyTestUtil",
