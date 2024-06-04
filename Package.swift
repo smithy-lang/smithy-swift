@@ -48,6 +48,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.30.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.0.0"),
     ],
     targets: [
         .target(
