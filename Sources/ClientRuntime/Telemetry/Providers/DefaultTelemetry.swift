@@ -30,7 +30,7 @@ public enum DefaultTelemetry {
 
 // Context
 extension DefaultTelemetry {
-    public static let defaultContextManager: TelemetryContextManager = NoOpTelemetryContextManager()
+    public static let defaultContextManager: TelemetryContextManager = OTelMeterProvider()
     fileprivate static let defaultTelemetryContext: TelemetryContext = NoOpTelemetryContext()
     fileprivate static let defaultTelemetryScope: TelemetryScope = NoOpTelemetryScope()
 

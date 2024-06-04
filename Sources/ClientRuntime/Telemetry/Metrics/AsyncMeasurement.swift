@@ -16,7 +16,8 @@ public protocol AsyncMeasurementHandle {
     func stop()
 }
 
-public typealias LongAsyncMeasurement = AsyncMeasurement<Int64>
+// in opentelemetry-swift this is Int instead of Int64
+public typealias LongAsyncMeasurement = AsyncMeasurement<Int>
 
 public typealias DoubleAsyncMeasurement = AsyncMeasurement<Double>
 

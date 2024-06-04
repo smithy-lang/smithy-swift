@@ -40,6 +40,10 @@ public struct Attributes {
     public mutating func remove<T>(key: AttributeKey<T>) {
         attributes.removeValue(forKey: key.name)
     }
+
+    public func getKeys(): [String] {
+        self.attributes.keys
+    }
 }
 
 /// A type that can be used as a type-safe property bag.
