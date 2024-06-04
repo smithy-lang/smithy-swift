@@ -41,8 +41,8 @@ public struct Attributes {
         attributes.removeValue(forKey: key.name)
     }
 
-    public func getKeys(): [String] {
-        self.attributes.keys
+    public func getKeys() -> [String] {
+        return Array(self.attributes.keys)
     }
 }
 
