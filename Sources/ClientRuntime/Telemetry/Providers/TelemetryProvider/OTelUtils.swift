@@ -6,7 +6,6 @@
 //
 
 import OpenTelemetryApi
-import OpenTelemetrySdk
 
 extension Attributes {
     public func toOtelAttributes() -> [String: AttributeValue] {

@@ -6,7 +6,6 @@
 //
 
 import OpenTelemetryApi
-import OpenTelemetrySdk
 
 public typealias OpenTelemetryTracer = OpenTelemetryApi.Tracer
 public typealias OpenTelemetrySpanKind = OpenTelemetryApi.SpanKind

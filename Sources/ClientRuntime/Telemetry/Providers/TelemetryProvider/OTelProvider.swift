@@ -6,7 +6,6 @@
 //
 
 import OpenTelemetryApi
-import OpenTelemetrySdk
 
 /// Namespace for the SDK Telemetry implementation.
 public enum TelemetryProviderOTel {

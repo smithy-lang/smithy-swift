@@ -73,6 +73,7 @@ let package = Package(
                 "SmithyEventStreams",
                 "SmithyEventStreamsAuthAPI",
                 "SmithyChecksumsAPI",
+                "OpenTelemetryApi",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ],
             resources: [
