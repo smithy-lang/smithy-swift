@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
 import ClientRuntime
 
 public struct MockInitializeMiddleware: Middleware {
-    public typealias Context = HttpContext
     public typealias MInput = MockInput
     public typealias MOutput = OperationOutput<MockOutput>
-    public typealias MockInitializeMiddlewareCallback = (HttpContext, MInput) -> Void
+    public typealias MockInitializeMiddlewareCallback = (Context, MInput) -> Void
     public let id: String
     let callback: MockInitializeMiddlewareCallback?
 
@@ -20,11 +20,10 @@ public struct MockInitializeMiddleware: Middleware {
         self.callback = callback
     }
 
-    public func handle<H>(context: HttpContext, input: MInput, next: H) async throws -> MOutput
+    public func handle<H>(context: Context, input: MInput, next: H) async throws -> MOutput
     where H: Handler,
           Self.MInput == H.Input,
-          Self.MOutput == H.Output,
-          Self.Context == H.Context {
+          Self.MOutput == H.Output {
         if let callback = self.callback {
             callback(context, input)
         }

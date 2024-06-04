@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import Smithy
+import SmithyHTTPAPI
 import Foundation
 import ClientRuntime
 import XCTest
@@ -48,10 +50,10 @@ class NetworkingTestUtils: XCTestCase {
     func getMockEndpoint(headers: Headers) -> Endpoint {
         let path = "/path/to/endpoint"
         let host = "myapi.host.com"
-        var queryItems: [SDKURLQueryItem] = []
+        var queryItems: [URIQueryItem] = []
         let endpoint: Endpoint!
 
-        queryItems.append(SDKURLQueryItem(name: "qualifier", value: "qualifier-value"))
+        queryItems.append(URIQueryItem(name: "qualifier", value: "qualifier-value"))
         endpoint = Endpoint(host: host, path: path, queryItems: queryItems, headers: headers)
         return endpoint
     }

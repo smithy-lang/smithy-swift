@@ -26,8 +26,7 @@ extension ExampleClientTypes {
                 .any,
                 .open,
                 .self,
-                .protocol,
-                .sdkUnknown("")
+                .protocol
             ]
         }
 
@@ -66,8 +65,7 @@ extension ExampleClientTypes {
         public static var allCases: [ModelType] {
             return [
                 .foo,
-                .test,
-                .sdkUnknown("")
+                .test
             ]
         }
 
@@ -104,8 +102,7 @@ extension ExampleClientTypes {
         public static var allCases: [ModelProtocol] {
             return [
                 .bar,
-                .foo,
-                .sdkUnknown("")
+                .foo
             ]
         }
 

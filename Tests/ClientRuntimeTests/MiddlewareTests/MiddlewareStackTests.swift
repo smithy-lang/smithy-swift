@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import Smithy
+import SmithyHTTPAPI
 import SmithyReadWrite
 import XCTest
 import SmithyTestUtil
@@ -8,7 +10,7 @@ import SmithyTestUtil
 
 class MiddlewareStackTests: XCTestCase {
     func testMiddlewareStackSuccessInterceptAfter() async throws {
-        let builtContext = HttpContextBuilder()
+        let builtContext = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
             .withOperation(value: "Test Operation")
@@ -32,7 +34,7 @@ class MiddlewareStackTests: XCTestCase {
     }
 
     func testMiddlewareStackConvenienceFunction() async throws {
-        let builtContext = HttpContextBuilder()
+        let builtContext = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
             .withOperation(value: "Test Operation")
@@ -47,7 +49,7 @@ class MiddlewareStackTests: XCTestCase {
         }
 
         stack.buildStep.intercept(position: .before, id: "add a header") { (context, input, next) -> OperationOutput<MockOutput> in
-            input.headers.add(name: "TestHeaderName2", value: "TestHeaderValue2")
+            input.withHeader(name: "TestHeaderName2", value: "TestHeaderValue2")
             return try await next.handle(context: context, input: input)
         }
         stack.finalizeStep.intercept(position: .after, id: "convert request builder to request") { (context, requestBuilder, next) -> OperationOutput<MockOutput> in
@@ -76,7 +78,7 @@ class MiddlewareStackTests: XCTestCase {
         let clientEngine = CRTClientEngine()
         let httpClient = SdkHttpClient(engine: clientEngine, config: httpClientConfiguration)
 
-        let builtContext = HttpContextBuilder()
+        let builtContext = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/headers")
             .withOperation(value: "Test Operation")

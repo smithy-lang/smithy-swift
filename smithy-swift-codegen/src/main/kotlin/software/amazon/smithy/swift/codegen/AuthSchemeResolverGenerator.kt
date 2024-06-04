@@ -19,6 +19,8 @@ import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import java.util.Locale
@@ -36,6 +38,8 @@ class AuthSchemeResolverGenerator {
             renderServiceSpecificDefaultResolver(serviceIndex, ctx, it)
             it.write("")
             it.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+            it.addImport(SwiftDependency.SMITHY.target)
+            it.addImport(SwiftDependency.SMITHY_HTTP_AUTH_API.target)
         }
     }
 
@@ -46,9 +50,9 @@ class AuthSchemeResolverGenerator {
     ) {
         writer.apply {
             openBlock(
-                "public struct ${getSdkId(ctx)}${ClientRuntimeTypes.Auth.AuthSchemeResolverParams.name}: \$L {",
+                "public struct ${getSdkId(ctx)}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$L {",
                 "}",
-                ClientRuntimeTypes.Auth.AuthSchemeResolverParams
+                SmithyHTTPAuthAPITypes.AuthSchemeResolverParams
             ) {
                 write("public let operation: String")
 
@@ -91,7 +95,7 @@ class AuthSchemeResolverGenerator {
             openBlock(
                 "public protocol ${getServiceSpecificAuthSchemeResolverName(ctx)}: \$L {",
                 "}",
-                ClientRuntimeTypes.Auth.AuthSchemeResolver
+                SmithyHTTPAuthAPITypes.AuthSchemeResolver
             ) {
                 // This is just a parent protocol that all auth scheme resolvers of a given service must conform to.
                 write("// Intentionally empty.")
@@ -144,13 +148,13 @@ class AuthSchemeResolverGenerator {
         writer: SwiftWriter
     ) {
         val sdkId = getSdkId(ctx)
-        val serviceParamsName = sdkId + ClientRuntimeTypes.Auth.AuthSchemeResolverParams.name
+        val serviceParamsName = sdkId + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
 
         writer.apply {
             openBlock(
                 "public func resolveAuthScheme(params: \$L) throws -> [AuthOption] {",
                 "}",
-                ClientRuntimeTypes.Auth.AuthSchemeResolverParams
+                SmithyHTTPAuthAPITypes.AuthSchemeResolverParams
             ) {
                 // Return value of array of auth options
                 write("var validAuthOptions = [AuthOption]()")
@@ -219,11 +223,11 @@ class AuthSchemeResolverGenerator {
     private fun renderSigV4AuthOption(scheme: Map.Entry<ShapeId, Trait>, writer: SwiftWriter) {
         writer.apply {
             write("var sigV4Option = AuthOption(schemeID: \"${scheme.key}\")")
-            write("sigV4Option.signingProperties.set(key: AttributeKeys.signingName, value: \"${(scheme.value as SigV4Trait).name}\")")
+            write("sigV4Option.signingProperties.set(key: SigningPropertyKeys.signingName, value: \"${(scheme.value as SigV4Trait).name}\")")
             openBlock("guard let region = serviceParams.region else {", "}") {
                 write("throw ClientError.authError(\"Missing region in auth scheme parameters for SigV4 auth scheme.\")")
             }
-            write("sigV4Option.signingProperties.set(key: AttributeKeys.signingRegion, value: region)")
+            write("sigV4Option.signingProperties.set(key: SigningPropertyKeys.signingRegion, value: region)")
             write("validAuthOptions.append(sigV4Option)")
         }
     }
@@ -235,9 +239,10 @@ class AuthSchemeResolverGenerator {
     ) {
         writer.apply {
             openBlock(
-                "public func constructParameters(context: HttpContext) throws -> \$L {",
+                "public func constructParameters(context: \$N) throws -> \$N {",
                 "}",
-                ClientRuntimeTypes.Auth.AuthSchemeResolverParams
+                SmithyTypes.Context,
+                SmithyHTTPAuthAPITypes.AuthSchemeResolverParams
             ) {
                 if (usesRulesBasedAuthResolver(ctx)) {
                     write("return try Default${getSdkId(ctx) + AUTH_SCHEME_RESOLVER}().constructParameters(context: context)")
@@ -245,7 +250,7 @@ class AuthSchemeResolverGenerator {
                     openBlock("guard let opName = context.getOperation() else {", "}") {
                         write("throw ClientError.dataNotFound(\"Operation name not configured in middleware context for auth scheme resolver params construction.\")")
                     }
-                    val paramType = getSdkId(ctx) + ClientRuntimeTypes.Auth.AuthSchemeResolverParams.name
+                    val paramType = getSdkId(ctx) + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
                     if (hasSigV4) {
                         write("let opRegion = context.getRegion()")
                         write("return $paramType(operation: opName, region: opRegion)")

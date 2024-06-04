@@ -5,7 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Context
+import enum Smithy.ClientError
 import Foundation
+import SmithyHTTPAPI
+import SmithyHTTPAuthAPI
 
 public struct SignerMiddleware<OperationStackOutput>: Middleware {
     public let id: String = "SignerMiddleware"
@@ -14,17 +18,16 @@ public struct SignerMiddleware<OperationStackOutput>: Middleware {
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
+    public typealias Context = Smithy.Context
 
-    public func handle<H>(context: HttpContext,
+    public func handle<H>(context: Smithy.Context,
                           input: SdkHttpRequestBuilder,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
-    Self.Context == H.Context,
     Self.MInput == H.Input,
     Self.MOutput == H.Output {
         // Retrieve selected auth scheme from context
-        let selectedAuthScheme = context.getSelectedAuthScheme()
+        let selectedAuthScheme = context.selectedAuthScheme
         let signed = try await apply(
             request: input.build(),
             selectedAuthScheme: selectedAuthScheme,
@@ -38,7 +41,7 @@ extension SignerMiddleware: ApplySigner {
     public func apply(
         request: SdkHttpRequest,
         selectedAuthScheme: SelectedAuthScheme?,
-        attributes: HttpContext
+        attributes: Smithy.Context
     ) async throws -> SdkHttpRequest {
         guard let selectedAuthScheme = selectedAuthScheme else {
             throw ClientError.authError("Auth scheme needed by signer middleware was not saved properly.")
@@ -73,7 +76,7 @@ extension SignerMiddleware: ApplySigner {
         )
 
         // The saved signature is used to sign event stream messages if needed.
-        attributes.set(key: AttributeKeys.requestSignature, value: signed.signature)
+        attributes.requestSignature = signed.signature ?? ""
 
         return signed.build()
     }

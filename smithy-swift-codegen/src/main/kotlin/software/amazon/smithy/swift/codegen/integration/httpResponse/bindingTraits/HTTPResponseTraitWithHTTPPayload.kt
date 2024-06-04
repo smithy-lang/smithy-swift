@@ -9,7 +9,6 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
@@ -21,6 +20,7 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPRespons
 import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isEnum
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsTypes
 
 class HTTPResponseTraitWithHTTPPayload(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -86,11 +86,12 @@ class HTTPResponseTraitWithHTTPPayload(
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 if (target.hasTrait<StreamingTrait>()) {
                     writer.openBlock("if case .stream(let stream) = httpResponse.body {", "}") {
-                        writer.addImport(customizations.messageDecoderSymbol.namespace)
-                        writer.write("let messageDecoder = \$N()", customizations.messageDecoderSymbol)
+                        writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS.target)
+                        writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
+                        writer.write("let messageDecoder = \$N()", SmithyEventStreamsTypes.DefaultMessageDecoder)
                         writer.write(
                             "let decoderStream = \$N(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
-                            ClientRuntimeTypes.EventStream.MessageDecoderStream,
+                            SmithyEventStreamsTypes.DefaultMessageDecoderStream,
                             symbol,
                         )
                         writer.write("value.\$L = decoderStream.toAsyncStream()", memberName)

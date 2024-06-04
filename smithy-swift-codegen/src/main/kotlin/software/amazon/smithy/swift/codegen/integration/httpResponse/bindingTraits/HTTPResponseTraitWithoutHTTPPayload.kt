@@ -10,7 +10,7 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPRespons
 import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.isRPCBound
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsTypes
 
 class HTTPResponseTraitWithoutHTTPPayload(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -48,11 +49,12 @@ class HTTPResponseTraitWithoutHTTPPayload(
         when (shape.type) {
             ShapeType.UNION -> {
                 writer.openBlock("if case let .stream(stream) = httpResponse.body {", "}") {
-                    writer.addImport(customizations.messageDecoderSymbol.namespace)
-                    writer.write("let messageDecoder = \$N()", customizations.messageDecoderSymbol)
+                    writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS.target)
+                    writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
+                    writer.write("let messageDecoder = \$N()", SmithyEventStreamsTypes.DefaultMessageDecoder)
                     writer.write(
                         "let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
-                        ClientRuntimeTypes.EventStream.MessageDecoderStream,
+                        SmithyEventStreamsTypes.DefaultMessageDecoderStream,
                         symbol,
                         symbol,
                     )

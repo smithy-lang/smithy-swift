@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import Smithy
+import SmithyHTTPAPI
 import SmithyReadWrite
 import ClientRuntime
 
@@ -28,8 +30,7 @@ public struct MockDeserializeMiddleware<OperationStackOutput>: Middleware {
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
           Self.MInput == H.Input,
-          Self.MOutput == H.Output,
-          Self.Context == H.Context {
+          Self.MOutput == H.Output {
 
               if let callbackReturnValue = try await callback?(context, input) {
                   return callbackReturnValue
@@ -48,11 +49,10 @@ public struct MockDeserializeMiddleware<OperationStackOutput>: Middleware {
 
     public typealias MInput = SdkHttpRequest
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
 }
 
 extension MockDeserializeMiddleware: ResponseMessageDeserializer {
-    public func deserialize(response: HttpResponse, attributes: HttpContext) async throws -> Result<OperationStackOutput, Error> {
+    public func deserialize(response: HttpResponse, attributes: Context) async throws -> Result<OperationStackOutput, Error> {
         let output = try await responseClosure(response)
         return .success(output)
     }

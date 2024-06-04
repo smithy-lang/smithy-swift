@@ -13,7 +13,6 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -25,6 +24,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 
 class HttpHeaderProvider(
     private val writer: SwiftWriter,
@@ -58,6 +58,7 @@ class HttpHeaderProvider(
                     .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+                    writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
                     val headerMiddleware = HttpHeaderProvider(writer, ctx, inputSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat)
                     headerMiddleware.renderProvider(writer)
                 }
@@ -72,9 +73,9 @@ class HttpHeaderProvider(
                 "static func headerProvider(_ value: \$N) -> \$N {",
                 "}",
                 inputSymbol,
-                ClientRuntimeTypes.Http.Headers,
+                SmithyHTTPAPITypes.Headers,
             ) {
-                writer.write("var items = \$N()", ClientRuntimeTypes.Http.Headers)
+                writer.write("var items = \$N()", SmithyHTTPAPITypes.Headers)
                 generateHeaders()
                 generatePrefixHeaders()
                 writer.write("return items")

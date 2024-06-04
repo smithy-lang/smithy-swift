@@ -193,7 +193,6 @@ class EnumGenerator(
     }
 
     fun generateAllCasesBlock() {
-        allCasesBuilder.add(".sdkUnknown(\"\")")
         writer.openBlock("public static var allCases: [\$enum.name:L] {", "}") {
             writer.openBlock("return [", "]") {
                 writer.write(allCasesBuilder.joinToString(",\n"))

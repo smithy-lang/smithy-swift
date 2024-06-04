@@ -17,6 +17,7 @@ class SwiftImportContainer : ImportContainer {
         internalSPIName: String? = null,
         importOnlyIfCanImport: Boolean = false
     ) {
+        if (packageName.isEmpty()) { return }
         importStatements.find { it.packageName == packageName }?.let {
             // Update isTestable to true if needed
             it.isTestable = it.isTestable || isTestable

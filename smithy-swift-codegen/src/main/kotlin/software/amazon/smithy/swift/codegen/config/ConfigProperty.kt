@@ -13,6 +13,8 @@ data class ConfigProperty(
     val type: Symbol,
     val default: DefaultProvider? = null
 ) {
+    internal val additionalTypes: Set<Symbol> = emptySet()
+
     constructor(
         name: String,
         type: Symbol,

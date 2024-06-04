@@ -5,7 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol SmithyChecksumsAPI.Checksum
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
+import let SmithyChecksumsAPI.CHUNK_SIZE_BYTES
+import protocol Smithy.ReadableStream
+import struct SmithyHTTPAPI.Headers
 import AwsCommonRuntimeKit
+import struct Foundation.Data
 
 public class AWSChunkedReader {
     private var stream: ReadableStream

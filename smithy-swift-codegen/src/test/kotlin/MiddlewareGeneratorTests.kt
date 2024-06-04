@@ -21,32 +21,29 @@ class MiddlewareGeneratorTests {
         val generator = MiddlewareGenerator(writer, mockMiddleware)
         generator.generate()
         val contents = writer.toString()
-        val expectedGeneratedStructure =
-            """
-            public struct TestMiddleware: ClientRuntime.Middleware {
-                public let id: Swift.String = "TestMiddleware"
-            
-                let test: Swift.String
-            
-                public init() {}
-            
-                public func handle<H>(context: Context,
-                              input: Swift.String,
-                              next: H) async throws -> ClientRuntime.OperationOutput<Swift.String>
-                where H: Handler,
-                Self.MInput == H.Input,
-                Self.MOutput == H.Output,
-                Self.Context == H.Context
-                {
-                    print("this is a \(test)")
-                    return try await next.handle(context: context, input: input)
-                }
-            
-                public typealias MInput = Swift.String
-                public typealias MOutput = ClientRuntime.OperationOutput<Swift.String>
-                public typealias Context = ClientRuntime.HttpContext
-            }
-            """.trimIndent()
+        val expectedGeneratedStructure = """
+public struct TestMiddleware: ClientRuntime.Middleware {
+    public let id: Swift.String = "TestMiddleware"
+
+    let test: Swift.String
+
+    public init() {}
+
+    public func handle<H>(context: Smithy.Context,
+                  input: Swift.String,
+                  next: H) async throws -> ClientRuntime.OperationOutput<Swift.String>
+    where H: Handler,
+    Self.MInput == H.Input,
+    Self.MOutput == H.Output
+    {
+        print("this is a \(test)")
+        return try await next.handle(context: context, input: input)
+    }
+
+    public typealias MInput = Swift.String
+    public typealias MOutput = ClientRuntime.OperationOutput<Swift.String>
+}
+"""
         contents.shouldContain(expectedGeneratedStructure)
     }
 }

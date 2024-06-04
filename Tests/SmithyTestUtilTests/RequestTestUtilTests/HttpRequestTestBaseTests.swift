@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import Smithy
+import SmithyHTTPAPI
 import SmithyReadWrite
 import SmithyJSON
 import SmithyTestUtil
@@ -12,7 +14,7 @@ import XCTest
 class HttpRequestTestBaseTests: HttpRequestTestBase {
     static let host = "myapi.host.com"
 
-    public struct SayHelloInputURLHostMiddleware: ClientRuntime.Middleware {
+    public struct SayHelloInputURLHostMiddleware: Middleware {
         public let id: Swift.String = "SayHelloInputURLHostMiddleware"
 
         let host: Swift.String?
@@ -26,34 +28,31 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                       next: H) async throws -> ClientRuntime.OperationOutput<MockOutput>
         where H: Handler,
         Self.MInput == H.Input,
-        Self.MOutput == H.Output,
-        Self.Context == H.Context
+        Self.MOutput == H.Output
         {
             if let host = host {
-                context.attributes.set(key: AttributeKey<String>(name: "Host"), value: host)
+                context.host = host
             }
             return try await next.handle(context: context, input: input)
         }
 
         public typealias MInput = SayHelloInput
         public typealias MOutput = ClientRuntime.OperationOutput<MockOutput>
-        public typealias Context = ClientRuntime.HttpContext
     }
 
     struct SayHelloInputQueryItemMiddleware<StackOutput>: Middleware {
 
         var id: String = "SayHelloInputQueryItemMiddleware"
 
-        func handle<H>(context: HttpContext,
+        func handle<H>(context: Context,
                        input: SerializeStepInput<SayHelloInput>,
                        next: H) async throws -> MOutput where H: Handler,
-                                                                Self.Context == H.Context,
                                                                 Self.MInput == H.Input,
                                                                 Self.MOutput == H.Output {
-            var queryItems: [SDKURLQueryItem] = []
-            var queryItem: SDKURLQueryItem
+            var queryItems: [URIQueryItem] = []
+            var queryItem: URIQueryItem
             if let requiredQuery = input.operationInput.requiredQuery {
-                queryItem = SDKURLQueryItem(name: "RequiredQuery".urlPercentEncoding(), value: String(requiredQuery).urlPercentEncoding())
+                queryItem = URIQueryItem(name: "RequiredQuery".urlPercentEncoding(), value: String(requiredQuery).urlPercentEncoding())
                 queryItems.append(queryItem)
             }
 
@@ -62,19 +61,15 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         }
 
         typealias MInput = SerializeStepInput<SayHelloInput>
-
         typealias MOutput = OperationOutput<StackOutput>
-
-        typealias Context = HttpContext
     }
 
     struct SayHelloInputHeaderMiddleware<StackOutput>: Middleware {
         var id: String = "SayHelloInputHeaderMiddleware"
 
-        func handle<H>(context: HttpContext,
+        func handle<H>(context: Context,
                        input: MInput,
                        next: H) async throws -> MOutput where H: Handler,
-                                                                Self.Context == H.Context,
                                                                 Self.MInput == H.Input,
                                                                 Self.MOutput == H.Output {
             var headers = Headers()
@@ -87,10 +82,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         }
 
         typealias MInput = SerializeStepInput<SayHelloInput>
-
         typealias MOutput = OperationOutput<StackOutput>
-
-        typealias Context = HttpContext
     }
 
     struct SayHelloInputBodyMiddleware<StackOutput>: Middleware {
@@ -108,12 +100,11 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         }
 
         func handle<H>(
-            context: HttpContext,
+            context: Context,
             input: MInput,
             next: H
         ) async throws -> MOutput where
             H: Handler,
-            Self.Context == H.Context,
             Self.MInput == H.Input,
             Self.MOutput == H.Output {
 
@@ -127,10 +118,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         }
 
         typealias MInput = SerializeStepInput<SayHelloInput>
-
         typealias MOutput = OperationOutput<StackOutput>
-
-        typealias Context = HttpContext
     }
 
     struct SayHelloInput: Encodable {
@@ -182,8 +170,8 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
         var operationStack = OperationStack<SayHelloInput, MockOutput>(id: "SayHelloInputRequest")
         operationStack.initializeStep.intercept(position: .before, middleware: SayHelloInputURLHostMiddleware(host: HttpRequestTestBaseTests.host))
         operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<MockOutput> in
-            input.withMethod(context.getMethod())
-            let host = "\(context.getHostPrefix() ?? "")\(context.getHost() ?? "")"
+            input.withMethod(context.method)
+            let host = "\(context.hostPrefix ?? "")\(context.host ?? "")"
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }
@@ -196,7 +184,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             let forbiddenQueryParams = ["ForbiddenQuery"]
             for forbiddenQueryParam in forbiddenQueryParams {
                 XCTAssertFalse(
-                    self.queryItemExists(forbiddenQueryParam, in: actual.endpoint.queryItems),
+                    self.queryItemExists(forbiddenQueryParam, in: actual.destination.queryItems),
                     "Forbidden Query:\(forbiddenQueryParam) exists in query items"
                 )
             }
@@ -208,7 +196,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
 
             let requiredQueryParams = ["RequiredQuery"]
             for requiredQueryParam in requiredQueryParams {
-                XCTAssertTrue(self.queryItemExists(requiredQueryParam, in: actual.endpoint.queryItems),
+                XCTAssertTrue(self.queryItemExists(requiredQueryParam, in: actual.destination.queryItems),
                               "Required Query:\(requiredQueryParam) does not exist in query items")
             }
 
@@ -230,7 +218,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             return output
            })
 
-        let context = HttpContextBuilder()
+        let context = ContextBuilder()
             .withMethod(value: .post)
             .build()
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler { (_, _) in

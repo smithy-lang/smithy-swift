@@ -21,7 +21,7 @@ class BlobDecodeXMLGenerationTests {
         val expectedContents = """
 extension XmlBlobsOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlBlobsOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlBlobsOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -41,12 +41,12 @@ extension XmlBlobsOutput {
         val expectedContents = """
 extension XmlBlobsNestedOutput {
 
-    static func httpOutput(from httpResponse: ClientRuntime.HttpResponse) async throws -> XmlBlobsNestedOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlBlobsNestedOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlBlobsNestedOutput()
-        value.nestedBlobList = try reader["nestedBlobList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: ClientRuntime.Data.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        value.nestedBlobList = try reader["nestedBlobList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: Foundation.Data.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
         return value
     }
 }

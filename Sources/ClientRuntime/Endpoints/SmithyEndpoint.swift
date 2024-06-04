@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct SmithyHTTPAPI.Endpoint
+
 /**
   A structure used by the service client to determine the endpoint.
   The SDK will automatically resolve endpoints per API client using an internal resolver.

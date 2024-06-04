@@ -1,7 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
+import class Smithy.Context
+import let SmithyChecksumsAPI.CHUNK_SIZE_BYTES
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import AwsCommonRuntimeKit
+import SmithyHTTPAPI
 
 public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: Middleware {
     public let id: String = "ContentMD5"
@@ -15,13 +19,12 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
                           next: H) async throws -> MOutput
     where H: Handler,
     Self.MInput == H.Input,
-    Self.MOutput == H.Output,
-    Self.Context == H.Context {
+    Self.MOutput == H.Output {
         try await addHeaders(builder: input, attributes: context)
         return try await next.handle(context: context, input: input)
     }
 
-    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: HttpContext) async throws {
+    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: Context) async throws {
         // Skip MD5 hash if using checksums
         if builder.headers.exists(name: "x-amz-sdk-checksum-algorithm") {
             return
@@ -34,7 +37,7 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
             }
             let md5Hash = try data.computeMD5()
             let base64Encoded = md5Hash.base64EncodedString()
-            builder.headers.update(name: "Content-MD5", value: base64Encoded)
+            builder.updateHeader(name: "Content-MD5", value: base64Encoded)
         case .stream(let stream):
             let checksumAlgorithm: ChecksumAlgorithm = .md5
             let md5Hasher = checksumAlgorithm.createChecksum()
@@ -47,7 +50,7 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
 
                 // Finalize the hash after reading all chunks.
                 let hashResult = try md5Hasher.digest().toBase64String()
-                builder.headers.update(name: "Content-MD5", value: hashResult)
+                builder.updateHeader(name: "Content-MD5", value: hashResult)
             } catch {
                 guard let logger = attributes.getLogger() else {
                     return
@@ -64,7 +67,6 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
 
     public typealias MInput = SdkHttpRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = HttpContext
 }
 
 extension ContentMD5Middleware: HttpInterceptor {

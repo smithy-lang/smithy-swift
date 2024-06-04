@@ -73,23 +73,21 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
     fun `002 XmlUnionShape should be marked as indirect`() {
         val context = setupTests("Isolated/Restxml/xml-unions.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape.swift")
-        val expectedContents =
-            """
-            extension ExampleClientTypes {
-                public indirect enum XmlUnionShape {
-                    case doublevalue(Swift.Double)
-                    case datavalue(ClientRuntime.Data)
-                    case unionvalue(ExampleClientTypes.XmlUnionShape)
-                    case structvalue(ExampleClientTypes.XmlNestedUnionStruct)
-                    case mapvalue([Swift.String:Swift.String])
-                    case stringlist([Swift.String])
-                    case timestampvalue(ClientRuntime.Date)
-                    case sdkUnknown(Swift.String)
-                }
-            
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension ExampleClientTypes {
+    public indirect enum XmlUnionShape {
+        case doublevalue(Swift.Double)
+        case datavalue(Foundation.Data)
+        case unionvalue(ExampleClientTypes.XmlUnionShape)
+        case structvalue(ExampleClientTypes.XmlNestedUnionStruct)
+        case mapvalue([Swift.String:Swift.String])
+        case stringlist([Swift.String])
+        case timestampvalue(Foundation.Date)
+        case sdkUnknown(Swift.String)
+    }
 
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

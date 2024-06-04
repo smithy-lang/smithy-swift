@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.Attributes
+
 /// A Monotonic Counter measures a value that only ever increases.
 ///
 /// Examples include: total requests received
