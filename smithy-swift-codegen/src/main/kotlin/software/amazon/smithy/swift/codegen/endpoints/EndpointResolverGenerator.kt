@@ -53,6 +53,8 @@ class EndpointResolverGenerator(
         writer.openBlock("extension DefaultEndpointResolver {", "}") {
             endpointRuleSet?.let {
                 writer.write("private static let ruleSet = \$S", Node.printJson(it.toNode()))
+            } ?: run {
+                writer.write("private static let ruleSet = \"{}\"")
             }
             writer.write("")
             writer.openBlock("init() throws {", "}") {

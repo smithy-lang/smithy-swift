@@ -115,8 +115,8 @@ class EndpointParamsGenerator(
                             val paramName = param.name.toString()
                             writer.write("try context.add(name: \$S, value: self.\$L)", paramName, memberName)
                         }
-                        writer.write("return context")
                     }
+                    writer.write("return context")
                 }
             }
         }
