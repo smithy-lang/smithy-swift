@@ -6,6 +6,8 @@
 //
 
 import OpenTelemetryApi
+import OpenTelemetrySdk
+import Smithy
 
 public typealias OpenTelemetryTracer = OpenTelemetryApi.Tracer
 public typealias OpenTelemetrySpanKind = OpenTelemetryApi.SpanKind
@@ -46,7 +48,7 @@ public class OTelTracerImpl: Tracer {
             )
         }
 
-        return OTelTraceSpanImpl(otelSpan: spanBuilder.startSpan())
+        return OTelTraceSpanImpl(name: name, otelSpan: spanBuilder.startSpan())
     }
 }
 
@@ -54,7 +56,8 @@ private class OTelTraceSpanImpl: TraceSpan {
     var name: String
     private let otelSpan: OpenTelemetrySpan
 
-    public init(otelSpan: OpenTelemetrySpan) {
+    public init(name: String,otelSpan: OpenTelemetrySpan) {
+        self.name = name
         self.otelSpan = otelSpan
     }
 
@@ -67,7 +70,7 @@ private class OTelTraceSpanImpl: TraceSpan {
     }
 
     func setAttribute<T>(key: AttributeKey<T>, value: T) {
-        self.otelSpan.setAttribute(key: key, value: AttributeValue.init(value))
+        self.otelSpan.setAttribute(key: key.getName(), value: AttributeValue.init(value))
     }
 
     func setStatus(status: TraceSpanStatus) {

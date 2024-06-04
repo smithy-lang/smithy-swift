@@ -6,6 +6,7 @@
 //
 
 import OpenTelemetryApi
+import OpenTelemetrySdk
 
 // Context (Not included at this time for Swift)
 extension TelemetryProviderOTel {

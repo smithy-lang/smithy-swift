@@ -6,6 +6,8 @@
 //
 
 import OpenTelemetryApi
+import OpenTelemetrySdk
+import Smithy
 
 /// Namespace for the SDK Telemetry implementation.
 public enum TelemetryProviderOTel {

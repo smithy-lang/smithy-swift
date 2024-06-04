@@ -73,8 +73,9 @@ let package = Package(
                 "SmithyEventStreams",
                 "SmithyEventStreamsAuthAPI",
                 "SmithyChecksumsAPI",
-                "OpenTelemetryApi",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+                .product(name: "OpenTelemetryApi", package: "opentelemetry-swift"),
+                .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift"),
             ],
             resources: [
                 .copy("PrivacyInfo.xcprivacy")

@@ -7,6 +7,8 @@
 
 import OpenTelemetryApi
 
+import Smithy
+
 extension Attributes {
     public func toOtelAttributes() -> [String: AttributeValue] {
         let keys: [String] = self.getKeys()

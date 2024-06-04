@@ -7,6 +7,7 @@
 
 import OpenTelemetryApi
 import OpenTelemetrySdk
+import Smithy
 
 // StableMeter is newer than Meter and will be renamed to Meter after a deprecation period
 public typealias OpenTelemetryMeter = OpenTelemetryApi.StableMeter

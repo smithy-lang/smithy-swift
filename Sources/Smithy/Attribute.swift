@@ -12,6 +12,10 @@ public struct AttributeKey<ValueType> {
     public init(name: String) {
         self.name = name
     }
+    
+    public func getName() -> String {
+        return self.name
+    }
 
     func toString() -> String {
         return "AttributeKey: \(name)"
