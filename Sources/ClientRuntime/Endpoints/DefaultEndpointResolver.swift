@@ -8,7 +8,7 @@
 import struct SmithyHTTPAPI.Endpoint
 import struct SmithyHTTPAPI.Headers
 
-public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding>  {
+public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding> {
 
     private let engine: ClientRuntime.EndpointsRuleEngine
 
@@ -18,7 +18,7 @@ public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding> 
 
     public func resolve(params: Params) throws -> SmithyHTTPAPI.Endpoint {
         guard let crtResolvedEndpoint = try engine.resolve(context: params.context) else {
-            throw EndpointError.unresolved("Failed to resolved endpoint")
+            throw EndpointError.unresolved("Failed to resolve endpoint")
         }
 
         if crtResolvedEndpoint.getType() == .error {
@@ -27,8 +27,7 @@ public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding> 
         }
 
         guard let url = crtResolvedEndpoint.getURL() else {
-            assertionFailure("This must be a bug in either CRT or the rule engine, if the endpoint is not an error, it must have a url")
-            throw EndpointError.unresolved("Failed to resolved endpoint")
+            throw EndpointError.unresolved("Failed to get URL from endpoint")
         }
 
         let headers = crtResolvedEndpoint.getHeaders() ?? [:]
