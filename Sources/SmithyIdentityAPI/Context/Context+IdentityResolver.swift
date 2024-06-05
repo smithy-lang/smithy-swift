@@ -11,14 +11,12 @@ import class Smithy.Context
 import class Smithy.ContextBuilder
 
 extension Context {
-
     public func getIdentityResolvers() -> Attributes? {
         return attributes.get(key: identityResolversKey)
     }
 }
 
 extension ContextBuilder {
-
     @discardableResult
     public func removeIdentityResolvers() -> Self {
         attributes.remove(key: identityResolversKey)

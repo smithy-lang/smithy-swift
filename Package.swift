@@ -36,8 +36,10 @@ let package = Package(
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyJSON", targets: ["SmithyJSON"]),
         .library(name: "SmithyFormURL", targets: ["SmithyFormURL"]),
+        .library(name: "SmithyIdentity", targets: ["SmithyIdentity"]),
         .library(name: "SmithyIdentityAPI", targets: ["SmithyIdentityAPI"]),
         .library(name: "SmithyHTTPAPI", targets: ["SmithyHTTPAPI"]),
+        .library(name: "SmithyHTTPAuth", targets: ["SmithyHTTPAuth"]),
         .library(name: "SmithyHTTPAuthAPI", targets: ["SmithyHTTPAuthAPI"]),
         .library(name: "SmithyEventStreamsAPI", targets: ["SmithyEventStreamsAPI"]),
         .library(name: "SmithyEventStreamsAuthAPI", targets: ["SmithyEventStreamsAuthAPI"]),
@@ -65,8 +67,10 @@ let package = Package(
                 "SmithyXML",
                 "SmithyJSON",
                 "SmithyFormURL",
+                "SmithyIdentity",
                 "SmithyIdentityAPI",
                 "SmithyHTTPAPI",
+                "SmithyHTTPAuth",
                 "SmithyHTTPAuthAPI",
                 "SmithyEventStreamsAPI",
                 "SmithyEventStreams",
@@ -87,10 +91,6 @@ let package = Package(
                 "SmithyRetriesAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ]
-        ),
-        .testTarget(
-            name: "SmithyRetriesTests",
-            dependencies: ["ClientRuntime", "SmithyRetriesAPI", "SmithyRetries"]
         ),
         .target(
             name: "SmithyReadWrite",
@@ -127,6 +127,13 @@ let package = Package(
             dependencies: ["ClientRuntime"]
         ),
         .target(
+            name: "SmithyIdentity",
+            dependencies: [
+                "SmithyIdentityAPI",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .target(
             name: "SmithyIdentityAPI",
             dependencies: ["Smithy"]
         ),
@@ -135,8 +142,18 @@ let package = Package(
             dependencies: ["Smithy"]
         ),
         .target(
+            name: "SmithyHTTPAuth",
+            dependencies: [
+                "Smithy",
+                "SmithyHTTPAuthAPI",
+                "SmithyIdentity",
+                "SmithyIdentityAPI",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .target(
             name: "SmithyHTTPAuthAPI",
-            dependencies: ["Smithy", "SmithyHTTPAPI"]
+            dependencies: ["Smithy", "SmithyHTTPAPI", "SmithyIdentityAPI", "SmithyChecksumsAPI"]
         ),
         .target(
             name: "SmithyEventStreamsAPI",
@@ -188,6 +205,10 @@ let package = Package(
             name: "SmithyEventStreamsTests",
             dependencies: ["SmithyEventStreams"]
         ),
+        .testTarget(
+            name: "SmithyIdentityTests",
+            dependencies: ["Smithy", "SmithyIdentity"]
+        )
     ].compactMap { $0 }
 )
 
