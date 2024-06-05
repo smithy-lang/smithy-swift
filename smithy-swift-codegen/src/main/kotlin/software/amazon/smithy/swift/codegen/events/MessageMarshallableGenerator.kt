@@ -20,6 +20,7 @@ import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class MessageMarshallableGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -28,8 +29,9 @@ class MessageMarshallableGenerator(
     internal fun render(streamShape: UnionShape) {
         val streamSymbol: Symbol = ctx.symbolProvider.toSymbol(streamShape)
         val rootNamespace = ctx.settings.moduleName
+        val filename = ModelFileUtils.filename(ctx.settings, "${streamSymbol.name}+MessageMarshallable")
         val streamMember = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/${streamSymbol.name}+MessageMarshallable.swift")
+            .definitionFile("./$rootNamespace/$filename")
             .name(streamSymbol.name)
             .build()
         ctx.delegator.useShapeWriter(streamMember) { writer ->

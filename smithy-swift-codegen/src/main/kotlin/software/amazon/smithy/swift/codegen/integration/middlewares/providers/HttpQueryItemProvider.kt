@@ -29,6 +29,7 @@ import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class HttpQueryItemProvider(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -48,8 +49,9 @@ class HttpQueryItemProvider(
                 val queryBindings =
                     requestBindings.filter { it.location == HttpBinding.Location.QUERY || it.location == HttpBinding.Location.QUERY_PARAMS }
                 val queryLiterals = httpTrait.uri.queryLiterals
+                val filename = ModelFileUtils.filename(ctx.settings, "${inputSymbol.name}+QueryItemProvider")
                 val headerMiddlewareSymbol = Symbol.builder()
-                    .definitionFile("./$rootNamespace/models/${inputSymbol.name}+QueryItemProvider.swift")
+                    .definitionFile("./$rootNamespace/$filename")
                     .name(inputSymbol.name)
                     .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
