@@ -25,6 +25,7 @@ import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class HttpHeaderProvider(
     private val writer: SwiftWriter,
@@ -52,8 +53,9 @@ class HttpHeaderProvider(
                     .sortedBy { it.memberName }
                 val prefixHeaderBindings = requestBindings
                     .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
+                val filename = ModelFileUtils.filename(ctx.settings, "${inputSymbol.name}+HeaderProvider")
                 val headerMiddlewareSymbol = Symbol.builder()
-                    .definitionFile("./$rootNamespace/models/${inputSymbol.name}+HeaderProvider.swift")
+                    .definitionFile("./$rootNamespace/$filename")
                     .name(inputSymbol.name)
                     .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
