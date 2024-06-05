@@ -15,9 +15,7 @@ public extension Context {
         set { attributes.set(key: checksumKey, value: newValue) }
     }
 
-    var checksumString: String {
-        get { String(describing: self.checksum) }
-    }
+    var checksumString: String? { self.checksum?.toString() }
 }
 
 private let checksumKey = AttributeKey<ChecksumAlgorithm>(name: "checksumKey")
