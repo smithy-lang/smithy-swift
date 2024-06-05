@@ -8,7 +8,7 @@
 public enum ChecksumAlgorithm {
     case crc32, crc32c, sha1, sha256, md5
 
-    func toString() -> String {
+    public func toString() -> String {
         switch self {
         case .crc32: return "crc32"
         case .crc32c: return "crc32c"
