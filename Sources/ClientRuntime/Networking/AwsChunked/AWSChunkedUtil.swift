@@ -51,14 +51,13 @@ extension SdkHttpRequestBuilder {
     ) throws {
         switch self.body {
         case .stream(let stream):
-            let checksum = checksumString.flatMap { ChecksumAlgorithm.from(string: $0) }
 
-            let chunkedStream = AWSChunkedStream(
+            let chunkedStream = try AWSChunkedStream(
                 inputStream: stream,
                 signingConfig: signingConfig,
                 previousSignature: signature,
                 trailingHeaders: trailingHeaders,
-                checksumAlgorithm: checksum
+                checksumString: checksumString
             )
             self.withBody(ByteStream.stream(chunkedStream))
         default:
