@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbo
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 import software.amazon.smithy.swift.codegen.utils.errorShapeName
 
 class HTTPResponseBindingErrorGenerator(
@@ -29,9 +30,9 @@ class HTTPResponseBindingErrorGenerator(
         val serviceShape = ctx.service
         val serviceName = ctx.service.id.name
         val rootNamespace = ctx.settings.moduleName
-        val fileName = "./$rootNamespace/models/$serviceName+HTTPServiceError.swift"
+        val filename = ModelFileUtils.filename(ctx.settings, "$serviceName+HTTPServiceError")
 
-        ctx.delegator.useFileWriter(fileName) { writer ->
+        ctx.delegator.useFileWriter("./$rootNamespace/$filename") { writer ->
             with(writer) {
                 addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
@@ -72,8 +73,9 @@ class HTTPResponseBindingErrorGenerator(
     fun renderOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, unknownServiceErrorSymbol: Symbol) {
         val operationErrorName = "${op.toUpperCamelCase()}OutputError"
         val rootNamespace = ctx.settings.moduleName
+        val filename = ModelFileUtils.filename(ctx.settings, "$operationErrorName+HttpResponseErrorBinding")
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName+HttpResponseErrorBinding.swift")
+            .definitionFile("./$rootNamespace/$filename")
             .name(operationErrorName)
             .build()
 

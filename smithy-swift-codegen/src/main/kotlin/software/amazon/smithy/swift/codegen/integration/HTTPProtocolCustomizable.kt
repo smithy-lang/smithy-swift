@@ -56,6 +56,8 @@ interface HTTPProtocolCustomizable {
         return null
     }
 
+    val endpointMiddlewareSymbol: Symbol
+
     val baseErrorSymbol: Symbol
 
     val unknownServiceErrorSymbol: Symbol

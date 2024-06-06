@@ -72,6 +72,7 @@ import software.amazon.smithy.swift.codegen.model.isOutputEventStream
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
@@ -163,8 +164,9 @@ abstract class HTTPBindingProtocolGenerator(
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
             val rootNamespace = ctx.settings.moduleName
+            val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+Write")
             val encodeSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/$symbolName+Write.swift")
+                .definitionFile("./$rootNamespace/$filename")
                 .name(symbolName)
                 .build()
             var httpBodyMembers = shape.members()
@@ -215,8 +217,9 @@ abstract class HTTPBindingProtocolGenerator(
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
         val rootNamespace = ctx.settings.moduleName
+        val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+ReadWrite")
         val encodeSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$symbolName+ReadWrite.swift")
+            .definitionFile("./$rootNamespace/$filename")
             .name(symbolName)
             .build()
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->

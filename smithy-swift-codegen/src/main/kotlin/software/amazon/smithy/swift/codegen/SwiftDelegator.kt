@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 /**
  * Manages writers for Swift files.
@@ -75,9 +76,11 @@ class SwiftDelegator(
 
     fun useShapeExtensionWriter(shape: Shape, extensionName: String, block: (SwiftWriter) -> Unit) {
         val symbol = symbolProvider.toSymbol(shape)
+        val baseFilename = "${symbol.name}+$extensionName"
+        val filename = ModelFileUtils.filename(settings, baseFilename)
         val extensionSymbol = Symbol.builder()
-            .name("${symbol.name}")
-            .definitionFile("${symbol.definitionFile.replace(".swift", "+$extensionName.swift")}")
+            .name(symbol.name)
+            .definitionFile("${settings.moduleName}/$filename")
             .putProperty(SymbolProperty.BOXED_KEY, symbol.isBoxed())
             .putProperty("defaultValue", symbol.defaultValue())
             .build()

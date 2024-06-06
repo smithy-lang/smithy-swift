@@ -24,6 +24,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.response
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class HTTPResponseBindingOutputGenerator(
     val customizations: HTTPProtocolCustomizable,
@@ -43,8 +44,10 @@ class HTTPResponseBindingOutputGenerator(
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
         val rootNamespace = ctx.settings.moduleName
+        val baseFilename = "${outputSymbol.name}+HttpResponseBinding"
+        val definitionFile = "./$rootNamespace/${ModelFileUtils.filename(ctx.settings, baseFilename)}"
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/${outputSymbol.name}+HttpResponseBinding.swift")
+            .definitionFile(definitionFile)
             .name(outputSymbol.name)
             .build()
 
