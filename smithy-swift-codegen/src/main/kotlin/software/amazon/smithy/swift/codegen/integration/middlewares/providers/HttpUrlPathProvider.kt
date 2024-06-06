@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.toMemberNames
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class HttpUrlPathProvider(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -34,9 +35,10 @@ class HttpUrlPathProvider(
 
             val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
             val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
+            val filename = ModelFileUtils.filename(ctx.settings, "${inputSymbol.name}+UrlPathProvider")
 
             val urlPathMiddlewareSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${inputSymbol.name}+UrlPathProvider.swift")
+                .definitionFile("./$rootNamespace/$filename")
                 .name(inputSymbol.name)
                 .build()
             ctx.delegator.useShapeWriter(urlPathMiddlewareSymbol) { writer ->

@@ -52,6 +52,7 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
@@ -62,7 +63,7 @@ private val Shape.isStreaming: Boolean
         return this.hasTrait<StreamingTrait>()
     }
 
-class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings) :
+class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSettings) :
     SymbolProvider,
     ShapeVisitor<Symbol> {
 
@@ -289,11 +290,8 @@ class SwiftSymbolProvider(private val model: Model, swiftSettings: SwiftSettings
     }
 
     private fun formatModuleName(shapeType: ShapeType, name: String): String? {
-        // All shapes except for the service are stored in models.
-        return when (shapeType) {
-            ShapeType.SERVICE -> "./$rootNamespace/${name}ClientProtocol.swift"
-            else -> "./$rootNamespace/models/$name.swift"
-        }
+        val filename = ModelFileUtils.filename(swiftSettings, name)
+        return "./$rootNamespace/$filename"
     }
 
     /**

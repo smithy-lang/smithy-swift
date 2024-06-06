@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestW
 import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class InitialRequestIntegration : SwiftIntegration {
     override fun enabledForService(model: Model, settings: SwiftSettings): Boolean {
@@ -36,8 +37,9 @@ class InitialRequestIntegration : SwiftIntegration {
         resolvedInputShapes.forEach {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(it)
             val rootNamespace = ctx.settings.moduleName
+            val filename = ModelFileUtils.filename(ctx.settings, "${symbol.name}+MakeInitialRequestMessage")
             val inputStruct = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${symbol.name}+MakeInitialRequestMessage.swift")
+                .definitionFile("./$rootNamespace/$filename")
                 .name(symbol.name)
                 .build()
             protocolGenerationContext.delegator.useShapeWriter(inputStruct) { writer ->
