@@ -143,7 +143,8 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
             inputStream: BufferedStream(data: mockData, isClosed: true),
             signingConfig: signingConfig,
             previousSignature: "test-signature",
-            trailingHeaders: Headers()
+            trailingHeaders: Headers(),
+            checksumString: checksumAlgorithm
         ))
 
         setStreamingPayload(payload: testData, checksum: checksumAlgorithm)
