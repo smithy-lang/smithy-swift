@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTrai
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitResponseCode
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class HTTPResponseBindingErrorInitGenerator(
     val customizations: HTTPProtocolCustomizable,
@@ -37,9 +38,9 @@ class HTTPResponseBindingErrorInitGenerator(
         val needsResponse = responseBindings.filter { it.location == HttpBinding.Location.HEADER || it.location == HttpBinding.Location.PREFIX_HEADERS }.isNotEmpty()
         val rootNamespace = ctx.settings.moduleName
         val errorShape = ctx.symbolProvider.toSymbol(structureShape)
-
+        val filename = ModelFileUtils.filename(ctx.settings, "${errorShape.name}+Init")
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/${errorShape.name}+Init.swift")
+            .definitionFile("./$rootNamespace/$filename")
             .name(errorShape.name)
             .build()
 

@@ -5,6 +5,7 @@ import SmithyHTTPAPI
 import SmithyJSON
 import SmithyReadWrite
 import SmithyTestUtil
+import class SmithyHTTPAPI.HttpResponse
 
 enum GetCityImageOutputError {
 

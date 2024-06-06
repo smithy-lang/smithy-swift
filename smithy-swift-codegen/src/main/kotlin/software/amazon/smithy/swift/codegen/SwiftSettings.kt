@@ -27,6 +27,7 @@ private const val SDK_ID = "sdkId"
 private const val GIT_REPO = "gitRepo"
 private const val SWIFT_VERSION = "swiftVersion"
 private const val USE_INTERCEPTORS = "useInterceptors"
+private const val MERGE_MODELS = "mergeModels"
 
 class SwiftSettings(
     val service: ShapeId,
@@ -38,7 +39,8 @@ class SwiftSettings(
     val sdkId: String,
     val gitRepo: String,
     val swiftVersion: String,
-    var useInterceptors: Boolean
+    var useInterceptors: Boolean,
+    val mergeModels: Boolean,
 ) {
 
     companion object {
@@ -65,7 +67,8 @@ class SwiftSettings(
                     HOMEPAGE,
                     GIT_REPO,
                     SWIFT_VERSION,
-                    USE_INTERCEPTORS
+                    USE_INTERCEPTORS,
+                    MERGE_MODELS,
                 )
             )
 
@@ -82,8 +85,21 @@ class SwiftSettings(
             val swiftVersion = config.expectStringMember(SWIFT_VERSION).value
             val sdkId = sanitizeSdkId(config.getStringMemberOrDefault(SDK_ID, serviceId.name))
             val useInterceptors = config.getBooleanMemberOrDefault(USE_INTERCEPTORS)
+            val mergeModels = config.getBooleanMemberOrDefault(MERGE_MODELS)
 
-            return SwiftSettings(serviceId, moduleName, version, desc, author, homepage, sdkId, gitRepo, swiftVersion, useInterceptors)
+            return SwiftSettings(
+                serviceId,
+                moduleName,
+                version,
+                desc,
+                author,
+                homepage,
+                sdkId,
+                gitRepo,
+                swiftVersion,
+                useInterceptors,
+                mergeModels
+            )
         }
 
         private fun sanitizeSdkId(sdkId: String): String {
