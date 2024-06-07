@@ -87,7 +87,7 @@ public struct FlexibleChecksumsResponseMiddleware<OperationStackInput, Operation
                 throw ClientError.dataNotFound("Cannot calculate checksum of empty body!")
             }
 
-            let responseChecksumHasher = try responseChecksum.createChecksum()
+            let responseChecksumHasher = responseChecksum.createChecksum()
             try responseChecksumHasher.update(chunk: data)
             let actualChecksum = try responseChecksumHasher.digest().toBase64String()
 
