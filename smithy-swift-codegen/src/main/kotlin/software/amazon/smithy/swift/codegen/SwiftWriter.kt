@@ -136,7 +136,11 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
     override fun toString(): String {
         val contents = super.toString()
         val imports = "${importContainer}\n\n"
-        return GENERATED_FILE_HEADER + imports + contents
+
+        // Leave out the header and imports for a Swift package manifest (Package.swift).
+        // Package.swift requires a special comment at the top to specify Swift tools version,
+        // and the package manifest generator manually writes its own dependency imports.
+        return contents.takeIf { fullPackageName == "Package" } ?: (GENERATED_FILE_HEADER + imports + contents)
     }
 
     private class SwiftSymbolFormatter(
