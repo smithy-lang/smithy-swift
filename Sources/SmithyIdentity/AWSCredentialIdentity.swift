@@ -6,6 +6,7 @@
 //
 
 import struct Foundation.Date
+import SmithyIdentityAPI
 
 /// A type representing AWS credentials for authenticating with an AWS service
 ///

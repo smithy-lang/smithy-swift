@@ -5,5 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyIdentityAPI
+
 /// A type that can provide credentials for authenticating with an AWS service
 public protocol AWSCredentialIdentityResolver: IdentityResolver where IdentityT == AWSCredentialIdentity {}

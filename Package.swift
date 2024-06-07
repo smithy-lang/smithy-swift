@@ -36,6 +36,7 @@ let package = Package(
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyJSON", targets: ["SmithyJSON"]),
         .library(name: "SmithyFormURL", targets: ["SmithyFormURL"]),
+        .library(name: "SmithyIdentity", targets: ["SmithyIdentity"]),
         .library(name: "SmithyIdentityAPI", targets: ["SmithyIdentityAPI"]),
         .library(name: "SmithyHTTPAPI", targets: ["SmithyHTTPAPI"]),
         .library(name: "SmithyHTTPAuthAPI", targets: ["SmithyHTTPAuthAPI"]),
@@ -65,6 +66,7 @@ let package = Package(
                 "SmithyXML",
                 "SmithyJSON",
                 "SmithyFormURL",
+                "SmithyIdentity",
                 "SmithyIdentityAPI",
                 "SmithyHTTPAPI",
                 "SmithyHTTPAuthAPI",
@@ -125,6 +127,10 @@ let package = Package(
         .target(
             name: "SmithyTestUtil",
             dependencies: ["ClientRuntime"]
+        ),
+        .target(
+            name: "SmithyIdentity",
+            dependencies: ["SmithyIdentityAPI"]
         ),
         .target(
             name: "SmithyIdentityAPI",
