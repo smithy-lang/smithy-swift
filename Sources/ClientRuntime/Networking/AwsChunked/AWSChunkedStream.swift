@@ -49,12 +49,26 @@ class AWSChunkedStream {
         signingConfig: SigningConfig,
         previousSignature: String,
         trailingHeaders: Headers,
-        checksumAlgorithm: ChecksumAlgorithm? = nil
-    ) {
+        checksumString: String? = nil
+    ) throws {
         self.inputStream = inputStream
         self.signingConfig = signingConfig
         self.previousSignature = previousSignature
         self.trailingHeaders = trailingHeaders
+
+        // Determine the checksum algorithm, if provided
+        let checksumAlgorithm: ChecksumAlgorithm?
+        if let checksumString = checksumString {
+            checksumAlgorithm = ChecksumAlgorithm.from(string: checksumString)
+
+            // Unsupported checksum
+            if checksumAlgorithm == nil {
+                throw UnknownChecksumError.notSupported(checksum: checksumString)
+            }
+        } else {
+            checksumAlgorithm = nil
+        }
+
         self.chunkedReader = AWSChunkedReader(
             stream: self.inputStream,
             signingConfig: self.signingConfig,

@@ -14,6 +14,10 @@ public enum HashError: Error {
     case hashingFailed(reason: String)
 }
 
+public enum UnknownChecksumError: Error {
+    case notSupported(checksum: String)
+}
+
 extension ChecksumAlgorithm {
 
     static func from(string: String) -> (ChecksumAlgorithm)? {
@@ -38,16 +42,6 @@ extension ChecksumAlgorithm {
         return hashFunctions
     }
 
-    func toString() -> String {
-        switch self {
-        case .crc32: return "crc32"
-        case .crc32c: return "crc32c"
-        case .sha1: return "sha1"
-        case .sha256: return "sha256"
-        case .md5: return "md5"
-        }
-    }
-
     var isFlexibleChecksum: Bool {
         switch self {
         case .crc32, .crc32c, .sha256, .sha1:
@@ -68,7 +62,7 @@ extension ChecksumAlgorithm {
         case .sha256:
             return SHA256()
         case .md5:
-           return MD5()
+            return MD5()
         }
     }
 }
