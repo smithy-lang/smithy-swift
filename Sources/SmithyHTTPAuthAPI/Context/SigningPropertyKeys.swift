@@ -14,7 +14,7 @@ public enum SigningPropertyKeys {
     public static let signingRegion = AttributeKey<String>(name: "SigningRegion")
     // Keys used to store/retrieve AWSSigningConfig fields in/from signingProperties passed to AWSSigV4Signer
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
-    public static let checksum = AttributeKey<ChecksumAlgorithm>(name: "checksum")
+    public static let checksum = AttributeKey<String>(name: "checksum")
     public static let expiration = AttributeKey<TimeInterval>(name: "Expiration")
     public static let isChunkedEligibleStream = AttributeKey<Bool>(name: "isChunkedEligibleStream")
     public static let omitSessionToken = AttributeKey<Bool>(name: "OmitSessionToken")
