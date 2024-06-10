@@ -123,8 +123,8 @@ jobs:
       fail-fast: false
       matrix:
         swift:
-          - 5.7-amazonlinux2
-          - 5.7-focal
+          - 5.9-amazonlinux2
+          - 5.9-focal
           - 5.10-amazonlinux2
           - 5.10-jammy
     container:
