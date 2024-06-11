@@ -33,7 +33,6 @@ import software.amazon.smithy.model.shapes.ResourceShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.ShapeVisitor
 import software.amazon.smithy.model.shapes.ShortShape
 import software.amazon.smithy.model.shapes.StringShape
@@ -52,6 +51,7 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
@@ -66,8 +66,6 @@ private val Shape.isStreaming: Boolean
 class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSettings) :
     SymbolProvider,
     ShapeVisitor<Symbol> {
-
-    private val rootNamespace = swiftSettings.moduleName
     private val sdkId = swiftSettings.sdkId
     private val service: ServiceShape? = try { swiftSettings.getService(model) } catch (e: CodegenException) { null }
     private val logger = Logger.getLogger(SwiftSymbolProvider::class.java.name)
@@ -118,22 +116,16 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
 
     override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Int16", "0")
 
-    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = createBigSymbol(shape, "[UInt8]")
+    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = numberShape(shape, "Int", defaultValue = "0")
 
-    override fun bigDecimalShape(shape: BigDecimalShape): Symbol = createBigSymbol(shape, "Complex<Double>")
-
-    private fun createBigSymbol(shape: Shape?, symbolName: String): Symbol {
-        return createSymbolBuilder(shape, symbolName, namespace = "ComplexModule", boxed = true)
-            .addDependency(SwiftDependency.BIG)
-            .build()
-    }
+    override fun bigDecimalShape(shape: BigDecimalShape): Symbol = numberShape(shape, "Double", "0.0")
 
     override fun stringShape(shape: StringShape): Symbol {
         val enumTrait = shape.getTrait(EnumTrait::class.java)
         if (enumTrait.isPresent) {
             return createEnumSymbol(shape)
         }
-        return createSymbolBuilder(shape, "String", namespace = "Swift", boxed = true).build()
+        return createSymbolBuilder(shape, "String", namespace = "Swift", SwiftDeclaration.STRUCT, boxed = true).build()
     }
 
     override fun enumShape(shape: EnumShape): Symbol {
@@ -142,8 +134,8 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
 
     private fun createEnumSymbol(shape: Shape): Symbol {
         val name = shape.defaultName(service)
-        val builder = createSymbolBuilder(shape, name, boxed = true)
-            .definitionFile(formatModuleName(shape.type, name))
+        val builder = createSymbolBuilder(shape, name, SwiftDeclaration.ENUM, boxed = true)
+            .definitionFile(formatModuleName(name))
 
         // add a reference to each member symbol
         if (shape is UnionShape) {
@@ -157,13 +149,13 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
     }
 
     override fun booleanShape(shape: BooleanShape): Symbol {
-        return createSymbolBuilder(shape, "Bool", namespace = "Swift").putProperty(SymbolProperty.DEFAULT_VALUE_KEY, "false").build()
+        return createSymbolBuilder(shape, "Bool", namespace = "Swift", SwiftDeclaration.STRUCT).putProperty(SymbolProperty.DEFAULT_VALUE_KEY, "false").build()
     }
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName(service)
-        val builder = createSymbolBuilder(shape, name, boxed = true)
-            .definitionFile(formatModuleName(shape.type, name))
+        val builder = createSymbolBuilder(shape, name, SwiftDeclaration.STRUCT, boxed = true)
+            .definitionFile(formatModuleName(name))
 
         // add a reference to each member symbol
         addDeclareMemberReferences(builder, shape.allMembers.values)
@@ -181,13 +173,13 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
         val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "$reference?" else "$reference"
-        return createSymbolBuilder(shape, "[$referenceTypeName]", true).addReference(reference).build()
+        return createSymbolBuilder(shape, "[$referenceTypeName]", SwiftDeclaration.STRUCT, true).addReference(reference).build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
         val referenceTypeName = if (shape.hasTrait<SparseTrait>()) "$reference?" else "$reference"
-        return createSymbolBuilder(shape, "[${SwiftTypes.String}:$referenceTypeName]", true)
+        return createSymbolBuilder(shape, "[${SwiftTypes.String}: $referenceTypeName]", SwiftDeclaration.STRUCT, true)
             .addReference(reference)
             .putProperty(SymbolProperty.ENTRY_EXPRESSION, "(String, $referenceTypeName)")
             .build()
@@ -195,13 +187,13 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<$reference>", "Swift", true,).addReference(reference)
+        return createSymbolBuilder(shape, "Set<$reference>", "Swift", SwiftDeclaration.STRUCT, true).addReference(reference)
             .build()
     }
 
     override fun resourceShape(shape: ResourceShape): Symbol {
         // May implement a resource type in future
-        return createSymbolBuilder(shape, "Any", true).build()
+        return createSymbolBuilder(shape, "Any", SwiftDeclaration.PROTOCOL, true).build()
     }
 
     override fun memberShape(shape: MemberShape): Symbol {
@@ -213,7 +205,7 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
 
         val isEventStream = targetShape.isStreaming && targetShape.isUnionShape
         if (isEventStream) {
-            return createSymbolBuilder(shape, "AsyncThrowingStream<${symbol.fullName}, Swift.Error>", true)
+            return createSymbolBuilder(shape, "AsyncThrowingStream<${symbol.fullName}, Swift.Error>", SwiftDeclaration.STRUCT, true)
                 .putProperty(SymbolProperty.NESTED_SYMBOL, symbol)
                 .build()
         }
@@ -221,7 +213,7 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
     }
 
     override fun timestampShape(shape: TimestampShape): Symbol {
-        return createSymbolBuilder(shape, "Date", "Foundation", true)
+        return createSymbolBuilder(shape, "Date", "Foundation", SwiftDeclaration.STRUCT, true)
             .build()
     }
 
@@ -236,23 +228,23 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
 
     override fun blobShape(shape: BlobShape): Symbol {
         if (shape.hasTrait<StreamingTrait>()) {
-            return createSymbolBuilder(shape, "ByteStream", "Smithy", true).build()
+            return createSymbolBuilder(shape, "ByteStream", "Smithy", SwiftDeclaration.ENUM, true).build()
         } else {
-            return createSymbolBuilder(shape, "Data", "Foundation", true).build()
+            return createSymbolBuilder(shape, "Data", "Foundation", SwiftDeclaration.STRUCT, true).build()
         }
     }
 
     override fun documentShape(shape: DocumentShape): Symbol {
-        return createSymbolBuilder(shape, "Document", "SmithyReadWrite", true)
+        return createSymbolBuilder(shape, "Document", "SmithyReadWrite", SwiftDeclaration.ENUM, true)
             .addDependency(SwiftDependency.SMITHY_READ_WRITE)
             .build()
     }
 
     override fun serviceShape(shape: ServiceShape): Symbol {
         val name = sdkId.clientName()
-        return createSymbolBuilder(shape, "${name}Client", "ClientRuntime")
+        return createSymbolBuilder(shape, "${name}Client", SwiftDeclaration.CLASS)
             .addDependency(SwiftDependency.CLIENT_RUNTIME)
-            .definitionFile(formatModuleName(shape.type, name))
+            .definitionFile(formatModuleName(name))
             .build()
     }
 
@@ -260,14 +252,17 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         if (shape != null && shape.isIntEnumShape()) {
             return createEnumSymbol(shape)
         }
-        return createSymbolBuilder(shape, typeName, "Swift").putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue).build()
+        return createSymbolBuilder(shape, typeName, "Swift", SwiftDeclaration.STRUCT).putProperty(SymbolProperty.DEFAULT_VALUE_KEY, defaultValue).build()
     }
 
     /**
      * Creates a symbol builder for the shape with the given type name in the root namespace.
      */
-    private fun createSymbolBuilder(shape: Shape?, typeName: String, boxed: Boolean = false): Symbol.Builder {
-        val builder = Symbol.builder().putProperty("shape", shape).name(typeName)
+    private fun createSymbolBuilder(shape: Shape?, typeName: String, declaration: SwiftDeclaration, boxed: Boolean = false): Symbol.Builder {
+        val builder = Symbol.builder()
+            .putProperty("shape", shape)
+            .putProperty("decl", declaration.keyword)
+            .name(typeName)
         if (boxed) {
             builder.boxed()
         }
@@ -283,15 +278,15 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         shape: Shape?,
         typeName: String,
         namespace: String,
+        declaration: SwiftDeclaration,
         boxed: Boolean = false
     ): Symbol.Builder {
-        return createSymbolBuilder(shape, typeName, boxed)
+        return createSymbolBuilder(shape, typeName, declaration, boxed)
             .namespace(namespace, ".")
     }
 
-    private fun formatModuleName(shapeType: ShapeType, name: String): String? {
-        val filename = ModelFileUtils.filename(swiftSettings, name)
-        return "./$rootNamespace/$filename"
+    private fun formatModuleName(name: String): String {
+        return ModelFileUtils.filename(swiftSettings, name)
     }
 
     /**

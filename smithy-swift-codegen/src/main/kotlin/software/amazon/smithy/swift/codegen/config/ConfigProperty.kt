@@ -6,6 +6,7 @@
 package software.amazon.smithy.swift.codegen.config
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.model.isOptional
 
 data class ConfigProperty(
@@ -13,12 +14,11 @@ data class ConfigProperty(
     val type: Symbol,
     val default: DefaultProvider? = null
 ) {
-    internal val additionalTypes: Set<Symbol> = emptySet()
 
     constructor(
         name: String,
         type: Symbol,
-        default: String,
+        default: (SwiftWriter) -> String,
         isThrowable: Boolean = false,
         isAsync: Boolean = false
     ) : this(name, type, DefaultProvider(default, isThrowable, isAsync))

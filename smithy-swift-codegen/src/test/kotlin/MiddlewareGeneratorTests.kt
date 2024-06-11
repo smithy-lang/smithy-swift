@@ -9,8 +9,8 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
 import software.amazon.smithy.swift.codegen.OperationStep
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class MiddlewareGeneratorTests {
     @Test
@@ -52,7 +52,12 @@ class MockOperationStep(outputSymbol: Symbol, outputErrorSymbol: Symbol) : Opera
     override val inputType: Symbol = SwiftTypes.String
 }
 
-class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(writer, symbol, MockOperationStep(SwiftTypes.String, SwiftTypes.Error)) {
+class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(
+    writer, symbol,
+    MockOperationStep(
+        SwiftTypes.String, SwiftTypes.Error
+    )
+) {
     override val properties = mutableMapOf("test" to SwiftTypes.String)
     override fun generateMiddlewareClosure() {
         writer.write("print(\"this is a \\(test)\")")

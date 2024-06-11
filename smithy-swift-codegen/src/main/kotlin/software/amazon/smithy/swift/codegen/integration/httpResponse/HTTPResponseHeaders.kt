@@ -18,14 +18,14 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.FoundationTypes
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class HTTPResponseHeaders(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -126,7 +126,6 @@ class HTTPResponseHeaders(
                                     splitFn = "splitHttpDateHeaderListValues"
                                 }
                                 invalidHeaderListErrorName = "invalidTimestampHeaderList"
-                                writer.addImport("Foundation")
                                 "(${stringToDate("\$0", tsFormat)} ?? ${FoundationTypes.Date}())"
                             }
                             is StringShape -> {

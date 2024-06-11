@@ -25,6 +25,8 @@ import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.errorShapeName
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
@@ -53,7 +55,6 @@ class StructureGenerator(
     }
 
     fun render() {
-        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         writer.putContext("struct.name", structSymbol.name.toUpperCamelCase())
         if (!shape.isError) {
             renderNonErrorStructure()
@@ -114,7 +115,7 @@ class StructureGenerator(
     private fun generateStruct() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        val equatableConformance = (": " + SwiftTypes.Protocols.Equatable + " ").takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
+        val equatableConformance = writer.format(": \$N ", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
         writer.openBlock("public struct \$struct.name:L $equatableConformance{")
             .call { generateStructMembers() }
             .write("")
@@ -138,7 +139,6 @@ class StructureGenerator(
         val hasMembers = membersSortedByName.isNotEmpty()
 
         if (hasMembers) {
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.openBlock("public init(", ")") {
                 for ((index, member) in membersSortedByName.withIndex()) {
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
@@ -199,7 +199,6 @@ class StructureGenerator(
     private fun renderErrorStructure() {
         assert(shape.getTrait(ErrorTrait::class.java).isPresent)
         writer.writeShapeDocs(shape)
-        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
 
         if (serviceErrorProtocolSymbol != null &&
             serviceErrorProtocolSymbol != ClientRuntimeTypes.Http.HttpError
@@ -212,7 +211,7 @@ class StructureGenerator(
 
         writer.writeAvailableAttribute(model, shape)
         writer.openBlock(
-            "public struct \$struct.name:L: \$L, \$error.protocol:L, \$L, \$L {",
+            "public struct \$struct.name:L: \$N, \$error.protocol:L, \$N, \$N {",
             ClientRuntimeTypes.Core.ModeledError,
             ClientRuntimeTypes.Http.HttpError,
             SwiftTypes.Error
@@ -229,7 +228,6 @@ class StructureGenerator(
     object AdditionalErrorMembers : SectionId
 
     private fun generateErrorStructMembers() {
-        writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
         if (membersSortedByName.isNotEmpty()) {
             writer.write("")
             writer.openBlock("public struct Properties {", "}") {
@@ -249,16 +247,16 @@ class StructureGenerator(
         writer.write("public static var typeName: \$N { \$S }", SwiftTypes.String, errorTypeString)
         val errorTrait = shape.getTrait<ErrorTrait>()
         if (errorTrait != null && errorTrait.isClientError) {
-            writer.write("public static var fault: ErrorFault { .client }")
+            writer.write("public static var fault: \$N { .client }", ClientRuntimeTypes.Core.ErrorFault)
         } else if (errorTrait != null && errorTrait.isServerError) {
-            writer.write("public static var fault: ErrorFault { .server }")
+            writer.write("public static var fault: \$N { .server }", ClientRuntimeTypes.Core.ErrorFault)
         }
         val retryableTrait = shape.getTrait<RetryableTrait>()
         val isRetryable = retryableTrait != null
         val isThrottling = retryableTrait?.throttling ?: false
         writer.write("public static var isRetryable: \$N { \$L }", SwiftTypes.Bool, isRetryable)
         writer.write("public static var isThrottling: \$N { \$L }", SwiftTypes.Bool, isThrottling)
-        writer.write("public internal(set) var httpResponse = HttpResponse()")
+        writer.write("public internal(set) var httpResponse = \$N()", SmithyHTTPAPITypes.HttpResponse)
         writer.write("public internal(set) var message: \$T", SwiftTypes.String)
         writer.write("public internal(set) var requestID: \$T", SwiftTypes.String)
         writer.declareSection(AdditionalErrorMembers)

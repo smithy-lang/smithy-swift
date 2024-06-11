@@ -4,7 +4,6 @@ import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
@@ -36,7 +35,6 @@ class MiddlewareExecutionGenerator(
         flowType: ContextAttributeCodegenFlowType = ContextAttributeCodegenFlowType.NORMAL,
         onError: (SwiftWriter, String) -> Unit,
     ) {
-        writer.addImport(SwiftDependency.SMITHY.target)
         val operationErrorName = "${op.toUpperCamelCase()}OutputError"
         val inputShape = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op)
         val outputShape = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op)

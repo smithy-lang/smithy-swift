@@ -27,23 +27,32 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                     writer.write(".library(name: \$S, targets: [\$S])", ctx.settings.moduleName, ctx.settings.moduleName)
                 }
 
-                val distinctDependencies = dependencies.distinctBy { it.expectProperty("target", String::class.java) + it.packageName }
+                val externalDependencies = dependencies.filter { it.getProperty("url", String::class.java).get().isNotEmpty() }
+                val dependenciesByURL = externalDependencies.distinctBy { it.expectProperty("url", String::class.java) }
 
                 writer.openBlock("dependencies: [", "],") {
-                    distinctDependencies.forEach { dependency ->
+                    dependenciesByURL.forEach { dependency ->
                         writer.openBlock(".package(", "),") {
-                            val dependencyURL = dependency.expectProperty("url", String::class.java)
-                            writer.write("url: \$S,", dependencyURL)
-                            writer.write("from: \$S", dependency.version)
+
+                            val localPath = dependency.expectProperty("localPath", String::class.java)
+                            if (localPath.isNotEmpty()) {
+                                writer.write("path: \$S", localPath)
+                            } else {
+                                val dependencyURL = dependency.expectProperty("url", String::class.java)
+                                writer.write("url: \$S,", dependencyURL)
+                                writer.write("from: \$S", dependency.version)
+                            }
                         }
                     }
                 }
 
+                val dependenciesByTarget = externalDependencies.distinctBy { it.expectProperty("target", String::class.java) + it.packageName }
+
                 writer.openBlock("targets: [", "]") {
                     writer.openBlock(".target(", "),") {
                         writer.write("name: \$S,", ctx.settings.moduleName)
-                        writer.openBlock("dependencies: [", "],") {
-                            for (dependency in distinctDependencies) {
+                        writer.openBlock("dependencies: [", "]") {
+                            for (dependency in dependenciesByTarget) {
                                 writer.openBlock(".product(", "),") {
                                     val target = dependency.expectProperty("target", String::class.java)
                                     writer.write("name: \$S,", target)
@@ -51,15 +60,13 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                                 }
                             }
                         }
-                        writer.write("path: \"./\$L\"", ctx.settings.moduleName)
                     }
                     writer.openBlock(".testTarget(", ")") {
                         writer.write("name: \$S,", ctx.settings.testModuleName)
-                        writer.openBlock("dependencies: [", "],") {
+                        writer.openBlock("dependencies: [", "]") {
                             writer.write("\$S,", ctx.settings.moduleName)
-                            writer.write(".product(name: \"SmithyTestUtil\", package: \"smithy-swift\")")
+                            writer.write(".product(name: \"SmithyTestUtil\", package: \"smithy-swift\"),")
                         }
-                        writer.write("path: \"./${ctx.settings.testModuleName}\"")
                     }
                 }
             }

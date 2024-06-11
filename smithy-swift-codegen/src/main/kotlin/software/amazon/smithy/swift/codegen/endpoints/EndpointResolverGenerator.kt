@@ -22,12 +22,10 @@ class EndpointResolverGenerator(
     private val partitionDefinition: Symbol,
 ) {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
-        val rootNamespace = ctx.settings.moduleName
-
         val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
         val ruleSet = if (ruleSetNode != null) EndpointRuleSet.fromNode(ruleSetNode) else null
 
-        ctx.delegator.useFileWriter("./$rootNamespace/Endpoints.swift") {
+        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Endpoints.swift") {
             renderResolverProtocol(it)
             it.write("")
             renderResolver(it, ruleSet)

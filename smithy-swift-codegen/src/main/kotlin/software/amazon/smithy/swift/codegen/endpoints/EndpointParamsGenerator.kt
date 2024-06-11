@@ -11,13 +11,13 @@ import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.swift.codegen.AuthSchemeResolverGenerator
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
@@ -30,8 +30,7 @@ class EndpointParamsGenerator(
     fun render() {
         val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
         val endpointRuleSet = ruleSetNode?.let { EndpointRuleSet.fromNode(it) }
-        val rootNamespace = ctx.settings.moduleName
-        ctx.delegator.useFileWriter("./$rootNamespace/Endpoints.swift") { writer ->
+        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Endpoints.swift") { writer ->
             renderParams(writer, endpointRuleSet)
             writer.write("")
             renderContextExtension(writer, endpointRuleSet)

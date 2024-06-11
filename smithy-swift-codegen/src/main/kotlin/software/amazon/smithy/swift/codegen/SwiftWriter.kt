@@ -105,6 +105,7 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         } ?: run {
             addImport(symbol.namespace, internalSPIName = spiName)
         }
+        symbol.dependencies.forEach { addDependency(it) }
     }
 
     fun addImport(

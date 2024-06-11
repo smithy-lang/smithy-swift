@@ -34,7 +34,6 @@ import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.RequiresLengthTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.NeedsReaderTrait
 import software.amazon.smithy.swift.codegen.customtraits.NeedsWriterTrait
@@ -163,10 +162,9 @@ abstract class HTTPBindingProtocolGenerator(
         for ((shape, shapeMetadata) in inputShapesWithMetadata) {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
-            val rootNamespace = ctx.settings.moduleName
             val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+Write")
             val encodeSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/$filename")
+                .definitionFile(filename)
                 .name(symbolName)
                 .build()
             var httpBodyMembers = shape.members()
@@ -186,7 +184,6 @@ abstract class HTTPBindingProtocolGenerator(
                         "}",
                         symbolName,
                     ) {
-                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                         writer.write("")
                         renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer)
                     }
@@ -216,15 +213,13 @@ abstract class HTTPBindingProtocolGenerator(
         if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) { return }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
-        val rootNamespace = ctx.settings.moduleName
         val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+ReadWrite")
         val encodeSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/$filename")
+            .definitionFile(filename)
             .name(symbolName)
             .build()
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             writer.openBlock("extension \$N {", "}", symbol) {
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 val members = shape.members().toList()
                 when (shape) {
                     is StructureShape -> {
@@ -379,7 +374,7 @@ abstract class HTTPBindingProtocolGenerator(
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
-        ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
+        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
             val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
             val clientGenerator = httpProtocolClientGeneratorFactory.createHttpProtocolClientGenerator(
                 ctx,

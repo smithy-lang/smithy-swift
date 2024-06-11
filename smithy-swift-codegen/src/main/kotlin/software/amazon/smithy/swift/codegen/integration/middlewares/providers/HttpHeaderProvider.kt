@@ -13,8 +13,6 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
@@ -25,6 +23,7 @@ import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class HttpHeaderProvider(
@@ -46,7 +45,6 @@ class HttpHeaderProvider(
         ) {
             if (MiddlewareShapeUtils.hasHttpHeaders(ctx.model, op)) {
                 val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
-                val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
                 val requestBindings = httpBindingResolver.requestBindings(op)
                 val headerBindings = requestBindings
                     .filter { it.location == HttpBinding.Location.HEADER }
@@ -55,14 +53,11 @@ class HttpHeaderProvider(
                     .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
                 val filename = ModelFileUtils.filename(ctx.settings, "${inputSymbol.name}+HeaderProvider")
                 val headerMiddlewareSymbol = Symbol.builder()
-                    .definitionFile("./$rootNamespace/$filename")
+                    .definitionFile(filename)
                     .name(inputSymbol.name)
                     .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                    writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
-                    val headerMiddleware = HttpHeaderProvider(writer, ctx, inputSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat)
-                    headerMiddleware.renderProvider(writer)
+                    HttpHeaderProvider(writer, ctx, inputSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat).renderProvider(writer)
                 }
             }
         }
@@ -114,7 +109,7 @@ class HttpHeaderProvider(
             member,
             HttpBinding.Location.HEADER,
             bindingIndex,
-            defaultTimestampFormat
+            defaultTimestampFormat,
         )
 
         if (requiresDoCatch) {
@@ -122,12 +117,30 @@ class HttpHeaderProvider(
         } else {
             if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider) && !inCollection) {
                 writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
-                    writer.write("items.add(Header(name: \"$paramName\", value: \$N($memberNameWithExtension)))", SwiftTypes.String)
+                    writer.write(
+                        "items.add(\$N(name: \$S, value: \$N(\$L)))",
+                        SmithyHTTPAPITypes.Header,
+                        paramName,
+                        SwiftTypes.String,
+                        memberNameWithExtension,
+                    )
                 }
             } else if (inCollection && ctx.model.expectShape(member.target) !is TimestampShape) {
-                writer.write("items.add(Header(name: \"$paramName\", value: quoteHeaderValue(\$N($memberNameWithExtension))))", SwiftTypes.String)
+                writer.write(
+                    "items.add(\$N(name: \$S, value: quoteHeaderValue(\$N(\$L))))",
+                    SmithyHTTPAPITypes.Header,
+                    paramName,
+                    SwiftTypes.String,
+                    memberNameWithExtension,
+                )
             } else {
-                writer.write("items.add(Header(name: \"$paramName\", value: \$N($memberNameWithExtension)))", SwiftTypes.String)
+                writer.write(
+                    "items.add(\$N(name: \$S, value: \$N(\$L)))",
+                    SmithyHTTPAPITypes.Header,
+                    paramName,
+                    SwiftTypes.String,
+                    memberNameWithExtension,
+                )
             }
         }
     }
@@ -163,9 +176,14 @@ class HttpHeaderProvider(
     }
 
     private fun renderDoCatch(headerValueWithExtension: String, headerName: String) {
-        writer.openBlock("do {", "} catch let err {") {
-            writer.write("let base64EncodedValue = $headerValueWithExtension")
-            writer.write("items.add(Header(name: \"$headerName\", value: \$N(base64EncodedValue)))", SwiftTypes.String)
+        writer.openBlock("do {", "} catch {") {
+            writer.write("let base64EncodedValue = \$L", headerValueWithExtension)
+            writer.write(
+                "items.add(\$N(name: \$S, value: \$N(base64EncodedValue)))",
+                SmithyHTTPAPITypes.Header,
+                headerName,
+                SwiftTypes.String,
+            )
         }
         writer.write("}")
     }

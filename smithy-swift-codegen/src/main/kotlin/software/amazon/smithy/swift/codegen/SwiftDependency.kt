@@ -6,134 +6,163 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
-import software.amazon.smithy.swift.codegen.resources.Resources
 
-enum class SwiftDependency(
+class SwiftDependency(
     override val target: String,
     private val branch: String? = null,
     private val version: String,
     private val url: String,
     private val localPath: String,
-    override var packageName: String
+    override var packageName: String,
 ) : Dependency {
-    BIG("ComplexModule", null, "0.0.5", "https://github.com/apple/swift-numerics", "", "swift-numerics"),
-    SWIFT_LOG("Logging", null, "", "", "", ""),
-    CLIENT_RUNTIME(
-        "ClientRuntime",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY(
-        "Smithy",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY_IDENTITY_API(
-        "SmithyIdentityAPI",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY_RETRIES_API(
-        "SmithyRetriesAPI",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY_RETRIES(
-        "SmithyRetries",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY_HTTP_API(
-        "SmithyHTTPAPI",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY_HTTP_AUTH_API(
-        "SmithyHTTPAuthAPI",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY_EVENT_STREAMS_API(
-        "SmithyEventStreamsAPI",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY_EVENT_STREAMS(
-        "SmithyEventStreams",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    XCTest("XCTest", null, "", "", "", ""),
-    SMITHY_TEST_UTIL(
-        "SmithyTestUtil",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY_READ_WRITE(
-        "SmithyReadWrite",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY_XML(
-        "SmithyXML",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY_JSON(
-        "SmithyJSON",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    ),
-    SMITHY_FORM_URL(
-        "SmithyFormURL",
-        "main",
-        "0.1.0",
-        "https://github.com/smithy-lang/smithy-swift",
-        Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR"),
-        "smithy-swift"
-    );
+
+    companion object {
+        val NONE = SwiftDependency("", "", "", "", "", "")
+        val XCTest = SwiftDependency("XCTest", null, "", "", "", "")
+        val CRT = SwiftDependency(
+            "AwsCommonRuntimeKit",
+            null,
+            "0.30.0",
+            "https://github.com/awslabs/aws-crt-swift",
+            "",
+            "aws-crt-swift",
+        )
+        val CLIENT_RUNTIME = SwiftDependency(
+            "ClientRuntime",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY = SwiftDependency(
+            "Smithy",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_IDENTITY_API = SwiftDependency(
+            "SmithyIdentityAPI",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_RETRIES_API = SwiftDependency(
+            "SmithyRetriesAPI",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_RETRIES = SwiftDependency(
+            "SmithyRetries",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_HTTP_API = SwiftDependency(
+            "SmithyHTTPAPI",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_HTTP_AUTH_API = SwiftDependency(
+            "SmithyHTTPAuthAPI",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_CHECKSUMS_API = SwiftDependency(
+            "SmithyChecksumsAPI",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_EVENT_STREAMS_API = SwiftDependency(
+            "SmithyEventStreamsAPI",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_EVENT_STREAMS_AUTH_API = SwiftDependency(
+            "SmithyEventStreamsAuthAPI",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_EVENT_STREAMS = SwiftDependency(
+            "SmithyEventStreams",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_TEST_UTIL = SwiftDependency(
+            "SmithyTestUtil",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_READ_WRITE = SwiftDependency(
+            "SmithyReadWrite",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_XML = SwiftDependency(
+            "SmithyXML",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_JSON = SwiftDependency(
+            "SmithyJSON",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_FORM_URL = SwiftDependency(
+            "SmithyFormURL",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+    }
 
     override fun getDependencies(): List<SymbolDependency> {
-        val dependency = SymbolDependency.builder()
+        return listOf(toSymbolDependency())
+    }
+
+    private fun toSymbolDependency(): SymbolDependency {
+        return SymbolDependency.builder()
             .putProperty("target", target)
             .putProperty("branch", branch)
             .putProperty("localPath", localPath)
@@ -141,6 +170,5 @@ enum class SwiftDependency(
             .version(version)
             .putProperty("url", url)
             .build()
-        return listOf(dependency)
     }
 }

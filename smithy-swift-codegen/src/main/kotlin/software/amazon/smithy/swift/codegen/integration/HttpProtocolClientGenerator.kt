@@ -9,7 +9,6 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.swift.codegen.ServiceGenerator
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareExecutionGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
@@ -34,10 +33,6 @@ open class HttpProtocolClientGenerator(
     private val httpProtocolServiceClient = httpProtocolCustomizable.serviceClient(ctx, writer, serviceConfig)
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
-        writer.addImport(SwiftDependency.SMITHY.target)
-        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-        writer.addImport(SwiftDependency.SWIFT_LOG.target)
-        writer.addImport("Foundation")
         httpProtocolCustomizable.renderInternals(ctx)
         httpProtocolServiceClient.render(serviceSymbol)
         writer.write("")

@@ -35,7 +35,6 @@ class HttpProtocolTestGenerator(
     private val httpProtocolCustomizable: HTTPProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware,
     private val httpBindingResolver: HttpBindingResolver,
-    private val imports: List<String> = listOf(),
     // list of test IDs to ignore/skip
     private val testsToIgnore: Set<String> = setOf(),
     private val tagsToIgnore: Set<String> = setOf(),
@@ -97,16 +96,10 @@ class HttpProtocolTestGenerator(
         val requestTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempTestCases))
         if (requestTestCases.isNotEmpty()) {
             val testClassName = "${operation.toUpperCamelCase()}RequestTest"
-            val testFilename = "./${ctx.settings.testModuleName}/$testClassName.swift"
+            val testFilename = "Tests/${ctx.settings.testModuleName}/$testClassName.swift"
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating request protocol test cases for ${operation.id}")
-                for (import in imports) {
-                    writer.addImport(import)
-                }
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 writer.addImport(ctx.settings.moduleName, true)
-                writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
-                writer.addImport(SwiftDependency.XCTest.target)
 
                 requestTestBuilder
                     .ctx(ctx)
@@ -135,13 +128,11 @@ class HttpProtocolTestGenerator(
         val responseTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempResponseTests))
         if (responseTestCases.isNotEmpty()) {
             val testClassName = "${operation.id.name.capitalize()}ResponseTest"
-            val testFilename = "./${ctx.settings.testModuleName}/$testClassName.swift"
+            val testFilename = "Tests/${ctx.settings.testModuleName}/$testClassName.swift"
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating response protocol test cases for ${operation.id}")
 
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 writer.addImport(ctx.settings.moduleName, true)
-                writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
                 writer.addImport(SwiftDependency.XCTest.target)
 
                 responseTestBuilder
@@ -178,7 +169,7 @@ class HttpProtocolTestGenerator(
                 // use the operation name + error name as the class name
                 val opName = operation.id.name.capitalize()
                 val testClassName = "${opName}${error.toUpperCamelCase()}Test"
-                val testFilename = "./${ctx.settings.testModuleName}/${opName}ErrorTest.swift"
+                val testFilename = "Tests/${ctx.settings.testModuleName}/${opName}ErrorTest.swift"
                 ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                     LOGGER.fine("Generating error protocol test cases for ${operation.id}")
 

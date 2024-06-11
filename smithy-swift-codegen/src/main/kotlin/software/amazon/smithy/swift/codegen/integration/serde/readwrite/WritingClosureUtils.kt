@@ -8,12 +8,12 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtils
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 
 class WritingClosureUtils(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -33,7 +33,6 @@ class WritingClosureUtils(
     }
 
     private fun makeWritingClosure(shape: Shape, memberTimestampFormatTrait: TimestampFormatTrait?, isSparse: Boolean): String {
-        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         val base = when (shape) {
             is MapShape -> {
                 val keyNodeInfo = nodeInfoUtils.nodeInfo(shape.key)
@@ -42,7 +41,8 @@ class WritingClosureUtils(
                 val valueWriter = writingClosure(shape.value, mapIsSparse)
                 val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
                 writer.format(
-                    "mapWritingClosure(valueWritingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+                    "\$N(valueWritingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+                    SmithyReadWriteTypes.mapWritingClosure,
                     valueWriter,
                     keyNodeInfo,
                     valueNodeInfo,
@@ -55,7 +55,8 @@ class WritingClosureUtils(
                 val memberWriter = writingClosure(shape.member, listIsSparse)
                 val isFlattened = shape.hasTrait<XmlFlattenedTrait>()
                 writer.format(
-                    "listWritingClosure(memberWritingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+                    "\$N(memberWritingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+                    SmithyReadWriteTypes.listWritingClosure,
                     memberWriter,
                     memberNodeInfo,
                     isFlattened
@@ -63,13 +64,13 @@ class WritingClosureUtils(
             }
             is TimestampShape -> {
                 writer.format(
-                    "timestampWritingClosure(format: \$L)",
+                    "\$N(format: \$L)",
+                    SmithyReadWriteTypes.timestampWritingClosure,
                     TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape)
                 )
             }
             else -> {
                 val symbol = ctx.symbolProvider.toSymbol(shape)
-                writer.addImport(symbol)
                 writer.format("\$N.write(value:to:)", symbol)
             }
         }

@@ -6,6 +6,7 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 /*
 Generates a swift middleware struct like the following:

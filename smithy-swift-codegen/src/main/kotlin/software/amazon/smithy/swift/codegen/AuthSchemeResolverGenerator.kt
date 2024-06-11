@@ -21,25 +21,22 @@ import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import java.util.Locale
 
 class AuthSchemeResolverGenerator {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
-        val rootNamespace = ctx.settings.moduleName
         val serviceIndex = ServiceIndex(ctx.model)
 
-        ctx.delegator.useFileWriter("./$rootNamespace/$AUTH_SCHEME_RESOLVER.swift") {
+        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/$AUTH_SCHEME_RESOLVER.swift") {
             renderServiceSpecificAuthResolverParamsStruct(serviceIndex, ctx, it)
             it.write("")
             renderServiceSpecificAuthResolverProtocol(ctx, it)
             it.write("")
             renderServiceSpecificDefaultResolver(serviceIndex, ctx, it)
             it.write("")
-            it.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            it.addImport(SwiftDependency.SMITHY.target)
-            it.addImport(SwiftDependency.SMITHY_HTTP_AUTH_API.target)
         }
     }
 
@@ -50,11 +47,11 @@ class AuthSchemeResolverGenerator {
     ) {
         writer.apply {
             openBlock(
-                "public struct ${getSdkId(ctx)}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$L {",
+                "public struct ${getSdkId(ctx)}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$N {",
                 "}",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolverParams
             ) {
-                write("public let operation: String")
+                write("public let operation: \$N", SwiftTypes.String)
 
                 if (usesRulesBasedAuthResolver(ctx)) {
                     // For rules based auth scheme resolvers, auth scheme resolver parameters must have
@@ -67,7 +64,7 @@ class AuthSchemeResolverGenerator {
                     // Region has to be in params in addition to operation string.
                     if (serviceIndex.getEffectiveAuthSchemes(ctx.service).contains(SigV4Trait.ID)) {
                         write("// Region is used for SigV4 auth scheme")
-                        write("public let region: String?")
+                        write("public let region: \$N?", SwiftTypes.String)
                     }
                 }
             }
@@ -93,7 +90,7 @@ class AuthSchemeResolverGenerator {
     private fun renderServiceSpecificAuthResolverProtocol(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {
         writer.apply {
             openBlock(
-                "public protocol ${getServiceSpecificAuthSchemeResolverName(ctx)}: \$L {",
+                "public protocol ${getServiceSpecificAuthSchemeResolverName(ctx)}: \$N {",
                 "}",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolver
             ) {
@@ -152,15 +149,16 @@ class AuthSchemeResolverGenerator {
 
         writer.apply {
             openBlock(
-                "public func resolveAuthScheme(params: \$L) throws -> [AuthOption] {",
+                "public func resolveAuthScheme(params: \$N) throws -> [\$N] {",
                 "}",
-                SmithyHTTPAuthAPITypes.AuthSchemeResolverParams
+                SmithyHTTPAuthAPITypes.AuthSchemeResolverParams,
+                SmithyHTTPAuthAPITypes.AuthOption,
             ) {
                 // Return value of array of auth options
-                write("var validAuthOptions = [AuthOption]()")
+                write("var validAuthOptions = [\$N]()", SmithyHTTPAuthAPITypes.AuthOption)
                 // Cast params to service specific params object
                 openBlock("guard let serviceParams = params as? \$L else {", "}", serviceParamsName) {
-                    write("throw ClientError.authError(\"Service specific auth scheme parameters type must be passed to auth scheme resolver.\")")
+                    write("throw \$N.authError(\"Service specific auth scheme parameters type must be passed to auth scheme resolver.\")", SmithyTypes.ClientError)
                 }
                 // Render switch block
                 renderSwitchBlock(serviceIndex, ctx, writer)
@@ -213,7 +211,11 @@ class AuthSchemeResolverGenerator {
                 if (it.key == SigV4Trait.ID) {
                     renderSigV4AuthOption(it, writer)
                 } else {
-                    write("validAuthOptions.append(AuthOption(schemeID: \"${it.key}\"))")
+                    write(
+                        "validAuthOptions.append(\$N(schemeID: \$S))",
+                        SmithyHTTPAuthAPITypes.AuthOption,
+                        it.key,
+                    )
                 }
             }
             dedent()
@@ -222,12 +224,12 @@ class AuthSchemeResolverGenerator {
 
     private fun renderSigV4AuthOption(scheme: Map.Entry<ShapeId, Trait>, writer: SwiftWriter) {
         writer.apply {
-            write("var sigV4Option = AuthOption(schemeID: \"${scheme.key}\")")
-            write("sigV4Option.signingProperties.set(key: SigningPropertyKeys.signingName, value: \"${(scheme.value as SigV4Trait).name}\")")
+            write("var sigV4Option = \$N(schemeID: \$S)", SmithyHTTPAuthAPITypes.AuthOption, scheme.key)
+            write("sigV4Option.signingProperties.set(key: \$N.signingName, value: \"${(scheme.value as SigV4Trait).name}\")", SmithyHTTPAuthAPITypes.SigningPropertyKeys)
             openBlock("guard let region = serviceParams.region else {", "}") {
-                write("throw ClientError.authError(\"Missing region in auth scheme parameters for SigV4 auth scheme.\")")
+                write("throw \$N.authError(\"Missing region in auth scheme parameters for SigV4 auth scheme.\")", SmithyTypes.ClientError)
             }
-            write("sigV4Option.signingProperties.set(key: SigningPropertyKeys.signingRegion, value: region)")
+            write("sigV4Option.signingProperties.set(key: \$N.signingRegion, value: region)", SmithyHTTPAuthAPITypes.SigningPropertyKeys)
             write("validAuthOptions.append(sigV4Option)")
         }
     }
@@ -248,7 +250,7 @@ class AuthSchemeResolverGenerator {
                     write("return try Default${getSdkId(ctx) + AUTH_SCHEME_RESOLVER}().constructParameters(context: context)")
                 } else {
                     openBlock("guard let opName = context.getOperation() else {", "}") {
-                        write("throw ClientError.dataNotFound(\"Operation name not configured in middleware context for auth scheme resolver params construction.\")")
+                        write("throw \$N.dataNotFound(\"Operation name not configured in middleware context for auth scheme resolver params construction.\")", SmithyTypes.ClientError)
                     }
                     val paramType = getSdkId(ctx) + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
                     if (hasSigV4) {

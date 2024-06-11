@@ -24,3 +24,5 @@ public extension AuthScheme {
         return try config.getIdentityResolver(schemeID: self.schemeID)
     }
 }
+
+public typealias AuthSchemes = [AuthScheme]

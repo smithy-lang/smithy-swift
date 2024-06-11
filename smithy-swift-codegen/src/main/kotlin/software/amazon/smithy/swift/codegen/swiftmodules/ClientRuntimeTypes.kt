@@ -12,48 +12,51 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
  */
 object ClientRuntimeTypes {
     object Http {
-        val HttpClientConfiguration = runtimeSymbol("HttpClientConfiguration")
-        val HttpError = runtimeSymbol("HTTPError")
-        val SdkHttpClient = runtimeSymbol("SdkHttpClient")
-        val UnknownHttpServiceError = runtimeSymbol("UnknownHTTPServiceError")
+        val HttpClientConfiguration = runtimeSymbol("HttpClientConfiguration", SwiftDeclaration.CLASS)
+        val HttpError = runtimeSymbol("HTTPError", SwiftDeclaration.PROTOCOL)
+        val SdkHttpClient = runtimeSymbol("SdkHttpClient", SwiftDeclaration.CLASS)
+        val UnknownHttpServiceError = runtimeSymbol("UnknownHTTPServiceError", SwiftDeclaration.STRUCT)
     }
 
     object Middleware {
-        val OperationOutput = runtimeSymbol("OperationOutput")
-        val Middleware = runtimeSymbol("Middleware")
-        val LoggerMiddleware = runtimeSymbol("LoggerMiddleware")
-        val ContentLengthMiddleware = runtimeSymbol("ContentLengthMiddleware")
-        val ContentMD5Middleware = runtimeSymbol("ContentMD5Middleware")
+        val OperationOutput = runtimeSymbol("OperationOutput", SwiftDeclaration.STRUCT)
+        val Middleware = runtimeSymbol("Middleware", SwiftDeclaration.PROTOCOL)
+        val LoggerMiddleware = runtimeSymbol("LoggerMiddleware", SwiftDeclaration.STRUCT)
+        val ContentLengthMiddleware = runtimeSymbol("ContentLengthMiddleware", SwiftDeclaration.STRUCT)
+        val ContentTypeMiddleware = runtimeSymbol("ContentTypeMiddleware", SwiftDeclaration.STRUCT)
+        val ContentMD5Middleware = runtimeSymbol("ContentMD5Middleware", SwiftDeclaration.STRUCT)
         val FlexibleChecksumsRequestMiddleware =
-            runtimeSymbol("FlexibleChecksumsRequestMiddleware")
+            runtimeSymbol("FlexibleChecksumsRequestMiddleware", SwiftDeclaration.STRUCT)
         val FlexibleChecksumsResponseMiddleware =
-            runtimeSymbol("FlexibleChecksumsResponseMiddleware")
-        val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware")
-        val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware")
-        val OperationStack = runtimeSymbol("OperationStack")
-        val URLHostMiddleware = runtimeSymbol("URLHostMiddleware")
-        val URLPathMiddleware = runtimeSymbol("URLPathMiddleware")
-        val QueryItemMiddleware = runtimeSymbol("QueryItemMiddleware")
-        val HeaderMiddleware = runtimeSymbol("HeaderMiddleware")
-        val RetryMiddleware = runtimeSymbol("RetryMiddleware")
+            runtimeSymbol("FlexibleChecksumsResponseMiddleware", SwiftDeclaration.STRUCT)
+        val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware", SwiftDeclaration.STRUCT)
+        val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware", SwiftDeclaration.STRUCT)
+        val OperationStack = runtimeSymbol("OperationStack", SwiftDeclaration.STRUCT)
+        val URLHostMiddleware = runtimeSymbol("URLHostMiddleware", SwiftDeclaration.STRUCT)
+        val URLPathMiddleware = runtimeSymbol("URLPathMiddleware", SwiftDeclaration.STRUCT)
+        val QueryItemMiddleware = runtimeSymbol("QueryItemMiddleware", SwiftDeclaration.STRUCT)
+        val HeaderMiddleware = runtimeSymbol("HeaderMiddleware", SwiftDeclaration.STRUCT)
+        val RetryMiddleware = runtimeSymbol("RetryMiddleware", SwiftDeclaration.STRUCT)
         val IdempotencyTokenMiddleware =
-            runtimeSymbol("IdempotencyTokenMiddleware")
-        val NoopHandler = runtimeSymbol("NoopHandler")
-        val SignerMiddleware = runtimeSymbol("SignerMiddleware")
-        val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware")
-        val BodyMiddleware = runtimeSymbol("BodyMiddleware")
-        val PayloadBodyMiddleware = runtimeSymbol("PayloadBodyMiddleware")
-        val EventStreamBodyMiddleware = runtimeSymbol("EventStreamBodyMiddleware")
-        val BlobStreamBodyMiddleware = runtimeSymbol("BlobStreamBodyMiddleware")
-        val BlobBodyMiddleware = runtimeSymbol("BlobBodyMiddleware")
-        val EnumBodyMiddleware = runtimeSymbol("EnumBodyMiddleware")
-        val IntEnumBodyMiddleware = runtimeSymbol("IntEnumBodyMiddleware")
-        val StringBodyMiddleware = runtimeSymbol("StringBodyMiddleware")
+            runtimeSymbol("IdempotencyTokenMiddleware", SwiftDeclaration.STRUCT)
+        val NoopHandler = runtimeSymbol("NoopHandler", SwiftDeclaration.STRUCT)
+        val SignerMiddleware = runtimeSymbol("SignerMiddleware", SwiftDeclaration.STRUCT)
+        val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware", SwiftDeclaration.STRUCT)
+        val BodyMiddleware = runtimeSymbol("BodyMiddleware", SwiftDeclaration.STRUCT)
+        val PayloadBodyMiddleware = runtimeSymbol("PayloadBodyMiddleware", SwiftDeclaration.STRUCT)
+        val EventStreamBodyMiddleware = runtimeSymbol("EventStreamBodyMiddleware", SwiftDeclaration.STRUCT)
+        val BlobStreamBodyMiddleware = runtimeSymbol("BlobStreamBodyMiddleware", SwiftDeclaration.STRUCT)
+        val BlobBodyMiddleware = runtimeSymbol("BlobBodyMiddleware", SwiftDeclaration.STRUCT)
+        val EnumBodyMiddleware = runtimeSymbol("EnumBodyMiddleware", SwiftDeclaration.STRUCT)
+        val IntEnumBodyMiddleware = runtimeSymbol("IntEnumBodyMiddleware", SwiftDeclaration.STRUCT)
+        val StringBodyMiddleware = runtimeSymbol("StringBodyMiddleware", SwiftDeclaration.STRUCT)
     }
 
     object Core {
+        val Client = runtimeSymbol("Client", SwiftDeclaration.PROTOCOL)
         val ModeledError = runtimeSymbol("ModeledError", SwiftDeclaration.PROTOCOL)
         val ServiceError = runtimeSymbol("ServiceError", SwiftDeclaration.PROTOCOL)
+        val ErrorFault = runtimeSymbol("ErrorFault", SwiftDeclaration.ENUM)
         val TelemetryProvider = runtimeSymbol("TelemetryProvider", SwiftDeclaration.PROTOCOL)
         val SDKLogHandlerFactory = runtimeSymbol("SDKLogHandlerFactory", SwiftDeclaration.PROTOCOL)
         val SDKLogLevel = runtimeSymbol("SDKLogLevel", SwiftDeclaration.ENUM)
@@ -65,12 +68,18 @@ object ClientRuntimeTypes {
         val EndpointsRuleEngine = runtimeSymbol("EndpointsRuleEngine", SwiftDeclaration.CLASS)
         val EndpointsRequestContext = runtimeSymbol("EndpointsRequestContext", SwiftDeclaration.CLASS)
         val EndpointsRequestContextProviding = runtimeSymbol("EndpointsRequestContextProviding", SwiftDeclaration.PROTOCOL)
+        val EndpointError = runtimeSymbol("EndpointError", SwiftDeclaration.ENUM)
         val PartitionDefinition = runtimeSymbol("partitionJSON", SwiftDeclaration.LET)
         val EndpointsAuthSchemeResolver = runtimeSymbol("EndpointsAuthSchemeResolver", SwiftDeclaration.PROTOCOL)
         val DefaultEndpointsAuthSchemeResolver = runtimeSymbol("DefaultEndpointsAuthSchemeResolver", SwiftDeclaration.STRUCT)
         val EndpointsAuthScheme = runtimeSymbol("EndpointsAuthScheme", SwiftDeclaration.ENUM)
         val DefaultEndpointResolver = runtimeSymbol("DefaultEndpointResolver", SwiftDeclaration.STRUCT)
         val EndpointResolverMiddleware = runtimeSymbol("EndpointResolverMiddleware", SwiftDeclaration.STRUCT)
+        val Plugin = runtimeSymbol("Plugin", SwiftDeclaration.PROTOCOL)
+        val ClientConfiguration = runtimeSymbol("ClientConfiguration", SwiftDeclaration.PROTOCOL)
+        val DefaultHttpClientConfiguration = runtimeSymbol("DefaultHttpClientConfiguration", SwiftDeclaration.PROTOCOL)
+        val ClientConfigurationDefaults = runtimeSymbol("ClientConfigurationDefaults", SwiftDeclaration.TYPEALIAS)
+        val ClientBuilder = runtimeSymbol("ClientBuilder", SwiftDeclaration.CLASS)
     }
 }
 
@@ -78,4 +87,5 @@ private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): 
     name,
     declaration,
     SwiftDependency.CLIENT_RUNTIME,
+    null,
 )

@@ -7,12 +7,12 @@ package software.amazon.smithy.swift.codegen.config
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.config.ClientConfiguration.Companion.runtimeSymbol
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class DefaultClientConfiguration : ClientConfiguration {
     override val swiftProtocolName: Symbol
@@ -22,23 +22,23 @@ class DefaultClientConfiguration : ClientConfiguration {
         ConfigProperty(
             "telemetryProvider",
             ClientRuntimeTypes.Core.TelemetryProvider,
-            "ClientRuntime.DefaultTelemetry.provider"
+            { it.format("ClientRuntime.DefaultTelemetry.provider") },
         ),
         ConfigProperty(
             "retryStrategyOptions",
             SmithyRetriesAPITypes.RetryStrategyOptions,
-            "ClientConfigurationDefaults.defaultRetryStrategyOptions"
+            { it.format("ClientConfigurationDefaults.defaultRetryStrategyOptions") },
         ),
         ConfigProperty(
             "clientLogMode",
             ClientRuntimeTypes.Core.ClientLogMode,
-            "ClientConfigurationDefaults.defaultClientLogMode"
+            { it.format("ClientConfigurationDefaults.defaultClientLogMode") },
         ),
         ConfigProperty("endpoint", SwiftTypes.String.toOptional()),
         ConfigProperty(
             "idempotencyTokenGenerator",
             ClientRuntimeTypes.Core.IdempotencyTokenGenerator,
-            "ClientConfigurationDefaults.defaultIdempotencyTokenGenerator"
+            { it.format("ClientConfigurationDefaults.defaultIdempotencyTokenGenerator") },
         ),
     )
 }
