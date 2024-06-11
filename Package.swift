@@ -153,7 +153,7 @@ let package = Package(
         ),
         .target(
             name: "SmithyHTTPAuthAPI",
-            dependencies: ["Smithy", "SmithyHTTPAPI", "SmithyIdentityAPI", "SmithyChecksumsAPI"]
+            dependencies: ["Smithy", "SmithyHTTPAPI", "SmithyIdentityAPI"]
         ),
         .target(
             name: "SmithyEventStreamsAPI",
