@@ -16,6 +16,16 @@ object SmithyReadWriteTypes {
     val mapWritingClosure = runtimeSymbol("mapWritingClosure", SwiftDeclaration.FUNC)
     val listWritingClosure = runtimeSymbol("listWritingClosure", SwiftDeclaration.FUNC)
     val timestampWritingClosure = runtimeSymbol("timestampWritingClosure", SwiftDeclaration.FUNC)
+    val mapReadingClosure = runtimeSymbol("mapReadingClosure", SwiftDeclaration.FUNC)
+    val listReadingClosure = runtimeSymbol("listReadingClosure", SwiftDeclaration.FUNC)
+    val timestampReadingClosure = runtimeSymbol("timestampReadingClosure", SwiftDeclaration.FUNC)
+    val sparseFormOf = runtimeSymbol("sparseFormOf", SwiftDeclaration.FUNC)
+    val optionalFormOf = runtimeSymbol("optionalFormOf", SwiftDeclaration.FUNC)
+    val ReadingClosures = runtimeSymbol("ReadingClosures", SwiftDeclaration.ENUM)
+    val WritingClosures = runtimeSymbol("WritingClosures", SwiftDeclaration.ENUM)
+    val ReadingClosureBox = runtimeSymbol("ReadingClosureBox", SwiftDeclaration.STRUCT)
+    val WritingClosureBox = runtimeSymbol("WritingClosureBox", SwiftDeclaration.STRUCT)
+
 }
 
 private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(

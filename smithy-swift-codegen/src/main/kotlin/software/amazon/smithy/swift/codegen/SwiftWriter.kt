@@ -97,6 +97,7 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
     }
 
     fun addImport(symbol: Symbol) {
+        symbol.references.forEach { addImport(it.symbol) }
         if (symbol.isBuiltIn || symbol.isServiceNestedNamespace || symbol.namespace.isEmpty()) return
         val spiName = symbol.getProperty("spiName").getOrNull()?.toString()
         val decl = symbol.getProperty("decl").getOrNull()?.toString()

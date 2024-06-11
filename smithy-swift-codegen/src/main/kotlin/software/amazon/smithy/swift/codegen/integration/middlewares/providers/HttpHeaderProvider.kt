@@ -22,6 +22,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
@@ -105,6 +106,7 @@ class HttpHeaderProvider(
     private fun renderHeader(member: MemberShape, memberName: String, paramName: String, inCollection: Boolean = false) {
         val (memberNameWithExtension, requiresDoCatch) = formatHeaderOrQueryValue(
             ctx,
+            writer,
             memberName,
             member,
             HttpBinding.Location.HEADER,
@@ -127,9 +129,10 @@ class HttpHeaderProvider(
                 }
             } else if (inCollection && ctx.model.expectShape(member.target) !is TimestampShape) {
                 writer.write(
-                    "items.add(\$N(name: \$S, value: quoteHeaderValue(\$N(\$L))))",
+                    "items.add(\$N(name: \$S, value: \$N(\$N(\$L))))",
                     SmithyHTTPAPITypes.Header,
                     paramName,
+                    ClientRuntimeTypes.Core.quoteHeaderValue,
                     SwiftTypes.String,
                     memberNameWithExtension,
                 )

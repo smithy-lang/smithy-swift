@@ -15,30 +15,29 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class DefaultClientConfiguration : ClientConfiguration {
-    override val swiftProtocolName: Symbol
-        get() = runtimeSymbol("DefaultClientConfiguration", SwiftDependency.CLIENT_RUNTIME)
+    override val swiftProtocolName: Symbol = ClientRuntimeTypes.Core.DefaultClientConfiguration
 
     override fun getProperties(ctx: ProtocolGenerator.GenerationContext): Set<ConfigProperty> = setOf(
         ConfigProperty(
             "telemetryProvider",
             ClientRuntimeTypes.Core.TelemetryProvider,
-            { it.format("ClientRuntime.DefaultTelemetry.provider") },
+            { it.format("\$N.provider", ClientRuntimeTypes.Core.DefaultTelemetry) },
         ),
         ConfigProperty(
             "retryStrategyOptions",
             SmithyRetriesAPITypes.RetryStrategyOptions,
-            { it.format("ClientConfigurationDefaults.defaultRetryStrategyOptions") },
+            { it.format("\$N.defaultRetryStrategyOptions", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
         ),
         ConfigProperty(
             "clientLogMode",
             ClientRuntimeTypes.Core.ClientLogMode,
-            { it.format("ClientConfigurationDefaults.defaultClientLogMode") },
+            { it.format("\$N.defaultClientLogMode", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
         ),
         ConfigProperty("endpoint", SwiftTypes.String.toOptional()),
         ConfigProperty(
             "idempotencyTokenGenerator",
             ClientRuntimeTypes.Core.IdempotencyTokenGenerator,
-            { it.format("ClientConfigurationDefaults.defaultIdempotencyTokenGenerator") },
+            { it.format("\$N.defaultIdempotencyTokenGenerator", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
         ),
     )
 }

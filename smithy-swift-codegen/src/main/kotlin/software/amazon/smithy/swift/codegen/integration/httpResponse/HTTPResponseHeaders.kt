@@ -24,7 +24,9 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class HTTPResponseHeaders(
@@ -90,7 +92,7 @@ class HTTPResponseHeaders(
                             HttpBinding.Location.HEADER,
                             defaultTimestampFormat
                         )
-                        var memberValue = stringToDate(headerDeclaration, tsFormat)
+                        var memberValue = stringToDate(writer, headerDeclaration, tsFormat)
                         writer.write("value.$path\$L = \$L", memberName, memberValue)
                     }
                     is ListShape -> {
@@ -126,7 +128,10 @@ class HTTPResponseHeaders(
                                     splitFn = "splitHttpDateHeaderListValues"
                                 }
                                 invalidHeaderListErrorName = "invalidTimestampHeaderList"
-                                "(${stringToDate("\$0", tsFormat)} ?? ${FoundationTypes.Date}())"
+                                writer.format(
+                                    "(${stringToDate(writer, "\$0", tsFormat)} ?? \$N())",
+                                    FoundationTypes.Date
+                                )
                             }
                             is StringShape -> {
                                 invalidHeaderListErrorName = "invalidStringHeaderList"
@@ -156,7 +161,12 @@ class HTTPResponseHeaders(
                                 writer.openBlock("value.\$L = try \$LHeaderValues.map {", "}", memberName, memberName) {
                                     val transformedHeaderDeclaration = "${memberName}Transformed"
                                     writer.openBlock("guard let \$L = \$L else {", "}", transformedHeaderDeclaration, conversion) {
-                                        writer.write("throw HeaderDeserializationError.\$L(value: \$LHeaderValue)", invalidHeaderListErrorName, memberName)
+                                        writer.write(
+                                            "throw \$N.\$L(value: \$LHeaderValue)",
+                                            ClientRuntimeTypes.Core.HeaderDeserializationError,
+                                            invalidHeaderListErrorName,
+                                            memberName
+                                        )
                                     }
                                     writer.write("return \$L", transformedHeaderDeclaration)
                                 }
@@ -184,8 +194,11 @@ class HTTPResponseHeaders(
         }
     }
 
-    private fun stringToDate(stringValue: String, tsFormat: TimestampFormatTrait.Format): String {
+    private fun stringToDate(writer: SwiftWriter, stringValue: String, tsFormat: TimestampFormatTrait.Format): String {
         val timestampFormat = TimestampHelpers.generateTimestampFormatEnumValue(tsFormat)
-        return "TimestampFormatter(format: .$timestampFormat).date(from: $stringValue)"
+        return writer.format(
+            "\$N(format: .$timestampFormat).date(from: $stringValue)",
+            SmithyTimestampsTypes.TimestampFormatter,
+        )
     }
 }

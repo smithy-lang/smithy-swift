@@ -50,7 +50,7 @@ class HTTPResponseTraitWithoutHTTPPayload(
                 writer.openBlock("if case let .stream(stream) = httpResponse.body {", "}") {
                     writer.write("let messageDecoder = \$N()", SmithyEventStreamsTypes.DefaultMessageDecoder)
                     writer.write(
-                        "let decoderStream = \$L<\$N>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
+                        "let decoderStream = \$N<\$N>(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",
                         SmithyEventStreamsTypes.DefaultMessageDecoderStream,
                         symbol,
                         symbol,

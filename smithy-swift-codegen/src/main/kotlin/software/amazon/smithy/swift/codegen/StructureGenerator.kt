@@ -129,7 +129,11 @@ class StructureGenerator(
             var (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
             val indirect = it.hasTrait<SwiftBoxTrait>()
-            val indirectOrNot = "@Indirect ".takeIf { indirect } ?: ""
+            var indirectOrNot = ""
+            if (indirect) {
+                writer.addImport(ClientRuntimeTypes.Core.Indirect)
+                indirectOrNot = "@Indirect "
+            }
             writer.writeAvailableAttribute(model, it)
             writer.write("\$Lpublic var \$L: \$T", indirectOrNot, memberName, memberSymbol)
         }

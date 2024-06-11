@@ -114,7 +114,7 @@ class MessageUnmarshallableGenerator(
                         writer.indent {
                             // this is a client exception because we failed to parse it
                             writer.write(
-                                "throw \$L.unknownError(\"unrecognized event stream message ':message-type': \\(messageType)\")",
+                                "throw \$N.unknownError(\"unrecognized event stream message ':message-type': \\(messageType)\")",
                                 SmithyTypes.ClientError,
                             )
                         }

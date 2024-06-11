@@ -79,6 +79,7 @@ class HttpUrlPathProvider(
                             TimestampFormatTrait.Format.DATE_TIME
                         )
                         ProtocolGenerator.getFormattedDateString(
+                            writer,
                             timestampFormat,
                             labelMemberName,
                             urlEncode = true

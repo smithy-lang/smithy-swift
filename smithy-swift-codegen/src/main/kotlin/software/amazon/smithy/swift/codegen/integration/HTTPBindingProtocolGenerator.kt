@@ -97,6 +97,7 @@ fun Shape.isInHttpBody(): Boolean {
  */
 fun formatHeaderOrQueryValue(
     ctx: ProtocolGenerator.GenerationContext,
+    writer: SwiftWriter,
     memberName: String,
     memberShape: MemberShape,
     location: HttpBinding.Location,
@@ -106,7 +107,7 @@ fun formatHeaderOrQueryValue(
     return when (val shape = ctx.model.expectShape(memberShape.target)) {
         is TimestampShape -> {
             val timestampFormat = bindingIndex.determineTimestampFormat(memberShape, location, defaultTimestampFormat)
-            Pair(ProtocolGenerator.getFormattedDateString(timestampFormat, memberName), false)
+            Pair(ProtocolGenerator.getFormattedDateString(writer, timestampFormat, memberName), false)
         }
         is BlobShape -> {
             Pair("try $memberName.base64EncodedString()", true)

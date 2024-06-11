@@ -163,10 +163,6 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         if (shape.hasTrait<NestedTrait>() && service != null && !shape.hasTrait<ErrorTrait>()) {
             builder.namespace(service.nestedNamespaceType(this).name, ".")
         }
-
-        if (shape.hasTrait<ErrorTrait>()) {
-            builder.addDependency(SwiftDependency.CLIENT_RUNTIME)
-        }
         return builder.build()
     }
 
@@ -243,7 +239,6 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
     override fun serviceShape(shape: ServiceShape): Symbol {
         val name = sdkId.clientName()
         return createSymbolBuilder(shape, "${name}Client", SwiftDeclaration.CLASS)
-            .addDependency(SwiftDependency.CLIENT_RUNTIME)
             .definitionFile(formatModuleName(name))
             .build()
     }

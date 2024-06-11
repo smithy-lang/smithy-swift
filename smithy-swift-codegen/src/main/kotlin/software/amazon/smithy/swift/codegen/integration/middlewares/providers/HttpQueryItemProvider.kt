@@ -177,6 +177,7 @@ class HttpQueryItemProvider(
     private fun renderQueryItem(member: MemberShape, bindingIndex: HttpBindingIndex, originalMemberName: String, paramName: String, unwrapped: Boolean) {
         var (memberName, requiresDoCatch) = formatHeaderOrQueryValue(
             ctx,
+            writer,
             originalMemberName,
             member,
             HttpBinding.Location.QUERY,
@@ -230,6 +231,7 @@ class HttpQueryItemProvider(
     ) {
         var (queryItemValue, requiresDoCatch) = formatHeaderOrQueryValue(
             ctx,
+            writer,
             "queryItemValue",
             memberTarget.member,
             HttpBinding.Location.QUERY,

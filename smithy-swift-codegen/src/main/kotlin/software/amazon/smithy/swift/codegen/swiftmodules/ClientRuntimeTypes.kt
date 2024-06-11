@@ -50,6 +50,10 @@ object ClientRuntimeTypes {
         val EnumBodyMiddleware = runtimeSymbol("EnumBodyMiddleware", SwiftDeclaration.STRUCT)
         val IntEnumBodyMiddleware = runtimeSymbol("IntEnumBodyMiddleware", SwiftDeclaration.STRUCT)
         val StringBodyMiddleware = runtimeSymbol("StringBodyMiddleware", SwiftDeclaration.STRUCT)
+        val HttpInterceptor = runtimeSymbol("HttpInterceptor", SwiftDeclaration.PROTOCOL)
+        val MutableInput = runtimeSymbol("MutableInput", SwiftDeclaration.PROTOCOL)
+        val Handler = runtimeSymbol("Handler", SwiftDeclaration.PROTOCOL)
+        val OrchestratorBuilder = runtimeSymbol("OrchestratorBuilder", SwiftDeclaration.CLASS)
     }
 
     object Core {
@@ -77,9 +81,15 @@ object ClientRuntimeTypes {
         val EndpointResolverMiddleware = runtimeSymbol("EndpointResolverMiddleware", SwiftDeclaration.STRUCT)
         val Plugin = runtimeSymbol("Plugin", SwiftDeclaration.PROTOCOL)
         val ClientConfiguration = runtimeSymbol("ClientConfiguration", SwiftDeclaration.PROTOCOL)
+        val DefaultClientConfiguration = runtimeSymbol("DefaultClientConfiguration", SwiftDeclaration.PROTOCOL)
         val DefaultHttpClientConfiguration = runtimeSymbol("DefaultHttpClientConfiguration", SwiftDeclaration.PROTOCOL)
         val ClientConfigurationDefaults = runtimeSymbol("ClientConfigurationDefaults", SwiftDeclaration.TYPEALIAS)
         val ClientBuilder = runtimeSymbol("ClientBuilder", SwiftDeclaration.CLASS)
+        val Indirect = runtimeSymbol("Indirect", SwiftDeclaration.CLASS)
+        val HeaderDeserializationError = runtimeSymbol("HeaderDeserializationError", SwiftDeclaration.ENUM)
+        val quoteHeaderValue = runtimeSymbol("quoteHeaderValue", SwiftDeclaration.FUNC)
+        val DefaultClientPlugin = runtimeSymbol("DefaultClientPlugin", SwiftDeclaration.CLASS)
+        val DefaultTelemetry = runtimeSymbol("DefaultTelemetry", SwiftDeclaration.ENUM)
     }
 }
 

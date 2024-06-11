@@ -1,10 +1,15 @@
 package software.amazon.smithy.swift.codegen.integration.serde.readwrite
 
+import software.amazon.smithy.model.shapes.EnumShape
+import software.amazon.smithy.model.shapes.IntEnumShape
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
+import software.amazon.smithy.model.shapes.UnionShape
+import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
@@ -33,8 +38,8 @@ class WritingClosureUtils(
     }
 
     private fun makeWritingClosure(shape: Shape, memberTimestampFormatTrait: TimestampFormatTrait?, isSparse: Boolean): String {
-        val base = when (shape) {
-            is MapShape -> {
+        val base = when {
+            shape is MapShape -> {
                 val keyNodeInfo = nodeInfoUtils.nodeInfo(shape.key)
                 val valueNodeInfo = nodeInfoUtils.nodeInfo(shape.value)
                 val mapIsSparse = shape.hasTrait<SparseTrait>()
@@ -49,7 +54,7 @@ class WritingClosureUtils(
                     isFlattened
                 )
             }
-            is ListShape -> {
+            shape is ListShape -> {
                 val memberNodeInfo = nodeInfoUtils.nodeInfo(shape.member)
                 val listIsSparse = shape.hasTrait<SparseTrait>()
                 val memberWriter = writingClosure(shape.member, listIsSparse)
@@ -62,20 +67,36 @@ class WritingClosureUtils(
                     isFlattened
                 )
             }
-            is TimestampShape -> {
+            shape is TimestampShape -> {
                 writer.format(
                     "\$N(format: \$L)",
                     SmithyReadWriteTypes.timestampWritingClosure,
                     TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape)
                 )
             }
+            shape is EnumShape || shape is IntEnumShape || shape.hasTrait<EnumTrait>()-> {
+                writer.format(
+                    "\$N<\$N>().write(value:to:)",
+                    SmithyReadWriteTypes.WritingClosureBox,
+                    ctx.symbolProvider.toSymbol(shape),
+                )
+            }
+            shape is MemberShape -> {
+                return writingClosure(shape, isSparse)
+            }
+            shape is StructureShape || shape is UnionShape -> {
+                writer.format("\$N.write(value:to:)", ctx.symbolProvider.toSymbol(shape))
+            }
             else -> {
-                val symbol = ctx.symbolProvider.toSymbol(shape)
-                writer.format("\$N.write(value:to:)", symbol)
+                writer.format(
+                    "\$N.write\$L(value:to:)",
+                    SmithyReadWriteTypes.WritingClosures,
+                    ctx.symbolProvider.toSymbol(shape).name,
+                )
             }
         }
         return if (isSparse) {
-            writer.format("sparseFormOf(writingClosure: \$L)", base)
+            writer.format("\$N(writingClosure: \$L)", SmithyReadWriteTypes.sparseFormOf, base)
         } else {
             base
         }

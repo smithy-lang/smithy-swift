@@ -12,6 +12,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes.Middleware.OperationStack
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
@@ -54,7 +55,8 @@ class MiddlewareExecutionGenerator(
             )
         } else {
             writer.write(
-                "let builder = OrchestratorBuilder<\$N, \$N, \$N, \$N>()",
+                "let builder = \$N<\$N, \$N, \$N, \$N>()",
+                ClientRuntimeTypes.Middleware.OrchestratorBuilder,
                 inputShape,
                 outputShape,
                 SmithyHTTPAPITypes.SdkHttpRequest,
