@@ -45,6 +45,7 @@ let package = Package(
         .library(name: "SmithyEventStreamsAuthAPI", targets: ["SmithyEventStreamsAuthAPI"]),
         .library(name: "SmithyEventStreams", targets: ["SmithyEventStreams"]),
         .library(name: "SmithyChecksumsAPI", targets: ["SmithyChecksumsAPI"]),
+        .library(name: "SmithyChecksums", targets: ["SmithyChecksums"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: [
@@ -175,6 +176,10 @@ let package = Package(
         .target(
             name: "SmithyChecksumsAPI",
             dependencies: ["Smithy"]
+        ),
+        .target(
+            name: "SmithyChecksums",
+            dependencies: ["Smithy", "SmithyChecksumsAPI"]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
