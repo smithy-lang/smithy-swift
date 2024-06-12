@@ -102,7 +102,19 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         val spiName = symbol.getProperty("spiName").getOrNull()?.toString()
         val decl = symbol.getProperty("decl").getOrNull()?.toString()
         decl?.let {
-            addImport("$it ${symbol.namespace}.${symbol.name}", internalSPIName = spiName)
+            // No need to import Foundation types individually because:
+            // - Foundation is always present on supported platforms & needs not be managed as a dependency.
+            // - Importing Foundation types individually becomes messy when swift-corelibs-foundation
+            //   splits them out to separate modules like FoundationXML or FoundationNetworking.
+            //
+            // SwiftWriter does not manage swift-corelibs-foundation imports; the source files that access
+            // those types should import FoundationXML, FoundationNetworking, or other corelibs module
+            // by calling the function below.
+            if (symbol.namespace == "Foundation") {
+                addImport(symbol.namespace)
+            } else {
+                addImport("$it ${symbol.namespace}.${symbol.name}", internalSPIName = spiName)
+            }
         } ?: run {
             addImport(symbol.namespace, internalSPIName = spiName)
         }
