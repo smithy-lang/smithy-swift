@@ -13,11 +13,16 @@ object FoundationTypes {
     val Date = builtInSymbol("Date", SwiftDeclaration.STRUCT)
     val TimeInterval = builtInSymbol("TimeInterval", SwiftDeclaration.TYPEALIAS)
     val URL = builtInSymbol("URL", SwiftDeclaration.STRUCT)
-    val URLRequest = builtInSymbol("URLRequest", SwiftDeclaration.STRUCT)
+    val URLRequest = builtInNetworkingSymbol("URLRequest", SwiftDeclaration.STRUCT)
 }
 
 private fun builtInSymbol(symbol: String, declaration: SwiftDeclaration? = null) = buildSymbol {
     name = symbol
     declaration?.let { this.setProperty("decl", it.keyword) }
     namespace = "Foundation"
+}
+
+private fun builtInNetworkingSymbol(symbol: String, declaration: SwiftDeclaration? = null) = buildSymbol {
+    name = symbol
+    declaration?.let { this.setProperty("decl", it.keyword) }
 }
