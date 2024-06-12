@@ -99,8 +99,8 @@ public class CRTClientEngine: HTTPClient {
 #endif
             let httpMonitoringOptions = HTTPMonitoringOptions(
                 minThroughputBytesPerSecond: 1,
-                // 0 means infinite; sockets won't timeout if no value was provided in config.
-                allowableThroughputFailureInterval: socketTimeout ?? 0
+                // Default to 60 seconds if no value was provided in config.
+                allowableThroughputFailureInterval: socketTimeout ?? UInt32(60)
             )
 
             let options = HTTPClientConnectionOptions(
