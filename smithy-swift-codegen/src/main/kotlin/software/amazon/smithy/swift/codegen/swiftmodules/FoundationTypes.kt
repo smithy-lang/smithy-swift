@@ -22,6 +22,10 @@ private fun builtInSymbol(symbol: String, declaration: SwiftDeclaration? = null)
     namespace = "Foundation"
 }
 
+// Foundation symbols that are in Foundation on Apple but in FoundationNetworking on open-source Swift
+// are rendered without any namespace.
+//
+// Note that URL, URLComponents, and URLQueryItem are part of Foundation on both platforms.
 private fun builtInNetworkingSymbol(symbol: String, declaration: SwiftDeclaration? = null) = buildSymbol {
     name = symbol
     declaration?.let { this.setProperty("decl", it.keyword) }

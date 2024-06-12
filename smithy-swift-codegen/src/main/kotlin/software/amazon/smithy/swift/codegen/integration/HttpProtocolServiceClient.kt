@@ -40,7 +40,6 @@ open class HttpProtocolServiceClient(
         }
         writer.write("")
         renderClientExtension(serviceSymbol)
-        renderLogHandlerFactory(serviceSymbol)
         renderServiceSpecificPlugins()
     }
 
@@ -148,29 +147,6 @@ open class HttpProtocolServiceClient(
         }
     }
 
-    private fun renderLogHandlerFactory(serviceSymbol: Symbol) {
-//        writer.openBlock(
-//            "public struct \$LLogHandlerFactory: \$N {",
-//            "}",
-//            serviceSymbol.name,
-//            ClientRuntimeTypes.Core.SDKLogHandlerFactory
-//        ) {
-//            writer.write("public var label = \$S", serviceSymbol.name)
-//            writer.write("let logLevel: \$N", ClientRuntimeTypes.Core.SDKLogLevel)
-//
-//            writer.openBlock("public func construct(label: String) -> LogHandler {", "}") {
-//                writer.write("var handler = StreamLogHandler.standardOutput(label: label)")
-//                writer.write("handler.logLevel = logLevel.toLoggerType()")
-//                writer.write("return handler")
-//            }
-//
-//            writer.openBlock("public init(logLevel: \$N) {", "}", ClientRuntimeTypes.Core.SDKLogLevel) {
-//                writer.write("self.logLevel = logLevel")
-//            }
-//        }
-//        writer.write("")
-    }
-
     data class ConfigClassVariablesCustomization(val serviceSymbol: Symbol) : CodeSection
 
     /**
@@ -202,9 +178,13 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderSynchronousConfigInitializer(properties: List<ConfigProperty>) {
+        val propertyString = properties.joinToString(", ") {
+            writer.format("\$L: \$N = nil", it.name, it.type.toOptional())
+        }
         writer.openBlock(
-            "public convenience init(\$L) throws {", "}",
-            properties.joinToString(", ") { SwiftWriter("").format("\$L: \$N = nil", it.name, it.type.toOptional()) }
+            "public convenience init(\$L) throws {",
+            "}",
+            propertyString,
         ) {
             writer.write(
                 "self.init(\$L)",
