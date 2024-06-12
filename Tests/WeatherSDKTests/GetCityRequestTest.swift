@@ -6,6 +6,10 @@ import SmithyHTTPAPI
 import SmithyTestUtil
 @testable import WeatherSDK
 import XCTest
+import struct ClientRuntime.ContentMD5Middleware
+import struct ClientRuntime.OperationOutput
+import struct ClientRuntime.URLHostMiddleware
+import struct ClientRuntime.URLPathMiddleware
 
 
 class GetCityRequestTest: HttpRequestTestBase {

@@ -13,19 +13,6 @@ class PackageManifestGeneratorTests {
     private val testContext = setupTests("simple-service-with-operation-and-dependency.smithy", "smithy.example#Example")
 
     @Test
-    fun `it renders package manifest file with swift-numerics in dependencies block`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
-        assertNotNull(packageManifest)
-        val expectedContents = """
-        .package(
-            url: "https://github.com/apple/swift-numerics",
-            from: "0.0.5"
-        ),
-"""
-        packageManifest.shouldContain(expectedContents)
-    }
-
-    @Test
     fun `it renders package manifest file with macOS and iOS platforms block`() {
         val packageManifest = testContext.manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)

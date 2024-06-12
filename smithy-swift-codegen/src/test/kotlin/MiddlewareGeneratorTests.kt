@@ -32,7 +32,7 @@ public struct TestMiddleware: ClientRuntime.Middleware {
     public func handle<H>(context: Smithy.Context,
                   input: Swift.String,
                   next: H) async throws -> ClientRuntime.OperationOutput<Swift.String>
-    where H: Handler,
+    where H: ClientRuntime.Handler,
     Self.MInput == H.Input,
     Self.MOutput == H.Output
     {

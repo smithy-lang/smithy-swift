@@ -17,7 +17,7 @@ class BlobDecodeXMLGenerationTests {
     @Test
     fun `decode blob`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlBlobsOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlBlobsOutput {
 
@@ -37,7 +37,7 @@ extension XmlBlobsOutput {
     @Test
     fun `decode blob nested`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlBlobsNestedOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlBlobsNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlBlobsNestedOutput {
 
@@ -46,7 +46,7 @@ extension XmlBlobsNestedOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlBlobsNestedOutput()
-        value.nestedBlobList = try reader["nestedBlobList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: Foundation.Data.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        value.nestedBlobList = try reader["nestedBlobList"].readListIfPresent(memberReadingClosure: SmithyReadWrite.listReadingClosure(memberReadingClosure: SmithyReadWrite.ReadingClosures.readData(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
         return value
     }
 }

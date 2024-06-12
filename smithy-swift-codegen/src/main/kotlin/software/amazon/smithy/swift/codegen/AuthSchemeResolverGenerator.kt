@@ -128,6 +128,7 @@ class AuthSchemeResolverGenerator {
                 defaultResolverName,
                 serviceSpecificAuthResolverProtocol
             ) {
+                write("")
                 renderResolveAuthSchemeMethod(serviceIndex, ctx, writer)
                 write("")
                 renderConstructParametersMethod(

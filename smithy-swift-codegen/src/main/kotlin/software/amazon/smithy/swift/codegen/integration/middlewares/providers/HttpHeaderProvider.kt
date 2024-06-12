@@ -120,7 +120,7 @@ class HttpHeaderProvider(
             if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider) && !inCollection) {
                 writer.openBlock("if $memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
                     writer.write(
-                        "items.add(\$N(name: \$S, value: \$N(\$L)))",
+                        "items.add(\$N(name: \"\$L\", value: \$N(\$L)))",
                         SmithyHTTPAPITypes.Header,
                         paramName,
                         SwiftTypes.String,
@@ -129,7 +129,7 @@ class HttpHeaderProvider(
                 }
             } else if (inCollection && ctx.model.expectShape(member.target) !is TimestampShape) {
                 writer.write(
-                    "items.add(\$N(name: \$S, value: \$N(\$N(\$L))))",
+                    "items.add(\$N(name: \"\$L\", value: \$N(\$N(\$L))))",
                     SmithyHTTPAPITypes.Header,
                     paramName,
                     ClientRuntimeTypes.Core.quoteHeaderValue,
@@ -138,7 +138,7 @@ class HttpHeaderProvider(
                 )
             } else {
                 writer.write(
-                    "items.add(\$N(name: \$S, value: \$N(\$L)))",
+                    "items.add(\$N(name: \"\$L\", value: \$N(\$L)))",
                     SmithyHTTPAPITypes.Header,
                     paramName,
                     SwiftTypes.String,

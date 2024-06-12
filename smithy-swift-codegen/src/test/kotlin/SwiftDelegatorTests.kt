@@ -24,9 +24,9 @@ class SwiftDelegatorTests {
 
         SwiftCodegenPlugin().execute(context)
 
-        assertTrue(manifest.hasFile("example/models/GetFooInput.swift"))
-        assertTrue(manifest.hasFile("example/models/GetFooOutput.swift"))
-        assertTrue(manifest.hasFile("example/models/GetFooError.swift"))
+        assertTrue(manifest.hasFile("Sources/example/models/GetFooInput.swift"))
+        assertTrue(manifest.hasFile("Sources/example/models/GetFooOutput.swift"))
+        assertTrue(manifest.hasFile("Sources/example/models/GetFooError.swift"))
     }
 
     @Test
@@ -44,7 +44,7 @@ class SwiftDelegatorTests {
         delegator.flushWriters()
         assertEquals(
             SwiftWriter.GENERATED_FILE_HEADER + "\n\nHello!\n",
-            manifest.getFileString("example/models/GetFooInput.swift").get()
+            manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
         )
     }
 
@@ -63,7 +63,7 @@ class SwiftDelegatorTests {
         delegator.flushWriters()
         assertEquals(
             SwiftWriter.GENERATED_FILE_HEADER + "\n\nHello!\n\nGoodbye!\n",
-            manifest.getFileString("example/models/GetFooInput.swift").get()
+            manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
         )
     }
 }

@@ -7,6 +7,7 @@ package software.amazon.smithy.swift.codegen.swiftmodules
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftDeclaration
+import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object SwiftTypes {
     val String = builtInSymbol("String", SwiftDeclaration.STRUCT)
@@ -36,6 +37,6 @@ object SwiftTypes {
 private fun builtInSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
     name,
     declaration,
-    null,
+    SwiftDependency("Swift", "", "", "", "", ""),
     null,
 )

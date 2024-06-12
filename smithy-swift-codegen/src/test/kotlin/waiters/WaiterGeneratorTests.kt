@@ -28,7 +28,7 @@ class WaiterGeneratorTests {
     @Test
     fun `renders a waiters extension on protocol`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
         val expected = """
 extension TestClient {
 """
@@ -38,20 +38,20 @@ extension TestClient {
     @Test
     fun `renders a waiter config into extension`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
         val expected = """
-            return try WaiterConfiguration<HeadBucketInput, HeadBucketOutput>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
-        """.trimIndent()
+        return try ClientRuntime.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
     @Test
     fun `renders a waiter method into extension`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
         val expected = """
-            public func waitUntilBucketExists(options: WaiterOptions, input: HeadBucketInput) async throws -> WaiterOutcome<HeadBucketOutput> {
-        """.trimIndent()
+    public func waitUntilBucketExists(options: ClientRuntime.WaiterOptions, input: HeadBucketInput) async throws -> ClientRuntime.WaiterOutcome<HeadBucketOutput> {
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -93,7 +93,7 @@ extension TestClient {
                 return integrations.toMutableList()
             }
         }
-        val path = "Test/Waiters.swift"
+        val path = "Sources/Test/Waiters.swift"
         context.generationCtx.delegator.useFileWriter(path) { writer ->
             val unit = WaiterGenerator(codegenContext, context.generationCtx, context.generationCtx.delegator)
             unit.render()

@@ -16,7 +16,7 @@ class TimeStampEncodeGenerationTests {
     @Test
     fun `001 encode all timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsInput+Write.swift")
         val expectedContents = """
 extension XmlTimestampsInput {
 
@@ -35,13 +35,13 @@ extension XmlTimestampsInput {
     @Test
     fun `002 encode nested list with timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedInput+Write.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedInput+Write.swift")
         val expectedContents = """
 extension XmlTimestampsNestedInput {
 
     static func write(value: XmlTimestampsNestedInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: listWritingClosure(memberWritingClosure: timestampWritingClosure(format: .epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """
@@ -51,13 +51,13 @@ extension XmlTimestampsNestedInput {
     @Test
     fun `003 encode nested list with timestamps httpDate`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedHTTPDateInput+Write.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedHTTPDateInput+Write.swift")
         val expectedContents = """
 extension XmlTimestampsNestedHTTPDateInput {
 
     static func write(value: XmlTimestampsNestedHTTPDateInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: listWritingClosure(memberWritingClosure: timestampWritingClosure(format: .httpDate), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .httpDate), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """
@@ -67,13 +67,13 @@ extension XmlTimestampsNestedHTTPDateInput {
     @Test
     fun `004 encode nested list with timestamps with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsNestedXmlNameInput+Write.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedXmlNameInput+Write.swift")
         val expectedContents = """
 extension XmlTimestampsNestedXmlNameInput {
 
     static func write(value: XmlTimestampsNestedXmlNameInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: listWritingClosure(memberWritingClosure: timestampWritingClosure(format: .epochSeconds), memberNodeInfo: "nestedTag2", isFlattened: false), memberNodeInfo: "nestedTag1", isFlattened: false)
+        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .epochSeconds), memberNodeInfo: "nestedTag2", isFlattened: false), memberNodeInfo: "nestedTag1", isFlattened: false)
     }
 }
 """
@@ -83,7 +83,7 @@ extension XmlTimestampsNestedXmlNameInput {
     @Test
     fun `005 encode all timestamps, withxmlName`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlTimestampsXmlNameInput+Write.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsXmlNameInput+Write.swift")
         val expectedContents = """
 extension XmlTimestampsXmlNameInput {
 

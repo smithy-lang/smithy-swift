@@ -99,8 +99,10 @@ class HttpProtocolTestGenerator(
             val testFilename = "Tests/${ctx.settings.testModuleName}/$testClassName.swift"
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating request protocol test cases for ${operation.id}")
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 writer.addImport(ctx.settings.moduleName, true)
-
+                writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
+                writer.addImport(SwiftDependency.XCTest.target)
                 requestTestBuilder
                     .ctx(ctx)
                     .writer(writer)
@@ -131,10 +133,10 @@ class HttpProtocolTestGenerator(
             val testFilename = "Tests/${ctx.settings.testModuleName}/$testClassName.swift"
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating response protocol test cases for ${operation.id}")
-
+                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 writer.addImport(ctx.settings.moduleName, true)
+                writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
                 writer.addImport(SwiftDependency.XCTest.target)
-
                 responseTestBuilder
                     .ctx(ctx)
                     .writer(writer)
@@ -172,12 +174,10 @@ class HttpProtocolTestGenerator(
                 val testFilename = "Tests/${ctx.settings.testModuleName}/${opName}ErrorTest.swift"
                 ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                     LOGGER.fine("Generating error protocol test cases for ${operation.id}")
-
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                     writer.addImport(ctx.settings.moduleName, true)
                     writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
                     writer.addImport(SwiftDependency.XCTest.target)
-
                     errorTestBuilder
                         .error(error)
                         .ctx(ctx)

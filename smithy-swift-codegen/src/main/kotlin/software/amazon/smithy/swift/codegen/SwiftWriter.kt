@@ -118,12 +118,6 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         importContainer.addImport(packageName, isTestable, internalSPIName, importOnlyIfCanImport)
     }
 
-    // Adds an import statement that imports the individual type from the specified module
-    // Example: addIndividualTypeImport("struct", "Foundation", "Date") -> "import struct Foundation.Date"
-    fun addIndividualTypeImport(decl: SwiftDeclaration, module: String, type: String) {
-        importContainer.addImport("${decl.keyword} $module.$type", false)
-    }
-
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
         symbol.references.forEach { reference ->
             for (option in options) {
@@ -141,7 +135,8 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
 
         // Leave out the header and imports for a Swift package manifest (Package.swift).
         // Package.swift requires a special comment at the top to specify Swift tools version,
-        // and the package manifest generator manually writes its own dependency imports.
+        // and the package manifest generator manually writes its own dependency imports
+        // (it only imports the PackageDescription module.)
         return contents.takeIf { fullPackageName == "Package" } ?: (GENERATED_FILE_HEADER + imports + contents)
     }
 

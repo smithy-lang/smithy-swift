@@ -101,8 +101,7 @@ class HTTPResponseHeaders(
                         // to the target symbol type
 
                         // we also have to handle multiple comma separated values (e.g. 'X-Foo': "1, 2, 3"`)
-                        var splitFn = "splitHeaderListValues"
-                        var splitFnPrefix = ""
+                        var splitFnSymbol = ClientRuntimeTypes.Core.splitHeaderListValues
                         var invalidHeaderListErrorName = "invalidNumbersHeaderList"
                         val conversion = when (val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)) {
                             is BooleanShape -> {
@@ -125,11 +124,11 @@ class HTTPResponseHeaders(
                                     defaultTimestampFormat
                                 )
                                 if (tsFormat == TimestampFormatTrait.Format.HTTP_DATE) {
-                                    splitFn = "splitHttpDateHeaderListValues"
+                                    splitFnSymbol = ClientRuntimeTypes.Core.splitHttpDateHeaderListValues
                                 }
                                 invalidHeaderListErrorName = "invalidTimestampHeaderList"
                                 writer.format(
-                                    "(${stringToDate(writer, "\$0", tsFormat)} ?? \$N())",
+                                    "(${stringToDate(writer, "\$\$\$\$0", tsFormat)} ?? \$N())",
                                     FoundationTypes.Date
                                 )
                             }
@@ -153,7 +152,7 @@ class HTTPResponseHeaders(
                         if (memberTarget.isSetShape) {
                             memberValue = "${SwiftTypes.Set}(${memberName}HeaderValues)"
                         }
-                        writer.openBlock("if let ${memberName}HeaderValues = try $splitFnPrefix$splitFn(${memberName}HeaderValue) {", "}") {
+                        writer.openBlock("if let ${memberName}HeaderValues = try \$N(${memberName}HeaderValue) {", "}", splitFnSymbol) {
                             // render map function
                             val collectionMemberTargetShape = ctx.model.expectShape(memberTarget.member.target)
                             val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)

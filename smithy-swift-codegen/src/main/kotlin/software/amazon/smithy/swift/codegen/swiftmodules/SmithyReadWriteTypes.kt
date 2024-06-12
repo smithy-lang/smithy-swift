@@ -25,7 +25,6 @@ object SmithyReadWriteTypes {
     val WritingClosures = runtimeSymbol("WritingClosures", SwiftDeclaration.ENUM)
     val ReadingClosureBox = runtimeSymbol("ReadingClosureBox", SwiftDeclaration.STRUCT)
     val WritingClosureBox = runtimeSymbol("WritingClosureBox", SwiftDeclaration.STRUCT)
-
 }
 
 private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(

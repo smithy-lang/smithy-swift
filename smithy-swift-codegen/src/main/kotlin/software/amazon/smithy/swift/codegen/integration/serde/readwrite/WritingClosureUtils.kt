@@ -74,7 +74,7 @@ class WritingClosureUtils(
                     TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape)
                 )
             }
-            shape is EnumShape || shape is IntEnumShape || shape.hasTrait<EnumTrait>()-> {
+            shape is EnumShape || shape is IntEnumShape || shape.hasTrait<EnumTrait>() -> {
                 writer.format(
                     "\$N<\$N>().write(value:to:)",
                     SmithyReadWriteTypes.WritingClosureBox,

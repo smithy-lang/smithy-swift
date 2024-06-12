@@ -16,7 +16,7 @@ class RecursiveShapesEncodeXMLGenerationTests {
     @Test
     fun `001 encode recursive shape Nested1`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/RecursiveShapesInputOutputNested1+ReadWrite.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/RecursiveShapesInputOutputNested1+ReadWrite.swift")
         val expectedContents = """
 extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1 {
 
@@ -41,7 +41,7 @@ extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1 {
     @Test
     fun `encode recursive shape Nested2`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/RecursiveShapesInputOutputNested2+ReadWrite.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/RecursiveShapesInputOutputNested2+ReadWrite.swift")
         val expectedContents = """
 extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2 {
 
@@ -65,13 +65,13 @@ extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2 {
     @Test
     fun `encode recursive nested shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlNestedRecursiveShapesInput+Write.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlNestedRecursiveShapesInput+Write.swift")
         val expectedContents = """
 extension XmlNestedRecursiveShapesInput {
 
     static func write(value: XmlNestedRecursiveShapesInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["nestedRecursiveList"].writeList(value.nestedRecursiveList, memberWritingClosure: listWritingClosure(memberWritingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.write(value:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        try writer["nestedRecursiveList"].writeList(value.nestedRecursiveList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1.write(value:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """

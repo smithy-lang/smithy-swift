@@ -90,6 +90,8 @@ object ClientRuntimeTypes {
         val quoteHeaderValue = runtimeSymbol("quoteHeaderValue", SwiftDeclaration.FUNC)
         val DefaultClientPlugin = runtimeSymbol("DefaultClientPlugin", SwiftDeclaration.CLASS)
         val DefaultTelemetry = runtimeSymbol("DefaultTelemetry", SwiftDeclaration.ENUM)
+        val splitHeaderListValues = runtimeSymbol("splitHeaderListValues", SwiftDeclaration.FUNC)
+        val splitHttpDateHeaderListValues = runtimeSymbol("splitHttpDateHeaderListValues", SwiftDeclaration.FUNC)
     }
 }
 
