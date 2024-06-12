@@ -22,12 +22,12 @@ jobs:
           - macos-13-xlarge
           - macos-14-xlarge
         xcode:
-          - Xcode_14.1
+          - Xcode_15.2
           - Xcode_15.4
         destination:
-          - 'platform=iOS Simulator,OS=16.1,name=iPhone 14'
+          - 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
           - 'platform=iOS Simulator,OS=17.5,name=iPhone 15'
-          - 'platform=tvOS Simulator,OS=16.1,name=Apple TV 4K (3rd generation) (at 1080p)'
+          - 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
           - 'platform=tvOS Simulator,OS=17.5,name=Apple TV 4K (3rd generation) (at 1080p)'
           - 'platform=OS X'
         exclude:
@@ -36,17 +36,17 @@ jobs:
             xcode: Xcode_15.4
           # Don't run new macOS with old Xcode
           - runner: macos-14-xlarge
-            xcode: Xcode_14.1
+            xcode: Xcode_15.2
           # Don't run old iOS/tvOS simulator with new Xcode
-          - destination: 'platform=iOS Simulator,OS=16.1,name=iPhone 14'
+          - destination: 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
             xcode: Xcode_15.4
-          - destination: 'platform=tvOS Simulator,OS=16.1,name=Apple TV 4K (3rd generation) (at 1080p)'
+          - destination: 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
             xcode: Xcode_15.4
           # Don't run new iOS/tvOS simulator with old Xcode
           - destination: 'platform=iOS Simulator,OS=17.5,name=iPhone 15'
-            xcode: Xcode_14.1
+            xcode: Xcode_15.2
           - destination: 'platform=tvOS Simulator,OS=17.5,name=Apple TV 4K (3rd generation) (at 1080p)'
-            xcode: Xcode_14.1
+            xcode: Xcode_15.2
     steps:
       - name: Checkout smithy-swift
         uses: actions/checkout@v4
@@ -123,8 +123,8 @@ jobs:
       fail-fast: false
       matrix:
         swift:
-          - 5.7-amazonlinux2
-          - 5.7-focal
+          - 5.9-amazonlinux2
+          - 5.9-focal
           - 5.10-amazonlinux2
           - 5.10-jammy
     container:
