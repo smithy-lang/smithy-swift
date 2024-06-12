@@ -10,7 +10,7 @@
                     "gitRepo": "https://github.com/smithy-lang/smithy-swift.git",
                     "author": "Amazon Web Services",
                     "homepage": "https://docs.amplify.aws/",
-                    "swiftVersion": "5.7.0",
+                    "swiftVersion": "5.9.0",
                     "mergeModels": false
                 }
             }
