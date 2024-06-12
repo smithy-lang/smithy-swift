@@ -57,7 +57,7 @@ public protocol WriteableStream: AnyObject {
 }
 
 /// Protocol that provides reading and writing data to a stream
-public protocol Stream: ReadableStream, WriteableStream {
+public protocol Stream: ReadableStream, WriteableStream, Sendable {
 }
 
 public enum StreamError: Error {

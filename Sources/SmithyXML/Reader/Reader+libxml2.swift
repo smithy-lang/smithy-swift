@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import libxml2
+@preconcurrency import libxml2
 import struct Foundation.Data
 
 extension Reader {

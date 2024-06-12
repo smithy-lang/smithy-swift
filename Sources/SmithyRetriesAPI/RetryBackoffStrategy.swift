@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol RetryBackoffStrategy {
+public protocol RetryBackoffStrategy : Sendable {
     /// Returns a Duration that a caller performing retries should use for delaying between retries. In a green-threads context, this would be
     /// the value indicating the value to set for a timer or time scheduled task.
     ///

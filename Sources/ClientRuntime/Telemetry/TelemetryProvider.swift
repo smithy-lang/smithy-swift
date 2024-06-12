@@ -6,7 +6,7 @@
 //
 
 /// A Telemetry Provider provides the SDK-level Telemetry configuration values.
-public protocol TelemetryProvider {
+public protocol TelemetryProvider : Sendable {
     /// The configured Telemetry Context Manager.
     var contextManager: any TelemetryContextManager { get }
     /// The configured Logger Provider.

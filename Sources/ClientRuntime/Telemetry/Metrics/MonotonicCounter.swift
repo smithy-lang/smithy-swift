@@ -10,7 +10,7 @@ import struct Smithy.Attributes
 /// A Monotonic Counter measures a value that only ever increases.
 ///
 /// Examples include: total requests received
-public protocol MonotonicCounter {
+public protocol MonotonicCounter : Sendable {
 
     /// Records a value for a metric.
     ///
