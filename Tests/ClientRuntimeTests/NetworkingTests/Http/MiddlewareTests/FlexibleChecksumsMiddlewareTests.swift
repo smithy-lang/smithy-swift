@@ -139,11 +139,12 @@ class FlexibleChecksumsMiddlewareTests: XCTestCase {
         let checksumAlgorithm = "crc32"
         let signingConfig = SigningConfig(algorithm: .signingV4, signatureType: .requestHeaders, service: "S3", region: "us-west-2")
 
-        let testData = ByteStream.stream(AWSChunkedStream(
+        let testData = ByteStream.stream(try AWSChunkedStream(
             inputStream: BufferedStream(data: mockData, isClosed: true),
             signingConfig: signingConfig,
             previousSignature: "test-signature",
-            trailingHeaders: Headers()
+            trailingHeaders: Headers(),
+            checksumString: checksumAlgorithm
         ))
 
         setStreamingPayload(payload: testData, checksum: checksumAlgorithm)
