@@ -45,7 +45,7 @@ public class ChunkedStream {
     /// The actor instance used by this ChunkedStream to enforce reading in series.
     private let readCoordinator = ReadCoordinator()
 
-    init(
+    public init(
         inputStream: Stream,
         signingConfig: SigningConfig,
         previousSignature: String,
