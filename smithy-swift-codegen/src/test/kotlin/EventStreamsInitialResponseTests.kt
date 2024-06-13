@@ -18,7 +18,7 @@ class EventStreamsInitialResponseTests {
         )
         val contents = getFileContents(
             context.manifest,
-            "/InitialMessageEventStreams/models/TestStreamOperationWithInitialRequestResponseOutput+HttpResponseBinding.swift"
+            "Sources/InitialMessageEventStreams/models/TestStreamOperationWithInitialRequestResponseOutput+HttpResponseBinding.swift"
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """

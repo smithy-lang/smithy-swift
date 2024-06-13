@@ -455,15 +455,12 @@ MyStruct(
         val contents = writer.toString()
 
         val expected = """
-import ComplexModule
-
 MyStruct(
-    bigDecimalMember: Complex(25613525352378.523),
-    bigIntMember: Array(String(31825352653626).utf8),
-    bigIntMemberNegative: Array(String(-31825352653626).utf8)
+    bigDecimalMember: 2.5613525352378523E13,
+    bigIntMember: 31825352653626,
+    bigIntMemberNegative: -31825352653626
 )
-        """.trimIndent()
-
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 }

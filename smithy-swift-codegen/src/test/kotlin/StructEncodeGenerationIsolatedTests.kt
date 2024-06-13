@@ -11,26 +11,26 @@ class StructEncodeGenerationIsolatedTests {
     @Test
     fun `BlobInput`() {
         val context = setupTests("Isolated/BlobInput.smithy", "com.test#Example")
-        Assertions.assertTrue(context.manifest.hasFile("/example/models/BlobInputInput+Write.swift"))
+        Assertions.assertTrue(context.manifest.hasFile("Sources/example/models/BlobInputInput+Write.swift"))
     }
 
     @Test
     fun `BlobInput Contents`() {
         val context = setupTests("Isolated/BlobInput.smithy", "com.test#Example")
-        val contents = getModelFileContents("example", "BlobInputInput+Write.swift", context.manifest)
+        val contents = getModelFileContents("Sources/example", "BlobInputInput+Write.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
     }
 
     @Test
     fun `EnumInput`() {
         val testContext = setupTests("Isolated/EnumInput.smithy", "com.test#Example")
-        Assertions.assertTrue(testContext.manifest.hasFile("/example/models/EnumInputInput+Write.swift"))
+        Assertions.assertTrue(testContext.manifest.hasFile("Sources/example/models/EnumInputInput+Write.swift"))
     }
 
     @Test
     fun `EnumInput Contents`() {
         val context = setupTests("Isolated/EnumInput.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/example/models/EnumInputInput.swift")
+        val contents = getFileContents(context.manifest, "Sources/example/models/EnumInputInput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -44,7 +44,7 @@ class StructEncodeGenerationIsolatedTests {
     fun `it can handle nested string lists`() {
         val context = setupTests("Isolated/NestedStringList.smithy", "com.test#Example")
         print(context.manifest.files)
-        val contents = getFileContents(context.manifest, "/example/models/JsonListsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "Sources/example/models/JsonListsInput+Write.swift")
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents = """
@@ -52,9 +52,9 @@ extension JsonListsInput {
 
     static func write(value: JsonListsInput?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
-        try writer["nestedStringList"].writeList(value.nestedStringList, memberWritingClosure: listWritingClosure(memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
-        try writer["stringList"].writeList(value.stringList, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
-        try writer["stringSet"].writeList(value.stringSet, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+        try writer["nestedStringList"].writeList(value.nestedStringList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        try writer["stringList"].writeList(value.stringList, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "member", isFlattened: false)
+        try writer["stringSet"].writeList(value.stringSet, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """

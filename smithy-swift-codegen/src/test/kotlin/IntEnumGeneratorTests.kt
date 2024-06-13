@@ -13,7 +13,7 @@ class IntEnumGeneratorTests {
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
         val enumShape = manifest
-            .getFileString("example/models/Abcs.swift").get()
+            .getFileString("Sources/example/models/Abcs.swift").get()
         Assertions.assertNotNull(enumShape)
         var expectedGeneratedEnum = """
 public enum Abcs: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Hashable {

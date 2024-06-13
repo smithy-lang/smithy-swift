@@ -10,8 +10,6 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.MemberShapeEncodeGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
 
 class UnionEncodeGenerator(
@@ -21,7 +19,6 @@ class UnionEncodeGenerator(
     private val writer: SwiftWriter
 ) : MemberShapeEncodeGenerator(ctx, writer) {
     override fun render() {
-        writer.addImports(ctx.service.requestWireProtocol)
         val structSymbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
             "static func write(value: \$N?, to writer: \$N) throws {", "}",

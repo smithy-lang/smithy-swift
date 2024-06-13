@@ -10,7 +10,7 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
     @Test
     fun `it can handle nan values`() {
         val context = setupTests("Isolated/number-type-test.smithy", "aws.protocoltests.restjson#RestJson")
-        val contents = getFileContents(context.manifest, "/RestJsonTests/HttpRequestWithFloatLabelsRequestTest.swift")
+        val contents = getFileContents(context.manifest, "Tests/RestJsonTests/HttpRequestWithFloatLabelsRequestTest.swift")
 
         val expectedContents = """
     func testRestJsonSupportsNaNFloatLabels() async throws {
@@ -65,7 +65,7 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
     @Test
     fun `it can handle infinity values`() {
         val context = setupTests("Isolated/number-type-test.smithy", "aws.protocoltests.restjson#RestJson")
-        val contents = getFileContents(context.manifest, "/RestJsonTests/HttpRequestWithFloatLabelsRequestTest.swift")
+        val contents = getFileContents(context.manifest, "Tests/RestJsonTests/HttpRequestWithFloatLabelsRequestTest.swift")
 
         val expectedContents = """
     func testRestJsonSupportsInfinityFloatLabels() async throws {
@@ -119,7 +119,7 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
     @Test
     fun `it can handle negative infinity values`() {
         val context = setupTests("Isolated/number-type-test.smithy", "aws.protocoltests.restjson#RestJson")
-        val contents = getFileContents(context.manifest, "/RestJsonTests/HttpRequestWithFloatLabelsRequestTest.swift")
+        val contents = getFileContents(context.manifest, "Tests/RestJsonTests/HttpRequestWithFloatLabelsRequestTest.swift")
 
         val expectedContents = """
     func testRestJsonSupportsNegativeInfinityFloatLabels() async throws {
@@ -173,7 +173,7 @@ class IsolatedHttpProtocolUnitTestRequestGeneratorTests {
     @Test
     fun `it can handle nan values in response`() {
         val context = setupTests("Isolated/number-type-test.smithy", "aws.protocoltests.restjson#RestJson")
-        val contents = getFileContents(context.manifest, "/RestJsonTests/InputAndOutputWithHeadersResponseTest.swift")
+        val contents = getFileContents(context.manifest, "Tests/RestJsonTests/InputAndOutputWithHeadersResponseTest.swift")
 
         val expectedContents = """
 class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
@@ -209,7 +209,7 @@ class InputAndOutputWithHeadersResponseTest: HttpResponseTestBase {
     @Test
     fun `it generates the document type correctly`() {
         val context = setupTests("Isolated/document-type-test.smithy", "aws.protocoltests.restjson#RestJson")
-        val contents = getFileContents(context.manifest, "/RestJsonTests/DocumentTypeRequestTest.swift")
+        val contents = getFileContents(context.manifest, "Tests/RestJsonTests/DocumentTypeRequestTest.swift")
 
         val expectedContents = """
 class DocumentTypeRequestTest: HttpRequestTestBase {

@@ -6,7 +6,6 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.config.ConfigProperty
 import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlugin
@@ -24,7 +23,12 @@ open class HttpProtocolServiceClient(
     private val serviceName: String = ctx.settings.sdkId
 
     fun render(serviceSymbol: Symbol) {
-        writer.openBlock("public class \$L: Client {", "}", serviceSymbol.name) {
+        writer.openBlock(
+            "public class \$L: \$N {",
+            "}",
+            serviceSymbol.name,
+            ClientRuntimeTypes.Core.Client,
+        ) {
             writer.write("public static let clientName = \$S", serviceSymbol.name)
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
             writer.write("let config: \$L", serviceConfig.typeName)
@@ -36,7 +40,6 @@ open class HttpProtocolServiceClient(
         }
         writer.write("")
         renderClientExtension(serviceSymbol)
-        renderLogHandlerFactory(serviceSymbol)
         renderServiceSpecificPlugins()
     }
 
@@ -64,8 +67,8 @@ open class HttpProtocolServiceClient(
             renderClientConfig(serviceSymbol)
             writer.write("")
 
-            writer.openBlock("public static func builder() -> ClientBuilder<\$L> {", "}", serviceSymbol.name) {
-                writer.openBlock("return ClientBuilder<\$L>(defaultPlugins: [", "])", serviceSymbol.name) {
+            writer.openBlock("public static func builder() -> \$N<\$L> {", "}", ClientRuntimeTypes.Core.ClientBuilder, serviceSymbol.name) {
+                writer.openBlock("return \$N<\$L>(defaultPlugins: [", "])", ClientRuntimeTypes.Core.ClientBuilder, serviceSymbol.name) {
 
                     val defaultPlugins: MutableList<Plugin> = mutableListOf(DefaultClientPlugin())
 
@@ -94,7 +97,8 @@ open class HttpProtocolServiceClient(
         val clientConfigurationProtocols =
             ctx.integrations
                 .flatMap { it.clientConfigurations(ctx) }
-                .mapNotNull { it.swiftProtocolName?.name }
+                .mapNotNull { it.swiftProtocolName }
+                .map { writer.format("\$N", it) }
                 .joinToString(" & ")
 
         writer.openBlock(
@@ -105,7 +109,6 @@ open class HttpProtocolServiceClient(
             val properties: List<ConfigProperty> = ctx.integrations
                 .flatMap { it.clientConfigurations(ctx).flatMap { it.getProperties(ctx) } }
                 .let { overrideConfigProperties(it) }
-            properties.forEach { writer.addImport(it.type.namespace) }
 
             renderConfigClassVariables(serviceSymbol, properties)
 
@@ -144,29 +147,6 @@ open class HttpProtocolServiceClient(
         }
     }
 
-    private fun renderLogHandlerFactory(serviceSymbol: Symbol) {
-        writer.openBlock(
-            "public struct \$LLogHandlerFactory: \$N {",
-            "}",
-            serviceSymbol.name,
-            ClientRuntimeTypes.Core.SDKLogHandlerFactory
-        ) {
-            writer.write("public var label = \$S", serviceSymbol.name)
-            writer.write("let logLevel: \$N", ClientRuntimeTypes.Core.SDKLogLevel)
-
-            writer.openBlock("public func construct(label: String) -> LogHandler {", "}") {
-                writer.write("var handler = StreamLogHandler.standardOutput(label: label)")
-                writer.write("handler.logLevel = logLevel.toLoggerType()")
-                writer.write("return handler")
-            }
-
-            writer.openBlock("public init(logLevel: \$N) {", "}", ClientRuntimeTypes.Core.SDKLogLevel) {
-                writer.write("self.logLevel = logLevel")
-            }
-        }
-        writer.write("")
-    }
-
     data class ConfigClassVariablesCustomization(val serviceSymbol: Symbol) : CodeSection
 
     /**
@@ -187,7 +167,7 @@ open class HttpProtocolServiceClient(
     private fun renderConfigInitializer(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
         writer.openBlock(
             "private init(\$L) {", "}",
-            properties.joinToString(", ") { "_ ${it.name}: ${it.type.renderSwiftType()}" }
+            properties.joinToString(", ") { "_ ${it.name}: ${it.type.renderSwiftType(writer)}" }
         ) {
             properties.forEach {
                 writer.write("self.\$L = \$L", it.name, it.name)
@@ -198,9 +178,13 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderSynchronousConfigInitializer(properties: List<ConfigProperty>) {
+        val propertyString = properties.joinToString(", ") {
+            writer.format("\$L: \$N = nil", it.name, it.type.toOptional())
+        }
         writer.openBlock(
-            "public convenience init(\$L) throws {", "}",
-            properties.joinToString(", ") { "${it.name}: ${it.type.toOptional().renderSwiftType()} = nil" }
+            "public convenience init(\$L) throws {",
+            "}",
+            propertyString,
         ) {
             writer.write(
                 "self.init(\$L)",
@@ -208,7 +192,7 @@ open class HttpProtocolServiceClient(
                     if (it.default?.isAsync == true) {
                         it.name
                     } else {
-                        it.default?.render(it.name) ?: it.name
+                        it.default?.render(writer, it.name) ?: it.name
                     }
                 }
             )
@@ -221,15 +205,15 @@ open class HttpProtocolServiceClient(
 
         writer.openBlock(
             "public convenience init(\$L) async throws {", "}",
-            properties.joinToString(", ") { "${it.name}: ${it.type.toOptional().renderSwiftType()} = nil" }
+            properties.joinToString(", ") { "${it.name}: ${it.type.toOptional().renderSwiftType(writer)} = nil" }
         ) {
             writer.write(
                 "self.init(\$L)",
                 properties.joinToString(", ") {
                     if (it.default?.isAsync == true) {
-                        it.default.render()
+                        it.default.render(writer)
                     } else {
-                        it.default?.render(it.name) ?: it.name
+                        it.default?.render(writer, it.name) ?: it.name
                     }
                 }
             )
@@ -237,8 +221,7 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
     private fun renderServiceSpecificPlugins() {
-        ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/Plugins.swift") { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
+        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Plugins.swift") { writer ->
             ctx.integrations
                 .flatMap { it.plugins(serviceConfig) }
                 .onEach { it.render(ctx, writer) }

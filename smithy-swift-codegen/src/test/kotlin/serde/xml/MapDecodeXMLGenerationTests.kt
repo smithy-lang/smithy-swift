@@ -17,7 +17,7 @@ class MapDecodeXMLGenerationTests {
     @Test
     fun `001 decode wrapped map`() {
         val context = setupTests("Isolated/Restxml/xml-maps.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsOutput {
 
@@ -37,7 +37,7 @@ extension XmlMapsOutput {
     @Test
     fun `002 decode wrapped map with name protocol`() {
         val context = setupTests("Isolated/Restxml/xml-maps.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsWithNameProtocolOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsWithNameProtocolOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsWithNameProtocolOutput {
 
@@ -57,7 +57,7 @@ extension XmlMapsWithNameProtocolOutput {
     @Test
     fun `003 decode nested wrapped map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsNestedOutput {
 
@@ -66,7 +66,7 @@ extension XmlMapsNestedOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsNestedOutput()
-        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         return value
     }
 }
@@ -77,7 +77,7 @@ extension XmlMapsNestedOutput {
     @Test
     fun `004 decode nested nested wrapped map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nestednested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedNestedOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsNestedNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsNestedNestedOutput {
 
@@ -86,7 +86,7 @@ extension XmlMapsNestedNestedOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsNestedNestedOutput()
-        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.mapReadingClosure(valueReadingClosure: SmithyReadWrite.mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         return value
     }
 }
@@ -97,7 +97,7 @@ extension XmlMapsNestedNestedOutput {
     @Test
     fun `005 decode flattened map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlFlattenedMapsOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlFlattenedMapsOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlFlattenedMapsOutput {
 
@@ -117,7 +117,7 @@ extension XmlFlattenedMapsOutput {
     @Test
     fun `006 decode flattened nested map`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsFlattenedNestedOutput {
 
@@ -126,7 +126,7 @@ extension XmlMapsFlattenedNestedOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsFlattenedNestedOutput()
-        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
         return value
     }
 }
@@ -137,7 +137,7 @@ extension XmlMapsFlattenedNestedOutput {
     @Test
     fun `007 decode map with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-maps-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsXmlNameOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsXmlNameOutput {
 
@@ -157,7 +157,7 @@ extension XmlMapsXmlNameOutput {
     @Test
     fun `008 decode map with xmlname flattened`() {
         val context = setupTests("Isolated/Restxml/xml-maps-xmlname-flattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameFlattenedOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsXmlNameFlattenedOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsXmlNameFlattenedOutput {
 
@@ -177,7 +177,7 @@ extension XmlMapsXmlNameFlattenedOutput {
     @Test
     fun `009 decode map with xmlname nested`() {
         val context = setupTests("Isolated/Restxml/xml-maps-xmlname-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNameNestedOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsXmlNameNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsXmlNameNestedOutput {
 
@@ -186,7 +186,7 @@ extension XmlMapsXmlNameNestedOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsXmlNameNestedOutput()
-        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "CustomKey2", valueNodeInfo: "CustomValue2", isFlattened: false), keyNodeInfo: "CustomKey1", valueNodeInfo: "CustomValue1", isFlattened: false)
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.mapReadingClosure(valueReadingClosure: RestXmlProtocolClientTypes.GreetingStruct.read(from:), keyNodeInfo: "CustomKey2", valueNodeInfo: "CustomValue2", isFlattened: false), keyNodeInfo: "CustomKey1", valueNodeInfo: "CustomValue1", isFlattened: false)
         return value
     }
 }
@@ -196,7 +196,7 @@ extension XmlMapsXmlNameNestedOutput {
     @Test
     fun `011 decode flattened nested map with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedXmlNameOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedNestedXmlNameOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsFlattenedNestedXmlNameOutput {
 
@@ -205,7 +205,7 @@ extension XmlMapsFlattenedNestedXmlNameOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsFlattenedNestedXmlNameOutput()
-        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false), keyNodeInfo: "yek", valueNodeInfo: "eulav", isFlattened: true)
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.mapReadingClosure(valueReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false), keyNodeInfo: "yek", valueNodeInfo: "eulav", isFlattened: true)
         return value
     }
 }
@@ -216,7 +216,7 @@ extension XmlMapsFlattenedNestedXmlNameOutput {
     @Test
     fun `011 decode map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsXmlNamespaceOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsXmlNamespaceOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsXmlNamespaceOutput {
 
@@ -225,7 +225,7 @@ extension XmlMapsXmlNamespaceOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsXmlNamespaceOutput()
-        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("Quality", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Degree", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
+        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), keyNodeInfo: .init("Quality", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Degree", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
         return value
     }
 }
@@ -236,7 +236,7 @@ extension XmlMapsXmlNamespaceOutput {
     @Test
     fun `012 decode flattened map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedXmlNamespaceOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedXmlNamespaceOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsFlattenedXmlNamespaceOutput {
 
@@ -245,7 +245,7 @@ extension XmlMapsFlattenedXmlNamespaceOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsFlattenedXmlNamespaceOutput()
-        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("Uid", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Val", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
+        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), keyNodeInfo: .init("Uid", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("Val", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
         return value
     }
 }
@@ -256,7 +256,7 @@ extension XmlMapsFlattenedXmlNamespaceOutput {
     @Test
     fun `013 decode nested map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsNestedXmlNamespaceOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsNestedXmlNamespaceOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsNestedXmlNamespaceOutput {
 
@@ -265,7 +265,7 @@ extension XmlMapsNestedXmlNamespaceOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsNestedXmlNamespaceOutput()
-        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
+        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: SmithyReadWrite.mapReadingClosure(valueReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: false)
         return value
     }
 }
@@ -276,7 +276,7 @@ extension XmlMapsNestedXmlNamespaceOutput {
     @Test
     fun `014 decode nested flattened map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedNestedXmlNamespaceOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedNestedXmlNamespaceOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsFlattenedNestedXmlNamespaceOutput {
 
@@ -285,7 +285,7 @@ extension XmlMapsFlattenedNestedXmlNamespaceOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsFlattenedNestedXmlNamespaceOutput()
-        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: mapReadingClosure(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
+        value.myMap = try reader[.init("myMap", namespaceDef: .init(prefix: "", uri: "http://boo.com"))].readMapIfPresent(valueReadingClosure: SmithyReadWrite.mapReadingClosure(valueReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), keyNodeInfo: .init("K", namespaceDef: .init(prefix: "", uri: "http://goo.com")), valueNodeInfo: .init("V", namespaceDef: .init(prefix: "", uri: "http://hoo.com")), isFlattened: false), keyNodeInfo: .init("yek", namespaceDef: .init(prefix: "", uri: "http://doo.com")), valueNodeInfo: .init("eulav", namespaceDef: .init(prefix: "", uri: "http://eoo.com")), isFlattened: true)
         return value
     }
 }
@@ -295,7 +295,7 @@ extension XmlMapsFlattenedNestedXmlNamespaceOutput {
     @Test
     fun `015 decode map containing list`() {
         val context = setupTests("Isolated/Restxml/xml-maps-contain-list.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsContainListOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsContainListOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsContainListOutput {
 
@@ -304,7 +304,7 @@ extension XmlMapsContainListOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsContainListOutput()
-        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: listReadingClosure(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.listReadingClosure(memberReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         return value
     }
 }
@@ -314,7 +314,7 @@ extension XmlMapsContainListOutput {
     @Test
     fun `016 decode flattened map containing list`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-contain-list.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedContainListOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedContainListOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsFlattenedContainListOutput {
 
@@ -323,7 +323,7 @@ extension XmlMapsFlattenedContainListOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsFlattenedContainListOutput()
-        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: listReadingClosure(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.listReadingClosure(memberReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
         return value
     }
 }
@@ -334,7 +334,7 @@ extension XmlMapsFlattenedContainListOutput {
     @Test
     fun `017 decode map containing timestamp`() {
         val context = setupTests("Isolated/Restxml/xml-maps-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsTimestampsOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsTimestampsOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsTimestampsOutput {
 
@@ -343,7 +343,7 @@ extension XmlMapsTimestampsOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsTimestampsOutput()
-        value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: timestampReadingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.timestampReadingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         return value
     }
 }
@@ -354,7 +354,7 @@ extension XmlMapsTimestampsOutput {
     @Test
     fun `018 decode flattened map containing timestamp`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsFlattenedTimestampsOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedTimestampsOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsFlattenedTimestampsOutput {
 
@@ -363,7 +363,7 @@ extension XmlMapsFlattenedTimestampsOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsFlattenedTimestampsOutput()
-        value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: timestampReadingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.timestampReadingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
         return value
     }
 }
@@ -373,7 +373,7 @@ extension XmlMapsFlattenedTimestampsOutput {
     @Test
     fun `019 two maps that may conflict with KeyValue`() {
         val context = setupTests("Isolated/Restxml/xml-maps-2x.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlMapsTwoOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsTwoOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsTwoOutput {
 
@@ -382,8 +382,8 @@ extension XmlMapsTwoOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsTwoOutput()
-        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-        value.mySecondMap = try reader["mySecondMap"].readMapIfPresent(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        value.myMap = try reader["myMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        value.mySecondMap = try reader["mySecondMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         return value
     }
 }

@@ -80,7 +80,7 @@ class SwiftDelegator(
         val filename = ModelFileUtils.filename(settings, baseFilename)
         val extensionSymbol = Symbol.builder()
             .name(symbol.name)
-            .definitionFile("${settings.moduleName}/$filename")
+            .definitionFile(filename)
             .putProperty(SymbolProperty.BOXED_KEY, symbol.isBoxed())
             .putProperty("defaultValue", symbol.defaultValue())
             .build()

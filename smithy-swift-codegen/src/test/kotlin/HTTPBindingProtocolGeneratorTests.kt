@@ -56,7 +56,7 @@ class HTTPBindingProtocolGeneratorTests {
 
     @Test
     fun `it creates correct init for explicit struct payloads`() {
-        val contents = getModelFileContents("example", "ExplicitStructOutput+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Sources/example", "ExplicitStructOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExplicitStructOutput {
@@ -83,7 +83,7 @@ extension ExplicitStructOutput {
 
     @Test
     fun `httpResponseCodeOutput response init content`() {
-        val contents = getModelFileContents("example", "HttpResponseCodeOutput+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Sources/example", "HttpResponseCodeOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension HttpResponseCodeOutput {
@@ -100,7 +100,7 @@ extension HttpResponseCodeOutput {
 
     @Test
     fun `decode the document type in HttpResponseBinding`() {
-        val contents = getModelFileContents("example", "InlineDocumentAsPayloadOutput+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Sources/example", "InlineDocumentAsPayloadOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension InlineDocumentAsPayloadOutput {
@@ -119,7 +119,7 @@ extension InlineDocumentAsPayloadOutput {
 
     @Test
     fun `default fooMap to an empty map if keysForFooMap is empty`() {
-        val contents = getModelFileContents("example", "HttpPrefixHeadersOutput+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Sources/example", "HttpPrefixHeadersOutput+HttpResponseBinding.swift", newTestContext.manifest)
         val expectedContents = """
 extension HttpPrefixHeadersOutput {
 

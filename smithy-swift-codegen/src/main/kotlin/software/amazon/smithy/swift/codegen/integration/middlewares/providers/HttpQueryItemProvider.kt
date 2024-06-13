@@ -15,8 +15,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
@@ -29,6 +27,7 @@ import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.needsDefaultValueCheck
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class HttpQueryItemProvider(
@@ -43,7 +42,6 @@ class HttpQueryItemProvider(
         fun renderQueryMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, httpBindingResolver: HttpBindingResolver, defaultTimestampFormat: TimestampFormatTrait.Format) {
             if (MiddlewareShapeUtils.hasQueryItems(ctx.model, op)) {
                 val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
-                val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
                 val httpTrait = httpBindingResolver.httpTrait(op)
                 val requestBindings = httpBindingResolver.requestBindings(op)
                 val queryBindings =
@@ -51,12 +49,10 @@ class HttpQueryItemProvider(
                 val queryLiterals = httpTrait.uri.queryLiterals
                 val filename = ModelFileUtils.filename(ctx.settings, "${inputSymbol.name}+QueryItemProvider")
                 val headerMiddlewareSymbol = Symbol.builder()
-                    .definitionFile("./$rootNamespace/$filename")
+                    .definitionFile(filename)
                     .name(inputSymbol.name)
                     .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-                    writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                    writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
                     val queryItemMiddleware = HttpQueryItemProvider(
                         ctx,
                         inputSymbol,
@@ -153,8 +149,7 @@ class HttpQueryItemProvider(
                         "let message = \"Creating a URL Query Item failed. \$L is required and must not be nil.\"",
                         memberName
                     )
-                    writer.addImport(SwiftDependency.SMITHY.target)
-                    writer.write("throw \$L.unknownError(message)", SmithyTypes.ClientError)
+                    writer.write("throw \$N.unknownError(message)", SmithyTypes.ClientError)
                 }
                 if (memberTarget is CollectionShape) {
                     renderListOrSet(memberTarget, bindingIndex, memberName, paramName)
@@ -182,6 +177,7 @@ class HttpQueryItemProvider(
     private fun renderQueryItem(member: MemberShape, bindingIndex: HttpBindingIndex, originalMemberName: String, paramName: String, unwrapped: Boolean) {
         var (memberName, requiresDoCatch) = formatHeaderOrQueryValue(
             ctx,
+            writer,
             originalMemberName,
             member,
             HttpBinding.Location.QUERY,
@@ -193,14 +189,35 @@ class HttpQueryItemProvider(
         } else {
             val prefix = "".takeIf { unwrapped } ?: "value."
             if (member.needsDefaultValueCheck(ctx.model, ctx.symbolProvider)) {
-                writer.openBlock("if value.$memberName != ${member.defaultValue(ctx.symbolProvider)} {", "}") {
+                writer.openBlock(
+                    "if value.\$L != \$L {",
+                    "}",
+                    memberName,
+                    member.defaultValue(ctx.symbolProvider),
+                ) {
                     val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                    writer.write("let $queryItemName = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($prefix$memberName).urlPercentEncoding())", SmithyTypes.URIQueryItem, SwiftTypes.String)
+                    writer.write(
+                        "let \$L = \$N(name: \$S.urlPercentEncoding(), value: \$N(\$L\$L).urlPercentEncoding())",
+                        queryItemName,
+                        SmithyTypes.URIQueryItem,
+                        paramName,
+                        SwiftTypes.String,
+                        prefix,
+                        memberName,
+                    )
                     writer.write("items.append($queryItemName)")
                 }
             } else {
                 val queryItemName = "${ctx.symbolProvider.toMemberNames(member).second}QueryItem"
-                writer.write("let $queryItemName = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($prefix$memberName).urlPercentEncoding())", SmithyTypes.URIQueryItem, SwiftTypes.String)
+                writer.write(
+                    "let \$L = \$N(name: \$S.urlPercentEncoding(), value: \$N(\$L\$L).urlPercentEncoding())",
+                    queryItemName,
+                    SmithyTypes.URIQueryItem,
+                    paramName,
+                    SwiftTypes.String,
+                    prefix,
+                    memberName,
+                )
                 writer.write("items.append($queryItemName)")
             }
         }
@@ -214,6 +231,7 @@ class HttpQueryItemProvider(
     ) {
         var (queryItemValue, requiresDoCatch) = formatHeaderOrQueryValue(
             ctx,
+            writer,
             "queryItemValue",
             memberTarget.member,
             HttpBinding.Location.QUERY,

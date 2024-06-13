@@ -46,7 +46,7 @@ class PaginatorGenerator : SwiftIntegration {
             return
         }
 
-        delegator.useFileWriter("${ctx.settings.moduleName}/Paginators.swift") { writer ->
+        delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Paginators.swift") { writer ->
             paginatedOperations.forEach { paginatedOperation ->
                 val paginationInfo = paginatedIndex.getPaginationInfo(service, paginatedOperation).orElse(null)
                     ?: throw CodegenException("Unexpectedly unable to get PaginationInfo from $service $paginatedOperation")
@@ -110,7 +110,6 @@ class PaginatorGenerator : SwiftIntegration {
     ) {
         val outputShape = paginationInfo.output
 
-        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
         val nextMarkerLiteral = paginationInfo.outputTokenMemberPath.joinToString(separator = "?.") {
             it.toLowerCamelCase()
         }

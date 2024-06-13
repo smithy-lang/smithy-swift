@@ -22,7 +22,6 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
@@ -93,8 +92,6 @@ class OperationInputBodyMiddleware(
         val isStreaming = payloadShape.hasTrait<StreamingTrait>()
         val payloadSymbol = ctx.symbolProvider.toSymbol(payloadShape)
         val requestWireProtocol = ctx.service.requestWireProtocol
-
-        writer.addImports(ctx.service.requestWireProtocol)
         when (payloadShape) {
             is UnionShape -> {
                 if (isStreaming) {

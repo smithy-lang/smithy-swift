@@ -12,9 +12,11 @@ class SwiftSymbol {
             name: String,
             declaration: SwiftDeclaration?,
             dependency: Dependency?,
+            spiName: String?
         ): Symbol = buildSymbol {
             this.name = name
             declaration?.let { this.setProperty("decl", it.keyword) }
+            spiName?.let { this.setProperty("spiName", it) }
             dependency?.let {
                 this.namespace = it.target
                 this.dependency(it)

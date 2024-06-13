@@ -24,7 +24,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
     @Test
     fun `it creates smoke test request test`() {
-        val contents = getTestFileContents("example", "SmokeTestRequestTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "SmokeTestRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents = """
@@ -85,7 +85,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SmokeTestInput, SmokeTestOutput>(SmokeTestInput.headerProvider(_:)))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.QueryItemMiddleware<SmokeTestInput, SmokeTestOutput>(SmokeTestInput.queryItemProvider(_:)))
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SmokeTestInput, SmokeTestOutput>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.ContentTypeMiddleware<SmokeTestInput, SmokeTestOutput>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SmokeTestInput, SmokeTestOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: SmokeTestInput.write(value:to:)))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<SmokeTestInput, SmokeTestOutput>())
         operationStack.deserializeStep.intercept(
@@ -108,13 +108,14 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             throw SmithyTestUtilError("Mock handler unexpectedly failed")
         })
     }
+}
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `it creates explicit string test`() {
-        val contents = getTestFileContents("example", "ExplicitStringRequestTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "ExplicitStringRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testExplicitString() async throws {
@@ -151,7 +152,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<ExplicitStringInput, ExplicitStringOutput>(contentType: "text/plain"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.ContentTypeMiddleware<ExplicitStringInput, ExplicitStringOutput>(contentType: "text/plain"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.StringBodyMiddleware<ExplicitStringInput, ExplicitStringOutput>(keyPath: \.payload1))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<ExplicitStringInput, ExplicitStringOutput>())
         operationStack.deserializeStep.intercept(
@@ -180,7 +181,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
     @Test
     fun `it creates a unit test for a request without a body`() {
-        val contents = getTestFileContents("example", "EmptyInputAndEmptyOutputRequestTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "EmptyInputAndEmptyOutputRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonEmptyInputAndEmptyOutput() async throws {
@@ -231,7 +232,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
     @Test
     fun `it creates a unit test for a request without a body given an empty object`() {
-        val contents = getTestFileContents("example", "SimpleScalarPropertiesRequestTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "SimpleScalarPropertiesRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonDoesntSerializeNullStructureValues() async throws {
@@ -267,7 +268,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>(SimpleScalarPropertiesInput.headerProvider(_:)))
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.ContentTypeMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: SimpleScalarPropertiesInput.write(value:to:)))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<SimpleScalarPropertiesInput, SimpleScalarPropertiesOutput>())
         operationStack.deserializeStep.intercept(
@@ -296,7 +297,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
     @Test
     fun `it creates a unit test with a string to be converted to data`() {
-        val contents = getTestFileContents("example", "StreamingTraitsRequestTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "StreamingTraitsRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonStreamingTraitsWithBlob() async throws {
@@ -334,7 +335,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             return try await next.handle(context: context, input: input)
         }
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.HeaderMiddleware<StreamingTraitsInput, StreamingTraitsOutput>(StreamingTraitsInput.headerProvider(_:)))
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutput>(contentType: "application/octet-stream"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.ContentTypeMiddleware<StreamingTraitsInput, StreamingTraitsOutput>(contentType: "application/octet-stream"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BlobStreamBodyMiddleware<StreamingTraitsInput, StreamingTraitsOutput>(keyPath: \.blob))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<StreamingTraitsInput, StreamingTraitsOutput>())
         operationStack.deserializeStep.intercept(
@@ -363,7 +364,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
     @Test
     fun `it creates unit test with an empty map`() {
-        val contents = getTestFileContents("example", "HttpPrefixHeadersRequestTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "HttpPrefixHeadersRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonHttpPrefixHeadersAreNotPresent() async throws {
@@ -421,7 +422,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
     @Test
     fun `it creates a unit test for union shapes`() {
-        val contents = getTestFileContents("example", "JsonUnionsRequestTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "JsonUnionsRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonSerializeStringUnionValue() async throws {
@@ -461,7 +462,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutput>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.ContentTypeMiddleware<JsonUnionsInput, JsonUnionsOutput>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<JsonUnionsInput, JsonUnionsOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: JsonUnionsInput.write(value:to:)))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<JsonUnionsInput, JsonUnionsOutput>())
         operationStack.deserializeStep.intercept(
@@ -490,7 +491,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
     @Test
     fun `it creates a unit test for recursive shapes`() {
-        val contents = getTestFileContents("example", "RecursiveShapesRequestTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "RecursiveShapesRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonRecursiveShapes() async throws {
@@ -549,7 +550,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutput>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.ContentTypeMiddleware<RecursiveShapesInput, RecursiveShapesOutput>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<RecursiveShapesInput, RecursiveShapesOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: RecursiveShapesInput.write(value:to:)))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<RecursiveShapesInput, RecursiveShapesOutput>())
         operationStack.deserializeStep.intercept(
@@ -578,7 +579,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
     @Test
     fun `it creates a unit test for inline document`() {
-        val contents = getTestFileContents("example", "InlineDocumentRequestTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "InlineDocumentRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testInlineDocumentInput() async throws {
@@ -624,7 +625,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutput>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.ContentTypeMiddleware<InlineDocumentInput, InlineDocumentOutput>(contentType: "application/json"))
         operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.BodyMiddleware<InlineDocumentInput, InlineDocumentOutput, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: InlineDocumentInput.write(value:to:)))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<InlineDocumentInput, InlineDocumentOutput>())
         operationStack.deserializeStep.intercept(
@@ -653,7 +654,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
 
     @Test
     fun `it creates a unit test for inline document as payload`() {
-        val contents = getTestFileContents("example", "InlineDocumentAsPayloadRequestTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "InlineDocumentAsPayloadRequestTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testInlineDocumentAsPayloadInput() async throws {
@@ -695,8 +696,8 @@ class HttpProtocolUnitTestRequestGeneratorTests {
             input.withHost(host)
             return try await next.handle(context: context, input: input)
         }
-        operationStack.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>(contentType: "application/json"))
-        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.PayloadBodyMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput, SmithyReadWrite.Document, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: SmithyReadWrite.Document.write(value:to:), keyPath: \.documentValue, defaultBody: "{}"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.ContentTypeMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>(contentType: "application/json"))
+        operationStack.serializeStep.intercept(position: .after, middleware: ClientRuntime.PayloadBodyMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput, SmithyReadWrite.Document, SmithyJSON.Writer>(rootNodeInfo: "", inputWritingClosure: SmithyReadWrite.WritingClosures.writeDocument(value:to:), keyPath: \.documentValue, defaultBody: "{}"))
         operationStack.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<InlineDocumentAsPayloadInput, InlineDocumentAsPayloadOutput>())
         operationStack.deserializeStep.intercept(
             position: .after,
