@@ -8,7 +8,7 @@
 import struct Smithy.Attributes
 
 /// Handle to stop recording values of an AsyncMeasurement.
-public protocol AsyncMeasurementHandle : Sendable {
+public protocol AsyncMeasurementHandle: Sendable {
 
     /// Stop recording values of an AsyncMeasurement.
     ///

@@ -6,7 +6,7 @@
 //
 
 /// Type safe property bag key
-public struct AttributeKey<ValueType> : Sendable {
+public struct AttributeKey<ValueType>: Sendable {
     let name: String
 
     public init(name: String) {

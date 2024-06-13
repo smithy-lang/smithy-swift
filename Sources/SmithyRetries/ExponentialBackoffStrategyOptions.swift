@@ -7,7 +7,7 @@
 
 import struct Foundation.TimeInterval
 
-struct ExponentialBackoffStrategyOptions : Sendable {
+struct ExponentialBackoffStrategyOptions: Sendable {
 
     let jitterType: ExponentialBackOffJitterType
 

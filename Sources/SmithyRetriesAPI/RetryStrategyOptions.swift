@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct RetryStrategyOptions : Sendable {
+public struct RetryStrategyOptions: Sendable {
 
     /// The backoff strategy determines the number of seconds to wait before retrying a failed operation.
     public let backoffStrategy: RetryBackoffStrategy
@@ -14,7 +14,7 @@ public struct RetryStrategyOptions : Sendable {
     public let maxRetriesBase: Int
 
     /// Sets the mode used for rate limiting requests in response to throttling.
-    public enum RateLimitingMode : Sendable {
+    public enum RateLimitingMode: Sendable {
 
         /// Requests may be sent immediately, and are not delayed for rate limiting when throttling is detected.
         ///

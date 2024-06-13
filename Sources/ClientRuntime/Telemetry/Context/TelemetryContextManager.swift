@@ -8,7 +8,7 @@
 /// A Telemetry Context Manager manages the Telemetry Contexts in a client.
 ///
 /// Implementations should be able to manage contexts in a thread-safe way.
-public protocol TelemetryContextManager : Sendable {
+public protocol TelemetryContextManager: Sendable {
 
     /// - Returns: the current Telemetry Context
     func current() -> TelemetryContext

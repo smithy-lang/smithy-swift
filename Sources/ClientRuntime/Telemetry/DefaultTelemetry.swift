@@ -11,7 +11,7 @@ import protocol Smithy.LogAgent
 import struct Smithy.SwiftLogger
 
 /// Namespace for the Default SDK Telemetry implementations.
-public enum DefaultTelemetry : Sendable {
+public enum DefaultTelemetry: Sendable {
     /// The Default SDK Telemetry Provider Implementation.
     ///
     /// - contextManager: no-op

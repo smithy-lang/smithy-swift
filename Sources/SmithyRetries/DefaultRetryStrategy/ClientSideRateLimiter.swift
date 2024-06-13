@@ -9,7 +9,7 @@ import struct Foundation.TimeInterval
 import struct Foundation.Date
 import func Foundation.pow
 
-actor ClientSideRateLimiter : Sendable {
+actor ClientSideRateLimiter: Sendable {
 
     // these are constants defined in Retry Behavior 2.0
     let minFillRate: Double = 0.5

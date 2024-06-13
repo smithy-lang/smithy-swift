@@ -8,7 +8,7 @@
 import protocol Smithy.LogAgent
 
 /// A Logger Provider provides implementations of LogAgents.
-public protocol LoggerProvider : Sendable {
+public protocol LoggerProvider: Sendable {
     /// Provides a LogAgent.
     ///
     /// - Parameter name: the name associated with the LogAgent

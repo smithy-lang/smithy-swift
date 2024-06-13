@@ -6,7 +6,7 @@
 //
 import AwsCommonRuntimeKit
 
-public enum ExponentialBackOffJitterType : Sendable {
+public enum ExponentialBackOffJitterType: Sendable {
     case `default`
     case none
     case full

@@ -15,7 +15,7 @@
 /// - MonotonicCounter
 /// - Asynchronous MonotonicCounter
 /// - Histogram
-public protocol Meter : Sendable {
+public protocol Meter: Sendable {
 
     /// Creates a Gauge, used to measure the current instantaneous value of something.
     ///

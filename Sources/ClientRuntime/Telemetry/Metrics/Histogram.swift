@@ -10,7 +10,7 @@ import struct Smithy.Attributes
 /// A Histogram measures a value where the statistics are likely meaningful.
 ///
 /// Examples include: request latency, HTTP response times
-public protocol Histogram : Sendable {
+public protocol Histogram: Sendable {
 
     /// Records a value for a metric.
     ///
