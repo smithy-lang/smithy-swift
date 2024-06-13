@@ -7,8 +7,8 @@
 
 import class Smithy.Context
 import protocol Smithy.ResponseMessageDeserializer
-import SmithyReadWrite
 import SmithyHTTPAPI
+import SmithyReadWrite
 
 public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
     public var id: String = "Deserialize"

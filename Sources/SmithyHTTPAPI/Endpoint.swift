@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Smithy
 import Foundation
+import Smithy
 
 public struct Endpoint: Hashable {
     public let uri: URI
