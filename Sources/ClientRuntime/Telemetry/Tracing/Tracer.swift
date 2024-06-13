@@ -11,7 +11,7 @@ import struct Smithy.Attributes
 ///
 /// Implementations MAY provide convenient builder APIs or other extensions to create spans, but ultimately new spans
 /// should be created using the tracer interface.
-public protocol Tracer: Sendable{
+public protocol Tracer: Sendable {
 
     /// Create a new Trace Span.
     ///

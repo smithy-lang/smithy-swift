@@ -16,7 +16,7 @@ import AwsCommonRuntimeKit
 /// URLSessionHTTPClient streams chunked payloads using this stream type.
 /// CRTClientEngine uses only the reader provided by this type to create chunks, then it
 /// streams them itself.
-class AWSChunkedStream : @unchecked Sendable {
+class AWSChunkedStream: @unchecked Sendable {
     private var inputStream: Stream
     private var signingConfig: SigningConfig
     private var previousSignature: String
