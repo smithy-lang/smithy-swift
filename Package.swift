@@ -44,6 +44,7 @@ let package = Package(
         .library(name: "SmithyEventStreamsAPI", targets: ["SmithyEventStreamsAPI"]),
         .library(name: "SmithyEventStreamsAuthAPI", targets: ["SmithyEventStreamsAuthAPI"]),
         .library(name: "SmithyEventStreams", targets: ["SmithyEventStreams"]),
+        .library(name: "SmithyStreams", targets: ["SmithyStreams"]),
         .library(name: "SmithyChecksumsAPI", targets: ["SmithyChecksumsAPI"]),
         .library(name: "SmithyChecksums", targets: ["SmithyChecksums"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
@@ -76,7 +77,9 @@ let package = Package(
                 "SmithyEventStreamsAPI",
                 "SmithyEventStreams",
                 "SmithyEventStreamsAuthAPI",
+                "SmithyStreams",
                 "SmithyChecksumsAPI",
+                "SmithyChecksums",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ],
             resources: [
@@ -140,7 +143,10 @@ let package = Package(
         ),
         .target(
             name: "SmithyHTTPAPI",
-            dependencies: ["Smithy"]
+            dependencies: [
+                "Smithy",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
         ),
         .target(
             name: "SmithyHTTPAuth",
@@ -174,16 +180,29 @@ let package = Package(
             ]
         ),
         .target(
+            name: "SmithyStreams",
+            dependencies: [
+                "Smithy",
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .target(
             name: "SmithyChecksumsAPI",
             dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyChecksums",
-            dependencies: ["Smithy", "SmithyChecksumsAPI"]
+            dependencies: [
+                "Smithy",
+                "SmithyChecksumsAPI",
+                "SmithyStreams",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
-            dependencies: ["ClientRuntime", "SmithyTestUtil"],
+            dependencies: ["ClientRuntime", "SmithyTestUtil", "SmithyStreams"],
             resources: [ .process("Resources") ]
         ),
         .testTarget(

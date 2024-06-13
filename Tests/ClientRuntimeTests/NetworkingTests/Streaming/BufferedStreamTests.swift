@@ -7,6 +7,7 @@
 
 import XCTest
 import ClientRuntime
+import class SmithyStreams.BufferedStream
 
 final class BufferedStreamTests: XCTestCase {
 

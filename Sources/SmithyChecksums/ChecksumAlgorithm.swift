@@ -20,7 +20,7 @@ public enum UnknownChecksumError: Error {
 
 extension ChecksumAlgorithm {
 
-    static func from(string: String) -> (ChecksumAlgorithm)? {
+    public static func from(string: String) -> (ChecksumAlgorithm)? {
         switch string.lowercased() {
         case "crc32": return .crc32
         case "crc32c": return .crc32c
@@ -31,7 +31,7 @@ extension ChecksumAlgorithm {
         }
     }
 
-    static func fromList(_ stringArray: [String]) -> [ChecksumAlgorithm] {
+    public static func fromList(_ stringArray: [String]) -> [ChecksumAlgorithm] {
         var hashFunctions = [ChecksumAlgorithm]()
         for string in stringArray {
             if let hashFunction = ChecksumAlgorithm.from(string: string) {
@@ -42,7 +42,7 @@ extension ChecksumAlgorithm {
         return hashFunctions
     }
 
-    var isFlexibleChecksum: Bool {
+    public var isFlexibleChecksum: Bool {
         switch self {
         case .crc32, .crc32c, .sha256, .sha1:
             return true
@@ -51,7 +51,7 @@ extension ChecksumAlgorithm {
         }
     }
 
-    func createChecksum() -> any Checksum {
+    public func createChecksum() -> any Checksum {
         switch self {
         case .crc32:
             return CRC32()
@@ -84,14 +84,14 @@ extension ChecksumAlgorithm: Comparable {
 }
 
 extension [ChecksumAlgorithm] {
-    func getPriorityOrderValidationList() -> [ChecksumAlgorithm] {
+    public func getPriorityOrderValidationList() -> [ChecksumAlgorithm] {
         // Filter out .md5 if present and then sort the remaining hash functions
         return self.filter { $0 != .md5 }.sorted()
     }
 }
 
 extension UInt32 {
-    func toBase64EncodedString() -> String {
+    public func toBase64EncodedString() -> String {
         // Create a Data instance from the UInt32 value
         let value = self
         var bigEndianValue = value.bigEndian
@@ -105,7 +105,7 @@ extension UInt32 {
 extension HashResult {
 
     // Convert a HashResult to a hexadecimal String
-    func toHexString() -> String {
+    public func toHexString() -> String {
         switch self {
         case .data(let data):
             return data.map { String(format: "%02x", $0) }.joined()
@@ -115,7 +115,7 @@ extension HashResult {
     }
 
     // Convert a HashResult to a base64-encoded String
-    func toBase64String() -> String {
+    public func toBase64String() -> String {
         switch self {
         case .data(let data):
             return data.base64EncodedString()
@@ -123,4 +123,8 @@ extension HashResult {
             return integer.toBase64EncodedString()
         }
     }
+}
+
+public enum ChecksumMismatchException: Error {
+    case message(String)
 }

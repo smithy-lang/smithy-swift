@@ -7,7 +7,9 @@
 
 import protocol Smithy.Stream
 import enum Smithy.ByteStream
+import class SmithyStreams.BufferedStream
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
+import class SmithyChecksums.ValidatingBufferedStream
 
 extension ByteStream {
 
