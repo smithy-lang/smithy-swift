@@ -13,7 +13,7 @@ import struct Foundation.Data
 /// A `Stream` that wraps a `FileHandle` for reading the file.
 ///
 /// - Note: This class is thread-safe.
-public final class FileStream: Stream {
+public final class FileStream: @unchecked Sendable, Stream {
 
     /// Returns the length of the stream, if known
     public var length: Int? {

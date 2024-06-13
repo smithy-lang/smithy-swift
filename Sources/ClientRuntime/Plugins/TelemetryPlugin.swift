@@ -33,7 +33,7 @@ public class TelemetryPlugin: Plugin {
     }
 }
 
-private class BasicTelemetryProvider: TelemetryProvider {
+private class BasicTelemetryProvider: @unchecked Sendable, TelemetryProvider {
     let contextManager: TelemetryContextManager
     let loggerProvider: LoggerProvider
     let meterProvider: MeterProvider
