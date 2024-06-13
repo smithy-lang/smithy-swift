@@ -10,6 +10,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
+import software.amazon.smithy.swift.codegen.swiftmodules.WaitersTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
@@ -43,14 +44,17 @@ class WaiterMethodGenerator(
             this.write(docBody)
         }
         writer.openBlock(
-            "public func \$L(options: WaiterOptions, input: \$L) async throws -> WaiterOutcome<\$L> {",
+            "public func \$L(options: \$N, input: \$L) async throws -> \$N<\$L> {",
             "}",
             waiterFunctionName,
+            WaitersTypes.WaiterOptions,
             inputTypeName,
-            outputTypeName
+            WaitersTypes.WaiterOutcome,
+            outputTypeName,
         ) {
             writer.write(
-                "let waiter = Waiter(config: try Self.\$L(), operation: self.\$L(input:))",
+                "let waiter = \$N(config: try Self.\$L(), operation: self.\$L(input:))",
+                WaitersTypes.Waiter,
                 configMethodName,
                 waitedOperationName
             )

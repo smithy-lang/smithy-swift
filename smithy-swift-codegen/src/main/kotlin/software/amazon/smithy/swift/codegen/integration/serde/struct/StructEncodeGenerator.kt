@@ -10,18 +10,17 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.swift.codegen.SmithyFormURLTypes
-import software.amazon.smithy.swift.codegen.SmithyJSONTypes
 import software.amazon.smithy.swift.codegen.SmithyXMLTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.MemberShapeEncodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.isError
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyFormURLTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyJSONTypes
 
 class StructEncodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -32,7 +31,6 @@ class StructEncodeGenerator(
 ) : MemberShapeEncodeGenerator(ctx, writer) {
 
     override fun render() {
-        writer.addImports(ctx.service.requestWireProtocol)
         val structSymbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
             "static func write(value: \$N?, to writer: \$N) throws {", "}",

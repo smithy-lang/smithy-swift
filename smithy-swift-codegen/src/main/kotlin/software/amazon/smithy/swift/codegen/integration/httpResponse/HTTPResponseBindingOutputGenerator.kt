@@ -8,7 +8,6 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
@@ -18,9 +17,7 @@ import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTrai
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitResponseCode
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
@@ -43,18 +40,14 @@ class HTTPResponseBindingOutputGenerator(
         val headerBindings = responseBindings
             .filter { it.location == HttpBinding.Location.HEADER }
             .sortedBy { it.memberName }
-        val rootNamespace = ctx.settings.moduleName
         val baseFilename = "${outputSymbol.name}+HttpResponseBinding"
-        val definitionFile = "./$rootNamespace/${ModelFileUtils.filename(ctx.settings, baseFilename)}"
+        val filename = ModelFileUtils.filename(ctx.settings, baseFilename)
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile(definitionFile)
+            .definitionFile(filename)
             .name(outputSymbol.name)
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
-            writer.addImports(ctx.service.responseWireProtocol)
             writer.openBlock("extension \$N {", "}", outputSymbol) {
                 writer.write("")
                 writer.openBlock(

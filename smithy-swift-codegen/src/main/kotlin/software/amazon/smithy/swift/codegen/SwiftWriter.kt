@@ -97,14 +97,28 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
     }
 
     fun addImport(symbol: Symbol) {
+        symbol.references.forEach { addImport(it.symbol) }
         if (symbol.isBuiltIn || symbol.isServiceNestedNamespace || symbol.namespace.isEmpty()) return
         val spiName = symbol.getProperty("spiName").getOrNull()?.toString()
         val decl = symbol.getProperty("decl").getOrNull()?.toString()
         decl?.let {
-            addImport("$it ${symbol.namespace}.${symbol.name}", internalSPIName = spiName)
+            // No need to import Foundation types individually because:
+            // - Foundation is always present on supported platforms & needs not be managed as a dependency.
+            // - Importing Foundation types individually becomes messy when swift-corelibs-foundation
+            //   splits them out to separate modules like FoundationXML or FoundationNetworking.
+            //
+            // SwiftWriter does not manage swift-corelibs-foundation imports; the source files that access
+            // those types should import FoundationXML, FoundationNetworking, or other corelibs module
+            // by calling the function below.
+            if (symbol.namespace == "Foundation") {
+                addImport(symbol.namespace)
+            } else {
+                addImport("$it ${symbol.namespace}.${symbol.name}", internalSPIName = spiName)
+            }
         } ?: run {
             addImport(symbol.namespace, internalSPIName = spiName)
         }
+        symbol.dependencies.forEach { addDependency(it) }
     }
 
     fun addImport(
@@ -114,12 +128,6 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         importOnlyIfCanImport: Boolean = false
     ) {
         importContainer.addImport(packageName, isTestable, internalSPIName, importOnlyIfCanImport)
-    }
-
-    // Adds an import statement that imports the individual type from the specified module
-    // Example: addIndividualTypeImport("struct", "Foundation", "Date") -> "import struct Foundation.Date"
-    fun addIndividualTypeImport(decl: SwiftDeclaration, module: String, type: String) {
-        importContainer.addImport("${decl.keyword} $module.$type", false)
     }
 
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
@@ -136,7 +144,12 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
     override fun toString(): String {
         val contents = super.toString()
         val imports = "${importContainer}\n\n"
-        return GENERATED_FILE_HEADER + imports + contents
+
+        // Leave out the header and imports for a Swift package manifest (Package.swift).
+        // Package.swift requires a special comment at the top to specify Swift tools version,
+        // and the package manifest generator manually writes its own dependency imports
+        // (it only imports the PackageDescription module.)
+        return contents.takeIf { fullPackageName == "Package" } ?: (GENERATED_FILE_HEADER + imports + contents)
     }
 
     private class SwiftSymbolFormatter(

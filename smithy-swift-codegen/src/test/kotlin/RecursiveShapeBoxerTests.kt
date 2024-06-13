@@ -46,7 +46,7 @@ internal class RecursiveShapeBoxerTests {
         SwiftCodegenPlugin().execute(context)
 
         val recursiveShapesInput = manifest
-            .getFileString("example/models/RecursiveShapesInput.swift").get()
+            .getFileString("Sources/example/models/RecursiveShapesInput.swift").get()
         Assertions.assertNotNull(recursiveShapesInput)
         val expected =
             """
@@ -64,7 +64,7 @@ internal class RecursiveShapeBoxerTests {
         recursiveShapesInput.shouldContain(expected)
 
         val recursiveShapesOutput = manifest
-            .getFileString("example/models/RecursiveShapesOutput.swift").get()
+            .getFileString("Sources/example/models/RecursiveShapesOutput.swift").get()
         Assertions.assertNotNull(recursiveShapesOutput)
         val expected2 =
             """
@@ -82,7 +82,7 @@ internal class RecursiveShapeBoxerTests {
         recursiveShapesOutput.shouldContain(expected2)
 
         val recursiveShapesInputOutputNested1 = manifest
-            .getFileString("example/models/RecursiveShapesInputOutputNested1.swift").get()
+            .getFileString("Sources/example/models/RecursiveShapesInputOutputNested1.swift").get()
         Assertions.assertNotNull(recursiveShapesInputOutputNested1)
         val expected3 =
             """
@@ -106,7 +106,7 @@ internal class RecursiveShapeBoxerTests {
         recursiveShapesInputOutputNested1.shouldContain(expected3)
 
         val recursiveShapesInputOutputNested2 = manifest
-            .getFileString("example/models/RecursiveShapesInputOutputNested2.swift").get()
+            .getFileString("Sources/example/models/RecursiveShapesInputOutputNested2.swift").get()
         Assertions.assertNotNull(recursiveShapesInputOutputNested2)
         val expected4 =
             """

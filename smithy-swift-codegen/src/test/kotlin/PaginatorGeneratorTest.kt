@@ -17,7 +17,7 @@ class PaginatorGeneratorTest {
     @Test
     fun testRenderPaginatorNoItem() {
         val context = setupTests("pagination.smithy", "com.test#Lambda")
-        val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/Paginators.swift")
         val expected = """
         extension TestClient {
             /// Paginate over `[ListFunctionsOutput]` results.
@@ -50,7 +50,7 @@ class PaginatorGeneratorTest {
     @Test
     fun testRenderPaginatorWithItem() {
         val context = setupTests("pagination.smithy", "com.test#Lambda")
-        val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/Paginators.swift")
         val expectedCode = """
         extension TestClient {
             /// Paginate over `[ListFunctionsOutput]` results.
@@ -92,7 +92,7 @@ class PaginatorGeneratorTest {
     @Test
     fun testRenderPaginatorNoItemWithMapToken() {
         val context = setupTests("pagination-map.smithy", "com.test#TestService")
-        val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/Paginators.swift")
         val expectedCode = """
         extension TestClient {
             /// Paginate over `[PaginatedMapOutput]` results.
@@ -132,7 +132,7 @@ class PaginatorGeneratorTest {
     @Test
     fun testRenderPaginatorTruncatable() {
         val context = setupTests("pagination-truncation.smithy", "software.amazon.smithy.swift.codegen.synthetic#Lambda")
-        val contents = getFileContents(context.manifest, "/Test/Paginators.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/Paginators.swift")
         val expected = """
     public func listFunctionsTruncatedPaginated(input: ListFunctionsTruncatedInput) -> ClientRuntime.PaginatorSequence<ListFunctionsTruncatedInput, ListFunctionsTruncatedOutput> {
         return ClientRuntime.PaginatorSequence<ListFunctionsTruncatedInput, ListFunctionsTruncatedOutput>(input: input, inputKey: \.marker, outputKey: \.nextMarker, isTruncatedKey: \.isTruncated, paginationFunction: self.listFunctionsTruncated(input:))
@@ -145,7 +145,7 @@ class PaginatorGeneratorTest {
     fun testRenderEquatableConformanceForStructNestedInPaginationToken() {
         val context = setupTests("pagination.smithy", "com.test#Lambda")
         // Equatable conformance must have been generated for struct nested inside a pagination token.
-        val contents = getFileContents(context.manifest, "/Test/models/NestedInputTokenValue.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/models/NestedInputTokenValue.swift")
         val expected = """
     public struct NestedInputTokenValue : Swift.Equatable {
         """.trimIndent()
@@ -156,7 +156,7 @@ class PaginatorGeneratorTest {
     fun testRenderEquatableConformanceForStructDoublyNestedInPaginationToken() {
         val context = setupTests("pagination.smithy", "com.test#Lambda")
         // Equatable conformance must have been generated for struct nested under pagination token.
-        val contents = getFileContents(context.manifest, "/Test/models/DoublyNestedInputTokenValue.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/models/DoublyNestedInputTokenValue.swift")
         val expected = """
     public struct DoublyNestedInputTokenValue : Swift.Equatable {
         """.trimIndent()
@@ -167,7 +167,7 @@ class PaginatorGeneratorTest {
     fun testRenderEquatableConformanceForUnionNestedInPaginationToken() {
         val context = setupTests("pagination.smithy", "com.test#Lambda")
         // Equatable conformance must have been generated for union nested under pagination token.
-        val contents = getFileContents(context.manifest, "/Test/models/InputPaginationUnion.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/models/InputPaginationUnion.swift")
         val expected = """
     public enum InputPaginationUnion : Swift.Equatable {
         """.trimIndent()

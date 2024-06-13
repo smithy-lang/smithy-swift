@@ -10,10 +10,10 @@ import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 abstract class OperationStep(outputType: Symbol, outputErrorType: Symbol) {
     abstract val inputType: Symbol
-    val outputType: Symbol = Symbol
-        .builder()
+    val outputType: Symbol = Symbol.builder()
         .name("${ClientRuntimeTypes.Middleware.OperationOutput}<$outputType>")
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
+        .addReference(ClientRuntimeTypes.Middleware.OperationOutput)
+        .addReference(outputType)
         .build()
 
     val errorType: Symbol = Symbol

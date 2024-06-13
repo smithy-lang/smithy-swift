@@ -9,7 +9,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
@@ -33,12 +32,10 @@ class RetryMiddleware(
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
         if (ctx.settings.useInterceptors) {
-            writer.addImport(SwiftDependency.SMITHY_RETRIES.target)
             writer.write("builder.retryStrategy(\$N(options: config.retryStrategyOptions))", SmithyRetriesTypes.DefaultRetryStrategy)
             writer.write("builder.retryErrorInfoProvider(\$N.errorInfo(for:))", retryErrorInfoProviderSymbol)
         } else {
             val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
-            writer.addImport(SwiftDependency.SMITHY_RETRIES.target)
             writer.write(
                 "\$L.\$L.intercept(position: \$L, middleware: \$N<\$N, \$N, \$N>(options: config.retryStrategyOptions))",
                 operationStackName,

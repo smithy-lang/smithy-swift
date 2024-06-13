@@ -6,7 +6,7 @@ extension WeatherClientTypes {
     public enum Precipitation {
         case rain(Swift.Bool)
         case sleet(Swift.Bool)
-        case hail([Swift.String:Swift.String])
+        case hail([Swift.String: Swift.String])
         case snow(WeatherClientTypes.SimpleYesNo)
         case mixed(WeatherClientTypes.TypedYesNo)
         case other(WeatherClientTypes.OtherStructure)

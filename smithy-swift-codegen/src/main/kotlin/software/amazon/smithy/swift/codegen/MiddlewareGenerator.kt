@@ -5,7 +5,9 @@
 
 package software.amazon.smithy.swift.codegen
 
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 /*
 Generates a swift middleware struct like the following:
@@ -34,13 +36,17 @@ class MiddlewareGenerator(
 ) {
     fun generate() {
 
-        writer.openBlock("public struct ${middleware.typeName}: ${middleware.getTypeInheritance()} {", "}") {
-            writer.write("public let id: \$N = \"${middleware.id}\"", SwiftTypes.String)
+        val inheritance = middleware
+            .typesToConformMiddlewareTo
+            .map { writer.format("\$N", it) }
+            .joinToString(", ")
+        writer.openBlock("public struct \$L: \$L {", "}", middleware.typeName, inheritance) {
+            writer.write("public let id: \$N = \$S", SwiftTypes.String, middleware.id)
             writer.write("")
             middleware.properties.forEach {
                 val memberName = it.key
                 val memberType = it.value
-                writer.write("let $memberName: \$L", memberType)
+                writer.write("let $memberName: \$N", memberType)
                 writer.write("")
             }
             middleware.generateInit()
@@ -49,9 +55,9 @@ class MiddlewareGenerator(
             writer.write("public func handle<H>(context: \$N,", SmithyTypes.Context)
             writer.swiftFunctionParameterIndent {
                 writer.write("  input: \$N,", middleware.inputType)
-                writer.write("  next: H) async throws -> \$L", middleware.outputType)
+                writer.write("  next: H) async throws -> \$N", middleware.outputType)
             }
-            writer.write("where H: Handler,")
+            writer.write("where H: \$N,", ClientRuntimeTypes.Middleware.Handler)
             writer.write("Self.MInput == H.Input,")
             writer.write("Self.MOutput == H.Output").openBlock("{", "}") {
                 middleware.generateMiddlewareClosure()
@@ -59,7 +65,7 @@ class MiddlewareGenerator(
             }
             writer.write("")
             writer.write("public typealias MInput = \$N", middleware.inputType)
-            writer.write("public typealias MOutput = \$L", middleware.outputType)
+            writer.write("public typealias MOutput = \$N", middleware.outputType)
         }
 
         middleware.renderExtensions()

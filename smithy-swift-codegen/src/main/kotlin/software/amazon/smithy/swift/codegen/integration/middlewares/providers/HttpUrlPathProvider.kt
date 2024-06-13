@@ -9,8 +9,6 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
@@ -18,6 +16,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.toMemberNames
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class HttpUrlPathProvider(
@@ -32,17 +31,13 @@ class HttpUrlPathProvider(
             val httpTrait = httpBindingResolver.httpTrait(op)
             val requestBindings = httpBindingResolver.requestBindings(op)
             val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
-
             val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
-            val rootNamespace = MiddlewareShapeUtils.rootNamespace(ctx.settings)
             val filename = ModelFileUtils.filename(ctx.settings, "${inputSymbol.name}+UrlPathProvider")
-
             val urlPathMiddlewareSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/$filename")
+                .definitionFile(filename)
                 .name(inputSymbol.name)
                 .build()
             ctx.delegator.useShapeWriter(urlPathMiddlewareSymbol) { writer ->
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 val urlPathMiddleware = HttpUrlPathProvider(ctx, inputSymbol, httpTrait, pathBindings, writer)
                 urlPathMiddleware.renderProvider(writer)
             }
@@ -84,6 +79,7 @@ class HttpUrlPathProvider(
                             TimestampFormatTrait.Format.DATE_TIME
                         )
                         ProtocolGenerator.getFormattedDateString(
+                            writer,
                             timestampFormat,
                             labelMemberName,
                             urlEncode = true

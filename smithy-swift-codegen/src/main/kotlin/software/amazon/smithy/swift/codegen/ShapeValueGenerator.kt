@@ -27,6 +27,7 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toMemberNames
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
 
@@ -86,7 +87,6 @@ class ShapeValueGenerator(
     }
 
     private fun documentDecl(writer: SwiftWriter, node: Node) {
-        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         writer.openBlock(
             "try \$N.make(from: Data(\"\"\"", "\"\"\".utf8))",
             SmithyReadWriteTypes.Document,
@@ -292,17 +292,9 @@ class ShapeValueGenerator(
                 }
 
                 ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,
-                ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT -> writer.writeInline("\$L", node.value)
+                ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT,
+                ShapeType.BIG_INTEGER, ShapeType.BIG_DECIMAL -> writer.writeInline("\$L", node.value)
 
-                ShapeType.BIG_INTEGER -> {
-                    writer.addImport(SwiftDependency.BIG.target)
-                    writer.writeInline("Array(String(\$L).utf8)", node.value)
-                }
-
-                ShapeType.BIG_DECIMAL -> {
-                    writer.addImport(SwiftDependency.BIG.target)
-                    writer.writeInline("Complex(\$L)", (node.value as Double).toBigDecimal())
-                }
                 else -> throw CodegenException("unexpected shape type $currShape for numberNode")
             }
         }

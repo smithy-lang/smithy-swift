@@ -6,7 +6,7 @@ class HttpUrlPathProviderTests {
     @Test
     fun `001 it builds url path provider smoke test`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy")
-        val contents = getModelFileContents("example", "SmokeTestInput+UrlPathProvider.swift", context.manifest)
+        val contents = getModelFileContents("Sources/example", "SmokeTestInput+UrlPathProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension SmokeTestInput {
@@ -25,7 +25,7 @@ extension SmokeTestInput {
     @Test
     fun `002 it handles required http labels`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy")
-        val contents = getModelFileContents("example", "RequiredHttpFieldsInput+UrlPathProvider.swift", context.manifest)
+        val contents = getModelFileContents("Sources/example", "RequiredHttpFieldsInput+UrlPathProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
 
         // All http labels are implicitly required, even if the smithy spec doesn't specify the required trait

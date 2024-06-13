@@ -27,7 +27,7 @@ extension QueryListsInput {
 
     static func write(value: QueryListsInput?, to writer: SmithyFormURL.Writer) throws {
         guard let value else { return }
-        try writer["FlattenedListArg"].writeList(value.flattenedListArg, memberWritingClosure: String.write(value:to:), memberNodeInfo: "member", isFlattened: true)
-        try writer["ListArg"].writeList(value.listArg, memberWritingClosure: String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+        try writer["FlattenedListArg"].writeList(value.flattenedListArg, memberWritingClosure: WritingClosures.writeString(value:to:), memberNodeInfo: "member", isFlattened: true)
+        try writer["ListArg"].writeList(value.listArg, memberWritingClosure: WritingClosures.writeString(value:to:), memberNodeInfo: "member", isFlattened: false)
     }
 }
