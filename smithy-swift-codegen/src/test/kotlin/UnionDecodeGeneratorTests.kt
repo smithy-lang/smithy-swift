@@ -29,12 +29,12 @@ class UnionDecodeGeneratorTests {
 
     @Test
     fun `it creates decodable conformance for nested structures`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("/example/models/MyUnion+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/MyUnion+ReadWrite.swift"))
     }
 
     @Test
     fun `it decodes a union with various member shape types`() {
-        val contents = getModelFileContents("example", "MyUnion+ReadWrite.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Sources/example", "MyUnion+ReadWrite.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExampleClientTypes.MyUnion {
@@ -51,9 +51,9 @@ extension ExampleClientTypes.MyUnion {
             case let .inheritedtimestamp(inheritedtimestamp):
                 try writer["inheritedTimestamp"].writeTimestamp(inheritedtimestamp, format: .httpDate)
             case let .listvalue(listvalue):
-                try writer["listValue"].writeList(listvalue, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+                try writer["listValue"].writeList(listvalue, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "member", isFlattened: false)
             case let .mapvalue(mapvalue):
-                try writer["mapValue"].writeMap(mapvalue, valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+                try writer["mapValue"].writeMap(mapvalue, valueWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
             case let .numbervalue(numbervalue):
                 try writer["numberValue"].write(numbervalue)
             case let .stringvalue(stringvalue):
@@ -86,9 +86,9 @@ extension ExampleClientTypes.MyUnion {
             case "enumValue":
                 return .enumvalue(try reader["enumValue"].read())
             case "listValue":
-                return .listvalue(try reader["listValue"].readList(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false))
+                return .listvalue(try reader["listValue"].readList(memberReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), memberNodeInfo: "member", isFlattened: false))
             case "mapValue":
-                return .mapvalue(try reader["mapValue"].readMap(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false))
+                return .mapvalue(try reader["mapValue"].readMap(valueReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false))
             case "structureValue":
                 return .structurevalue(try reader["structureValue"].read(with: ExampleClientTypes.GreetingWithErrorsOutput.read(from:)))
             default:

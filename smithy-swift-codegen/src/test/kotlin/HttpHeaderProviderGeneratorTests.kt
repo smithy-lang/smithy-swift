@@ -21,7 +21,7 @@ class HttpHeaderProviderGeneratorTests {
 
     @Test
     fun `it creates smoke test request builder`() {
-        val contents = getModelFileContents("example", "SmokeTestInput+HeaderProvider.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Sources/example", "SmokeTestInput+HeaderProvider.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension SmokeTestInput {
@@ -29,10 +29,10 @@ extension SmokeTestInput {
     static func headerProvider(_ value: SmokeTestInput) -> SmithyHTTPAPI.Headers {
         var items = SmithyHTTPAPI.Headers()
         if let header1 = value.header1 {
-            items.add(Header(name: "X-Header1", value: Swift.String(header1)))
+            items.add(SmithyHTTPAPI.Header(name: "X-Header1", value: Swift.String(header1)))
         }
         if let header2 = value.header2 {
-            items.add(Header(name: "X-Header2", value: Swift.String(header2)))
+            items.add(SmithyHTTPAPI.Header(name: "X-Header2", value: Swift.String(header2)))
         }
         return items
     }
@@ -43,7 +43,7 @@ extension SmokeTestInput {
 
     @Test
     fun `it builds headers with enums as raw values`() {
-        val contents = getModelFileContents("example", "EnumInputInput+HeaderProvider.swift", newTestContext.manifest)
+        val contents = getModelFileContents("Sources/example", "EnumInputInput+HeaderProvider.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension EnumInputInput {
@@ -51,7 +51,7 @@ extension EnumInputInput {
     static func headerProvider(_ value: EnumInputInput) -> SmithyHTTPAPI.Headers {
         var items = SmithyHTTPAPI.Headers()
         if let enumHeader = value.enumHeader {
-            items.add(Header(name: "X-EnumHeader", value: Swift.String(enumHeader.rawValue)))
+            items.add(SmithyHTTPAPI.Header(name: "X-EnumHeader", value: Swift.String(enumHeader.rawValue)))
         }
         return items
     }
@@ -63,7 +63,7 @@ extension EnumInputInput {
     @Test
     fun `it builds header with idempotency token value`() {
         val contents = getModelFileContents(
-            "example",
+            "Sources/example",
             "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+HeaderProvider.swift",
             newTestContext.manifest
         )
@@ -74,7 +74,7 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
     static func headerProvider(_ value: IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput) -> SmithyHTTPAPI.Headers {
         var items = SmithyHTTPAPI.Headers()
         if let token = value.token {
-            items.add(Header(name: "token", value: Swift.String(token)))
+            items.add(SmithyHTTPAPI.Header(name: "token", value: Swift.String(token)))
         }
         return items
     }
@@ -86,7 +86,7 @@ extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {
     @Test
     fun `it creates http headers for timestamps with format`() {
         val contents =
-            getModelFileContents("example", "TimestampInputInput+HeaderProvider.swift", newTestContext.manifest)
+            getModelFileContents("Sources/example", "TimestampInputInput+HeaderProvider.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension TimestampInputInput {
@@ -94,10 +94,10 @@ extension TimestampInputInput {
     static func headerProvider(_ value: TimestampInputInput) -> SmithyHTTPAPI.Headers {
         var items = SmithyHTTPAPI.Headers()
         if let headerEpoch = value.headerEpoch {
-            items.add(Header(name: "X-Epoch", value: Swift.String(TimestampFormatter(format: .epochSeconds).string(from: headerEpoch))))
+            items.add(SmithyHTTPAPI.Header(name: "X-Epoch", value: Swift.String(SmithyTimestamps.TimestampFormatter(format: .epochSeconds).string(from: headerEpoch))))
         }
         if let headerHttpDate = value.headerHttpDate {
-            items.add(Header(name: "X-Date", value: Swift.String(TimestampFormatter(format: .httpDate).string(from: headerHttpDate))))
+            items.add(SmithyHTTPAPI.Header(name: "X-Date", value: Swift.String(SmithyTimestamps.TimestampFormatter(format: .httpDate).string(from: headerHttpDate))))
         }
         return items
     }

@@ -11,11 +11,12 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
  * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
  */
 object SmithyRetriesTypes {
-    val DefaultRetryStrategy = runtimeSymbol("DefaultRetryStrategy")
+    val DefaultRetryStrategy = runtimeSymbol("DefaultRetryStrategy", SwiftDeclaration.STRUCT)
 }
 
 private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
     name,
     declaration,
     SwiftDependency.SMITHY_RETRIES,
+    null,
 )

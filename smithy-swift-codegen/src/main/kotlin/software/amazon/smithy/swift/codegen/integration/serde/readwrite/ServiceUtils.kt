@@ -7,8 +7,6 @@ import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 // An enum expressing the six defined AWS protocols used with Smithy.
@@ -54,19 +52,3 @@ val ServiceShape.isRPCBound: Boolean
         AWSProtocol.AWS_JSON_1_0, AWSProtocol.AWS_JSON_1_1, AWSProtocol.AWS_QUERY, AWSProtocol.EC2_QUERY -> true
         else -> false
     }
-
-// Adds the imports needed for models of this protocol
-fun SwiftWriter.addImports(wireProtocol: WireProtocol) {
-    addImport(SwiftDependency.SMITHY_READ_WRITE.target)
-    when (wireProtocol) {
-        WireProtocol.XML -> {
-            addImport(SwiftDependency.SMITHY_XML.target)
-        }
-        WireProtocol.FORM_URL -> {
-            addImport(SwiftDependency.SMITHY_FORM_URL.target)
-        }
-        WireProtocol.JSON -> {
-            addImport(SwiftDependency.SMITHY_JSON.target)
-        }
-    }
-}

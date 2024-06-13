@@ -34,13 +34,13 @@ class WaiterAcceptorGeneratorTests {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters", 0)
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
-            .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutput, Error>) -> Bool in
-                switch result {
-                    case .success: return true
-                    case .failure: return false
-                }
-            }),
-        """.trimIndent()
+.init(state: .success, matcher: { (input: HeadBucketInput, result: Swift.Result<HeadBucketOutput, Swift.Error>) -> Bool in
+    switch result {
+        case .success: return true
+        case .failure: return false
+    }
+}),
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -49,11 +49,11 @@ class WaiterAcceptorGeneratorTests {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters", 1)
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
-            .init(state: .retry, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutput, Error>) -> Bool in
-                guard case .failure(let error) = result else { return false }
-                return (error as? ServiceError)?.typeName == "NotFound"
-            }),
-        """.trimIndent()
+.init(state: .retry, matcher: { (input: HeadBucketInput, result: Swift.Result<HeadBucketOutput, Swift.Error>) -> Bool in
+    guard case .failure(let error) = result else { return false }
+    return (error as? ClientRuntime.ServiceError)?.typeName == "NotFound"
+}),
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -62,15 +62,15 @@ class WaiterAcceptorGeneratorTests {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters", 2)
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
-            .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutput, Error>) -> Bool in
-                // JMESPath expression: "field1"
-                // JMESPath comparator: "stringEquals"
-                // JMESPath expected value: "abc"
-                guard case .success(let output) = result else { return false }
-                let field1 = output.field1
-                return JMESUtils.compare(field1, ==, "abc")
-            }),
-        """.trimIndent()
+.init(state: .success, matcher: { (input: HeadBucketInput, result: Swift.Result<HeadBucketOutput, Swift.Error>) -> Bool in
+    // JMESPath expression: "field1"
+    // JMESPath comparator: "stringEquals"
+    // JMESPath expected value: "abc"
+    guard case .success(let output) = result else { return false }
+    let field1 = output.field1
+    return ClientRuntime.JMESUtils.compare(field1, ==, "abc")
+}),
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -79,20 +79,20 @@ class WaiterAcceptorGeneratorTests {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters", 3)
         val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
         val expected = """
-            .init(state: .success, matcher: { (input: HeadBucketInput, result: Result<HeadBucketOutput, Error>) -> Bool in
-                // JMESPath expression: "input.bucketName == output.field1"
-                // JMESPath comparator: "booleanEquals"
-                // JMESPath expected value: "true"
-                guard case .success(let unwrappedOutput) = result else { return false }
-                let inputOutput = WaiterConfiguration<HeadBucketInput, HeadBucketOutput>.Acceptor.InputOutput(input: input, output: unwrappedOutput)
-                let input = inputOutput.input
-                let bucketName = input?.bucketName
-                let output = inputOutput.output
-                let field1 = output?.field1
-                let comparison = JMESUtils.compare(bucketName, ==, field1)
-                return JMESUtils.compare(comparison, ==, true)
-            }),
-        """.trimIndent()
+.init(state: .success, matcher: { (input: HeadBucketInput, result: Swift.Result<HeadBucketOutput, Swift.Error>) -> Bool in
+    // JMESPath expression: "input.bucketName == output.field1"
+    // JMESPath comparator: "booleanEquals"
+    // JMESPath expected value: "true"
+    guard case .success(let unwrappedOutput) = result else { return false }
+    let inputOutput = ClientRuntime.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>.Acceptor.InputOutput(input: input, output: unwrappedOutput)
+    let input = inputOutput.input
+    let bucketName = input?.bucketName
+    let output = inputOutput.output
+    let field1 = output?.field1
+    let comparison = JMESUtils.compare(bucketName, ==, field1)
+    return ClientRuntime.JMESUtils.compare(comparison, ==, true)
+}),
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 

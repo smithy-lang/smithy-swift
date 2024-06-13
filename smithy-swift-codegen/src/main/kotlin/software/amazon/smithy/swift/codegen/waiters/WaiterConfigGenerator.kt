@@ -9,6 +9,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
+import software.amazon.smithy.swift.codegen.swiftmodules.WaitersTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.waiters.Matcher.ErrorTypeMember
@@ -26,14 +27,28 @@ class WaiterConfigGenerator(
         val configFunctionName = "${waiterName.toLowerCamelCase()}WaiterConfig"
         val inputTypeName = waitedOperation.inputShape.name.toUpperCamelCase()
         val outputTypeName = waitedOperation.outputShape.name.toUpperCamelCase()
-        writer.openBlock("static func \$L() throws -> WaiterConfiguration<\$L, \$L> {", "}", configFunctionName, inputTypeName, outputTypeName) {
-            writer.openBlock("let acceptors: [WaiterConfiguration<\$L, \$L>.Acceptor] = [", "]", inputTypeName, outputTypeName) {
+        writer.openBlock(
+            "static func \$L() throws -> \$N<\$L, \$L> {",
+            "}",
+            configFunctionName,
+            WaitersTypes.WaiterConfiguration,
+            inputTypeName,
+            outputTypeName,
+        ) {
+            writer.openBlock(
+                "let acceptors: [\$N<\$L, \$L>.Acceptor] = [",
+                "]",
+                WaitersTypes.WaiterConfiguration,
+                inputTypeName,
+                outputTypeName,
+            ) {
                 waiter.acceptors.forEach { acceptor ->
                     WaiterAcceptorGenerator(writer, ctx, service, waitedOperation, acceptor).render()
                 }
             }
             writer.write(
-                "return try WaiterConfiguration<\$L, \$L>(acceptors: acceptors, minDelay: \$L.0, maxDelay: \$L.0)",
+                "return try \$N<\$L, \$L>(acceptors: acceptors, minDelay: \$L.0, maxDelay: \$L.0)",
+                WaitersTypes.WaiterConfiguration,
                 inputTypeName,
                 outputTypeName,
                 waiter.minDelay,

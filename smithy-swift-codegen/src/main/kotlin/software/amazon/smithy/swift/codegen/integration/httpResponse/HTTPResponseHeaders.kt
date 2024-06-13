@@ -18,14 +18,16 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.FoundationTypes
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class HTTPResponseHeaders(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -90,7 +92,7 @@ class HTTPResponseHeaders(
                             HttpBinding.Location.HEADER,
                             defaultTimestampFormat
                         )
-                        var memberValue = stringToDate(headerDeclaration, tsFormat)
+                        var memberValue = stringToDate(writer, headerDeclaration, tsFormat)
                         writer.write("value.$path\$L = \$L", memberName, memberValue)
                     }
                     is ListShape -> {
@@ -99,8 +101,7 @@ class HTTPResponseHeaders(
                         // to the target symbol type
 
                         // we also have to handle multiple comma separated values (e.g. 'X-Foo': "1, 2, 3"`)
-                        var splitFn = "splitHeaderListValues"
-                        var splitFnPrefix = ""
+                        var splitFnSymbol = ClientRuntimeTypes.Core.splitHeaderListValues
                         var invalidHeaderListErrorName = "invalidNumbersHeaderList"
                         val conversion = when (val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)) {
                             is BooleanShape -> {
@@ -123,11 +124,13 @@ class HTTPResponseHeaders(
                                     defaultTimestampFormat
                                 )
                                 if (tsFormat == TimestampFormatTrait.Format.HTTP_DATE) {
-                                    splitFn = "splitHttpDateHeaderListValues"
+                                    splitFnSymbol = ClientRuntimeTypes.Core.splitHttpDateHeaderListValues
                                 }
                                 invalidHeaderListErrorName = "invalidTimestampHeaderList"
-                                writer.addImport("Foundation")
-                                "(${stringToDate("\$0", tsFormat)} ?? ${FoundationTypes.Date}())"
+                                writer.format(
+                                    "(${stringToDate(writer, "\$\$\$\$0", tsFormat)} ?? \$N())",
+                                    FoundationTypes.Date
+                                )
                             }
                             is StringShape -> {
                                 invalidHeaderListErrorName = "invalidStringHeaderList"
@@ -149,7 +152,7 @@ class HTTPResponseHeaders(
                         if (memberTarget.isSetShape) {
                             memberValue = "${SwiftTypes.Set}(${memberName}HeaderValues)"
                         }
-                        writer.openBlock("if let ${memberName}HeaderValues = try $splitFnPrefix$splitFn(${memberName}HeaderValue) {", "}") {
+                        writer.openBlock("if let ${memberName}HeaderValues = try \$N(${memberName}HeaderValue) {", "}", splitFnSymbol) {
                             // render map function
                             val collectionMemberTargetShape = ctx.model.expectShape(memberTarget.member.target)
                             val collectionMemberTargetSymbol = ctx.symbolProvider.toSymbol(collectionMemberTargetShape)
@@ -157,7 +160,12 @@ class HTTPResponseHeaders(
                                 writer.openBlock("value.\$L = try \$LHeaderValues.map {", "}", memberName, memberName) {
                                     val transformedHeaderDeclaration = "${memberName}Transformed"
                                     writer.openBlock("guard let \$L = \$L else {", "}", transformedHeaderDeclaration, conversion) {
-                                        writer.write("throw HeaderDeserializationError.\$L(value: \$LHeaderValue)", invalidHeaderListErrorName, memberName)
+                                        writer.write(
+                                            "throw \$N.\$L(value: \$LHeaderValue)",
+                                            ClientRuntimeTypes.Core.HeaderDeserializationError,
+                                            invalidHeaderListErrorName,
+                                            memberName
+                                        )
                                     }
                                     writer.write("return \$L", transformedHeaderDeclaration)
                                 }
@@ -185,8 +193,11 @@ class HTTPResponseHeaders(
         }
     }
 
-    private fun stringToDate(stringValue: String, tsFormat: TimestampFormatTrait.Format): String {
+    private fun stringToDate(writer: SwiftWriter, stringValue: String, tsFormat: TimestampFormatTrait.Format): String {
         val timestampFormat = TimestampHelpers.generateTimestampFormatEnumValue(tsFormat)
-        return "TimestampFormatter(format: .$timestampFormat).date(from: $stringValue)"
+        return writer.format(
+            "\$N(format: .$timestampFormat).date(from: $stringValue)",
+            SmithyTimestampsTypes.TimestampFormatter,
+        )
     }
 }

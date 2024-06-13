@@ -6,7 +6,11 @@ class ModelFileUtils {
 
     companion object {
         fun filename(settings: SwiftSettings, filename: String): String {
-            return "Models.swift".takeIf { settings.mergeModels } ?: "models/$filename.swift"
+            return if (settings.mergeModels) {
+                "Sources/${settings.moduleName}/Models.swift"
+            } else {
+                "Sources/${settings.moduleName}/models/$filename.swift"
+            }
         }
     }
 }

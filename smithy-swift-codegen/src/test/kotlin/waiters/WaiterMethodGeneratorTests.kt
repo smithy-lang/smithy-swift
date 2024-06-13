@@ -32,24 +32,25 @@ class WaiterMethodGeneratorTests {
     @Test
     fun testRendersCorrectWaitersSwiftFileContentForServiceWithWaiters() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
+        println(context.manifest.files)
+        val contents = getFileContents(context.manifest, "/Sources/Test/Waiters.swift")
         val expected = """
-            /// Initiates waiting for the BucketExists event on the headBucket operation.
-            /// The operation will be tried and (if necessary) retried until the wait succeeds, fails, or times out.
-            /// Returns a `WaiterOutcome` asynchronously on waiter success, throws an error asynchronously on
-            /// waiter failure or timeout.
-            /// - Parameters:
-            ///   - options: `WaiterOptions` to be used to configure this wait.
-            ///   - input: The `HeadBucketInput` object to be used as a parameter when performing the operation.
-            /// - Returns: A `WaiterOutcome` with the result of the final, successful performance of the operation.
-            /// - Throws: `WaiterFailureError` if the waiter fails due to matching an `Acceptor` with state `failure`
-            /// or there is an error not handled by any `Acceptor.`
-            /// `WaiterTimeoutError` if the waiter times out.
-            public func waitUntilBucketExists(options: WaiterOptions, input: HeadBucketInput) async throws -> WaiterOutcome<HeadBucketOutput> {
-                let waiter = Waiter(config: try Self.bucketExistsWaiterConfig(), operation: self.headBucket(input:))
-                return try await waiter.waitUntil(options: options, input: input)
-            }
-        """.trimIndent()
+/// Initiates waiting for the BucketExists event on the headBucket operation.
+/// The operation will be tried and (if necessary) retried until the wait succeeds, fails, or times out.
+/// Returns a `WaiterOutcome` asynchronously on waiter success, throws an error asynchronously on
+/// waiter failure or timeout.
+/// - Parameters:
+///   - options: `WaiterOptions` to be used to configure this wait.
+///   - input: The `HeadBucketInput` object to be used as a parameter when performing the operation.
+/// - Returns: A `WaiterOutcome` with the result of the final, successful performance of the operation.
+/// - Throws: `WaiterFailureError` if the waiter fails due to matching an `Acceptor` with state `failure`
+/// or there is an error not handled by any `Acceptor.`
+/// `WaiterTimeoutError` if the waiter times out.
+public func waitUntilBucketExists(options: ClientRuntime.WaiterOptions, input: HeadBucketInput) async throws -> ClientRuntime.WaiterOutcome<HeadBucketOutput> {
+    let waiter = ClientRuntime.Waiter(config: try Self.bucketExistsWaiterConfig(), operation: self.headBucket(input:))
+    return try await waiter.waitUntil(options: options, input: input)
+}
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -91,7 +92,7 @@ class WaiterMethodGeneratorTests {
                 return integrations.toMutableList()
             }
         }
-        val path = "Test/Waiters.swift"
+        val path = "/Sources/Test/Waiters.swift"
         context.generationCtx.delegator.useFileWriter(path) { writer ->
             val service = codegenContext.model.expectShape<ServiceShape>(codegenContext.settings.service)
             val waitedOperation = service.allOperations

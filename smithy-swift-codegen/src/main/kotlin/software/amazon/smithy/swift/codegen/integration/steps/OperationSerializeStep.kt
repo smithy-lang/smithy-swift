@@ -14,9 +14,10 @@ class OperationSerializeStep(
     outputType: Symbol,
     outputErrorType: Symbol
 ) : OperationStep(outputType, outputErrorType) {
-    override val inputType: Symbol = Symbol
-        .builder()
+    override val inputType: Symbol = Symbol.builder()
         .name("SerializeStepInput<$inputType>")
         .namespace("ClientRuntime", ".")
-        .dependencies(SwiftDependency.CLIENT_RUNTIME).build()
+        .addReference(inputType)
+        .dependencies(SwiftDependency.CLIENT_RUNTIME)
+        .build()
 }

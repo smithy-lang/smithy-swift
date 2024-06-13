@@ -13,6 +13,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 object SmithyHTTPAPITypes {
     val Endpoint = runtimeSymbol("Endpoint", SwiftDeclaration.STRUCT)
     val HttpClient = runtimeSymbol("HTTPClient", SwiftDeclaration.PROTOCOL)
+    val Header = runtimeSymbol("Header", SwiftDeclaration.STRUCT)
     val Headers = runtimeSymbol("Headers", SwiftDeclaration.STRUCT)
     val SdkHttpRequestBuilder = runtimeSymbol("SdkHttpRequestBuilder", SwiftDeclaration.CLASS)
     val SdkHttpRequest = runtimeSymbol("SdkHttpRequest", SwiftDeclaration.CLASS)
@@ -23,4 +24,5 @@ private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): 
     name,
     declaration,
     SwiftDependency.SMITHY_HTTP_API,
+    null,
 )

@@ -32,7 +32,7 @@ class OutputDeserializerTests {
     @Test
     fun `it creates correct init for simple structure payloads`() {
         val contents = getModelFileContents(
-            "example",
+            "Sources/example",
             "SimpleStructureOutput+HttpResponseBinding.swift",
             newTestContext.manifest
         )
@@ -57,7 +57,7 @@ extension SimpleStructureOutput {
     @Test
     fun `it creates correct init for data streaming payloads`() {
         val contents = getModelFileContents(
-            "example",
+            "Sources/example",
             "DataStreamingOutput+HttpResponseBinding.swift",
             newTestContext.manifest
         )
@@ -85,7 +85,7 @@ extension DataStreamingOutput {
     @Test
     fun `it creates correct init for event streaming payloads`() {
         val contents = getModelFileContents(
-            "example",
+            "Sources/example",
             "EventStreamingOutput+HttpResponseBinding.swift",
             newTestContext.manifest
         )
