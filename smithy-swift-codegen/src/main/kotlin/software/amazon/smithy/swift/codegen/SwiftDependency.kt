@@ -51,6 +51,14 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
         )
+        val SMITHY_IDENTITY = SwiftDependency(
+            "SmithyIdentity",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
         val SMITHY_RETRIES_API = SwiftDependency(
             "SmithyRetriesAPI",
             "main",

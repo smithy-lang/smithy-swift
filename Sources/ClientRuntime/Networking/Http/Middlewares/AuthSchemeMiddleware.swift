@@ -12,6 +12,7 @@ import class Smithy.Context
 import class SmithyHTTPAPI.SdkHttpRequestBuilder
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 import protocol SmithyHTTPAuthAPI.AuthScheme
+import struct SmithyHTTPAuth.DefaultIdentityResolverConfiguration
 
 public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
     public let id: String = "AuthSchemeMiddleware"

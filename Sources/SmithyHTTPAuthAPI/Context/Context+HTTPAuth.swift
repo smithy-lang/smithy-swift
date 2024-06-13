@@ -5,13 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.Attributes
-import struct Smithy.AttributeKey
 import class Smithy.Context
 import class Smithy.ContextBuilder
+import struct Smithy.Attributes
+import struct Smithy.AttributeKey
 
 public extension Context {
-
     func getAuthSchemes() -> Attributes? {
         return attributes.get(key: authSchemesKey)
     }
@@ -36,7 +35,6 @@ public extension Context {
 }
 
 extension ContextBuilder {
-
     @discardableResult
     public func withAuthSchemeResolver(value: AuthSchemeResolver?) -> ContextBuilder {
         self.attributes.set(key: authSchemeResolverKey, value: value)
