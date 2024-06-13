@@ -14,7 +14,7 @@ import struct Foundation.Data
 // Will fix after event stream modularizaion has been reviewed.
 
     /// Stream adapter that encodes input into `Data` objects.
-    public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream {
+    public class DefaultMessageEncoderStream<Event>: @unchecked Sendable, MessageEncoderStream, Stream {
 
         let stream: AsyncThrowingStream<Event, Error>
         let messageEncoder: MessageEncoder
