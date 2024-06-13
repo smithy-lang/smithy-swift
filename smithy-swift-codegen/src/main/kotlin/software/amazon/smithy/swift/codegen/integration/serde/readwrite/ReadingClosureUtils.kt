@@ -80,7 +80,6 @@ class ReadingClosureUtils(
                 writer.format("\$N.read(from:)", ctx.symbolProvider.toSymbol(shape))
             }
             else -> {
-//                println("${shape.id} is a ${shape.javaClass.simpleName}")
                 writer.format(
                     "\$N.read\$L(from:)",
                     SmithyReadWriteTypes.ReadingClosures,
