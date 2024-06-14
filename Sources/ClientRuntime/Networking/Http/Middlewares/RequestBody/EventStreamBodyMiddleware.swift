@@ -7,8 +7,8 @@
 
 import protocol Smithy.RequestMessageSerializer
 import class Smithy.Context
-import SmithyEventStreamsAPI
 import SmithyEventStreams
+import SmithyEventStreamsAPI
 import SmithyEventStreamsAuthAPI
 import struct Foundation.Data
 import typealias SmithyReadWrite.WritingClosure

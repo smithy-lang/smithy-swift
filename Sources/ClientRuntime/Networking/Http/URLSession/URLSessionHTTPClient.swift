@@ -36,8 +36,8 @@ import class Foundation.URLSessionTask
 import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
 import struct Foundation.Data
-import Security
 import AwsCommonRuntimeKit
+import Security
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
 ///
