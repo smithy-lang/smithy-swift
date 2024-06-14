@@ -9,7 +9,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
-import software.amazon.smithy.swift.codegen.swiftmodules.WaitersTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyWaitersAPITypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.waiters.Matcher.ErrorTypeMember
@@ -31,14 +31,14 @@ class WaiterConfigGenerator(
             "static func \$L() throws -> \$N<\$L, \$L> {",
             "}",
             configFunctionName,
-            WaitersTypes.WaiterConfiguration,
+            SmithyWaitersAPITypes.WaiterConfiguration,
             inputTypeName,
             outputTypeName,
         ) {
             writer.openBlock(
                 "let acceptors: [\$N<\$L, \$L>.Acceptor] = [",
                 "]",
-                WaitersTypes.WaiterConfiguration,
+                SmithyWaitersAPITypes.WaiterConfiguration,
                 inputTypeName,
                 outputTypeName,
             ) {
@@ -48,7 +48,7 @@ class WaiterConfigGenerator(
             }
             writer.write(
                 "return try \$N<\$L, \$L>(acceptors: acceptors, minDelay: \$L.0, maxDelay: \$L.0)",
-                WaitersTypes.WaiterConfiguration,
+                SmithyWaitersAPITypes.WaiterConfiguration,
                 inputTypeName,
                 outputTypeName,
                 waiter.minDelay,

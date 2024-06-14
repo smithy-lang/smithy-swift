@@ -34,7 +34,7 @@ class WaiterConfigGeneratorTests {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
         val expected = """
-static func bucketExistsWaiterConfig() throws -> ClientRuntime.WaiterConfiguration<HeadBucketInput, HeadBucketOutput> {
+static func bucketExistsWaiterConfig() throws -> SmithyWaitersAPI.WaiterConfiguration<HeadBucketInput, HeadBucketOutput> {
 """
         contents.shouldContainOnlyOnce(expected)
     }
@@ -44,7 +44,7 @@ static func bucketExistsWaiterConfig() throws -> ClientRuntime.WaiterConfigurati
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
         val expected = """
-    return try ClientRuntime.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
+    return try SmithyWaitersAPI.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
 """
         contents.shouldContainOnlyOnce(expected)
     }
@@ -54,7 +54,7 @@ static func bucketExistsWaiterConfig() throws -> ClientRuntime.WaiterConfigurati
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
         val expected = """
-    let acceptors: [ClientRuntime.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>.Acceptor] = [
+    let acceptors: [SmithyWaitersAPI.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>.Acceptor] = [
 """
         contents.shouldContainOnlyOnce(expected)
     }

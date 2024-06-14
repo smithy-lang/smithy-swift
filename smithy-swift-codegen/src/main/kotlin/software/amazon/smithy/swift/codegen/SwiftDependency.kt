@@ -171,6 +171,14 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
         )
+        val SMITHY_WAITERS_API = SwiftDependency(
+            "SmithyWaitersAPI",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
     }
 
     override fun getDependencies(): List<SymbolDependency> {

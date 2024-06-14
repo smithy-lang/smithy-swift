@@ -45,6 +45,7 @@ let package = Package(
         .library(name: "SmithyEventStreamsAuthAPI", targets: ["SmithyEventStreamsAuthAPI"]),
         .library(name: "SmithyEventStreams", targets: ["SmithyEventStreams"]),
         .library(name: "SmithyChecksumsAPI", targets: ["SmithyChecksumsAPI"]),
+        .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: [
@@ -176,6 +177,9 @@ let package = Package(
             name: "SmithyChecksumsAPI",
             dependencies: ["Smithy"]
         ),
+        .target(
+            name: "SmithyWaitersAPI"
+        ),
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: ["ClientRuntime", "SmithyTestUtil"],
@@ -208,7 +212,11 @@ let package = Package(
         .testTarget(
             name: "SmithyIdentityTests",
             dependencies: ["Smithy", "SmithyIdentity"]
-        )
+        ),
+        .testTarget(
+            name: "SmithyWaitersAPITests",
+            dependencies: ["Smithy", "SmithyWaitersAPI"]
+        ),
     ].compactMap { $0 }
 )
 
