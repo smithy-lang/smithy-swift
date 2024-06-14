@@ -68,7 +68,7 @@ class WaiterAcceptorGeneratorTests {
     // JMESPath expected value: "abc"
     guard case .success(let output) = result else { return false }
     let field1 = output.field1
-    return ClientRuntime.JMESUtils.compare(field1, ==, "abc")
+    return SmithyWaitersAPI.JMESUtils.compare(field1, ==, "abc")
 }),
 """
         contents.shouldContainOnlyOnce(expected)
@@ -84,13 +84,13 @@ class WaiterAcceptorGeneratorTests {
     // JMESPath comparator: "booleanEquals"
     // JMESPath expected value: "true"
     guard case .success(let unwrappedOutput) = result else { return false }
-    let inputOutput = ClientRuntime.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>.Acceptor.InputOutput(input: input, output: unwrappedOutput)
+    let inputOutput = SmithyWaitersAPI.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>.Acceptor.InputOutput(input: input, output: unwrappedOutput)
     let input = inputOutput.input
     let bucketName = input?.bucketName
     let output = inputOutput.output
     let field1 = output?.field1
-    let comparison = JMESUtils.compare(bucketName, ==, field1)
-    return ClientRuntime.JMESUtils.compare(comparison, ==, true)
+    let comparison = SmithyWaitersAPI.JMESUtils.compare(bucketName, ==, field1)
+    return SmithyWaitersAPI.JMESUtils.compare(comparison, ==, true)
 }),
 """
         contents.shouldContainOnlyOnce(expected)

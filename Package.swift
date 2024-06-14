@@ -47,6 +47,7 @@ let package = Package(
         .library(name: "SmithyStreams", targets: ["SmithyStreams"]),
         .library(name: "SmithyChecksumsAPI", targets: ["SmithyChecksumsAPI"]),
         .library(name: "SmithyChecksums", targets: ["SmithyChecksums"]),
+        .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: [
@@ -200,6 +201,9 @@ let package = Package(
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
             ]
         ),
+        .target(
+            name: "SmithyWaitersAPI"
+        ),
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: ["ClientRuntime", "SmithyTestUtil", "SmithyStreams"],
@@ -232,7 +236,11 @@ let package = Package(
         .testTarget(
             name: "SmithyIdentityTests",
             dependencies: ["Smithy", "SmithyIdentity"]
-        )
+        ),
+        .testTarget(
+            name: "SmithyWaitersAPITests",
+            dependencies: ["Smithy", "SmithyWaitersAPI"]
+        ),
     ].compactMap { $0 }
 )
 

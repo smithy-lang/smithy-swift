@@ -7,7 +7,7 @@
 
 import Foundation
 import XCTest
-@testable import ClientRuntime
+@testable import SmithyWaitersAPI
 
 class WaiterSchedulerTests: XCTestCase {
 

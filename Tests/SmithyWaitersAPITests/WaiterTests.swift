@@ -8,7 +8,7 @@
 import Smithy
 import Foundation
 import XCTest
-@testable import ClientRuntime
+@testable import SmithyWaitersAPI
 
 fileprivate typealias Acceptor = WaiterConfiguration<String, String>.Acceptor
 
@@ -29,9 +29,9 @@ class WaiterTests: XCTestCase {
 
         func waitThenRequest(
             scheduler: WaiterScheduler,
-            input: Input, config: ClientRuntime.WaiterConfiguration<String, String>,
+            input: Input, config: WaiterConfiguration<String, String>,
             operation: (Input) async throws -> Output
-        ) async throws -> ClientRuntime.WaiterOutcome<String>? {
+        ) async throws -> WaiterOutcome<String>? {
             defer {
                 scheduler.updateAfterRetry()
                 callCounter += 1

@@ -8,7 +8,7 @@
 import Smithy
 import Foundation
 import XCTest
-@testable import ClientRuntime
+@testable import SmithyWaitersAPI
 
 fileprivate typealias Acceptor = WaiterConfiguration<String, String>.Acceptor
 

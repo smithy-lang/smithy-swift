@@ -7,7 +7,7 @@
 
 import Foundation
 import XCTest
-@testable import ClientRuntime
+@testable import SmithyWaitersAPI
 
 // In tests, waiters are used with String as Input & String as Output
 // to makes tests as simple as possible.
