@@ -30,6 +30,8 @@ import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
+
 
 /**
  * Generates a shape type declaration based on the parameters provided.
@@ -157,7 +159,7 @@ class ShapeValueGenerator(
             }
             ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {
-                    writer.writeInline(".stream(BufferedStream(data: ")
+                    writer.writeInline(".stream(\$N(data: ", SmithyStreamsTypes.Core.BufferedStream)
                     ".data(using: .utf8)!, isClosed: true))"
                 } else {
                     // TODO: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.

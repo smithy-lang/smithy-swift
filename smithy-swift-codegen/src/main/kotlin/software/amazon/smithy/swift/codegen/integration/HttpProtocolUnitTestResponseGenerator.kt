@@ -22,6 +22,7 @@ import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.getNestedShapes
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 
 /**
  * Generates HTTP protocol unit tests for `httpResponseTest` cases
@@ -71,7 +72,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 // depending on the shape of the output, we may need to wrap the body in a stream
                 if (outputShape.hasStreamingMember(model)) {
                     // wrapping to CachingStream required for test asserts which reads body multiple times
-                    writer.write("content: .stream(BufferedStream(data: \$L, isClosed: true))", data)
+                    writer.write("content: .stream(\$N(data: \$L, isClosed: true))", SmithyStreamsTypes.Core.BufferedStream, data)
                 } else {
                     writer.write("content: .data(\$L)", data)
                 }
