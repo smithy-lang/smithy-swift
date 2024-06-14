@@ -46,8 +46,8 @@ class WaiterMethodGeneratorTests {
 /// - Throws: `WaiterFailureError` if the waiter fails due to matching an `Acceptor` with state `failure`
 /// or there is an error not handled by any `Acceptor.`
 /// `WaiterTimeoutError` if the waiter times out.
-public func waitUntilBucketExists(options: ClientRuntime.WaiterOptions, input: HeadBucketInput) async throws -> ClientRuntime.WaiterOutcome<HeadBucketOutput> {
-    let waiter = ClientRuntime.Waiter(config: try Self.bucketExistsWaiterConfig(), operation: self.headBucket(input:))
+public func waitUntilBucketExists(options: SmithyWaitersAPI.WaiterOptions, input: HeadBucketInput) async throws -> SmithyWaitersAPI.WaiterOutcome<HeadBucketOutput> {
+    let waiter = SmithyWaitersAPI.Waiter(config: try Self.bucketExistsWaiterConfig(), operation: self.headBucket(input:))
     return try await waiter.waitUntil(options: options, input: input)
 }
 """

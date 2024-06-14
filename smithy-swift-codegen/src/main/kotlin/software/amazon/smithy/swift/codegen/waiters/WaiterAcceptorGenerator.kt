@@ -18,7 +18,7 @@ import software.amazon.smithy.swift.codegen.SwiftSymbolProvider
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.WaitersTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyWaitersAPITypes
 import software.amazon.smithy.waiters.Acceptor
 import software.amazon.smithy.waiters.Matcher
 import software.amazon.smithy.waiters.PathComparator
@@ -79,7 +79,7 @@ class WaiterAcceptorGenerator(
             writer.write("guard case .success(let unwrappedOutput) = result else { return false }")
             writer.write(
                 "let inputOutput = \$N<\$L, \$L>.Acceptor.InputOutput(input: input, output: unwrappedOutput)",
-                WaitersTypes.WaiterConfiguration,
+                SmithyWaitersAPITypes.WaiterConfiguration,
                 inputTypeName,
                 outputTypeName
             )
@@ -107,14 +107,14 @@ class WaiterAcceptorGenerator(
         val expected = pathMatcher.expected
         when (pathMatcher.comparator) {
             PathComparator.STRING_EQUALS ->
-                writer.write("return \$N.compare(\$L, ==, \$S)", WaitersTypes.JMESUtils, actual.name, expected)
+                writer.write("return \$N.compare(\$L, ==, \$S)", SmithyWaitersAPITypes.JMESUtils, actual.name, expected)
             PathComparator.BOOLEAN_EQUALS ->
-                writer.write("return \$N.compare(\$L, ==, \$L)", WaitersTypes.JMESUtils, actual.name, expected.toBoolean())
+                writer.write("return \$N.compare(\$L, ==, \$L)", SmithyWaitersAPITypes.JMESUtils, actual.name, expected.toBoolean())
             PathComparator.ANY_STRING_EQUALS ->
                 writer.write(
                     "return \$L?.contains(where: { \$N.compare($$0, ==, \$S) }) ?? false",
                     actual.name,
-                    WaitersTypes.JMESUtils,
+                    SmithyWaitersAPITypes.JMESUtils,
                     expected,
                 )
             PathComparator.ALL_STRING_EQUALS ->
@@ -122,7 +122,7 @@ class WaiterAcceptorGenerator(
                     "return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { \$N.compare($$0, ==, \$S) } ?? false)",
                     actual.name,
                     actual.name,
-                    WaitersTypes.JMESUtils,
+                    SmithyWaitersAPITypes.JMESUtils,
                     expected,
                 )
         }

@@ -4,7 +4,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
-object WaitersTypes {
+object SmithyWaitersAPITypes {
     val Waiter = runtimeSymbol("Waiter", SwiftDeclaration.CLASS)
     val WaiterConfiguration = runtimeSymbol("WaiterConfiguration", SwiftDeclaration.STRUCT)
     val WaiterOptions = runtimeSymbol("WaiterOptions", SwiftDeclaration.STRUCT)
@@ -15,6 +15,6 @@ object WaitersTypes {
 private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
     name,
     declaration,
-    SwiftDependency.CLIENT_RUNTIME,
+    SwiftDependency.SMITHY_WAITERS_API,
     null,
 )
