@@ -21,8 +21,8 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.Response
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.getNestedShapes
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 /**
  * Generates HTTP protocol unit tests for `httpResponseTest` cases

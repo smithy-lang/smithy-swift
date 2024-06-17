@@ -28,17 +28,16 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
-
 
 /**
  * Generates a shape type declaration based on the parameters provided.
  */
 class ShapeValueGenerator(
     internal val model: Model,
-    internal val symbolProvider: SymbolProvider
+    internal val symbolProvider: SymbolProvider,
 ) {
 
     /**
