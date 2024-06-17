@@ -6,7 +6,7 @@
 //
 
 /// Stream adapter that decodes input data into `Message` objects.
-public protocol MessageDecoderStream: Sendable, AsyncSequence where Event == Element {
+public protocol MessageDecoderStream: AsyncSequence where Event == Element {
     associatedtype Event
 }
 

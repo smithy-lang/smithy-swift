@@ -14,7 +14,7 @@ import struct Foundation.Data
 // Will fix after event stream modularizaion has been reviewed.
 
     /// Stream adapter that decodes input data into `EventStream.Message` objects.
-    public struct DefaultMessageDecoderStream<Event>: MessageDecoderStream, @unchecked Sendable {
+    public struct DefaultMessageDecoderStream<Event>: MessageDecoderStream {
         public typealias Element = Event
 
         let stream: ReadableStream
