@@ -17,7 +17,7 @@ class EnumDecodeXMLGenerationTests {
     @Test
     fun `decode enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlEnumsOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlEnumsOutput {
 
@@ -29,7 +29,7 @@ extension XmlEnumsOutput {
         value.fooEnum1 = try reader["fooEnum1"].readIfPresent()
         value.fooEnum2 = try reader["fooEnum2"].readIfPresent()
         value.fooEnum3 = try reader["fooEnum3"].readIfPresent()
-        value.fooEnumList = try reader["fooEnumList"].readListIfPresent(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.read(from:), memberNodeInfo: "member", isFlattened: false)
+        value.fooEnumList = try reader["fooEnumList"].readListIfPresent(memberReadingClosure: SmithyReadWrite.ReadingClosureBox<RestXmlProtocolClientTypes.FooEnum>().read(from:), memberNodeInfo: "member", isFlattened: false)
         return value
     }
 }
@@ -40,7 +40,7 @@ extension XmlEnumsOutput {
     @Test
     fun `decode enum nested`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlEnumsNestedOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlEnumsNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlEnumsNestedOutput {
 
@@ -49,7 +49,7 @@ extension XmlEnumsNestedOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlEnumsNestedOutput()
-        value.nestedEnumsList = try reader["nestedEnumsList"].readListIfPresent(memberReadingClosure: listReadingClosure(memberReadingClosure: RestXmlProtocolClientTypes.FooEnum.read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        value.nestedEnumsList = try reader["nestedEnumsList"].readListIfPresent(memberReadingClosure: SmithyReadWrite.listReadingClosure(memberReadingClosure: SmithyReadWrite.ReadingClosureBox<RestXmlProtocolClientTypes.FooEnum>().read(from:), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
         return value
     }
 }

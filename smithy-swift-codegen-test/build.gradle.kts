@@ -47,14 +47,14 @@ task("stageSdks") {
     doLast {
         logger.warn("copying ${outputDir}/WeatherSDK source to ${sourcesDir}")
         delete("$sourcesDir/WeatherSDK")
-        delete("$testsDir/WeatherSDKTests")
+        delete("$sourcesDir/WeatherSDKTests")
         copy {
-            from("$outputDir/WeatherSDK")
+            from("$outputDir/Sources/WeatherSDK")
             into("$sourcesDir/WeatherSDK")
             exclude("Package.swift")
         }
         copy {
-            from("$outputDir/WeatherSDKTests")
+            from("$outputDir/Tests/WeatherSDKTests")
             into("$testsDir/WeatherSDKTests")
             exclude("Package.swift")
         }

@@ -12,9 +12,11 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
+import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.utils.CaseUtils
 
 /**
@@ -40,13 +42,17 @@ interface ProtocolGenerator {
         }
 
         fun getFormattedDateString(
+            writer: SwiftWriter,
             tsFormat: TimestampFormatTrait.Format,
             memberName: String,
             urlEncode: Boolean = false
         ): String {
             val stringDateTerminator = if (urlEncode) ".urlPercentEncoding()" else ""
             val timestampFormat = TimestampHelpers.generateTimestampFormatEnumValue(tsFormat)
-            return "TimestampFormatter(format: .$timestampFormat).string(from: $memberName)$stringDateTerminator"
+            return writer.format(
+                "\$N(format: .$timestampFormat).string(from: $memberName)$stringDateTerminator",
+                SmithyTimestampsTypes.TimestampFormatter,
+            )
         }
 
         val DefaultServiceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Core.ServiceError

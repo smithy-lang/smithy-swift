@@ -6,17 +6,12 @@
 package software.amazon.smithy.swift.codegen.integration.plugins
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.integration.Plugin
-import software.amazon.smithy.swift.codegen.model.buildSymbol
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 internal class DefaultClientPlugin : Plugin {
-    override val className: Symbol
-        get() = buildSymbol {
-            this.name = "DefaultClientPlugin"
-            this.namespace = SwiftDependency.CLIENT_RUNTIME.target
-            dependency(SwiftDependency.CLIENT_RUNTIME)
-        }
+    override val className: Symbol = ClientRuntimeTypes.Core.DefaultClientPlugin
+
     override val isDefault: Boolean
         get() = true
 }

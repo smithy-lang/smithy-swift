@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.SwiftWriter
 
 @DslMarker
 annotation class SymbolDsl
@@ -108,13 +109,6 @@ fun Symbol.isOptional(): Boolean {
     return this.getProperty("isOptional").orElse(false) as Boolean
 }
 
-fun Symbol.toInternalSPI(spiName: String): Symbol {
-    return this.toBuilder()
-        .putProperty("isInternalSPI", true)
-        .putProperty("spiName", spiName)
-        .build()
-}
-
 fun Symbol.toOptional(): Symbol {
     return this.toBuilder().putProperty("isOptional", true).name(name).build()
 }
@@ -123,14 +117,6 @@ fun Symbol.toGeneric(): Symbol {
     return this.toBuilder().putProperty("isGeneric", true).name(name).build()
 }
 
-fun Symbol.renderSwiftType(): String {
-    return if (this.isGeneric() && this.isOptional()) {
-        "(any $this)?"
-    } else if (this.isGeneric()) {
-        "any $this"
-    } else if (this.isOptional()) {
-        "$this?"
-    } else {
-        "$this"
-    }
+fun Symbol.renderSwiftType(writer: SwiftWriter): String {
+    return writer.format("\$N", this)
 }

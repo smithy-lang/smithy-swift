@@ -12,10 +12,10 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SensitiveTrait
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toMemberNames
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class CustomDebugStringConvertibleGenerator(
     private val symbolProvider: SymbolProvider,

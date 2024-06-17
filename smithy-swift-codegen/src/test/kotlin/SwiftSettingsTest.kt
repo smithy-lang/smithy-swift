@@ -19,5 +19,6 @@ class SwiftSettingsTest {
         assertEquals("https://docs.amplify.aws/", settings.homepage)
         assertEquals("Amazon Web Services", settings.author)
         assertEquals("https://github.com/aws-amplify/amplify-codegen.git", settings.gitRepo)
+        assertEquals(false, settings.mergeModels)
     }
 }

@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.Attributes
+import struct Smithy.AttributeKey
 import enum Smithy.ByteStream
 import enum Smithy.ClientError
 import struct SmithyHTTPAPI.Headers
@@ -45,16 +47,17 @@ extension SdkHttpRequestBuilder {
         signingConfig: SigningConfig,
         signature: String,
         trailingHeaders: Headers,
-        checksumAlgorithm: ChecksumAlgorithm? = nil
+        checksumString: String? = nil
     ) throws {
         switch self.body {
         case .stream(let stream):
-            let chunkedStream = AWSChunkedStream(
+
+            let chunkedStream = try AWSChunkedStream(
                 inputStream: stream,
                 signingConfig: signingConfig,
                 previousSignature: signature,
                 trailingHeaders: trailingHeaders,
-                checksumAlgorithm: checksumAlgorithm
+                checksumString: checksumString
             )
             self.withBody(ByteStream.stream(chunkedStream))
         default:
