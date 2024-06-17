@@ -11,7 +11,7 @@ import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import struct Foundation.Data
 import AwsCommonRuntimeKit
 
-class ValidatingBufferedStream: @unchecked Sendable {
+class ValidatingBufferedStream {
     private var stream: BufferedStream
     private var checksumAlgorithm: ChecksumAlgorithm
     private var checksum: (any Checksum)
