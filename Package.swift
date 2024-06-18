@@ -144,10 +144,7 @@ let package = Package(
         ),
         .target(
             name: "SmithyHTTPAPI",
-            dependencies: [
-                "Smithy",
-                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
-            ]
+            dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyHTTPAuth",

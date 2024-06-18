@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
- import AwsCommonRuntimeKit
-
 public struct Headers {
     public var headers: [Header] = []
 
@@ -240,24 +238,5 @@ extension Header: Comparable {
 extension Headers: CustomDebugStringConvertible {
     public var debugDescription: String {
         return dictionary.map {"\($0.key): \($0.value.joined(separator: ", "))"}.joined(separator: ", \n")
-    }
-}
-
-extension Headers {
-    public func toHttpHeaders() -> [HTTPHeader] {
-        headers.map {
-            HTTPHeader(name: $0.name, value: $0.value.joined(separator: ","))
-        }
-    }
-
-    public init(httpHeaders: [HTTPHeader]) {
-        self.init()
-        addAll(httpHeaders: httpHeaders)
-    }
-
-    public mutating func addAll(httpHeaders: [HTTPHeader]) {
-        httpHeaders.forEach {
-            add(name: $0.name, value: $0.value)
-        }
     }
 }

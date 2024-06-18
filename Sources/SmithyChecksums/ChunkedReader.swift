@@ -10,6 +10,7 @@ import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import protocol Smithy.ReadableStream
 import struct SmithyHTTPAPI.Headers
 import AwsCommonRuntimeKit
+import SmithyHTTPAuth
 import struct Foundation.Data
 
 public class ChunkedReader {
