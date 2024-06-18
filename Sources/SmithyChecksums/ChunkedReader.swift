@@ -96,7 +96,7 @@ public class ChunkedReader {
             finalChunk.append(trailingHeaderChunk)
         }
 
-        // Append terminating CRLF to signal end of chunkß
+        // Append terminating CRLF to signal end of chunk
         finalChunk.append(Data("\r\n".utf8))
 
         return finalChunk
