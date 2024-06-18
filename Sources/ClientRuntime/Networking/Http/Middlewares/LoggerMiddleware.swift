@@ -41,7 +41,9 @@ public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middl
     }
 
     private func logRequest(logger: any LogAgent, request: SdkHttpRequest) {
-        if clientLogMode == .request || clientLogMode == .requestAndResponse {
+        if clientLogMode == .requestWithoutAuthorizationHeader {
+            logger.debug("Request: \(request.debugDescriptionWithoutAuthorizationHeader)")
+        } else if clientLogMode == .request || clientLogMode == .requestAndResponse {
             logger.debug("Request: \(request.debugDescription)")
         } else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .requestWithBody {
             logger.debug("Request: \(request.debugDescriptionWithBody)")

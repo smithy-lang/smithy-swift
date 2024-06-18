@@ -118,6 +118,16 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
         description
     }
 
+    public var debugDescriptionWithoutAuthorizationHeader: String {
+        let method = method.rawValue.uppercased()
+        let protocolType = self.destination.scheme
+        let query = self.destination.queryString ?? ""
+        let port = self.destination.port.map { String($0) } ?? ""
+        let header = headers.dictionary.filter({ $0.key != "Authorization" }).map({"\($0.key): \($0.value.joined(separator: ", "))"}).joined(separator: ", \n")
+        return "\(method) \(protocolType):\(port) \n " +
+               "Path: \(endpoint.uri.path) \n Headers: \(header) \n Query: \(query)"
+    }
+
     public var description: String {
         let method = method.rawValue.uppercased()
         let protocolType = self.destination.scheme
