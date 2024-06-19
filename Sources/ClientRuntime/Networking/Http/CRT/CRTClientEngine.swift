@@ -15,6 +15,8 @@ import enum SmithyHTTPAPI.ALPNProtocol
 import class SmithyHTTPAPI.SdkHttpRequest
 import class SmithyHTTPAPI.HttpResponse
 import enum SmithyHTTPAPI.HttpStatusCode
+import class SmithyChecksums.ChunkedStream
+import class SmithyStreams.BufferedStream
 import AwsCommonRuntimeKit
 #if os(Linux)
 import Glibc
@@ -200,32 +202,32 @@ public class CRTClientEngine: HTTPClient {
                                 }
                                 let body = request.body
 
-                                guard case .stream(let stream) = body, stream.isEligibleForAwsChunkedStreaming else {
+                                guard case .stream(let stream) = body, stream.isEligibleForChunkedStreaming else {
                                     throw ByteStreamError.invalidStreamTypeForChunkedBody(
-                                        "The stream is not eligible for AWS chunked streaming or is not a stream type!"
+                                        "The stream is not eligible for chunked streaming or is not a stream type!"
                                     )
                                 }
 
-                                guard let awsChunkedStream = stream as? AWSChunkedStream else {
-                                    throw ByteStreamError.streamDoesNotConformToAwsChunkedStream(
-                                        "Stream does not conform to AwsChunkedStream! Type is \(stream)."
+                                guard let chunkedStream = stream as? ChunkedStream else {
+                                    throw ByteStreamError.streamDoesNotConformToChunkedStream(
+                                        "Stream does not conform to ChunkedStream! Type is \(stream)."
                                     )
                                 }
 
                                 var hasMoreChunks = true
                                 while hasMoreChunks {
                                     // Process the first chunk and determine if there are more to send
-                                    hasMoreChunks = try await awsChunkedStream.chunkedReader.processNextChunk()
+                                    hasMoreChunks = try await chunkedStream.chunkedReader.processNextChunk()
 
                                     if !hasMoreChunks {
                                         // Send the final chunk
-                                        let finalChunk = try await awsChunkedStream.chunkedReader.getFinalChunk()
+                                        let finalChunk = try await chunkedStream.chunkedReader.getFinalChunk()
                                         try await http1Stream.writeChunk(chunk: finalChunk, endOfStream: true)
                                     } else {
-                                        let currentChunkBody = awsChunkedStream.chunkedReader.getCurrentChunkBody()
+                                        let currentChunkBody = chunkedStream.chunkedReader.getCurrentChunkBody()
                                         if !currentChunkBody.isEmpty {
                                             try await http1Stream.writeChunk(
-                                                chunk: awsChunkedStream.chunkedReader.getCurrentChunk(),
+                                                chunk: chunkedStream.chunkedReader.getCurrentChunk(),
                                                 endOfStream: false
                                             )
                                         }

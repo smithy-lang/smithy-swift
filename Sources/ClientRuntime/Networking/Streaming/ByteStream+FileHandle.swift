@@ -6,6 +6,7 @@
 //
 
 import enum Smithy.ByteStream
+import class SmithyStreams.FileStream
 import class Foundation.FileHandle
 
 extension ByteStream {
