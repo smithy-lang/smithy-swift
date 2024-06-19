@@ -1,12 +1,5 @@
-//
-// Copyright Amazon.com Inc. or its affiliates.
-// All Rights Reserved.
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-
-import struct SmithyHTTPAPI.Headers
 import AwsCommonRuntimeKit
+import struct SmithyHTTPAPI.Headers
 
 extension Headers {
     public func toHttpHeaders() -> [HTTPHeader] {
@@ -15,7 +8,7 @@ extension Headers {
         }
     }
 
-    init(httpHeaders: [HTTPHeader]) {
+    public init(httpHeaders: [HTTPHeader]) {
         self.init()
         addAll(httpHeaders: httpHeaders)
     }
