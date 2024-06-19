@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Smithy
 import struct Foundation.Data
 import class Foundation.NSRecursiveLock
+import protocol Smithy.Stream
 
 /// A `Stream` implementation that buffers data in memory.
 /// The buffer size depends on the amount of data written and read.

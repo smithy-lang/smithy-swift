@@ -43,7 +43,7 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
             builder.updateHeader(name: "Content-Length", value: String(contentLength))
         case .stream(let stream):
             if let length = stream.length {
-                if !stream.isEligibleForAwsChunkedStreaming
+                if !stream.isEligibleForChunkedStreaming
                     && !(builder.headers.value(for: "Transfer-Encoding") == "chunked") {
                     builder.updateHeader(name: "Content-Length", value: String(length))
                 }

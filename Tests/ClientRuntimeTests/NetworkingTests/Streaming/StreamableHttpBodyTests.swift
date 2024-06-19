@@ -7,6 +7,7 @@
 
 import XCTest
 @testable import ClientRuntime
+import class SmithyStreams.StreamableHttpBody
 import AwsCommonRuntimeKit
 
 final class StreamableHttpBodyTests: XCTestCase {

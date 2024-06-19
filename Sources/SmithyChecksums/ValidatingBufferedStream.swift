@@ -10,15 +10,16 @@ import protocol SmithyChecksumsAPI.Checksum
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import struct Foundation.Data
 import AwsCommonRuntimeKit
+import class SmithyStreams.BufferedStream
 
-class ValidatingBufferedStream {
+public class ValidatingBufferedStream {
     private var stream: BufferedStream
     private var checksumAlgorithm: ChecksumAlgorithm
     private var checksum: (any Checksum)
     private var expectedChecksum: String
     private var currentHash: UInt32 = 0
 
-    init(stream: BufferedStream, expectedChecksum: String, checksumAlgorithm: ChecksumAlgorithm) {
+    public init(stream: BufferedStream, expectedChecksum: String, checksumAlgorithm: ChecksumAlgorithm) {
         self.stream = stream
         self.expectedChecksum = expectedChecksum
         self.checksumAlgorithm = checksumAlgorithm
@@ -28,35 +29,35 @@ class ValidatingBufferedStream {
 
 extension ValidatingBufferedStream: Stream {
 
-    var position: Data.Index {
+    public var position: Data.Index {
         self.stream.position
     }
 
-    var length: Int? {
+    public var length: Int? {
         self.stream.length
     }
 
-    var isEmpty: Bool {
+    public var isEmpty: Bool {
         self.stream.isEmpty
     }
 
-    var isSeekable: Bool {
+    public var isSeekable: Bool {
         self.stream.isSeekable
     }
 
-    func read(upToCount count: Int) throws -> Data? {
+    public func read(upToCount count: Int) throws -> Data? {
         try self.stream.read(upToCount: count)
     }
 
-    func readAsync(upToCount count: Int) async throws -> Data? {
+    public func readAsync(upToCount count: Int) async throws -> Data? {
         try await self.stream.readAsync(upToCount: count)
     }
 
-    func readToEnd() throws -> Data? {
+    public func readToEnd() throws -> Data? {
         try self.stream.readToEnd()
     }
 
-    func readToEndAsync() async throws -> Data? {
+    public func readToEndAsync() async throws -> Data? {
         let streamData = try await self.stream.readToEndAsync()
 
         // This will be invoked when the user executes the readData() method on ByteStream
@@ -77,15 +78,15 @@ extension ValidatingBufferedStream: Stream {
         return streamData
     }
 
-    func write(contentsOf data: Data) throws {
+    public func write(contentsOf data: Data) throws {
         try self.stream.write(contentsOf: data)
     }
 
-    func close() {
+    public func close() {
         self.stream.close()
     }
 
-    func closeWithError(_ error: Error) {
+    public func closeWithError(_ error: Error) {
         self.stream.closeWithError(error)
     }
 

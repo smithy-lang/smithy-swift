@@ -5,21 +5,22 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum Smithy.ByteStream
-import enum Smithy.StreamError
-import struct Smithy.SwiftLogger
 import struct Foundation.Data
 import AwsCommonRuntimeKit
+import struct Smithy.SwiftLogger
+import protocol Smithy.Stream
+import enum Smithy.ByteStream
+import enum Smithy.StreamError
 
 /// A class that implements the `IStreamable` protocol for `ByteStream`.
 /// It acts as a bridge between AWS SDK and CRT.
-class StreamableHttpBody: IStreamable {
+public class StreamableHttpBody: IStreamable {
 
     var position: Data.Index
     let body: ByteStream
     let logger: SwiftLogger
 
-    init(body: ByteStream) {
+    public init(body: ByteStream) {
         self.body = body
 
         switch body {
@@ -37,7 +38,7 @@ class StreamableHttpBody: IStreamable {
     /// Returns the length of the stream
     /// - Returns: The length of the stream
     /// if not available, returns 0
-    func length() throws -> UInt64 {
+    public func length() throws -> UInt64 {
         switch body {
         case .data(let data):
             return UInt64(data?.count ?? 0)
@@ -52,7 +53,7 @@ class StreamableHttpBody: IStreamable {
     /// - Parameters:
     ///   - offset: offset to seek to
     ///   - streamSeekType: type of seek
-    func seek(offset: Int64, streamSeekType: AwsCommonRuntimeKit.StreamSeekType) throws {
+    public func seek(offset: Int64, streamSeekType: AwsCommonRuntimeKit.StreamSeekType) throws {
         guard streamSeekType == .begin else {
             throw StreamError.notSupported("Seeking from end is not supported."
                                            + " Only seeking from beginning is supported.")
@@ -78,7 +79,7 @@ class StreamableHttpBody: IStreamable {
         }
     }
 
-    func read(buffer: UnsafeMutableBufferPointer<UInt8>) throws -> Int? {
+    public func read(buffer: UnsafeMutableBufferPointer<UInt8>) throws -> Int? {
         switch body {
         case .data(let data):
             guard let data = data else {

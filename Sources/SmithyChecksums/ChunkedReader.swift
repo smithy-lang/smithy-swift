@@ -7,13 +7,13 @@
 
 import protocol SmithyChecksumsAPI.Checksum
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
-import let SmithyChecksumsAPI.CHUNK_SIZE_BYTES
 import protocol Smithy.ReadableStream
 import struct SmithyHTTPAPI.Headers
 import AwsCommonRuntimeKit
+import SmithyHTTPAuth
 import struct Foundation.Data
 
-public class AWSChunkedReader {
+public class ChunkedReader {
     private var stream: ReadableStream
     private var signingConfig: SigningConfig
     private var previousSignature: String
@@ -23,20 +23,36 @@ public class AWSChunkedReader {
     private var chunkBody = Data()
     private var currentHash: UInt32 = 0
     private var emptyChunkSigned = false
-    private var checksum: (any Checksum)?
     private var checksumAlgorithm: ChecksumAlgorithm?
+    private var checksum: (any Checksum)?
+    private var checksumString: String?
 
     init(
         stream: ReadableStream,
         signingConfig: SigningConfig,
         previousSignature: String,
         trailingHeaders: Headers,
-        checksumAlgorithm: ChecksumAlgorithm? = nil // if nil, chunked encoding without checksum
-    ) {
+        checksumString: String? = nil // if nil, chunked encoding without checksum
+    ) throws {
         self.stream = stream
         self.signingConfig = signingConfig
         self.previousSignature = previousSignature
         self.trailingHeaders = trailingHeaders
+        self.checksumString = checksumString
+
+        // Determine the checksum algorithm, if provided
+        let checksumAlgorithm: ChecksumAlgorithm?
+        if let checksumString = checksumString {
+            checksumAlgorithm = ChecksumAlgorithm.from(string: checksumString)
+
+            // Unsupported checksum
+            if checksumAlgorithm == nil {
+                throw UnknownChecksumError.notSupported(checksum: checksumString)
+            }
+        } else {
+            checksumAlgorithm = nil
+        }
+
         self.checksumAlgorithm = checksumAlgorithm // Enum for working with the checksum
         self.checksum = self.checksumAlgorithm?.createChecksum() // Create an instance of the Checksum
     }
@@ -94,7 +110,7 @@ public class AWSChunkedReader {
     }
 
     private func getUnsignedChunk(from stream: ReadableStream) async throws -> Data? {
-        let chunk = try await stream.readAsync(upToCount: CHUNK_SIZE_BYTES) ?? Data()
+        let chunk = try await stream.readAsync(upToCount: SmithyChecksums.CHUNK_SIZE_BYTES) ?? Data()
 
         self.chunkBody = chunk
 
@@ -106,7 +122,7 @@ public class AWSChunkedReader {
         return constructChunk(chunk: chunk, signature: nil)
     }
 
-    func getSignedChunk(from stream: ReadableStream) async throws -> Data? {
+    public func getSignedChunk(from stream: ReadableStream) async throws -> Data? {
         let chunk = try await stream.readAsync(upToCount: CHUNK_SIZE_BYTES) ?? Data()
 
         // keep track of the chunk body without additional structure like chunk-signature
@@ -198,7 +214,7 @@ public class AWSChunkedReader {
     }
 }
 
-extension AWSChunkedReader {
+extension ChunkedReader {
 
     public func updateTrailingHeader(name: String, value: String) {
         self.trailingHeaders.update(name: name, value: value)
@@ -221,19 +237,25 @@ extension AWSChunkedReader {
         return self.checksum
     }
 
-    func getCurrentChunk() -> Data {
+    public func getCurrentChunk() -> Data {
         return self.chunk
     }
 
-    func setCurrentChunk(chunk: Data) {
+    public func setCurrentChunk(chunk: Data) {
         self.chunk = chunk
     }
 
-    func getCurrentChunkBody() -> Data {
+    public func getCurrentChunkBody() -> Data {
         return self.chunkBody
     }
 
-    func setCurrentChunkBody(chunk: Data) {
+    public func setCurrentChunkBody(chunk: Data) {
         self.chunkBody = chunk
+    }
+}
+
+extension Int {
+    var hexString: String {
+        return String(self, radix: 16)
     }
 }
