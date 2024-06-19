@@ -75,10 +75,6 @@ jobs:
         with:
           distribution: corretto
           java-version: 17
-      - name: Tools Versions
-        run: |
-          cd ../aws-sdk-swift
-          ./scripts/ci_steps/log_tool_versions.sh
       - name: Build & Run smithy-swift Kotlin Unit Tests
         run: ./gradlew build
       - name: Build & Run smithy-swift Swift Unit Tests
