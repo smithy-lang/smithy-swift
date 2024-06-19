@@ -40,7 +40,7 @@ extension TestClient {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
         val expected = """
-        return try ClientRuntime.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
+        return try SmithyWaitersAPI.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
 """
         contents.shouldContainOnlyOnce(expected)
     }
@@ -50,7 +50,7 @@ extension TestClient {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
         val expected = """
-    public func waitUntilBucketExists(options: ClientRuntime.WaiterOptions, input: HeadBucketInput) async throws -> ClientRuntime.WaiterOutcome<HeadBucketOutput> {
+    public func waitUntilBucketExists(options: SmithyWaitersAPI.WaiterOptions, input: HeadBucketInput) async throws -> SmithyWaitersAPI.WaiterOutcome<HeadBucketOutput> {
 """
         contents.shouldContainOnlyOnce(expected)
     }

@@ -10,7 +10,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
-import software.amazon.smithy.swift.codegen.swiftmodules.WaitersTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyWaitersAPITypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
@@ -47,14 +47,14 @@ class WaiterMethodGenerator(
             "public func \$L(options: \$N, input: \$L) async throws -> \$N<\$L> {",
             "}",
             waiterFunctionName,
-            WaitersTypes.WaiterOptions,
+            SmithyWaitersAPITypes.WaiterOptions,
             inputTypeName,
-            WaitersTypes.WaiterOutcome,
+            SmithyWaitersAPITypes.WaiterOutcome,
             outputTypeName,
         ) {
             writer.write(
                 "let waiter = \$N(config: try Self.\$L(), operation: self.\$L(input:))",
-                WaitersTypes.Waiter,
+                SmithyWaitersAPITypes.Waiter,
                 configMethodName,
                 waitedOperationName
             )

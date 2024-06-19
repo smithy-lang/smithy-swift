@@ -37,6 +37,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyWaitersAPITypes
 import software.amazon.smithy.swift.codegen.utils.BufferWriter
 
 // sequence of "", "2", "3", "4", etc, used for creating unique local vars
@@ -182,8 +183,9 @@ class JMESPathVisitor(
         val comparisonResultVar = JMESVariable("comparison", false, boolShape)
         return addTempVar(
             comparisonResultVar,
-            "\$LJMESUtils.compare(\$L, \$L, \$L)",
+            "\$L\$N.compare(\$L, \$L, \$L)",
             negationMark,
+            SmithyWaitersAPITypes.JMESUtils,
             left.name,
             comparator,
             right.name

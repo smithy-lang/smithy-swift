@@ -27,6 +27,8 @@ disabled_rules:
 
 opt_in_rules:
   - empty_count
+  - sorted_imports
+  - unused_imports
 
 # configurable rules can be customized from this configuration file
 force_cast: warning
