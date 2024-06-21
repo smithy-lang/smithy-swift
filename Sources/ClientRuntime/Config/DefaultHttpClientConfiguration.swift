@@ -29,4 +29,9 @@ public protocol DefaultHttpClientConfiguration: ClientConfiguration {
     ///
     /// Defaults to a auth scheme resolver generated based on Smithy service model.
     var authSchemeResolver: AuthSchemeResolver { get set }
+
+    /// Add an `HttpInterceptorProvider` that will be used to provide interceptors for all HTTP operations.
+    ///
+    /// - Parameter provider: The `HttpInterceptorProvider` to add.
+    func addInterceptorProvider(_ provider: HttpInterceptorProvider)
 }
