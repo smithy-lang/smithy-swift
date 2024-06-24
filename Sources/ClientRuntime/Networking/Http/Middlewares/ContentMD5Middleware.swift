@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 import class Smithy.Context
-import let SmithyChecksumsAPI.CHUNK_SIZE_BYTES
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import AwsCommonRuntimeKit
+import SmithyChecksums
 import SmithyHTTPAPI
 
 public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: Middleware {

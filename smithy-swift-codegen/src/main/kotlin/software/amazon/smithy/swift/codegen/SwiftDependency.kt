@@ -99,6 +99,22 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
         )
+        val SMITHY_CHECKSUMS = SwiftDependency(
+            "SmithyChecksums",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
+        val SMITHY_STREAMS = SwiftDependency(
+            "SmithyStreams",
+            "main",
+            "0.1.0",
+            "https://github.com/smithy-lang/smithy-swift.git",
+            "../../../smithy-swift",
+            "smithy-swift",
+        )
         val SMITHY_EVENT_STREAMS_API = SwiftDependency(
             "SmithyEventStreamsAPI",
             "main",
