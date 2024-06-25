@@ -2,14 +2,9 @@
 
 import ClientRuntime
 import Smithy
-import SmithyHTTPAPI
 import SmithyTestUtil
 @testable import WeatherSDK
 import XCTest
-import struct ClientRuntime.ContentMD5Middleware
-import struct ClientRuntime.OperationOutput
-import struct ClientRuntime.URLHostMiddleware
-import struct ClientRuntime.URLPathMiddleware
 
 
 class GetCityRequestTest: HttpRequestTestBase {
@@ -21,41 +16,23 @@ class GetCityRequestTest: HttpRequestTestBase {
             method: .get,
             path: "/cities/123",
             body: nil,
-            host: "",
-            resolvedHost: ""
+            host: "example.com",
+            resolvedHost: "example.com"
         )
+
+        let config = try await WeatherClient.WeatherClientConfiguration()
+        config.region = "us-west-2"
+        config.httpClientEngine = ProtocolTestClient()
+        config.idempotencyTokenGenerator = ProtocolTestIdempotencyTokenGenerator()
+        let client = WeatherClient(config: config)
 
         let input = GetCityInput(
             cityId: "123"
         )
-        let context = ContextBuilder()
-                      .withMethod(value: .get)
-                      .build()
-        var operationStack = OperationStack<GetCityInput, GetCityOutput>(id: "WriteGetCityAssertions")
-        operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<GetCityInput, GetCityOutput>(urlPrefix: urlPrefix, GetCityInput.urlPathProvider(_:)))
-        operationStack.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<GetCityInput, GetCityOutput>(host: hostOnly))
-        operationStack.buildStep.intercept(position: .before, middleware: ClientRuntime.ContentMD5Middleware<GetCityInput, GetCityOutput>())
-        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<GetCityOutput> in
-            input.withMethod(context.method)
-            input.withPath(context.path)
-            let host = "\(context.hostPrefix ?? "")\(context.host ?? "")"
-            input.withHost(host)
-            return try await next.handle(context: context, input: input)
+        do {
+            _ = try await client.getCity(input: input)
+        } catch TestCheckError.actual(let actual) {
+            try await self.assertEqual(expected, actual)
         }
-        operationStack.deserializeStep.intercept(
-            position: .after,
-            middleware: MockDeserializeMiddleware<GetCityOutput>(
-                id: "TestDeserializeMiddleware",
-                responseClosure: GetCityOutput.httpOutput(from:),
-                callback: { context, actual in
-                    try await self.assertEqual(expected, actual)
-                    return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: GetCityOutput())
-                }
-            )
-        )
-        _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler() { (context, request) in
-            XCTFail("Deserialize was mocked out, this should fail")
-            throw SmithyTestUtilError("Mock handler unexpectedly failed")
-        })
     }
 }

@@ -44,3 +44,16 @@ extension DefaultEndpointResolver {
 }
 
 extension DefaultEndpointResolver: EndpointResolver {}
+
+public struct StaticEndpointResolver: EndpointResolver {
+
+    private let endpoint: SmithyHTTPAPI.Endpoint
+
+    public init(endpoint: SmithyHTTPAPI.Endpoint) {
+        self.endpoint = endpoint
+    }
+
+    public func resolve(params: EndpointParams) throws -> SmithyHTTPAPI.Endpoint {
+        return endpoint
+    }
+}
