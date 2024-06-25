@@ -36,6 +36,7 @@ let package = Package(
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyJSON", targets: ["SmithyJSON"]),
         .library(name: "SmithyFormURL", targets: ["SmithyFormURL"]),
+        .library(name: "SmithyTimestamps", targets: ["SmithyTimestamps"]),
         .library(name: "SmithyIdentity", targets: ["SmithyIdentity"]),
         .library(name: "SmithyIdentityAPI", targets: ["SmithyIdentityAPI"]),
         .library(name: "SmithyHTTPAPI", targets: ["SmithyHTTPAPI"]),
