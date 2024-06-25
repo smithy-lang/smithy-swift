@@ -125,7 +125,7 @@ let package = Package(
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime"]
+            dependencies: ["ClientRuntime", "SmithyHTTPAPI"]
         ),
         .target(
             name: "SmithyIdentity",

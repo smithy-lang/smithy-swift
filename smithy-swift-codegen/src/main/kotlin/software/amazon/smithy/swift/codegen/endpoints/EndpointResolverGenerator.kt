@@ -29,6 +29,7 @@ class EndpointResolverGenerator(
             renderResolverProtocol(it)
             it.write("")
             renderResolver(it, ruleSet)
+            renderStaticResolver(it)
             val inputSymbol = Symbol.builder().name("SdkHttpRequestBuilder").build()
             val outputSymbol = Symbol.builder().name("OperationStackOutput").build()
             val outputErrorSymbol = Symbol.builder().name("OperationStackError").build()
@@ -61,5 +62,18 @@ class EndpointResolverGenerator(
         }
         writer.write("")
         writer.write("extension DefaultEndpointResolver: EndpointResolver {}")
+    }
+
+    private fun renderStaticResolver(writer: SwiftWriter) {
+        writer.write("")
+        writer.openBlock("public struct StaticEndpointResolver: EndpointResolver {", "}") {
+            writer.write("\nprivate let endpoint: \$N", SmithyHTTPAPITypes.Endpoint)
+            writer.openBlock("\npublic init(endpoint: \$N) {", "}", SmithyHTTPAPITypes.Endpoint) {
+                writer.write("self.endpoint = endpoint")
+            }
+            writer.openBlock("\npublic func resolve(params: EndpointParams) throws -> \$N {", "}", SmithyHTTPAPITypes.Endpoint) {
+                writer.write("return endpoint")
+            }
+        }
     }
 }
