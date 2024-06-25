@@ -11,11 +11,15 @@ class SwiftDependency(
     override val target: String,
     private val branch: String? = null,
     private val version: String,
-    private val url: String,
+    private val location: String,
     private val localPath: String,
     override var packageName: String,
+    private val distributionMethod: DistributionMethod = DistributionMethod.GIT,
 ) : Dependency {
 
+    enum class DistributionMethod {
+        SPR, GIT
+    }
     companion object {
         val NONE = SwiftDependency("", "", "", "", "", "")
         val XCTest = SwiftDependency("XCTest", null, "", "", "", "")
@@ -202,13 +206,20 @@ class SwiftDependency(
     }
 
     private fun toSymbolDependency(): SymbolDependency {
-        return SymbolDependency.builder()
+        val builder = SymbolDependency.builder()
             .putProperty("target", target)
             .putProperty("branch", branch)
             .putProperty("localPath", localPath)
             .packageName(packageName)
             .version(version)
-            .putProperty("url", url)
-            .build()
+        when (distributionMethod) {
+            DistributionMethod.GIT -> {
+                builder.putProperty("url", location)
+            }
+            DistributionMethod.SPR -> {
+                builder.putProperty("id", location)
+            }
+        }
+        return builder.build()
     }
 }

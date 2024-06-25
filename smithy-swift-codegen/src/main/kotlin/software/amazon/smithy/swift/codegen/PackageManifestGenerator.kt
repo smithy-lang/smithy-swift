@@ -6,6 +6,7 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import kotlin.jvm.optionals.getOrNull
 
 class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
 
@@ -27,21 +28,26 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                     writer.write(".library(name: \$S, targets: [\$S])", ctx.settings.moduleName, ctx.settings.moduleName)
                 }
 
-                val externalDependencies = dependencies.filter { it.getProperty("url", String::class.java).get().isNotEmpty() }
-                val dependenciesByURL = externalDependencies.distinctBy { it.expectProperty("url", String::class.java) }
+                val externalDependencies = dependencies.filter {
+                    it.getProperty("url", String::class.java).getOrNull() != null ||
+                        it.getProperty("id", String::class.java).getOrNull() != null
+                }
+                val dependenciesByURL = externalDependencies.distinctBy {
+                    it.getProperty("url", String::class.java).getOrNull() ?: it.getProperty("id", String::class.java).getOrNull() ?: ""
+                }
 
                 writer.openBlock("dependencies: [", "],") {
                     dependenciesByURL.forEach { dependency ->
                         writer.openBlock(".package(", "),") {
-
-                            val localPath = dependency.expectProperty("localPath", String::class.java)
-                            if (localPath.isNotEmpty()) {
-                                writer.write("path: \$S", localPath)
-                            } else {
-                                val dependencyURL = dependency.expectProperty("url", String::class.java)
-                                writer.write("url: \$S,", dependencyURL)
-                                writer.write("from: \$S", dependency.version)
+                            val id = dependency.getProperty("id", String::class.java).getOrNull()
+                            id?.let {
+                                writer.write("id: \$S,", it)
                             }
+                            val url = dependency.getProperty("url", String::class.java).getOrNull()
+                            url?.let {
+                                writer.write("url: \$S,", it)
+                            }
+                            writer.write("from: \$S", dependency.version)
                         }
                     }
                 }
@@ -56,7 +62,9 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                                 writer.openBlock(".product(", "),") {
                                     val target = dependency.expectProperty("target", String::class.java)
                                     writer.write("name: \$S,", target)
-                                    writer.write("package: \$S", dependency.packageName)
+                                    val id = dependency.getProperty("id", String::class.java).getOrNull()
+                                    val packageName = id ?: dependency.packageName
+                                    writer.write("package: \$S", packageName)
                                 }
                             }
                         }

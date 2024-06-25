@@ -149,7 +149,8 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         // Package.swift requires a special comment at the top to specify Swift tools version,
         // and the package manifest generator manually writes its own dependency imports
         // (it only imports the PackageDescription module.)
-        return contents.takeIf { fullPackageName == "Package" } ?: (GENERATED_FILE_HEADER + imports + contents)
+        val noHeader = fullPackageName == "Package" || fullPackageName == ".swiftpm/configuration/registries.json"
+        return contents.takeIf { noHeader } ?: (GENERATED_FILE_HEADER + imports + contents)
     }
 
     private class SwiftSymbolFormatter(
