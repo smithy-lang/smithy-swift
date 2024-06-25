@@ -61,7 +61,7 @@ extension AWSSignedBodyValue {
         case .streamingSha256Events: return .streamingSha256Events
         case .streamingSha256PayloadTrailer: return .streamingSha256PayloadTrailer
         case .streamingUnsignedPayloadTrailer: return .streamingUnSignedPayloadTrailer
-        case .precomputed(let hash): return .sha256(hash)
+        case .precomputed(let value): return .precomputedSha256(value)
         }
     }
 }
