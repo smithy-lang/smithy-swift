@@ -7,21 +7,22 @@
 
 import protocol Smithy.Stream
 import struct SmithyHTTPAPI.Headers
-import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import struct Foundation.Data
 import AwsCommonRuntimeKit
+import class SmithyStreams.BufferedStream
 
 /// Reads data from the input stream, chunks it, and passes it out through its output stream.
 ///
 /// URLSessionHTTPClient streams chunked payloads using this stream type.
 /// CRTClientEngine uses only the reader provided by this type to create chunks, then it
 /// streams them itself.
-class AWSChunkedStream {
+public class ChunkedStream {
     private var inputStream: Stream
     private var signingConfig: SigningConfig
     private var previousSignature: String
     private var trailingHeaders: Headers
-    var chunkedReader: AWSChunkedReader
+    public var chunkedReader: ChunkedReader
+    private var checksumString: String?
     private var outputStream = BufferedStream()
 
     /// Actor used for ensuring stream reads are performed in order and one at a time.
@@ -41,10 +42,10 @@ class AWSChunkedStream {
         }
     }
 
-    /// The actor instance used by this AWSChunkedStream to enforce reading in series.
+    /// The actor instance used by this ChunkedStream to enforce reading in series.
     private let readCoordinator = ReadCoordinator()
 
-    init(
+    public init(
         inputStream: Stream,
         signingConfig: SigningConfig,
         previousSignature: String,
@@ -55,35 +56,23 @@ class AWSChunkedStream {
         self.signingConfig = signingConfig
         self.previousSignature = previousSignature
         self.trailingHeaders = trailingHeaders
+        self.checksumString = checksumString
 
-        // Determine the checksum algorithm, if provided
-        let checksumAlgorithm: ChecksumAlgorithm?
-        if let checksumString = checksumString {
-            checksumAlgorithm = ChecksumAlgorithm.from(string: checksumString)
-
-            // Unsupported checksum
-            if checksumAlgorithm == nil {
-                throw UnknownChecksumError.notSupported(checksum: checksumString)
-            }
-        } else {
-            checksumAlgorithm = nil
-        }
-
-        self.chunkedReader = AWSChunkedReader(
+        self.chunkedReader = try ChunkedReader(
             stream: self.inputStream,
             signingConfig: self.signingConfig,
             previousSignature: self.previousSignature,
             trailingHeaders: self.trailingHeaders,
-            checksumAlgorithm: checksumAlgorithm
+            checksumString: self.checksumString
         )
     }
 }
 
-extension AWSChunkedStream: Stream {
+extension ChunkedStream: Stream {
 
     /// Writes data to the input stream.
     /// - Parameter data: The data to be written.
-    func write(contentsOf data: Data) throws {
+    public func write(contentsOf data: Data) throws {
         try inputStream.write(contentsOf: data)
     }
 
@@ -91,32 +80,32 @@ extension AWSChunkedStream: Stream {
     ///
     /// The output stream will close once the input stream closes, and all data from the
     /// input stream has been chunked.
-    func close() {
+    public func close() {
         inputStream.close()
     }
 
-    func closeWithError(_ error: any Error) {
+    public func closeWithError(_ error: any Error) {
         inputStream.closeWithError(error)
     }
 
-    var position: Data.Index {
+    public var position: Data.Index {
         self.inputStream.position
     }
 
     /// Returns the length of the _input_ stream.
-    var length: Int? {
+    public var length: Int? {
         self.inputStream.length
     }
 
-    var isEmpty: Bool {
+    public var isEmpty: Bool {
         self.inputStream.isEmpty
     }
 
-    var isSeekable: Bool {
+    public var isSeekable: Bool {
         self.outputStream.isSeekable
     }
 
-    func read(upToCount count: Int) throws -> Data? {
+    public func read(upToCount count: Int) throws -> Data? {
         let bytes = try outputStream.read(upToCount: count)
         if bytes == nil {
             Task {
@@ -130,7 +119,7 @@ extension AWSChunkedStream: Stream {
         return bytes
     }
 
-    func readAsync(upToCount count: Int) async throws -> Data? {
+    public func readAsync(upToCount count: Int) async throws -> Data? {
         return try await readCoordinator.add { [self] in
             let bytes = try outputStream.read(upToCount: count)
             if let bytes, bytes.isEmpty {
@@ -165,15 +154,15 @@ extension AWSChunkedStream: Stream {
         }
     }
 
-    func readToEnd() throws -> Data? {
+    public func readToEnd() throws -> Data? {
         try self.outputStream.readToEnd()
     }
 
-    func readToEndAsync() async throws -> Data? {
+    public func readToEndAsync() async throws -> Data? {
         try await self.outputStream.readToEndAsync()
     }
 
-    func seek(toOffset offset: Int) throws {
+    public func seek(toOffset offset: Int) throws {
         try self.outputStream.seek(toOffset: offset)
     }
 }

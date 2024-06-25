@@ -6,6 +6,7 @@ import SmithyHTTPAPI
 import XCTest
 import SmithyTestUtil
 @testable import ClientRuntime
+import class SmithyStreams.BufferedStream
 
 class ContentLengthMiddlewareTests: XCTestCase {
     private var builtContext: Context!

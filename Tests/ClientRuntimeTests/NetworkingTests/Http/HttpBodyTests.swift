@@ -9,6 +9,7 @@ import Smithy
 import XCTest
 import AwsCommonRuntimeKit
 @testable import ClientRuntime
+import class SmithyStreams.BufferedStream
 
 class HttpBodyTests: XCTestCase {
     func testWhenDataIsEmptyThenIsEmptyIsTrue() {

@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol Smithy.Stream
 import class Foundation.FileHandle
 import class Foundation.NSRecursiveLock
 import struct Foundation.Data
+import protocol Smithy.Stream
 
 /// A `Stream` that wraps a `FileHandle` for reading the file.
 ///
@@ -39,7 +39,7 @@ public final class FileStream: Stream {
     private let lock = NSRecursiveLock()
 
     /// Initializes a new `FileStream` instance.
-    init(fileHandle: FileHandle) {
+    public init(fileHandle: FileHandle) {
         self.fileHandle = fileHandle
         self.position = fileHandle.availableData.startIndex
     }
