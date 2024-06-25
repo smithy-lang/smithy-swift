@@ -60,8 +60,8 @@ extension RestJsonProtocolClient {
             self.retryStrategyOptions = retryStrategyOptions
             self.clientLogMode = clientLogMode
             self.endpoint = endpoint
-            self.region = region
             self.idempotencyTokenGenerator = idempotencyTokenGenerator
+            self.region = region
             self.httpClientEngine = httpClientEngine
             self.httpClientConfiguration = httpClientConfiguration
             self.authSchemes = authSchemes
