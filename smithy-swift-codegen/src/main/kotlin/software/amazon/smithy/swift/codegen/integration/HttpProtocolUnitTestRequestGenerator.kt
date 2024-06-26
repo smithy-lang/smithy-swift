@@ -8,20 +8,16 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.hasStreamingMember
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
-import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
-import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
-import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
+import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 
@@ -69,7 +65,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 val inputShape = model.expectShape(it) as StructureShape
                 val data = writer.format(
                     "Data(\"\"\"\n\$L\n\"\"\".utf8)",
-                    test.body.get().replace("\\\"", "\\\\\"")
+                    test.body.get().replace("\\\"", "\\\\\""),
                 )
                 // depending on the shape of the input, wrap the expected body in a stream or not
                 if (inputShape.hasStreamingMember(model)) {
@@ -91,14 +87,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         if (!serviceShape.getTrait(EndpointRuleSetTrait::class.java).isPresent) {
             val host: String? = test.host.orElse(null)
             val url: String = "http://${host ?: "example.com"}"
-            writer.write("\nlet config = try await ${clientName}.${clientName}Configuration(endpointResolver: StaticEndpointResolver(endpoint: try \$N(urlString: \$S)))", SmithyHTTPAPITypes.Endpoint, url)
+            writer.write("\nlet config = try await $clientName.${clientName}Configuration(endpointResolver: StaticEndpointResolver(endpoint: try \$N(urlString: \$S)))", SmithyHTTPAPITypes.Endpoint, url)
         } else {
-            writer.write("\nlet config = try await ${clientName}.${clientName}Configuration()")
+            writer.write("\nlet config = try await $clientName.${clientName}Configuration()")
         }
         writer.write("config.region = \"us-west-2\"")
         writer.write("config.httpClientEngine = ProtocolTestClient()")
         writer.write("config.idempotencyTokenGenerator = ProtocolTestIdempotencyTokenGenerator()")
-        writer.write("let client = ${clientName}(config: config)")
+        writer.write("let client = $clientName(config: config)")
     }
 
     private fun renderOperationBlock(test: HttpRequestTestCase) {
@@ -126,7 +122,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     ${'$'}{C|}
                 }
                 """.trimIndent(),
-                Runnable { renderBodyAssert(test, inputSymbol, inputShape) }
+                Runnable { renderBodyAssert(test, inputSymbol, inputShape) },
             )
         }
     }
@@ -140,7 +136,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         if (test.body.isPresent && test.body.get().isNotBlank()) {
             writer.openBlock(
                 "try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
-                "})"
+                "})",
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual ByteStream is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected ByteStream is nil\")")
@@ -153,7 +149,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             }
         } else {
             writer.write(
-                "try await self.assertEqual(expected, actual)"
+                "try await self.assertEqual(expected, actual)",
             )
         }
     }
