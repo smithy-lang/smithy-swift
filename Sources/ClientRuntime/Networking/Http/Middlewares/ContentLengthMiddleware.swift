@@ -54,7 +54,7 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
                 // Only for HTTP/1.1 requests, will be removed in all HTTP/2 requests
                 builder.updateHeader(name: "Transfer-Encoding", value: "chunked")
             } else {
-                let operation = attributes.get(key: AttributeKey<String>(name: "Operation"))
+                let operation = attributes.getOperation()
                              ?? "Error getting operation name"
                 let errorMessage = (unsignedPayload ?? false) ?
                     "Missing content-length for operation: \(operation)" :
@@ -75,7 +75,7 @@ extension ContentLengthMiddleware: HttpInterceptor {
     public typealias OutputType = OperationStackOutput
 
     public func modifyBeforeTransmit(
-        context: some MutableRequest<InputType, RequestType, AttributesType>
+        context: some MutableRequest<InputType, RequestType>
     ) async throws {
         let builder = context.getRequest().toBuilder()
         try addHeaders(builder: builder, attributes: context.getAttributes())

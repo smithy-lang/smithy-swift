@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Context
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
-import protocol Smithy.HasAttributes
 
 /// Default implementation for all interceptor context types.
 ///
@@ -17,16 +17,15 @@ public class DefaultInterceptorContext<
     InputType,
     OutputType,
     RequestType: RequestMessage,
-    ResponseType: ResponseMessage,
-    AttributesType: HasAttributes
+    ResponseType: ResponseMessage
 >: InterceptorContext {
-    private var attributes: AttributesType
+    private var attributes: Context
     private var input: InputType
     private var request: RequestType?
     private var response: ResponseType?
     private var result: Result<OutputType, Error>?
 
-    public init(input: InputType, attributes: AttributesType) {
+    public init(input: InputType, attributes: Context) {
         self.input = input
         self.attributes = attributes
     }
@@ -35,8 +34,12 @@ public class DefaultInterceptorContext<
         self.input
     }
 
-    public func getAttributes() -> AttributesType {
+    public func getAttributes() -> Context {
         return self.attributes
+    }
+
+    internal func setResult(result: Result<OutputType, Error>) {
+        self.result = result
     }
 }
 
@@ -73,8 +76,13 @@ extension DefaultInterceptorContext: MutableResponse {
 }
 
 extension DefaultInterceptorContext: AfterDeserialization {
-    public func getResult() -> Result<OutputType, Error> {
-        self.result!
+    public func getOutput() throws -> OutputType {
+        switch self.result! {
+        case .success(let output):
+            return output
+        case .failure(let error):
+            throw error
+        }
     }
 }
 
@@ -85,8 +93,8 @@ extension DefaultInterceptorContext: AfterAttempt {
 }
 
 extension DefaultInterceptorContext: MutableOutputAfterAttempt {
-    public func updateResult(updated: Result<OutputType, Error>) {
-        self.result = updated
+    public func updateOutput(updated: OutputType) {
+        self.result = .success(updated)
     }
 }
 

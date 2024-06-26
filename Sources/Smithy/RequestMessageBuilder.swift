@@ -13,6 +13,10 @@ public protocol RequestMessageBuilder<RequestType>: AnyObject {
 
     init()
 
+    func withHost(_ host: String) -> Self
+
+    func withBody(_ body: ByteStream) -> Self
+
     /// - Returns: The built request.
     func build() -> RequestType
 }

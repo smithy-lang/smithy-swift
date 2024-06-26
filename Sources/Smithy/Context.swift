@@ -23,8 +23,7 @@ public class Context {
     }
 }
 
-extension Context: HasAttributes {
-
+extension Context {
     public func get<T>(key: AttributeKey<T>) -> T? {
         self.attributes.get(key: key)
     }

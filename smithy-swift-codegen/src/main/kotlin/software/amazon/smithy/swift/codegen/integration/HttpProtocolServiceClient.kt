@@ -106,9 +106,11 @@ open class HttpProtocolServiceClient(
             serviceConfig.clientName.toUpperCamelCase(),
             clientConfigurationProtocols
         ) {
-            val properties: List<ConfigProperty> = ctx.integrations
-                .flatMap { it.clientConfigurations(ctx).flatMap { it.getProperties(ctx) } }
+            val clientConfigs = ctx.integrations.flatMap { it.clientConfigurations(ctx) }
+            val properties: List<ConfigProperty> = clientConfigs
+                .flatMap { it.getProperties(ctx) }
                 .let { overrideConfigProperties(it) }
+                .sortedBy { it.accessModifier }
 
             renderConfigClassVariables(serviceSymbol, properties)
 
@@ -123,6 +125,14 @@ open class HttpProtocolServiceClient(
             renderCustomConfigInitializer(properties)
 
             renderPartitionID()
+
+            clientConfigs
+                .flatMap { it.getMethods(ctx) }
+                .sortedBy { it.accessModifier }
+                .forEach {
+                    it.render(writer)
+                    writer.write("")
+                }
         }
         writer.write("")
     }
@@ -153,11 +163,10 @@ open class HttpProtocolServiceClient(
      * Declare class variables in client configuration class
      */
     private fun renderConfigClassVariables(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
-        properties
-            .forEach {
-                writer.write("public var \$L: \$N", it.name, it.type)
-                writer.write("")
-            }
+        properties.forEach {
+            it.render(writer)
+            writer.write("")
+        }
         writer.injectSection(ConfigClassVariablesCustomization(serviceSymbol))
         writer.write("")
     }
