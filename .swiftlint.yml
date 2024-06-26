@@ -1,9 +1,7 @@
 excluded:
   - .build
   - Sources/SmithyTestUtil/*
-  - Sources/WeatherSDK/*
   - Tests/*
-  - smithy-swift-codegen-test/build/*
 
 analyzer_rules:
   - unused_import
