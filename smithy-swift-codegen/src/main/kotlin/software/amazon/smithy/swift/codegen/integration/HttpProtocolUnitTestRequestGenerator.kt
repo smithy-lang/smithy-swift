@@ -112,15 +112,15 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write(
                     """
                     let op = builder.attributes(context)
-                        .deserialize({ (_, _) in 
-                            return .success($outputSymbol())
+                        .deserialize({ (_, _) in
+                            return $outputSymbol()
                         })
                         .executeRequest({ (actual, attributes) in
                             ${'$'}{C|}
                             return HttpResponse(body: .noStream, statusCode: .ok)
                         })
                         .build()
-                    
+
                     _ = try await op.execute(input: input)
                     """.trimIndent(),
                     Runnable { renderBodyAssert(test, inputSymbol, inputShape) }
