@@ -40,7 +40,6 @@ class DefaultClientConfiguration : ClientConfiguration {
             ClientRuntimeTypes.Core.IdempotencyTokenGenerator,
             { it.format("\$N.defaultIdempotencyTokenGenerator", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
         ),
-        ConfigProperty("region", SwiftTypes.String.toOptional()),
         ConfigProperty(
             "interceptorProviders",
             ClientRuntimeTypes.Core.InterceptorProviders,
