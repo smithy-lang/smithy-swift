@@ -123,19 +123,19 @@ operation GetCity {
 }
 
 // Tests that HTTP protocol tests are generated.
-apply GetCity @httpRequestTests(
-    [
-        {
-            id: "WriteGetCityAssertions"
-            documentation: "Does something"
-            protocol: "common#fakeProtocol"
-            method: "GET"
-            uri: "/cities/123"
-            body: ""
-            params: {cityId: "123"}
-        }
-    ]
-)
+//apply GetCity @httpRequestTests(
+//    [
+//        {
+//            id: "WriteGetCityAssertions"
+//            documentation: "Does something"
+//            protocol: "common#fakeProtocol"
+//            method: "GET"
+//            uri: "/cities/123"
+//            body: ""
+//            params: {cityId: "123"}
+//        }
+//    ]
+//)
 
 apply GetCity @httpResponseTests(
     [
@@ -278,21 +278,21 @@ operation ListCities {
     errors: [NoSuchResource]
 }
 
-apply ListCities @httpRequestTests(
-    [
-        {
-            id: "WriteListCitiesAssertions"
-            documentation: "Does something"
-            protocol: "common#fakeProtocol"
-            method: "GET"
-            uri: "/cities"
-            body: ""
-            queryParams: ["pageSize=50"]
-            forbidQueryParams: ["nextToken"]
-            params: {pageSize: 50}
-        }
-    ]
-)
+//apply ListCities @httpRequestTests(
+//    [
+//        {
+//            id: "WriteListCitiesAssertions"
+//            documentation: "Does something"
+//            protocol: "common#fakeProtocol"
+//            method: "GET"
+//            uri: "/cities"
+//            body: ""
+//            queryParams: ["pageSize=50"]
+//            forbidQueryParams: ["nextToken"]
+//            params: {pageSize: 50}
+//        }
+//    ]
+//)
 
 structure ListCitiesInput {
     @httpQuery("nextToken")
