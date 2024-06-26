@@ -20,6 +20,7 @@ class SwiftDependency(
     enum class DistributionMethod {
         SPR, GIT
     }
+
     companion object {
         val NONE = SwiftDependency("", "", "", "", "", "")
         val XCTest = SwiftDependency("XCTest", null, "", "", "", "")
@@ -30,6 +31,7 @@ class SwiftDependency(
             "https://github.com/awslabs/aws-crt-swift",
             "",
             "aws-crt-swift",
+            DistributionMethod.GIT,
         )
         val CLIENT_RUNTIME = SwiftDependency(
             "ClientRuntime",
@@ -48,7 +50,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_IDENTITY_API = SwiftDependency(
             "SmithyIdentityAPI",
             "main",
@@ -57,7 +59,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_IDENTITY = SwiftDependency(
             "SmithyIdentity",
             "main",
@@ -66,7 +68,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_RETRIES_API = SwiftDependency(
             "SmithyRetriesAPI",
             "main",
@@ -75,7 +77,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_RETRIES = SwiftDependency(
             "SmithyRetries",
             "main",
@@ -84,7 +86,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_HTTP_API = SwiftDependency(
             "SmithyHTTPAPI",
             "main",
@@ -93,7 +95,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_HTTP_AUTH_API = SwiftDependency(
             "SmithyHTTPAuthAPI",
             "main",
@@ -101,6 +103,7 @@ class SwiftDependency(
             "aws-sdk-swift.ClientRuntime",
             "../../../smithy-swift",
             "smithy-swift",
+            DistributionMethod.SPR,
         )
         val SMITHY_CHECKSUMS_API = SwiftDependency(
             "SmithyChecksumsAPI",
@@ -110,7 +113,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_CHECKSUMS = SwiftDependency(
             "SmithyChecksums",
             "main",
@@ -119,7 +122,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_STREAMS = SwiftDependency(
             "SmithyStreams",
             "main",
@@ -128,7 +131,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_EVENT_STREAMS_API = SwiftDependency(
             "SmithyEventStreamsAPI",
             "main",
@@ -137,7 +140,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_EVENT_STREAMS_AUTH_API = SwiftDependency(
             "SmithyEventStreamsAuthAPI",
             "main",
@@ -146,7 +149,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_EVENT_STREAMS = SwiftDependency(
             "SmithyEventStreams",
             "main",
@@ -155,7 +158,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_TEST_UTIL = SwiftDependency(
             "SmithyTestUtil",
             "main",
@@ -164,7 +167,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_READ_WRITE = SwiftDependency(
             "SmithyReadWrite",
             "main",
@@ -173,7 +176,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_TIMESTAMPS = SwiftDependency(
             "SmithyTimestamps",
             "main",
@@ -182,7 +185,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_XML = SwiftDependency(
             "SmithyXML",
             "main",
@@ -191,7 +194,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_JSON = SwiftDependency(
             "SmithyJSON",
             "main",
@@ -200,7 +203,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_FORM_URL = SwiftDependency(
             "SmithyFormURL",
             "main",
@@ -209,7 +212,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
         val SMITHY_WAITERS_API = SwiftDependency(
             "SmithyWaitersAPI",
             "main",
@@ -218,7 +221,7 @@ class SwiftDependency(
             "../../../smithy-swift",
             "smithy-swift",
             DistributionMethod.SPR,
-            )
+        )
     }
 
     override fun getDependencies(): List<SymbolDependency> {
