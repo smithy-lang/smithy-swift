@@ -58,7 +58,7 @@ extension MutateHeadersMiddleware: HttpInterceptor {
     public typealias OutputType = OperationStackOutput
 
     public func modifyBeforeTransmit(
-        context: some MutableRequest<InputType, RequestType, AttributesType>
+        context: some MutableRequest<InputType, RequestType>
     ) async throws {
         let builder = context.getRequest().toBuilder()
         mutateHeaders(builder: builder)
