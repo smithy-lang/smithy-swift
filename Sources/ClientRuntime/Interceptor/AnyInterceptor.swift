@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Context
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
-import protocol Smithy.HasAttributes
 
 /// Type-erased, concrete interceptor.
 ///
@@ -22,11 +22,10 @@ internal struct AnyInterceptor<
     InputType,
     OutputType,
     RequestType: RequestMessage,
-    ResponseType: ResponseMessage,
-    AttributesType: HasAttributes
+    ResponseType: ResponseMessage
 > {
     internal typealias InterceptorContextType = DefaultInterceptorContext<
-        InputType, OutputType, RequestType, ResponseType, AttributesType
+        InputType, OutputType, RequestType, ResponseType
     >
     internal typealias InterceptorFn = (InterceptorContextType) async throws -> Void
 
@@ -55,8 +54,7 @@ internal struct AnyInterceptor<
         I.InputType == InputType,
         I.OutputType == OutputType,
         I.RequestType == RequestType,
-        I.ResponseType == ResponseType,
-        I.AttributesType == AttributesType {
+        I.ResponseType == ResponseType {
         self.readBeforeExecution = interceptor.readBeforeExecution(context:)
         self.modifyBeforeSerialization = interceptor.modifyBeforeSerialization(context:)
         self.readBeforeSerialization = interceptor.readBeforeSerialization(context:)

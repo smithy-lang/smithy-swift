@@ -88,6 +88,12 @@ object ClientRuntimeTypes {
         val DefaultTelemetry = runtimeSymbol("DefaultTelemetry", SwiftDeclaration.ENUM)
         val splitHeaderListValues = runtimeSymbol("splitHeaderListValues", SwiftDeclaration.FUNC)
         val splitHttpDateHeaderListValues = runtimeSymbol("splitHttpDateHeaderListValues", SwiftDeclaration.FUNC)
+        val OrchestratorBuilder = runtimeSymbol("OrchestratorBuilder", SwiftDeclaration.CLASS)
+        val InterceptorProviders = runtimeSymbolWithoutNamespace("[ClientRuntime.InterceptorProvider]")
+        val InterceptorProvider = runtimeSymbol("InterceptorProvider", SwiftDeclaration.PROTOCOL)
+        val HttpInterceptorProviders = runtimeSymbolWithoutNamespace("[ClientRuntime.HttpInterceptorProvider]")
+        val HttpInterceptorProvider = runtimeSymbol("HttpInterceptorProvider", SwiftDeclaration.PROTOCOL)
+        val HttpInterceptor = runtimeSymbol("HttpInterceptor", SwiftDeclaration.PROTOCOL)
     }
 }
 
@@ -95,5 +101,12 @@ private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): 
     name,
     declaration,
     SwiftDependency.CLIENT_RUNTIME,
+    null,
+)
+
+private fun runtimeSymbolWithoutNamespace(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+    name,
+    declaration,
+    null,
     null,
 )

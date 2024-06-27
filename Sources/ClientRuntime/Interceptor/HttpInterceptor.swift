@@ -10,7 +10,4 @@ import class SmithyHTTPAPI.SdkHttpRequest
 import class SmithyHTTPAPI.HttpResponse
 
 public protocol HttpInterceptor<InputType, OutputType>: Interceptor
-where
-    RequestType == SdkHttpRequest,
-    ResponseType == HttpResponse,
-    AttributesType == Smithy.Context {}
+where RequestType == SdkHttpRequest, ResponseType == HttpResponse {}

@@ -67,7 +67,7 @@ extension LoggerMiddleware: HttpInterceptor {
     public typealias OutputType = OperationStackOutput
 
     public func readBeforeTransmit(
-        context: some AfterSerialization<InputType, RequestType, AttributesType>
+        context: some AfterSerialization<InputType, RequestType>
     ) async throws {
         guard let logger = context.getAttributes().getLogger() else {
             return
@@ -77,7 +77,7 @@ extension LoggerMiddleware: HttpInterceptor {
     }
 
     public func readAfterTransmit(
-        context: some BeforeDeserialization<InputType, RequestType, ResponseType, AttributesType>
+        context: some BeforeDeserialization<InputType, RequestType, ResponseType>
     ) async throws {
         guard let logger = context.getAttributes().getLogger() else {
             return

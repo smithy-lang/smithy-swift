@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol Smithy.HasAttributes
 import class Smithy.Context
 
 public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
@@ -42,7 +41,7 @@ extension IdempotencyTokenMiddleware: HttpInterceptor {
     public typealias InputType = OperationStackInput
     public typealias OutputType = OperationStackOutput
 
-    public func modifyBeforeSerialization(context: some MutableInput<InputType, AttributesType>) async throws {
+    public func modifyBeforeSerialization(context: some MutableInput<InputType>) async throws {
         let withToken = addToken(input: context.getInput(), attributes: context.getAttributes())
         context.updateInput(updated: withToken)
     }
