@@ -124,8 +124,8 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
         let query = self.destination.queryString ?? ""
         let port = self.destination.port.map { String($0) } ?? ""
         let header = headers.dictionary
-            .filter({ $0.key != "Authorization" })
-            .map({"\($0.key): \($0.value.joined(separator: ", "))"})
+            .filter { key, _ in key != "Authorization" }
+            .map { key, value in "\(key): \(value.joined(separator: ", "))"}
             .joined(separator: ", \n")
         return "\(method) \(protocolType):\(port) \n " +
                "Path: \(endpoint.uri.path) \n Headers: \(header) \n Query: \(query)"
