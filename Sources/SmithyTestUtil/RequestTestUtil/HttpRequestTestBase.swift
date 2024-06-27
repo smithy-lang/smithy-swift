@@ -10,7 +10,6 @@ import SmithyHTTPAPI
 import AwsCommonRuntimeKit
 import ClientRuntime
 import XCTest
-import Foundation
 
 /**
  Includes Utility functions for Http Protocol Request Serialization Tests
@@ -416,21 +415,14 @@ open class HttpRequestTestBase: XCTestCase {
         }
 
         for expectedQueryItem in expectedQueryItems {
-            let values = actualQueryItems.filter {$0.name == expectedQueryItem.name}.map { $0.value}
+            let values = actualQueryItems.filter {$0.name == expectedQueryItem.name}.map { $0.value }
             XCTAssertNotNil(
                 values,
                 "expected query parameter \(expectedQueryItem.name); no values found",
                 file: file,
                 line: line
             )
-            let expectedValue = expectedQueryItem.value
-            let valueExists: Bool
-            if let expectedValue = expectedValue {
-                valueExists = values.contains(expectedValue)
-            } else {
-                valueExists = values.isEmpty || values == [nil]
-            }
-            XCTAssertTrue(valueExists,
+            XCTAssertTrue(values.contains(expectedQueryItem.value),
                           """
                           expected query item value not found for \"\(expectedQueryItem.name)\".
                           Expected Value: \(expectedQueryItem.value ?? "nil")
