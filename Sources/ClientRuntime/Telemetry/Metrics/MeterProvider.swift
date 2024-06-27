@@ -8,7 +8,7 @@
 import struct Smithy.Attributes
 
 /// A Meter Provider provides implementations of Meters.
-public protocol MeterProvider {
+public protocol MeterProvider: Sendable {
 
     /// Provides a Meter.
     ///

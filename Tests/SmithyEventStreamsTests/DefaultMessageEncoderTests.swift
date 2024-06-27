@@ -13,17 +13,17 @@ final class DefaultMessageEncoderTests: XCTestCase {
     let sut = DefaultMessageEncoder()
 
     func testEncode_MessageWithAllHeaders() {
-        let encodedMessage = try! sut.encode(message: validMessageWithAllHeaders)
-        XCTAssertEqual(validMessageDataWithAllHeaders, encodedMessage)
+        let encodedMessage = try! sut.encode(message: EventStreamTestData.validMessageWithAllHeaders())
+        XCTAssertEqual(EventStreamTestData.validMessageDataWithAllHeaders(), encodedMessage)
     }
 
     func testEncode_MessageWithEmptyPayload() {
-        let encodedMessage = try! sut.encode(message: validMessageEmptyPayload)
-        XCTAssertEqual(validMessageDataEmptyPayload, encodedMessage)
+        let encodedMessage = try! sut.encode(message: EventStreamTestData.validMessageEmptyPayload())
+        XCTAssertEqual(EventStreamTestData.validMessageDataEmptyPayload(), encodedMessage)
     }
 
     func testEncode_MessageWithNoHeaders() {
-        let encodedMessage = try! sut.encode(message: validMessageNoHeaders)
-        XCTAssertEqual(validMessageDataNoHeaders, encodedMessage)
+        let encodedMessage = try! sut.encode(message: EventStreamTestData.validMessageNoHeaders())
+        XCTAssertEqual(EventStreamTestData.validMessageDataNoHeaders(), encodedMessage)
     }
 }

@@ -9,7 +9,7 @@
 ///
 /// Context implementations may be containers for execution-scoped values across API boundaries (both in-process and
 /// distributed).
-public protocol TelemetryContext {
+public protocol TelemetryContext: Sendable {
 
     /// Make this context the currently active context.
     ///

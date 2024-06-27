@@ -31,7 +31,7 @@ public class ChunkedStream {
         private var task: Task<Data?, Error>?
 
         /// Perform a new unit of work, after previously scheduled work has completed.
-        func add(_ block: @escaping () async throws -> Data?) async throws -> Data? {
+        func add(_ block: @escaping @Sendable () async throws -> Data?) async throws -> Data? {
             let prevTask = self.task
             let task = Task {
                 _ = await prevTask?.result
@@ -109,7 +109,7 @@ extension ChunkedStream: Stream {
         let bytes = try outputStream.read(upToCount: count)
         if bytes == nil {
             Task {
-                try await readCoordinator.add { [self] () -> Data? in
+                try await readCoordinator.add { @Sendable [self] () -> Data? in
                     guard outputStream.bufferCount == 0 else { return nil }
                     try await getNextChunk()
                     return nil
@@ -120,7 +120,7 @@ extension ChunkedStream: Stream {
     }
 
     public func readAsync(upToCount count: Int) async throws -> Data? {
-        return try await readCoordinator.add { [self] in
+        return try await readCoordinator.add { @Sendable [self] in
             let bytes = try outputStream.read(upToCount: count)
             if let bytes, bytes.isEmpty {
                 // The output stream is empty.  Process the next chunk and add it to the

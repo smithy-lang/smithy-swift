@@ -14,32 +14,32 @@ final class DefaultMessageDecoderTests: XCTestCase {
     let sut = DefaultMessageDecoder()
 
     func testDecode_MessageWithAllHeaders() {
-        try! sut.feed(data: validMessageDataWithAllHeaders)
+        try! sut.feed(data: EventStreamTestData.validMessageDataWithAllHeaders())
         let decodedMessage = try! sut.message()
-        XCTAssertEqual(validMessageWithAllHeaders, decodedMessage)
+        XCTAssertEqual(EventStreamTestData.validMessageWithAllHeaders(), decodedMessage)
     }
 
     func testDecode_MessageWithEmptyPayload() {
-        try! sut.feed(data: validMessageDataEmptyPayload)
+        try! sut.feed(data: EventStreamTestData.validMessageDataEmptyPayload())
         let decodedMessage = try! sut.message()
-        XCTAssertEqual(validMessageEmptyPayload, decodedMessage)
+        XCTAssertEqual(EventStreamTestData.validMessageEmptyPayload(), decodedMessage)
     }
 
     func testDecode_MessageWithNoHeaders() {
-        try! sut.feed(data: validMessageDataNoHeaders)
+        try! sut.feed(data: EventStreamTestData.validMessageDataNoHeaders())
         let decodedMessage = try! sut.message()
-        XCTAssertEqual(validMessageNoHeaders, decodedMessage)
+        XCTAssertEqual(EventStreamTestData.validMessageNoHeaders(), decodedMessage)
     }
 
     func testDecode_MessageWithInitialResponse() {
-        try! sut.feed(data: validInitialResponseMessageData)
+        try! sut.feed(data: EventStreamTestData.validInitialResponseMessageData())
         let decodedMessage = try! sut.message()
         // initialResponse message should not be added to the messageBuffer
         XCTAssertNil(decodedMessage)
     }
 
     func testEndOfStream_StreamClosed() {
-        try! sut.feed(data: validMessageDataNoHeaders[0..<validMessageDataNoHeaders.count-1])
+        try! sut.feed(data: EventStreamTestData.validMessageDataNoHeaders()[0..<EventStreamTestData.validMessageDataNoHeaders().count-1])
         XCTAssertThrowsError(try sut.endOfStream()) { error in
             guard case EventStreamError.decoding(let message) = error else {
                 return XCTFail()
@@ -50,7 +50,7 @@ final class DefaultMessageDecoderTests: XCTestCase {
     }
 
     func testAwaitInitialResponse_MessageWithInitialResponse() async {
-        try! sut.feed(data: validInitialResponseMessageData)
+        try! sut.feed(data: EventStreamTestData.validInitialResponseMessageData())
         guard let initialResponse = await sut.awaitInitialResponse() else {
             XCTFail("Error!")
             return
@@ -69,7 +69,7 @@ final class DefaultMessageDecoderTests: XCTestCase {
         }
 
         XCTAssertEqual(
-            String(data: validInitialResponseMessage.payload, encoding: .utf8),
+            String(data: EventStreamTestData.validInitialResponseMessage().payload, encoding: .utf8),
             String(data: initialResponse, encoding: .utf8)
         )
 
