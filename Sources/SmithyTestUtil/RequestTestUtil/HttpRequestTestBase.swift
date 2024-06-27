@@ -428,7 +428,7 @@ open class HttpRequestTestBase: XCTestCase {
             if let expectedValue = expectedValue {
                 valueExists = values.contains(expectedValue)
             } else {
-                valueExists = values.isEmpty
+                valueExists = values.isEmpty || values == [nil]
             }
             XCTAssertTrue(valueExists,
                           """
