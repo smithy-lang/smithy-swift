@@ -66,7 +66,7 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
         writer.openBlock(".package(", "),") {
             val scope = dependency.getProperty("scope", String::class.java).getOrNull()
             scope?.let {
-                writer.write("id: \"\$L.\$L\",", it, dependency.packageName)
+                writer.write("id: \$S,", "$it.${dependency.packageName}")
             }
             val url = dependency.getProperty("url", String::class.java).getOrNull()
             url?.let {
