@@ -26,10 +26,16 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     override val baseTestClassName = "HttpRequestTestBase"
 
     override fun renderTestBody(test: HttpRequestTestCase) {
+        renderFakeCredentials()
         renderExpectedBlock(test)
         writer.write("")
         renderClientBlock(test)
         renderOperationBlock(test)
+    }
+
+    private fun renderFakeCredentials() {
+        writer.write("setenv(\"AWS_ACCESS_KEY_ID\", \"AKIDEXAMPLE\", 1)")
+        writer.write("setenv(\"AWS_SECRET_ACCESS_KEY\", \"wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY\", 1)")
     }
 
     private fun renderExpectedBlock(test: HttpRequestTestCase) {
