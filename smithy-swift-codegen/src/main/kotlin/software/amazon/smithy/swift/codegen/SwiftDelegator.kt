@@ -27,7 +27,11 @@ class SwiftDelegator(
     private val fileManifest: FileManifest,
     private val symbolProvider: SymbolProvider,
     private val integrations: List<SwiftIntegration> = listOf()
-) : WriterDelegator<SwiftWriter>(fileManifest, symbolProvider, SwiftWriter.SwiftWriterFactory(integrations)) {
+) : WriterDelegator<SwiftWriter>(
+    fileManifest,
+    symbolProvider,
+    SwiftWriter.SwiftWriterFactory(integrations, settings)
+) {
 
     /**
      * Gets a previously created writer or creates a new one if needed.

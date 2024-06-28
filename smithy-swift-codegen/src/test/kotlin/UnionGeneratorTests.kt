@@ -39,7 +39,7 @@ class UnionGeneratorTests {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
+        contents.shouldContain(settings.copyrightNotice)
 
         val expectedGeneratedEnum =
             """
@@ -83,7 +83,7 @@ class UnionGeneratorTests {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
+        contents.shouldContain(settings.copyrightNotice)
 
         val expectedGeneratedEnum =
             """
@@ -123,7 +123,7 @@ class UnionGeneratorTests {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
+        contents.shouldContain(settings.copyrightNotice)
 
         val expectedGeneratedEnum =
             """
