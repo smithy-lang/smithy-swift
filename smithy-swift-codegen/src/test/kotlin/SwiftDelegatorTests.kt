@@ -43,7 +43,7 @@ class SwiftDelegatorTests {
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Hello!") })
         delegator.flushWriters()
         assertEquals(
-            SwiftWriter.GENERATED_FILE_HEADER + "\n\nHello!\n",
+            settings.copyrightNotice + "\n\nHello!\n",
             manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
         )
     }
@@ -62,7 +62,7 @@ class SwiftDelegatorTests {
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Goodbye!") })
         delegator.flushWriters()
         assertEquals(
-            SwiftWriter.GENERATED_FILE_HEADER + "\n\nHello!\n\nGoodbye!\n",
+            settings.copyrightNotice + "\n\nHello!\n\nGoodbye!\n",
             manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
         )
     }
