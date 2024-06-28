@@ -149,7 +149,9 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         // Package.swift requires a special comment at the top to specify Swift tools version,
         // and the package manifest generator manually writes its own dependency imports
         // (it only imports the PackageDescription module.)
-        val noHeader = fullPackageName == "Package" || fullPackageName == ".swiftpm/configuration/registries.json"
+        //
+        // Also leave out the headers when JSON is being written, as indicated by the file extension.
+        val noHeader = fullPackageName == "Package" || fullPackageName.endsWith(".json")
         return contents.takeIf { noHeader } ?: (GENERATED_FILE_HEADER + imports + contents)
     }
 

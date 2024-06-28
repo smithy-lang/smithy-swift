@@ -31,6 +31,15 @@ class SwiftDependency(
             "",
             DistributionMethod.GIT,
         )
+        val SWIFT = SwiftDependency(
+            "Swift",
+            "",
+            "",
+            "",
+            "",
+            "",
+            SwiftDependency.DistributionMethod.GIT,
+        )
         val XCTest = SwiftDependency(
             "XCTest",
             null,
