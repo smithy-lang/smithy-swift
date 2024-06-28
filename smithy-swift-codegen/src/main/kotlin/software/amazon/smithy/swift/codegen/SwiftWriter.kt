@@ -152,7 +152,9 @@ class SwiftWriter(private val fullPackageName: String, swiftImportContainer: Swi
         //
         // Also leave out the headers when JSON or the version file is being written,
         // as indicated by the file extension.
-        val noHeader = fullPackageName == "Package" || listOf(".json", ".version").any { fullPackageName.endsWith(it) }
+        val isPackageManifest = listOf(PACKAGE_MANIFEST_NAME, (PACKAGE_MANIFEST_NAME + ".swift")).contains(fullPackageName)
+        val isNonSwiftSourceFile = listOf(".json", ".version").any { fullPackageName.endsWith(it) }
+        val noHeader = isPackageManifest || isNonSwiftSourceFile
         return contents.takeIf { noHeader } ?: (GENERATED_FILE_HEADER + imports + contents)
     }
 
