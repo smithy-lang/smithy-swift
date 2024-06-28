@@ -46,8 +46,11 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                 writer.openBlock("targets: [", "]") {
                     writer.openBlock(".target(", "),") {
                         writer.write("name: \$S,", ctx.settings.moduleName)
-                        writer.openBlock("dependencies: [", "]") {
+                        writer.openBlock("dependencies: [", "],") {
                             dependenciesByTarget.forEach { writeTargetDependency(writer, it) }
+                        }
+                        writer.openBlock("resources: [", "]") {
+                            writer.write(".process(\"Resources\")")
                         }
                     }
                     writer.openBlock(".testTarget(", ")") {
