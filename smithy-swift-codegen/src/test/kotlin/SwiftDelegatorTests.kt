@@ -12,7 +12,6 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
-import software.amazon.smithy.swift.codegen.SwiftWriter
 
 class SwiftDelegatorTests {
     @Test
