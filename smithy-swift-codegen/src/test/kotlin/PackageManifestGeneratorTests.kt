@@ -14,7 +14,7 @@ class PackageManifestGeneratorTests {
 
     @Test
     fun `it renders package manifest file with macOS and iOS platforms block`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
             "platforms: [\n" +
@@ -25,7 +25,7 @@ class PackageManifestGeneratorTests {
 
     @Test
     fun `it renders package manifest file with single library in product block`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
             "products: [\n" +
@@ -37,20 +37,26 @@ class PackageManifestGeneratorTests {
     @Test
     fun `it renders package manifest file with target and test target`() {
         println(testContext.manifest.files)
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
         assertNotNull(packageManifest)
         val expected = """
     targets: [
         .target(
             name: "MockSDK",
             dependencies: [
+            ],
+            resources: [
+                .process("Resources")
             ]
         ),
         .testTarget(
             name: "MockSDKTests",
             dependencies: [
                 "MockSDK",
-                .product(name: "SmithyTestUtil", package: "smithy-swift"),
+                .product(
+                    name: "SmithyTestUtil",
+                    package: "aws-sdk-swift.smithy-swift"
+                ),
             ]
         )
     ]

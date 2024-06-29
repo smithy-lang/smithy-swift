@@ -37,6 +37,6 @@ object SwiftTypes {
 private fun builtInSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
     name,
     declaration,
-    SwiftDependency("Swift", "", "", "", "", ""),
+    SwiftDependency.SWIFT,
     null,
 )
