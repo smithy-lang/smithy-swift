@@ -35,8 +35,8 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                         it.getProperty("scope", String::class.java).getOrNull() != null
                 }
                 val dependenciesByURL = externalDependencies.distinctBy {
-                    it.getProperty("url", String::class.java).getOrNull() ?:
-                        "${it.getProperty("scope", String::class.java).get()}.${it.packageName}"
+                    it.getProperty("url", String::class.java).getOrNull()
+                        ?: "${it.getProperty("scope", String::class.java).get()}.${it.packageName}"
                 }
 
                 writer.openBlock("dependencies: [", "],") {
