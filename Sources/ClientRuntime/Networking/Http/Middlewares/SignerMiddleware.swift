@@ -74,7 +74,7 @@ extension SignerMiddleware: ApplySigner {
         var updatedSigningProperties = signingProperties
         let sha256: String? = attributes.get(key: AttributeKey(name: "X-Amz-Content-Sha256"))
         if let bodyValue = sha256 {
-            updatedSigningProperties.set(key: AttributeKey(name: "SignedBodyValue"), value: sha256)
+            updatedSigningProperties.set(key: AttributeKey(name: "SignedBodyValue"), value: bodyValue)
         }
 
         let signed = try await signer.signRequest(
