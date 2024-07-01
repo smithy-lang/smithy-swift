@@ -7,6 +7,7 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
+import struct Smithy.Attributes
 import struct Smithy.SwiftLogger
 import protocol Smithy.LogAgent
 import protocol SmithyHTTPAPI.HTTPClient
@@ -34,6 +35,7 @@ import struct Foundation.TimeInterval
 import class Foundation.URLSession
 import class Foundation.URLSessionConfiguration
 import class Foundation.URLSessionTask
+import class Foundation.URLSessionTaskMetrics
 import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
 import struct Foundation.Data
@@ -51,6 +53,10 @@ import Security
 ///
 /// On Linux platforms, we recommend using the CRT-based HTTP client for its configurability and performance.
 public final class URLSessionHTTPClient: HTTPClient {
+    public static let noOpURLSessionHTTPClientTelemetry = HttpTelemetry(
+        httpScope: "URLSessionHTTPClient",
+        telemetryProvider: DefaultTelemetry.provider
+    )
 
     /// Holds a connection's associated resources from the time the connection is executed to when it completes.
     private final class Connection {
@@ -66,6 +72,9 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// Once the initial response is received, the continuation is called, and is subsequently set to `nil` so its
         /// resources may be deallocated and to prevent it from being resumed twice.
         private var continuation: CheckedContinuation<HttpResponse, Error>?
+
+        /// HTTP Client Telemetry
+        private let telemetry: HttpTelemetry
 
         /// Returns `true` once the continuation is set to `nil`, which will happen once it has been resumed.
         var hasBeenResumed: Bool { continuation == nil }
@@ -101,9 +110,15 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// - Parameters:
         ///   - streamBridge: The `FoundationStreamBridge` for the connection.
         ///   - continuation: The continuation object for the `execute(request:)` call that initiated this connection.
-        init(streamBridge: FoundationStreamBridge?, continuation: CheckedContinuation<HttpResponse, Error>) {
+        ///   - telemetry:    The HTTP client telemetry.
+        init(
+            streamBridge: FoundationStreamBridge?,
+            continuation: CheckedContinuation<HttpResponse, Error>,
+            telemetry: HttpTelemetry
+        ) {
             self.streamBridge = streamBridge
             self.continuation = continuation
+            self.telemetry = telemetry
         }
 
         /// Ensure continuation is resumed and stream is closed before deallocation.
@@ -160,13 +175,17 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// Holds connection records for all in-progress connections.
         let storage = Storage()
 
+        /// HTTP Client Telemetry
+        let telemetry: HttpTelemetry
+
         /// Logger for HTTP-related events.
         let logger: LogAgent
 
         /// TLS options
         let tlsOptions: URLSessionTLSOptions?
 
-        init(logger: LogAgent, tlsOptions: URLSessionTLSOptions?) {
+        init(telemetry: HttpTelemetry, logger: LogAgent, tlsOptions: URLSessionTLSOptions?) {
+            self.telemetry = telemetry
             self.logger = logger
             self.tlsOptions = tlsOptions
         }
@@ -305,7 +324,16 @@ public final class URLSessionHTTPClient: HTTPClient {
             logger.debug("urlSession(_:dataTask:didReceive data:) called (\(data.count) bytes)")
             storage.modify(dataTask) { connection in
                 do {
+                    // TICK - smithy.client.http.bytes_received
                     try connection.responseStream.write(contentsOf: data)
+                    var attributes = Attributes()
+                    attributes.set(
+                        key: HttpMetricsAttributesKeys.serverAddress,
+                        value: URLSessionHTTPClient.makeServerAddress(sessionTask: dataTask))
+                    telemetry.bytesReceived.add(
+                        value: data.count,
+                        attributes: attributes,
+                        context: telemetry.contextManager.current())
                 } catch {
                     // If the response stream errored on write, save the error for later return &
                     // cancel the HTTP request.
@@ -367,6 +395,9 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// The delegate object used to handle `URLSessionTask` callbacks.
     private let delegate: SessionDelegate
 
+    /// HTTP Client Telemetry
+    private let telemetry: HttpTelemetry
+
     /// The logger for this HTTP client.
     private var logger: LogAgent
 
@@ -401,9 +432,10 @@ public final class URLSessionHTTPClient: HTTPClient {
         sessionType SessionType: URLSession.Type
     ) {
         self.config = httpClientConfiguration
-        self.logger = SwiftLogger(label: "URLSessionHTTPClient")
+        self.telemetry = httpClientConfiguration.telemetry
+        self.logger = self.telemetry.loggerProvider.getLogger(name: "URLSessionHTTPClient")
         self.tlsConfiguration = config.tlsConfiguration as? URLSessionTLSOptions
-        self.delegate = SessionDelegate(logger: logger, tlsOptions: tlsConfiguration)
+        self.delegate = SessionDelegate(telemetry: telemetry, logger: logger, tlsOptions: tlsConfiguration)
         self.connectionTimeout = httpClientConfiguration.connectTimeout ?? 60.0
         var urlsessionConfiguration = URLSessionConfiguration.default
         urlsessionConfiguration = URLSessionConfiguration.from(httpClientConfiguration: httpClientConfiguration)
@@ -425,42 +457,107 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// - Returns: The response to the request.  This call may return as soon as a complete response is received but before the body finishes streaming;
     /// the response body will continue to stream back to the caller.
     public func send(request: SdkHttpRequest) async throws -> HttpResponse {
-        return try await withCheckedThrowingContinuation { continuation in
-
-            // Get the request stream to use for the body, if any.
-            let requestStream: ReadableStream?
-            switch request.body {
-            case .data(let data):
-                requestStream = BufferedStream(data: data, isClosed: true)
-            case .stream(let stream):
-                requestStream = stream
-            case .noStream:
-                requestStream = nil
+        let telemetryContext = telemetry.contextManager.current()
+        let tracer = telemetry.tracerProvider.getTracer(
+            scope: telemetry.tracerScope,
+            attributes: telemetry.tracerAttributes)
+        do {
+            // START - smithy.client.http.requests.queued_duration
+            let queuedStart = Date().timeIntervalSinceReferenceDate
+            let span = tracer.createSpan(
+                name: telemetry.spanName,
+                initialAttributes: telemetry.spanAttributes,
+                spanKind: SpanKind.internal,
+                parentContext: telemetryContext)
+            defer {
+                span.end()
             }
+            return try await withCheckedThrowingContinuation { continuation in
 
-            // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
-            // that URLSession can stream its request body from.
-            // Allow 16kb of in-memory buffer for request body streaming
-            let streamBridge = requestStream.map {
-                FoundationStreamBridge(readableStream: $0, bridgeBufferSize: 16_384, logger: logger)
+                // Get the request stream to use for the body, if any.
+                let requestStream: ReadableStream?
+                switch request.body {
+                case .data(let data):
+                    requestStream = BufferedStream(data: data, isClosed: true)
+                case .stream(let stream):
+                    requestStream = stream
+                case .noStream:
+                    requestStream = nil
+                }
+
+                // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
+                // that URLSession can stream its request body from.
+                // Allow 16kb of in-memory buffer for request body streaming
+                // START - smithy.client.http.connections.acquire_duration
+                let acquireConnectionStart = Date().timeIntervalSinceReferenceDate
+                let streamBridge = requestStream.map {
+                    FoundationStreamBridge(
+                        readableStream: $0,
+                        bridgeBufferSize: 16_384,
+                        logger: logger,
+                        telemetry: telemetry,
+                        serverAddress: URLSessionHTTPClient.makeServerAddress(request: request))
+                }
+                let acquireConnectionEnd = Date().timeIntervalSinceReferenceDate
+                telemetry.connectionsAcquireDuration.record(
+                    value: acquireConnectionEnd - acquireConnectionStart,
+                    attributes: Attributes(),
+                    context: telemetryContext)
+                // END - smithy.client.http.connections.acquire_duration
+                let queuedEnd = acquireConnectionEnd
+                telemetry.requestsQueuedDuration.record(
+                    value: queuedEnd - queuedStart,
+                    attributes: Attributes(),
+                    context: telemetryContext)
+                // END - smithy.client.http.requests.queued_duration
+
+                // TICK - smithy.client.http.connections.limit
+                telemetry.httpMetricsUsage.connectionsLimit = session.configuration.httpMaximumConnectionsPerHost
+
+                // TICK - smithy.client.http.connections.usage
+                // TODO(observability): instead of the transient stores, should rely on the Key/Value observer patttern
+                let totalCount = session.delegateQueue.operationCount
+                let maxConcurrentOperationCount = session.delegateQueue.maxConcurrentOperationCount
+                telemetry.httpMetricsUsage.acquiredConnections = totalCount < maxConcurrentOperationCount
+                    ? totalCount
+                    : maxConcurrentOperationCount
+                telemetry.httpMetricsUsage.idleConnections = totalCount - telemetry.httpMetricsUsage.acquiredConnections
+
+                // TICK - smithy.client.http.requests.usage
+                telemetry.httpMetricsUsage.inflightRequests = telemetry.httpMetricsUsage.acquiredConnections
+                telemetry.httpMetricsUsage.queuedRequests = telemetry.httpMetricsUsage.idleConnections
+
+                // Create the request (with a streaming body when needed.)
+                do {
+                    // DURATION - smithy.client.http.connections.uptime
+                    let connectionUptimeStart = acquireConnectionEnd
+                    defer {
+                        telemetry.connectionsUptime.record(
+                            value: Date().timeIntervalSinceReferenceDate - connectionUptimeStart,
+                            attributes: Attributes(),
+                            context: telemetryContext)
+                    }
+                    do {
+                        let urlRequest = try self.makeURLRequest(
+                            from: request,
+                            httpBodyStream: streamBridge?.inputStream)
+                        // Create the data task and associated connection object, then place them in storage.
+                        let dataTask = session.dataTask(with: urlRequest)
+                        let connection = Connection(
+                            streamBridge: streamBridge,
+                            continuation: continuation,
+                            telemetry: telemetry)
+                        delegate.storage.set(connection, for: dataTask)
+
+                        // Start the HTTP connection and start streaming the request body data
+                        dataTask.resume()
+                        logger.info("start URLRequest(\(urlRequest.url?.absoluteString ?? "")) called")
+                        Task { await streamBridge?.open() }
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                }
             }
-
-            // Create the request (with a streaming body when needed.)
-            do {
-                let urlRequest = try self.makeURLRequest(from: request, httpBodyStream: streamBridge?.inputStream)
-                // Create the data task and associated connection object, then place them in storage.
-                let dataTask = session.dataTask(with: urlRequest)
-                let connection = Connection(streamBridge: streamBridge, continuation: continuation)
-                delegate.storage.set(connection, for: dataTask)
-
-                // Start the HTTP connection and start streaming the request body data
-                dataTask.resume()
-                logger.info("start URLRequest(\(urlRequest.url?.absoluteString ?? "")) called")
-                Task { await streamBridge?.open() }
-            } catch {
-                continuation.resume(throwing: error)
-            }
-
         }
     }
 
@@ -501,6 +598,25 @@ public final class URLSessionHTTPClient: HTTPClient {
             return nil
         default:
             return request.destination.port.map { Int($0) }
+        }
+    }
+
+    private static func makeServerAddress(sessionTask: URLSessionTask) -> String {
+        let url = sessionTask.originalRequest?.url
+        let host = url?.host ?? "unknown"
+        if let port = url?.port {
+            return "\(host):\(port)"
+        } else {
+            return host
+        }
+    }
+
+    private static func makeServerAddress(request: SdkHttpRequest) -> String {
+        let host = request.destination.host
+        if let port = request.destination.port {
+            return "\(host):\(port)"
+        } else {
+            return host
         }
     }
 }

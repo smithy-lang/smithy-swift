@@ -32,6 +32,7 @@ public class OrchestratorBuilder<
     internal var deserialize: ((ResponseType, Context) async throws -> OutputType)?
     internal var retryStrategy: (any RetryStrategy)?
     internal var retryErrorInfoProvider: ((Error) -> RetryErrorInfo?)?
+    internal var telemetry: OrchestratorTelemetry?
     internal var selectAuthScheme: SelectAuthScheme?
     internal var applyEndpoint: (any ApplyEndpoint<RequestType>)?
     internal var applySigner: (any ApplySigner<RequestType>)?
@@ -100,6 +101,14 @@ public class OrchestratorBuilder<
     @discardableResult
     public func retryErrorInfoProvider(_ retryErrorInfoProvider: @escaping (Error) -> RetryErrorInfo?) -> Self {
         self.retryErrorInfoProvider = retryErrorInfoProvider
+        return self
+    }
+
+    /// - Parameter telemetry: container for telemetry
+    /// - Returns: Builder
+    @discardableResult
+    public func telemetry(_ telemetry: OrchestratorTelemetry) -> Self {
+        self.telemetry = telemetry
         return self
     }
 

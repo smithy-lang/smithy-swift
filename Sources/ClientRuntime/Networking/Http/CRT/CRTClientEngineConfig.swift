@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import AwsCommonRuntimeKit
-
 struct CRTClientEngineConfig {
 
     /// Max connections the manager can contain per endpoint
@@ -12,6 +10,9 @@ struct CRTClientEngineConfig {
 
     /// The IO channel window size to use for connections in the connection pool
     let windowSize: Int
+
+    /// HTTP Client Telemetry
+    let telemetry: HttpTelemetry
 
     /// The default is true for clients and false for servers.
     /// You should not change this default for clients unless
@@ -31,6 +32,7 @@ struct CRTClientEngineConfig {
     public init(
         maxConnectionsPerEndpoint: Int = 50,
         windowSize: Int = 16 * 1024 * 1024,
+        telemetry: HttpTelemetry = CRTClientEngine.noOpCrtClientEngineTelemetry,
         verifyPeer: Bool = true,
         connectTimeoutMs: UInt32? = nil,
         crtTlsOptions: CRTClientTLSOptions? = nil,
@@ -38,6 +40,7 @@ struct CRTClientEngineConfig {
     ) {
         self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
         self.windowSize = windowSize
+        self.telemetry = telemetry
         self.verifyPeer = verifyPeer
         self.connectTimeoutMs = connectTimeoutMs
         self.crtTlsOptions = crtTlsOptions

@@ -20,7 +20,10 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTestUtilTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
@@ -109,9 +112,15 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.DESERIALIZESTEP)
 
             if (ctx.settings.useInterceptors) {
+                val rpcService = serviceName
+                val rpcMethod = operation.getId().getName()
                 writer.write(
                     """
+                    var metricsAttributes = ${'$'}N()
+                    metricsAttributes.set(key: ${'$'}N.service, value: ${'$'}S)
+                    metricsAttributes.set(key: ${'$'}N.method, value: ${'$'}S)
                     let op = builder.attributes(context)
+                        .selectAuthScheme(${'$'}N())
                         .deserialize({ (_, _) in
                             return $outputSymbol()
                         })
@@ -119,11 +128,23 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                             ${'$'}{C|}
                             return HttpResponse(body: .noStream, statusCode: .ok)
                         })
+                        .telemetry(${'$'}N(
+                            telemetryProvider: ${'$'}N.provider,
+                            metricsAttributes: metricsAttributes
+                        ))
                         .build()
 
                     _ = try await op.execute(input: input)
                     """.trimIndent(),
-                    Runnable { renderBodyAssert(test, inputSymbol, inputShape) }
+                    SmithyTypes.Attributes,
+                    ClientRuntimeTypes.Middleware.OrchestratorMetricsAttributesKeys,
+                    rpcService,
+                    ClientRuntimeTypes.Middleware.OrchestratorMetricsAttributesKeys,
+                    rpcMethod,
+                    SmithyTestUtilTypes.SelectNoAuthScheme,
+                    Runnable { renderBodyAssert(test, inputSymbol, inputShape) },
+                    ClientRuntimeTypes.Middleware.OrchestratorTelemetry,
+                    ClientRuntimeTypes.Core.DefaultTelemetry
                 )
             } else {
                 renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)

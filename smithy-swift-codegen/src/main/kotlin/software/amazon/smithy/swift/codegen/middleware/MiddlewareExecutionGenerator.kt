@@ -86,12 +86,27 @@ class MiddlewareExecutionGenerator(
         renderMiddlewares(ctx, op, operationStackName)
 
         if (ctx.settings.useInterceptors) {
+            val rpcService = symbolProvider.toSymbol(serviceShape).getName().removeSuffix("Client")
+            val rpcMethod = op.getId().getName()
             writer.write(
                 """
+                var metricsAttributes = ${"$"}N()
+                metricsAttributes.set(key: ${"$"}N.service, value: ${"$"}S)
+                metricsAttributes.set(key: ${"$"}N.method, value: ${"$"}S)
                 let op = builder.attributes(context)
+                    .telemetry(${"$"}N(
+                        telemetryProvider: config.telemetryProvider,
+                        metricsAttributes: metricsAttributes
+                    ))
                     .executeRequest(client)
                     .build()
-                """.trimIndent()
+                """.trimIndent(),
+                SmithyTypes.Attributes,
+                ClientRuntimeTypes.Middleware.OrchestratorMetricsAttributesKeys,
+                rpcService,
+                ClientRuntimeTypes.Middleware.OrchestratorMetricsAttributesKeys,
+                rpcMethod,
+                ClientRuntimeTypes.Middleware.OrchestratorTelemetry
             )
         }
     }

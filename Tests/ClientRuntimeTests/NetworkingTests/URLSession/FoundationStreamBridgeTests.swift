@@ -65,7 +65,12 @@ class FoundationStreamBridgeTests: XCTestCase {
 
             // Create a stream bridge with our original data & open it
             let bufferedStream = BufferedStream(data: originalData, isClosed: true)
-            let subject = FoundationStreamBridge(readableStream: bufferedStream, bridgeBufferSize: bridgeBufferSize, boundStreamBufferSize: boundStreamBufferSize, logger: TestLogger())
+            let subject = FoundationStreamBridge(
+                readableStream: bufferedStream,
+                bridgeBufferSize: bridgeBufferSize,
+                boundStreamBufferSize: boundStreamBufferSize,
+                logger: TestLogger(),
+                telemetry: HttpTelemetry(httpScope: "FoundationStreamBridgeTests"))
             await subject.open()
 
             // This will hold the data that is bridged from the ReadableStream to the Foundation InputStream
