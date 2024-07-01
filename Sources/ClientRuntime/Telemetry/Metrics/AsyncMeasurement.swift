@@ -16,7 +16,7 @@ public protocol AsyncMeasurementHandle {
     func stop()
 }
 
-public typealias LongAsyncMeasurement = AsyncMeasurement<Int64>
+public typealias LongAsyncMeasurement = AsyncMeasurement<Int>
 
 public typealias DoubleAsyncMeasurement = AsyncMeasurement<Double>
 
