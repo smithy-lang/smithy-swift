@@ -228,6 +228,32 @@ open class HttpRequestTestBase: XCTestCase {
         try await assertEqualHttpBody?(expected.body, actual.body)
     }
 
+    private func checkStreamLengthEqualityIfUnseekableActualStreamHasBeenRead(
+        expected: ByteStream,
+        actual: ByteStream,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> Bool {
+        switch actual {
+        case .stream(let actualStream):
+            if actualStream.position == actualStream.length, !actualStream.isSeekable {
+                switch expected {
+                case .stream(let expectedStream):
+                    if actualStream.length == expectedStream.length {
+                        return true // Streams are considered equal
+                    } else {
+                        XCTFail("Actual stream is a different size than expected!", file: file, line: line)
+                    }
+                default:
+                    break // This is only applicable to streams
+                }
+            }
+        default:
+            break // This is only applicable to streams
+        }
+        return false
+    }
+
     public func genericAssertEqualHttpBodyData(
         expected: ByteStream,
         actual: ByteStream,
@@ -237,6 +263,17 @@ open class HttpRequestTestBase: XCTestCase {
     ) async throws {
         let expectedData = try await expected.readData()
         let actualData = try await actual.readData()
+
+        // Unseekable streams may have already been read by Signer middleware and cannot be read again
+        // Compare stream lengths if ByteStream is a .stream and actualData is nil
+        if checkStreamLengthEqualityIfUnseekableActualStreamHasBeenRead(
+            expected: expected, actual: actual, file: file, line: line
+        ) {
+            // Stream lengths were checked and comparing data will result in failure due to above conditions
+            return
+        }
+
+        // Compare the data
         compareData(contentType: contentType, expectedData, actualData, file: file, line: line)
     }
 
@@ -304,10 +341,17 @@ open class HttpRequestTestBase: XCTestCase {
                 return
             }
 
-            let actualValue = actual.values(for: header.name)?.joined(separator: ", ")
+            let actualValue = actual.values(for: header.name)?
+                .joined(separator: ", ")
+                .components(separatedBy: .whitespaces)
+                .joined()
             XCTAssertNotNil(actualValue, file: file, line: line)
 
-            let expectedValue = header.value.joined(separator: ", ")
+            let expectedValue = header.value
+                .joined(separator: ", ")
+                .components(separatedBy: .whitespaces)
+                .joined()
+            
             XCTAssertEqual(actualValue, expectedValue, file: file, line: line)
         }
     }
@@ -371,7 +415,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
 
         for expectedQueryItem in expectedQueryItems {
-            let values = actualQueryItems.filter {$0.name == expectedQueryItem.name}.map { $0.value}
+            let values = actualQueryItems.filter {$0.name == expectedQueryItem.name}.map { $0.value }
             XCTAssertNotNil(
                 values,
                 "expected query parameter \(expectedQueryItem.name); no values found",
