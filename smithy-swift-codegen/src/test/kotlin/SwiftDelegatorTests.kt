@@ -12,7 +12,6 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
-import software.amazon.smithy.swift.codegen.SwiftWriter
 
 class SwiftDelegatorTests {
     @Test
@@ -43,7 +42,7 @@ class SwiftDelegatorTests {
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Hello!") })
         delegator.flushWriters()
         assertEquals(
-            SwiftWriter.GENERATED_FILE_HEADER + "\n\nHello!\n",
+            settings.copyrightNotice + "\n\nHello!\n",
             manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
         )
     }
@@ -62,7 +61,7 @@ class SwiftDelegatorTests {
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Goodbye!") })
         delegator.flushWriters()
         assertEquals(
-            SwiftWriter.GENERATED_FILE_HEADER + "\n\nHello!\n\nGoodbye!\n",
+            settings.copyrightNotice + "\n\nHello!\n\nGoodbye!\n",
             manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
         )
     }
