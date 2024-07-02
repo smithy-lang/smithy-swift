@@ -20,6 +20,7 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
@@ -57,7 +58,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 // depending on the shape of the input, wrap the expected body in a stream or not
                 if (inputShape.hasStreamingMember(model)) {
                     // wrapping to CachingStream required for test asserts which reads body multiple times
-                    writer.write("body: .stream(BufferedStream(data: \$L, isClosed: true)),", data)
+                    writer.write("body: .stream(\$N(data: \$L, isClosed: true)),", SmithyStreamsTypes.Core.BufferedStream, data)
                 } else {
                     writer.write("body: .data(\$L),", data)
                 }
@@ -111,15 +112,15 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write(
                     """
                     let op = builder.attributes(context)
-                        .deserialize({ (_, _) in 
-                            return .success($outputSymbol())
+                        .deserialize({ (_, _) in
+                            return $outputSymbol()
                         })
                         .executeRequest({ (actual, attributes) in
                             ${'$'}{C|}
                             return HttpResponse(body: .noStream, statusCode: .ok)
                         })
                         .build()
-                    
+
                     _ = try await op.execute(input: input)
                     """.trimIndent(),
                     Runnable { renderBodyAssert(test, inputSymbol, inputShape) }

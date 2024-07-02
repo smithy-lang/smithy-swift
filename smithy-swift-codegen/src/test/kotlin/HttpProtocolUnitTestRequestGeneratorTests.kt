@@ -310,7 +310,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
                 "Content-Type": "application/octet-stream",
                 "X-Foo": "Foo"
             ],
-            body: .stream(BufferedStream(data: Data(""${'"'}
+            body: .stream(SmithyStreams.BufferedStream(data: Data(""${'"'}
             blobby blob blob
             ""${'"'}.utf8), isClosed: true)),
             host: "",
@@ -318,7 +318,7 @@ class HttpProtocolUnitTestRequestGeneratorTests {
         )
 
         let input = StreamingTraitsInput(
-            blob: .stream(BufferedStream(data: "blobby blob blob".data(using: .utf8)!, isClosed: true)),
+            blob: .stream(SmithyStreams.BufferedStream(data: "blobby blob blob".data(using: .utf8)!, isClosed: true)),
             foo: "Foo"
         )
         let context = ContextBuilder()

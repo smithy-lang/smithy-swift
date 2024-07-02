@@ -31,5 +31,10 @@ public protocol DefaultClientConfiguration: ClientConfiguration {
     /// If none is provided, only a default logger provider will be used.
     var telemetryProvider: TelemetryProvider { get set }
 
+    /// Add an `InterceptorProvider` that will be used to provide interceptors for all operations.
+    ///
+    /// - Parameter provider: The `InterceptorProvider` to add.
+    func addInterceptorProvider(_ provider: InterceptorProvider)
+
     /// TODO(plugins): Add Checksum, etc.
 }

@@ -25,10 +25,6 @@ object ClientRuntimeTypes {
         val ContentLengthMiddleware = runtimeSymbol("ContentLengthMiddleware", SwiftDeclaration.STRUCT)
         val ContentTypeMiddleware = runtimeSymbol("ContentTypeMiddleware", SwiftDeclaration.STRUCT)
         val ContentMD5Middleware = runtimeSymbol("ContentMD5Middleware", SwiftDeclaration.STRUCT)
-        val FlexibleChecksumsRequestMiddleware =
-            runtimeSymbol("FlexibleChecksumsRequestMiddleware", SwiftDeclaration.STRUCT)
-        val FlexibleChecksumsResponseMiddleware =
-            runtimeSymbol("FlexibleChecksumsResponseMiddleware", SwiftDeclaration.STRUCT)
         val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware", SwiftDeclaration.STRUCT)
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware", SwiftDeclaration.STRUCT)
         val OperationStack = runtimeSymbol("OperationStack", SwiftDeclaration.STRUCT)
@@ -92,6 +88,12 @@ object ClientRuntimeTypes {
         val DefaultTelemetry = runtimeSymbol("DefaultTelemetry", SwiftDeclaration.ENUM)
         val splitHeaderListValues = runtimeSymbol("splitHeaderListValues", SwiftDeclaration.FUNC)
         val splitHttpDateHeaderListValues = runtimeSymbol("splitHttpDateHeaderListValues", SwiftDeclaration.FUNC)
+        val OrchestratorBuilder = runtimeSymbol("OrchestratorBuilder", SwiftDeclaration.CLASS)
+        val InterceptorProviders = runtimeSymbolWithoutNamespace("[ClientRuntime.InterceptorProvider]")
+        val InterceptorProvider = runtimeSymbol("InterceptorProvider", SwiftDeclaration.PROTOCOL)
+        val HttpInterceptorProviders = runtimeSymbolWithoutNamespace("[ClientRuntime.HttpInterceptorProvider]")
+        val HttpInterceptorProvider = runtimeSymbol("HttpInterceptorProvider", SwiftDeclaration.PROTOCOL)
+        val HttpInterceptor = runtimeSymbol("HttpInterceptor", SwiftDeclaration.PROTOCOL)
     }
 }
 
@@ -99,5 +101,12 @@ private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): 
     name,
     declaration,
     SwiftDependency.CLIENT_RUNTIME,
+    null,
+)
+
+private fun runtimeSymbolWithoutNamespace(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+    name,
+    declaration,
+    null,
     null,
 )

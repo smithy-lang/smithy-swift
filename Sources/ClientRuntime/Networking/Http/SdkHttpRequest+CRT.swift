@@ -6,6 +6,7 @@
 //
 
 import struct Smithy.URI
+import class SmithyStreams.StreamableHttpBody
 import class SmithyHTTPAPI.SdkHttpRequest
 import AwsCommonRuntimeKit
 
@@ -47,7 +48,7 @@ extension SdkHttpRequest {
         let isStreamBody: Bool
         switch body {
         case .stream(let stream):
-            if stream.isEligibleForAwsChunkedStreaming {
+            if stream.isEligibleForChunkedStreaming {
                 isStreamBody = true
             } else {
                 isStreamBody = false
