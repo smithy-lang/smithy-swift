@@ -22,3 +22,5 @@ public struct AuthOption {
         self.signingProperties = signingProperties
     }
 }
+
+public typealias AuthOptions = [AuthOption]

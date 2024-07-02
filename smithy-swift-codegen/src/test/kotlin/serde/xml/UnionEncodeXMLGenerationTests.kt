@@ -16,7 +16,7 @@ class UnionEncodeXMLGenerationTests {
     @Test
     fun `001 XmlUnionShape+Codable`() {
         val context = setupTests("Isolated/Restxml/xml-unions.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape+ReadWrite.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlUnionShape+ReadWrite.swift")
         val expectedContents = """
 extension RestXmlProtocolClientTypes.XmlUnionShape {
 
@@ -28,9 +28,9 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
             case let .doublevalue(doublevalue):
                 try writer["doubleValue"].write(doublevalue)
             case let .mapvalue(mapvalue):
-                try writer["mapValue"].writeMap(mapvalue, valueWritingClosure: Swift.String.write(value:to:), keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false)
+                try writer["mapValue"].writeMap(mapvalue, valueWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false)
             case let .stringlist(stringlist):
-                try writer["stringList"].writeList(stringlist, memberWritingClosure: Swift.String.write(value:to:), memberNodeInfo: "member", isFlattened: false)
+                try writer["stringList"].writeList(stringlist, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "member", isFlattened: false)
             case let .structvalue(structvalue):
                 try writer["structValue"].write(structvalue, with: RestXmlProtocolClientTypes.XmlNestedUnionStruct.write(value:to:))
             case let .timestampvalue(timestampvalue):
@@ -57,9 +57,9 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
             case "structValue":
                 return .structvalue(try reader["structValue"].read(with: RestXmlProtocolClientTypes.XmlNestedUnionStruct.read(from:)))
             case "mapValue":
-                return .mapvalue(try reader["mapValue"].readMap(valueReadingClosure: Swift.String.read(from:), keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false))
+                return .mapvalue(try reader["mapValue"].readMap(valueReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), keyNodeInfo: "K", valueNodeInfo: "V", isFlattened: false))
             case "stringList":
-                return .stringlist(try reader["stringList"].readList(memberReadingClosure: Swift.String.read(from:), memberNodeInfo: "member", isFlattened: false))
+                return .stringlist(try reader["stringList"].readList(memberReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), memberNodeInfo: "member", isFlattened: false))
             case "timeStampValue":
                 return .timestampvalue(try reader["timeStampValue"].readTimestamp(format: .dateTime))
             default:
@@ -74,7 +74,7 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
     @Test
     fun `002 XmlUnionShape should be marked as indirect`() {
         val context = setupTests("Isolated/Restxml/xml-unions.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/models/XmlUnionShape.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlUnionShape.swift")
         val expectedContents = """
 extension ExampleClientTypes {
     public indirect enum XmlUnionShape {
@@ -82,7 +82,7 @@ extension ExampleClientTypes {
         case datavalue(Foundation.Data)
         case unionvalue(ExampleClientTypes.XmlUnionShape)
         case structvalue(ExampleClientTypes.XmlNestedUnionStruct)
-        case mapvalue([Swift.String:Swift.String])
+        case mapvalue([Swift.String: Swift.String])
         case stringlist([Swift.String])
         case timestampvalue(Foundation.Date)
         case sdkUnknown(Swift.String)

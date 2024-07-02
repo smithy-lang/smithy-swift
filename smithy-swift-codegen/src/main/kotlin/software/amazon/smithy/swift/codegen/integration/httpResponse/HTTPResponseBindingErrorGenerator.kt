@@ -9,16 +9,14 @@ import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 import software.amazon.smithy.swift.codegen.utils.errorShapeName
 
 class HTTPResponseBindingErrorGenerator(
@@ -28,14 +26,10 @@ class HTTPResponseBindingErrorGenerator(
     fun renderServiceError(ctx: ProtocolGenerator.GenerationContext) {
         val serviceShape = ctx.service
         val serviceName = ctx.service.id.name
-        val rootNamespace = ctx.settings.moduleName
-        val fileName = "./$rootNamespace/models/$serviceName+HTTPServiceError.swift"
+        val filename = ModelFileUtils.filename(ctx.settings, "$serviceName+HTTPServiceError")
 
-        ctx.delegator.useFileWriter(fileName) { writer ->
+        ctx.delegator.useFileWriter(filename) { writer ->
             with(writer) {
-                addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
-                addImport(customizations.baseErrorSymbol.namespace)
                 openBlock(
                     "func httpServiceError(baseError: \$N) throws -> \$N? {",
                     "}",
@@ -71,18 +65,13 @@ class HTTPResponseBindingErrorGenerator(
 
     fun renderOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, unknownServiceErrorSymbol: Symbol) {
         val operationErrorName = "${op.toUpperCamelCase()}OutputError"
-        val rootNamespace = ctx.settings.moduleName
+        val filename = ModelFileUtils.filename(ctx.settings, "$operationErrorName+HttpResponseErrorBinding")
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$operationErrorName+HttpResponseErrorBinding.swift")
+            .definitionFile(filename)
             .name(operationErrorName)
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
-            writer.addImport(unknownServiceErrorSymbol)
-            writer.addImport(customizations.baseErrorSymbol.namespace)
-            writer.addImports(ctx.service.responseWireProtocol)
             writer.openBlock("enum \$L {", "}", operationErrorName) {
                 writer.write("")
                 writer.openBlock(

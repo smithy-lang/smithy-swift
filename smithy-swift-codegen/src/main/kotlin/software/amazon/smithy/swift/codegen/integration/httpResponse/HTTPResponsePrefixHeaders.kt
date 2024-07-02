@@ -11,10 +11,10 @@ import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.SetShape
 import software.amazon.smithy.model.shapes.StringShape
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class HTTPResponsePrefixHeaders(
     val ctx: ProtocolGenerator.GenerationContext,

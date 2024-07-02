@@ -9,6 +9,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class ContentTypeMiddleware(
     val model: Model,
@@ -42,6 +43,12 @@ class ContentTypeMiddleware(
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
-        writer.write("ContentTypeMiddleware<$inputShapeName, $outputShapeName>(contentType: \"${defaultContentType}\")")
+        writer.write(
+            "\$N<\$L, \$L>(contentType: \$S)",
+            ClientRuntimeTypes.Middleware.ContentTypeMiddleware,
+            inputShapeName,
+            outputShapeName,
+            defaultContentType,
+        )
     }
 }

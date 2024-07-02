@@ -16,23 +16,9 @@ abstract class Middleware(private val writer: SwiftWriter, shapeSymbol: Symbol, 
 
     open val outputType: Symbol = step.outputType
 
-    open val errorType: Symbol = step.errorType
-
-    open val contextType: Symbol = Symbol
-        .builder()
-        .name("HttpContext")
-        .namespace(SwiftDependency.CLIENT_RUNTIME.target, ".")
-        .addDependency(SwiftDependency.CLIENT_RUNTIME)
-        .build()
-
     open val typesToConformMiddlewareTo: List<Symbol> = mutableListOf(ClientRuntimeTypes.Middleware.Middleware)
 
     open val properties: MutableMap<String, Symbol> = mutableMapOf()
-
-    fun getTypeInheritance(): String {
-        val separator = if (typesToConformMiddlewareTo.count() == 1) "" else ", "
-        return typesToConformMiddlewareTo.joinToString(separator) { it.toString() }
-    }
 
     abstract fun generateInit()
 

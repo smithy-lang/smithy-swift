@@ -66,7 +66,6 @@ class DirectedSwiftCodegen(val context: PluginContext) :
         val context = directive.context()
         val model = directive.model()
         val integrations = context.integrations
-        val fileManifest = context.fileManifest
         val writers = context.writerDelegator()
 
         LOGGER.info("Generating Swift client for service ${directive.settings().service}")
@@ -90,18 +89,16 @@ class DirectedSwiftCodegen(val context: PluginContext) :
             LOGGER.info("[${service.id}] Generated $numProtocolUnitTestsGenerated tests for protocol ${this.protocol}")
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${this.protocol}")
-
             generateProtocolClient(ctx)
 
             integrations.forEach { it.writeAdditionalFiles(context, ctx, writers) }
+
+            LOGGER.info("Generating package manifest file")
+            PackageManifestGenerator(ctx).writePackageManifest(writers.dependencies)
+
+            LOGGER.info("Flushing swift writers")
+            writers.flushWriters()
         }
-
-        println("Flushing swift writers")
-        val dependencies = writers.dependencies
-        writers.flushWriters()
-
-        println("Generating package manifest file")
-        writePackageManifest(settings, fileManifest, dependencies, shouldGenerateTestTarget)
     }
 
     override fun generateStructure(directive: GenerateStructureDirective<GenerationContext, SwiftSettings>) {

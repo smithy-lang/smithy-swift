@@ -3,7 +3,6 @@ package software.amazon.smithy.swift.codegen.swiftmodules
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.model.buildSymbol
 
 /**
  * Commonly used runtime types. Provides a single definition of a runtime symbol such that codegen isn't littered
@@ -12,20 +11,24 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
  * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
  */
 object SmithyHTTPAuthAPITypes {
-    val AuthSchemes = runtimeSymbolWithoutNamespace("[SmithyHTTPAuthAPI.AuthScheme]")
-    val AuthSchemeResolver = runtimeSymbol("AuthSchemeResolver")
-    val AuthSchemeResolverParams = runtimeSymbol("AuthSchemeResolverParameters")
+    val AuthOption = runtimeSymbol("AuthOption", SwiftDeclaration.STRUCT)
+    val AuthScheme = runtimeSymbol("AuthScheme", SwiftDeclaration.PROTOCOL)
+    val AuthSchemes = runtimeSymbol("AuthSchemes", SwiftDeclaration.TYPEALIAS)
+    val AuthSchemeResolver = runtimeSymbol("AuthSchemeResolver", SwiftDeclaration.PROTOCOL)
+    val AuthSchemeResolverParams = runtimeSymbol("AuthSchemeResolverParameters", SwiftDeclaration.PROTOCOL)
+    var SigningPropertyKeys = runtimeSymbol("SigningPropertyKeys", SwiftDeclaration.ENUM)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = buildSymbol {
-    this.name = name
-    this.namespace = SwiftDependency.SMITHY_HTTP_AUTH_API.target
-    declaration?.let { this.setProperty("decl", it.keyword) }
-    dependency(SwiftDependency.SMITHY_HTTP_AUTH_API)
-}
+private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+    name,
+    declaration,
+    SwiftDependency.SMITHY_HTTP_AUTH_API,
+    null,
+)
 
-private fun runtimeSymbolWithoutNamespace(name: String, declaration: SwiftDeclaration? = null): Symbol = buildSymbol {
-    this.name = name
-    declaration?.let { this.setProperty("decl", it.keyword) }
-    dependency(SwiftDependency.SMITHY_HTTP_AUTH_API)
-}
+private fun runtimeSymbolWithoutNamespace(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+    name,
+    declaration,
+    null,
+    null,
+)

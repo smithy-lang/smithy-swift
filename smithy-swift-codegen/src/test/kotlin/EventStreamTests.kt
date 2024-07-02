@@ -7,7 +7,7 @@ class EventStreamTests {
     fun `test MessageMarshallable`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
         println(context.manifest.files)
-        val contents = getFileContents(context.manifest, "/Example/models/TestStream+MessageMarshallable.swift")
+        val contents = getFileContents(context.manifest, "Sources/Example/models/TestStream+MessageMarshallable.swift")
         val expected = """
 extension EventStreamTestClientTypes.TestStream {
     static var marshal: SmithyEventStreamsAPI.MarshalClosure<EventStreamTestClientTypes.TestStream> {
@@ -68,8 +68,8 @@ extension EventStreamTestClientTypes.TestStream {
                 headers.append(.init(name: ":event-type", value: .string("MessageWithNoHeaderPayloadTraits")))
                 headers.append(.init(name: ":content-type", value: .string("application/json")))
                 let writer = SmithyJSON.Writer(nodeInfo: "")
-                try writer["someInt"].write(value.someInt, with: Swift.Int.write(value:to:))
-                try writer["someString"].write(value.someString, with: Swift.String.write(value:to:))
+                try writer["someInt"].write(value.someInt, with: SmithyReadWrite.WritingClosures.writeInt(value:to:))
+                try writer["someString"].write(value.someString, with: SmithyReadWrite.WritingClosures.writeString(value:to:))
                 payload = try writer.data()
             case .messagewithunboundpayloadtraits(let value):
                 headers.append(.init(name: ":event-type", value: .string("MessageWithUnboundPayloadTraits")))
@@ -78,7 +78,7 @@ extension EventStreamTestClientTypes.TestStream {
                 }
                 headers.append(.init(name: ":content-type", value: .string("application/json")))
                 let writer = SmithyJSON.Writer(nodeInfo: "")
-                try writer["unboundString"].write(value.unboundString, with: Swift.String.write(value:to:))
+                try writer["unboundString"].write(value.unboundString, with: SmithyReadWrite.WritingClosures.writeString(value:to:))
                 payload = try writer.data()
             case .sdkUnknown(_):
                 throw Smithy.ClientError.unknownError("cannot serialize the unknown event type!")
@@ -94,7 +94,7 @@ extension EventStreamTestClientTypes.TestStream {
     @Test
     fun `test MessageUnmarshallable`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
-        val contents = getFileContents(context.manifest, "/Example/models/TestStream+MessageUnmarshallable.swift")
+        val contents = getFileContents(context.manifest, "Sources/Example/models/TestStream+MessageUnmarshallable.swift")
         val expected = """
 extension EventStreamTestClientTypes.TestStream {
     static var unmarshal: SmithyEventStreamsAPI.UnmarshalClosure<EventStreamTestClientTypes.TestStream> {
@@ -162,7 +162,7 @@ extension EventStreamTestClientTypes.TestStream {
                     if case .string(let value) = message.headers.value(name: "header") {
                         event.header = value
                     }
-                    let value = try SmithyJSON.Reader.readFrom(message.payload, with: Swift.String.read(from:))
+                    let value = try SmithyJSON.Reader.readFrom(message.payload, with: SmithyReadWrite.ReadingClosures.readString(from:))
                     event.unboundString = value
                     return .messagewithunboundpayloadtraits(event)
                 default:
@@ -198,7 +198,7 @@ extension EventStreamTestClientTypes.TestStream {
     fun `operation stack`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
         println(context.manifest.files)
-        val contents = getFileContents(context.manifest, "/Example/EventStreamTestClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/Example/EventStreamTestClient.swift")
         var expected = """
     public func testStreamOp(input: TestStreamOpInput) async throws -> TestStreamOpOutput {
         let context = Smithy.ContextBuilder()
@@ -217,7 +217,7 @@ extension EventStreamTestClientTypes.TestStream {
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<TestStreamOpInput, TestStreamOpOutput>(TestStreamOpInput.urlPathProvider(_:)))
         operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<TestStreamOpInput, TestStreamOpOutput>())
         operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<TestStreamOpOutput>())
-        operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<TestStreamOpInput, TestStreamOpOutput>(contentType: "application/json"))
+        operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.ContentTypeMiddleware<TestStreamOpInput, TestStreamOpOutput>(contentType: "application/json"))
         operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.EventStreamBodyMiddleware<TestStreamOpInput, TestStreamOpOutput, EventStreamTestClientTypes.TestStream>(keyPath: \.value, defaultBody: "{}", marshalClosure: EventStreamTestClientTypes.TestStream.marshal))
         operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<TestStreamOpInput, TestStreamOpOutput>())
         operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, TestStreamOpOutput>(options: config.retryStrategyOptions))

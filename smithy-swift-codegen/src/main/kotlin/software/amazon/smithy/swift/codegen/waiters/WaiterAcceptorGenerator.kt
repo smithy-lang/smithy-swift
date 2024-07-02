@@ -17,6 +17,8 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.swift.codegen.SwiftSymbolProvider
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyWaitersAPITypes
 import software.amazon.smithy.waiters.Acceptor
 import software.amazon.smithy.waiters.Matcher
 import software.amazon.smithy.waiters.PathComparator
@@ -36,7 +38,7 @@ class WaiterAcceptorGenerator(
 
     fun render() {
         writer.openBlock(
-            ".init(state: .\$L, matcher: { (input: \$L, result: Result<\$L, Error>) -> Bool in", "}),",
+            ".init(state: .\$L, matcher: { (input: \$L, result: Swift.Result<\$L, Swift.Error>) -> Bool in", "}),",
             acceptor.state,
             inputTypeName,
             outputTypeName
@@ -58,7 +60,7 @@ class WaiterAcceptorGenerator(
                 }
                 is Matcher.ErrorTypeMember -> {
                     writer.write("guard case .failure(let error) = result else { return false }")
-                    writer.write("return (error as? ServiceError)?.typeName == \$S", matcher.value)
+                    writer.write("return (error as? \$N)?.typeName == \$S", ClientRuntimeTypes.Core.ServiceError, matcher.value)
                 }
             }
         }
@@ -76,7 +78,8 @@ class WaiterAcceptorGenerator(
         if (includeInput) {
             writer.write("guard case .success(let unwrappedOutput) = result else { return false }")
             writer.write(
-                "let inputOutput = WaiterConfiguration<\$L, \$L>.Acceptor.InputOutput(input: input, output: unwrappedOutput)",
+                "let inputOutput = \$N<\$L, \$L>.Acceptor.InputOutput(input: input, output: unwrappedOutput)",
+                SmithyWaitersAPITypes.WaiterConfiguration,
                 inputTypeName,
                 outputTypeName
             )
@@ -104,21 +107,23 @@ class WaiterAcceptorGenerator(
         val expected = pathMatcher.expected
         when (pathMatcher.comparator) {
             PathComparator.STRING_EQUALS ->
-                writer.write("return JMESUtils.compare(\$L, ==, \$S)", actual.name, expected)
+                writer.write("return \$N.compare(\$L, ==, \$S)", SmithyWaitersAPITypes.JMESUtils, actual.name, expected)
             PathComparator.BOOLEAN_EQUALS ->
-                writer.write("return JMESUtils.compare(\$L, ==, \$L)", actual.name, expected.toBoolean())
+                writer.write("return \$N.compare(\$L, ==, \$L)", SmithyWaitersAPITypes.JMESUtils, actual.name, expected.toBoolean())
             PathComparator.ANY_STRING_EQUALS ->
                 writer.write(
-                    "return \$L?.contains(where: { JMESUtils.compare($$0, ==, \$S) }) ?? false",
+                    "return \$L?.contains(where: { \$N.compare($$0, ==, \$S) }) ?? false",
                     actual.name,
-                    expected
+                    SmithyWaitersAPITypes.JMESUtils,
+                    expected,
                 )
             PathComparator.ALL_STRING_EQUALS ->
                 writer.write(
-                    "return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { JMESUtils.compare($$0, ==, \$S) } ?? false)",
+                    "return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { \$N.compare($$0, ==, \$S) } ?? false)",
                     actual.name,
                     actual.name,
-                    expected
+                    SmithyWaitersAPITypes.JMESUtils,
+                    expected,
                 )
         }
     }

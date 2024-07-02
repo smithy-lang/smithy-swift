@@ -7,8 +7,6 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EventHeaderTrait
 import software.amazon.smithy.model.traits.EventPayloadTrait
-import software.amazon.smithy.swift.codegen.FoundationTypes
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
@@ -18,8 +16,10 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.response
 import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
 import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class MessageMarshallableGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -28,14 +28,13 @@ class MessageMarshallableGenerator(
     internal fun render(streamShape: UnionShape) {
         val streamSymbol: Symbol = ctx.symbolProvider.toSymbol(streamShape)
         val rootNamespace = ctx.settings.moduleName
+        val filename = ModelFileUtils.filename(ctx.settings, "${streamSymbol.name}+MessageMarshallable")
         val streamMember = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/${streamSymbol.name}+MessageMarshallable.swift")
+            .definitionFile(filename)
             .name(streamSymbol.name)
             .build()
         ctx.delegator.useShapeWriter(streamMember) { writer ->
             writer.apply {
-                addImport(SwiftDependency.SMITHY.target)
-                addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
                 openBlock("extension \$L {", "}", streamSymbol.fullName) {
                     openBlock(
                         "static var marshal: \$N<\$N> {", "}",
@@ -47,7 +46,6 @@ class MessageMarshallableGenerator(
                                 "var headers: [\$N] = [.init(name: \":message-type\", value: .string(\"event\"))]",
                                 SmithyEventStreamsAPITypes.Header
                             )
-                            addImport("Foundation")
                             write("var payload: \$D", FoundationTypes.Data)
                             write("switch self {")
                             streamShape.eventStreamEvents(ctx.model).forEach { member ->
@@ -74,7 +72,6 @@ class MessageMarshallableGenerator(
                                     eventPayloadBinding != null -> renderSerializeEventPayload(ctx, eventPayloadBinding, writer)
                                     unbound.isNotEmpty() -> {
                                         writer.addStringHeader(":content-type", payloadContentType)
-                                        writer.addImport(ctx.service.writerSymbol.namespace)
                                         val nodeInfo = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol).nodeInfo(member, true)
                                         writer.write("let writer = \$N(nodeInfo: \$L)", ctx.service.writerSymbol, nodeInfo)
                                         unbound.forEach {
@@ -196,7 +193,6 @@ class MessageMarshallableGenerator(
         val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.responseWireProtocol)
         val rootNodeInfo = nodeInfoUtils.nodeInfo(memberShape, true)
         val valueWritingClosure = WritingClosureUtils(ctx, writer).writingClosure(memberShape)
-        writer.addImport(ctx.service.writerSymbol.namespace)
         writer.write(
             "payload = try \$N.write(value.\$L, rootNodeInfo: \$L, with: \$L)",
             ctx.service.writerSymbol,

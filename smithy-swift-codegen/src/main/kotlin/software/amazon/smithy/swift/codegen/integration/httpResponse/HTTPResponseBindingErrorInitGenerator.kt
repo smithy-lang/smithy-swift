@@ -4,7 +4,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.declareSection
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
@@ -14,8 +13,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitPayload
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitResponseCode
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class HTTPResponseBindingErrorInitGenerator(
     val customizations: HTTPProtocolCustomizable,
@@ -35,19 +33,14 @@ class HTTPResponseBindingErrorInitGenerator(
             .sortedBy { it.memberName }
         val needsReader = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }.isNotEmpty()
         val needsResponse = responseBindings.filter { it.location == HttpBinding.Location.HEADER || it.location == HttpBinding.Location.PREFIX_HEADERS }.isNotEmpty()
-        val rootNamespace = ctx.settings.moduleName
         val errorShape = ctx.symbolProvider.toSymbol(structureShape)
-
+        val filename = ModelFileUtils.filename(ctx.settings, "${errorShape.name}+Init")
         val httpBindingSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/${errorShape.name}+Init.swift")
+            .definitionFile(filename)
             .name(errorShape.name)
             .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-            writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
-            writer.addImport(customizations.baseErrorSymbol.namespace)
-            writer.addImports(ctx.service.responseWireProtocol)
             writer.openBlock("extension \$N {", "}", errorShape) {
                 writer.write("")
                 writer.openBlock(

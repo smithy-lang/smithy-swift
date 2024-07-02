@@ -1,4 +1,4 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.9
 
 import PackageDescription
 
@@ -36,13 +36,19 @@ let package = Package(
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
         .library(name: "SmithyJSON", targets: ["SmithyJSON"]),
         .library(name: "SmithyFormURL", targets: ["SmithyFormURL"]),
+        .library(name: "SmithyTimestamps", targets: ["SmithyTimestamps"]),
+        .library(name: "SmithyIdentity", targets: ["SmithyIdentity"]),
         .library(name: "SmithyIdentityAPI", targets: ["SmithyIdentityAPI"]),
         .library(name: "SmithyHTTPAPI", targets: ["SmithyHTTPAPI"]),
+        .library(name: "SmithyHTTPAuth", targets: ["SmithyHTTPAuth"]),
         .library(name: "SmithyHTTPAuthAPI", targets: ["SmithyHTTPAuthAPI"]),
         .library(name: "SmithyEventStreamsAPI", targets: ["SmithyEventStreamsAPI"]),
         .library(name: "SmithyEventStreamsAuthAPI", targets: ["SmithyEventStreamsAuthAPI"]),
         .library(name: "SmithyEventStreams", targets: ["SmithyEventStreams"]),
+        .library(name: "SmithyStreams", targets: ["SmithyStreams"]),
         .library(name: "SmithyChecksumsAPI", targets: ["SmithyChecksumsAPI"]),
+        .library(name: "SmithyChecksums", targets: ["SmithyChecksums"]),
+        .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: [
@@ -65,13 +71,17 @@ let package = Package(
                 "SmithyXML",
                 "SmithyJSON",
                 "SmithyFormURL",
+                "SmithyIdentity",
                 "SmithyIdentityAPI",
                 "SmithyHTTPAPI",
+                "SmithyHTTPAuth",
                 "SmithyHTTPAuthAPI",
                 "SmithyEventStreamsAPI",
                 "SmithyEventStreams",
                 "SmithyEventStreamsAuthAPI",
+                "SmithyStreams",
                 "SmithyChecksumsAPI",
+                "SmithyChecksums",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ],
             resources: [
@@ -87,10 +97,6 @@ let package = Package(
                 "SmithyRetriesAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ]
-        ),
-        .testTarget(
-            name: "SmithyRetriesTests",
-            dependencies: ["ClientRuntime", "SmithyRetriesAPI", "SmithyRetries"]
         ),
         .target(
             name: "SmithyReadWrite",
@@ -127,6 +133,13 @@ let package = Package(
             dependencies: ["ClientRuntime"]
         ),
         .target(
+            name: "SmithyIdentity",
+            dependencies: [
+                "SmithyIdentityAPI",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .target(
             name: "SmithyIdentityAPI",
             dependencies: ["Smithy"]
         ),
@@ -135,8 +148,18 @@ let package = Package(
             dependencies: ["Smithy"]
         ),
         .target(
+            name: "SmithyHTTPAuth",
+            dependencies: [
+                "Smithy",
+                "SmithyHTTPAuthAPI",
+                "SmithyIdentity",
+                "SmithyIdentityAPI",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .target(
             name: "SmithyHTTPAuthAPI",
-            dependencies: ["Smithy", "SmithyHTTPAPI"]
+            dependencies: ["Smithy", "SmithyHTTPAPI", "SmithyIdentityAPI"]
         ),
         .target(
             name: "SmithyEventStreamsAPI",
@@ -156,12 +179,33 @@ let package = Package(
             ]
         ),
         .target(
+            name: "SmithyStreams",
+            dependencies: [
+                "Smithy",
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .target(
             name: "SmithyChecksumsAPI",
             dependencies: ["Smithy"]
         ),
+        .target(
+            name: "SmithyChecksums",
+            dependencies: [
+                "Smithy",
+                "SmithyChecksumsAPI",
+                "SmithyStreams",
+                "SmithyHTTPAuth",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .target(
+            name: "SmithyWaitersAPI"
+        ),
         .testTarget(
             name: "ClientRuntimeTests",
-            dependencies: ["ClientRuntime", "SmithyTestUtil"],
+            dependencies: ["ClientRuntime", "SmithyTestUtil", "SmithyStreams"],
             resources: [ .process("Resources") ]
         ),
         .testTarget(
@@ -188,20 +232,13 @@ let package = Package(
             name: "SmithyEventStreamsTests",
             dependencies: ["SmithyEventStreams"]
         ),
-    ].compactMap { $0 }
-)
-
-func addTestServiceTargets() {
-    package.targets += [
-        .target(
-            name: "WeatherSDK",
-            dependencies: ["SmithyTestUtil", "ClientRuntime", "SmithyRetriesAPI", "SmithyRetries"]
+        .testTarget(
+            name: "SmithyIdentityTests",
+            dependencies: ["Smithy", "SmithyIdentity"]
         ),
         .testTarget(
-            name: "WeatherSDKTests",
-            dependencies: ["WeatherSDK", "SmithyTestUtil"]
-        )
-    ]
-}
-
-addTestServiceTargets()
+            name: "SmithyWaitersAPITests",
+            dependencies: ["Smithy", "SmithyWaitersAPI"]
+        ),
+    ].compactMap { $0 }
+)

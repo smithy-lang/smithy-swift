@@ -10,14 +10,14 @@ class AuthSchemeResolverGeneratorTests {
     @Test
     fun `test auth scheme resolver generation`() {
         val context = setupTests("auth-scheme-resolver-generator-test.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/Example/AuthSchemeResolver.swift")
+        val contents = getFileContents(context.manifest, "Sources/Example/AuthSchemeResolver.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             """
 public struct ExampleAuthSchemeResolverParameters: SmithyHTTPAuthAPI.AuthSchemeResolverParameters {
-    public let operation: String
+    public let operation: Swift.String
     // Region is used for SigV4 auth scheme
-    public let region: String?
+    public let region: Swift.String?
 }
 
 public protocol ExampleAuthSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver {
@@ -27,57 +27,58 @@ public protocol ExampleAuthSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver 
 }
 
 public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
-    public func resolveAuthScheme(params: SmithyHTTPAuthAPI.AuthSchemeResolverParameters) throws -> [AuthOption] {
-        var validAuthOptions = [AuthOption]()
+
+    public func resolveAuthScheme(params: SmithyHTTPAuthAPI.AuthSchemeResolverParameters) throws -> [SmithyHTTPAuthAPI.AuthOption] {
+        var validAuthOptions = [SmithyHTTPAuthAPI.AuthOption]()
         guard let serviceParams = params as? ExampleAuthSchemeResolverParameters else {
-            throw ClientError.authError("Service specific auth scheme parameters type must be passed to auth scheme resolver.")
+            throw Smithy.ClientError.authError("Service specific auth scheme parameters type must be passed to auth scheme resolver.")
         }
         switch serviceParams.operation {
             case "onlyHttpApiKeyAuth":
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#httpApiKeyAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#httpApiKeyAuth"))
             case "onlyHttpApiKeyAuthOptional":
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#httpApiKeyAuth"))
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#noAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#httpApiKeyAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#noAuth"))
             case "onlyHttpBearerAuth":
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#httpBearerAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#httpBearerAuth"))
             case "onlyHttpBearerAuthOptional":
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#httpBearerAuth"))
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#noAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#httpBearerAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#noAuth"))
             case "onlyHttpApiKeyAndBearerAuth":
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#httpApiKeyAuth"))
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#httpBearerAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#httpApiKeyAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#httpBearerAuth"))
             case "onlyHttpApiKeyAndBearerAuthReversed":
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#httpBearerAuth"))
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#httpApiKeyAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#httpBearerAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#httpApiKeyAuth"))
             case "onlySigv4Auth":
-                var sigV4Option = AuthOption(schemeID: "aws.auth#sigv4")
-                sigV4Option.signingProperties.set(key: SigningPropertyKeys.signingName, value: "weather")
+                var sigV4Option = SmithyHTTPAuthAPI.AuthOption(schemeID: "aws.auth#sigv4")
+                sigV4Option.signingProperties.set(key: SmithyHTTPAuthAPI.SigningPropertyKeys.signingName, value: "weather")
                 guard let region = serviceParams.region else {
-                    throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
+                    throw Smithy.ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                 }
-                sigV4Option.signingProperties.set(key: SigningPropertyKeys.signingRegion, value: region)
+                sigV4Option.signingProperties.set(key: SmithyHTTPAuthAPI.SigningPropertyKeys.signingRegion, value: region)
                 validAuthOptions.append(sigV4Option)
             case "onlySigv4AuthOptional":
-                var sigV4Option = AuthOption(schemeID: "aws.auth#sigv4")
-                sigV4Option.signingProperties.set(key: SigningPropertyKeys.signingName, value: "weather")
+                var sigV4Option = SmithyHTTPAuthAPI.AuthOption(schemeID: "aws.auth#sigv4")
+                sigV4Option.signingProperties.set(key: SmithyHTTPAuthAPI.SigningPropertyKeys.signingName, value: "weather")
                 guard let region = serviceParams.region else {
-                    throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
+                    throw Smithy.ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                 }
-                sigV4Option.signingProperties.set(key: SigningPropertyKeys.signingRegion, value: region)
+                sigV4Option.signingProperties.set(key: SmithyHTTPAuthAPI.SigningPropertyKeys.signingRegion, value: region)
                 validAuthOptions.append(sigV4Option)
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#noAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#noAuth"))
             case "onlyCustomAuth":
-                validAuthOptions.append(AuthOption(schemeID: "com.test#customAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "com.test#customAuth"))
             case "onlyCustomAuthOptional":
-                validAuthOptions.append(AuthOption(schemeID: "com.test#customAuth"))
-                validAuthOptions.append(AuthOption(schemeID: "smithy.api#noAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "com.test#customAuth"))
+                validAuthOptions.append(SmithyHTTPAuthAPI.AuthOption(schemeID: "smithy.api#noAuth"))
             default:
-                var sigV4Option = AuthOption(schemeID: "aws.auth#sigv4")
-                sigV4Option.signingProperties.set(key: SigningPropertyKeys.signingName, value: "weather")
+                var sigV4Option = SmithyHTTPAuthAPI.AuthOption(schemeID: "aws.auth#sigv4")
+                sigV4Option.signingProperties.set(key: SmithyHTTPAuthAPI.SigningPropertyKeys.signingName, value: "weather")
                 guard let region = serviceParams.region else {
-                    throw ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
+                    throw Smithy.ClientError.authError("Missing region in auth scheme parameters for SigV4 auth scheme.")
                 }
-                sigV4Option.signingProperties.set(key: SigningPropertyKeys.signingRegion, value: region)
+                sigV4Option.signingProperties.set(key: SmithyHTTPAuthAPI.SigningPropertyKeys.signingRegion, value: region)
                 validAuthOptions.append(sigV4Option)
         }
         return validAuthOptions
@@ -85,7 +86,7 @@ public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
 
     public func constructParameters(context: Smithy.Context) throws -> SmithyHTTPAuthAPI.AuthSchemeResolverParameters {
         guard let opName = context.getOperation() else {
-            throw ClientError.dataNotFound("Operation name not configured in middleware context for auth scheme resolver params construction.")
+            throw Smithy.ClientError.dataNotFound("Operation name not configured in middleware context for auth scheme resolver params construction.")
         }
         let opRegion = context.getRegion()
         return ExampleAuthSchemeResolverParameters(operation: opName, region: opRegion)

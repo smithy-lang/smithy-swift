@@ -16,6 +16,7 @@ import class SmithyHTTPAPI.SdkHttpRequest
 import enum SmithyHTTPAPI.HttpStatusCode
 import protocol Smithy.ReadableStream
 import enum Smithy.ByteStream
+import class SmithyStreams.BufferedStream
 import class Foundation.Bundle
 import class Foundation.InputStream
 import class Foundation.NSObject
@@ -36,8 +37,8 @@ import class Foundation.URLSessionTask
 import class Foundation.URLSessionDataTask
 import protocol Foundation.URLSessionDataDelegate
 import struct Foundation.Data
-import Security
 import AwsCommonRuntimeKit
+import Security
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
 ///

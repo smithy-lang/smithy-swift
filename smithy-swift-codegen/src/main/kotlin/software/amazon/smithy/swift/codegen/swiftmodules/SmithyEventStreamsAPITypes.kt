@@ -3,7 +3,6 @@ package software.amazon.smithy.swift.codegen.swiftmodules
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.model.buildSymbol
 
 /**
  * Commonly used runtime types. Provides a single definition of a runtime symbol such that codegen isn't littered
@@ -12,17 +11,17 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
  * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
  */
 object SmithyEventStreamsAPITypes {
-    val ExceptionParams = runtimeSymbol("MessageType.ExceptionParams")
-    val Header = runtimeSymbol("Header")
-    val Message = runtimeSymbol("Message")
-    val MessageDecoder = runtimeSymbol("MessageDecoder")
-    val UnmarshalClosure = runtimeSymbol("UnmarshalClosure")
-    val MarshalClosure = runtimeSymbol("MarshalClosure")
+    val Header = runtimeSymbol("Header", SwiftDeclaration.STRUCT)
+    val Message = runtimeSymbol("Message", SwiftDeclaration.STRUCT)
+    val MessageType = runtimeSymbol("MessageType", SwiftDeclaration.ENUM)
+    val MessageDecoder = runtimeSymbol("MessageDecoder", SwiftDeclaration.PROTOCOL)
+    val UnmarshalClosure = runtimeSymbol("UnmarshalClosure", SwiftDeclaration.TYPEALIAS)
+    val MarshalClosure = runtimeSymbol("MarshalClosure", SwiftDeclaration.TYPEALIAS)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = buildSymbol {
-    this.name = name
-    this.namespace = SwiftDependency.SMITHY_EVENT_STREAMS_API.target
-    declaration?.let { this.setProperty("decl", it.keyword) }
-    dependency(SwiftDependency.SMITHY_EVENT_STREAMS_API)
-}
+private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+    name,
+    declaration,
+    SwiftDependency.SMITHY_EVENT_STREAMS_API,
+    null,
+)

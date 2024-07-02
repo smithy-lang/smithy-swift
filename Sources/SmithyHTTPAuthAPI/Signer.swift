@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.Attributes
 import class SmithyHTTPAPI.SdkHttpRequestBuilder
 import protocol SmithyIdentityAPI.Identity
+import struct Smithy.Attributes
 
 public protocol Signer {
 

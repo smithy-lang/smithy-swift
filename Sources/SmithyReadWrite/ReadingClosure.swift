@@ -83,101 +83,82 @@ public func timestampReadingClosure<Reader: SmithyReader>(format: TimestampForma
     }
 }
 
-public extension String {
+public struct ReadingClosureBox<Value: RawRepresentable> {
 
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> String {
+    public init() {}
+
+    public func read<Reader: SmithyReader>(from reader: Reader) throws -> Value where Value.RawValue == Int {
         try reader.read()
     }
 
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> String? {
+    public func read<Reader: SmithyReader>(from reader: Reader) throws -> Value? where Value.RawValue == Int {
+        try reader.readIfPresent()
+    }
+
+    public func read<Reader: SmithyReader>(from reader: Reader) throws -> Value where Value.RawValue == String {
+        try reader.read()
+    }
+
+    public func read<Reader: SmithyReader>(from reader: Reader) throws -> Value? where Value.RawValue == String {
         try reader.readIfPresent()
     }
 }
 
-public extension RawRepresentable where RawValue == Int {
+public enum ReadingClosures {
 
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Self {
+    public static func readString<Reader: SmithyReader>(from reader: Reader) throws -> String {
         try reader.read()
     }
 
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Self? {
+    public static func readString<Reader: SmithyReader>(from reader: Reader) throws -> String? {
         try reader.readIfPresent()
     }
-}
 
-public extension RawRepresentable where RawValue == String {
-
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Self {
+    public static func readBool<Reader: SmithyReader>(from reader: Reader) throws -> Bool {
         try reader.read()
     }
 
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Self? {
+    public static func readBool<Reader: SmithyReader>(from reader: Reader) throws -> Bool? {
         try reader.readIfPresent()
     }
-}
 
-public extension Bool {
-
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Bool {
+    public static func readInt<Reader: SmithyReader>(from reader: Reader) throws -> Int {
         try reader.read()
     }
 
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Bool? {
+    public static func readInt<Reader: SmithyReader>(from reader: Reader) throws -> Int? {
         try reader.readIfPresent()
     }
-}
 
-public extension Int {
-
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Int {
+    public static func readFloat<Reader: SmithyReader>(from reader: Reader) throws -> Float {
         try reader.read()
     }
 
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Int? {
+    public static func readFloat<Reader: SmithyReader>(from reader: Reader) throws -> Float? {
         try reader.readIfPresent()
     }
-}
 
-public extension Float {
-
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Float {
+    public static func readDouble<Reader: SmithyReader>(from reader: Reader) throws -> Double {
         try reader.read()
     }
 
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Float? {
+    public static func readDouble<Reader: SmithyReader>(from reader: Reader) throws -> Double? {
         try reader.readIfPresent()
     }
-}
 
-public extension Double {
-
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Double {
+    public static func readData<Reader: SmithyReader>(from reader: Reader) throws -> Data {
         try reader.read()
     }
 
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Double? {
+    public static func readData<Reader: SmithyReader>(from reader: Reader) throws -> Data? {
         try reader.readIfPresent()
     }
-}
 
-public extension Data {
-
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Data {
+    public static func readDocument<Reader: SmithyReader>(from reader: Reader) throws -> Document {
         try reader.read()
     }
 
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Data? {
-        try reader.readIfPresent()
-    }
-}
-
-public extension Document {
-
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Document {
-        try reader.read()
-    }
-
-    static func read<Reader: SmithyReader>(from reader: Reader) throws -> Document? {
+    public static func readDocument<Reader: SmithyReader>(from reader: Reader) throws -> Document? {
         try reader.readIfPresent()
     }
 }

@@ -8,16 +8,14 @@ package software.amazon.smithy.swift.codegen.integration.serde.union
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.JsonNameTrait
-import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 
 class UnionDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -27,7 +25,6 @@ class UnionDecodeGenerator(
 ) : MemberShapeDecodeGenerator(ctx, writer, shapeContainingMembers) {
 
     fun render() {
-        writer.addImports(ctx.service.responseWireProtocol)
         val symbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
             "static func read(from reader: \$N) throws -> \$N {", "}",

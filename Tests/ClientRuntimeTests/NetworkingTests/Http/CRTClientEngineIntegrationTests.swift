@@ -8,6 +8,7 @@ import SmithyHTTPAPI
 import XCTest
 @testable import ClientRuntime
 import AwsCommonRuntimeKit
+import class SmithyStreams.BufferedStream
 
 // These tests are disabled because unreliability of httpbin.org is causing spurious failures.
 // Github issue to track correction of these tests: https://github.com/awslabs/aws-sdk-swift/issues/962

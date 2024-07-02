@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 import class Smithy.Context
-import let SmithyChecksumsAPI.CHUNK_SIZE_BYTES
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import AwsCommonRuntimeKit
+import SmithyChecksums
 import SmithyHTTPAPI
 
 public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: Middleware {
@@ -74,7 +74,7 @@ extension ContentMD5Middleware: HttpInterceptor {
     public typealias OutputType = OperationStackOutput
 
     public func modifyBeforeTransmit(
-        context: some MutableRequest<InputType, RequestType, AttributesType>
+        context: some MutableRequest<InputType, RequestType>
     ) async throws {
         let builder = context.getRequest().toBuilder()
         try await addHeaders(builder: builder, attributes: context.getAttributes())

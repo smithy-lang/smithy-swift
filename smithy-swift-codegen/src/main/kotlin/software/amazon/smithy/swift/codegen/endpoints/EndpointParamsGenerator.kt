@@ -9,28 +9,43 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
+import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.swift.codegen.AuthSchemeResolverGenerator
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.defaultValue
+import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 /**
  * Generates EndpointParams struct for the service
  */
-class EndpointParamsGenerator(private val endpointRules: EndpointRuleSet?) {
-    fun render(writer: SwiftWriter, ctx: ProtocolGenerator.GenerationContext? = null) {
+class EndpointParamsGenerator(
+    val ctx: ProtocolGenerator.GenerationContext,
+) {
+    fun render() {
+        val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
+        val endpointRuleSet = ruleSetNode?.let { EndpointRuleSet.fromNode(it) }
+        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Endpoints.swift") { writer ->
+            renderParams(writer, endpointRuleSet)
+            writer.write("")
+            renderContextExtension(writer, endpointRuleSet)
+        }
+    }
+
+    private fun renderParams(writer: SwiftWriter, endpointRuleSet: EndpointRuleSet?) {
         writer.openBlock("public struct EndpointParams {", "}") {
-            endpointRules?.parameters?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
+            endpointRuleSet?.parameters?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
                 renderMembers(writer, sortedParameters)
                 writer.write("")
                 renderInit(writer, sortedParameters)
                 // Convert auth scheme params to endpoint params for rules-based auth scheme resolvers
-                if (ctx != null && AuthSchemeResolverGenerator.usesRulesBasedAuthResolver(ctx)) {
-                    renderConversionInit(writer, sortedParameters, ctx)
+                if (AuthSchemeResolverGenerator.usesRulesBasedAuthResolver(ctx)) {
+                    renderConversionInit(writer, sortedParameters)
                 }
             }
         }
@@ -67,7 +82,6 @@ class EndpointParamsGenerator(private val endpointRules: EndpointRuleSet?) {
     private fun renderConversionInit(
         writer: SwiftWriter,
         parameters: List<Parameter>,
-        ctx: ProtocolGenerator.GenerationContext
     ) {
         writer.apply {
             val paramsType = ctx.settings.sdkId.clientName() + "AuthSchemeResolverParameters"
@@ -75,6 +89,33 @@ class EndpointParamsGenerator(private val endpointRules: EndpointRuleSet?) {
                 parameters.forEach {
                     val memberName = it.name.toString().toLowerCamelCase()
                     writer.write("self.\$1L = authSchemeParams.\$1L", memberName)
+                }
+            }
+        }
+    }
+
+    private fun renderContextExtension(writer: SwiftWriter, endpointRuleSet: EndpointRuleSet?) {
+        writer.openBlock(
+            "extension EndpointParams: \$N {",
+            "}",
+            ClientRuntimeTypes.Core.EndpointsRequestContextProviding,
+        ) {
+            writer.write("")
+            writer.openBlock(
+                "public var context: \$N {",
+                "}",
+                ClientRuntimeTypes.Core.EndpointsRequestContext,
+            ) {
+                writer.openBlock("get throws {", "}") {
+                    writer.write("let context = try \$N()", ClientRuntimeTypes.Core.EndpointsRequestContext)
+                    endpointRuleSet?.parameters?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
+                        sortedParameters.forEach { param ->
+                            val memberName = param.name.toString().toLowerCamelCase()
+                            val paramName = param.name.toString()
+                            writer.write("try context.add(name: \$S, value: self.\$L)", paramName, memberName)
+                        }
+                    }
+                    writer.write("return context")
                 }
             }
         }

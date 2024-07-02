@@ -5,26 +5,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol Smithy.HasAttributes
+import class Smithy.Context
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 
 /// Component used by an Orchestrator to select an auth scheme to use for the operation.
-public protocol SelectAuthScheme<AttributesType> {
-
-    /// The type of the attributes the component requires.
-    associatedtype AttributesType: HasAttributes
+public protocol SelectAuthScheme {
 
     /// Selects an auth scheme.
     /// - Parameter attributes: The attributes available.
     /// - Returns: The auth scheme to use, if available.
-    func select(attributes: AttributesType) async throws -> SelectedAuthScheme?
+    func select(attributes: Context) async throws -> SelectedAuthScheme?
 }
 
 /// Concrete SelectAuthScheme backed by a closure.
-internal struct WrappedSelectAuthScheme<AttributesType: HasAttributes>: SelectAuthScheme {
-    internal let closure: (AttributesType) async throws -> SelectedAuthScheme?
+internal struct WrappedSelectAuthScheme: SelectAuthScheme {
+    internal let closure: (Context) async throws -> SelectedAuthScheme?
 
-    public func select(attributes: AttributesType) async throws -> SelectedAuthScheme? {
+    public func select(attributes: Context) async throws -> SelectedAuthScheme? {
         return try await closure(attributes)
     }
 }

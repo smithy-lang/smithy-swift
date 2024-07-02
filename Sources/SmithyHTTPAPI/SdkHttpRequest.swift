@@ -81,29 +81,30 @@ public final class SdkHttpRequest: RequestMessage {
     }
 }
 
-public extension URLRequest {
-    init(sdkRequest: SdkHttpRequest) async throws {
+public extension SdkHttpRequest {
+    static func makeURLRequest(from sdkRequest: SdkHttpRequest) async throws -> URLRequest {
         // Set URL
         guard let url = sdkRequest.destination.url else {
             throw ClientError.dataNotFound("Failed to construct URLRequest due to missing URL.")
         }
-        self.init(url: url)
+        var urlRequest = URLRequest(url: url)
         // Set method type
-        self.httpMethod = sdkRequest.method.rawValue
+        urlRequest.httpMethod = sdkRequest.method.rawValue
         // Set body, handling any serialization errors
         do {
             let data = try await sdkRequest.body.readData()
             sdkRequest.body = .data(data)
-            self.httpBody = data
+            urlRequest.httpBody = data
         } catch {
             throw ClientError.serializationFailed("Failed to construct URLRequest due to HTTP body conversion failure.")
         }
         // Set headers
         sdkRequest.headers.headers.forEach { header in
             header.value.forEach { value in
-                self.addValue(value, forHTTPHeaderField: header.name)
+                urlRequest.addValue(value, forHTTPHeaderField: header.name)
             }
         }
+        return urlRequest
     }
 }
 
@@ -117,6 +118,19 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
         description
     }
 
+    public var debugDescriptionWithoutAuthorizationHeader: String {
+        let method = method.rawValue.uppercased()
+        let protocolType = self.destination.scheme
+        let query = self.destination.queryString ?? ""
+        let port = self.destination.port.map { String($0) } ?? ""
+        let header = headers.dictionary
+            .filter { key, _ in key != "Authorization" }
+            .map { key, value in "\(key): \(value.joined(separator: ", "))"}
+            .joined(separator: ", \n")
+        return "\(method) \(protocolType):\(port) \n " +
+               "Path: \(endpoint.uri.path) \n Headers: \(header) \n Query: \(query)"
+    }
+
     public var description: String {
         let method = method.rawValue.uppercased()
         let protocolType = self.destination.scheme
@@ -127,7 +141,7 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
     }
 }
 
-public class SdkHttpRequestBuilder: RequestMessageBuilder {
+public final class SdkHttpRequestBuilder: RequestMessageBuilder {
 
     required public init() {}
 
