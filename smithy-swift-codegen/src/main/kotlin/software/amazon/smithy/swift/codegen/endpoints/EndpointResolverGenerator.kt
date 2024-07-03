@@ -66,14 +66,11 @@ class EndpointResolverGenerator(
 
     private fun renderStaticResolver(writer: SwiftWriter) {
         writer.write("")
-        writer.openBlock("public struct StaticEndpointResolver: EndpointResolver {", "}") {
-            writer.write("\nprivate let endpoint: \$N", SmithyHTTPAPITypes.Endpoint)
-            writer.openBlock("\npublic init(endpoint: \$N) {", "}", SmithyHTTPAPITypes.Endpoint) {
-                writer.write("self.endpoint = endpoint")
-            }
-            writer.openBlock("\npublic func resolve(params: EndpointParams) throws -> \$N {", "}", SmithyHTTPAPITypes.Endpoint) {
-                writer.write("return endpoint")
-            }
-        }
+        writer.write(
+            "typealias StaticEndpointResolver = \$N<EndpointParams>",
+            ClientRuntimeTypes.Core.StaticEndpointResolver,
+        )
+        writer.write("")
+        writer.write("extension StaticEndpointResolver: EndpointResolver {}")
     }
 }
