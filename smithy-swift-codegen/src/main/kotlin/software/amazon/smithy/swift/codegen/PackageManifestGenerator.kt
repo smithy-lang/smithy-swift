@@ -8,7 +8,7 @@ import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import kotlin.jvm.optionals.getOrNull
 
-val PACKAGE_MANIFEST_NAME = "Package.swift.txt"
+val PACKAGE_MANIFEST_NAME = "Package.swift"
 
 class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
 

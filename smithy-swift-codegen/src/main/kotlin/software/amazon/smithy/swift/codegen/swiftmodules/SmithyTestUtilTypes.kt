@@ -5,6 +5,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 
 object SmithyTestUtilTypes {
+    val TestInitializer = runtimeSymbol("TestInitializer")
     val TestBaseError = runtimeSymbol("TestBaseError")
 }
 

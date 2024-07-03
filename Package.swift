@@ -130,7 +130,10 @@ let package = Package(
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime"]
+            dependencies: [
+                "ClientRuntime",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+            ]
         ),
         .target(
             name: "SmithyIdentity",
