@@ -126,7 +126,7 @@ public extension DefaultSDKRuntimeConfiguration {
     /// The log mode to use when none is provided
     ///
     /// Defaults to `.request`.
-    static var defaultClientLogMode: ClientLogMode { .request }
+    static var defaultClientLogMode: ClientLogMode { .requestWithoutAuthorizationHeader }
 
     static var defaultAuthSchemeResolver: AuthSchemeResolver { DefaultAuthSchemeResolver() }
 }

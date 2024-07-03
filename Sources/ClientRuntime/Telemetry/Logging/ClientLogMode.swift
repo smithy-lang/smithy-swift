@@ -12,4 +12,5 @@ public enum ClientLogMode {
     case responseWithBody
     case requestAndResponse
     case requestAndResponseWithBody
+    case requestWithoutAuthorizationHeader
 }
