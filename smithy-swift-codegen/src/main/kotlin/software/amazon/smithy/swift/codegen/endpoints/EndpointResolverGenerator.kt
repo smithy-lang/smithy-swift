@@ -29,6 +29,7 @@ class EndpointResolverGenerator(
             renderResolverProtocol(it)
             it.write("")
             renderResolver(it, ruleSet)
+            renderStaticResolver(it)
             val inputSymbol = Symbol.builder().name("SdkHttpRequestBuilder").build()
             val outputSymbol = Symbol.builder().name("OperationStackOutput").build()
             val outputErrorSymbol = Symbol.builder().name("OperationStackError").build()
@@ -61,5 +62,15 @@ class EndpointResolverGenerator(
         }
         writer.write("")
         writer.write("extension DefaultEndpointResolver: EndpointResolver {}")
+    }
+
+    private fun renderStaticResolver(writer: SwiftWriter) {
+        writer.write("")
+        writer.write(
+            "typealias StaticEndpointResolver = \$N<EndpointParams>",
+            ClientRuntimeTypes.Core.StaticEndpointResolver,
+        )
+        writer.write("")
+        writer.write("extension StaticEndpointResolver: EndpointResolver {}")
     }
 }
