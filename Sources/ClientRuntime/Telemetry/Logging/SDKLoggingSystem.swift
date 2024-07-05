@@ -8,18 +8,19 @@
 import Logging
 
 public actor SDKLoggingSystem {
-    private static var isInitialized = false
-    private static var factories: [String: SDKLogHandlerFactory] = [:]
+    private var isInitialized = false
+    private var factories: [String: SDKLogHandlerFactory] = [:]
 
-    public static func add(logHandlerFactory: SDKLogHandlerFactory) {
+    public func add(logHandlerFactory: SDKLogHandlerFactory) {
         let label = logHandlerFactory.label
         factories[label] = logHandlerFactory
     }
 
-    public static func initialize(defaultLogLevel: SDKLogLevel = .info) async {
+    public func initialize(defaultLogLevel: SDKLogLevel = .info) async {
         if isInitialized { return } else { isInitialized = true }
+        let ptr = factories
         LoggingSystem.bootstrap { label in
-            if let factory = factories[label] {
+            if let factory = ptr[label] {
                 return factory.construct(label: label)
             }
             var handler = StreamLogHandler.standardOutput(label: label)
@@ -28,7 +29,7 @@ public actor SDKLoggingSystem {
         }
     }
 
-    public static func initialize(logLevel: SDKLogLevel) async {
+    public func initialize(logLevel: SDKLogLevel) async {
         if isInitialized { return } else { isInitialized = true }
         LoggingSystem.bootstrap { label in
             var handler = StreamLogHandler.standardOutput(label: label)

@@ -10,7 +10,7 @@ import struct Smithy.Attributes
 /// An UpDownCounter measures a value that goes up or down.
 ///
 /// Examples include: queue length
-public protocol UpDownCounter {
+public protocol UpDownCounter: Sendable {
 
     /// Records a value for a metric.
     ///
