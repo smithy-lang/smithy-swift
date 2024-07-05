@@ -10,6 +10,7 @@ import enum Smithy.ClientError
 import Foundation
 import SmithyHTTPAPI
 import SmithyHTTPAuthAPI
+import struct Smithy.AttributeKey
 
 public struct SignerMiddleware<OperationStackOutput>: Middleware {
     public let id: String = "SignerMiddleware"
@@ -69,10 +70,17 @@ extension SignerMiddleware: ApplySigner {
             )
         }
 
+        // Check if CRT should be provided a pre-computed Sha256 SignedBodyValue
+        var updatedSigningProperties = signingProperties
+        let sha256: String? = attributes.get(key: AttributeKey(name: "X-Amz-Content-Sha256"))
+        if let bodyValue = sha256 {
+            updatedSigningProperties.set(key: AttributeKey(name: "SignedBodyValue"), value: bodyValue)
+        }
+
         let signed = try await signer.signRequest(
             requestBuilder: request.toBuilder(),
             identity: identity,
-            signingProperties: signingProperties
+            signingProperties: updatedSigningProperties
         )
 
         // The saved signature is used to sign event stream messages if needed.
