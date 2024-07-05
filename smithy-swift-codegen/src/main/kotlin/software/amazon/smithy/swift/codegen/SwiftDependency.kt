@@ -75,8 +75,8 @@ class SwiftDependency(
             return SwiftDependency(
                 name,
                 "main",
-                "0.0.1",
-                "https://github.com/smithy-lang/smithy-swift",
+                "0.60.0",
+                "https://github.com/jbelkins/smithy-swift",
                 "../../../smithy-swift",
                 "smithy-swift",
                 DistributionMethod.GIT,

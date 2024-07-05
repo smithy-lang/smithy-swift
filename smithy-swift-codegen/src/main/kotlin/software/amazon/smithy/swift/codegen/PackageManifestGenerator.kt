@@ -77,7 +77,7 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
             url?.let {
                 writer.write("url: \$S,", it)
             }
-            writer.write("from: \$S", dependency.version)
+            writer.write("exact: \$S", dependency.version)
         }
     }
 
