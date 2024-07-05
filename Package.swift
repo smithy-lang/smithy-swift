@@ -132,6 +132,7 @@ let package = Package(
             name: "SmithyTestUtil",
             dependencies: [
                 "ClientRuntime",
+                "SmithyHTTPAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ]
         ),
