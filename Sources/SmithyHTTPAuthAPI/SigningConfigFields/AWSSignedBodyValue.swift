@@ -13,4 +13,5 @@ public enum AWSSignedBodyValue {
     case streamingSha256Events
     case streamingSha256PayloadTrailer
     case streamingUnsignedPayloadTrailer
+    case precomputed(String)
 }
