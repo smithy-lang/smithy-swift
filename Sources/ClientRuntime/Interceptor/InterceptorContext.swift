@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Context
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
-import protocol Smithy.HasAttributes
 
 /// The base type of all context objects passed to `Interceptor` methods.
 public protocol InterceptorContext: AnyObject {
@@ -24,21 +24,18 @@ public protocol InterceptorContext: AnyObject {
     /// The type of the transport message that will be received by the operation being invoked.
     associatedtype ResponseType: ResponseMessage
 
-    /// The type of the attributes that will be available to all interceptors.
-    associatedtype AttributesType: HasAttributes
-
     /// - Returns: The input for the operation being invoked.
     func getInput() -> InputType
 
     /// - Returns: The attributes available in this interceptor context.
-    func getAttributes() -> AttributesType
+    func getAttributes() -> Context
 }
 
 /// Context given to interceptor hooks called before request serialization.
-public protocol BeforeSerialization<InputType, AttributesType>: InterceptorContext {}
+public protocol BeforeSerialization<InputType>: InterceptorContext {}
 
 /// Context given to interceptor hooks that can mutate the operation input.
-public protocol MutableInput<InputType, AttributesType>: InterceptorContext {
+public protocol MutableInput<InputType>: InterceptorContext {
 
     /// Mutates the operation input.
     /// - Parameter updated: The updated operation input.
@@ -48,7 +45,7 @@ public protocol MutableInput<InputType, AttributesType>: InterceptorContext {
 /// Context given to interceptor hooks called after request serialization.
 ///
 /// These hooks have access to the serialized `RequestType`.
-public protocol AfterSerialization<InputType, RequestType, AttributesType>: InterceptorContext {
+public protocol AfterSerialization<InputType, RequestType>: InterceptorContext {
 
     /// - Returns: The serialized request.
     func getRequest() -> RequestType
@@ -57,7 +54,7 @@ public protocol AfterSerialization<InputType, RequestType, AttributesType>: Inte
 /// Context given to interceptor hooks that can mutate the serialized request.
 ///
 /// These hooks have access to the serialized `RequestType`
-public protocol MutableRequest<InputType, RequestType, AttributesType>: InterceptorContext {
+public protocol MutableRequest<InputType, RequestType>: InterceptorContext {
 
     /// - Returns: The serialized request.
     func getRequest() -> RequestType
@@ -70,7 +67,7 @@ public protocol MutableRequest<InputType, RequestType, AttributesType>: Intercep
 /// Context given to interceptor hooks called before response deserialization, after the response has been received.
 ///
 /// These hooks have access to the serialized `RequestType` and `ResponseType`.
-public protocol BeforeDeserialization<InputType, RequestType, ResponseType, AttributesType>: InterceptorContext {
+public protocol BeforeDeserialization<InputType, RequestType, ResponseType>: InterceptorContext {
     /// - Returns: The serialized request.
     func getRequest() -> RequestType
 
@@ -81,7 +78,7 @@ public protocol BeforeDeserialization<InputType, RequestType, ResponseType, Attr
 /// Context given to interceptor hooks that can mutate the serialized response.
 ///
 /// These hooks have access to the serialized `RequestType` and `ResponseType`.
-public protocol MutableResponse<InputType, RequestType, ResponseType, AttributesType>: InterceptorContext {
+public protocol MutableResponse<InputType, RequestType, ResponseType>: InterceptorContext {
     /// - Returns: The serialized request.
     func getRequest() -> RequestType
 
@@ -96,7 +93,7 @@ public protocol MutableResponse<InputType, RequestType, ResponseType, Attributes
 /// Context given to interceptor hooks called after response deserialization.
 ///
 /// These hooks have access to the serialized `RequestType` and `ResponseType`, as well as the operation output.
-public protocol AfterDeserialization<InputType, OutputType, RequestType, ResponseType, AttributesType>:
+public protocol AfterDeserialization<InputType, OutputType, RequestType, ResponseType>:
     InterceptorContext {
 
     /// - Returns: The serialized request.
@@ -105,28 +102,30 @@ public protocol AfterDeserialization<InputType, OutputType, RequestType, Respons
     /// - Returns: The serialized response.
     func getResponse() -> ResponseType
 
-    /// - Returns: The operation result.
-    func getResult() -> Result<OutputType, Error>
+    /// - Returns: The operation output.
+    /// - Throws: The latest error that occurred during execution, if present.
+    func getOutput() throws -> OutputType
 }
 
 /// Context given to interceptor hooks called after each attempt at sending the request.
 ///
 /// These hooks have access to the serialized `RequestType` and `ResponseType` (if a response was received), as well as the operation output.
-public protocol AfterAttempt<InputType, OutputType, RequestType, ResponseType, AttributesType>: InterceptorContext {
+public protocol AfterAttempt<InputType, OutputType, RequestType, ResponseType>: InterceptorContext {
     /// - Returns: The serialized request.
     func getRequest() -> RequestType
 
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation result.
-    func getResult() -> Result<OutputType, Error>
+    /// - Returns: The operation output.
+    /// - Throws: The latest error that occurred during execution, if present.
+    func getOutput() throws -> OutputType
 }
 
 /// Context given to interceptor hooks that can mutate the operation output, called after each attempt at sending the request.
 ///
 /// These hooks have access to the serialized `RequestType` and `ResponseType` (if a response was received), as well as the operation output.
-public protocol MutableOutputAfterAttempt<InputType, OutputType, RequestType, ResponseType, AttributesType>:
+public protocol MutableOutputAfterAttempt<InputType, OutputType, RequestType, ResponseType>:
     InterceptorContext {
 
     /// - Returns: The serialized request.
@@ -135,34 +134,36 @@ public protocol MutableOutputAfterAttempt<InputType, OutputType, RequestType, Re
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation result.
-    func getResult() -> Result<OutputType, Error>
+    /// - Returns: The operation output.
+    /// - Throws: The latest error that occurred during execution, if present.
+    func getOutput() throws -> OutputType
 
-    /// Mutates the operation result.
-    /// - Parameter updated: The updated result.
-    func updateResult(updated: Result<OutputType, Error>)
+    /// Mutates the operation output.
+    /// - Parameter updated: The updated output.
+    func updateOutput(updated: OutputType)
 }
 
 /// Context given to interceptor hooks called after execution.
 ///
 /// These hooks have access to the serialized `RequestType` (if it was successfully serialized) and the `ResponseType`
 /// (if a response was received), as well as the operation output.
-public protocol Finalization<InputType, OutputType, RequestType, ResponseType, AttributesType>: InterceptorContext {
+public protocol Finalization<InputType, OutputType, RequestType, ResponseType>: InterceptorContext {
     /// - Returns: The serialized request, if available.
     func getRequest() -> RequestType?
 
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation result.
-    func getResult() -> Result<OutputType, Error>
+    /// - Returns: The operation output.
+    /// - Throws: The latest error that occurred during execution, if present.
+    func getOutput() throws -> OutputType
 }
 
 /// Context given to interceptor hooks that can mutate the operation output, called after execution.
 ///
 /// These hooks have access to the serialized `RequestType` (if it was successfully serialized) and the `ResponseType`
 /// (if a response was received), as well as the operation output.
-public protocol MutableOutputFinalization<InputType, OutputType, RequestType, ResponseType, AttributesType>:
+public protocol MutableOutputFinalization<InputType, OutputType, RequestType, ResponseType>:
     InterceptorContext {
 
     /// - Returns: The serialized request, if available.
@@ -171,10 +172,11 @@ public protocol MutableOutputFinalization<InputType, OutputType, RequestType, Re
     /// - Returns: The serialized response, if one was received.
     func getResponse() -> ResponseType?
 
-    /// - Returns: The operation result.
-    func getResult() -> Result<OutputType, Error>
+    /// - Returns: The operation output.
+    /// - Throws: The latest error that occurred during execution, if present.
+    func getOutput() throws -> OutputType
 
-    /// Mutates the operation result.
-    /// - Parameter updated: The updated result.
-    func updateResult(updated: Result<OutputType, Error>)
+    /// Mutates the operation output.
+    /// - Parameter updated: The updated output.
+    func updateOutput(updated: OutputType)
 }

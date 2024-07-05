@@ -9,7 +9,6 @@ import class Smithy.Context
 import enum Smithy.ClientError
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
-import protocol Smithy.HasAttributes
 import SmithyHTTPAPI
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryErrorInfo
@@ -51,7 +50,7 @@ import struct SmithyRetriesAPI.RetryErrorInfo
 ///
 /// Error behavior works as follows:
 /// - If any Interceptors fail, the last error is stored and the rest are logged, meaning the last error that occurred will be thrown
-/// - If the service response is deserialized as an error, it is stored as an error
+/// - If the service response is deserialized as a modeled error, it is stored as an error
 /// - If an error occurs in steps 1 - 7b, store the error and go straight to 10
 /// - If an error occurs in steps 7c - 7q, store the error and go straight to 7r
 /// - If an error occurs in step 7r, store the error and go to 7s
@@ -65,19 +64,19 @@ public struct Orchestrator<
     ResponseType: ResponseMessage
 > {
     internal typealias InterceptorContextType = DefaultInterceptorContext<
-        InputType, OutputType, RequestType, ResponseType, Context
+        InputType, OutputType, RequestType, ResponseType
     >
 
-    private let interceptors: Interceptors<InputType, OutputType, RequestType, ResponseType, Context>
+    private let interceptors: Interceptors<InputType, OutputType, RequestType, ResponseType>
     private let attributes: Context
     private let serialize: (InputType, RequestType.RequestBuilderType, Context) throws -> Void
-    private let deserialize: (ResponseType, Context) async throws -> Result<OutputType, Error>
+    private let deserialize: (ResponseType, Context) async throws -> OutputType
     private let retryStrategy: (any RetryStrategy)?
     private let retryErrorInfoProvider: (Error) -> RetryErrorInfo?
-    private let selectAuthScheme: any SelectAuthScheme<Context>
-    private let applyEndpoint: any ApplyEndpoint<RequestType, Context>
-    private let applySigner: any ApplySigner<RequestType, Context>
-    private let executeRequest: any ExecuteRequest<RequestType, ResponseType, Context>
+    private let selectAuthScheme: SelectAuthScheme
+    private let applyEndpoint: any ApplyEndpoint<RequestType>
+    private let applySigner: any ApplySigner<RequestType>
+    private let executeRequest: any ExecuteRequest<RequestType, ResponseType>
 
     internal init(builder: OrchestratorBuilder<InputType, OutputType, RequestType, ResponseType>) {
         self.interceptors = builder.interceptors
@@ -121,7 +120,7 @@ public struct Orchestrator<
     /// - Parameter input: Operation input
     /// - Returns: Presigned request
     public func presignRequest(input: InputType) async throws -> RequestType {
-        let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType, Context>(
+        let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType>(
             input: input,
             attributes: attributes
         )
@@ -169,7 +168,7 @@ public struct Orchestrator<
     /// - Parameter input: Operation input
     /// - Returns: Operation output
     public func execute(input: InputType) async throws -> OutputType {
-        let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType, Context>(
+        let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType>(
             input: input,
             attributes: attributes
         )
@@ -194,7 +193,7 @@ public struct Orchestrator<
                 await attempt(context: context)
             }
         } catch let error {
-            context.updateResult(updated: .failure(error))
+            context.setResult(result: .failure(error))
         }
 
         return try await startCompletion(context: context)
@@ -225,7 +224,10 @@ public struct Orchestrator<
 
         await attempt(context: context)
 
-        if case let .failure(error) = context.getResult() {
+        do {
+            _ = try context.getOutput()
+            await strategy.recordSuccess(token: token)
+        } catch let error {
             // If we can't get errorInfo, we definitely can't retry
             guard let errorInfo = retryErrorInfoProvider(error) else { return }
 
@@ -238,8 +240,6 @@ public struct Orchestrator<
 
             context.updateRequest(updated: copiedRequest)
             await startAttempt(context: context, strategy: strategy, token: token)
-        } else {
-            await strategy.recordSuccess(token: token)
         }
     }
 
@@ -281,31 +281,24 @@ public struct Orchestrator<
             try await interceptors.modifyBeforeDeserialization(context: context)
             try await interceptors.readBeforeDeserialization(context: context)
 
-            let result = try await deserialize(context.getResponse(), context.getAttributes())
-            // Note: can't just directly pass 'result' to 'updateResult' because of variance:
-            //  i.e. Result<OutputType, _> isn't a subtype of Result<Any, _> in swift.
-            switch result {
-            case let .success(output):
-                context.updateResult(updated: .success(output))
-            case let .failure(error):
-                context.updateResult(updated: .failure(error))
-            }
+            let output = try await deserialize(context.getResponse(), context.getAttributes())
+            context.updateOutput(updated: output)
 
             try await interceptors.readAfterDeserialization(context: context)
         } catch let error {
-            context.updateResult(updated: .failure(error))
+            context.setResult(result: .failure(error))
         }
 
         // If modifyBeforeAttemptCompletion fails, we still want to let readAfterAttempt run
         do {
             try await interceptors.modifyBeforeAttemptCompletion(context: context)
         } catch let error {
-            context.updateResult(updated: .failure(error))
+            context.setResult(result: .failure(error))
         }
         do {
             try await interceptors.readAfterAttempt(context: context)
         } catch let error {
-            context.updateResult(updated: .failure(error))
+            context.setResult(result: .failure(error))
         }
     }
 
@@ -314,20 +307,15 @@ public struct Orchestrator<
         do {
             try await interceptors.modifyBeforeCompletion(context: context)
         } catch let error {
-            context.updateResult(updated: .failure(error))
+            context.setResult(result: .failure(error))
         }
         do {
             try await interceptors.readAfterExecution(context: context)
         } catch let error {
-            context.updateResult(updated: .failure(error))
+            context.setResult(result: .failure(error))
         }
 
         // The last error that occurred, if any, is thrown
-        switch context.getResult() {
-        case let .success(output):
-            return output
-        case let .failure(error):
-            throw error
-        }
+        return try context.getOutput()
     }
 }

@@ -5,38 +5,34 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Context
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
-import protocol Smithy.HasAttributes
 
 /// Component used by an Orchestrator to send a request to the service and receive a response.
-public protocol ExecuteRequest<RequestType, ResponseType, AttributesType> {
+public protocol ExecuteRequest<RequestType, ResponseType> {
     /// The type of the request message.
     associatedtype RequestType: RequestMessage
 
     /// The type of the response message.
     associatedtype ResponseType: ResponseMessage
 
-    /// The type of the attributes required by the component.
-    associatedtype AttributesType: HasAttributes
-
     /// Sends the request and receives the response.
     /// - Parameters:
     ///   - request: The request to send.
     ///   - attributes: The attributes available.
     /// - Returns: The received response.
-    func execute(request: RequestType, attributes: AttributesType) async throws -> ResponseType
+    func execute(request: RequestType, attributes: Context) async throws -> ResponseType
 }
 
 /// Concrete ExecuteRequest backed by a closure.
 internal struct WrappedExecuteRequest<
     RequestType: RequestMessage,
-    ResponseType: ResponseMessage,
-    AttributesType: HasAttributes
+    ResponseType: ResponseMessage
 >: ExecuteRequest {
-    internal let closure: (RequestType, AttributesType) async throws -> ResponseType
+    internal let closure: (RequestType, Context) async throws -> ResponseType
 
-    public func execute(request: RequestType, attributes: AttributesType) async throws -> ResponseType {
+    public func execute(request: RequestType, attributes: Context) async throws -> ResponseType {
         return try await closure(request, attributes)
     }
 }

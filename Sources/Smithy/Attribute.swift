@@ -41,22 +41,3 @@ public struct Attributes {
         attributes.removeValue(forKey: key.name)
     }
 }
-
-/// A type that can be used as a type-safe property bag.
-public protocol HasAttributes: AnyObject {
-    /// - Parameter key: The key of the attribute to get.
-    /// - Returns: The attribute, if it exists.
-    func get<T>(key: AttributeKey<T>) -> T?
-
-    /// - Parameter key: The key of the attribute to get.
-    /// - Returns: `true` if the property bag contains a value for the specified `key`, otherwise `false`.
-    func contains<T>(key: AttributeKey<T>) -> Bool
-
-    /// - Parameters:
-    ///   - key: The key to associate with `value`.
-    ///   - value: The value to set in the property bag.
-    func set<T>(key: AttributeKey<T>, value: T?)
-
-    /// - Parameter key: The key of the attribute to remove from the property bag.
-    func remove<T>(key: AttributeKey<T>)
-}

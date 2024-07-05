@@ -56,11 +56,30 @@ class MiddlewareExecutionGenerator(
         } else {
             writer.write(
                 "let builder = \$N<\$N, \$N, \$N, \$N>()",
-                ClientRuntimeTypes.Middleware.OrchestratorBuilder,
+                ClientRuntimeTypes.Core.OrchestratorBuilder,
                 inputShape,
                 outputShape,
                 SmithyHTTPAPITypes.SdkHttpRequest,
                 SmithyHTTPAPITypes.HttpResponse,
+            )
+            writer.write(
+                """
+                config.interceptorProviders.forEach { provider in
+                    builder.interceptors.add(provider.create())
+                }
+                """.trimIndent()
+            )
+            // Swift can't infer the generic arguments to `create` for some reason
+            writer.write(
+                """
+                config.httpInterceptorProviders.forEach { provider in
+                    let i: any ${'$'}N<${'$'}N, ${'$'}N> = provider.create()
+                    builder.interceptors.add(i)
+                }
+                """.trimIndent(),
+                ClientRuntimeTypes.Core.HttpInterceptor,
+                inputShape,
+                outputShape,
             )
         }
 

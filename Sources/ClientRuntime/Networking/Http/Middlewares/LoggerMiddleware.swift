@@ -41,7 +41,9 @@ public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middl
     }
 
     private func logRequest(logger: any LogAgent, request: SdkHttpRequest) {
-        if clientLogMode == .request || clientLogMode == .requestAndResponse {
+        if clientLogMode == .requestWithoutAuthorizationHeader {
+            logger.debug("Request: \(request.debugDescriptionWithoutAuthorizationHeader)")
+        } else if clientLogMode == .request || clientLogMode == .requestAndResponse {
             logger.debug("Request: \(request.debugDescription)")
         } else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .requestWithBody {
             logger.debug("Request: \(request.debugDescriptionWithBody)")
@@ -65,7 +67,7 @@ extension LoggerMiddleware: HttpInterceptor {
     public typealias OutputType = OperationStackOutput
 
     public func readBeforeTransmit(
-        context: some AfterSerialization<InputType, RequestType, AttributesType>
+        context: some AfterSerialization<InputType, RequestType>
     ) async throws {
         guard let logger = context.getAttributes().getLogger() else {
             return
@@ -75,7 +77,7 @@ extension LoggerMiddleware: HttpInterceptor {
     }
 
     public func readAfterTransmit(
-        context: some BeforeDeserialization<InputType, RequestType, ResponseType, AttributesType>
+        context: some BeforeDeserialization<InputType, RequestType, ResponseType>
     ) async throws {
         guard let logger = context.getAttributes().getLogger() else {
             return

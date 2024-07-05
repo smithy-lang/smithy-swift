@@ -65,102 +65,100 @@ class OrchestratorTests: XCTestCase {
         }
     }
 
-    class TraceInterceptor<InputType, OutputType, RequestType: RequestMessage, ResponseType: ResponseMessage, AttributesType: HasAttributes>:
-        Interceptor
-    {
+    class TraceInterceptor<InputType, OutputType, RequestType: RequestMessage, ResponseType: ResponseMessage>: Interceptor {
         var trace: Trace
 
         init(trace: Trace) {
             self.trace = trace
         }
 
-        public func readBeforeExecution(context: some BeforeSerialization<InputType, AttributesType>) async throws {
+        public func readBeforeExecution(context: some BeforeSerialization<InputType>) async throws {
             trace.append("readBeforeExecution")
         }
 
-        public func modifyBeforeSerialization(context: some MutableInput<InputType, AttributesType>) async throws {
+        public func modifyBeforeSerialization(context: some MutableInput<InputType>) async throws {
             trace.append("modifyBeforeSerialization")
         }
 
-        public func readBeforeSerialization(context: some BeforeSerialization<InputType, AttributesType>) async throws {
+        public func readBeforeSerialization(context: some BeforeSerialization<InputType>) async throws {
             trace.append("readBeforeSerialization")
         }
 
-        public func readAfterSerialization(context: some AfterSerialization<InputType, RequestType, AttributesType>) async throws {
+        public func readAfterSerialization(context: some AfterSerialization<InputType, RequestType>) async throws {
             trace.append("readAfterSerialization")
         }
 
-        public func modifyBeforeRetryLoop(context: some MutableRequest<InputType, RequestType, AttributesType>) async throws {
+        public func modifyBeforeRetryLoop(context: some MutableRequest<InputType, RequestType>) async throws {
             trace.append("modifyBeforeRetryLoop")
         }
 
-        public func readBeforeAttempt(context: some AfterSerialization<InputType, RequestType, AttributesType>) async throws {
+        public func readBeforeAttempt(context: some AfterSerialization<InputType, RequestType>) async throws {
             trace.append("readBeforeAttempt")
         }
 
-        public func modifyBeforeSigning(context: some MutableRequest<InputType, RequestType, AttributesType>) async throws {
+        public func modifyBeforeSigning(context: some MutableRequest<InputType, RequestType>) async throws {
             trace.append("modifyBeforeSigning")
         }
 
-        public func readBeforeSigning(context: some AfterSerialization<InputType, RequestType, AttributesType>) async throws {
+        public func readBeforeSigning(context: some AfterSerialization<InputType, RequestType>) async throws {
             trace.append("readBeforeSigning")
         }
 
-        public func readAfterSigning(context: some AfterSerialization<InputType, RequestType, AttributesType>) async throws {
+        public func readAfterSigning(context: some AfterSerialization<InputType, RequestType>) async throws {
             trace.append("readAfterSigning")
         }
 
-        public func modifyBeforeTransmit(context: some MutableRequest<InputType, RequestType, AttributesType>) async throws {
+        public func modifyBeforeTransmit(context: some MutableRequest<InputType, RequestType>) async throws {
             trace.append("modifyBeforeTransmit")
         }
 
-        public func readBeforeTransmit(context: some AfterSerialization<InputType, RequestType, AttributesType>) async throws {
+        public func readBeforeTransmit(context: some AfterSerialization<InputType, RequestType>) async throws {
             trace.append("readBeforeTransmit")
         }
 
         public func readAfterTransmit(
-            context: some BeforeDeserialization<InputType, RequestType, ResponseType, AttributesType>
+            context: some BeforeDeserialization<InputType, RequestType, ResponseType>
         ) async throws {
             trace.append("readAfterTransmit")
         }
 
         public func modifyBeforeDeserialization(
-            context: some MutableResponse<InputType, RequestType, ResponseType, AttributesType>
+            context: some MutableResponse<InputType, RequestType, ResponseType>
         ) async throws {
             trace.append("modifyBeforeDeserialization")
         }
 
         public func readBeforeDeserialization(
-            context: some BeforeDeserialization<InputType, RequestType, ResponseType, AttributesType>
+            context: some BeforeDeserialization<InputType, RequestType, ResponseType>
         ) async throws {
             trace.append("readBeforeDeserialization")
         }
 
         public func readAfterDeserialization(
-            context: some AfterDeserialization<InputType, OutputType, RequestType, ResponseType, AttributesType>
+            context: some AfterDeserialization<InputType, OutputType, RequestType, ResponseType>
         ) async throws {
             trace.append("readAfterDeserialization")
         }
 
         public func modifyBeforeAttemptCompletion(
-            context: some MutableOutputAfterAttempt<InputType, OutputType, RequestType, ResponseType, AttributesType>
+            context: some MutableOutputAfterAttempt<InputType, OutputType, RequestType, ResponseType>
         ) async throws {
             trace.append("modifyBeforeAttemptCompletion")
         }
 
-        public func readAfterAttempt(context: some AfterAttempt<InputType, OutputType, RequestType, ResponseType, AttributesType>) async throws
+        public func readAfterAttempt(context: some AfterAttempt<InputType, OutputType, RequestType, ResponseType>) async throws
         {
             trace.append("readAfterAttempt")
         }
 
         public func modifyBeforeCompletion(
-            context: some MutableOutputFinalization<InputType, OutputType, RequestType, ResponseType, AttributesType>
+            context: some MutableOutputFinalization<InputType, OutputType, RequestType, ResponseType>
         ) async throws {
             trace.append("modifyBeforeCompletion")
         }
 
         public func readAfterExecution(
-            context: some Finalization<InputType, OutputType, RequestType, ResponseType, AttributesType>
+            context: some Finalization<InputType, OutputType, RequestType, ResponseType>
         ) async throws {
             trace.append("readAfterExecution")
         }
@@ -206,7 +204,7 @@ class OrchestratorTests: XCTestCase {
             .withPath(value: "/")
             .withOperation(value: "Test")
             .build()
-        let traceInterceptor = TraceInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse, Context>(trace: trace)
+        let traceInterceptor = TraceInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse>(trace: trace)
         let builder = OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse>()
             .attributes(attributes)
             .serialize({ input, builder, _ in
@@ -220,14 +218,14 @@ class OrchestratorTests: XCTestCase {
                 trace.append("deserialize")
                 if (200..<300).contains(response.statusCode.rawValue) {
                     guard case let .data(data) = response.body else {
-                        return .success(TestOutput(bar: ""))
+                        return TestOutput(bar: "")
                     }
                     let bar = try! JSONDecoder().decode(String.self, from: data!)
-                    return .success(TestOutput(bar: bar))
+                    return TestOutput(bar: bar)
                 } else {
                     let responseReader = try SmithyJSON.Reader.from(data: try await response.data())
                     let baseError = try TestBaseError(httpResponse: response, responseReader: responseReader, noErrorWrapping: true)
-                    return .failure(try UnknownHTTPServiceError.makeError(baseError: baseError))
+                    throw try UnknownHTTPServiceError.makeError(baseError: baseError)
                 }
             })
             .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())))
@@ -328,7 +326,6 @@ class OrchestratorTests: XCTestCase {
                 "modifyBeforeDeserialization",
                 "readBeforeDeserialization",
                 "deserialize",
-                "readAfterDeserialization",
                 "modifyBeforeAttemptCompletion",
                 "readAfterAttempt",
                 "errorInfo",
@@ -1275,7 +1272,7 @@ class OrchestratorTests: XCTestCase {
         let trace = Trace()
         let result = await asyncResult {
             let b = self.traceOrchestrator(trace: trace)
-            b.attributes?.logger = logger
+            b.attributes = b.attributes?.toBuilder().withLogger(value: logger).build()
             b.interceptors.addReadBeforeExecution({ _ in throw TestError(value: "firstError") })
             b.interceptors.addReadBeforeExecution({ _ in throw TestError(value: "secondError") })
             return try await b.build().execute(input: TestInput(foo: ""))

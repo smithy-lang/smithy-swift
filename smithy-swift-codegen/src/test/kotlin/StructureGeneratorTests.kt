@@ -31,7 +31,7 @@ class StructureGeneratorTests {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
+        contents.shouldContain(swiftSettings.copyrightNotice)
         val expectedGeneratedStructure =
             """
             /// This is documentation about the shape.
@@ -253,7 +253,7 @@ public struct RecursiveShapesInputOutputLists {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
+        contents.shouldContain(swiftSettings.copyrightNotice)
         val expectedGeneratedStructure = """
 public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError, Swift.Error {
 
