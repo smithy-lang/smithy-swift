@@ -473,31 +473,35 @@ public final class URLSessionHTTPClient: HTTPClient {
                 span.end()
             }
             return try await withCheckedThrowingContinuation { continuation in
+                // Get the in-memory data or request stream to use for the body, if any.
+                // Keep a reference to the stream bridge for a streaming request.
+                let body: Body
+                var streamBridge: FoundationStreamBridge?
 
-                // Get the request stream to use for the body, if any.
-                let requestStream: ReadableStream?
-                switch request.body {
-                case .data(let data):
-                    requestStream = BufferedStream(data: data, isClosed: true)
-                case .stream(let stream):
-                    requestStream = stream
-                case .noStream:
-                    requestStream = nil
-                }
-
-                // If needed, create a stream bridge that streams data from a SDK stream to a Foundation InputStream
-                // that URLSession can stream its request body from.
-                // Allow 16kb of in-memory buffer for request body streaming
                 // START - smithy.client.http.connections.acquire_duration
                 let acquireConnectionStart = Date().timeIntervalSinceReferenceDate
-                let streamBridge = requestStream.map {
-                    FoundationStreamBridge(
-                        readableStream: $0,
+
+                // Convert the HTTP request body into a URLSession `Body`.
+                switch request.body {
+                case .data(let data):
+                    body = .data(data)
+                case .stream(let stream):
+                    // Create a stream bridge that streams data from a SDK stream to a Foundation InputStream
+                    // that URLSession can stream its request body from.
+                    // Allow 16kb of in-memory buffer for request body streaming
+                    let bridge = FoundationStreamBridge(
+                        readableStream: stream,
                         bridgeBufferSize: 16_384,
                         logger: logger,
                         telemetry: telemetry,
-                        serverAddress: URLSessionHTTPClient.makeServerAddress(request: request))
+                        serverAddress: URLSessionHTTPClient.makeServerAddress(request: request)
+                    )
+                    streamBridge = bridge
+                    body = .stream(bridge)
+                case .noStream:
+                    body = .data(nil)
                 }
+
                 let acquireConnectionEnd = Date().timeIntervalSinceReferenceDate
                 telemetry.connectionsAcquireDuration.record(
                     value: acquireConnectionEnd - acquireConnectionStart,
@@ -538,21 +542,25 @@ public final class URLSessionHTTPClient: HTTPClient {
                             context: telemetryContext)
                     }
                     do {
-                        let urlRequest = try self.makeURLRequest(
-                            from: request,
-                            httpBodyStream: streamBridge?.inputStream)
-                        // Create the data task and associated connection object, then place them in storage.
+                        // Create a data task for the request, and store it as a Connection along with its continuation.
+                        let urlRequest = try self.makeURLRequest(from: request, body: body)
                         let dataTask = session.dataTask(with: urlRequest)
+                        
+                        // Create a Connection and store it, keyed by its data task for retrieval on future
+                        // delegate callbacks.
                         let connection = Connection(
                             streamBridge: streamBridge,
                             continuation: continuation,
                             telemetry: telemetry)
                         delegate.storage.set(connection, for: dataTask)
 
-                        // Start the HTTP connection and start streaming the request body data
-                        dataTask.resume()
+                        // Start the HTTP connection and start streaming the request body data, if needed
                         logger.info("start URLRequest(\(urlRequest.url?.absoluteString ?? "")) called")
-                        Task { await streamBridge?.open() }
+                        logger.info("  body is \(streamBridge != nil ? "InputStream" : "Data")")
+                        dataTask.resume()
+                        Task { [streamBridge] in
+                            await streamBridge?.open()
+                        }
                     } catch {
                         continuation.resume(throwing: error)
                     }
@@ -561,14 +569,20 @@ public final class URLSessionHTTPClient: HTTPClient {
         }
     }
 
-    // MARK: - Private methods
+    // MARK: - Private methods & types
+
+    /// A private type used to encapsulate the body to be used for a URLRequest.
+    private enum Body {
+        case stream(FoundationStreamBridge)
+        case data(Data?)
+    }
 
     /// Create a `URLRequest` for the Smithy operation to be performed.
     /// - Parameters:
     ///   - request: The SDK-native, signed `SdkHttpRequest` ready to be transmitted.
     ///   - httpBodyStream: A Foundation `InputStream` carrying the HTTP body for this request.
     /// - Returns: A `URLRequest` ready to be transmitted by `URLSession` for this operation.
-    private func makeURLRequest(from request: SdkHttpRequest, httpBodyStream: InputStream?) throws -> URLRequest {
+    private func makeURLRequest(from request: SdkHttpRequest, body: Body) throws -> URLRequest {
         var components = URLComponents()
         components.scheme = config.protocolType?.rawValue ?? request.destination.scheme.rawValue
         components.host = request.endpoint.uri.host
@@ -582,7 +596,12 @@ public final class URLSessionHTTPClient: HTTPClient {
         guard let url = components.url else { throw URLSessionHTTPClientError.incompleteHTTPRequest }
         var urlRequest = URLRequest(url: url, timeoutInterval: self.connectionTimeout)
         urlRequest.httpMethod = request.method.rawValue
-        urlRequest.httpBodyStream = httpBodyStream
+        switch body {
+        case .stream(let bridge):
+            urlRequest.httpBodyStream = bridge.inputStream
+        case .data(let data):
+            urlRequest.httpBody = data
+        }
         for header in request.headers.headers + config.defaultHeaders.headers {
             for value in header.value {
                 urlRequest.addValue(value, forHTTPHeaderField: header.name)

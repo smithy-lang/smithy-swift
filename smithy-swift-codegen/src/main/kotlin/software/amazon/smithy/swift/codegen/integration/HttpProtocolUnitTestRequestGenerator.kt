@@ -8,22 +8,18 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
+import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.hasStreamingMember
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
-import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
-import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTestUtilTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
@@ -32,20 +28,33 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     override fun renderTestBody(test: HttpRequestTestCase) {
         renderExpectedBlock(test)
         writer.write("")
+        renderClientBlock(test)
         renderOperationBlock(test)
     }
 
     private fun renderExpectedBlock(test: HttpRequestTestCase) {
-        var resolvedHostValue = test.resolvedHost?.let { it } ?: run { "nil" }
+        var resolvedHostValue = if (test.resolvedHost.isPresent && test.resolvedHost.get() != "") test.resolvedHost.get() else "example.com"
+        var hostValue = if (test.host.isPresent && test.host.get() != "") test.host.get() else "example.com"
+
+        // Normalize the URI
+        val normalizedUri = when {
+            test.uri == "/" -> "/"
+            test.uri.isEmpty() -> ""
+            else -> {
+                val trimmedUri = test.uri.removeSuffix("/")
+                if (!trimmedUri.startsWith('/')) "/$trimmedUri" else trimmedUri
+            }
+        }
+
         writer.write("let urlPrefix = urlPrefixFromHost(host: \$S)", test.host)
         writer.write("let hostOnly = hostOnlyFromHost(host: \$S)", test.host)
         writer.openBlock("let expected = buildExpectedHttpRequest(")
             .write("method: .${test.method.toLowerCase()},")
-            .write("path: \$S,", test.uri)
+            .write("path: \$S,", normalizedUri)
             .call { renderExpectedHeaders(test) }
             .call { renderExpectedQueryParams(test) }
             .call { renderExpectedBody(test) }
-            .write("host: \$S,", test.host)
+            .write("host: \$S,", hostValue)
             .write("resolvedHost: \$S", resolvedHostValue)
             .closeBlock(")")
     }
@@ -56,7 +65,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 val inputShape = model.expectShape(it) as StructureShape
                 val data = writer.format(
                     "Data(\"\"\"\n\$L\n\"\"\".utf8)",
-                    test.body.get().replace("\\\"", "\\\\\"")
+                    test.body.get().replace("\\\"", "\\\\\""),
                 )
                 // depending on the shape of the input, wrap the expected body in a stream or not
                 if (inputShape.hasStreamingMember(model)) {
@@ -71,8 +80,26 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
     }
 
+    private fun renderClientBlock(test: HttpRequestTestCase) {
+        val serviceShape = ctx.service
+        val clientName = "${ctx.settings.sdkId}Client"
+
+        if (!serviceShape.getTrait(EndpointRuleSetTrait::class.java).isPresent) {
+            val host: String? = test.host.orElse(null)
+            val url: String = "http://${host ?: "example.com"}"
+            writer.write("\nlet config = try await $clientName.${clientName}Configuration(endpointResolver: StaticEndpointResolver(endpoint: try \$N(urlString: \$S)))", SmithyHTTPAPITypes.Endpoint, url)
+        } else {
+            writer.write("\nlet config = try await $clientName.${clientName}Configuration()")
+        }
+        writer.write("config.region = \"us-west-2\"")
+        writer.write("config.httpClientEngine = ProtocolTestClient()")
+        writer.write("config.idempotencyTokenGenerator = ProtocolTestIdempotencyTokenGenerator()")
+        writer.write("let client = $clientName(config: config)")
+    }
+
     private fun renderOperationBlock(test: HttpRequestTestCase) {
         operation.input.ifPresent { it ->
+            val clientName = "${ctx.settings.sdkId}Client"
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
             writer.writeInline("\nlet input = ")
@@ -86,73 +113,17 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             val outputSymbol = symbolProvider.toSymbol(outputShape)
             val outputErrorName = "${operation.toUpperCamelCase()}OutputError"
             writer.addImport(SwiftDependency.SMITHY.target)
-            writer.write("let context = ContextBuilder()")
-            val idempotentMember = inputShape.members().firstOrNull() { it.hasTrait(IdempotencyTokenTrait::class.java) }
-            val hasIdempotencyTokenTrait = idempotentMember != null
-            val httpMethod = resolveHttpMethod(operation)
-            writer.swiftFunctionParameterIndent {
-                writer.write("  .withMethod(value: .$httpMethod)")
-                if (hasIdempotencyTokenTrait) {
-                    writer.write("  .withIdempotencyTokenGenerator(value: QueryIdempotencyTestTokenGenerator())")
+            writer.addImport(SwiftDependency.SMITHY.target)
+            writer.write(
+                """
+                do {
+                    _ = try await client.${operation.toLowerCamelCase()}(input: input)
+                } catch TestCheckError.actual(let actual) {
+                    ${'$'}{C|}
                 }
-                writer.write("  .build()")
-            }
-            val operationStack = "operationStack"
-            if (!ctx.settings.useInterceptors) {
-                writer.write("var $operationStack = OperationStack<$inputSymbol, $outputSymbol>(id: \"${test.id}\")")
-            } else {
-                writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
-                writer.write("let builder = OrchestratorBuilder<$inputSymbol, $outputSymbol, SdkHttpRequest, HttpResponse>()")
-            }
-
-            operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.INITIALIZESTEP)
-            operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.BUILDSTEP)
-            operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.SERIALIZESTEP)
-            operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.FINALIZESTEP)
-            operationMiddleware.renderMiddleware(ctx, writer, operation, operationStack, MiddlewareStep.DESERIALIZESTEP)
-
-            if (ctx.settings.useInterceptors) {
-                val rpcService = serviceName
-                val rpcMethod = operation.getId().getName()
-                writer.write(
-                    """
-                    var metricsAttributes = ${'$'}N()
-                    metricsAttributes.set(key: ${'$'}N.service, value: ${'$'}S)
-                    metricsAttributes.set(key: ${'$'}N.method, value: ${'$'}S)
-                    let op = builder.attributes(context)
-                        .selectAuthScheme(${'$'}N())
-                        .deserialize({ (_, _) in
-                            return $outputSymbol()
-                        })
-                        .executeRequest({ (actual, attributes) in
-                            ${'$'}{C|}
-                            return HttpResponse(body: .noStream, statusCode: .ok)
-                        })
-                        .telemetry(${'$'}N(
-                            telemetryProvider: ${'$'}N.provider,
-                            metricsAttributes: metricsAttributes
-                        ))
-                        .build()
-
-                    _ = try await op.execute(input: input)
-                    """.trimIndent(),
-                    SmithyTypes.Attributes,
-                    ClientRuntimeTypes.Middleware.OrchestratorMetricsAttributesKeys,
-                    rpcService,
-                    ClientRuntimeTypes.Middleware.OrchestratorMetricsAttributesKeys,
-                    rpcMethod,
-                    SmithyTestUtilTypes.SelectNoAuthScheme,
-                    Runnable { renderBodyAssert(test, inputSymbol, inputShape) },
-                    ClientRuntimeTypes.Middleware.OrchestratorTelemetry,
-                    ClientRuntimeTypes.Core.DefaultTelemetry
-                )
-            } else {
-                renderMockDeserializeMiddleware(test, operationStack, inputSymbol, outputSymbol, outputErrorName, inputShape)
-                writer.openBlock("_ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler() { (context, request) in ", "})") {
-                    writer.write("XCTFail(\"Deserialize was mocked out, this should fail\")")
-                    writer.write("throw SmithyTestUtilError(\"Mock handler unexpectedly failed\")")
-                }
-            }
+                """.trimIndent(),
+                Runnable { renderBodyAssert(test, inputSymbol, inputShape) },
+            )
         }
     }
 
@@ -161,34 +132,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         return httpTrait.method.toLowerCase()
     }
 
-    private fun renderMockDeserializeMiddleware(
-        test: HttpRequestTestCase,
-        operationStack: String,
-        inputSymbol: Symbol,
-        outputSymbol: Symbol,
-        outputErrorName: String,
-        inputShape: Shape
-    ) {
-        writer.openBlock("\$L.deserializeStep.intercept(", ")", operationStack) {
-            writer.write("position: .after,")
-            writer.openBlock("middleware: MockDeserializeMiddleware<\$N>(", ")", outputSymbol) {
-                writer.write("id: \"TestDeserializeMiddleware\",")
-                val responseClosure = ResponseClosureUtils(ctx, writer, operation).render()
-                writer.write("responseClosure: \$L,", responseClosure)
-                writer.openBlock("callback: { context, actual in", "}") {
-                    renderBodyAssert(test, inputSymbol, inputShape)
-                    writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
-                    writer.write("return OperationOutput(httpResponse: HttpResponse(body: ByteStream.noStream, statusCode: .ok), output: \$N())", outputSymbol)
-                }
-            }
-        }
-    }
-
     private fun renderBodyAssert(test: HttpRequestTestCase, inputSymbol: Symbol, inputShape: Shape) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
             writer.openBlock(
                 "try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
-                "})"
+                "})",
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual ByteStream is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected ByteStream is nil\")")
@@ -201,7 +149,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             }
         } else {
             writer.write(
-                "try await self.assertEqual(expected, actual)"
+                "try await self.assertEqual(expected, actual)",
             )
         }
     }

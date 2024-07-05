@@ -76,6 +76,7 @@ object ClientRuntimeTypes {
         val DefaultEndpointsAuthSchemeResolver = runtimeSymbol("DefaultEndpointsAuthSchemeResolver", SwiftDeclaration.STRUCT)
         val EndpointsAuthScheme = runtimeSymbol("EndpointsAuthScheme", SwiftDeclaration.ENUM)
         val DefaultEndpointResolver = runtimeSymbol("DefaultEndpointResolver", SwiftDeclaration.STRUCT)
+        val StaticEndpointResolver = runtimeSymbol("StaticEndpointResolver", SwiftDeclaration.STRUCT)
         val EndpointResolverMiddleware = runtimeSymbol("EndpointResolverMiddleware", SwiftDeclaration.STRUCT)
         val Plugin = runtimeSymbol("Plugin", SwiftDeclaration.PROTOCOL)
         val ClientConfiguration = runtimeSymbol("ClientConfiguration", SwiftDeclaration.PROTOCOL)
