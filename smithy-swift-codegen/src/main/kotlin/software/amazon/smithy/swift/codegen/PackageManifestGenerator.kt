@@ -60,6 +60,7 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                         writer.openBlock("dependencies: [", "]") {
                             writer.write("\$S,", ctx.settings.moduleName)
                             SwiftDependency.SMITHY_TEST_UTIL.dependencies.forEach { writeTargetDependency(writer, it) }
+                            SwiftDependency.CRT.dependencies.forEach { writeTargetDependency(writer, it) }
                         }
                     }
                 }

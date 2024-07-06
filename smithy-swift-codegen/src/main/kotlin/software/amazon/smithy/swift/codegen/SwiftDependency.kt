@@ -49,6 +49,15 @@ class SwiftDependency(
             "",
             DistributionMethod.GIT,
         )
+        val CRT = SwiftDependency(
+            "AwsCommonRuntimeKit",
+            null,
+            "0.32.0",
+            "https://github.com/awslabs/aws-crt-swift",
+            "",
+            "aws-crt-swift",
+            DistributionMethod.GIT,
+        )
         val CLIENT_RUNTIME = smithySwiftTargetNamed("ClientRuntime")
         val SMITHY = smithySwiftTargetNamed("Smithy")
         val SMITHY_IDENTITY_API = smithySwiftTargetNamed("SmithyIdentityAPI")
@@ -75,8 +84,8 @@ class SwiftDependency(
             return SwiftDependency(
                 name,
                 "main",
-                "0.60.0",
-                "https://github.com/jbelkins/smithy-swift",
+                "0.51.0",
+                "https://github.com/smithy-lang/smithy-swift",
                 "../../../smithy-swift",
                 "smithy-swift",
                 DistributionMethod.GIT,
