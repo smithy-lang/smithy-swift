@@ -13,7 +13,7 @@ import Glibc
 import Darwin
 #endif
 
-public final class SDKDefaultIO {
+public final class SDKDefaultIO: @unchecked Sendable {
     public let eventLoopGroup: EventLoopGroup
     public let hostResolver: HostResolver
     public let clientBootstrap: ClientBootstrap

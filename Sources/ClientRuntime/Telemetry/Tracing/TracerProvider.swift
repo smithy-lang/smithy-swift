@@ -8,7 +8,7 @@
 import struct Smithy.Attributes
 
 /// A Tracer Provider provides implementations of Tracers.
-public protocol TracerProvider {
+public protocol TracerProvider: Sendable {
 
     /// Gets a scoped Tracer.
     ///

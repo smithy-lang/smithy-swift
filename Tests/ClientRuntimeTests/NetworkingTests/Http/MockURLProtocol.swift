@@ -11,7 +11,7 @@ import FoundationNetworking
 
 class MockURLProtocol: URLProtocol {
 
-    static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data?))?
+    var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data?))?
 
     override class func canInit(with request: URLRequest) -> Bool {
       // handles all requests
@@ -23,7 +23,7 @@ class MockURLProtocol: URLProtocol {
     }
 
     override func startLoading() {
-      guard let handler = MockURLProtocol.requestHandler else {
+      guard let handler = requestHandler else {
         fatalError("Handler is unavailable.")
       }
 
