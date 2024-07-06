@@ -60,17 +60,13 @@ class SwiftDependency(
         )
         val CLIENT_RUNTIME = smithySwiftTargetNamed("ClientRuntime")
         val SMITHY = smithySwiftTargetNamed("Smithy")
-        val SMITHY_IDENTITY_API = smithySwiftTargetNamed("SmithyIdentityAPI")
         val SMITHY_IDENTITY = smithySwiftTargetNamed("SmithyIdentity")
         val SMITHY_RETRIES_API = smithySwiftTargetNamed("SmithyRetriesAPI")
         val SMITHY_RETRIES = smithySwiftTargetNamed("SmithyRetries")
         val SMITHY_HTTP_API = smithySwiftTargetNamed("SmithyHTTPAPI")
         val SMITHY_HTTP_AUTH_API = smithySwiftTargetNamed("SmithyHTTPAuthAPI")
-        val SMITHY_CHECKSUMS_API = smithySwiftTargetNamed("SmithyChecksumsAPI")
-        val SMITHY_CHECKSUMS = smithySwiftTargetNamed("SmithyChecksums")
         val SMITHY_STREAMS = smithySwiftTargetNamed("SmithyStreams")
         val SMITHY_EVENT_STREAMS_API = smithySwiftTargetNamed("SmithyEventStreamsAPI")
-        val SMITHY_EVENT_STREAMS_AUTH_API = smithySwiftTargetNamed("SmithyEventStreamsAuthAPI")
         val SMITHY_EVENT_STREAMS = smithySwiftTargetNamed("SmithyEventStreams")
         val SMITHY_TEST_UTIL = smithySwiftTargetNamed("SmithyTestUtil")
         val SMITHY_READ_WRITE = smithySwiftTargetNamed("SmithyReadWrite")
@@ -84,8 +80,8 @@ class SwiftDependency(
             return SwiftDependency(
                 name,
                 "main",
-                "0.51.0",
-                "https://github.com/smithy-lang/smithy-swift",
+                "0.100.0",
+                "https://github.com/jbelkins/smithy-swift",
                 "../../../smithy-swift",
                 "smithy-swift",
                 DistributionMethod.GIT,
