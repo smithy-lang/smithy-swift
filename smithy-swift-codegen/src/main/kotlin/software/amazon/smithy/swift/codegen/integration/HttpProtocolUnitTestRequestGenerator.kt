@@ -46,8 +46,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             }
         }
 
-        writer.write("let urlPrefix = urlPrefixFromHost(host: \$S)", test.host)
-        writer.write("let hostOnly = hostOnlyFromHost(host: \$S)", test.host)
         writer.openBlock("let expected = buildExpectedHttpRequest(")
             .write("method: .${test.method.toLowerCase()},")
             .write("path: \$S,", normalizedUri)
@@ -108,11 +106,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 }
                 .write("")
             val inputSymbol = symbolProvider.toSymbol(inputShape)
-            val outputShapeId = operation.output.get()
-            val outputShape = model.expectShape(outputShapeId)
-            val outputSymbol = symbolProvider.toSymbol(outputShape)
-            val outputErrorName = "${operation.toUpperCamelCase()}OutputError"
-            writer.addImport(SwiftDependency.SMITHY.target)
             writer.addImport(SwiftDependency.SMITHY.target)
             writer.write(
                 """

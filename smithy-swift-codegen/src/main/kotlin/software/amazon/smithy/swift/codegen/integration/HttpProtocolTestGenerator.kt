@@ -46,7 +46,6 @@ class HttpProtocolTestGenerator(
      */
     fun generateProtocolTests(): Int {
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
-        val operationMiddleware = updateRequestTestMiddleware()
         var numTests = 0
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
             numTests += renderRequestTests(operation, operationMiddleware)
@@ -54,37 +53,6 @@ class HttpProtocolTestGenerator(
             numTests += renderErrorTestCases(operation)
         }
         return numTests
-    }
-
-    private fun updateRequestTestMiddleware(): OperationMiddleware {
-        val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
-        val requestTestOperations = TreeSet(
-            topDownIndex.getContainedOperations(ctx.service)
-                .filter { it.hasTrait<HttpRequestTestsTrait>() }
-                .filterNot(::serverOnly)
-        )
-        val cloned = operationMiddleware.clone()
-
-        for (operation in requestTestOperations) {
-            cloned.removeMiddleware(operation, MiddlewareStep.INITIALIZESTEP, "OperationInputUrlPathMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.INITIALIZESTEP, "OperationInputUrlHostMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "EndpointResolverMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "UserAgentMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "AuthSchemeMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "RetryMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "SignerMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "DeserializeMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
-
-            cloned.appendMiddleware(operation, RequestTestEndpointResolverMiddleware(ctx.model, ctx.symbolProvider))
-            cloned.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, "urlPrefix: urlPrefix"))
-            val hostMiddlewares = cloned.middlewares(operation, MiddlewareStep.INITIALIZESTEP)
-                .filter { it.name.contains("HostMiddleware") }
-            if (hostMiddlewares.isEmpty()) {
-                cloned.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, operation, true))
-            }
-        }
-        return cloned
     }
 
     private fun renderRequestTests(operation: OperationShape, operationMiddleware: OperationMiddleware): Int {
