@@ -44,7 +44,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             val symbol = symbolProvider.toSymbol(it)
             renderBuildHttpResponse(test)
             writer.write("")
-            renderActualOutput(test, symbol)
+            renderActualOutput(symbol)
             writer.write("")
             renderExpectedOutput(test, it)
             writer.write("")
@@ -103,7 +103,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         }
     }
 
-    private fun renderActualOutput(test: HttpResponseTestCase, outputStruct: Symbol) {
+    private fun renderActualOutput(outputStruct: Symbol) {
         val responseClosure = ResponseClosureUtils(ctx, writer, operation).render()
         writer.write("let actual: \$N = try await \$L(httpResponse)", outputStruct, responseClosure)
     }

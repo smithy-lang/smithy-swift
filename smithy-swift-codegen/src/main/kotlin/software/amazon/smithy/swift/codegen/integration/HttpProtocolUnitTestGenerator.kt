@@ -10,7 +10,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 
 /**
  * Abstract base implementation for protocol test generators to extend in order to generate HttpMessageTestCase
@@ -28,7 +27,6 @@ protected constructor(builder: Builder<T>) {
     protected val operation: OperationShape = builder.operation!!
     protected val writer: SwiftWriter = builder.writer!!
     protected val httpProtocolCustomizable = builder.httpProtocolCustomizable!!
-    protected val operationMiddleware = builder.operationMiddleware!!
     protected val httpBindingResolver = builder.httpBindingResolver!!
     protected val serviceName: String = builder.serviceName!!
     abstract val baseTestClassName: String
@@ -75,7 +73,6 @@ protected constructor(builder: Builder<T>) {
         var writer: SwiftWriter? = null
         var serviceName: String? = null
         var httpProtocolCustomizable: HTTPProtocolCustomizable? = null
-        var operationMiddleware: OperationMiddleware? = null
         var httpBindingResolver: HttpBindingResolver? = null
 
         fun symbolProvider(provider: SymbolProvider): Builder<T> = apply { this.symbolProvider = provider }
@@ -86,7 +83,6 @@ protected constructor(builder: Builder<T>) {
         fun writer(writer: SwiftWriter): Builder<T> = apply { this.writer = writer }
         fun serviceName(serviceName: String): Builder<T> = apply { this.serviceName = serviceName }
         fun httpProtocolCustomizable(httpProtocolCustomizable: HTTPProtocolCustomizable): Builder<T> = apply { this.httpProtocolCustomizable = httpProtocolCustomizable }
-        fun operationMiddleware(operationMiddleware: OperationMiddleware): Builder<T> = apply { this.operationMiddleware = operationMiddleware }
         fun httpBindingResolver(httpBindingResolver: HttpBindingResolver): Builder<T> = apply { this.httpBindingResolver = httpBindingResolver }
         abstract fun build(): HttpProtocolUnitTestGenerator<T>
     }

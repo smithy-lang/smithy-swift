@@ -13,12 +13,6 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlHostMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.RequestTestEndpointResolverMiddleware
-import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
-import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.testModuleName
 import java.util.TreeSet
@@ -33,7 +27,6 @@ class HttpProtocolTestGenerator(
     private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
     private val errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
     private val httpProtocolCustomizable: HTTPProtocolCustomizable,
-    private val operationMiddleware: OperationMiddleware,
     private val httpBindingResolver: HttpBindingResolver,
     // list of test IDs to ignore/skip
     private val testsToIgnore: Set<String> = setOf(),
@@ -46,48 +39,16 @@ class HttpProtocolTestGenerator(
      */
     fun generateProtocolTests(): Int {
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
-        val operationMiddleware = updateRequestTestMiddleware()
         var numTests = 0
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
-            numTests += renderRequestTests(operation, operationMiddleware)
+            numTests += renderRequestTests(operation)
             numTests += renderResponseTests(operation)
             numTests += renderErrorTestCases(operation)
         }
         return numTests
     }
 
-    private fun updateRequestTestMiddleware(): OperationMiddleware {
-        val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
-        val requestTestOperations = TreeSet(
-            topDownIndex.getContainedOperations(ctx.service)
-                .filter { it.hasTrait<HttpRequestTestsTrait>() }
-                .filterNot(::serverOnly)
-        )
-        val cloned = operationMiddleware.clone()
-
-        for (operation in requestTestOperations) {
-            cloned.removeMiddleware(operation, MiddlewareStep.INITIALIZESTEP, "OperationInputUrlPathMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.INITIALIZESTEP, "OperationInputUrlHostMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "EndpointResolverMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "UserAgentMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.BUILDSTEP, "AuthSchemeMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "RetryMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.FINALIZESTEP, "SignerMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "DeserializeMiddleware")
-            cloned.removeMiddleware(operation, MiddlewareStep.DESERIALIZESTEP, "LoggingMiddleware")
-
-            cloned.appendMiddleware(operation, RequestTestEndpointResolverMiddleware(ctx.model, ctx.symbolProvider))
-            cloned.appendMiddleware(operation, OperationInputUrlPathMiddleware(ctx.model, ctx.symbolProvider, "urlPrefix: urlPrefix"))
-            val hostMiddlewares = cloned.middlewares(operation, MiddlewareStep.INITIALIZESTEP)
-                .filter { it.name.contains("HostMiddleware") }
-            if (hostMiddlewares.isEmpty()) {
-                cloned.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, operation, true))
-            }
-        }
-        return cloned
-    }
-
-    private fun renderRequestTests(operation: OperationShape, operationMiddleware: OperationMiddleware): Int {
+    private fun renderRequestTests(operation: OperationShape): Int {
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val tempTestCases = operation.getTrait(HttpRequestTestsTrait::class.java)
             .orElse(null)
@@ -112,7 +73,6 @@ class HttpProtocolTestGenerator(
                     .serviceName(serviceSymbol.name)
                     .testCases(requestTestCases)
                     .httpProtocolCustomizable(httpProtocolCustomizable)
-                    .operationMiddleware(operationMiddleware)
                     .httpBindingResolver(httpBindingResolver)
                     .build()
                     .renderTestClass(testClassName)
@@ -146,7 +106,6 @@ class HttpProtocolTestGenerator(
                     .serviceName(serviceSymbol.name)
                     .testCases(responseTestCases)
                     .httpProtocolCustomizable(httpProtocolCustomizable)
-                    .operationMiddleware(operationMiddleware)
                     .httpBindingResolver(httpBindingResolver)
                     .build()
                     .renderTestClass(testClassName)
@@ -188,7 +147,6 @@ class HttpProtocolTestGenerator(
                         .serviceName(serviceSymbol.name)
                         .testCases(testCases)
                         .httpProtocolCustomizable(httpProtocolCustomizable)
-                        .operationMiddleware(operationMiddleware)
                         .httpBindingResolver(httpBindingResolver)
                         .build()
                         .renderTestClass(testClassName)
