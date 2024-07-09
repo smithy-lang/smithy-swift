@@ -37,7 +37,6 @@ class MockHTTPRestXMLProtocolGenerator : HTTPBindingProtocolGenerator(MockRestXM
             responseTestBuilder,
             errorTestBuilder,
             customizations,
-            operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
         ).generateProtocolTests()
     }
