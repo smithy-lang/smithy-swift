@@ -6,6 +6,7 @@
 //
 
 import Smithy
+import struct SmithyTestUtil.SelectNoAuthScheme
 import SmithyHTTPAPI
 import XCTest
 
@@ -204,6 +205,9 @@ class OrchestratorTests: XCTestCase {
             .withPath(value: "/")
             .withOperation(value: "Test")
             .build()
+        var metricsAttributes = Attributes()
+        metricsAttributes.set(key: OrchestratorMetricsAttributesKeys.service, value: "Service")
+        metricsAttributes.set(key: OrchestratorMetricsAttributesKeys.method, value: "Method")
         let traceInterceptor = TraceInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse>(trace: trace)
         let builder = OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse>()
             .attributes(attributes)
@@ -235,7 +239,7 @@ class OrchestratorTests: XCTestCase {
             })
             .selectAuthScheme({ _ in
                 trace.append("selectAuthScheme")
-                return nil
+                return SelectNoAuthScheme.noAuthScheme
             })
             .applyEndpoint({ request, _, _ in
                 trace.append("applyEndpoint")
@@ -245,6 +249,10 @@ class OrchestratorTests: XCTestCase {
                 trace.append("applySigner")
                 return request
             })
+            .telemetry(OrchestratorTelemetry(
+                telemetryProvider: DefaultTelemetry.provider,
+                metricsAttributes: metricsAttributes
+            ))
             .executeRequest(TraceExecuteRequest(trace: trace))
         builder.interceptors.add(traceInterceptor)
         return builder

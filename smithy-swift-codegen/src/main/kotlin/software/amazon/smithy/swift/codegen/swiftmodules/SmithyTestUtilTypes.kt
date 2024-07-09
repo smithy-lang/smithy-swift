@@ -7,6 +7,7 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
 object SmithyTestUtilTypes {
     val TestInitializer = runtimeSymbol("TestInitializer")
     val TestBaseError = runtimeSymbol("TestBaseError")
+    val SelectNoAuthScheme = runtimeSymbol("SelectNoAuthScheme")
 }
 
 private fun runtimeSymbol(name: String): Symbol = buildSymbol {

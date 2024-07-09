@@ -9,6 +9,8 @@ import class Smithy.Context
 import enum Smithy.ClientError
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
+import struct Smithy.AttributeKey
+import struct Smithy.Attributes
 import SmithyHTTPAPI
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryErrorInfo
@@ -73,6 +75,7 @@ public struct Orchestrator<
     private let deserialize: (ResponseType, Context) async throws -> OutputType
     private let retryStrategy: (any RetryStrategy)?
     private let retryErrorInfoProvider: (Error) -> RetryErrorInfo?
+    private let telemetry: OrchestratorTelemetry
     private let selectAuthScheme: SelectAuthScheme
     private let applyEndpoint: any ApplyEndpoint<RequestType>
     private let applySigner: any ApplySigner<RequestType>
@@ -84,6 +87,7 @@ public struct Orchestrator<
         self.serialize = builder.serialize
         self.deserialize = builder.deserialize!
         self.retryStrategy = builder.retryStrategy
+        self.telemetry = builder.telemetry!
 
         if let retryErrorInfoProvider = builder.retryErrorInfoProvider {
             self.retryErrorInfoProvider = retryErrorInfoProvider
@@ -168,41 +172,70 @@ public struct Orchestrator<
     /// - Parameter input: Operation input
     /// - Returns: Operation output
     public func execute(input: InputType) async throws -> OutputType {
-        let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType>(
-            input: input,
-            attributes: attributes
-        )
+        let telemetryContext = telemetry.contextManager.current()
+        let tracer = telemetry.tracerProvider.getTracer(
+            scope: telemetry.tracerScope,
+            attributes: telemetry.tracerAttributes)
 
+        // DURATION - smithy.client.call.duration
         do {
-            try await interceptors.readBeforeExecution(context: context)
-            try await interceptors.modifyBeforeSerialization(context: context)
-            try await interceptors.readBeforeSerialization(context: context)
-
-            let finalizedInput = context.getInput()
-            let builder = RequestType.RequestBuilderType()
-            try serialize(finalizedInput, builder, context.getAttributes())
-            context.updateRequest(updated: builder.build())
-
-            try await interceptors.readAfterSerialization(context: context)
-            try await interceptors.modifyBeforeRetryLoop(context: context)
-
-            // Skip retries if a strategy wasn't provided
-            if let retryStrategy = self.retryStrategy {
-                try await enterRetryLoop(context: context, strategy: retryStrategy)
-            } else {
-                await attempt(context: context)
+            let span = tracer.createSpan(
+                name: telemetry.spanName,
+                initialAttributes: telemetry.spanAttributes,
+                spanKind: SpanKind.internal,
+                parentContext: telemetryContext)
+            let callStart = Date().timeIntervalSinceReferenceDate
+            defer {
+                telemetry.rpcCallDuration.record(
+                    value: Date().timeIntervalSinceReferenceDate - callStart,
+                    attributes: telemetry.metricsAttributes,
+                    context: telemetryContext)
+                span.end()
             }
-        } catch let error {
-            context.setResult(result: .failure(error))
-        }
+            let context = DefaultInterceptorContext<InputType, OutputType, RequestType, ResponseType>(
+                input: input,
+                attributes: attributes
+            )
 
-        return try await startCompletion(context: context)
+            do {
+                try await interceptors.readBeforeExecution(context: context)
+                try await interceptors.modifyBeforeSerialization(context: context)
+                try await interceptors.readBeforeSerialization(context: context)
+
+                let finalizedInput = context.getInput()
+                let builder = RequestType.RequestBuilderType()
+
+                // START - smithy.client.call.serialization_duration
+                let serializeStart = Date().timeIntervalSinceReferenceDate
+                try serialize(finalizedInput, builder, context.getAttributes())
+                telemetry.serializationDuration.record(
+                    value: Date().timeIntervalSinceReferenceDate - serializeStart,
+                    attributes: telemetry.metricsAttributes,
+                    context: telemetryContext)
+                // END - smithy.client.call.serialization_duration
+                context.updateRequest(updated: builder.build())
+
+                try await interceptors.readAfterSerialization(context: context)
+                try await interceptors.modifyBeforeRetryLoop(context: context)
+
+                // Skip retries if a strategy wasn't provided
+                if let retryStrategy = self.retryStrategy {
+                    try await enterRetryLoop(context: context, strategy: retryStrategy)
+                } else {
+                    await attempt(context: context, attemptCount: 1)
+                }
+            } catch let error {
+                context.setResult(result: .failure(error))
+            }
+
+            return try await startCompletion(context: context)
+        }
     }
 
     private func enterRetryLoop(context: InterceptorContextType, strategy: some RetryStrategy) async throws {
         let partitionId = try getPartitionId(context: context)
         let token = try await strategy.acquireInitialRetryToken(tokenScope: partitionId)
-        await startAttempt(context: context, strategy: strategy, token: token)
+        await startAttempt(context: context, strategy: strategy, token: token, attemptCount: 1)
     }
 
     private func getPartitionId(context: InterceptorContextType) throws -> String {
@@ -218,11 +251,12 @@ public struct Orchestrator<
     private func startAttempt<S: RetryStrategy>(
         context: InterceptorContextType,
         strategy: S,
-        token: S.Token
+        token: S.Token,
+        attemptCount: Int
     ) async {
         let copiedRequest = context.getRequest().toBuilder().build()
 
-        await attempt(context: context)
+        await attempt(context: context, attemptCount: attemptCount)
 
         do {
             _ = try context.getOutput()
@@ -239,66 +273,131 @@ public struct Orchestrator<
             }
 
             context.updateRequest(updated: copiedRequest)
-            await startAttempt(context: context, strategy: strategy, token: token)
+            await startAttempt(context: context, strategy: strategy, token: token, attemptCount: attemptCount + 1)
         }
     }
 
-    private func attempt(context: InterceptorContextType) async {
+    private func attempt(context: InterceptorContextType, attemptCount: Int) async {
         // If anything in here fails, the attempt short-circuits and we go to modifyBeforeAttemptCompletion,
         // with the thrown error in context.result
+        let telemetryContext = telemetry.contextManager.current()
+        let tracer = telemetry.tracerProvider.getTracer(
+            scope: telemetry.tracerScope,
+            attributes: telemetry.tracerAttributes)
+
+        // TICK - smithy.client.call.attempts
+        telemetry.rpcAttempts.add(
+            value: 1,
+            attributes: telemetry.metricsAttributes,
+            context: telemetryContext)
+
+        // DURATION - smithy.client.call.attempt_duration
         do {
-            try await interceptors.readBeforeAttempt(context: context)
+            let span = tracer.createSpan(
+                name: "Attempt-\(attemptCount)",
+                initialAttributes: telemetry.spanAttributes,
+                spanKind: SpanKind.internal,
+                parentContext: telemetryContext)
+            let attemptStart = Date().timeIntervalSinceReferenceDate
+            defer {
+                telemetry.rpcAttemptDuration.record(
+                    value: Date().timeIntervalSinceReferenceDate - attemptStart,
+                    attributes: telemetry.metricsAttributes,
+                    context: telemetryContext)
+                span.end()
+            }
+            do {
+                try await interceptors.readBeforeAttempt(context: context)
 
-            let selectedAuthScheme = try await selectAuthScheme.select(attributes: context.getAttributes())
-            let withEndpoint = try await applyEndpoint.apply(
-                request: context.getRequest(),
-                selectedAuthScheme: selectedAuthScheme,
-                attributes: context.getAttributes()
-            )
-            context.updateRequest(updated: withEndpoint)
+                // START - smithy.client.call.auth.resolve_identity_duration
+                let identityStart = Date().timeIntervalSinceReferenceDate
+                let selectedAuthScheme = try await selectAuthScheme.select(attributes: context.getAttributes())
+                if selectedAuthScheme == nil {
+                    throw ClientError.authError("auth scheme could not be selected")
+                }
+                var authSchemeAttributes = telemetry.metricsAttributes
+                authSchemeAttributes.set(
+                    key: AttributeKey<String>(name: "auth.scheme_id"),
+                    value: selectedAuthScheme!.schemeID)
+                telemetry.resolveIdentityDuration.record(
+                    value: Date().timeIntervalSinceReferenceDate - identityStart,
+                    attributes: authSchemeAttributes,
+                    context: telemetryContext)
+                // END - smithy.client.call.auth.resolve_identity_duration
 
-            try await interceptors.modifyBeforeSigning(context: context)
-            try await interceptors.readBeforeSigning(context: context)
+                // START - smithy.client.call.resolve_endpoint_duration
+                let endpointStart = Date().timeIntervalSinceReferenceDate
+                let withEndpoint = try await applyEndpoint.apply(
+                    request: context.getRequest(),
+                    selectedAuthScheme: selectedAuthScheme,
+                    attributes: context.getAttributes()
+                )
+                telemetry.resolveEndpointDuration.record(
+                    value: Date().timeIntervalSinceReferenceDate - endpointStart,
+                    attributes: telemetry.metricsAttributes,
+                    context: telemetryContext)
+                // END - smithy.client.call.resolve_endpoint_duration
 
-            let signed = try await applySigner.apply(
-                request: context.getRequest(),
-                selectedAuthScheme: selectedAuthScheme,
-                attributes: context.getAttributes()
-            )
-            context.updateRequest(updated: signed)
+                context.updateRequest(updated: withEndpoint)
 
-            try await interceptors.readAfterSigning(context: context)
-            try await interceptors.modifyBeforeTransmit(context: context)
-            try await interceptors.readBeforeTransmit(context: context)
+                try await interceptors.modifyBeforeSigning(context: context)
+                try await interceptors.readBeforeSigning(context: context)
 
-            let response = try await executeRequest.execute(
-                request: context.getRequest(),
-                attributes: context.getAttributes()
-            )
-            context.updateResponse(updated: response)
+                // START - smithy.client.call.auth.signing_duration
+                let signingStart = Date().timeIntervalSinceReferenceDate
+                let signed = try await applySigner.apply(
+                    request: context.getRequest(),
+                    selectedAuthScheme: selectedAuthScheme,
+                    attributes: context.getAttributes()
+                )
+                telemetry.signingDuration.record(
+                    value: Date().timeIntervalSinceReferenceDate - signingStart,
+                    attributes: authSchemeAttributes,
+                    context: telemetryContext)
+                // END - smithy.client.call.auth.signing_duration
 
-            try await interceptors.readAfterTransmit(context: context)
-            try await interceptors.modifyBeforeDeserialization(context: context)
-            try await interceptors.readBeforeDeserialization(context: context)
+                context.updateRequest(updated: signed)
 
-            let output = try await deserialize(context.getResponse(), context.getAttributes())
-            context.updateOutput(updated: output)
+                try await interceptors.readAfterSigning(context: context)
+                try await interceptors.modifyBeforeTransmit(context: context)
+                try await interceptors.readBeforeTransmit(context: context)
 
-            try await interceptors.readAfterDeserialization(context: context)
-        } catch let error {
-            context.setResult(result: .failure(error))
-        }
+                let response = try await executeRequest.execute(
+                    request: context.getRequest(),
+                    attributes: context.getAttributes()
+                )
+                context.updateResponse(updated: response)
 
-        // If modifyBeforeAttemptCompletion fails, we still want to let readAfterAttempt run
-        do {
-            try await interceptors.modifyBeforeAttemptCompletion(context: context)
-        } catch let error {
-            context.setResult(result: .failure(error))
-        }
-        do {
-            try await interceptors.readAfterAttempt(context: context)
-        } catch let error {
-            context.setResult(result: .failure(error))
+                try await interceptors.readAfterTransmit(context: context)
+                try await interceptors.modifyBeforeDeserialization(context: context)
+                try await interceptors.readBeforeDeserialization(context: context)
+
+                // START - smithy.client.call.deserialization_duration
+                let deserializeStart = Date().timeIntervalSinceReferenceDate
+                let output = try await deserialize(context.getResponse(), context.getAttributes())
+                telemetry.deserializationDuration.record(
+                    value: Date().timeIntervalSinceReferenceDate - deserializeStart,
+                    attributes: telemetry.metricsAttributes,
+                    context: telemetryContext)
+                // END - smithy.client.call.deserialization_duration
+                context.updateOutput(updated: output)
+
+                try await interceptors.readAfterDeserialization(context: context)
+            } catch let error {
+                context.setResult(result: .failure(error))
+            }
+
+            // If modifyBeforeAttemptCompletion fails, we still want to let readAfterAttempt run
+            do {
+                try await interceptors.modifyBeforeAttemptCompletion(context: context)
+            } catch let error {
+                context.setResult(result: .failure(error))
+            }
+            do {
+                try await interceptors.readAfterAttempt(context: context)
+            } catch let error {
+                context.setResult(result: .failure(error))
+            }
         }
     }
 
@@ -316,6 +415,15 @@ public struct Orchestrator<
         }
 
         // The last error that occurred, if any, is thrown
-        return try context.getOutput()
+        do {
+            return try context.getOutput()
+        } catch {
+            // TICK - smithy.client.call.errors
+            telemetry.rpcErrors.add(
+                value: 1,
+                attributes: telemetry.metricsAttributes,
+                context: telemetry.contextManager.current())
+            throw error
+        }
     }
 }
