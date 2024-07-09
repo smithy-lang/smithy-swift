@@ -32,7 +32,7 @@ struct CRTClientEngineConfig {
     public init(
         maxConnectionsPerEndpoint: Int = 50,
         windowSize: Int = 16 * 1024 * 1024,
-        telemetry: HttpTelemetry,
+        telemetry: HttpTelemetry = CRTClientEngine.noOpCrtClientEngineTelemetry,
         verifyPeer: Bool = true,
         connectTimeoutMs: UInt32? = nil,
         crtTlsOptions: CRTClientTLSOptions? = nil,
