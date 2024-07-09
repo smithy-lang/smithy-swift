@@ -22,7 +22,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
             writer.openBlock("do {", "} catch {") {
                 renderBuildHttpResponse(test)
                 writer.write("")
-                renderInitOperationError(test, operationErrorType)
+                renderInitOperationError(operationErrorType)
                 writer.write("")
                 renderCompareActualAndExpectedErrors(test, it, operationErrorType)
                 writer.write("")
@@ -34,8 +34,8 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         }
     }
 
-    private fun renderInitOperationError(test: HttpResponseTestCase, operationErrorType: String) {
-        val operationErrorVariableName = operationErrorType.decapitalize()
+    private fun renderInitOperationError(operationErrorType: String) {
+        val operationErrorVariableName = operationErrorType.replaceFirstChar { it.lowercase() }
         val responseErrorClosure = ResponseErrorClosureUtils(ctx, writer, operation).render()
         writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         writer.write(
@@ -50,9 +50,8 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         errorShape: Shape,
         operationErrorType: String
     ) {
-        val operationErrorVariableName = operationErrorType.decapitalize()
+        val operationErrorVariableName = operationErrorType.replaceFirstChar { it.lowercase() }
         val errorType = symbolProvider.toSymbol(errorShape).name
-        val errorVariableName = errorType.decapitalize()
 
         writer.openBlock("if let actual = \$L as? \$L {", "} else {", operationErrorVariableName, errorType) {
             renderExpectedOutput(test, errorShape)

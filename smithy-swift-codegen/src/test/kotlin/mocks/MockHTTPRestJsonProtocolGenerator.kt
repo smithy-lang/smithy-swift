@@ -36,7 +36,6 @@ class MockHTTPRestJsonProtocolGenerator : HTTPBindingProtocolGenerator(MockRestJ
             responseTestBuilder,
             errorTestBuilder,
             customizations,
-            operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
         ).generateProtocolTests()
     }
