@@ -44,7 +44,7 @@ public class HttpClientConfiguration {
     public var tlsConfiguration: (any TLSConfiguration)?
 
     /// HTTP Client Telemetry
-    public var telemetry: HttpTelemetry
+    public var telemetry: HttpTelemetry?
 
     /// Creates a configuration object for a SDK HTTP client.
     ///
@@ -62,7 +62,7 @@ public class HttpClientConfiguration {
         protocolType: URIScheme = .https,
         defaultHeaders: Headers = Headers(),
         tlsConfiguration: (any TLSConfiguration)? = nil,
-        telemetry: HttpTelemetry = URLSessionHTTPClient.noOpURLSessionHTTPClientTelemetry
+        telemetry: HttpTelemetry? = nil
     ) {
         self.socketTimeout = socketTimeout
         self.protocolType = protocolType

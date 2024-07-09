@@ -432,7 +432,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         sessionType SessionType: URLSession.Type
     ) {
         self.config = httpClientConfiguration
-        self.telemetry = httpClientConfiguration.telemetry
+        self.telemetry = httpClientConfiguration.telemetry ?? URLSessionHTTPClient.noOpURLSessionHTTPClientTelemetry
         self.logger = self.telemetry.loggerProvider.getLogger(name: "URLSessionHTTPClient")
         self.tlsConfiguration = config.tlsConfiguration as? URLSessionTLSOptions
         self.delegate = SessionDelegate(telemetry: telemetry, logger: logger, tlsOptions: tlsConfiguration)
