@@ -127,11 +127,11 @@ extension DefaultTelemetry {
     }
 
     fileprivate final class NoOpUpDownCounter: UpDownCounter {
-        func add(value: Int64, attributes: Attributes?, context: TelemetryContext?) {}
+        func add(value: Int, attributes: Attributes?, context: TelemetryContext?) {}
     }
 
     fileprivate final class NoOpMonotonicCounter: MonotonicCounter {
-        func add(value: Int64, attributes: Attributes?, context: TelemetryContext?) {}
+        func add(value: Int, attributes: Attributes?, context: TelemetryContext?) {}
     }
 
     fileprivate final class NoOpHistogram: Histogram {

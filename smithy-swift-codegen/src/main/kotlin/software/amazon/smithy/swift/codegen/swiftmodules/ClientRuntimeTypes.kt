@@ -50,6 +50,8 @@ object ClientRuntimeTypes {
         val MutableInput = runtimeSymbol("MutableInput", SwiftDeclaration.PROTOCOL)
         val Handler = runtimeSymbol("Handler", SwiftDeclaration.PROTOCOL)
         val OrchestratorBuilder = runtimeSymbol("OrchestratorBuilder", SwiftDeclaration.CLASS)
+        val OrchestratorTelemetry = runtimeSymbol("OrchestratorTelemetry", SwiftDeclaration.CLASS)
+        val OrchestratorMetricsAttributesKeys = runtimeSymbol("OrchestratorMetricsAttributesKeys", SwiftDeclaration.ENUM)
     }
 
     object Core {

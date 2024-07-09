@@ -17,5 +17,5 @@ public protocol MonotonicCounter: Sendable {
     /// - Parameter value: value to record
     /// - Parameter attributes: associated attributes, typically of the metric
     /// - Parameter context: context in which value is recorded in
-    func add(value: Int64, attributes: Attributes?, context: TelemetryContext?)
+    func add(value: Int, attributes: Attributes?, context: TelemetryContext?)
 }
