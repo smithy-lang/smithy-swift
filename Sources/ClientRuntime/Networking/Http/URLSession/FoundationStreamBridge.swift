@@ -9,6 +9,7 @@
 
 import protocol Smithy.LogAgent
 import protocol Smithy.ReadableStream
+import struct Smithy.Attributes
 import func Foundation.CFWriteStreamSetDispatchQueue
 import class Foundation.DispatchQueue
 import class Foundation.NSObject
@@ -60,6 +61,12 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     /// A Logger for logging events.
     private let logger: LogAgent
+
+    /// HTTP Client Telemetry
+    private let telemetry: HttpTelemetry
+
+    /// Server address
+    private let serverAddress: String
 
     /// Actor used to ensure writes are performed in series, one at a time.
     private actor WriteCoordinator {
@@ -119,13 +126,17 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         readableStream: ReadableStream,
         bridgeBufferSize: Int = 65_536,
         boundStreamBufferSize: Int? = nil,
-        logger: LogAgent
+        logger: LogAgent,
+        telemetry: HttpTelemetry,
+        serverAddress: String = "unknown"
     ) {
         self.bridgeBufferSize = bridgeBufferSize
         self.boundStreamBufferSize = boundStreamBufferSize ?? bridgeBufferSize
         self.buffer = Data(capacity: bridgeBufferSize)
         self.readableStream = readableStream
         self.logger = logger
+        self.telemetry = telemetry
+        self.serverAddress = serverAddress
         (inputStream, outputStream) = Self.makeStreams(boundStreamBufferSize: self.boundStreamBufferSize, queue: queue)
     }
 
@@ -272,6 +283,15 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                 if writeCount > 0 {
                     logger.info("FoundationStreamBridge: wrote \(writeCount) bytes to request body")
                     buffer.removeFirst(writeCount)
+                    // TICK - smithy.client.http.bytes_sent
+                    var attributes = Attributes()
+                    attributes.set(
+                        key: HttpMetricsAttributesKeys.serverAddress,
+                        value: serverAddress)
+                    telemetry.bytesSent.add(
+                        value: writeCount,
+                        attributes: attributes,
+                        context: telemetry.contextManager.current())
                 }
 
                 // Resume the caller now that the write is complete, returning the stream error, if any.

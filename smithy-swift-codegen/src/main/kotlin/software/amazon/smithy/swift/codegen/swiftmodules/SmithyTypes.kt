@@ -11,6 +11,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
  * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
  */
 object SmithyTypes {
+    val Attributes = runtimeSymbol("Attributes", SwiftDeclaration.STRUCT)
     val AttributeKey = runtimeSymbol("AttributeKey", SwiftDeclaration.STRUCT)
     val ClientError = runtimeSymbol("ClientError", SwiftDeclaration.ENUM)
     val Context = runtimeSymbol("Context", SwiftDeclaration.CLASS)
