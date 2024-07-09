@@ -13,12 +13,7 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlHostMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputUrlPathMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.RequestTestEndpointResolverMiddleware
-import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.testModuleName
 import java.util.TreeSet

@@ -4,9 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
@@ -17,7 +14,6 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProt
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
-import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 
@@ -33,8 +29,8 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderExpectedBlock(test: HttpRequestTestCase) {
-        var resolvedHostValue = if (test.resolvedHost.isPresent && test.resolvedHost.get() != "") test.resolvedHost.get() else "example.com"
-        var hostValue = if (test.host.isPresent && test.host.get() != "") test.host.get() else "example.com"
+        val resolvedHostValue = if (test.resolvedHost.isPresent && test.resolvedHost.get() != "") test.resolvedHost.get() else "example.com"
+        val hostValue = if (test.host.isPresent && test.host.get() != "") test.host.get() else "example.com"
 
         // Normalize the URI
         val normalizedUri = when {
@@ -47,7 +43,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         }
 
         writer.openBlock("let expected = buildExpectedHttpRequest(")
-            .write("method: .${test.method.toLowerCase()},")
+            .write("method: .${test.method.lowercase()},")
             .write("path: \$S,", normalizedUri)
             .call { renderExpectedHeaders(test) }
             .call { renderExpectedQueryParams(test) }
@@ -84,7 +80,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
         if (!serviceShape.getTrait(EndpointRuleSetTrait::class.java).isPresent) {
             val host: String? = test.host.orElse(null)
-            val url: String = "http://${host ?: "example.com"}"
+            val url = "http://${host ?: "example.com"}"
             writer.write("\nlet config = try await $clientName.${clientName}Configuration(endpointResolver: StaticEndpointResolver(endpoint: try \$N(urlString: \$S)))", SmithyHTTPAPITypes.Endpoint, url)
         } else {
             writer.write("\nlet config = try await $clientName.${clientName}Configuration()")
@@ -96,8 +92,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderOperationBlock(test: HttpRequestTestCase) {
-        operation.input.ifPresent { it ->
-            val clientName = "${ctx.settings.sdkId}Client"
+        operation.input.ifPresent {
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
             writer.writeInline("\nlet input = ")
@@ -105,7 +100,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }
                 .write("")
-            val inputSymbol = symbolProvider.toSymbol(inputShape)
             writer.addImport(SwiftDependency.SMITHY.target)
             writer.write(
                 """
@@ -115,17 +109,12 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     ${'$'}{C|}
                 }
                 """.trimIndent(),
-                Runnable { renderBodyAssert(test, inputSymbol, inputShape) },
+                Runnable { renderBodyAssert(test) },
             )
         }
     }
 
-    private fun resolveHttpMethod(op: OperationShape): String {
-        val httpTrait = httpBindingResolver.httpTrait(op)
-        return httpTrait.method.toLowerCase()
-    }
-
-    private fun renderBodyAssert(test: HttpRequestTestCase, inputSymbol: Symbol, inputShape: Shape) {
+    private fun renderBodyAssert(test: HttpRequestTestCase) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
             writer.openBlock(
                 "try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) -> Void in",
@@ -186,39 +175,26 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderExpectedHeaders(test: HttpRequestTestCase) {
-        if (test.headers.isNotEmpty()) {
-            writer.openBlock("headers: [")
-                .call {
-                    for ((idx, hdr) in test.headers.entries.withIndex()) {
-                        val suffix = if (idx < test.headers.size - 1) "," else ""
-                        writer.write("\$S: \$S$suffix", hdr.key, hdr.value)
-                    }
-                }
-                .closeBlock("],")
-        }
+        writeHeaders("headers", test.headers)
+        writeHeaders("forbiddenHeaders", test.forbidHeaders)
+        writeHeaders("requiredHeaders", test.requireHeaders)
+    }
 
-        if (test.forbidHeaders.isNotEmpty()) {
-            val forbiddenHeaders = test.forbidHeaders
-            writer.openBlock("forbiddenHeaders: [")
-                .call {
-                    forbiddenHeaders.forEachIndexed { idx, value ->
-                        val suffix = if (idx < forbiddenHeaders.size - 1) "," else ""
-                        writer.write("\$S$suffix", value)
-                    }
-                }
-                .closeBlock("],")
+    private fun writeHeaders(name: String, headers: Map<String, String>) {
+        if (headers.isEmpty()) return
+        writer.openBlock("\$L: [", "],", name) {
+            val contents = headers.entries.joinToString(",\n") {
+                writer.format("\$S: \$S", it.key, it.value)
+            }
+            writer.write(contents)
         }
+    }
 
-        if (test.requireHeaders.isNotEmpty()) {
-            val requiredHeaders = test.requireHeaders
-            writer.openBlock("requiredHeaders: [")
-                .call {
-                    requiredHeaders.forEachIndexed { idx, value ->
-                        val suffix = if (idx < requiredHeaders.size - 1) "," else ""
-                        writer.write("\$S$suffix", value)
-                    }
-                }
-                .closeBlock("],")
+    private fun writeHeaders(name: String, headers: List<String>) {
+        if (headers.isEmpty()) return
+        writer.openBlock("\$L: [", "],", name) {
+            val contents = headers.joinToString(",\n") { writer.format("\$S", it) }
+            writer.write(contents)
         }
     }
 
