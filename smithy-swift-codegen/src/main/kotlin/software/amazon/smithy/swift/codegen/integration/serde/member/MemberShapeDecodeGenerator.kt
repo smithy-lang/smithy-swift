@@ -183,10 +183,7 @@ open class MemberShapeDecodeGenerator(
         val matchingMember = enumShape.members().first { member ->
             value == member.expectTrait<EnumValueTrait>().expectStringValue()
         }
-        return swiftEnumCaseName(
-            matchingMember.memberName,
-            matchingMember.expectTrait<EnumValueTrait>().expectStringValue()
-        )
+        return swiftEnumCaseName(matchingMember.memberName, value)
     }
 
     private fun intEnumDefaultValue(node: Node): String {
