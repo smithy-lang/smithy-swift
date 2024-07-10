@@ -29,6 +29,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.DefaultTrait
+import software.amazon.smithy.model.traits.EnumValueTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
@@ -38,6 +39,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtil
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ReadingClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
+import software.amazon.smithy.swift.codegen.model.expectTrait
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
@@ -150,7 +152,7 @@ open class MemberShapeDecodeGenerator(
             if (it.isNullNode) { return "" }
             // Provide a default value dependent on the type.
             return when (targetShape) {
-                is EnumShape -> " ?? .${swiftEnumCaseName(it.expectStringNode().value, "")}"
+                is EnumShape -> " ?? .${enumDefaultValue(targetShape, it.expectStringNode().value)}"
                 is IntEnumShape -> intEnumDefaultValue(it)
                 is StringShape -> " ?? \"${it.expectStringNode().value}\""
                 is ByteShape -> " ?? ${it.expectNumberNode().value}"
@@ -170,6 +172,21 @@ open class MemberShapeDecodeGenerator(
                 else -> ""
             }
         } ?: "" // If there is no default trait, provide no default value.
+    }
+
+    // From the Smithy docs at https://smithy.io/2.0/spec/type-refinement-traits.html#default-value-constraints :
+    // > The following shapes have restrictions on their default values:
+    // >
+    // > enum: can be set to any valid string _value_ of the enum.
+    // So, find the member with the default value, then render it as a Swift enum case.
+    private fun enumDefaultValue(enumShape: EnumShape, value: String): String {
+        val matchingMember = enumShape.members().first { member ->
+            value == member.expectTrait<EnumValueTrait>().expectStringValue()
+        }
+        return swiftEnumCaseName(
+            matchingMember.memberName,
+            matchingMember.expectTrait<EnumValueTrait>().expectStringValue()
+        )
     }
 
     private fun intEnumDefaultValue(node: Node): String {
