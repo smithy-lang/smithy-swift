@@ -13,7 +13,7 @@ import software.amazon.smithy.swift.codegen.PackageManifestGenerator
 class PackageManifestGeneratorTests {
     private val testContext = setupTests("simple-service-with-operation-and-dependency.smithy", "smithy.example#Example")
 
-    val PACKAGE_MANIFEST_NAME = "Package.swift"
+    val PACKAGE_MANIFEST_NAME = "Package.swift.txt"
 
     @Test
     fun `it starts with a swift-tools-version statement`() {
@@ -27,8 +27,8 @@ class PackageManifestGeneratorTests {
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
             "platforms: [\n" +
-                    "        .macOS(.v10_15), .iOS(.v13)\n" +
-                    "    ]"
+                "        .macOS(.v10_15), .iOS(.v13)\n" +
+                "    ]"
         )
     }
 
