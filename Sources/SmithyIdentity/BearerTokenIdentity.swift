@@ -11,4 +11,9 @@ import struct Foundation.Date
 public struct BearerTokenIdentity: Identity {
     public let token: String
     public let expiration: Date?
+
+    public init(token: String, expiration: Date? = nil) {
+        self.token = token
+        self.expiration = expiration
+    }
 }
