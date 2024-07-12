@@ -17,7 +17,6 @@ import SmithyRetriesAPI
 
 // This test class reproduces the "Standard Mode" test cases defined in "Retry Behavior 2.0"
 final class RetryIntegrationTests: XCTestCase {
-    private let partitionIDKey = AttributeKey<String>(name: "PartitionID")
     private let partitionID = "partition"
 
     private var context: Context!
@@ -28,7 +27,7 @@ final class RetryIntegrationTests: XCTestCase {
     private func setUp(availableCapacity: Int, maxCapacity: Int, maxRetriesBase: Int, maxBackoff: TimeInterval) async {
         // Setup the HTTP context, used by the retry middleware
         context = Context(attributes: Attributes())
-        context.attributes.set(key: partitionIDKey, value: partitionID)
+        context.partitionID = partitionID
         context.socketTimeout = 60.0
         context.estimatedSkew = 30.0
 
@@ -239,7 +238,12 @@ private class TestOutputHandler: Handler {
     }
 
     func verifyResult(atEnd: Bool = true) async throws {
-        guard let testStep = latestTestStep else { return }
+        guard let testStep = latestTestStep else {
+            if atEnd {
+                XCTFail("No test steps were run! Encountered error: \(String(describing: finalError!))")
+            }
+            return
+        }
 
         // Test available capacity
         let availableCapacity = await quota.availableCapacity
