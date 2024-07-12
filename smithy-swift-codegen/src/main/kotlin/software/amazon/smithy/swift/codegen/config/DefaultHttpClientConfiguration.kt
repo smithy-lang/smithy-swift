@@ -14,6 +14,8 @@ import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyIdentityTypes
+import software.amazon.smithy.swift.codegen.utils.AuthUtils
 
 class DefaultHttpClientConfiguration : ClientConfiguration {
     override val swiftProtocolName: Symbol = ClientRuntimeTypes.Core.DefaultHttpClientConfiguration
@@ -33,7 +35,7 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
             ClientRuntimeTypes.Http.HttpClientConfiguration,
             { it.format("\$N.defaultHttpClientConfiguration", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
         ),
-        ConfigProperty("authSchemes", SmithyHTTPAuthAPITypes.AuthSchemes.toOptional()),
+        ConfigProperty("authSchemes", SmithyHTTPAuthAPITypes.AuthSchemes.toOptional(), AuthUtils(ctx).authSchemesDefaultProvider),
         ConfigProperty(
             "authSchemeResolver",
             SmithyHTTPAuthAPITypes.AuthSchemeResolver,
@@ -44,6 +46,11 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
             ClientRuntimeTypes.Core.HttpInterceptorProviders,
             { "[]" },
             accessModifier = AccessModifier.PublicPrivateSet
+        ),
+        ConfigProperty(
+            "bearerTokenIdentityResolver",
+            SmithyIdentityTypes.BearerTokenIdentityResolver,
+            { it.format("\$N()", SmithyIdentityTypes.StaticBearerTokenIdentityResolver) }
         )
     )
 

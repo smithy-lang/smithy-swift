@@ -126,6 +126,7 @@ class MiddlewareExecutionGenerator(
         writer.write("  .withAuthSchemeResolver(value: config.authSchemeResolver)")
         writer.write("  .withUnsignedPayloadTrait(value: ${op.hasTrait(UnsignedPayloadTrait::class.java)})")
         writer.write("  .withSocketTimeout(value: config.httpClientConfiguration.socketTimeout)")
+        writer.write("  .withIdentityResolver(value: config.bearerTokenIdentityResolver, schemeID: \$S)", "smithy.api#httpBearerAuth")
 
         // Add flag for presign / presign-url flows
         if (flowType == ContextAttributeCodegenFlowType.PRESIGN_REQUEST) {

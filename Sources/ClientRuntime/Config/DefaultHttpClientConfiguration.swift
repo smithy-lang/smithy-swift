@@ -8,6 +8,7 @@
 import protocol SmithyHTTPAPI.HTTPClient
 import protocol SmithyHTTPAuthAPI.AuthScheme
 import protocol SmithyHTTPAuthAPI.AuthSchemeResolver
+import protocol SmithyIdentity.BearerTokenIdentityResolver
 
 public protocol DefaultHttpClientConfiguration: ClientConfiguration {
 
@@ -29,6 +30,11 @@ public protocol DefaultHttpClientConfiguration: ClientConfiguration {
     ///
     /// Defaults to a auth scheme resolver generated based on Smithy service model.
     var authSchemeResolver: AuthSchemeResolver { get set }
+
+    /// The token identity resolver to be used for bearer token authentication.
+    ///
+    /// If no resolver is supplied, the SDK will look for token in the `~/.aws/sso/cache` directory.
+    var bearerTokenIdentityResolver: any BearerTokenIdentityResolver { get set }
 
     /// Add an `HttpInterceptorProvider` that will be used to provide interceptors for all HTTP operations.
     ///
