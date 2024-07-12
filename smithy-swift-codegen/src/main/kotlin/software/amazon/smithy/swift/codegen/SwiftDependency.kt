@@ -130,6 +130,15 @@ class SwiftDependency(
             "smithy-swift",
             DistributionMethod.SPR,
         )
+        val SMITHY_HTTP_AUTH = SwiftDependency(
+            "SmithyHTTPAuth",
+            "main",
+            "0.0.1",
+            "aws-sdk-swift",
+            "../../../smithy-swift",
+            "smithy-swift",
+            DistributionMethod.SPR,
+        )
         val SMITHY_CHECKSUMS_API = SwiftDependency(
             "SmithyChecksumsAPI",
             "main",
