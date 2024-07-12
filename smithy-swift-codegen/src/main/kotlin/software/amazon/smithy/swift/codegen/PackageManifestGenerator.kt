@@ -30,10 +30,12 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                     writer.write(".library(name: \$S, targets: [\$S])", ctx.settings.moduleName, ctx.settings.moduleName)
                 }
 
-                val externalDependencies = dependencies.filter {
-                    it.getProperty("url", String::class.java).getOrNull() != null ||
-                        it.getProperty("scope", String::class.java).getOrNull() != null
-                }
+                val externalDependencies = dependencies
+                    .filter { it.expectProperty("target", String::class.java) != "SmithyTestUtil" } // SmithyTestUtil links to test target only
+                    .filter {
+                        it.getProperty("url", String::class.java).getOrNull() != null ||
+                            it.getProperty("scope", String::class.java).getOrNull() != null
+                    }
                 val dependenciesByURL = externalDependencies.distinctBy {
                     it.getProperty("url", String::class.java).getOrNull()
                         ?: "${it.getProperty("scope", String::class.java).get()}.${it.packageName}"
