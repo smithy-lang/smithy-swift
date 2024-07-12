@@ -8,12 +8,10 @@ import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import kotlin.jvm.optionals.getOrNull
 
-val PACKAGE_MANIFEST_NAME = "Package.swift.txt"
-
 class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
 
     fun writePackageManifest(dependencies: List<SymbolDependency>) {
-        ctx.delegator.useFileWriter(PACKAGE_MANIFEST_NAME) { writer ->
+        ctx.delegator.useFileWriter("Package.swift") { writer ->
             writer.write("// swift-tools-version: \$L", ctx.settings.swiftVersion)
             writer.write("")
             writer.write("import PackageDescription")
