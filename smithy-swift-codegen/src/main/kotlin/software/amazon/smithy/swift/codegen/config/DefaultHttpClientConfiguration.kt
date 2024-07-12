@@ -10,6 +10,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.lang.AccessModifier
 import software.amazon.smithy.swift.codegen.lang.Function
 import software.amazon.smithy.swift.codegen.lang.FunctionParameter
+import software.amazon.smithy.swift.codegen.model.toGeneric
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
@@ -49,8 +50,8 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
         ),
         ConfigProperty(
             "bearerTokenIdentityResolver",
-            SmithyIdentityTypes.BearerTokenIdentityResolver,
-            { it.format("\$N()", SmithyIdentityTypes.StaticBearerTokenIdentityResolver) }
+            SmithyIdentityTypes.BearerTokenIdentityResolver.toGeneric(),
+            { it.format("\$N(token: \$N(token: \"\"))", SmithyIdentityTypes.StaticBearerTokenIdentityResolver, SmithyIdentityTypes.BearerTokenIdentity) }
         )
     )
 
