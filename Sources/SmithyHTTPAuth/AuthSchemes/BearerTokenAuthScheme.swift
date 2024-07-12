@@ -16,7 +16,10 @@ public struct BearerTokenAuthScheme: AuthScheme {
 
     public init() {}
 
-    public func customizeSigningProperties(signingProperties: Smithy.Attributes, context: Smithy.Context) throws -> Smithy.Attributes {
+    public func customizeSigningProperties(
+        signingProperties: Smithy.Attributes,
+        context: Smithy.Context
+    ) throws -> Smithy.Attributes {
         // no-op
         return signingProperties
     }

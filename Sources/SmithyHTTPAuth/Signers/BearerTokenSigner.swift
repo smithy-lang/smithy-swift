@@ -17,7 +17,7 @@ public class BearerTokenSigner: Signer {
         requestBuilder: SmithyHTTPAPI.SdkHttpRequestBuilder,
         identity: IdentityT,
         signingProperties: Smithy.Attributes
-    ) async throws -> SmithyHTTPAPI.SdkHttpRequestBuilder where IdentityT : SmithyIdentityAPI.Identity {
+    ) async throws -> SmithyHTTPAPI.SdkHttpRequestBuilder where IdentityT: SmithyIdentityAPI.Identity {
         guard let identity = identity as? BearerTokenIdentity else {
             throw Smithy.ClientError.authError(
                 "Identity passed to the BearerTokenSigner must be of type BearerTokenIdentity."
