@@ -151,6 +151,7 @@ let package = Package(
             name: "SmithyHTTPAuth",
             dependencies: [
                 "Smithy",
+                "SmithyHTTPAPI",
                 "SmithyHTTPAuthAPI",
                 "SmithyIdentity",
                 "SmithyIdentityAPI",
