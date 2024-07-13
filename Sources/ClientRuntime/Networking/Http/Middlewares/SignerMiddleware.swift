@@ -12,30 +12,10 @@ import SmithyHTTPAPI
 import SmithyHTTPAuthAPI
 import struct Smithy.AttributeKey
 
-public struct SignerMiddleware<OperationStackOutput>: Middleware {
+public struct SignerMiddleware<OperationStackOutput> {
     public let id: String = "SignerMiddleware"
 
-    public init () {}
-
-    public typealias MInput = SdkHttpRequestBuilder
-    public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = Smithy.Context
-
-    public func handle<H>(context: Smithy.Context,
-                          input: SdkHttpRequestBuilder,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-    Self.MInput == H.Input,
-    Self.MOutput == H.Output {
-        // Retrieve selected auth scheme from context
-        let selectedAuthScheme = context.selectedAuthScheme
-        let signed = try await apply(
-            request: input.build(),
-            selectedAuthScheme: selectedAuthScheme,
-            attributes: context
-        )
-        return try await next.handle(context: context, input: signed.toBuilder())
-    }
+    public init() {}
 }
 
 extension SignerMiddleware: ApplySigner {

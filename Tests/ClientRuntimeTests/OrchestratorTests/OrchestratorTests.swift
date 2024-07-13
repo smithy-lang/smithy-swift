@@ -1280,7 +1280,7 @@ class OrchestratorTests: XCTestCase {
         let trace = Trace()
         let result = await asyncResult {
             let b = self.traceOrchestrator(trace: trace)
-            b.attributes = b.attributes?.toBuilder().withLogger(value: logger).build()
+            b.attributes = b.attributes.toBuilder().withLogger(value: logger).build()
             b.interceptors.addReadBeforeExecution({ _ in throw TestError(value: "firstError") })
             b.interceptors.addReadBeforeExecution({ _ in throw TestError(value: "secondError") })
             return try await b.build().execute(input: TestInput(foo: ""))

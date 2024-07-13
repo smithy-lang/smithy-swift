@@ -25,27 +25,7 @@ public class SdkHttpClient: ExecuteRequest {
         }
     }
 
-    public func getHandler<OperationStackOutput>()
-        -> AnyHandler<SdkHttpRequest, OperationOutput<OperationStackOutput>> {
-
-        let clientHandler = ClientHandler<OperationStackOutput>(client: self)
-        return clientHandler.eraseToAnyHandler()
-    }
-
     func send(request: SdkHttpRequest) async throws -> HttpResponse {
         return try await engine.send(request: request)
     }
-}
-
-private struct ClientHandler<OperationStackOutput>: Handler {
-    let client: SdkHttpClient
-
-    func handle(context: Smithy.Context, input: SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput> {
-        let httpResponse = try await client.execute(request: input, attributes: context)
-        return OperationOutput<OperationStackOutput>(httpResponse: httpResponse)
-    }
-
-    typealias Input = SdkHttpRequest
-    typealias Output = OperationOutput<OperationStackOutput>
-    typealias Context = Smithy.Context
 }

@@ -5,7 +5,7 @@ import class Smithy.Context
 import struct SmithyHTTPAPI.Headers
 import class SmithyHTTPAPI.SdkHttpRequestBuilder
 
-public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
+public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput> {
 
     public let id: String = "MutateHeaders"
 
@@ -19,16 +19,6 @@ public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>
         self.overrides = Headers(overrides ?? [:])
         self.additional = Headers(additional ?? [:])
         self.conditionallySet = Headers(conditionallySet ?? [:])
-    }
-
-    public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-    Self.MInput == H.Input,
-    Self.MOutput == H.Output {
-        mutateHeaders(builder: input)
-        return try await next.handle(context: context, input: input)
     }
 
     private func mutateHeaders(builder: SdkHttpRequestBuilder) {
@@ -48,9 +38,6 @@ public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>
             }
         }
     }
-
-    public typealias MInput = SdkHttpRequestBuilder
-    public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension MutateHeadersMiddleware: HttpInterceptor {

@@ -14,14 +14,12 @@ import SmithyTestUtil
 
 class SignerMiddlewareTests: XCTestCase {
     private var contextBuilder: ContextBuilder!
-    private var operationStack: OperationStack<MockInput, MockOutput>!
 
     override func setUp() async throws {
         try await super.setUp()
         contextBuilder = ContextBuilder()
-        operationStack = OperationStack<MockInput, MockOutput>(id: "auth scheme middleware test stack")
     }
-    
+
     // Test exception cases
     func testNoSelectedAuthScheme() async throws {
         let context = contextBuilder.build()
@@ -33,7 +31,7 @@ class SignerMiddlewareTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error.localizedDescription)")
         }
     }
-    
+
     func testNoIdentityInSelectedAuthScheme() async throws {
         let context = contextBuilder
             .withSelectedAuthScheme(value: SelectedAuthScheme(
@@ -51,7 +49,7 @@ class SignerMiddlewareTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error.localizedDescription)")
         }
     }
-    
+
     func testNoSignerInSelectedAuthScheme() async throws {
         let context = contextBuilder
             .withSelectedAuthScheme(value: SelectedAuthScheme(
@@ -69,7 +67,7 @@ class SignerMiddlewareTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error.localizedDescription)")
         }
     }
-    
+
     func testNoSigningPropertiesInSelectedAuthScheme() async throws {
         let context = contextBuilder
             .withSelectedAuthScheme(value: SelectedAuthScheme(
@@ -87,7 +85,7 @@ class SignerMiddlewareTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error.localizedDescription)")
         }
     }
-    
+
     // Test success cases
     func testSignedRequest() async throws {
         let context = contextBuilder
@@ -106,21 +104,17 @@ class SignerMiddlewareTests: XCTestCase {
         file: StaticString = #file,
         line: UInt = #line
     ) async throws {
-        operationStack.finalizeStep.intercept(position: .before, middleware: SignerMiddleware<MockOutput>())
-
-        let mockHandler = MockHandler<MockOutput>(handleCallback: { (context, input) in
-            XCTAssertEqual(
-                input.headers.value(for: "Mock-Authorization"),
-                "Mock-Signed",
-                file: file,
-                line: line
-            )
-            let httpResponse = HttpResponse(body: .noStream, statusCode: HttpStatusCode.ok)
-            let mockOutput = MockOutput()
-            let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
-            return output
-        })
-
-        _ = try await operationStack.handleMiddleware(context: builtContext, input: MockInput(), next: mockHandler)
+        let middleware = SignerMiddleware<MockOutput>()
+        let signed = try await middleware.apply(
+            request: SdkHttpRequest(method: .get, endpoint: Endpoint(uri: URIBuilder().build())),
+            selectedAuthScheme: builtContext.selectedAuthScheme,
+            attributes: builtContext
+        )
+        XCTAssertEqual(
+            signed.headers.value(for: "Mock-Authorization"),
+            "Mock-Signed",
+            file: file,
+            line: line
+        )
     }
 }

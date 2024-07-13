@@ -14,18 +14,13 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
  * How this interface is used is entirely protocol/generator dependent
  */
 interface MiddlewareRenderable {
-
     val name: String
-
-    val middlewareStep: MiddlewareStep
-
-    val position: MiddlewarePosition
 
     /**
      * Primary render method - what actually gets called to generate the middleware.
      *
      * The default implementation calls `renderSpecific` with the method name
-     * `interceptors.add` (only applies when using interceptors).
+     * `interceptors.add`.
      *
      * @see renderSpecific
      */
@@ -39,9 +34,7 @@ interface MiddlewareRenderable {
     fun renderMiddlewareInit(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape) {}
 
     /**
-     * When using interceptors, renders a specific method call on the orchestrator. Otherwise, adds
-     * a middleware to the operation stack. Either way, `renderMiddlewareInit` is called to generate
-     * the middleware.
+     * Renders a specific method call on the orchestrator. `renderMiddlewareInit` is called to generate the middleware.
      *
      * @see renderMiddlewareInit
      */
@@ -52,20 +45,10 @@ interface MiddlewareRenderable {
         operationStackName: String,
         orchestratorMethodName: String,
     ) {
-        if (ctx.settings.useInterceptors) {
-            writer.write(
-                "builder.\$L(\$C)",
-                orchestratorMethodName,
-                Runnable { renderMiddlewareInit(ctx, writer, op) }
-            )
-        } else {
-            writer.write(
-                "\$L.\$L.intercept(position: \$L, middleware: \$C)",
-                operationStackName,
-                middlewareStep.stringValue(),
-                position.stringValue(),
-                Runnable { renderMiddlewareInit(ctx, writer, op) }
-            )
-        }
+        writer.write(
+            "builder.\$L(\$C)",
+            orchestratorMethodName,
+            Runnable { renderMiddlewareInit(ctx, writer, op) }
+        )
     }
 }
