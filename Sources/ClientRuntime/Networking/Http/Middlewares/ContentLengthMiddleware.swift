@@ -6,7 +6,7 @@ import class Smithy.Context
 import enum Smithy.StreamError
 import SmithyHTTPAPI
 
-public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
+public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput> {
     public let id: String = "ContentLength"
 
     private let contentLengthHeaderName = "Content-Length"
@@ -17,23 +17,13 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
 
     /// Creates a new `ContentLengthMiddleware` with the supplied parameters
     /// - Parameters:
-    ///   - requiresLength: Trait requires the length of a blob stream to be known. 
+    ///   - requiresLength: Trait requires the length of a blob stream to be known.
     ///     When the request body is not a streaming blob, `nil` should be passed. Defaults to `nil`.
     ///   - unsignedPayload: Trait signifies that the length of a stream in payload does not need to be known.
     ///     When the request body is not a streaming blob, `nil` should be passed. Defaults to `nil`.
     public init(requiresLength: Bool? = nil, unsignedPayload: Bool? = nil) {
         self.requiresLength = requiresLength
         self.unsignedPayload = unsignedPayload
-    }
-
-    public func handle<H>(context: Context,
-                          input: MInput,
-                          next: H) async throws -> MOutput
-    where H: Handler,
-    Self.MInput == H.Input,
-    Self.MOutput == H.Output {
-        try addHeaders(builder: input, attributes: context)
-        return try await next.handle(context: context, input: input)
     }
 
     private func addHeaders(builder: HTTPRequestBuilder, attributes: Context) throws {
@@ -65,9 +55,6 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
             builder.updateHeader(name: "Content-Length", value: "0")
         }
     }
-
-    public typealias MInput = HTTPRequestBuilder
-    public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension ContentLengthMiddleware: HttpInterceptor {

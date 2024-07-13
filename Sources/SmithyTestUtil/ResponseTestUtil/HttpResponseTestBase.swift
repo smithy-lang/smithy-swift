@@ -15,7 +15,7 @@ import class AwsCommonRuntimeKit.ByteBuffer
  */
 open class HttpResponseTestBase: XCTestCase {
     /**
-     Create `HttpResponse` from its components
+     Create `HTTPResponse` from its components
      */
     public func buildHttpResponse(code: Int,
                                   path: String? = nil,

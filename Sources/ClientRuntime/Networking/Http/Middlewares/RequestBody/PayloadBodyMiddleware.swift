@@ -17,7 +17,7 @@ import SmithyHTTPAPI
 public struct PayloadBodyMiddleware<OperationStackInput,
                                     OperationStackOutput,
                                     OperationStackInputPayload,
-                                    Writer: SmithyWriter>: Middleware {
+                                    Writer: SmithyWriter> {
     public let id: Swift.String = "PayloadBodyMiddleware"
 
     let rootNodeInfo: Writer.NodeInfo
@@ -36,20 +36,6 @@ public struct PayloadBodyMiddleware<OperationStackInput,
         self.keyPath = keyPath
         self.defaultBody = defaultBody
     }
-
-    public func handle<H>(context: Context,
-                          input: SerializeStepInput<OperationStackInput>,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-          Self.MInput == H.Input,
-          Self.MOutput == H.Output {
-              try apply(input: input.operationInput, builder: input.builder, attributes: context)
-              return try await next.handle(context: context, input: input)
-          }
-
-    public typealias MInput = SerializeStepInput<OperationStackInput>
-    public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = Smithy.Context
 }
 
 extension PayloadBodyMiddleware: RequestMessageSerializer {

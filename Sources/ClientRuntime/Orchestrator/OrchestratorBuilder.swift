@@ -6,6 +6,7 @@
 //
 
 import class Smithy.Context
+import class Smithy.ContextBuilder
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
 import protocol Smithy.RequestMessageSerializer
@@ -27,7 +28,7 @@ public class OrchestratorBuilder<
     public var interceptors: Interceptors<InputType, OutputType, RequestType, ResponseType> =
         Interceptors()
 
-    internal var attributes: Smithy.Context?
+    internal var attributes: Smithy.Context = Smithy.ContextBuilder().build()
     internal var serialize: (InputType, RequestType.RequestBuilderType, Context) throws -> Void = { _, _, _ in }
     internal var deserialize: ((ResponseType, Context) async throws -> OutputType)?
     internal var retryStrategy: (any RetryStrategy)?

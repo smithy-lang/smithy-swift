@@ -12,7 +12,7 @@ import SmithyHTTPAPI
 
 public struct EnumBodyMiddleware<OperationStackInput,
                                  OperationStackOutput,
-                                 Primitive: RawRepresentable>: Middleware where Primitive.RawValue == String {
+                                 Primitive: RawRepresentable> where Primitive.RawValue == String {
     public let id: Swift.String = "EnumBodyMiddleware"
 
     let keyPath: KeyPath<OperationStackInput, Primitive?>
@@ -20,26 +20,11 @@ public struct EnumBodyMiddleware<OperationStackInput,
     public init(keyPath: KeyPath<OperationStackInput, Primitive?>) {
         self.keyPath = keyPath
     }
-
-    public func handle<H>(context: Context,
-                          input: SerializeStepInput<OperationStackInput>,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-          Self.MInput == H.Input,
-          Self.MOutput == H.Output {
-              try apply(input: input.operationInput, builder: input.builder, attributes: context)
-              return try await next.handle(context: context, input: input)
-          }
-
-    public typealias MInput = SerializeStepInput<OperationStackInput>
-    public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = Smithy.Context
 }
 
 extension EnumBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
     public typealias RequestType = HTTPRequest
-    public typealias AttributesType = Smithy.Context
 
     public func apply(input: OperationStackInput, builder: HTTPRequestBuilder, attributes: Smithy.Context) throws {
         let bodyString = input[keyPath: keyPath]?.rawValue ?? ""

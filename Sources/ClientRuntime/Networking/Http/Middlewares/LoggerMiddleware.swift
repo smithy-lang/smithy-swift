@@ -10,7 +10,7 @@ import class Smithy.Context
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 
-public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
+public struct LoggerMiddleware<OperationStackInput, OperationStackOutput> {
 
     public let id: String = "Logger"
 
@@ -18,26 +18,6 @@ public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middl
 
     public init(clientLogMode: ClientLogMode) {
         self.clientLogMode = clientLogMode
-    }
-
-    public func handle<H>(context: Context,
-                          input: HTTPRequest,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-          Self.MInput == H.Input,
-          Self.MOutput == H.Output {
-
-        guard let logger = context.getLogger() else {
-            return try await next.handle(context: context, input: input)
-        }
-
-        logRequest(logger: logger, request: input)
-
-        let response = try await next.handle(context: context, input: input)
-
-        logResponse(logger: logger, response: response.httpResponse)
-
-        return response
     }
 
     private func logRequest(logger: any LogAgent, request: HTTPRequest) {
@@ -57,9 +37,6 @@ public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middl
             logger.debug("Response: \(response.debugDescriptionWithBody)")
         }
     }
-
-    public typealias MInput = HTTPRequest
-    public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension LoggerMiddleware: HttpInterceptor {

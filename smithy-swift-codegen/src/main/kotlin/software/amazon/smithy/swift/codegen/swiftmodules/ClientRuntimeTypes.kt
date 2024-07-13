@@ -19,23 +19,18 @@ object ClientRuntimeTypes {
     }
 
     object Middleware {
-        val OperationOutput = runtimeSymbol("OperationOutput", SwiftDeclaration.STRUCT)
-        val Middleware = runtimeSymbol("Middleware", SwiftDeclaration.PROTOCOL)
         val LoggerMiddleware = runtimeSymbol("LoggerMiddleware", SwiftDeclaration.STRUCT)
         val ContentLengthMiddleware = runtimeSymbol("ContentLengthMiddleware", SwiftDeclaration.STRUCT)
         val ContentTypeMiddleware = runtimeSymbol("ContentTypeMiddleware", SwiftDeclaration.STRUCT)
         val ContentMD5Middleware = runtimeSymbol("ContentMD5Middleware", SwiftDeclaration.STRUCT)
         val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware", SwiftDeclaration.STRUCT)
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware", SwiftDeclaration.STRUCT)
-        val OperationStack = runtimeSymbol("OperationStack", SwiftDeclaration.STRUCT)
         val URLHostMiddleware = runtimeSymbol("URLHostMiddleware", SwiftDeclaration.STRUCT)
         val URLPathMiddleware = runtimeSymbol("URLPathMiddleware", SwiftDeclaration.STRUCT)
         val QueryItemMiddleware = runtimeSymbol("QueryItemMiddleware", SwiftDeclaration.STRUCT)
         val HeaderMiddleware = runtimeSymbol("HeaderMiddleware", SwiftDeclaration.STRUCT)
-        val RetryMiddleware = runtimeSymbol("RetryMiddleware", SwiftDeclaration.STRUCT)
         val IdempotencyTokenMiddleware =
             runtimeSymbol("IdempotencyTokenMiddleware", SwiftDeclaration.STRUCT)
-        val NoopHandler = runtimeSymbol("NoopHandler", SwiftDeclaration.STRUCT)
         val SignerMiddleware = runtimeSymbol("SignerMiddleware", SwiftDeclaration.STRUCT)
         val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware", SwiftDeclaration.STRUCT)
         val BodyMiddleware = runtimeSymbol("BodyMiddleware", SwiftDeclaration.STRUCT)
@@ -48,7 +43,6 @@ object ClientRuntimeTypes {
         val StringBodyMiddleware = runtimeSymbol("StringBodyMiddleware", SwiftDeclaration.STRUCT)
         val HttpInterceptor = runtimeSymbol("HttpInterceptor", SwiftDeclaration.PROTOCOL)
         val MutableInput = runtimeSymbol("MutableInput", SwiftDeclaration.PROTOCOL)
-        val Handler = runtimeSymbol("Handler", SwiftDeclaration.PROTOCOL)
         val OrchestratorBuilder = runtimeSymbol("OrchestratorBuilder", SwiftDeclaration.CLASS)
         val OrchestratorTelemetry = runtimeSymbol("OrchestratorTelemetry", SwiftDeclaration.CLASS)
         val OrchestratorMetricsAttributesKeys = runtimeSymbol("OrchestratorMetricsAttributesKeys", SwiftDeclaration.ENUM)
