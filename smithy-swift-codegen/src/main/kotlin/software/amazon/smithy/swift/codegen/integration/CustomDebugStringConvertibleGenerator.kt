@@ -59,14 +59,7 @@ class CustomDebugStringConvertibleGenerator(
     private fun renderDescription() {
         val symbolName = structSymbol.name
         writer.writeInline("\"$symbolName(")
-        val membersWithoutSensitiveTrait = membersSortedByName
-            .filterNot { it.isSensitive(model) }
-            .sortedBy { it.memberName }
-            .toList()
-        val membersWithSensitiveTrait = membersSortedByName
-            .filter { it.isSensitive(model) }
-            .sortedBy { it.memberName }
-            .toList()
+        val (membersWithSensitiveTrait, membersWithoutSensitiveTrait) = membersSortedByName.partition { it.isSensitive(model) }
         for (member in membersWithoutSensitiveTrait) {
             renderMemberDescription(writer, member, false)
             renderComma(writer, member != membersWithoutSensitiveTrait.last())
