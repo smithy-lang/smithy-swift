@@ -27,12 +27,13 @@ open class AuthUtils(
             authSchemeList += writer.format("\$N()", SmithyHTTPAuthTypes.BearerTokenAuthScheme)
         }
 
-        addAdditionalSchemes(writer, authSchemeList)
+        authSchemeList = addAdditionalSchemes(writer, authSchemeList)
 
         return "[${authSchemeList.joinToString(", ")}]"
     }
 
-    open fun addAdditionalSchemes(writer: SwiftWriter, authSchemeList: Array<String>) {
+    open fun addAdditionalSchemes(writer: SwiftWriter, authSchemeList: Array<String>): Array<String> {
         // Override to add any additional auth schemes supported
+        return authSchemeList
     }
 }
