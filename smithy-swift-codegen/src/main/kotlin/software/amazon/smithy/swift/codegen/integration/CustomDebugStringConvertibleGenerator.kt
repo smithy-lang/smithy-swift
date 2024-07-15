@@ -83,7 +83,7 @@ class CustomDebugStringConvertibleGenerator(
         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
         var description = ""
         if (member.isMapShape) {
-            when(getNestedSensitiveTraitInfoInMapShape(member.asMapShape().get())) {
+            when (getNestedSensitiveTraitInfoInMapShape(member.asMapShape().get())) {
                 MapShapeSensitiveTraitInfo.BOTH_SENSITIVE -> "\\\"$REDACT_STRING\\\""
                 MapShapeSensitiveTraitInfo.SENSITIVE_KEYS -> "\\(${SwiftTypes.String}(describing: $path${memberNames.first}.values))"
                 MapShapeSensitiveTraitInfo.SENSITIVE_VALUES -> "\\(${SwiftTypes.String}(describing: $path${memberNames.first}.keys))"
