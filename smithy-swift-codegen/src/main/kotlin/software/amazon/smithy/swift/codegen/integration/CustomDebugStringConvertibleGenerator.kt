@@ -8,7 +8,10 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.ListShape
+import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.SensitiveTrait
@@ -25,6 +28,14 @@ class CustomDebugStringConvertibleGenerator(
 ) {
     companion object {
         const val REDACT_STRING = "CONTENT_REDACTED"
+
+        fun Shape.isSensitive(model: Model): Boolean = when {
+            this is MemberShape -> model.expectShape(target).isSensitive(model)
+            hasTrait<SensitiveTrait>() -> true
+            this is ListShape -> member.isSensitive(model)
+            this is MapShape -> key.isSensitive(model) || value.isSensitive(model)
+            else -> false
+        }
     }
 
     private val structSymbol: Symbol by lazy {
@@ -49,11 +60,11 @@ class CustomDebugStringConvertibleGenerator(
         val symbolName = structSymbol.name
         writer.writeInline("\"$symbolName(")
         val membersWithoutSensitiveTrait = membersSortedByName
-            .filterNot { it.hasTrait<SensitiveTrait>() || model.expectShape(it.target).hasTrait<SensitiveTrait>() }
+            .filterNot { it.isSensitive(model) }
             .sortedBy { it.memberName }
             .toList()
         val membersWithSensitiveTrait = membersSortedByName
-            .filter { it.hasTrait<SensitiveTrait>() || model.expectShape(it.target).hasTrait<SensitiveTrait>() }
+            .filter { it.isSensitive(model) }
             .sortedBy { it.memberName }
             .toList()
         for (member in membersWithoutSensitiveTrait) {
