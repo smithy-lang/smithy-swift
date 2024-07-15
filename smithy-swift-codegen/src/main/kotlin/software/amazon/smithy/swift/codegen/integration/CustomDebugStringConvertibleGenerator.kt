@@ -81,7 +81,18 @@ class CustomDebugStringConvertibleGenerator(
     ) {
         val memberNames = symbolProvider.toMemberNames(member)
         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
-        val description = if (isRedacted) "\\\"$REDACT_STRING\\\"" else "\\(${SwiftTypes.String}(describing: $path${memberNames.first}))"
+        var description = ""
+        if (member.isMapShape) {
+            when(getNestedSensitiveTraitInfoInMapShape(member.asMapShape().get())) {
+                MapShapeSensitiveTraitInfo.BOTH_SENSITIVE -> "\\\"$REDACT_STRING\\\""
+                MapShapeSensitiveTraitInfo.SENSITIVE_KEYS -> "\\(${SwiftTypes.String}(describing: $path${memberNames.first}.values))"
+                MapShapeSensitiveTraitInfo.SENSITIVE_VALUES -> "\\(${SwiftTypes.String}(describing: $path${memberNames.first}.keys))"
+                MapShapeSensitiveTraitInfo.NONE -> "\\(${SwiftTypes.String}(describing: $path${memberNames.first}))"
+            }
+        } else {
+            description =
+                if (isRedacted) "\\\"$REDACT_STRING\\\"" else "\\(${SwiftTypes.String}(describing: $path${memberNames.first}))"
+        }
         writer.writeInline("${memberNames.second}: $description")
     }
 
@@ -89,5 +100,20 @@ class CustomDebugStringConvertibleGenerator(
         if (shouldWriteComma) {
             writer.writeInline(", ")
         }
+    }
+
+    private fun getNestedSensitiveTraitInfoInMapShape(member: MapShape): MapShapeSensitiveTraitInfo {
+        if (member.hasTrait<SensitiveTrait>()) return MapShapeSensitiveTraitInfo.BOTH_SENSITIVE
+        if (member.key.isSensitive(model) && member.value.isSensitive(model)) return MapShapeSensitiveTraitInfo.BOTH_SENSITIVE
+        if (member.key.isSensitive(model)) return MapShapeSensitiveTraitInfo.SENSITIVE_KEYS
+        if (member.value.isSensitive(model)) return MapShapeSensitiveTraitInfo.SENSITIVE_VALUES
+        return MapShapeSensitiveTraitInfo.NONE
+    }
+
+    private enum class MapShapeSensitiveTraitInfo {
+        SENSITIVE_KEYS,
+        SENSITIVE_VALUES,
+        BOTH_SENSITIVE,
+        NONE
     }
 }
