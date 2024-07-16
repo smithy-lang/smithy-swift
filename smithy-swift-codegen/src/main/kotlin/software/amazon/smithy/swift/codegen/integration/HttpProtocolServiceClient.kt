@@ -8,10 +8,8 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.config.ConfigProperty
-import software.amazon.smithy.swift.codegen.config.DefaultHttpClientConfiguration
 import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlugin
 import software.amazon.smithy.swift.codegen.model.renderSwiftType
-import software.amazon.smithy.swift.codegen.model.toGeneric
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyIdentityTypes

@@ -7,6 +7,7 @@
 
 import struct Smithy.Attributes
 
+/// The token identity resolver that returns a static token identity given to it at initialization.
 public struct StaticBearerTokenIdentityResolver: BearerTokenIdentityResolver {
     private let token: BearerTokenIdentity
 

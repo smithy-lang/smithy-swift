@@ -8,6 +8,7 @@
 import protocol SmithyIdentityAPI.Identity
 import struct Foundation.Date
 
+/// The type representing bearer token identity, used in HTTP bearer auth.
 public struct BearerTokenIdentity: Identity {
     public let token: String
     public let expiration: Date?
