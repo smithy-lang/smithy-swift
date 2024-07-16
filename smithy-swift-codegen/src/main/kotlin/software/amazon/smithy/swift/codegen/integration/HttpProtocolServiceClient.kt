@@ -8,10 +8,13 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.config.ConfigProperty
+import software.amazon.smithy.swift.codegen.config.DefaultHttpClientConfiguration
 import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlugin
 import software.amazon.smithy.swift.codegen.model.renderSwiftType
+import software.amazon.smithy.swift.codegen.model.toGeneric
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyIdentityTypes
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.CodeSection
 
@@ -164,7 +167,14 @@ open class HttpProtocolServiceClient(
      */
     private fun renderConfigClassVariables(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
         properties.forEach {
-            it.render(writer)
+            when (it.name) {
+                "bearerTokenIdentityResolver" -> {
+                    writer.write("public var \$N: any \$N", it.name, SmithyIdentityTypes.BearerTokenIdentityResolver)
+                }
+                else -> {
+                    it.render(writer)
+                }
+            }
             writer.write("")
         }
         writer.injectSection(ConfigClassVariablesCustomization(serviceSymbol))
