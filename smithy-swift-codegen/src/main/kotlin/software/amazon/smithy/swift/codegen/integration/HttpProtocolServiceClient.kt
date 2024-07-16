@@ -169,7 +169,7 @@ open class HttpProtocolServiceClient(
         properties.forEach {
             when (it.name) {
                 "bearerTokenIdentityResolver" -> {
-                    writer.write("public var \$N: any \$N", it.name, SmithyIdentityTypes.BearerTokenIdentityResolver)
+                    writer.write("public var \$L: any \$N", it.name, SmithyIdentityTypes.BearerTokenIdentityResolver)
                 }
                 else -> {
                     it.render(writer)
