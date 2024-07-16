@@ -63,14 +63,29 @@ fun ServiceShape.hasIdempotentTokenMember(model: Model) =
 val Shape.isDeprecated: Boolean
     get() = hasTrait<DeprecatedTrait>()
 
+/**
+ * Test if a shape represents a string enumeration shape
+ */
 val Shape.isEnum: Boolean
     get() = isStringShape && hasTrait<EnumTrait>()
 
+/**
+ * Test if a shape is an error.
+ */
 val Shape.isError: Boolean
     get() = hasTrait<ErrorTrait>()
 
+/**
+ * Test if a shape represents a Kotlin number type
+ */
 val Shape.isNumberShape: Boolean
     get() = this is NumberShape
+
+/**
+ * Test if a shape has the streaming trait applied.
+ */
+val Shape.isStreaming: Boolean
+    get() = hasTrait<StreamingTrait>()
 
 fun Shape.toUpperCamelCase(): String {
     return this.id.name.toUpperCamelCase()
