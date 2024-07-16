@@ -214,6 +214,10 @@ let package = Package(
             dependencies: ["SmithyXML", "ClientRuntime"]
         ),
         .testTarget(
+            name: "SmithyHTTPAuthTests",
+            dependencies: ["SmithyHTTPAuth", "SmithyHTTPAPI", "Smithy", "SmithyIdentity","ClientRuntime"]
+        ),
+        .testTarget(
             name: "SmithyJSONTests",
             dependencies: ["SmithyJSON", "ClientRuntime"]
         ),

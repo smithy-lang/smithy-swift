@@ -15,6 +15,8 @@ import struct SmithyIdentity.BearerTokenIdentity
 /// The signer for HTTP bearer auth.
 /// Adds the Authorization header to the request using the resolved bearer token identity as its value.
 public class BearerTokenSigner: Signer {
+    public init() {}
+
     public func signRequest<IdentityT>(
         requestBuilder: SmithyHTTPAPI.SdkHttpRequestBuilder,
         identity: IdentityT,
