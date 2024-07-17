@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum SmithyHTTPAPI.HttpStatusCode
+import enum SmithyHTTPAPI.HTTPStatusCode
 import struct SmithyRetriesAPI.RetryErrorInfo
 import enum SmithyRetriesAPI.RetryErrorType
 import protocol SmithyRetriesAPI.RetryErrorInfoProvider
@@ -17,7 +17,7 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
     /// - Returns: `RetryErrorInfo` for the passed error, or `nil` if the error should not be retried.
     public static func errorInfo(for error: Error) -> RetryErrorInfo? {
         var hint: TimeInterval?
-        let retryableStatusCodes: [HttpStatusCode] = [
+        let retryableStatusCodes: [HTTPStatusCode] = [
             .internalServerError,  // 500
             .badGateway,           // 502
             .serviceUnavailable,   // 503

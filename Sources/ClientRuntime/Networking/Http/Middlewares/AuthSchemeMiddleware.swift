@@ -9,7 +9,7 @@ import enum Smithy.ClientError
 import struct Smithy.Attributes
 import struct Smithy.AttributeKey
 import class Smithy.Context
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequestBuilder
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 import protocol SmithyHTTPAuthAPI.AuthScheme
 import struct SmithyHTTPAuth.DefaultIdentityResolverConfiguration
@@ -19,11 +19,11 @@ public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
 
     public init () {}
 
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = HTTPRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
 
     public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
+                          input: HTTPRequestBuilder,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
     Self.MInput == H.Input,

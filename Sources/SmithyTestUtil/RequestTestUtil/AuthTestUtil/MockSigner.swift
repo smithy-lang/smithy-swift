@@ -18,10 +18,10 @@ public struct MockSigner: Signer {
     public init() {}
 
     public func signRequest<IdentityT: Identity>(
-        requestBuilder: SdkHttpRequestBuilder,
+        requestBuilder: HTTPRequestBuilder,
         identity: IdentityT,
         signingProperties: Attributes
-    ) async throws -> SdkHttpRequestBuilder {
+    ) async throws -> HTTPRequestBuilder {
         requestBuilder.withHeader(name: "Mock-Authorization", value: "Mock-Signed")
         return requestBuilder
     }

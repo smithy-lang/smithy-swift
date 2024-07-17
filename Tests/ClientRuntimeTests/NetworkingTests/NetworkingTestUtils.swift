@@ -11,8 +11,8 @@ import XCTest
 
 class NetworkingTestUtils: XCTestCase {
 
-    var mockHttpDataRequest: SdkHttpRequest!
-    var mockHttpStreamRequest: SdkHttpRequest!
+    var mockHttpDataRequest: HTTPRequest!
+    var mockHttpStreamRequest: HTTPRequest!
     var expectedMockRequestURL: URL!
     var expectedMockRequestData: Data!
 
@@ -33,7 +33,7 @@ class NetworkingTestUtils: XCTestCase {
         let endpoint = getMockEndpoint(headers: headers)
 
         let httpBody = ByteStream.data(expectedMockRequestData)
-        mockHttpDataRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
+        mockHttpDataRequest = HTTPRequest(method: .get, endpoint: endpoint, body: httpBody)
     }
 
     /*
@@ -44,7 +44,7 @@ class NetworkingTestUtils: XCTestCase {
         let endpoint = getMockEndpoint(headers: headers)
 
         let httpBody = ByteStream.data(expectedMockRequestData)
-        mockHttpStreamRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
+        mockHttpStreamRequest = HTTPRequest(method: .get, endpoint: endpoint, body: httpBody)
     }
 
     func getMockEndpoint(headers: Headers) -> Endpoint {
@@ -59,7 +59,7 @@ class NetworkingTestUtils: XCTestCase {
     }
 
     func testHttpStatusCodeDescriptionWorks() {
-        let httpStatusCode = HttpStatusCode.ok
+        let httpStatusCode = HTTPStatusCode.ok
         let httpStatusCodeDescription = httpStatusCode.description
 
         XCTAssertNotNil(httpStatusCodeDescription)

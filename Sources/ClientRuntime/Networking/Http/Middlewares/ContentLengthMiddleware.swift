@@ -36,7 +36,7 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
         return try await next.handle(context: context, input: input)
     }
 
-    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: Context) throws {
+    private func addHeaders(builder: HTTPRequestBuilder, attributes: Context) throws {
         switch builder.body {
         case .data(let data):
             let contentLength = data?.count ?? 0
@@ -66,7 +66,7 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
         }
     }
 
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = HTTPRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 

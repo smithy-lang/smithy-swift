@@ -34,7 +34,7 @@ class ProviderTests: HttpRequestTestBase {
                                         next: MockHandler { (context, request) in
 
             XCTAssertEqual(context.path, "/3")
-            let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
+            let httpResponse = HTTPResponse(body: ByteStream.noStream, statusCode: HTTPStatusCode.ok)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
             return output
         })
@@ -57,7 +57,7 @@ class ProviderTests: HttpRequestTestBase {
             XCTAssert(request.queryItems?.first(where: { queryItem in
                 queryItem.value == "3"
             }) != nil)
-            let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
+            let httpResponse = HTTPResponse(body: ByteStream.noStream, statusCode: HTTPStatusCode.ok)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
             return output
         })
@@ -87,7 +87,7 @@ class ProviderTests: HttpRequestTestBase {
             XCTAssert(request.headers.headers.first(where: { header in
                 header.value == ["3"]
             }) != nil)
-            let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
+            let httpResponse = HTTPResponse(body: ByteStream.noStream, statusCode: HTTPStatusCode.ok)
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
             return output
         })

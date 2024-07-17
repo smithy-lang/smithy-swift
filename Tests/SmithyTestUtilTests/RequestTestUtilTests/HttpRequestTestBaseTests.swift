@@ -212,7 +212,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                 try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: .json)
             })
 
-            let response = HttpResponse(body: ByteStream.noStream, statusCode: .ok)
+            let response = HTTPResponse(body: ByteStream.noStream, statusCode: .ok)
             let mockOutput = MockOutput()
             let output = OperationOutput<MockOutput>(httpResponse: response, output: mockOutput)
             return output
@@ -223,7 +223,7 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             .build()
         _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler { (_, _) in
             XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HttpResponse(body: .noStream, statusCode: .badRequest)
+            let httpResponse = HTTPResponse(body: .noStream, statusCode: .badRequest)
             let mockServiceError = MockMiddlewareError.responseErrorClosure(httpResponse)
             throw mockServiceError
         })

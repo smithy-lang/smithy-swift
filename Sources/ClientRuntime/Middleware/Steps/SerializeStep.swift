@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 import class Smithy.Context
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequestBuilder
 
 /// Serializes the prepared input into a data structure that can be consumed
 /// by the target transport's message, (e.g. REST-JSON serialization)
@@ -16,7 +16,7 @@ public typealias SerializeStep<OperationStackInput, OperationStackOutput> =
 public let SerializeStepId = "Serialize"
 
 public struct SerializeStepHandler<OperationStackInput, OperationStackOutput, H: Handler>: Handler
-    where H.Input == SdkHttpRequestBuilder,
+    where H.Input == HTTPRequestBuilder,
           H.Output == OperationOutput<OperationStackOutput> {
 
     public typealias Input = SerializeStepInput<OperationStackInput>
@@ -36,5 +36,5 @@ public struct SerializeStepHandler<OperationStackInput, OperationStackOutput, H:
 
 public struct SerializeStepInput<OperationStackInput> {
     public let operationInput: OperationStackInput
-    public let builder: SdkHttpRequestBuilder = SdkHttpRequestBuilder()
+    public let builder: HTTPRequestBuilder = HTTPRequestBuilder()
 }

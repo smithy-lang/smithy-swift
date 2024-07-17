@@ -24,7 +24,7 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
         return try await next.handle(context: context, input: input)
     }
 
-    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: Context) async throws {
+    private func addHeaders(builder: HTTPRequestBuilder, attributes: Context) async throws {
         // Skip MD5 hash if using checksums
         if builder.headers.exists(name: "x-amz-sdk-checksum-algorithm") {
             return
@@ -65,7 +65,7 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
         }
     }
 
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = HTTPRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 

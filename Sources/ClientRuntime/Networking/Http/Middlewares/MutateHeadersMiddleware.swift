@@ -3,7 +3,7 @@
 
 import class Smithy.Context
 import struct SmithyHTTPAPI.Headers
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequestBuilder
 
 public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
@@ -22,7 +22,7 @@ public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>
     }
 
     public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
+                          input: HTTPRequestBuilder,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
     Self.MInput == H.Input,
@@ -31,7 +31,7 @@ public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>
         return try await next.handle(context: context, input: input)
     }
 
-    private func mutateHeaders(builder: SdkHttpRequestBuilder) {
+    private func mutateHeaders(builder: HTTPRequestBuilder) {
         if !additional.dictionary.isEmpty {
             builder.withHeaders(additional)
         }
@@ -49,7 +49,7 @@ public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>
         }
     }
 
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = HTTPRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 

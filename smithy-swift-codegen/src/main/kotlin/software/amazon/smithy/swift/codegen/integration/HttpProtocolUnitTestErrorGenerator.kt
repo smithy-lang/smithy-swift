@@ -10,6 +10,7 @@ import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseErrorClosureUtils
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 
 open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestResponseGenerator(builder) {
@@ -65,7 +66,11 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
 
     override fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
         writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
-        writer.write("XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: \$L))", test.code)
+        writer.write(
+            "XCTAssertEqual(actual.httpResponse.statusCode, \$N(rawValue: \$L))",
+            SmithyHTTPAPITypes.HTTPStatusCode,
+            test.code,
+        )
         super.renderAssertions(test, outputShape)
     }
 

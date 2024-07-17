@@ -56,7 +56,7 @@ class OperationStackTests: HttpRequestTestBase {
                                             next: MockHandler { (_, request) in
                                                 self.checkOrder(&currExpectCount, 6)
                                                 XCTAssert(request.headers.value(for: "TestHeaderName1") == "TestHeaderValue1")
-                                                let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
+                                                let httpResponse = HTTPResponse(body: ByteStream.noStream, statusCode: HTTPStatusCode.ok)
                                                 let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
                                                 return output
                                             })

@@ -12,9 +12,9 @@ import struct Smithy.SwiftLogger
 import protocol Smithy.LogAgent
 import protocol SmithyHTTPAPI.HTTPClient
 import struct SmithyHTTPAPI.Headers
-import class SmithyHTTPAPI.HttpResponse
-import class SmithyHTTPAPI.SdkHttpRequest
-import enum SmithyHTTPAPI.HttpStatusCode
+import class SmithyHTTPAPI.HTTPResponse
+import class SmithyHTTPAPI.HTTPRequest
+import enum SmithyHTTPAPI.HTTPStatusCode
 import protocol Smithy.ReadableStream
 import enum Smithy.ByteStream
 import class SmithyStreams.BufferedStream
@@ -71,7 +71,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         ///
         /// Once the initial response is received, the continuation is called, and is subsequently set to `nil` so its
         /// resources may be deallocated and to prevent it from being resumed twice.
-        private var continuation: CheckedContinuation<HttpResponse, Error>?
+        private var continuation: CheckedContinuation<HTTPResponse, Error>?
 
         /// HTTP Client Telemetry
         private let telemetry: HttpTelemetry
@@ -83,7 +83,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         ///
         /// Calling this method and/or `resume(throwing:)` more than once has no effect.
         /// - Parameter httpResponse: The HTTP response to be asynchronously returned to the caller.
-        func resume(returning httpResponse: HttpResponse) {
+        func resume(returning httpResponse: HTTPResponse) {
             continuation?.resume(returning: httpResponse)
             continuation = nil
         }
@@ -113,7 +113,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         ///   - telemetry:    The HTTP client telemetry.
         init(
             streamBridge: FoundationStreamBridge?,
-            continuation: CheckedContinuation<HttpResponse, Error>,
+            continuation: CheckedContinuation<HTTPResponse, Error>,
             telemetry: HttpTelemetry
         ) {
             self.streamBridge = streamBridge
@@ -285,14 +285,14 @@ public final class URLSessionHTTPClient: HTTPClient {
                     connection.resume(throwing: error)
                     return
                 }
-                let statusCode = HttpStatusCode(rawValue: httpResponse.statusCode) ?? .insufficientStorage
+                let statusCode = HTTPStatusCode(rawValue: httpResponse.statusCode) ?? .insufficientStorage
                 let httpHeaders: [HTTPHeader] = httpResponse.allHeaderFields.compactMap { (name, value) in
                     guard let name = name as? String else { return nil }
                     return HTTPHeader(name: name, value: String(describing: value))
                 }
                 let headers = Headers(httpHeaders: httpHeaders)
                 let body = ByteStream.stream(connection.responseStream)
-                let response = HttpResponse(headers: headers, body: body, statusCode: statusCode)
+                let response = HTTPResponse(headers: headers, body: body, statusCode: statusCode)
                 connection.resume(returning: response)
             }
             return .allow
@@ -456,7 +456,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// - Parameter request: The request to be submitted to the server.  Fields must be filled in sufficiently to form a valid URL.
     /// - Returns: The response to the request.  This call may return as soon as a complete response is received but before the body finishes streaming;
     /// the response body will continue to stream back to the caller.
-    public func send(request: SdkHttpRequest) async throws -> HttpResponse {
+    public func send(request: HTTPRequest) async throws -> HTTPResponse {
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
             scope: telemetry.tracerScope,
@@ -582,7 +582,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     ///   - request: The SDK-native, signed `SdkHttpRequest` ready to be transmitted.
     ///   - httpBodyStream: A Foundation `InputStream` carrying the HTTP body for this request.
     /// - Returns: A `URLRequest` ready to be transmitted by `URLSession` for this operation.
-    private func makeURLRequest(from request: SdkHttpRequest, body: Body) throws -> URLRequest {
+    private func makeURLRequest(from request: HTTPRequest, body: Body) throws -> URLRequest {
         var components = URLComponents()
         components.scheme = config.protocolType?.rawValue ?? request.destination.scheme.rawValue
         components.host = request.endpoint.uri.host
@@ -610,7 +610,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         return urlRequest
     }
 
-    private func port(for request: SdkHttpRequest) -> Int? {
+    private func port(for request: HTTPRequest) -> Int? {
         switch (request.destination.scheme, request.destination.port) {
         case (.https, 443), (.http, 80):
             // Don't set port explicitly if it's the default port for the scheme
@@ -630,7 +630,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         }
     }
 
-    private static func makeServerAddress(request: SdkHttpRequest) -> String {
+    private static func makeServerAddress(request: HTTPRequest) -> String {
         let host = request.destination.host
         if let port = request.destination.port {
             return "\(host):\(port)"
