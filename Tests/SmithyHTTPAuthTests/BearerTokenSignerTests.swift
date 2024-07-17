@@ -6,7 +6,7 @@
 //
 
 import class SmithyHTTPAuth.BearerTokenSigner
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequestBuilder
 import struct Smithy.Attributes
 import struct SmithyIdentity.BearerTokenIdentity
 import XCTest
@@ -14,7 +14,7 @@ import XCTest
 class BearerTokenSignerTests: XCTestCase {
     func testSignRequest() async throws {
         let tokenIdentity = BearerTokenIdentity(token: "dummy-token-for-test")
-        let unsignedRequest = SdkHttpRequestBuilder()
+        let unsignedRequest = HTTPRequestBuilder()
         let signer = BearerTokenSigner()
         let signedRequest = try await signer.signRequest(requestBuilder: unsignedRequest, identity: tokenIdentity, signingProperties: Attributes())
         XCTAssert(signedRequest.headers.exists(name: "Authorization"))
