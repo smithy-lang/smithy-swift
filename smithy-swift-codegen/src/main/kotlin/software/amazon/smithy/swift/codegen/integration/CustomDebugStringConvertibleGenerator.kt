@@ -99,8 +99,8 @@ class CustomDebugStringConvertibleGenerator(
     private fun getStringForLoggingMapShape(member: MapShape, path: String, memberNames: Pair<String, String>): String {
         if (member.hasTrait<SensitiveTrait>()) return "\\\"$REDACT_STRING\\\""
         if (member.key.isSensitive(model) && member.value.isSensitive(model)) return "\\\"$REDACT_STRING\\\""
-        if (member.key.isSensitive(model)) return "[keys: \\\"$REDACT_STRING\\\", values: \\(${SwiftTypes.String}(describing: $path${memberNames.first}.values))]"
-        if (member.value.isSensitive(model)) return "[keys: \\(${SwiftTypes.String}(describing: $path${memberNames.first}.keys)), values: \\\"$REDACT_STRING\\\"]"
+        if (member.key.isSensitive(model)) return "[keys: \\\"$REDACT_STRING\\\", values: \\(${SwiftTypes.String}(describing: $path${memberNames.first}?.values))]"
+        if (member.value.isSensitive(model)) return "[keys: \\(${SwiftTypes.String}(describing: $path${memberNames.first}?.keys)), values: \\\"$REDACT_STRING\\\"]"
         return "\\(${SwiftTypes.String}(describing: $path${memberNames.first}))"
     }
 }

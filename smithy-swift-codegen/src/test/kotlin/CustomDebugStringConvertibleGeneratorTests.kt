@@ -32,7 +32,7 @@ class CustomDebugStringConvertibleGeneratorTests {
         val context = setupTests("custom-debug-string-convertible-generator-test.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce("mapWithSensitiveTargetedByKey: [keys: \\\"CONTENT_REDACTED\\\", values: \\(Swift.String(describing: mapWithSensitiveTargetedByKey.values))]")
+        contents.shouldContainOnlyOnce("mapWithSensitiveTargetedByKey: [keys: \\\"CONTENT_REDACTED\\\", values: \\(Swift.String(describing: mapWithSensitiveTargetedByKey?.values))]")
     }
 
     @Test
@@ -40,7 +40,7 @@ class CustomDebugStringConvertibleGeneratorTests {
         val context = setupTests("custom-debug-string-convertible-generator-test.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce("mapWithSensitiveTargetedByValue: [keys: \\(Swift.String(describing: mapWithSensitiveTargetedByValue.keys)), values: \\\"CONTENT_REDACTED\\\"]")
+        contents.shouldContainOnlyOnce("mapWithSensitiveTargetedByValue: [keys: \\(Swift.String(describing: mapWithSensitiveTargetedByValue?.keys)), values: \\\"CONTENT_REDACTED\\\"]")
     }
 
     @Test
