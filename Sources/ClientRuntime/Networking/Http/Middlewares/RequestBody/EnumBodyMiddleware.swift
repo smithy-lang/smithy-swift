@@ -38,10 +38,10 @@ public struct EnumBodyMiddleware<OperationStackInput,
 
 extension EnumBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
-    public typealias RequestType = SdkHttpRequest
+    public typealias RequestType = HTTPRequest
     public typealias AttributesType = Smithy.Context
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
+    public func apply(input: OperationStackInput, builder: HTTPRequestBuilder, attributes: Smithy.Context) throws {
         let bodyString = input[keyPath: keyPath]?.rawValue ?? ""
         let bodyData = Data(bodyString.utf8)
         builder.withBody(.data(bodyData))

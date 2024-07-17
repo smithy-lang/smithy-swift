@@ -17,12 +17,12 @@ public struct SignerMiddleware<OperationStackOutput>: Middleware {
 
     public init () {}
 
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = HTTPRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
     public typealias Context = Smithy.Context
 
     public func handle<H>(context: Smithy.Context,
-                          input: SdkHttpRequestBuilder,
+                          input: HTTPRequestBuilder,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
     Self.MInput == H.Input,
@@ -40,10 +40,10 @@ public struct SignerMiddleware<OperationStackOutput>: Middleware {
 
 extension SignerMiddleware: ApplySigner {
     public func apply(
-        request: SdkHttpRequest,
+        request: HTTPRequest,
         selectedAuthScheme: SelectedAuthScheme?,
         attributes: Smithy.Context
-    ) async throws -> SdkHttpRequest {
+    ) async throws -> HTTPRequest {
         guard let selectedAuthScheme = selectedAuthScheme else {
             throw ClientError.authError("Auth scheme needed by signer middleware was not saved properly.")
         }

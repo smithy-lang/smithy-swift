@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 import class Smithy.Context
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
-import class SmithyHTTPAPI.HttpResponse
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPRequestBuilder
+import class SmithyHTTPAPI.HTTPResponse
 
 // Performs final preparations needed before sending the message. The
 // message should already be complete by this stage, and is only alternated
@@ -14,16 +14,16 @@ import class SmithyHTTPAPI.HttpResponse
 // Takes Request, and returns result or error.
 //
 // Receives result or error from Deserialize step.
-public typealias FinalizeStep<OperationStackOutput> = MiddlewareStep<SdkHttpRequestBuilder,
+public typealias FinalizeStep<OperationStackOutput> = MiddlewareStep<HTTPRequestBuilder,
                                                                      OperationOutput<OperationStackOutput>>
 
 public let FinalizeStepId = "Finalize"
 
 public struct FinalizeStepHandler<OperationStackOutput, H: Handler>: Handler
-    where H.Input == SdkHttpRequest,
+    where H.Input == HTTPRequest,
           H.Output == OperationOutput<OperationStackOutput> {
 
-    public typealias Input = SdkHttpRequestBuilder
+    public typealias Input = HTTPRequestBuilder
 
     public typealias Output = OperationOutput<OperationStackOutput>
 

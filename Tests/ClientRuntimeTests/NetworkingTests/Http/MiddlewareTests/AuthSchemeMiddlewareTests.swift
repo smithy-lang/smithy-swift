@@ -138,7 +138,7 @@ class AuthSchemeMiddlewareTests: XCTestCase {
         let mockHandler = MockHandler<MockOutput>(handleCallback: { (context, input) in
             let selectedAuthScheme = context.selectedAuthScheme
             XCTAssertEqual(expectedAuthScheme, selectedAuthScheme?.schemeID, file: file, line: line)
-            let httpResponse = HttpResponse(body: .noStream, statusCode: HttpStatusCode.ok)
+            let httpResponse = HTTPResponse(body: .noStream, statusCode: .ok)
             let mockOutput = MockOutput()
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
             return output

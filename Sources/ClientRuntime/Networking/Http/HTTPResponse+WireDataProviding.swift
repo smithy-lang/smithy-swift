@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyHTTPAPI.HttpResponse
+import class SmithyHTTPAPI.HTTPResponse
 import enum Smithy.ByteStream
 import protocol SmithyReadWrite.WireDataProviding
 import struct Foundation.Data
 
-extension HttpResponse: WireDataProviding {
+extension HTTPResponse: WireDataProviding {
 
     public func data() async throws -> Data {
         let data = try await body.readData()

@@ -12,18 +12,18 @@ import SmithyReadWrite
 
 public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
     public var id: String = "Deserialize"
-    let wireResponseClosure: WireResponseOutputClosure<HttpResponse, OperationStackOutput>
-    let wireResponseErrorClosure: WireResponseErrorClosure<HttpResponse>
+    let wireResponseClosure: WireResponseOutputClosure<HTTPResponse, OperationStackOutput>
+    let wireResponseErrorClosure: WireResponseErrorClosure<HTTPResponse>
 
     public init(
-        _ wireResponseClosure: @escaping WireResponseOutputClosure<HttpResponse, OperationStackOutput>,
-        _ wireResponseErrorClosure: @escaping WireResponseErrorClosure<HttpResponse>
+        _ wireResponseClosure: @escaping WireResponseOutputClosure<HTTPResponse, OperationStackOutput>,
+        _ wireResponseErrorClosure: @escaping WireResponseErrorClosure<HTTPResponse>
     ) {
         self.wireResponseClosure = wireResponseClosure
         self.wireResponseErrorClosure = wireResponseErrorClosure
     }
     public func handle<H>(context: Context,
-                          input: SdkHttpRequest,
+                          input: HTTPRequest,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
             Self.MInput == H.Input,
@@ -36,13 +36,13 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
             return response
     }
 
-    public typealias MInput = SdkHttpRequest
+    public typealias MInput = HTTPRequest
     public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension DeserializeMiddleware: ResponseMessageDeserializer {
     public func deserialize(
-        response: HttpResponse,
+        response: HTTPResponse,
         attributes: Context
     ) async throws -> OperationStackOutput {
         if let responseDateString = response.headers.value(for: "Date") {

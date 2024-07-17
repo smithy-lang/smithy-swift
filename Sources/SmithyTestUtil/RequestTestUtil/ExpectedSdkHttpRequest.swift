@@ -18,9 +18,9 @@ public struct ExpectedSdkHttpRequest {
     public let forbiddenQueryItems: [URIQueryItem]?
     public let requiredQueryItems: [URIQueryItem]?
     public let endpoint: Endpoint
-    public let method: HttpMethodType
+    public let method: HTTPMethodType
 
-    public init(method: HttpMethodType,
+    public init(method: HTTPMethodType,
                 endpoint: Endpoint,
                 headers: Headers? = nil,
                 forbiddenHeaders: [String]? = nil,
@@ -46,7 +46,7 @@ public class ExpectedSdkHttpRequestBuilder {
     var headers = Headers()
     var forbiddenHeaders = [String]()
     var requiredHeaders = [String]()
-    var methodType: HttpMethodType = .get
+    var methodType: HTTPMethodType = .get
     var host: String = ""
     var path: String = "/"
     var body: ByteStream = .noStream
@@ -85,7 +85,7 @@ public class ExpectedSdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withMethod(_ value: HttpMethodType) -> ExpectedSdkHttpRequestBuilder {
+    public func withMethod(_ value: HTTPMethodType) -> ExpectedSdkHttpRequestBuilder {
         self.methodType = value
         return self
     }

@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyHTTPAPI.HttpResponse
+import class SmithyHTTPAPI.HTTPResponse
 
 public protocol BaseError {
-    var httpResponse: HttpResponse { get }
+    var httpResponse: HTTPResponse { get }
     var code: String { get }
     var message: String? { get }
     var requestID: String? { get }

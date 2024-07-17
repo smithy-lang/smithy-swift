@@ -70,6 +70,6 @@ private struct MockHandler<I, O>: Handler {
 
     func handle(context: Context, input: I) async throws -> Output {
         try await handleCallback(context, input)
-        return OperationOutput(httpResponse: HttpResponse())
+        return OperationOutput(httpResponse: HTTPResponse())
     }
 }

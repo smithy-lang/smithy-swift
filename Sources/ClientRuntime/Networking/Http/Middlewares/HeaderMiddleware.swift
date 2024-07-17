@@ -6,8 +6,8 @@
 //
 
 import protocol Smithy.RequestMessageSerializer
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPRequestBuilder
 import class Smithy.Context
 
 public struct HeaderMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
@@ -35,10 +35,10 @@ public struct HeaderMiddleware<OperationStackInput, OperationStackOutput>: Middl
 
 extension HeaderMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
-    public typealias RequestType = SdkHttpRequest
+    public typealias RequestType = HTTPRequest
     public typealias AttributesType = Smithy.Context
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
+    public func apply(input: OperationStackInput, builder: HTTPRequestBuilder, attributes: Smithy.Context) throws {
         builder.withHeaders(headerProvider(input))
     }
 }
