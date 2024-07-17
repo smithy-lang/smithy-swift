@@ -82,16 +82,10 @@ class CustomDebugStringConvertibleGenerator(
         val memberNames = symbolProvider.toMemberNames(member)
         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
         var description = ""
-        if (member.isMapShape) {
-            when (getNestedSensitiveTraitInfoInMapShape(member.asMapShape().get())) {
-                MapShapeSensitiveTraitInfo.BOTH_SENSITIVE -> "\\\"$REDACT_STRING\\\""
-                MapShapeSensitiveTraitInfo.SENSITIVE_KEYS -> "\\(${SwiftTypes.String}(describing: $path${memberNames.first}.values))"
-                MapShapeSensitiveTraitInfo.SENSITIVE_VALUES -> "\\(${SwiftTypes.String}(describing: $path${memberNames.first}.keys))"
-                MapShapeSensitiveTraitInfo.NONE -> "\\(${SwiftTypes.String}(describing: $path${memberNames.first}))"
-            }
+        if (model.expectShape(member.target).isMapShape) {
+            description = getStringForLoggingMapShape(model.expectShape(member.target).asMapShape().get(), path, memberNames)
         } else {
-            description =
-                if (isRedacted) "\\\"$REDACT_STRING\\\"" else "\\(${SwiftTypes.String}(describing: $path${memberNames.first}))"
+            description = if (isRedacted) "\\\"$REDACT_STRING\\\"" else "\\(${SwiftTypes.String}(describing: $path${memberNames.first}))"
         }
         writer.writeInline("${memberNames.second}: $description")
     }
@@ -102,18 +96,11 @@ class CustomDebugStringConvertibleGenerator(
         }
     }
 
-    private fun getNestedSensitiveTraitInfoInMapShape(member: MapShape): MapShapeSensitiveTraitInfo {
-        if (member.hasTrait<SensitiveTrait>()) return MapShapeSensitiveTraitInfo.BOTH_SENSITIVE
-        if (member.key.isSensitive(model) && member.value.isSensitive(model)) return MapShapeSensitiveTraitInfo.BOTH_SENSITIVE
-        if (member.key.isSensitive(model)) return MapShapeSensitiveTraitInfo.SENSITIVE_KEYS
-        if (member.value.isSensitive(model)) return MapShapeSensitiveTraitInfo.SENSITIVE_VALUES
-        return MapShapeSensitiveTraitInfo.NONE
-    }
-
-    private enum class MapShapeSensitiveTraitInfo {
-        SENSITIVE_KEYS,
-        SENSITIVE_VALUES,
-        BOTH_SENSITIVE,
-        NONE
+    private fun getStringForLoggingMapShape(member: MapShape, path: String, memberNames: Pair<String, String>): String {
+        if (member.hasTrait<SensitiveTrait>()) return "\\\"$REDACT_STRING\\\""
+        if (member.key.isSensitive(model) && member.value.isSensitive(model)) return "\\\"$REDACT_STRING\\\""
+        if (member.key.isSensitive(model)) return "[keys: \\\"$REDACT_STRING\\\", values: \\(${SwiftTypes.String}(describing: $path${memberNames.first}.values))]"
+        if (member.value.isSensitive(model)) return "[keys: \\(${SwiftTypes.String}(describing: $path${memberNames.first}.keys)), values: \\\"$REDACT_STRING\\\"]"
+        return "\\(${SwiftTypes.String}(describing: $path${memberNames.first}))"
     }
 }
