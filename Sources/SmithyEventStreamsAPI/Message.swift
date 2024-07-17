@@ -33,7 +33,7 @@ extension Message: CustomDebugStringConvertible {
             headers: [
             \(headers)
             ],
-            payload: \(String(decoding: payload, as: UTF8.self)
+            payload: \(String(data: payload, encoding: .utf8) ?? "<invalid>"
         )
         """
     }

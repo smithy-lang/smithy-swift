@@ -73,10 +73,11 @@ extension StringProtocol {
 /// Decode the Base64 Encoded String
 extension StringProtocol {
     public func base64DecodedString() throws -> String {
-        guard let base64EncodedData = Data(base64Encoded: String(self)) else {
+        guard let base64EncodedData = Data(base64Encoded: String(self)),
+            let decodedString = String(data: base64EncodedData, encoding: .utf8) else {
             throw ClientError.serializationFailed("Failed to decode a base64 encoded string")
         }
-        return String(decoding: base64EncodedData, as: UTF8.self)
+        return decodedString
     }
 }
 
