@@ -165,14 +165,7 @@ open class HttpProtocolServiceClient(
      */
     private fun renderConfigClassVariables(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
         properties.forEach {
-            when (it.name) {
-                "bearerTokenIdentityResolver" -> {
-                    writer.write("public var \$L: any \$N", it.name, SmithyIdentityTypes.BearerTokenIdentityResolver)
-                }
-                else -> {
-                    it.render(writer)
-                }
-            }
+            it.render(writer)
             writer.write("")
         }
         writer.injectSection(ConfigClassVariablesCustomization(serviceSymbol))
