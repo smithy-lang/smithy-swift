@@ -23,7 +23,7 @@ class HttpResponseBindingIgnoreQuery {
         val expectedContents = """
 extension IgnoreQueryParamsInResponseOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> IgnoreQueryParamsInResponseOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> IgnoreQueryParamsInResponseOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyJSON.Reader.from(data: data)
         let reader = responseReader

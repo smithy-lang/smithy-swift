@@ -545,7 +545,7 @@ public final class URLSessionHTTPClient: HTTPClient {
                         // Create a data task for the request, and store it as a Connection along with its continuation.
                         let urlRequest = try self.makeURLRequest(from: request, body: body)
                         let dataTask = session.dataTask(with: urlRequest)
-                        
+
                         // Create a Connection and store it, keyed by its data task for retrieval on future
                         // delegate callbacks.
                         let connection = Connection(

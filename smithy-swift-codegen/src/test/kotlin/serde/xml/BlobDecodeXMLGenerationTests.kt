@@ -21,7 +21,7 @@ class BlobDecodeXMLGenerationTests {
         val expectedContents = """
 extension XmlBlobsOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlBlobsOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> XmlBlobsOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -41,7 +41,7 @@ extension XmlBlobsOutput {
         val expectedContents = """
 extension XmlBlobsNestedOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlBlobsNestedOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> XmlBlobsNestedOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
