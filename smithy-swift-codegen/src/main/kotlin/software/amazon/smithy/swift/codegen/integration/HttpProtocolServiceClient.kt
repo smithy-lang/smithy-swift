@@ -12,7 +12,6 @@ import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlu
 import software.amazon.smithy.swift.codegen.model.renderSwiftType
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyIdentityTypes
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.CodeSection
 
