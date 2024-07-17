@@ -10,7 +10,7 @@ import SmithyHTTPAPI
 import ClientRuntime
 
 public struct MockBuildMiddleware: Middleware {
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = HTTPRequestBuilder
     public typealias MOutput = OperationOutput<MockOutput>
     public typealias MockBuildMiddlewareCallback = (Context, MInput) -> Void
     public let id: String

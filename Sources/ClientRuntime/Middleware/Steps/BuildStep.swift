@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 import class Smithy.Context
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequestBuilder
 
 /// Adds additional metadata to the serialized transport message,
 /// (e.g. HTTP's Content-Length header, or body checksum). Decorations and
@@ -11,16 +11,16 @@ import class SmithyHTTPAPI.SdkHttpRequestBuilder
 /// Takes Request, and returns result or error.
 ///
 /// Receives result or error from Finalize step.
-public typealias BuildStep<OperationStackOutput> = MiddlewareStep<SdkHttpRequestBuilder,
+public typealias BuildStep<OperationStackOutput> = MiddlewareStep<HTTPRequestBuilder,
                                                                   OperationOutput<OperationStackOutput>>
 
 public let BuildStepId = "Build"
 
 public struct BuildStepHandler<OperationStackOutput, H: Handler>: Handler
-    where H.Input == SdkHttpRequestBuilder,
+    where H.Input == HTTPRequestBuilder,
           H.Output == OperationOutput<OperationStackOutput> {
 
-    public typealias Input = SdkHttpRequestBuilder
+    public typealias Input = HTTPRequestBuilder
 
     public typealias Output = OperationOutput<OperationStackOutput>
 

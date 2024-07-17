@@ -7,8 +7,8 @@
 
 import class Smithy.Context
 import enum Smithy.ClientError
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPRequestBuilder
 
 public struct OperationStack<OperationStackInput, OperationStackOutput> {
 
@@ -33,7 +33,7 @@ public struct OperationStack<OperationStackInput, OperationStackOutput> {
     public func handleMiddleware<H: Handler>(context: Smithy.Context,
                                              input: OperationStackInput,
                                              next: H) async throws -> OperationStackOutput
-    where H.Input == SdkHttpRequest,
+    where H.Input == HTTPRequest,
           H.Output == OperationOutput<OperationStackOutput> {
 
               let deserialize = compose(next: DeserializeStepHandler(handler: next), with: deserializeStep)
@@ -58,10 +58,10 @@ public struct OperationStack<OperationStackInput, OperationStackOutput> {
         input: OperationStackInput,
         output: OperationStackOutput,
         next: H
-    ) async throws -> SdkHttpRequestBuilder? where
-    H.Input == SdkHttpRequest,
+    ) async throws -> HTTPRequestBuilder? where
+    H.Input == HTTPRequest,
     H.Output == OperationOutput<OperationStackOutput> {
-        var builder: SdkHttpRequestBuilder?
+        var builder: HTTPRequestBuilder?
         self.finalizeStep.intercept(
             position: .after,
             middleware: PresignerShim<OperationStackOutput>(handler: { buildInMiddleware in

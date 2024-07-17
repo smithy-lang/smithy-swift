@@ -7,8 +7,8 @@
 
 import class Smithy.Context
 import struct SmithyHTTPAPI.Endpoint
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPRequestBuilder
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 import enum SmithyHTTPAuthAPI.SigningAlgorithm
 import enum SmithyHTTPAuthAPI.SigningPropertyKeys
@@ -34,7 +34,7 @@ public struct EndpointResolverMiddleware<OperationStackOutput, Params: Endpoints
 
     public func handle<H>(
         context: Smithy.Context,
-        input: SmithyHTTPAPI.SdkHttpRequestBuilder,
+        input: HTTPRequestBuilder,
         next: H
     ) async throws -> OperationOutput<OperationStackOutput>
         where H: Handler,
@@ -46,17 +46,17 @@ public struct EndpointResolverMiddleware<OperationStackOutput, Params: Endpoints
             try await apply(request: request, selectedAuthScheme: selectedAuthScheme, attributes: context)
         return try await next.handle(context: context, input: updatedRequest.toBuilder())
     }
-    public typealias MInput = SmithyHTTPAPI.SdkHttpRequestBuilder
+    public typealias MInput = HTTPRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension EndpointResolverMiddleware: ApplyEndpoint {
 
     public func apply(
-        request: SdkHttpRequest,
+        request: HTTPRequest,
         selectedAuthScheme: SelectedAuthScheme?,
         attributes: Smithy.Context
-    ) async throws -> SdkHttpRequest {
+    ) async throws -> HTTPRequest {
         let builder = request.toBuilder()
 
         let endpoint = try endpointResolverBlock(endpointParams)

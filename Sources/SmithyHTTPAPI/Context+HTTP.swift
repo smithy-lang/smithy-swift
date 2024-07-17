@@ -14,7 +14,7 @@ import struct Foundation.TimeInterval
 /// This extends `OperationContext` for all http middleware operations
 extension Context {
 
-    public var httpResponse: HttpResponse? {
+    public var httpResponse: HTTPResponse? {
         get { attributes.get(key: httpResponseKey) }
         set { attributes.set(key: httpResponseKey, value: newValue) }
     }
@@ -34,7 +34,7 @@ extension Context {
         set { attributes.set(key: hostPrefixKey, value: newValue) }
     }
 
-    public var method: HttpMethodType {
+    public var method: HTTPMethodType {
         get { attributes.get(key: methodKey) ?? .get }
         set { attributes.set(key: methodKey, value: newValue) }
     }
@@ -121,7 +121,7 @@ extension ContextBuilder {
     }
 
     @discardableResult
-    public func withMethod(value: HttpMethodType) -> Self {
+    public func withMethod(value: HTTPMethodType) -> Self {
         self.attributes.set(key: methodKey, value: value)
         return self
     }
@@ -197,10 +197,10 @@ public enum SmithyHTTPAPIKeys {
     public static let forceUnsignedBody = AttributeKey<Bool>(name: "ForceUnsignedBody")
 }
 
-private let methodKey = AttributeKey<HttpMethodType>(name: "MethodKey")
+private let methodKey = AttributeKey<HTTPMethodType>(name: "MethodKey")
 private let hostKey = AttributeKey<String>(name: "HostKey")
 private let hostPrefixKey = AttributeKey<String>(name: "HostPrefixKey")
-private let httpResponseKey = AttributeKey<HttpResponse>(name: "httpResponseKey")
+private let httpResponseKey = AttributeKey<HTTPResponse>(name: "httpResponseKey")
 private let isBidirectionalStreamingEnabledKey = AttributeKey<Bool>(name: "isBidirectionalStreamingEnabledKey")
 private let partitionIDKey = AttributeKey<String>(name: "PartitionIDKey")
 private let pathKey = AttributeKey<String>(name: "PathKey")

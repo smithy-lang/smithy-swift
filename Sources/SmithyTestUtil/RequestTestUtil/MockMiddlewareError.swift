@@ -11,7 +11,7 @@ import ClientRuntime
 public enum MockMiddlewareError: Error {
     case unknown(Error)
 
-    public static func responseErrorClosure(_ httpResponse: HttpResponse) -> Error {
+    public static func responseErrorClosure(_ httpResponse: HTTPResponse) -> Error {
         return UnknownServiceError(typeName: "MockMiddlewareError", message: httpResponse.debugDescription)
     }
 }

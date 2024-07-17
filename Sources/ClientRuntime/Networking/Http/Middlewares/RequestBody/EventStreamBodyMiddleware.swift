@@ -53,10 +53,10 @@ public struct EventStreamBodyMiddleware<OperationStackInput,
 
 extension EventStreamBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
-    public typealias RequestType = SdkHttpRequest
+    public typealias RequestType = HTTPRequest
     public typealias AttributesType = Smithy.Context
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
+    public func apply(input: OperationStackInput, builder: HTTPRequestBuilder, attributes: Smithy.Context) throws {
         if let eventStream = input[keyPath: keyPath] {
             guard let messageEncoder = attributes.messageEncoder else {
                 fatalError("Message encoder is required for streaming payload")

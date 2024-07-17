@@ -35,9 +35,9 @@ public struct StringBodyMiddleware<OperationStackInput, OperationStackOutput>: M
 
 extension StringBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
-    public typealias RequestType = SdkHttpRequest
+    public typealias RequestType = HTTPRequest
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
+    public func apply(input: OperationStackInput, builder: HTTPRequestBuilder, attributes: Smithy.Context) throws {
         builder.withBody(.data(Data((input[keyPath: keyPath] ?? "").utf8)))
     }
 }

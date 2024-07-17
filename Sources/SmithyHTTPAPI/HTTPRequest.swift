@@ -25,11 +25,11 @@ import struct Foundation.URLRequest
 
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
-public final class SdkHttpRequest: RequestMessage {
+public final class HTTPRequest: RequestMessage {
     public var body: ByteStream
     public let destination: URI
     public var headers: Headers
-    public let method: HttpMethodType
+    public let method: HTTPMethodType
     public var host: String { destination.host }
     public var path: String { destination.path }
     public var queryItems: [URIQueryItem]? { destination.queryItems }
@@ -38,13 +38,13 @@ public final class SdkHttpRequest: RequestMessage {
         return Endpoint(uri: self.destination, headers: self.headers)
     }
 
-    public convenience init(method: HttpMethodType,
+    public convenience init(method: HTTPMethodType,
                             endpoint: Endpoint,
                             body: ByteStream = ByteStream.noStream) {
         self.init(method: method, uri: endpoint.uri, headers: endpoint.headers, body: body)
     }
 
-    public init(method: HttpMethodType,
+    public init(method: HTTPMethodType,
                 uri: URI,
                 headers: Headers,
                 body: ByteStream = ByteStream.noStream) {
@@ -54,8 +54,8 @@ public final class SdkHttpRequest: RequestMessage {
         self.body = body
     }
 
-    public func toBuilder() -> SdkHttpRequestBuilder {
-        let builder = SdkHttpRequestBuilder()
+    public func toBuilder() -> HTTPRequestBuilder {
+        let builder = HTTPRequestBuilder()
             .withBody(self.body)
             .withMethod(self.method)
             .withHeaders(self.headers)
@@ -81,25 +81,26 @@ public final class SdkHttpRequest: RequestMessage {
     }
 }
 
-public extension SdkHttpRequest {
-    static func makeURLRequest(from sdkRequest: SdkHttpRequest) async throws -> URLRequest {
+public extension HTTPRequest {
+
+    static func makeURLRequest(from httpRequest: HTTPRequest) async throws -> URLRequest {
         // Set URL
-        guard let url = sdkRequest.destination.url else {
+        guard let url = httpRequest.destination.url else {
             throw ClientError.dataNotFound("Failed to construct URLRequest due to missing URL.")
         }
         var urlRequest = URLRequest(url: url)
         // Set method type
-        urlRequest.httpMethod = sdkRequest.method.rawValue
+        urlRequest.httpMethod = httpRequest.method.rawValue
         // Set body, handling any serialization errors
         do {
-            let data = try await sdkRequest.body.readData()
-            sdkRequest.body = .data(data)
+            let data = try await httpRequest.body.readData()
+            httpRequest.body = .data(data)
             urlRequest.httpBody = data
         } catch {
             throw ClientError.serializationFailed("Failed to construct URLRequest due to HTTP body conversion failure.")
         }
         // Set headers
-        sdkRequest.headers.headers.forEach { header in
+        httpRequest.headers.headers.forEach { header in
             header.value.forEach { value in
                 urlRequest.addValue(value, forHTTPHeaderField: header.name)
             }
@@ -108,7 +109,7 @@ public extension SdkHttpRequest {
     }
 }
 
-extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible {
+extension HTTPRequest: CustomDebugStringConvertible, CustomStringConvertible {
 
     public var debugDescriptionWithBody: String {
         return debugDescription + "\nRequestBody: \(body.debugDescription)"
@@ -141,12 +142,12 @@ extension SdkHttpRequest: CustomDebugStringConvertible, CustomStringConvertible 
     }
 }
 
-public final class SdkHttpRequestBuilder: RequestMessageBuilder {
+public final class HTTPRequestBuilder: RequestMessageBuilder {
 
     required public init() {}
 
     public var headers: Headers = Headers()
-    public private(set) var methodType: HttpMethodType = .get
+    public private(set) var methodType: HTTPMethodType = .get
     public private(set) var host: String = ""
     public private(set) var path: String = "/"
     public private(set) var body: ByteStream = .noStream
@@ -164,95 +165,95 @@ public final class SdkHttpRequestBuilder: RequestMessageBuilder {
     // @discardableResult attribute we won't get warnings if we
     // don't end up doing any chaining.
     @discardableResult
-    public func withHeaders(_ value: Headers) -> SdkHttpRequestBuilder {
+    public func withHeaders(_ value: Headers) -> HTTPRequestBuilder {
         self.headers.addAll(headers: value)
         return self
     }
 
     @discardableResult
-    public func withHeader(name: String, value: String) -> SdkHttpRequestBuilder {
+    public func withHeader(name: String, value: String) -> HTTPRequestBuilder {
         self.headers.add(name: name, value: value)
         return self
     }
 
     @discardableResult
-    public func updateHeader(name: String, value: String) -> SdkHttpRequestBuilder {
+    public func updateHeader(name: String, value: String) -> HTTPRequestBuilder {
         self.headers.update(name: name, value: value)
         return self
     }
 
     @discardableResult
-    public func updateHeader(name: String, value: [String]) -> SdkHttpRequestBuilder {
+    public func updateHeader(name: String, value: [String]) -> HTTPRequestBuilder {
         self.headers.update(name: name, value: value)
         return self
     }
 
     @discardableResult
-    public func withTrailers(_ value: Headers) -> SdkHttpRequestBuilder {
+    public func withTrailers(_ value: Headers) -> HTTPRequestBuilder {
         self.trailingHeaders.addAll(headers: value)
         return self
     }
 
     @discardableResult
-    public func updateTrailer(name: String, value: [String]) -> SdkHttpRequestBuilder {
+    public func updateTrailer(name: String, value: [String]) -> HTTPRequestBuilder {
         self.trailingHeaders.update(name: name, value: value)
         return self
     }
 
     @discardableResult
-    public func withMethod(_ value: HttpMethodType) -> SdkHttpRequestBuilder {
+    public func withMethod(_ value: HTTPMethodType) -> HTTPRequestBuilder {
         self.methodType = value
         return self
     }
 
     @discardableResult
-    public func withHost(_ value: String) -> SdkHttpRequestBuilder {
+    public func withHost(_ value: String) -> HTTPRequestBuilder {
         self.host = value
         return self
     }
 
     @discardableResult
-    public func withPath(_ value: String) -> SdkHttpRequestBuilder {
+    public func withPath(_ value: String) -> HTTPRequestBuilder {
         self.path = value
         return self
     }
 
     @discardableResult
-    public func withBody(_ value: ByteStream) -> SdkHttpRequestBuilder {
+    public func withBody(_ value: ByteStream) -> HTTPRequestBuilder {
         self.body = value
         return self
     }
 
     @discardableResult
-    public func withQueryItems(_ value: [URIQueryItem]) -> SdkHttpRequestBuilder {
+    public func withQueryItems(_ value: [URIQueryItem]) -> HTTPRequestBuilder {
         self.queryItems.append(contentsOf: value)
         return self
     }
 
     @discardableResult
-    public func withQueryItem(_ value: URIQueryItem) -> SdkHttpRequestBuilder {
+    public func withQueryItem(_ value: URIQueryItem) -> HTTPRequestBuilder {
         withQueryItems([value])
     }
 
     @discardableResult
-    public func replacingQueryItems(_ value: [URIQueryItem]) -> SdkHttpRequestBuilder {
+    public func replacingQueryItems(_ value: [URIQueryItem]) -> HTTPRequestBuilder {
         self.queryItems = value
         return self
     }
 
     @discardableResult
-    public func withPort(_ value: Int16?) -> SdkHttpRequestBuilder {
+    public func withPort(_ value: Int16?) -> HTTPRequestBuilder {
         self.port = value
         return self
     }
 
     @discardableResult
-    public func withProtocol(_ value: URIScheme) -> SdkHttpRequestBuilder {
+    public func withProtocol(_ value: URIScheme) -> HTTPRequestBuilder {
         self.protocolType = value
         return self
     }
 
-    public func build() -> SdkHttpRequest {
+    public func build() -> HTTPRequest {
         let uri = URIBuilder()
             .withScheme(protocolType)
             .withPath(path)
@@ -260,11 +261,11 @@ public final class SdkHttpRequestBuilder: RequestMessageBuilder {
             .withPort(port)
             .withQueryItems(queryItems)
             .build()
-        return SdkHttpRequest(method: methodType, uri: uri, headers: headers, body: body)
+        return HTTPRequest(method: methodType, uri: uri, headers: headers, body: body)
     }
 }
 
-extension SdkHttpRequestBuilder {
+extension HTTPRequestBuilder {
     public var signature: String? {
         let authHeader = self.headers.value(for: "Authorization")
         guard let signatureSequence = authHeader?.split(separator: "=").last else {

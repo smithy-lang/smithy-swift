@@ -94,13 +94,13 @@ class InterceptorTests: XCTestCase {
     func test_mutation() async throws {
         let httpContext = Context(attributes: Attributes())
         let input = TestInput(property: "foo")
-        let interceptorContext = DefaultInterceptorContext<TestInput, TestOutput, SdkHttpRequest, HttpResponse>(input: input, attributes: httpContext)
-        let addAttributeInterceptor = AddAttributeInterceptor<String, TestInput, TestOutput, SdkHttpRequest, HttpResponse>(key: AttributeKey(name: "foo"), value: "bar")
-        let modifyInputInterceptor = ModifyInputInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse>(keyPath: \.property, value: "bar")
+        let interceptorContext = DefaultInterceptorContext<TestInput, TestOutput, HTTPRequest, HTTPResponse>(input: input, attributes: httpContext)
+        let addAttributeInterceptor = AddAttributeInterceptor<String, TestInput, TestOutput, HTTPRequest, HTTPResponse>(key: AttributeKey(name: "foo"), value: "bar")
+        let modifyInputInterceptor = ModifyInputInterceptor<TestInput, TestOutput, HTTPRequest, HTTPResponse>(keyPath: \.property, value: "bar")
         let addHeaderInterceptor = AddHeaderInterceptor<TestInput, TestOutput>(headerName: "foo", headerValue: "bar")
         let modifyMultipleInterceptor = ModifyMultipleInterceptor(newInputValue: 1)
 
-        let interceptors: [AnyInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse>] = [
+        let interceptors: [AnyInterceptor<TestInput, TestOutput, HTTPRequest, HTTPResponse>] = [
             addAttributeInterceptor.erase(),
             modifyInputInterceptor.erase(),
             addHeaderInterceptor.erase(),
@@ -109,7 +109,7 @@ class InterceptorTests: XCTestCase {
         for i in interceptors {
             try await i.modifyBeforeSerialization(context: interceptorContext)
         }
-        interceptorContext.updateRequest(updated: SdkHttpRequestBuilder().build())
+        interceptorContext.updateRequest(updated: HTTPRequestBuilder().build())
         for i in interceptors {
             try await i.modifyBeforeTransmit(context: interceptorContext)
         }
@@ -136,15 +136,15 @@ class InterceptorTests: XCTestCase {
 
     func test_providers() async throws {
         let provider1 = ModifyHostInterceptorProvider()
-        var interceptors = Interceptors<TestInput, TestOutput, SdkHttpRequest, HttpResponse>()
+        var interceptors = Interceptors<TestInput, TestOutput, HTTPRequest, HTTPResponse>()
 
         interceptors.add(provider1.create())
 
         let attributes = Context(attributes: Attributes())
         let input = TestInput()
 
-        let context = DefaultInterceptorContext<TestInput, TestOutput, SdkHttpRequest, HttpResponse>(input: input, attributes: attributes)
-        context.updateRequest(updated: SdkHttpRequestBuilder().build())
+        let context = DefaultInterceptorContext<TestInput, TestOutput, HTTPRequest, HTTPResponse>(input: input, attributes: attributes)
+        context.updateRequest(updated: HTTPRequestBuilder().build())
 
         try await interceptors.modifyBeforeSerialization(context: context)
         try await interceptors.modifyBeforeRetryLoop(context: context)

@@ -17,10 +17,10 @@ final class DefaultRetryErrorInfoProviderTests: XCTestCase {
     func test_returnsErrorInfoWhenErrorIsARetryableHTTPStatusCode() {
 
         struct RetryableHTTPError: Error, HTTPError {
-            let httpResponse: HttpResponse
+            let httpResponse: HTTPResponse
 
-            init(statusCode: HttpStatusCode) {
-                self.httpResponse = HttpResponse(headers: Headers(), statusCode: statusCode)
+            init(statusCode: HTTPStatusCode) {
+                self.httpResponse = HTTPResponse(headers: Headers(), statusCode: statusCode)
             }
         }
 
@@ -127,7 +127,7 @@ final class DefaultRetryErrorInfoProviderTests: XCTestCase {
     func test_errorInfo_returnsRetryAfterDelayWhenRetryAfterHeaderIsSet() {
 
         struct RetryAfterError: Error, HTTPError {
-            var httpResponse: HttpResponse = HttpResponse(headers: Headers(["x-retry-after": String(0.027)]), statusCode: .internalServerError)
+            var httpResponse = HTTPResponse(headers: Headers(["x-retry-after": String(0.027)]), statusCode: .internalServerError)
         }
 
         let errorInfo = DefaultRetryErrorInfoProvider.errorInfo(for: RetryAfterError())

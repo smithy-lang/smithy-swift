@@ -14,9 +14,9 @@ import protocol SmithyHTTPAPI.HTTPClient
 import struct SmithyHTTPAPI.Headers
 import struct SmithyHTTPAPI.Endpoint
 import enum SmithyHTTPAPI.ALPNProtocol
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.HttpResponse
-import enum SmithyHTTPAPI.HttpStatusCode
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPResponse
+import enum SmithyHTTPAPI.HTTPStatusCode
 import class SmithyChecksums.ChunkedStream
 import class SmithyStreams.BufferedStream
 import AwsCommonRuntimeKit
@@ -166,7 +166,7 @@ public class CRTClientEngine: HTTPClient {
         }
     }
 
-    public typealias StreamContinuation = CheckedContinuation<HttpResponse, Error>
+    public typealias StreamContinuation = CheckedContinuation<HTTPResponse, Error>
     private let telemetry: HttpTelemetry
     private var logger: LogAgent
     private let serialExecutor: SerialExecutor
@@ -186,7 +186,7 @@ public class CRTClientEngine: HTTPClient {
     }
 
     // swiftlint:disable function_body_length
-    public func send(request: SdkHttpRequest) async throws -> HttpResponse {
+    public func send(request: HTTPRequest) async throws -> HTTPResponse {
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
             scope: telemetry.tracerScope,
@@ -376,7 +376,7 @@ public class CRTClientEngine: HTTPClient {
 
     // Forces an Http2 request that uses CRT's `HTTP2StreamManager`.
     // This may be removed or improved as part of SRA work and CRT adapting to SRA for HTTP.
-    func executeHTTP2Request(request: SdkHttpRequest) async throws -> HttpResponse {
+    func executeHTTP2Request(request: HTTPRequest) async throws -> HTTPResponse {
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
             scope: telemetry.tracerScope,
@@ -485,11 +485,11 @@ public class CRTClientEngine: HTTPClient {
         http2ManualDataWrites: Bool = false,
         serverAddress: String
     ) -> HTTPRequestOptions {
-        let response = HttpResponse()
+        let response = HTTPResponse()
         let stream = BufferedStream()
 
-        let makeStatusCode: (UInt32) -> HttpStatusCode = { statusCode in
-            HttpStatusCode(rawValue: Int(statusCode)) ?? .notFound
+        let makeStatusCode: (UInt32) -> HTTPStatusCode = { statusCode in
+            HTTPStatusCode(rawValue: Int(statusCode)) ?? .notFound
         }
 
         var bytesReceivedAttributes = Attributes()
@@ -543,7 +543,7 @@ public class CRTClientEngine: HTTPClient {
         return requestOptions
     }
 
-    private static func makeServerAddress(request: SdkHttpRequest) -> String {
+    private static func makeServerAddress(request: HTTPRequest) -> String {
         let address = request.destination.host
         if let port = request.destination.port {
             return "\(address):\(port)"
@@ -559,7 +559,7 @@ public class CRTClientEngine: HTTPClient {
             self.continuation = continuation
         }
 
-        public func safeResume(response: HttpResponse) {
+        public func safeResume(response: HTTPResponse) {
             continuation?.resume(returning: response)
             self.continuation = nil
         }

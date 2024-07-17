@@ -31,7 +31,7 @@ open class HttpRequestTestBase: XCTestCase {
     /**
      Create `HttpRequest` from its components
      */
-    public func buildExpectedHttpRequest(method: HttpMethodType,
+    public func buildExpectedHttpRequest(method: HTTPMethodType,
                                          path: String,
                                          headers: [String: String]? = nil,
                                          forbiddenHeaders: [String]? = nil,
@@ -202,7 +202,7 @@ open class HttpRequestTestBase: XCTestCase {
      */
     public func assertEqual(
         _ expected: ExpectedSdkHttpRequest,
-        _ actual: SdkHttpRequest,
+        _ actual: SmithyHTTPAPI.HTTPRequest,
         _ assertEqualHttpBody: ((ByteStream?, ByteStream?) async throws -> Void)? = nil,
         file: StaticString = #filePath,
         line: UInt = #line

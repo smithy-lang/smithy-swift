@@ -20,7 +20,7 @@ class RecursiveShapesDecodeXMLGenerationTests {
         val expectedContents = """
 extension XmlRecursiveShapesOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlRecursiveShapesOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> XmlRecursiveShapesOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -40,7 +40,7 @@ extension XmlRecursiveShapesOutput {
         val expectedContents = """
 extension XmlNestedRecursiveShapesOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlNestedRecursiveShapesOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> XmlNestedRecursiveShapesOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader

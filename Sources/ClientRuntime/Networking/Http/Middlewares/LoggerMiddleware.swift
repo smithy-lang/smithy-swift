@@ -7,8 +7,8 @@
 
 import protocol Smithy.LogAgent
 import class Smithy.Context
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.HttpResponse
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPResponse
 
 public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
 
@@ -21,7 +21,7 @@ public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middl
     }
 
     public func handle<H>(context: Context,
-                          input: SdkHttpRequest,
+                          input: HTTPRequest,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
           Self.MInput == H.Input,
@@ -40,7 +40,7 @@ public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middl
         return response
     }
 
-    private func logRequest(logger: any LogAgent, request: SdkHttpRequest) {
+    private func logRequest(logger: any LogAgent, request: HTTPRequest) {
         if clientLogMode == .requestWithoutAuthorizationHeader {
             logger.debug("Request: \(request.debugDescriptionWithoutAuthorizationHeader)")
         } else if clientLogMode == .request || clientLogMode == .requestAndResponse {
@@ -50,7 +50,7 @@ public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middl
         }
     }
 
-    private func logResponse(logger: any LogAgent, response: HttpResponse) {
+    private func logResponse(logger: any LogAgent, response: HTTPResponse) {
         if clientLogMode == .response || clientLogMode == .requestAndResponse {
             logger.debug("Response: \(response.debugDescription)")
         } else if clientLogMode == .requestAndResponseWithBody || clientLogMode == .responseWithBody {
@@ -58,7 +58,7 @@ public struct LoggerMiddleware<OperationStackInput, OperationStackOutput>: Middl
         }
     }
 
-    public typealias MInput = SdkHttpRequest
+    public typealias MInput = HTTPRequest
     public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 

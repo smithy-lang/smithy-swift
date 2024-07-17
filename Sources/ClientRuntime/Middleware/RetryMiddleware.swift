@@ -15,13 +15,13 @@ import struct Foundation.UUID
 import protocol SmithyRetriesAPI.RetryStrategy
 import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 import struct SmithyRetriesAPI.RetryStrategyOptions
-import SmithyHTTPAPI
+import class SmithyHTTPAPI.HTTPRequestBuilder
 
 public struct RetryMiddleware<Strategy: RetryStrategy,
                               ErrorInfoProvider: RetryErrorInfoProvider,
                               OperationStackOutput>: Middleware {
 
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = HTTPRequestBuilder
     public typealias MOutput = OperationOutput<OperationStackOutput>
 
     public var id: String { "Retry" }
@@ -37,7 +37,7 @@ public struct RetryMiddleware<Strategy: RetryStrategy,
         self.maxRetries = options.maxRetriesBase
     }
 
-    public func handle<H>(context: Context, input: SdkHttpRequestBuilder, next: H) async throws ->
+    public func handle<H>(context: Context, input: HTTPRequestBuilder, next: H) async throws ->
         OperationOutput<OperationStackOutput>
         where H: Handler, MInput == H.Input, MOutput == H.Output {
 

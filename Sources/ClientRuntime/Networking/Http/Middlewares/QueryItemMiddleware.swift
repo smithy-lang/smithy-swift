@@ -35,10 +35,10 @@ public struct QueryItemMiddleware<OperationStackInput, OperationStackOutput>: Mi
 
 extension QueryItemMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
-    public typealias RequestType = SdkHttpRequest
+    public typealias RequestType = HTTPRequest
     public typealias AttributesType = Smithy.Context
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
+    public func apply(input: OperationStackInput, builder: HTTPRequestBuilder, attributes: Smithy.Context) throws {
         for queryItem in try queryItemProvider(input) {
             builder.withQueryItem(queryItem)
         }

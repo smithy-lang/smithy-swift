@@ -27,7 +27,7 @@ class HttpResponseTestBaseTests: HttpResponseTestBase {
             values.joined(separator: ", ")
         }))
 
-        XCTAssertEqual(HttpStatusCode(rawValue: statusCode), httpResponse.statusCode)
+        XCTAssertEqual(HTTPStatusCode(rawValue: statusCode), httpResponse.statusCode)
 
         if case .data(let actualData) = httpResponse.body {
             XCTAssertEqual(bodyData, actualData)

@@ -115,7 +115,7 @@ class SignerMiddlewareTests: XCTestCase {
                 file: file,
                 line: line
             )
-            let httpResponse = HttpResponse(body: .noStream, statusCode: HttpStatusCode.ok)
+            let httpResponse = HTTPResponse(body: .noStream, statusCode: HTTPStatusCode.ok)
             let mockOutput = MockOutput()
             let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
             return output

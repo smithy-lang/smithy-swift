@@ -10,15 +10,15 @@ import protocol Smithy.Stream
 import enum Smithy.ByteStream
 import class Foundation.DispatchQueue
 
-public class HttpResponse: HttpUrlResponse, ResponseMessage {
+public class HTTPResponse: HTTPURLResponse, ResponseMessage {
 
     public var headers: Headers
     public var body: ByteStream
     public var reason: String?
 
-    private var _statusCode: HttpStatusCode
+    private var _statusCode: HTTPStatusCode
     private let statusCodeQueue = DispatchQueue(label: "statusCodeSerialQueue")
-    public var statusCode: HttpStatusCode {
+    public var statusCode: HTTPStatusCode {
         get {
             statusCodeQueue.sync {
                 return _statusCode
@@ -33,7 +33,7 @@ public class HttpResponse: HttpUrlResponse, ResponseMessage {
 
     public init(
         headers: Headers = .init(),
-        statusCode: HttpStatusCode = .processing,
+        statusCode: HTTPStatusCode = .processing,
         body: ByteStream = .noStream,
         reason: String? = nil) {
         self.headers = headers
@@ -41,14 +41,14 @@ public class HttpResponse: HttpUrlResponse, ResponseMessage {
         self.body = body
     }
 
-    public init(headers: Headers = .init(), body: ByteStream, statusCode: HttpStatusCode, reason: String? = nil) {
+    public init(headers: Headers = .init(), body: ByteStream, statusCode: HTTPStatusCode, reason: String? = nil) {
         self.body = body
         self._statusCode = statusCode
         self.headers = headers
     }
 }
 
-extension HttpResponse: CustomDebugStringConvertible {
+extension HTTPResponse: CustomDebugStringConvertible {
     public var debugDescriptionWithBody: String {
         return debugDescription + "\nResponseBody: \(body.debugDescription)"
     }

@@ -11,7 +11,7 @@ import SmithyHTTPAPI
 import SmithyHTTPAPI
 
 public struct MockFinalizeMiddleware: Middleware {
-    public typealias MInput = SdkHttpRequestBuilder
+    public typealias MInput = HTTPRequestBuilder
     public typealias MOutput = OperationOutput<MockOutput>
     public typealias MError = MockMiddlewareError
     public typealias MockFinalizeMiddlewareCallback = (Context, MInput) -> Void

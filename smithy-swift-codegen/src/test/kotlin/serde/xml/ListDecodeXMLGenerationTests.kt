@@ -20,7 +20,7 @@ class ListDecodeXMLGenerationTests {
         val expectedContents = """
 extension XmlListXmlNameOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlListXmlNameOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> XmlListXmlNameOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -40,7 +40,7 @@ extension XmlListXmlNameOutput {
         val expectedContents = """
 extension XmlListXmlNameNestedOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlListXmlNameNestedOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> XmlListXmlNameNestedOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -61,7 +61,7 @@ extension XmlListXmlNameNestedOutput {
         val expectedContents = """
 extension XmlFlattenedListOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlFlattenedListOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> XmlFlattenedListOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -81,7 +81,7 @@ extension XmlFlattenedListOutput {
         val expectedContents = """
 extension XmlEmptyFlattenedListsOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlEmptyFlattenedListsOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> XmlEmptyFlattenedListsOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -104,7 +104,7 @@ extension XmlEmptyFlattenedListsOutput {
         val expectedContents = """
 extension XmlNestedNestedFlattenedListOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlNestedNestedFlattenedListOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> XmlNestedNestedFlattenedListOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -124,7 +124,7 @@ extension XmlNestedNestedFlattenedListOutput {
         val expectedContents = """
 extension XmlListContainMapOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlListContainMapOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> XmlListContainMapOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
@@ -144,7 +144,7 @@ extension XmlListContainMapOutput {
         val expectedContents = """
 extension XmlListFlattenedContainMapOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> XmlListFlattenedContainMapOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> XmlListFlattenedContainMapOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader

@@ -24,7 +24,7 @@ public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput>: 
         return try await next.handle(context: context, input: input)
     }
 
-    private func addHeaders(builder: SdkHttpRequestBuilder) {
+    private func addHeaders(builder: HTTPRequestBuilder) {
         if !builder.headers.exists(name: "Content-Type") {
             builder.withHeader(name: "Content-Type", value: contentType)
         }

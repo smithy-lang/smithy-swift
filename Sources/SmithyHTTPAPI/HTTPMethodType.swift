@@ -1,11 +1,11 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
-import Foundation
-
-public enum HttpMethodType: String {
+public enum HTTPMethodType: String {
     case connect = "CONNECT"
     case delete = "DELETE"
     case get = "GET"
@@ -15,5 +15,4 @@ public enum HttpMethodType: String {
     case post = "POST"
     case put = "PUT"
     case trace = "TRACE"
-
 }

@@ -1,9 +1,9 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
-
-import Foundation
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
 /// HTTP Statuses
 ///
@@ -70,7 +70,7 @@ import Foundation
 /// - notExtended: Not Extended
 /// - networkAuthenticationRequired: Network Authentication Required
 /// - networkConnectTimeoutError: Network Connect Timeout Error
-public enum HttpStatusCode: Int, Equatable {
+public enum HTTPStatusCode: Int, Equatable {
     case `continue` = 100
     case switchingProtocols = 101
     case processing = 102
@@ -136,22 +136,16 @@ public enum HttpStatusCode: Int, Equatable {
     case networkConnectTimeoutError = 599
 }
 
-extension HttpStatusCode: CustomStringConvertible {
-    public var description: String {
+extension HTTPStatusCode: CustomStringConvertible {
 
-        return NSLocalizedString(
-            "http_status_\(rawValue)",
-            tableName: "HttpStatusEnum",
-            comment: ""
-        )
+    public var description: String {
+        return "HTTP status code: \(rawValue)"
     }
 }
 
-extension HttpStatusCode {
+extension HTTPStatusCode {
+
     public var isRetryable: Bool {
-        if (502..<505).contains(rawValue) || rawValue == 500 {
-            return true
-        }
-        return false
+        (502..<505).contains(rawValue) || rawValue == 500
     }
 }
