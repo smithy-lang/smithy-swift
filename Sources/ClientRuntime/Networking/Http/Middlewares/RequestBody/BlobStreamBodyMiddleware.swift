@@ -8,8 +8,8 @@
 import protocol Smithy.RequestMessageSerializer
 import class Smithy.Context
 import enum Smithy.ByteStream
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPRequestBuilder
 import struct Foundation.Data
 
 public struct BlobStreamBodyMiddleware<OperationStackInput,
@@ -39,10 +39,10 @@ public struct BlobStreamBodyMiddleware<OperationStackInput,
 
 extension BlobStreamBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
-    public typealias RequestType = SdkHttpRequest
+    public typealias RequestType = HTTPRequest
     public typealias AttributesType = Smithy.Context
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
+    public func apply(input: OperationStackInput, builder: HTTPRequestBuilder, attributes: Smithy.Context) throws {
         if let byteStream = input[keyPath: keyPath] {
             builder.withBody(byteStream)
         }

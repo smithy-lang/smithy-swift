@@ -6,16 +6,16 @@
 //
 
 import class Smithy.Context
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.HttpResponse
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPResponse
 
 public struct NoopHandler<OperationStackOutput>: Handler {
     public init() {}
 
     public func handle(
         context: Smithy.Context,
-        input: SdkHttpRequest
+        input: HTTPRequest
     ) async throws -> OperationOutput<OperationStackOutput> {
-        return OperationOutput<OperationStackOutput>(httpResponse: HttpResponse())
+        return OperationOutput<OperationStackOutput>(httpResponse: HTTPResponse())
     }
 }

@@ -13,20 +13,20 @@ import ClientRuntime
 public struct MockDeserializeMiddleware<OperationStackOutput>: Middleware {
 
     public typealias MockDeserializeMiddlewareCallback =
-        (Context, SdkHttpRequest) async throws -> OperationOutput<OperationStackOutput>?
+        (Context, HTTPRequest) async throws -> OperationOutput<OperationStackOutput>?
 
     public var id: String
-    let responseClosure: WireResponseOutputClosure<HttpResponse, OperationStackOutput>
+    let responseClosure: WireResponseOutputClosure<HTTPResponse, OperationStackOutput>
     let callback: MockDeserializeMiddlewareCallback?
 
-    public init(id: String, responseClosure: @escaping WireResponseOutputClosure<HttpResponse, OperationStackOutput>, callback: MockDeserializeMiddlewareCallback? = nil) {
+    public init(id: String, responseClosure: @escaping WireResponseOutputClosure<HTTPResponse, OperationStackOutput>, callback: MockDeserializeMiddlewareCallback? = nil) {
         self.id = id
         self.responseClosure = responseClosure
         self.callback = callback
     }
 
     public func handle<H>(context: Context,
-                          input: SdkHttpRequest,
+                          input: HTTPRequest,
                           next: H) async throws -> OperationOutput<OperationStackOutput>
     where H: Handler,
           Self.MInput == H.Input,
@@ -47,12 +47,12 @@ public struct MockDeserializeMiddleware<OperationStackOutput>: Middleware {
 
           }
 
-    public typealias MInput = SdkHttpRequest
+    public typealias MInput = HTTPRequest
     public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension MockDeserializeMiddleware: ResponseMessageDeserializer {
-    public func deserialize(response: HttpResponse, attributes: Context) async throws -> Result<OperationStackOutput, Error> {
+    public func deserialize(response: HTTPResponse, attributes: Context) async throws -> Result<OperationStackOutput, Error> {
         let output = try await responseClosure(response)
         return .success(output)
     }

@@ -46,7 +46,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
                     ),
                     topLevel: "Top level"
                 )
-                XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: 403))
+                XCTAssertEqual(actual.httpResponse.statusCode, SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
                 XCTAssertEqual(actual, expected)
             } else {
                 XCTFail("The deserialized error type does not match expected type")
@@ -98,7 +98,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
                     ),
                     topLevel: "Top level"
                 )
-                XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: 403))
+                XCTAssertEqual(actual.httpResponse.statusCode, SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
                 XCTAssertEqual(actual, expected)
             } else {
                 XCTFail("The deserialized error type does not match expected type")
