@@ -117,7 +117,7 @@ final class RetryIntegrationTests: XCTestCase {
 
     private func runTest() async throws {
         do {
-            _ = try await subject.handle(context: context, input: SdkHttpRequestBuilder(), next: next)
+            _ = try await subject.handle(context: context, input: HTTPRequestBuilder(), next: next)
         } catch {
             next.finalError = error
         }
@@ -196,14 +196,14 @@ private struct TestOutputResponse {
 }
 
 private enum TestOutputError {
-    static func httpError(from httpResponse: HttpResponse) async throws -> Error  {
+    static func httpError(from httpResponse: HTTPResponse) async throws -> Error  {
         RetryIntegrationTestError.dontCallThisMethod  // is never called
     }
 }
 
 private class TestOutputHandler: Handler {
 
-    typealias Input = SdkHttpRequestBuilder
+    typealias Input = HTTPRequestBuilder
     typealias Output = OperationOutput<TestOutputResponse>
 
     var index = 0
@@ -215,7 +215,7 @@ private class TestOutputHandler: Handler {
     var invocationID = ""
     var prevAttemptNum = 0
 
-    func handle(context: Context, input: SdkHttpRequestBuilder) async throws -> OperationOutput<TestOutputResponse> {
+    func handle(context: Context, input: HTTPRequestBuilder) async throws -> OperationOutput<TestOutputResponse> {
         if index == testSteps.count { throw RetryIntegrationTestError.maxAttemptsExceeded }
 
         // Verify the results of the previous test step, if there was one.
@@ -231,7 +231,7 @@ private class TestOutputHandler: Handler {
         // Return either a successful response or a HTTP error, depending on the directions in the test step.
         switch testStep.response {
         case .success:
-            return Output(httpResponse: HttpResponse(), output: TestOutputResponse())
+            return Output(httpResponse: HTTPResponse(), output: TestOutputResponse())
         case .httpError(let statusCode):
             throw TestHTTPError(statusCode: statusCode)
         }
@@ -266,7 +266,7 @@ private class TestOutputHandler: Handler {
         }
     }
 
-    func verifyInput(input: SdkHttpRequestBuilder) async throws {
+    func verifyInput(input: HTTPRequestBuilder) async throws {
         // Get invocation ID of the request off of amz-sdk-invocation-id header.
         let invocationID = try XCTUnwrap(input.headers.value(for: "amz-sdk-invocation-id"))
         // If this is the first request, save the retrieved ID.
@@ -309,11 +309,11 @@ private class TestOutputHandler: Handler {
 
 // Thrown during a test to simulate a server response with a given HTTP status code.
 private struct TestHTTPError: HTTPError, Error {
-    var httpResponse: HttpResponse
+    var httpResponse: HTTPResponse
 
     init(statusCode: Int) {
-        guard let statusCodeValue = HttpStatusCode(rawValue: statusCode) else { fatalError("Unrecognized HTTP code") }
-        self.httpResponse = HttpResponse(statusCode: statusCodeValue)
+        guard let statusCodeValue = HTTPStatusCode(rawValue: statusCode) else { fatalError("Unrecognized HTTP code") }
+        self.httpResponse = HTTPResponse(statusCode: statusCodeValue)
     }
 }
 

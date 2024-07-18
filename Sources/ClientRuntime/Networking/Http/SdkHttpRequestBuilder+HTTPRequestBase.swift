@@ -6,24 +6,25 @@
 //
 
 import struct Smithy.URIQueryItem
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPRequestBuilder
 import struct SmithyHTTPAPI.Headers
 import struct Foundation.URLComponents
 import AwsCommonRuntimeKit
 
-extension SdkHttpRequestBuilder {
+extension HTTPRequestBuilder {
 
     /// Update the builder with the values from the CRT request
     /// - Parameters:
     ///   - crtRequest: the CRT request, this can be either a `HTTPRequest` or a `HTTP2Request`
     ///   - originalRequest: the SDK request that is used to hold the original values
     /// - Returns: the builder
-    public func update(from crtRequest: HTTPRequestBase, originalRequest: SdkHttpRequest) -> SdkHttpRequestBuilder {
+    public func update(from crtRequest: HTTPRequestBase, originalRequest: HTTPRequest) -> HTTPRequestBuilder {
         headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
         withMethod(originalRequest.method)
         withHost(originalRequest.host)
-        if let crtRequest = crtRequest as? HTTPRequest, let components = URLComponents(string: crtRequest.path) {
+        if let crtRequest = crtRequest as? AwsCommonRuntimeKit.HTTPRequest,
+           let components = URLComponents(string: crtRequest.path) {
             withPath(components.percentEncodedPath)
             replacingQueryItems(components.percentEncodedQueryItems?.map {
                 URIQueryItem(name: $0.name, value: $0.value)

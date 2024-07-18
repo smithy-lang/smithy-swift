@@ -30,10 +30,10 @@ class OrchestratorTests: XCTestCase {
         let requestID: String? = nil
         public var errorBodyReader: Reader { responseReader }
 
-        public let httpResponse: HttpResponse
+        public let httpResponse: HTTPResponse
         private let responseReader: Reader
 
-        public init(httpResponse: HttpResponse, responseReader: Reader, noErrorWrapping: Bool) throws {
+        public init(httpResponse: HTTPResponse, responseReader: Reader, noErrorWrapping: Bool) throws {
             self.httpResponse = httpResponse
             self.responseReader = responseReader
         }
@@ -174,13 +174,13 @@ class OrchestratorTests: XCTestCase {
             self.trace = trace
         }
 
-        public func execute(request: SdkHttpRequest, attributes: Context) async throws -> HttpResponse {
+        public func execute(request: HTTPRequest, attributes: Context) async throws -> HTTPResponse {
             trace.append("executeRequest")
             if succeedAfter <= 0 {
-                return HttpResponse(body: request.body, statusCode: .ok)
+                return HTTPResponse(body: request.body, statusCode: .ok)
             } else {
                 succeedAfter -= 1
-                return HttpResponse(body: request.body, statusCode: .internalServerError)
+                return HTTPResponse(body: request.body, statusCode: .internalServerError)
             }
         }
     }
@@ -199,7 +199,7 @@ class OrchestratorTests: XCTestCase {
 
     func traceOrchestrator(
         trace: Trace
-    ) -> OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse> {
+    ) -> OrchestratorBuilder<TestInput, TestOutput, HTTPRequest, HTTPResponse> {
         let attributes = ContextBuilder()
             .withMethod(value: .get)
             .withPath(value: "/")
@@ -208,8 +208,8 @@ class OrchestratorTests: XCTestCase {
         var metricsAttributes = Attributes()
         metricsAttributes.set(key: OrchestratorMetricsAttributesKeys.service, value: "Service")
         metricsAttributes.set(key: OrchestratorMetricsAttributesKeys.method, value: "Method")
-        let traceInterceptor = TraceInterceptor<TestInput, TestOutput, SdkHttpRequest, HttpResponse>(trace: trace)
-        let builder = OrchestratorBuilder<TestInput, TestOutput, SdkHttpRequest, HttpResponse>()
+        let traceInterceptor = TraceInterceptor<TestInput, TestOutput, HTTPRequest, HTTPResponse>(trace: trace)
+        let builder = OrchestratorBuilder<TestInput, TestOutput, HTTPRequest, HTTPResponse>()
             .attributes(attributes)
             .serialize({ input, builder, _ in
                 trace.append("serialize")

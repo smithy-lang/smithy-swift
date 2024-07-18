@@ -54,9 +54,9 @@ public struct PayloadBodyMiddleware<OperationStackInput,
 
 extension PayloadBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
-    public typealias RequestType = SdkHttpRequest
+    public typealias RequestType = HTTPRequest
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
+    public func apply(input: OperationStackInput, builder: HTTPRequestBuilder, attributes: Smithy.Context) throws {
         do {
             if let payload = input[keyPath: keyPath] {
                 let data = try Writer.write(

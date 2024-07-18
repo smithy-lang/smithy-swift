@@ -22,6 +22,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator
+import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator.Companion.isSensitive
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -114,7 +115,7 @@ class DirectedSwiftCodegen(val context: PluginContext) :
             StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator?.serviceErrorProtocolSymbol).render()
         }
 
-        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.hasTrait<SensitiveTrait>() || model.expectShape(it.target).hasTrait<SensitiveTrait>() }) {
+        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.isSensitive(model) }) {
             writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
                 CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape, model).render()
             }
@@ -134,7 +135,7 @@ class DirectedSwiftCodegen(val context: PluginContext) :
             StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator?.serviceErrorProtocolSymbol).renderErrors()
         }
 
-        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.hasTrait<SensitiveTrait>() || model.expectShape(it.target).hasTrait<SensitiveTrait>() }) {
+        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.isSensitive(model) }) {
             writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
                 CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape, model).render()
             }

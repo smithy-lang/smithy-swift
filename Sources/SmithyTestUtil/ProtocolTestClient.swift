@@ -4,8 +4,8 @@
  */
 
 import protocol SmithyHTTPAPI.HTTPClient
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.HttpResponse
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPResponse
 import ClientRuntime
 
 public class ProtocolTestClient {
@@ -13,11 +13,11 @@ public class ProtocolTestClient {
 }
 
 public enum TestCheckError: Error {
-    case actual(SdkHttpRequest)
+    case actual(HTTPRequest)
 }
 
 extension ProtocolTestClient: HTTPClient {
-    public func send(request: SdkHttpRequest) async throws -> HttpResponse {
+    public func send(request: HTTPRequest) async throws -> HTTPResponse {
         throw TestCheckError.actual(request)
     }
 }

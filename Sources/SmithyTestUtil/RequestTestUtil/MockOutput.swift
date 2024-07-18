@@ -13,7 +13,7 @@ public struct MockOutput {
 
     public init() {}
 
-    public static func responseClosure(_ httpResponse: HttpResponse) async throws -> MockOutput {
+    public static func responseClosure(_ httpResponse: HTTPResponse) async throws -> MockOutput {
         var value = MockOutput()
         value.value = httpResponse.statusCode.rawValue
         value.headers = httpResponse.headers

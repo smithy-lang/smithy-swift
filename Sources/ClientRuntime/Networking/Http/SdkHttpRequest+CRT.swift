@@ -7,13 +7,13 @@
 
 import struct Smithy.URI
 import class SmithyStreams.StreamableHttpBody
-import class SmithyHTTPAPI.SdkHttpRequest
+import class SmithyHTTPAPI.HTTPRequest
 import AwsCommonRuntimeKit
 
-extension SdkHttpRequest {
+extension HTTPRequest {
 
-    public func toHttpRequest() throws -> HTTPRequest {
-        let httpRequest = try HTTPRequest()
+    public func toHttpRequest() throws -> AwsCommonRuntimeKit.HTTPRequest {
+        let httpRequest = try AwsCommonRuntimeKit.HTTPRequest()
         httpRequest.method = method.rawValue
         httpRequest.path = [endpoint.path, endpoint.uri.queryString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
@@ -25,7 +25,7 @@ extension SdkHttpRequest {
     /// CRT converts the HTTPRequestBase to HTTP2Request internally if the protocol is HTTP/2
     /// - Returns: the CRT request
     public func toHttp2Request() throws -> HTTPRequestBase {
-        let httpRequest = try HTTPRequest()
+        let httpRequest = try AwsCommonRuntimeKit.HTTPRequest()
         httpRequest.method = method.rawValue
         httpRequest.path = [endpoint.path, endpoint.uri.queryString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
@@ -40,7 +40,7 @@ extension SdkHttpRequest {
     }
 }
 
-extension SdkHttpRequest {
+extension HTTPRequest {
 
     var isChunked: Bool {
 
