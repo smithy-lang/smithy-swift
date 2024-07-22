@@ -76,7 +76,7 @@ class HTTPResponseBindingErrorGenerator(
                 writer.write("")
                 writer.openBlock(
                     "static func httpError(from httpResponse: \$N) async throws -> \$N {", "}",
-                    SmithyHTTPAPITypes.HttpResponse,
+                    SmithyHTTPAPITypes.HTTPResponse,
                     SwiftTypes.Error,
                 ) {
                     val errorShapes = op.errors

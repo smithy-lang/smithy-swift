@@ -13,7 +13,6 @@ import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes.Middleware.OperationStack
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
@@ -44,71 +43,58 @@ class MiddlewareExecutionGenerator(
             renderContextAttributes(op, flowType)
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
-        if (!ctx.settings.useInterceptors) {
-            writer.write(
-                "var \$L = \$N<\$L, \$L>(id: \$S)",
-                operationStackName,
-                OperationStack,
-                inputShape.name,
-                outputShape.name,
-                op.toLowerCamelCase(),
-            )
-        } else {
-            writer.write(
-                "let builder = \$N<\$N, \$N, \$N, \$N>()",
-                ClientRuntimeTypes.Core.OrchestratorBuilder,
-                inputShape,
-                outputShape,
-                SmithyHTTPAPITypes.SdkHttpRequest,
-                SmithyHTTPAPITypes.HttpResponse,
-            )
-            writer.write(
-                """
-                config.interceptorProviders.forEach { provider in
-                    builder.interceptors.add(provider.create())
-                }
-                """.trimIndent()
-            )
-            // Swift can't infer the generic arguments to `create` for some reason
-            writer.write(
-                """
-                config.httpInterceptorProviders.forEach { provider in
-                    let i: any ${'$'}N<${'$'}N, ${'$'}N> = provider.create()
-                    builder.interceptors.add(i)
-                }
-                """.trimIndent(),
-                ClientRuntimeTypes.Core.HttpInterceptor,
-                inputShape,
-                outputShape,
-            )
-        }
+        writer.write(
+            "let builder = \$N<\$N, \$N, \$N, \$N>()",
+            ClientRuntimeTypes.Core.OrchestratorBuilder,
+            inputShape,
+            outputShape,
+            SmithyHTTPAPITypes.HTTPRequest,
+            SmithyHTTPAPITypes.HTTPResponse,
+        )
+        writer.write(
+            """
+            config.interceptorProviders.forEach { provider in
+                builder.interceptors.add(provider.create())
+            }
+            """.trimIndent()
+        )
+        // Swift can't infer the generic arguments to `create` for some reason
+        writer.write(
+            """
+            config.httpInterceptorProviders.forEach { provider in
+                let i: any ${'$'}N<${'$'}N, ${'$'}N> = provider.create()
+                builder.interceptors.add(i)
+            }
+            """.trimIndent(),
+            ClientRuntimeTypes.Core.HttpInterceptor,
+            inputShape,
+            outputShape,
+        )
 
         renderMiddlewares(ctx, op, operationStackName)
 
-        if (ctx.settings.useInterceptors) {
-            val rpcService = symbolProvider.toSymbol(serviceShape).getName().removeSuffix("Client")
-            val rpcMethod = op.getId().getName()
-            writer.write(
-                """
-                var metricsAttributes = ${"$"}N()
-                metricsAttributes.set(key: ${"$"}N.service, value: ${"$"}S)
-                metricsAttributes.set(key: ${"$"}N.method, value: ${"$"}S)
-                let op = builder.attributes(context)
-                    .telemetry(${"$"}N(
-                        telemetryProvider: config.telemetryProvider,
-                        metricsAttributes: metricsAttributes
-                    ))
-                    .executeRequest(client)
-                    .build()
-                """.trimIndent(),
-                SmithyTypes.Attributes,
-                ClientRuntimeTypes.Middleware.OrchestratorMetricsAttributesKeys,
-                rpcService,
-                ClientRuntimeTypes.Middleware.OrchestratorMetricsAttributesKeys,
-                rpcMethod,
-                ClientRuntimeTypes.Middleware.OrchestratorTelemetry
-            )
-        }
+        val rpcService = symbolProvider.toSymbol(serviceShape).getName().removeSuffix("Client")
+        val rpcMethod = op.getId().getName()
+        writer.write(
+            """
+            var metricsAttributes = ${"$"}N()
+            metricsAttributes.set(key: ${"$"}N.service, value: ${"$"}S)
+            metricsAttributes.set(key: ${"$"}N.method, value: ${"$"}S)
+            let op = builder.attributes(context)
+                .telemetry(${"$"}N(
+                    telemetryProvider: config.telemetryProvider,
+                    metricsAttributes: metricsAttributes
+                ))
+                .executeRequest(client)
+                .build()
+            """.trimIndent(),
+            SmithyTypes.Attributes,
+            ClientRuntimeTypes.Middleware.OrchestratorMetricsAttributesKeys,
+            rpcService,
+            ClientRuntimeTypes.Middleware.OrchestratorMetricsAttributesKeys,
+            rpcMethod,
+            ClientRuntimeTypes.Middleware.OrchestratorTelemetry
+        )
     }
 
     private fun renderContextAttributes(op: OperationShape, flowType: ContextAttributeCodegenFlowType) {
@@ -153,11 +139,7 @@ class MiddlewareExecutionGenerator(
     }
 
     private fun renderMiddlewares(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, operationStackName: String) {
-        operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.INITIALIZESTEP)
-        operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.BUILDSTEP)
-        operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.SERIALIZESTEP)
-        operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.FINALIZESTEP)
-        operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName, MiddlewareStep.DESERIALIZESTEP)
+        operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName)
     }
 
     /*

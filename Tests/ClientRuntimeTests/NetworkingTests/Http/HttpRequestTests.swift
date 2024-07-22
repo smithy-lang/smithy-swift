@@ -69,7 +69,7 @@ class HttpRequestTests: NetworkingTestUtils {
 
         XCTAssertNotNil(urlRequest)
         guard let headersFromRequest = urlRequest.allHTTPHeaderFields else {
-            XCTFail("Headers in SdkHttpRequest were not successfully converted to headers in URLRequest.")
+            XCTFail("Headers in HTTPRequest were not successfully converted to headers in URLRequest.")
             // Compiler doesn't recognize XCTFail as return / exception thrown
             return
         }
