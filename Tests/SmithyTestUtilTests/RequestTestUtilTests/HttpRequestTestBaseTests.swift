@@ -14,7 +14,10 @@ import XCTest
 class HttpRequestTestBaseTests: HttpRequestTestBase {
     static let host = "myapi.host.com"
 
-    public struct SayHelloInputURLHostMiddleware: Middleware {
+    public struct SayHelloInputURLHostMiddleware: RequestMessageSerializer {
+        public typealias InputType = SayHelloInput
+        public typealias RequestType = HTTPRequest
+
         public let id: Swift.String = "SayHelloInputURLHostMiddleware"
 
         let host: Swift.String?
@@ -23,69 +26,44 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             self.host = host
         }
 
-        public func handle<H>(context: Context,
-                      input: SayHelloInput,
-                      next: H) async throws -> ClientRuntime.OperationOutput<MockOutput>
-        where H: Handler,
-        Self.MInput == H.Input,
-        Self.MOutput == H.Output
-        {
+        public func apply(input: SayHelloInput, builder: HTTPRequestBuilder, attributes: Context) throws {
             if let host = host {
-                context.host = host
+                attributes.host = host
             }
-            return try await next.handle(context: context, input: input)
         }
-
-        public typealias MInput = SayHelloInput
-        public typealias MOutput = ClientRuntime.OperationOutput<MockOutput>
     }
 
-    struct SayHelloInputQueryItemMiddleware<StackOutput>: Middleware {
+    struct SayHelloInputQueryItemMiddleware: RequestMessageSerializer {
+        public typealias InputType = SayHelloInput
+        public typealias RequestType = HTTPRequest
 
         var id: String = "SayHelloInputQueryItemMiddleware"
 
-        func handle<H>(context: Context,
-                       input: SerializeStepInput<SayHelloInput>,
-                       next: H) async throws -> MOutput where H: Handler,
-                                                                Self.MInput == H.Input,
-                                                                Self.MOutput == H.Output {
-            var queryItems: [URIQueryItem] = []
-            var queryItem: URIQueryItem
-            if let requiredQuery = input.operationInput.requiredQuery {
-                queryItem = URIQueryItem(name: "RequiredQuery".urlPercentEncoding(), value: String(requiredQuery).urlPercentEncoding())
-                queryItems.append(queryItem)
+        public func apply(input: HttpRequestTestBaseTests.SayHelloInput, builder: HTTPRequestBuilder, attributes: Context) throws {
+            if let requiredQuery = input.requiredQuery {
+                builder.withQueryItem(URIQueryItem(name: "RequiredQuery".urlPercentEncoding(), value: String(requiredQuery).urlPercentEncoding()))
             }
-
-            input.builder.withQueryItems(queryItems)
-            return try await next.handle(context: context, input: input)
         }
-
-        typealias MInput = SerializeStepInput<SayHelloInput>
-        typealias MOutput = OperationOutput<StackOutput>
     }
 
-    struct SayHelloInputHeaderMiddleware<StackOutput>: Middleware {
+    struct SayHelloInputHeaderMiddleware: RequestMessageSerializer {
+        public typealias InputType = SayHelloInput
+        public typealias RequestType = HTTPRequest
+
         var id: String = "SayHelloInputHeaderMiddleware"
 
-        func handle<H>(context: Context,
-                       input: MInput,
-                       next: H) async throws -> MOutput where H: Handler,
-                                                                Self.MInput == H.Input,
-                                                                Self.MOutput == H.Output {
-            var headers = Headers()
-            headers.add(name: "Content-Type", value: "application/json")
-            if let requiredHeader = input.operationInput.requiredHeader {
-                headers.add(name: "RequiredHeader", value: requiredHeader)
+        func apply(input: InputType, builder: RequestType.RequestBuilderType, attributes: Context) throws {
+            builder.headers.add(name: "Content-Type", value: "application/json")
+            if let requiredHeader = input.requiredHeader {
+                builder.headers.add(name: "RequiredHeader", value: requiredHeader)
             }
-            input.builder.withHeaders(headers)
-            return try await next.handle(context: context, input: input)
         }
-
-        typealias MInput = SerializeStepInput<SayHelloInput>
-        typealias MOutput = OperationOutput<StackOutput>
     }
 
-    struct SayHelloInputBodyMiddleware<StackOutput>: Middleware {
+    struct SayHelloInputBodyMiddleware: RequestMessageSerializer {
+        public typealias InputType = SayHelloInput
+        public typealias RequestType = HTTPRequest
+
         var id: String = "SayHelloInputBodyMiddleware"
 
         let rootNodeInfo: SmithyJSON.Writer.NodeInfo
@@ -99,26 +77,12 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
             self.inputWritingClosure = inputWritingClosure
         }
 
-        func handle<H>(
-            context: Context,
-            input: MInput,
-            next: H
-        ) async throws -> MOutput where
-            H: Handler,
-            Self.MInput == H.Input,
-            Self.MOutput == H.Output {
-
-
+        func apply(input: InputType, builder: RequestType.RequestBuilderType, attributes: Context) throws {
             let writer = SmithyJSON.Writer(nodeInfo: rootNodeInfo)
-            try writer.write(input.operationInput, with: inputWritingClosure)
+            try writer.write(input, with: inputWritingClosure)
             let body = ByteStream.data(try writer.data())
-            input.builder.withBody(body)
-            return try await next.handle(context: context, input: input)
-
+            builder.withBody(body)
         }
-
-        typealias MInput = SerializeStepInput<SayHelloInput>
-        typealias MOutput = OperationOutput<StackOutput>
     }
 
     struct SayHelloInput: Encodable {
@@ -167,65 +131,54 @@ class HttpRequestTestBaseTests: HttpRequestTestBase {
                                   forbiddenHeader: "forbidden header",
                                   requiredHeader: "required header")
 
-        var operationStack = OperationStack<SayHelloInput, MockOutput>(id: "SayHelloInputRequest")
-        operationStack.initializeStep.intercept(position: .before, middleware: SayHelloInputURLHostMiddleware(host: HttpRequestTestBaseTests.host))
-        operationStack.buildStep.intercept(position: .after, id: "RequestTestEndpointResolver") { (context, input, next) -> ClientRuntime.OperationOutput<MockOutput> in
-            input.withMethod(context.method)
-            let host = "\(context.hostPrefix ?? "")\(context.host ?? "")"
-            input.withHost(host)
-            return try await next.handle(context: context, input: input)
-        }
-        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputQueryItemMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputHeaderMiddleware())
-        operationStack.serializeStep.intercept(position: .before, middleware: SayHelloInputBodyMiddleware(rootNodeInfo: "", inputWritingClosure: SayHelloInput.write(value:to:)))
-        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput>(
-            id: "TestDeserializeMiddleware", responseClosure: { _ in MockOutput() }) { _, actual in
+        let builder = TestOrchestrator.httpBuilder()
+            .attributes(ContextBuilder().withMethod(value: .post).build())
+            .serialize(SayHelloInputURLHostMiddleware(host: HttpRequestTestBaseTests.host))
+            .serialize(SayHelloInputQueryItemMiddleware())
+            .serialize(SayHelloInputHeaderMiddleware())
+            .serialize(SayHelloInputBodyMiddleware(rootNodeInfo: "", inputWritingClosure: SayHelloInput.write(value:to:)))
+            .applyEndpoint({ request, _, attributes in
+                return request.toBuilder()
+                    .withMethod(attributes.method)
+                    .withHost("\(attributes.hostPrefix ?? "")\(attributes.host ?? "")")
+                    .build()
+            })
+            .deserialize(MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: { _ in MockOutput() }))
+            .executeRequest({ actual, attributes in
+                let forbiddenQueryParams = ["ForbiddenQuery"]
+                for forbiddenQueryParam in forbiddenQueryParams {
+                    XCTAssertFalse(
+                        self.queryItemExists(forbiddenQueryParam, in: actual.destination.queryItems),
+                        "Forbidden Query:\(forbiddenQueryParam) exists in query items"
+                    )
+                }
+                let forbiddenHeaders = ["ForbiddenHeader"]
+                for forbiddenHeader in forbiddenHeaders {
+                    XCTAssertFalse(self.headerExists(forbiddenHeader, in: actual.headers.headers),
+                                   "Forbidden Header:\(forbiddenHeader) exists in headers")
+                }
 
-            let forbiddenQueryParams = ["ForbiddenQuery"]
-            for forbiddenQueryParam in forbiddenQueryParams {
-                XCTAssertFalse(
-                    self.queryItemExists(forbiddenQueryParam, in: actual.destination.queryItems),
-                    "Forbidden Query:\(forbiddenQueryParam) exists in query items"
-                )
-            }
-            let forbiddenHeaders = ["ForbiddenHeader"]
-            for forbiddenHeader in forbiddenHeaders {
-                XCTAssertFalse(self.headerExists(forbiddenHeader, in: actual.headers.headers),
-                               "Forbidden Header:\(forbiddenHeader) exists in headers")
-            }
+                let requiredQueryParams = ["RequiredQuery"]
+                for requiredQueryParam in requiredQueryParams {
+                    XCTAssertTrue(self.queryItemExists(requiredQueryParam, in: actual.destination.queryItems),
+                                  "Required Query:\(requiredQueryParam) does not exist in query items")
+                }
 
-            let requiredQueryParams = ["RequiredQuery"]
-            for requiredQueryParam in requiredQueryParams {
-                XCTAssertTrue(self.queryItemExists(requiredQueryParam, in: actual.destination.queryItems),
-                              "Required Query:\(requiredQueryParam) does not exist in query items")
-            }
+                let requiredHeaders = ["RequiredHeader"]
+                for requiredHeader in requiredHeaders {
+                    XCTAssertTrue(self.headerExists(requiredHeader, in: actual.headers.headers),
+                                  "Required Header:\(requiredHeader) does not exist in headers")
+                }
 
-            let requiredHeaders = ["RequiredHeader"]
-            for requiredHeader in requiredHeaders {
-                XCTAssertTrue(self.headerExists(requiredHeader, in: actual.headers.headers),
-                              "Required Header:\(requiredHeader) does not exist in headers")
-            }
+                try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) throws -> Void in
+                    XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
+                    XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
+                    try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: .json)
+                })
 
-            try await self.assertEqual(expected, actual, { (expectedHttpBody, actualHttpBody) throws -> Void in
-                XCTAssertNotNil(actualHttpBody, "The actual ByteStream is nil")
-                XCTAssertNotNil(expectedHttpBody, "The expected ByteStream is nil")
-                try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: .json)
+                return HTTPResponse(body: ByteStream.noStream, statusCode: .ok)
             })
 
-            let response = HTTPResponse(body: ByteStream.noStream, statusCode: .ok)
-            let mockOutput = MockOutput()
-            let output = OperationOutput<MockOutput>(httpResponse: response, output: mockOutput)
-            return output
-           })
-
-        let context = ContextBuilder()
-            .withMethod(value: .post)
-            .build()
-        _ = try await operationStack.handleMiddleware(context: context, input: input, next: MockHandler { (_, _) in
-            XCTFail("Deserialize was mocked out, this should fail")
-            let httpResponse = HTTPResponse(body: .noStream, statusCode: .badRequest)
-            let mockServiceError = MockMiddlewareError.responseErrorClosure(httpResponse)
-            throw mockServiceError
-        })
+        _ = try await builder.build().execute(input: input)
     }
 }
