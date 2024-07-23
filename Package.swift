@@ -155,7 +155,6 @@ let package = Package(
                 "Smithy",
                 "SmithyHTTPAPI",
                 "SmithyStreams",
-                "SmithyChecksums",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
             ]
         ),
@@ -209,7 +208,6 @@ let package = Package(
                 "Smithy",
                 "SmithyChecksumsAPI",
                 "SmithyStreams",
-                "SmithyHTTPAuth",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
             ]
         ),

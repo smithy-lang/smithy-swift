@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyChecksums
 import struct Smithy.URI
 import class SmithyStreams.StreamableHttpBody
 import class SmithyHTTPAPI.HTTPRequest
