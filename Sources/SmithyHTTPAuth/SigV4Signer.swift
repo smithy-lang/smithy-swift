@@ -33,11 +33,11 @@ import SmithyHTTPClient
 public class SigV4Signer: SmithyHTTPAuthAPI.Signer {
     public init() {}
 
-    func signRequest<IdentityT>(
+    public func signRequest<IdentityT>(
         requestBuilder: SmithyHTTPAPI.HTTPRequestBuilder,
         identity: IdentityT,
         signingProperties: Smithy.Attributes
-    ) async throws -> SmithyHTTPAPI.HTTPRequestBuilder where IdentityT : SmithyIdentityAPI.Identity {
+    ) async throws -> SmithyHTTPAPI.HTTPRequestBuilder where IdentityT: SmithyIdentityAPI.Identity {
         guard let isBidirectionalStreamingEnabled = signingProperties.get(
             key: SigningPropertyKeys.bidirectionalStreaming
         ) else {
