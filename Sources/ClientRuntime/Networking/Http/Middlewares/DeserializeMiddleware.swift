@@ -5,12 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Context
-import protocol Smithy.ResponseMessageDeserializer
 import SmithyHTTPAPI
 import SmithyReadWrite
+import class Foundation.DateFormatter
+import struct Foundation.Locale
+import struct Foundation.TimeInterval
+import struct Foundation.TimeZone
+import struct Foundation.UUID
+import class Smithy.Context
+import protocol Smithy.ResponseMessageDeserializer
 
-public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
+public struct DeserializeMiddleware<OperationStackOutput> {
     public var id: String = "Deserialize"
     let wireResponseClosure: WireResponseOutputClosure<HTTPResponse, OperationStackOutput>
     let wireResponseErrorClosure: WireResponseErrorClosure<HTTPResponse>
@@ -22,22 +27,6 @@ public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
         self.wireResponseClosure = wireResponseClosure
         self.wireResponseErrorClosure = wireResponseErrorClosure
     }
-    public func handle<H>(context: Context,
-                          input: HTTPRequest,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-            Self.MInput == H.Input,
-            Self.MOutput == H.Output {
-
-            var response = try await next.handle(context: context, input: input) // call handler to get http response
-
-            let output = try await deserialize(response: response.httpResponse, attributes: context)
-            response.output = output
-            return response
-    }
-
-    public typealias MInput = HTTPRequest
-    public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension DeserializeMiddleware: ResponseMessageDeserializer {
@@ -68,4 +57,15 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
             throw try await wireResponseErrorClosure(copiedResponse)
         }
     }
+}
+
+// Calculates & returns estimated skew.
+func getEstimatedSkew(now: Date, responseDateString: String) -> TimeInterval {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
+    let responseDate: Date = dateFormatter.date(from: responseDateString) ?? now
+    // (Estimated skew) = (Date header from HTTP response) - (client's current time)).
+    return responseDate.timeIntervalSince(now)
 }

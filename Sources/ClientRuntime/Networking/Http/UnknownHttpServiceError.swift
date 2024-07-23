@@ -5,7 +5,7 @@
 
 import SmithyHTTPAPI
 
-/// General Service Error structure used when exact error could not be deduced from the `HttpResponse`
+/// General Service Error structure used when exact error could not be deduced from the `HTTPResponse`
 public struct UnknownHTTPServiceError: ServiceError, HTTPError, Error {
     public var typeName: String?
 

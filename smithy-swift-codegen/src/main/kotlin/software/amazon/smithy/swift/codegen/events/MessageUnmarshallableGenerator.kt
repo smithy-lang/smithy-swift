@@ -85,7 +85,7 @@ class MessageUnmarshallableGenerator(
                                 writer.indent {
                                     writer.write(
                                         "let httpResponse = \$N(body: .data(message.payload), statusCode: .ok)",
-                                        SmithyHTTPAPITypes.HttpResponse,
+                                        SmithyHTTPAPITypes.HTTPResponse,
                                     )
                                     writer.write(
                                         "return \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':exceptionType': \\(params.exceptionType); contentType: \\(params.contentType ?? \"nil\")\", requestID: nil, typeName: nil)",
@@ -103,7 +103,7 @@ class MessageUnmarshallableGenerator(
                             // this is a service exception still, just un-modeled
                             writer.write(
                                 "let httpResponse = \$N(body: .data(message.payload), statusCode: .ok)",
-                                SmithyHTTPAPITypes.HttpResponse,
+                                SmithyHTTPAPITypes.HTTPResponse,
                             )
                             writer.write(
                                 "throw \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':errorType': \\(params.errorCode); message: \\(params.message ?? \"nil\")\", requestID: nil, typeName: nil)",

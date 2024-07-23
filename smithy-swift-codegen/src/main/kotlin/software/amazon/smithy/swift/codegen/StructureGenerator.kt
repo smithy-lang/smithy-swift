@@ -187,7 +187,7 @@ class StructureGenerator(
      *     public var _message: String?
      *     public var _requestID: String?
      *     public var _retryable: Bool = true
-     *     public var _statusCode: HttpStatusCode?
+     *     public var _statusCode: HTTPStatusCode?
      *     public var _type: ErrorType = .client
      *     public var message: String?
      *
@@ -260,7 +260,7 @@ class StructureGenerator(
         val isThrottling = retryableTrait?.throttling ?: false
         writer.write("public static var isRetryable: \$N { \$L }", SwiftTypes.Bool, isRetryable)
         writer.write("public static var isThrottling: \$N { \$L }", SwiftTypes.Bool, isThrottling)
-        writer.write("public internal(set) var httpResponse = \$N()", SmithyHTTPAPITypes.HttpResponse)
+        writer.write("public internal(set) var httpResponse = \$N()", SmithyHTTPAPITypes.HTTPResponse)
         writer.write("public internal(set) var message: \$T", SwiftTypes.String)
         writer.write("public internal(set) var requestID: \$T", SwiftTypes.String)
         writer.declareSection(AdditionalErrorMembers)

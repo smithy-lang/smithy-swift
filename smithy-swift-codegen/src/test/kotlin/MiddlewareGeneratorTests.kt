@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.Middleware
 import software.amazon.smithy.swift.codegen.MiddlewareGenerator
-import software.amazon.smithy.swift.codegen.OperationStep
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
@@ -22,47 +21,20 @@ class MiddlewareGeneratorTests {
         generator.generate()
         val contents = writer.toString()
         val expectedGeneratedStructure = """
-public struct TestMiddleware: ClientRuntime.Middleware {
+public struct TestMiddleware {
     public let id: Swift.String = "TestMiddleware"
 
     let test: Swift.String
 
     public init() {}
-
-    public func handle<H>(context: Smithy.Context,
-                  input: Swift.String,
-                  next: H) async throws -> ClientRuntime.OperationOutput<Swift.String>
-    where H: ClientRuntime.Handler,
-    Self.MInput == H.Input,
-    Self.MOutput == H.Output
-    {
-        print("this is a \(test)")
-        return try await next.handle(context: context, input: input)
-    }
-
-    public typealias MInput = Swift.String
-    public typealias MOutput = ClientRuntime.OperationOutput<Swift.String>
 }
 """
         contents.shouldContain(expectedGeneratedStructure)
     }
 }
 
-class MockOperationStep(outputSymbol: Symbol, outputErrorSymbol: Symbol) : OperationStep(outputSymbol, outputErrorSymbol) {
-    override val inputType: Symbol = SwiftTypes.String
-}
-
-class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(
-    writer, symbol,
-    MockOperationStep(
-        SwiftTypes.String, SwiftTypes.Error
-    )
-) {
+class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(writer, symbol) {
     override val properties = mutableMapOf("test" to SwiftTypes.String)
-    override fun generateMiddlewareClosure() {
-        writer.write("print(\"this is a \\(test)\")")
-    }
-
     override fun generateInit() {
         writer.write("public init() {}")
     }
