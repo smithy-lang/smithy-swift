@@ -5,6 +5,7 @@
 
 import Smithy
 import SmithyHTTPAPI
+import SmithyHTTPClent
 import XCTest
 import AwsCommonRuntimeKit
 import struct Foundation.URLQueryItem
