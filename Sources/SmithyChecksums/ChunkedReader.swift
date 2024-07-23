@@ -12,6 +12,7 @@ import struct SmithyHTTPAPI.Headers
 import AwsCommonRuntimeKit
 import SmithyHTTPClient
 import struct Foundation.Data
+import Smithy
 
 public class ChunkedReader {
     private var stream: ReadableStream
@@ -110,7 +111,7 @@ public class ChunkedReader {
     }
 
     private func getUnsignedChunk(from stream: ReadableStream) async throws -> Data? {
-        let chunk = try await stream.readAsync(upToCount: SmithyChecksums.CHUNK_SIZE_BYTES) ?? Data()
+        let chunk = try await stream.readAsync(upToCount: CHUNK_SIZE_BYTES) ?? Data()
 
         self.chunkBody = chunk
 
