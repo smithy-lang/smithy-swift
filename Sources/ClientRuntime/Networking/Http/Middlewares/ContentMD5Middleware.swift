@@ -6,6 +6,7 @@ import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import AwsCommonRuntimeKit
 import SmithyChecksums
 import SmithyHTTPAPI
+import Smithy
 
 public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput> {
     public let id: String = "ContentMD5"
