@@ -227,7 +227,7 @@ let package = Package(
                 "SmithyHTTPClient",
                 "SmithyHTTPAPI",
                 "Smithy",
-                "ClientRuntime",
+                "SmithyTestUtil",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
             ]
         ),

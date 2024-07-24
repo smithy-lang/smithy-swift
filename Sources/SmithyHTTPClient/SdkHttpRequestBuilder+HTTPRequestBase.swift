@@ -37,7 +37,7 @@ extension HTTPRequestBuilder {
         return self
     }
 
-    func convertSignedHeadersToHeaders(crtRequest: HTTPRequestBase) -> Headers {
+    public func convertSignedHeadersToHeaders(crtRequest: HTTPRequestBase) -> Headers {
         return Headers(httpHeaders: crtRequest.getHeaders())
     }
 }
