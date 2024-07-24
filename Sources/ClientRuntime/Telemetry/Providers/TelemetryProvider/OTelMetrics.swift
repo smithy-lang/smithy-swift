@@ -13,7 +13,7 @@ import Smithy
 public typealias OpenTelemetryMeter = OpenTelemetryApi.StableMeter
 
 // Metrics
-public class OTelMeterProvider: MeterProvider {
+public final class OTelMeterProvider: MeterProvider {
     private let sdkMeterProvider: StableMeterProviderSdk
 
     public init() {
@@ -31,14 +31,17 @@ public class OTelMeterProvider: MeterProvider {
     }
 }
 
-public class OTelMeter: Meter {
+public final class OTelMeter: Meter {
     private let otelMeter: OpenTelemetryMeter
 
     internal init(_ otelMeter: OpenTelemetryMeter) {
         self.otelMeter = otelMeter
     }
 
-    public func createGauge(name: String, callback: @escaping (any DoubleAsyncMeasurement) -> Void, units: String?, description: String?) -> any AsyncMeasurementHandle {
+    public func createGauge(
+        name: String,
+        callback: @escaping (any DoubleAsyncMeasurement) -> Void, units: String?, description: String?
+    ) -> any AsyncMeasurementHandle {
         // unused args: description
         let builder = self.otelMeter.gaugeBuilder(name: name).buildWithCallback { observer in
             callback(OTelDoubleAsyncMeasurementImpl(measurement: observer ))
@@ -52,7 +55,10 @@ public class OTelMeter: Meter {
         return OTelUpDownCounterImpl(instrument: counter)
     }
 
-    public func createAsyncUpDownCounter(name: String, callback: @escaping (any LongAsyncMeasurement) -> Void, units: String?, description: String?) -> any AsyncMeasurementHandle {
+    public func createAsyncUpDownCounter(
+        name: String,
+        callback: @escaping (any LongAsyncMeasurement) -> Void, units: String?, description: String?
+    ) -> any AsyncMeasurementHandle {
         // unused args: description
         let builder = self.otelMeter.upDownCounterBuilder(name: name).buildWithCallback { observer in
             callback(OTelLongAsyncMeasurementImpl(measurement: observer ))
@@ -65,7 +71,10 @@ public class OTelMeter: Meter {
         return OTelMonotonicCounterImpl(instrument: builder)
     }
 
-    public func createAsyncMonotonicCounter(name: String, callback: @escaping (any LongAsyncMeasurement) -> Void, units: String?, description: String?) -> any AsyncMeasurementHandle {
+    public func createAsyncMonotonicCounter(
+        name: String,
+        callback: @escaping (any LongAsyncMeasurement) -> Void, units: String?, description: String?
+    ) -> any AsyncMeasurementHandle {
         let builder = self.otelMeter.counterBuilder(name: name).buildWithCallback { observer in
             callback(OTelLongAsyncMeasurementImpl(measurement: observer ))
         }
@@ -77,7 +86,6 @@ public class OTelMeter: Meter {
         return OTelDoubleHistogramImpl(instrument: hist)
     }
 }
-
 
 private class OTelDoubleAsyncMeasurementImpl: AsyncMeasurement {
     private let measurement: ObservableDoubleMeasurement
@@ -118,7 +126,7 @@ private class OTelUpDownCounterImpl: UpDownCounter {
         self.instrument = instrument
     }
 
-    func add(value: Int64, attributes: Attributes?, context: (any TelemetryContext)?) {
+    func add(value: Int, attributes: Attributes?, context: (any TelemetryContext)?) {
         if let attributes = attributes, !(attributes.size == 0) {
             self.instrument.add(value: Int(value), attributes: attributes.toOtelAttributes())
         } else {
@@ -127,14 +135,14 @@ private class OTelUpDownCounterImpl: UpDownCounter {
     }
 }
 
-private class OTelMonotonicCounterImpl: MonotonicCounter {
+private final class OTelMonotonicCounterImpl: MonotonicCounter {
     private var instrument: LongCounter
 
     public init(instrument: LongCounter) {
         self.instrument = instrument
     }
 
-    func add(value: Int64, attributes: Attributes?, context: (any TelemetryContext)?) {
+    func add(value: Int, attributes: Attributes?, context: (any TelemetryContext)?) {
         if let attributes = attributes, !(attributes.size == 0) {
             self.instrument.add(value: Int(value), attribute: attributes.toOtelAttributes())
         } else {
@@ -143,7 +151,7 @@ private class OTelMonotonicCounterImpl: MonotonicCounter {
     }
 }
 
-private class OTelDoubleHistogramImpl: Histogram {
+private final class OTelDoubleHistogramImpl: Histogram {
     private var instrument: DoubleHistogram
 
     public init(instrument: DoubleHistogram) {
@@ -159,7 +167,7 @@ private class OTelDoubleHistogramImpl: Histogram {
     }
 }
 
-private class OTelDoubleGaugeAsyncMeasurementHandleImpl: AsyncMeasurementHandle {
+private final class OTelDoubleGaugeAsyncMeasurementHandleImpl: AsyncMeasurementHandle {
     private let otelHandle: any ObservableDoubleGauge
 
     public init(otelHandle: any ObservableDoubleGauge) {
@@ -171,7 +179,7 @@ private class OTelDoubleGaugeAsyncMeasurementHandleImpl: AsyncMeasurementHandle 
     }
 }
 
-private class OTelLongUpDownAsyncMeasurementHandleImpl: AsyncMeasurementHandle {
+private final class OTelLongUpDownAsyncMeasurementHandleImpl: AsyncMeasurementHandle {
     private let otelHandle: any ObservableLongUpDownCounter
 
     public init(otelHandle: any ObservableLongUpDownCounter) {
@@ -183,7 +191,7 @@ private class OTelLongUpDownAsyncMeasurementHandleImpl: AsyncMeasurementHandle {
     }
 }
 
-private class OTelLongCounterAsyncMeasurementHandleImpl: AsyncMeasurementHandle {
+private final class OTelLongCounterAsyncMeasurementHandleImpl: AsyncMeasurementHandle {
     private let otelHandle: any ObservableLongCounter
 
     public init(otelHandle: any ObservableLongCounter) {

@@ -15,7 +15,7 @@ public typealias OpenTelemetrySpan = OpenTelemetryApi.Span
 public typealias OpenTelemetryStatus = OpenTelemetryApi.Status
 
 // Trace
-public class OTelTracerProvider: TracerProvider {
+public final class OTelTracerProvider: TracerProvider {
     private let sdkTracerProvider: TracerProviderSdk
 
     public init() {
@@ -29,14 +29,17 @@ public class OTelTracerProvider: TracerProvider {
     }
 }
 
-public class OTelTracerImpl: Tracer {
+public final class OTelTracerImpl: Tracer {
     private let otelTracer: OpenTelemetryTracer
 
     public init(otelTracer: OpenTelemetryTracer) {
         self.otelTracer = otelTracer
     }
 
-    public func createSpan(name: String, initialAttributes: Attributes?, spanKind: SpanKind, parentContext: (any TelemetryContext)?) -> any TraceSpan {
+    public func createSpan(
+        name: String,
+        initialAttributes: Attributes?, spanKind: SpanKind, parentContext: (any TelemetryContext)?
+    ) -> any TraceSpan {
         let spanBuilder = self.otelTracer
             .spanBuilder(spanName: name)
             .setSpanKind(spanKind: spanKind.toOTelSpanKind())
@@ -44,7 +47,8 @@ public class OTelTracerImpl: Tracer {
         initialAttributes?.getKeys().forEach { key in
             spanBuilder.setAttribute(
                 key: key,
-                value: (initialAttributes?.get(key: AttributeKey<String>(name: key))) ?? "error" // should change for production
+                // should change line below for production
+                value: (initialAttributes?.get(key: AttributeKey<String>(name: key))) ?? "error"
             )
         }
 
@@ -52,11 +56,11 @@ public class OTelTracerImpl: Tracer {
     }
 }
 
-private class OTelTraceSpanImpl: TraceSpan {
+private final class OTelTraceSpanImpl: TraceSpan {
     var name: String
     private let otelSpan: OpenTelemetrySpan
 
-    public init(name: String,otelSpan: OpenTelemetrySpan) {
+    public init(name: String, otelSpan: OpenTelemetrySpan) {
         self.name = name
         self.otelSpan = otelSpan
     }

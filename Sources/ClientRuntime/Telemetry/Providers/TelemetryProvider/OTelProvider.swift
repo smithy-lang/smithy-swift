@@ -19,7 +19,7 @@ public enum TelemetryProviderOTel {
     /// - tracerProvider: no-op
     public static let provider: TelemetryProvider = OpenTelemetryProvider()
 
-    fileprivate class OpenTelemetryProvider: TelemetryProvider {
+    fileprivate final class OpenTelemetryProvider: TelemetryProvider {
         let contextManager: TelemetryContextManager = defaultContextManager
         let loggerProvider: LoggerProvider = defaultLoggerProvider
         let meterProvider: MeterProvider = OTelMeterProvider()
@@ -31,7 +31,7 @@ public enum TelemetryProviderOTel {
 extension TelemetryProviderOTel {
     public static let defaultLoggerProvider: LoggerProvider = _DefaultLoggerProvider()
 
-    fileprivate class _DefaultLoggerProvider: LoggerProvider {
+    fileprivate final class _DefaultLoggerProvider: LoggerProvider {
         func getLogger(name: String) -> LogAgent { SwiftLogger(label: name) }
     }
 }
