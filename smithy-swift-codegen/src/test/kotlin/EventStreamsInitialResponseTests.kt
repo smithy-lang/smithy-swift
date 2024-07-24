@@ -18,13 +18,13 @@ class EventStreamsInitialResponseTests {
         )
         val contents = getFileContents(
             context.manifest,
-            "/InitialMessageEventStreams/models/TestStreamOperationWithInitialRequestResponseOutput+HttpResponseBinding.swift"
+            "Sources/InitialMessageEventStreams/models/TestStreamOperationWithInitialRequestResponseOutput+HttpResponseBinding.swift"
         )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension TestStreamOperationWithInitialRequestResponseOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> TestStreamOperationWithInitialRequestResponseOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> TestStreamOperationWithInitialRequestResponseOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyJSON.Reader.from(data: data)
         let reader = responseReader

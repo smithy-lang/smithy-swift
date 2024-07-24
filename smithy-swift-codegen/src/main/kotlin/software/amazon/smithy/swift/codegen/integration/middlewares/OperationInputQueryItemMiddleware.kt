@@ -6,9 +6,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
-import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
-import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class OperationInputQueryItemMiddleware(
@@ -17,10 +15,6 @@ class OperationInputQueryItemMiddleware(
 ) : MiddlewareRenderable {
 
     override val name = "OperationInputQueryItemMiddleware"
-
-    override val middlewareStep = MiddlewareStep.SERIALIZESTEP
-
-    override val position = MiddlewarePosition.AFTER
 
     override fun render(
         ctx: ProtocolGenerator.GenerationContext,

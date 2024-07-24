@@ -34,7 +34,6 @@ import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.RequiresLengthTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.NeedsReaderTrait
 import software.amazon.smithy.swift.codegen.customtraits.NeedsWriterTrait
@@ -72,6 +71,7 @@ import software.amazon.smithy.swift.codegen.model.isOutputEventStream
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
@@ -97,6 +97,7 @@ fun Shape.isInHttpBody(): Boolean {
  */
 fun formatHeaderOrQueryValue(
     ctx: ProtocolGenerator.GenerationContext,
+    writer: SwiftWriter,
     memberName: String,
     memberShape: MemberShape,
     location: HttpBinding.Location,
@@ -106,7 +107,7 @@ fun formatHeaderOrQueryValue(
     return when (val shape = ctx.model.expectShape(memberShape.target)) {
         is TimestampShape -> {
             val timestampFormat = bindingIndex.determineTimestampFormat(memberShape, location, defaultTimestampFormat)
-            Pair(ProtocolGenerator.getFormattedDateString(timestampFormat, memberName), false)
+            Pair(ProtocolGenerator.getFormattedDateString(writer, timestampFormat, memberName), false)
         }
         is BlobShape -> {
             Pair("try $memberName.base64EncodedString()", true)
@@ -162,9 +163,9 @@ abstract class HTTPBindingProtocolGenerator(
         for ((shape, shapeMetadata) in inputShapesWithMetadata) {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
-            val rootNamespace = ctx.settings.moduleName
+            val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+Write")
             val encodeSymbol = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/$symbolName+Write.swift")
+                .definitionFile(filename)
                 .name(symbolName)
                 .build()
             var httpBodyMembers = shape.members()
@@ -184,7 +185,6 @@ abstract class HTTPBindingProtocolGenerator(
                         "}",
                         symbolName,
                     ) {
-                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                         writer.write("")
                         renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer)
                     }
@@ -214,14 +214,13 @@ abstract class HTTPBindingProtocolGenerator(
         if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) { return }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
-        val rootNamespace = ctx.settings.moduleName
+        val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+ReadWrite")
         val encodeSymbol = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/$symbolName+ReadWrite.swift")
+            .definitionFile(filename)
             .name(symbolName)
             .build()
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             writer.openBlock("extension \$N {", "}", symbol) {
-                writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
                 val members = shape.members().toList()
                 when (shape) {
                     is StructureShape -> {
@@ -376,7 +375,7 @@ abstract class HTTPBindingProtocolGenerator(
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
-        ctx.delegator.useFileWriter("./${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
+        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
             val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
             val clientGenerator = httpProtocolClientGeneratorFactory.createHttpProtocolClientGenerator(
                 ctx,

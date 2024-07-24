@@ -159,9 +159,8 @@ class SymbolProviderTest {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val memberSymbol = provider.toSymbol(member)
 
-        assertEquals("ComplexModule", memberSymbol.namespace)
         assertEquals(true, memberSymbol.isBoxed())
-        assertEquals("[UInt8]", memberSymbol.name)
+        assertEquals("Int", memberSymbol.name)
     }
 
     @Test fun `creates lists`() {
@@ -210,7 +209,7 @@ class SymbolProviderTest {
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val mapSymbol = provider.toSymbol(map)
 
-        assertEquals("[Swift.String:Record]", mapSymbol.name)
+        assertEquals("[Swift.String: Record]", mapSymbol.name)
         assertEquals(true, mapSymbol.isBoxed())
         assertEquals("nil", mapSymbol.defaultValue())
     }

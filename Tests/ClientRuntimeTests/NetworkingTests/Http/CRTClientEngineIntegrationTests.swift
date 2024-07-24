@@ -8,6 +8,7 @@ import SmithyHTTPAPI
 import XCTest
 @testable import ClientRuntime
 import AwsCommonRuntimeKit
+import class SmithyStreams.BufferedStream
 
 // These tests are disabled because unreliability of httpbin.org is causing spurious failures.
 // Github issue to track correction of these tests: https://github.com/awslabs/aws-sdk-swift/issues/962
@@ -26,19 +27,15 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         httpClient = SdkHttpClient(engine: crtEngine, config: httpClientConfiguration)
     }
 
-    override func tearDown() {
-        super.tearDown()
-    }
-
     func xtestMakeHttpGetRequest() async throws {
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
-        let request = SdkHttpRequest(method: .get, endpoint: Endpoint(host: "httpbin.org", path: "/get", headers: headers))
+        let request = HTTPRequest(method: .get, endpoint: Endpoint(host: "httpbin.org", path: "/get", headers: headers))
         let response = try await httpClient.send(request: request)
 
         XCTAssertNotNil(response)
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        XCTAssertEqual(response.statusCode, .ok)
     }
 
     func xtestMakeHttpPostRequest() async throws {
@@ -49,12 +46,12 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let body = TestBody(test: "testval")
         let encoder = JSONEncoder()
         let encodedData = try encoder.encode(body)
-        let request = SdkHttpRequest(method: .post,
+        let request = HTTPRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post", headers: headers),
                                      body: ByteStream.data(encodedData))
         let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        XCTAssertEqual(response.statusCode, .ok)
     }
 
     func xtestMakeHttpStreamRequestDynamicReceive() async throws {
@@ -62,12 +59,12 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         var headers = Headers()
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
-        let request = SdkHttpRequest(method: .get,
+        let request = HTTPRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024", headers: headers),
                                      body: ByteStream.stream(BufferedStream()))
         let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        XCTAssertEqual(response.statusCode, .ok)
     }
 
     func xtestMakeHttpStreamRequestReceive() async throws {
@@ -76,7 +73,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
 
-        let request = SdkHttpRequest(method: .get,
+        let request = HTTPRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1024", headers: headers),
                                      body: ByteStream.stream(BufferedStream()))
         let response = try await httpClient.send(request: request)
@@ -87,7 +84,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         } else {
             XCTFail("Bytes not received")
         }
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        XCTAssertEqual(response.statusCode, .ok)
     }
 
     func xtestMakeHttpStreamRequestReceiveOneByte() async throws {
@@ -96,7 +93,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
 
-        let request = SdkHttpRequest(method: .get,
+        let request = HTTPRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/1", headers: headers),
                                      body: ByteStream.stream(BufferedStream()))
         let response = try await httpClient.send(request: request)
@@ -107,7 +104,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         } else {
             XCTFail("Bytes not received")
         }
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        XCTAssertEqual(response.statusCode, .ok)
     }
 
     func xtestMakeHttpStreamRequestReceive3ThousandBytes() async throws {
@@ -116,7 +113,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         headers.add(name: "Content-type", value: "application/json")
         headers.add(name: "Host", value: "httpbin.org")
 
-        let request = SdkHttpRequest(method: .get,
+        let request = HTTPRequest(method: .get,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/stream-bytes/3000", headers: headers),
                                      body: ByteStream.stream(BufferedStream()))
         let response = try await httpClient.send(request: request)
@@ -127,7 +124,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         } else {
             XCTFail("Bytes not received")
         }
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        XCTAssertEqual(response.statusCode, .ok)
     }
 
     func xtestMakeHttpStreamRequestFromData() async throws {
@@ -139,12 +136,12 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let encoder = JSONEncoder()
         let encodedData = try encoder.encode(body)
 
-        let request = SdkHttpRequest(method: .post,
+        let request = HTTPRequest(method: .post,
                                      endpoint: Endpoint(host: "httpbin.org", path: "/post", headers: headers),
                                      body: ByteStream.stream(BufferedStream(data: encodedData)))
         let response = try await httpClient.send(request: request)
         XCTAssertNotNil(response)
-        XCTAssert(response.statusCode == HttpStatusCode.ok)
+        XCTAssertEqual(response.statusCode, .ok)
     }
     
     func xtestMakeHttp2StreamRequest() async throws {
@@ -156,7 +153,7 @@ class CRTClientEngineIntegrationTests: NetworkingTestUtils {
         let encoder = JSONEncoder()
         let encodedData = try encoder.encode(body)
         
-        let request = SdkHttpRequest(
+        let request = HTTPRequest(
             method: .put,
             endpoint: Endpoint(host: "nghttp2.org", path: "/httpbin/put", headers: headers),
             body: .data(encodedData)

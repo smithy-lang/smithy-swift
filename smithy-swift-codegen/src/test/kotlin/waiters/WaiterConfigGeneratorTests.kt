@@ -32,30 +32,30 @@ class WaiterConfigGeneratorTests {
     @Test
     fun `renders correct function signature for waiter config`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
         val expected = """
-            static func bucketExistsWaiterConfig() throws -> WaiterConfiguration<HeadBucketInput, HeadBucketOutput> {
-        """.trimIndent()
+static func bucketExistsWaiterConfig() throws -> SmithyWaitersAPI.WaiterConfiguration<HeadBucketInput, HeadBucketOutput> {
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
     @Test
     fun `renders correct function return value for waiter config`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
         val expected = """
-            return try WaiterConfiguration<HeadBucketInput, HeadBucketOutput>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
-        """.trimIndent()
+    return try SmithyWaitersAPI.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
     @Test
     fun `renders acceptor array for waiter config`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "/Test/Waiters.swift")
+        val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
         val expected = """
-            let acceptors: [WaiterConfiguration<HeadBucketInput, HeadBucketOutput>.Acceptor] = [
-        """.trimIndent()
+    let acceptors: [SmithyWaitersAPI.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>.Acceptor] = [
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -97,7 +97,7 @@ class WaiterConfigGeneratorTests {
                 return integrations.toMutableList()
             }
         }
-        val path = "Test/Waiters.swift"
+        val path = "Sources/Test/Waiters.swift"
         context.generationCtx.delegator.useFileWriter(path) { writer ->
             val service = codegenContext.model.expectShape<ServiceShape>(codegenContext.settings.service)
             val waitedOperation = service.allOperations

@@ -27,7 +27,7 @@ class HttpRequestTests: NetworkingTestUtils {
         let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
 
         let httpBody = ByteStream.data(expectedMockRequestData)
-        let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
+        let mockHttpRequest = HTTPRequest(method: .get, endpoint: endpoint, body: httpBody)
         mockHttpRequest.withHeader(name: "foo", value: "bar")
         let httpRequest = try mockHttpRequest.toHttpRequest()
 
@@ -64,12 +64,12 @@ class HttpRequestTests: NetworkingTestUtils {
         let endpoint = Endpoint(host: "host.com", path: "/", headers: headers)
 
         let httpBody = ByteStream.data(expectedMockRequestData)
-        let mockHttpRequest = SdkHttpRequest(method: .get, endpoint: endpoint, body: httpBody)
-        let urlRequest = try await URLRequest(sdkRequest: mockHttpRequest)
+        let mockHttpRequest = HTTPRequest(method: .get, endpoint: endpoint, body: httpBody)
+        let urlRequest = try await HTTPRequest.makeURLRequest(from: mockHttpRequest)
 
         XCTAssertNotNil(urlRequest)
         guard let headersFromRequest = urlRequest.allHTTPHeaderFields else {
-            XCTFail("Headers in SdkHttpRequest were not successfully converted to headers in URLRequest.")
+            XCTFail("Headers in HTTPRequest were not successfully converted to headers in URLRequest.")
             // Compiler doesn't recognize XCTFail as return / exception thrown
             return
         }
@@ -84,7 +84,7 @@ class HttpRequestTests: NetworkingTestUtils {
     }
 
     func testCRTHeadersToSdkHeaders() throws {
-        let builder = SdkHttpRequestBuilder()
+        let builder = HTTPRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
             .withHeader(name: "Content-Length", value: "6")
@@ -100,7 +100,7 @@ class HttpRequestTests: NetworkingTestUtils {
     func testSdkPathAndQueryItemsToCRTPathAndQueryItems() throws {
         let queryItem1 = URIQueryItem(name: "foo", value: "bar")
         let queryItem2 = URIQueryItem(name: "quz", value: "baz")
-        let builder = SdkHttpRequestBuilder()
+        let builder = HTTPRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
             .withQueryItem(queryItem1)
@@ -113,7 +113,7 @@ class HttpRequestTests: NetworkingTestUtils {
     func testCRTPathAndQueryItemsToSdkPathAndQueryItems() throws {
         let queryItem1 = URIQueryItem(name: "foo", value: "bar")
         let queryItem2 = URIQueryItem(name: "quz", value: "bar")
-        let builder = SdkHttpRequestBuilder()
+        let builder = HTTPRequestBuilder()
             .withHeader(name: "Host", value: "amazon.aws.com")
             .withPath("/hello")
             .withQueryItem(queryItem1)
@@ -135,7 +135,7 @@ class HttpRequestTests: NetworkingTestUtils {
 
     func testPathInInHttpRequestIsNotAltered() throws {
         let path = "/space%20/colon:/dollar$/tilde~/dash-/underscore_/period."
-        let builder = SdkHttpRequestBuilder()
+        let builder = HTTPRequestBuilder()
             .withHeader(name: "Host", value: "xctest.amazon.com")
             .withPath(path)
         let httpRequest = try builder.build().toHttpRequest()

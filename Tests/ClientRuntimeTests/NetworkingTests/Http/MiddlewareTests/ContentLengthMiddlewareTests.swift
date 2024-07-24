@@ -6,10 +6,11 @@ import SmithyHTTPAPI
 import XCTest
 import SmithyTestUtil
 @testable import ClientRuntime
+import class SmithyStreams.BufferedStream
 
 class ContentLengthMiddlewareTests: XCTestCase {
     private var builtContext: Context!
-    private var stack: OperationStack<MockInput, MockOutput>!
+    private var builder: OrchestratorBuilder<MockInput, MockOutput, HTTPRequest, HTTPResponse>!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -18,7 +19,10 @@ class ContentLengthMiddlewareTests: XCTestCase {
                   .withPath(value: "/")
                   .withOperation(value: "Test Operation")
                   .build()
-        stack = OperationStack<MockInput, MockOutput>(id: "Test Operation")
+        builder = TestOrchestrator.httpBuilder()
+            .attributes(builtContext)
+            .serialize(MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestName", headerValue: "TestValue"))
+            .deserialize(MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
     }
 
     func testTransferEncodingChunkedSetWhenStreamLengthIsNil() async throws {
@@ -62,31 +66,25 @@ class ContentLengthMiddlewareTests: XCTestCase {
     }
 
     private func addContentLengthMiddlewareWith(requiresLength: Bool?, unsignedPayload: Bool?) {
-        stack.finalizeStep.intercept(
-            position: .before,
-            middleware: ContentLengthMiddleware<MockInput, MockOutput>(requiresLength: requiresLength, unsignedPayload: unsignedPayload)
-        )
+        builder.interceptors.add(ContentLengthMiddleware<MockInput, MockOutput>(requiresLength: requiresLength, unsignedPayload: unsignedPayload))
     }
 
     private func forceEmptyStream() {
         // Force stream length to be nil
-        stack.finalizeStep.intercept(position: .before, id: "set nil stream length") { (context, input, next) -> OperationOutput<MockOutput> in
-            input.withBody(.stream(BufferedStream())) // Set the stream length to nil
-            return try await next.handle(context: context, input: input)
-        }
+        builder.interceptors.addModifyBeforeSigning({ ctx in
+            ctx.updateRequest(updated: ctx.getRequest().toBuilder()
+                .withBody(.stream(BufferedStream()))
+                .build())
+        })
     }
-        
-    private func AssertHeadersArePresent(expectedHeaders: [String: String], file: StaticString = #file, line: UInt = #line) async throws -> Void {
-        let mockHandler = MockHandler { (_, input) in
-            for (key, value) in expectedHeaders {
-                XCTAssert(input.headers.value(for: key) == value, file: file, line: line)
-            }
-            let httpResponse = HttpResponse(body: ByteStream.noStream, statusCode: HttpStatusCode.ok)
-            let mockOutput = MockOutput()
-            let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
-            return output
-        }
 
-        _ = try await stack.handleMiddleware(context: builtContext, input: MockInput(), next: mockHandler)
+    private func AssertHeadersArePresent(expectedHeaders: [String: String], file: StaticString = #file, line: UInt = #line) async throws -> Void {
+        builder.executeRequest({ req, ctx in
+            for (key, value) in expectedHeaders {
+                XCTAssert(req.headers.value(for: key) == value, file: file, line: line)
+            }
+            return HTTPResponse(body: .noStream, statusCode: .ok)
+        })
+        _ = try await builder.build().execute(input: MockInput())
     }
 }

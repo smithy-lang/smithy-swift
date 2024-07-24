@@ -4,111 +4,90 @@
  */
 package software.amazon.smithy.swift.codegen
 
-import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.SymbolDependency
-import software.amazon.smithy.swift.codegen.resources.Resources
-import software.amazon.smithy.utils.CodeWriter
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import kotlin.jvm.optionals.getOrNull
 
-fun writePackageManifest(settings: SwiftSettings, fileManifest: FileManifest, dependencies: List<SymbolDependency>, generateTestTarget: Boolean = false) {
+val PACKAGE_MANIFEST_NAME = "Package.swift.txt"
 
-    // filter duplicates in dependencies
-    val distinctDependencies = dependencies.distinctBy { it.packageName }
-    val writer = CodeWriter().apply {
-        trimBlankLines()
-        trimTrailingSpaces()
-        setIndentText("    ")
-    }
+class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
 
-    writer.write("// swift-tools-version:${settings.swiftVersion}")
-    writer.write("")
-    writer.write("import PackageDescription")
-    writer.write("import class Foundation.ProcessInfo")
-    writer.write("import class Foundation.FileManager")
+    fun writePackageManifest(dependencies: List<SymbolDependency>) {
+        ctx.delegator.useFileWriter(PACKAGE_MANIFEST_NAME) { writer ->
+            writer.write("// swift-tools-version: \$L", ctx.settings.swiftVersion)
+            writer.write("")
+            writer.write("import PackageDescription")
+            writer.write("")
 
-    writer.openBlock("let package = Package(", ")") {
-        writer.write("name: \"${settings.moduleName}\",")
+            writer.openBlock("let package = Package(", ")") {
+                writer.write("name: \$S,", ctx.settings.moduleName)
 
-        writer.openBlock("platforms: [", "],") {
-            writer.write(".macOS(.v10_15), .iOS(.v13)")
-        }
+                writer.openBlock("platforms: [", "],") {
+                    writer.write(".macOS(.v10_15), .iOS(.v13)")
+                }
 
-        writer.openBlock("products: [", "],") {
-            writer.write(".library(name: \"${settings.moduleName}\", targets: [\"${settings.moduleName}\"])")
-        }
+                writer.openBlock("products: [", "],") {
+                    writer.write(".library(name: \$S, targets: [\$S])", ctx.settings.moduleName, ctx.settings.moduleName)
+                }
 
-        writer.openBlock("targets: [", "]") {
-            writer.openBlock(".target(", "),") {
-                writer.write("name: \"${settings.moduleName}\",")
+                val externalDependencies = dependencies.filter {
+                    it.getProperty("url", String::class.java).getOrNull() != null ||
+                        it.getProperty("scope", String::class.java).getOrNull() != null
+                }
+                val dependenciesByURL = externalDependencies.distinctBy {
+                    it.getProperty("url", String::class.java).getOrNull()
+                        ?: "${it.getProperty("scope", String::class.java).get()}.${it.packageName}"
+                }
+
                 writer.openBlock("dependencies: [", "],") {
-                    for (dependency in distinctDependencies) {
-                        writer.openBlock(".product(", "),") {
-                            val target = dependency.expectProperty("target", String::class.java)
-                            writer.write("name: \"${target}\",")
-                            writer.write("package: \"${dependency.packageName}\"")
+                    dependenciesByURL.forEach { writePackageDependency(writer, it) }
+                }
+
+                val dependenciesByTarget = externalDependencies.distinctBy { it.expectProperty("target", String::class.java) + it.packageName }
+
+                writer.openBlock("targets: [", "]") {
+                    writer.openBlock(".target(", "),") {
+                        writer.write("name: \$S,", ctx.settings.moduleName)
+                        writer.openBlock("dependencies: [", "],") {
+                            dependenciesByTarget.forEach { writeTargetDependency(writer, it) }
+                        }
+                        writer.openBlock("resources: [", "]") {
+                            writer.write(".process(\"Resources\")")
+                        }
+                    }
+                    writer.openBlock(".testTarget(", ")") {
+                        writer.write("name: \$S,", ctx.settings.testModuleName)
+                        writer.openBlock("dependencies: [", "]") {
+                            writer.write("\$S,", ctx.settings.moduleName)
+                            SwiftDependency.SMITHY_TEST_UTIL.dependencies.forEach { writeTargetDependency(writer, it) }
                         }
                     }
                 }
-                writer.write("path: \"./${settings.moduleName}\"")
-            }
-            if (generateTestTarget) {
-                writer.openBlock(".testTarget(", ")") {
-                    writer.write("name: \"${settings.testModuleName}\",")
-                    writer.openBlock("dependencies: [", "],") {
-                        writer.write("\$S,", settings.moduleName)
-                        writer.write(".product(name: \"SmithyTestUtil\", package: \"smithy-swift\")")
-                    }
-                    writer.write("path: \"./${settings.testModuleName}\"")
-                }
             }
         }
     }
 
-    writer.write("let isUsingSPMLocal: Bool = FileManager.default.fileExists(atPath: \"${Resources.computeAbsolutePath("smithy-swift", "", "SMITHY_SWIFT_CI_DIR")}/Package.swift\")")
-    writer.openBlock("if isUsingSPMLocal {", "}") {
-        renderPackageDependenciesWithLocalPaths(writer, distinctDependencies)
-    }
-    writer.openBlock("else {", "}") {
-        renderPackageDependenciesUsingSPMBranchDependency(writer, distinctDependencies)
+    private fun writePackageDependency(writer: SwiftWriter, dependency: SymbolDependency) {
+        writer.openBlock(".package(", "),") {
+            val scope = dependency.getProperty("scope", String::class.java).getOrNull()
+            scope?.let {
+                writer.write("id: \$S,", "$it.${dependency.packageName}")
+            }
+            val url = dependency.getProperty("url", String::class.java).getOrNull()
+            url?.let {
+                writer.write("url: \$S,", it)
+            }
+            writer.write("exact: \$S", dependency.version)
+        }
     }
 
-    val contents = writer.toString()
-    fileManifest.writeFile("Package.swift", contents)
-}
-
-fun renderPackageDependenciesWithLocalPaths(writer: CodeWriter, distinctDependencies: List<SymbolDependency>) {
-    writer.openBlock("package.dependencies += [", "]") {
-        for (dependency in distinctDependencies) {
-            val localPath = dependency.expectProperty("localPath", String::class.java)
+    private fun writeTargetDependency(writer: SwiftWriter, dependency: SymbolDependency) {
+        writer.openBlock(".product(", "),") {
             val target = dependency.expectProperty("target", String::class.java)
-
-            if (localPath.isNotEmpty()) {
-                writer.write(".package(path: \"$localPath\"),")
-            } else {
-                renderPackageWithUrl(writer, dependency)
-            }
-        }
-    }
-}
-
-fun renderPackageDependenciesUsingSPMBranchDependency(writer: CodeWriter, distinctDependencies: List<SymbolDependency>) {
-    writer.openBlock("package.dependencies += [", "]") {
-        for (dependency in distinctDependencies) {
-            renderPackageWithUrl(writer, dependency)
-        }
-    }
-}
-
-fun renderPackageWithUrl(writer: CodeWriter, dependency: SymbolDependency) {
-    writer.openBlock(".package(", "),") {
-        val target = dependency.expectProperty("target", String::class.java)
-        val dependencyURL = dependency.expectProperty("url", String::class.java)
-        writer.write("url: \"$dependencyURL\",")
-        val branch = dependency.getProperty("branch", String::class.java)
-        if (!branch.orElse(null).isNullOrEmpty()) {
-            val branchString = "${branch.get()}"
-            writer.write(".branch(\"$branchString\")")
-        } else {
-            writer.write("from: \"${dependency.version}\"")
+            writer.write("name: \$S,", target)
+            val scope = dependency.getProperty("scope", String::class.java).getOrNull()
+            val packageName = scope?.let { "$it.${dependency.packageName}" } ?: dependency.packageName
+            writer.write("package: \$S", packageName)
         }
     }
 }

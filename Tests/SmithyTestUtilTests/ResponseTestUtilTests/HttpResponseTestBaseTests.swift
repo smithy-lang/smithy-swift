@@ -27,12 +27,12 @@ class HttpResponseTestBaseTests: HttpResponseTestBase {
             values.joined(separator: ", ")
         }))
 
-        XCTAssertEqual(HttpStatusCode(rawValue: statusCode), httpResponse.statusCode)
+        XCTAssertEqual(HTTPStatusCode(rawValue: statusCode), httpResponse.statusCode)
 
         if case .data(let actualData) = httpResponse.body {
             XCTAssertEqual(bodyData, actualData)
         } else {
-            XCTFail("HttpResponse Content unexpectedly found to be nil")
+            XCTFail("HTTPResponse Content unexpectedly found to be nil")
         }
     }
 }

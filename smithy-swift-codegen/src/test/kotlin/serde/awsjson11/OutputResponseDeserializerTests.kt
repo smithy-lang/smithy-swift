@@ -32,7 +32,7 @@ class OutputDeserializerTests {
     @Test
     fun `it creates correct init for simple structure payloads`() {
         val contents = getModelFileContents(
-            "example",
+            "Sources/example",
             "SimpleStructureOutput+HttpResponseBinding.swift",
             newTestContext.manifest
         )
@@ -40,7 +40,7 @@ class OutputDeserializerTests {
         val expectedContents = """
 extension SimpleStructureOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> SimpleStructureOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> SimpleStructureOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyJSON.Reader.from(data: data)
         let reader = responseReader
@@ -57,7 +57,7 @@ extension SimpleStructureOutput {
     @Test
     fun `it creates correct init for data streaming payloads`() {
         val contents = getModelFileContents(
-            "example",
+            "Sources/example",
             "DataStreamingOutput+HttpResponseBinding.swift",
             newTestContext.manifest
         )
@@ -65,7 +65,7 @@ extension SimpleStructureOutput {
         val expectedContents = """
 extension DataStreamingOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> DataStreamingOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> DataStreamingOutput {
         var value = DataStreamingOutput()
         switch httpResponse.body {
         case .data(let data):
@@ -85,7 +85,7 @@ extension DataStreamingOutput {
     @Test
     fun `it creates correct init for event streaming payloads`() {
         val contents = getModelFileContents(
-            "example",
+            "Sources/example",
             "EventStreamingOutput+HttpResponseBinding.swift",
             newTestContext.manifest
         )
@@ -93,7 +93,7 @@ extension DataStreamingOutput {
         val expectedContents = """
 extension EventStreamingOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> EventStreamingOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> EventStreamingOutput {
         var value = EventStreamingOutput()
         if case let .stream(stream) = httpResponse.body {
             let messageDecoder = SmithyEventStreams.DefaultMessageDecoder()

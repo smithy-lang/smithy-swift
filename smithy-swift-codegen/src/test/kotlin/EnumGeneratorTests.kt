@@ -35,7 +35,7 @@ class EnumGeneratorTests {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
+        contents.shouldContain(settings.copyrightNotice)
 
         val expectedGeneratedEnum = """
 /// Really long multi-line Documentation for the enum
@@ -94,7 +94,7 @@ public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable,
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
+        contents.shouldContain(settings.copyrightNotice)
 
         val expectedGeneratedEnum = """
 /// Really long multi-line Documentation for the enum
@@ -135,7 +135,7 @@ public enum MyEnum: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable,
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
         val suitEnumShape = manifest
-            .getFileString("example/models/Suit.swift").get()
+            .getFileString("Sources/example/models/Suit.swift").get()
         Assertions.assertNotNull(suitEnumShape)
 
         var expectedGeneratedEnum = """

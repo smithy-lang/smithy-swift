@@ -9,9 +9,6 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
-import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
@@ -21,6 +18,8 @@ import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isEnum
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class HTTPResponseTraitWithHTTPPayload(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -38,7 +37,6 @@ class HTTPResponseTraitWithHTTPPayload(
             ctx.model.getShape(binding.member.target).get().hasTrait<StreamingTrait>() && target.type == ShapeType.BLOB
         when (target.type) {
             ShapeType.DOCUMENT -> {
-                writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
                 writer.openBlock("if let data = try await httpResponse.body.readData() {", "}") {
                     writer.write("value.\$L = try \$N.make(from: data)", memberName, SmithyReadWriteTypes.Document)
                 }
@@ -86,8 +84,6 @@ class HTTPResponseTraitWithHTTPPayload(
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 if (target.hasTrait<StreamingTrait>()) {
                     writer.openBlock("if case .stream(let stream) = httpResponse.body {", "}") {
-                        writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS.target)
-                        writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
                         writer.write("let messageDecoder = \$N()", SmithyEventStreamsTypes.DefaultMessageDecoder)
                         writer.write(
                             "let decoderStream = \$N(stream: stream, messageDecoder: messageDecoder, unmarshalClosure: \$N.unmarshal)",

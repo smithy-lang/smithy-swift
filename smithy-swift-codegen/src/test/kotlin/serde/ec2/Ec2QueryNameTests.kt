@@ -17,7 +17,7 @@ class Ec2QueryNameTests {
     @Test
     fun `001 encode simple types`() {
         val context = setupTests("Isolated/ec2/query-simple.smithy", "aws.protocoltests.ec2#AwsEc2")
-        val contents = getFileContents(context.manifest, "/Example/models/Ec2SimpleInputParamsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "Sources/Example/models/Ec2SimpleInputParamsInput+Write.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension Ec2SimpleInputParamsInput {

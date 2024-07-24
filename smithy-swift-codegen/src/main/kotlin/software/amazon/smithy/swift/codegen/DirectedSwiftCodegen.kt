@@ -22,6 +22,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator
+import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator.Companion.isSensitive
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -66,7 +67,6 @@ class DirectedSwiftCodegen(val context: PluginContext) :
         val context = directive.context()
         val model = directive.model()
         val integrations = context.integrations
-        val fileManifest = context.fileManifest
         val writers = context.writerDelegator()
 
         LOGGER.info("Generating Swift client for service ${directive.settings().service}")
@@ -90,18 +90,16 @@ class DirectedSwiftCodegen(val context: PluginContext) :
             LOGGER.info("[${service.id}] Generated $numProtocolUnitTestsGenerated tests for protocol ${this.protocol}")
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${this.protocol}")
-
             generateProtocolClient(ctx)
 
             integrations.forEach { it.writeAdditionalFiles(context, ctx, writers) }
+
+            LOGGER.info("Generating package manifest file")
+            PackageManifestGenerator(ctx).writePackageManifest(writers.dependencies)
+
+            LOGGER.info("Flushing swift writers")
+            writers.flushWriters()
         }
-
-        println("Flushing swift writers")
-        val dependencies = writers.dependencies
-        writers.flushWriters()
-
-        println("Generating package manifest file")
-        writePackageManifest(settings, fileManifest, dependencies, shouldGenerateTestTarget)
     }
 
     override fun generateStructure(directive: GenerateStructureDirective<GenerationContext, SwiftSettings>) {
@@ -117,7 +115,7 @@ class DirectedSwiftCodegen(val context: PluginContext) :
             StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator?.serviceErrorProtocolSymbol).render()
         }
 
-        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.hasTrait<SensitiveTrait>() || model.expectShape(it.target).hasTrait<SensitiveTrait>() }) {
+        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.isSensitive(model) }) {
             writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
                 CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape, model).render()
             }
@@ -137,7 +135,7 @@ class DirectedSwiftCodegen(val context: PluginContext) :
             StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator?.serviceErrorProtocolSymbol).renderErrors()
         }
 
-        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.hasTrait<SensitiveTrait>() || model.expectShape(it.target).hasTrait<SensitiveTrait>() }) {
+        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.isSensitive(model) }) {
             writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
                 CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape, model).render()
             }

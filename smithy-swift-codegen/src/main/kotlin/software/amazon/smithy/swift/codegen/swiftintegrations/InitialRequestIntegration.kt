@@ -8,7 +8,6 @@ import software.amazon.smithy.model.knowledge.EventStreamIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.swift.codegen.SwiftDelegator
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -19,6 +18,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestW
 import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class InitialRequestIntegration : SwiftIntegration {
     override fun enabledForService(model: Model, settings: SwiftSettings): Boolean {
@@ -35,17 +35,14 @@ class InitialRequestIntegration : SwiftIntegration {
         val resolvedInputShapes = getOperationInputShapesWithStreamingUnionMember(protocolGenerationContext)
         resolvedInputShapes.forEach {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(it)
-            val rootNamespace = ctx.settings.moduleName
+            val filename = ModelFileUtils.filename(ctx.settings, "${symbol.name}+MakeInitialRequestMessage")
             val inputStruct = Symbol.builder()
-                .definitionFile("./$rootNamespace/models/${symbol.name}+MakeInitialRequestMessage.swift")
+                .definitionFile(filename)
                 .name(symbol.name)
                 .build()
             protocolGenerationContext.delegator.useShapeWriter(inputStruct) { writer ->
                 writer.apply {
-                    addImport(protocolGenerationContext.service.writerSymbol.namespace)
                     openBlock("extension \$N {", "}", symbol) {
-                        writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
-                        writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
                         openBlock(
                             "func makeInitialRequestMessage() throws -> \$N {",
                             "}",

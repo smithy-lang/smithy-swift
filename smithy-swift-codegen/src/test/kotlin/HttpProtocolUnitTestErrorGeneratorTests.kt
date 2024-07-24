@@ -10,7 +10,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
 
     @Test
     fun `it creates error test for simple error with no payload`() {
-        val contents = getTestFileContents("example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonComplexErrorWithNoMessage() async throws {
@@ -46,7 +46,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
                     ),
                     topLevel: "Top level"
                 )
-                XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: 403))
+                XCTAssertEqual(actual.httpResponse.statusCode, SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
                 XCTAssertEqual(actual, expected)
             } else {
                 XCTFail("The deserialized error type does not match expected type")
@@ -62,7 +62,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
 
     @Test
     fun `it creates error test for complex error with payload`() {
-        val contents = getTestFileContents("example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
+        val contents = getTestFileContents("Tests/example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonComplexErrorWithNoMessage() async throws {
@@ -98,7 +98,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
                     ),
                     topLevel: "Top level"
                 )
-                XCTAssertEqual(actual.httpResponse.statusCode, HttpStatusCode(rawValue: 403))
+                XCTAssertEqual(actual.httpResponse.statusCode, SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
                 XCTAssertEqual(actual, expected)
             } else {
                 XCTFail("The deserialized error type does not match expected type")

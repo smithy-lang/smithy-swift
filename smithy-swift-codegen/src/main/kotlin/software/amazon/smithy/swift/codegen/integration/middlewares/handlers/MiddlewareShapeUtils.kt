@@ -9,7 +9,6 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.HttpTrait
-import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.model.getTrait
@@ -42,9 +41,6 @@ class MiddlewareShapeUtils {
         }
         fun outputErrorSymbolName(op: OperationShape): String {
             return "${op.toUpperCamelCase()}OutputError"
-        }
-        fun rootNamespace(settings: SwiftSettings): String {
-            return settings.moduleName
         }
 
         fun hasHttpBody(model: Model, op: OperationShape): Boolean {

@@ -10,11 +10,11 @@ import AwsCommonRuntimeKit
 @testable import ClientRuntime
 
 class MockHttpClientEngine: HTTPClient {
-    func successHttpResponse(request: SdkHttpRequest) -> HttpResponse {
-        return HttpResponse(headers: request.headers, body: ByteStream.empty, statusCode: HttpStatusCode.ok)
+    func successHttpResponse(request: SmithyHTTPAPI.HTTPRequest) -> HTTPResponse {
+        return HTTPResponse(headers: request.headers, body: ByteStream.empty, statusCode: HTTPStatusCode.ok)
     }
 
-    func send(request: SdkHttpRequest) async throws -> HttpResponse {
+    func send(request: SmithyHTTPAPI.HTTPRequest) async throws -> HTTPResponse {
         return successHttpResponse(request: request)
     }
 }

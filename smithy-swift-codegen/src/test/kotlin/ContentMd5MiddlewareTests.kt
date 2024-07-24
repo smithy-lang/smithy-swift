@@ -5,9 +5,9 @@ class ContentMd5MiddlewareTests {
     @Test
     fun `generates ContentMD5 middleware`() {
         val context = setupTests("Isolated/contentmd5checksum.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/RestXmlProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/RestXmlProtocolClient.swift")
         val expectedContents = """
-        operation.buildStep.intercept(position: .before, middleware: ClientRuntime.ContentMD5Middleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>())
+        builder.interceptors.add(ClientRuntime.ContentMD5Middleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>())
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }

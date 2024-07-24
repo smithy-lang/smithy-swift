@@ -18,12 +18,12 @@ class HttpResponseBindingIgnoreQuery {
     @Test
     fun `001 Output httpResponseBinding ignores query trait & decodes field`() {
         val context = setupTests("http-query-payload.smithy", "aws.protocoltests.restjson#RestJson")
-        val contents = getFileContents(context.manifest, "/RestJson/models/IgnoreQueryParamsInResponseOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/models/IgnoreQueryParamsInResponseOutput+HttpResponseBinding.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension IgnoreQueryParamsInResponseOutput {
 
-    static func httpOutput(from httpResponse: SmithyHTTPAPI.HttpResponse) async throws -> IgnoreQueryParamsInResponseOutput {
+    static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> IgnoreQueryParamsInResponseOutput {
         let data = try await httpResponse.data()
         let responseReader = try SmithyJSON.Reader.from(data: data)
         let reader = responseReader

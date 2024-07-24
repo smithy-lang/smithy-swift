@@ -10,39 +10,20 @@ import enum Smithy.ClientError
 import Foundation
 import SmithyHTTPAPI
 import SmithyHTTPAuthAPI
+import struct Smithy.AttributeKey
 
-public struct SignerMiddleware<OperationStackOutput>: Middleware {
+public struct SignerMiddleware<OperationStackOutput> {
     public let id: String = "SignerMiddleware"
 
-    public init () {}
-
-    public typealias MInput = SdkHttpRequestBuilder
-    public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = Smithy.Context
-
-    public func handle<H>(context: Smithy.Context,
-                          input: SdkHttpRequestBuilder,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-    Self.MInput == H.Input,
-    Self.MOutput == H.Output {
-        // Retrieve selected auth scheme from context
-        let selectedAuthScheme = context.selectedAuthScheme
-        let signed = try await apply(
-            request: input.build(),
-            selectedAuthScheme: selectedAuthScheme,
-            attributes: context
-        )
-        return try await next.handle(context: context, input: signed.toBuilder())
-    }
+    public init() {}
 }
 
 extension SignerMiddleware: ApplySigner {
     public func apply(
-        request: SdkHttpRequest,
+        request: HTTPRequest,
         selectedAuthScheme: SelectedAuthScheme?,
         attributes: Smithy.Context
-    ) async throws -> SdkHttpRequest {
+    ) async throws -> HTTPRequest {
         guard let selectedAuthScheme = selectedAuthScheme else {
             throw ClientError.authError("Auth scheme needed by signer middleware was not saved properly.")
         }
@@ -69,10 +50,17 @@ extension SignerMiddleware: ApplySigner {
             )
         }
 
+        // Check if CRT should be provided a pre-computed Sha256 SignedBodyValue
+        var updatedSigningProperties = signingProperties
+        let sha256: String? = attributes.get(key: AttributeKey(name: "X-Amz-Content-Sha256"))
+        if let bodyValue = sha256 {
+            updatedSigningProperties.set(key: AttributeKey(name: "SignedBodyValue"), value: bodyValue)
+        }
+
         let signed = try await signer.signRequest(
             requestBuilder: request.toBuilder(),
             identity: identity,
-            signingProperties: signingProperties
+            signingProperties: updatedSigningProperties
         )
 
         // The saved signature is used to sign event stream messages if needed.

@@ -6,10 +6,11 @@ class RetryMiddlewareTests {
     @Test
     fun `generates operation with retry middleware`() {
         val context = setupTests("Isolated/contentmd5checksum.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/RestXmlProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/RestXmlProtocolClient.swift")
         val expectedContents = """
-        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, IdempotencyTokenWithStructureOutput>(options: config.retryStrategyOptions))
-        """.trimIndent()
+        builder.retryStrategy(SmithyRetries.DefaultRetryStrategy(options: config.retryStrategyOptions))
+        builder.retryErrorInfoProvider(ClientRuntime.DefaultRetryErrorInfoProvider.errorInfo(for:))
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {

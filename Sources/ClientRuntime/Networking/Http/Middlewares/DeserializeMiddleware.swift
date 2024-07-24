@@ -5,58 +5,40 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyHTTPAPI
+import SmithyReadWrite
+import class Foundation.DateFormatter
+import struct Foundation.Locale
+import struct Foundation.TimeInterval
+import struct Foundation.TimeZone
+import struct Foundation.UUID
 import class Smithy.Context
 import protocol Smithy.ResponseMessageDeserializer
-import SmithyReadWrite
-import SmithyHTTPAPI
 
-public struct DeserializeMiddleware<OperationStackOutput>: Middleware {
+public struct DeserializeMiddleware<OperationStackOutput> {
     public var id: String = "Deserialize"
-    let wireResponseClosure: WireResponseOutputClosure<HttpResponse, OperationStackOutput>
-    let wireResponseErrorClosure: WireResponseErrorClosure<HttpResponse>
+    let wireResponseClosure: WireResponseOutputClosure<HTTPResponse, OperationStackOutput>
+    let wireResponseErrorClosure: WireResponseErrorClosure<HTTPResponse>
 
     public init(
-        _ wireResponseClosure: @escaping WireResponseOutputClosure<HttpResponse, OperationStackOutput>,
-        _ wireResponseErrorClosure: @escaping WireResponseErrorClosure<HttpResponse>
+        _ wireResponseClosure: @escaping WireResponseOutputClosure<HTTPResponse, OperationStackOutput>,
+        _ wireResponseErrorClosure: @escaping WireResponseErrorClosure<HTTPResponse>
     ) {
         self.wireResponseClosure = wireResponseClosure
         self.wireResponseErrorClosure = wireResponseErrorClosure
     }
-    public func handle<H>(context: Context,
-                          input: SdkHttpRequest,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-            Self.MInput == H.Input,
-            Self.MOutput == H.Output {
-
-            var response = try await next.handle(context: context, input: input) // call handler to get http response
-
-            if let responseDateString = response.httpResponse.headers.value(for: "Date") {
-                let estimatedSkew = getEstimatedSkew(now: Date(), responseDateString: responseDateString)
-                context.estimatedSkew = estimatedSkew
-            }
-
-            let result = try await deserialize(response: response.httpResponse, attributes: context)
-
-            switch result {
-            case let .success(output):
-                response.output = output
-            case let .failure(error):
-                throw error
-            }
-
-            return response
-    }
-
-    public typealias MInput = SdkHttpRequest
-    public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension DeserializeMiddleware: ResponseMessageDeserializer {
     public func deserialize(
-        response: HttpResponse,
+        response: HTTPResponse,
         attributes: Context
-    ) async throws -> Result<OperationStackOutput, Error> {
+    ) async throws -> OperationStackOutput {
+        if let responseDateString = response.headers.value(for: "Date") {
+            let estimatedSkew = getEstimatedSkew(now: Date(), responseDateString: responseDateString)
+            attributes.estimatedSkew = estimatedSkew
+        }
+
         // check if the response body was effected by a previous middleware
         if let contextBody = attributes.httpResponse?.body {
             response.body = contextBody
@@ -64,7 +46,7 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
 
         let copiedResponse = response
         if (200..<300).contains(response.statusCode.rawValue) {
-            return .success(try await wireResponseClosure(copiedResponse))
+            return try await wireResponseClosure(copiedResponse)
         } else {
             // if the response is a stream, we need to cache the stream so that it can be read again
             // error deserialization reads the stream multiple times to first deserialize the protocol error
@@ -72,7 +54,18 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
             // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
             let bodyData = try await copiedResponse.body.readData()
             copiedResponse.body = .data(bodyData)
-            return .failure(try await wireResponseErrorClosure(copiedResponse))
+            throw try await wireResponseErrorClosure(copiedResponse)
         }
     }
+}
+
+// Calculates & returns estimated skew.
+func getEstimatedSkew(now: Date, responseDateString: String) -> TimeInterval {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
+    let responseDate: Date = dateFormatter.date(from: responseDateString) ?? now
+    // (Estimated skew) = (Date header from HTTP response) - (client's current time)).
+    return responseDate.timeIntervalSince(now)
 }

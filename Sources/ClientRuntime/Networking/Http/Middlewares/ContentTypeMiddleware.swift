@@ -4,7 +4,7 @@
 import class Smithy.Context
 import SmithyHTTPAPI
 
-public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
+public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput> {
 
     public let id: String = "ContentType"
 
@@ -14,24 +14,11 @@ public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput>: 
         self.contentType = contentType
     }
 
-    public func handle<H>(context: Context,
-                          input: SerializeStepInput<OperationStackInput>,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-    Self.MInput == H.Input,
-    Self.MOutput == H.Output {
-        addHeaders(builder: input.builder)
-        return try await next.handle(context: context, input: input)
-    }
-
-    private func addHeaders(builder: SdkHttpRequestBuilder) {
+    private func addHeaders(builder: HTTPRequestBuilder) {
         if !builder.headers.exists(name: "Content-Type") {
             builder.withHeader(name: "Content-Type", value: contentType)
         }
     }
-
-    public typealias MInput = SerializeStepInput<OperationStackInput>
-    public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension ContentTypeMiddleware: HttpInterceptor {
@@ -39,7 +26,7 @@ extension ContentTypeMiddleware: HttpInterceptor {
     public typealias OutputType = OperationStackOutput
 
     public func modifyBeforeRetryLoop(
-        context: some MutableRequest<InputType, RequestType, AttributesType>
+        context: some MutableRequest<InputType, RequestType>
     ) async throws {
         let builder = context.getRequest().toBuilder()
         addHeaders(builder: builder)

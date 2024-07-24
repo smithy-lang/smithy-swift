@@ -7,8 +7,6 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EventHeaderTrait
 import software.amazon.smithy.model.traits.EventPayloadTrait
-import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.SwiftTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -21,6 +19,8 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class MessageUnmarshallableGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -30,9 +30,9 @@ class MessageUnmarshallableGenerator(
         streamingMember: MemberShape
     ) {
         val symbol: Symbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(streamingMember.target))
-        val rootNamespace = ctx.settings.moduleName
+        val filename = ModelFileUtils.filename(ctx.settings, "${symbol.name}+MessageUnmarshallable")
         val streamMember = Symbol.builder()
-            .definitionFile("./$rootNamespace/models/${symbol.name}+MessageUnmarshallable.swift")
+            .definitionFile(filename)
             .name(symbol.name)
             .build()
 
@@ -41,8 +41,6 @@ class MessageUnmarshallableGenerator(
 
         ctx.delegator.useShapeWriter(streamMember) { writer ->
 
-            writer.addImport(SwiftDependency.SMITHY_EVENT_STREAMS_API.target)
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             writer.openBlock("extension \$L {", "}", streamSymbol.fullName) {
                 writer.openBlock(
                     "static var unmarshal: \$N<\$N> {", "}",
@@ -69,9 +67,9 @@ class MessageUnmarshallableGenerator(
                         writer.write("case .exception(let params):")
                         writer.indent {
                             writer.write(
-                                "let makeError: (\$N, \$N) throws -> \$N = { message, params in",
+                                "let makeError: (\$N, \$N.ExceptionParams) throws -> \$N = { message, params in",
                                 SmithyEventStreamsAPITypes.Message,
-                                SmithyEventStreamsAPITypes.ExceptionParams,
+                                SmithyEventStreamsAPITypes.MessageType,
                                 SwiftTypes.Error
                             )
                             writer.indent {
@@ -85,10 +83,9 @@ class MessageUnmarshallableGenerator(
                                 }
                                 writer.write("default:")
                                 writer.indent {
-                                    writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
                                     writer.write(
                                         "let httpResponse = \$N(body: .data(message.payload), statusCode: .ok)",
-                                        SmithyHTTPAPITypes.HttpResponse,
+                                        SmithyHTTPAPITypes.HTTPResponse,
                                     )
                                     writer.write(
                                         "return \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':exceptionType': \\(params.exceptionType); contentType: \\(params.contentType ?? \"nil\")\", requestID: nil, typeName: nil)",
@@ -104,10 +101,9 @@ class MessageUnmarshallableGenerator(
                         writer.write("case .error(let params):")
                         writer.indent {
                             // this is a service exception still, just un-modeled
-                            writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
                             writer.write(
                                 "let httpResponse = \$N(body: .data(message.payload), statusCode: .ok)",
-                                SmithyHTTPAPITypes.HttpResponse,
+                                SmithyHTTPAPITypes.HTTPResponse,
                             )
                             writer.write(
                                 "throw \$N(httpResponse: httpResponse, message: \"error processing event stream, unrecognized ':errorType': \\(params.errorCode); message: \\(params.message ?? \"nil\")\", requestID: nil, typeName: nil)",
@@ -117,9 +113,8 @@ class MessageUnmarshallableGenerator(
                         writer.write("case .unknown(messageType: let messageType):")
                         writer.indent {
                             // this is a client exception because we failed to parse it
-                            writer.addImport(SwiftDependency.SMITHY.target)
                             writer.write(
-                                "throw \$L.unknownError(\"unrecognized event stream message ':message-type': \\(messageType)\")",
+                                "throw \$N.unknownError(\"unrecognized event stream message ':message-type': \\(messageType)\")",
                                 SmithyTypes.ClientError,
                             )
                         }
@@ -210,7 +205,6 @@ class MessageUnmarshallableGenerator(
     }
 
     private fun renderReadToValue(writer: SwiftWriter, memberShape: MemberShape) {
-        writer.addImport(ctx.service.readerSymbol.namespace)
         val readingClosure = ReadingClosureUtils(ctx, writer).readingClosure(memberShape)
         writer.write(
             "let value = try \$N.readFrom(message.payload, with: \$L)",

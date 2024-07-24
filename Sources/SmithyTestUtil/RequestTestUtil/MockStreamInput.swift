@@ -8,7 +8,7 @@
 import enum Smithy.ByteStream
 
 public struct MockStreamInput {
-    let body: ByteStream
+    public let body: ByteStream
 
     public init(body: ByteStream) {
         self.body = body

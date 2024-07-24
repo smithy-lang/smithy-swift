@@ -3,9 +3,9 @@
 
 import class Smithy.Context
 import struct SmithyHTTPAPI.Headers
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequestBuilder
 
-public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>: Middleware {
+public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput> {
 
     public let id: String = "MutateHeaders"
 
@@ -21,17 +21,7 @@ public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>
         self.conditionallySet = Headers(conditionallySet ?? [:])
     }
 
-    public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-    Self.MInput == H.Input,
-    Self.MOutput == H.Output {
-        mutateHeaders(builder: input)
-        return try await next.handle(context: context, input: input)
-    }
-
-    private func mutateHeaders(builder: SdkHttpRequestBuilder) {
+    private func mutateHeaders(builder: HTTPRequestBuilder) {
         if !additional.dictionary.isEmpty {
             builder.withHeaders(additional)
         }
@@ -48,9 +38,6 @@ public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>
             }
         }
     }
-
-    public typealias MInput = SdkHttpRequestBuilder
-    public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension MutateHeadersMiddleware: HttpInterceptor {
@@ -58,7 +45,7 @@ extension MutateHeadersMiddleware: HttpInterceptor {
     public typealias OutputType = OperationStackOutput
 
     public func modifyBeforeTransmit(
-        context: some MutableRequest<InputType, RequestType, AttributesType>
+        context: some MutableRequest<InputType, RequestType>
     ) async throws {
         let builder = context.getRequest().toBuilder()
         mutateHeaders(builder: builder)

@@ -6,11 +6,8 @@
 //
 
 import class Smithy.Context
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.HttpResponse
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPResponse
 
 public protocol HttpInterceptor<InputType, OutputType>: Interceptor
-where
-    RequestType == SdkHttpRequest,
-    ResponseType == HttpResponse,
-    AttributesType == Smithy.Context {}
+where RequestType == HTTPRequest, ResponseType == HTTPResponse {}

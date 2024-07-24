@@ -3,7 +3,6 @@ package software.amazon.smithy.swift.codegen.swiftmodules
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.model.buildSymbol
 
 /**
  * Commonly used runtime types. Provides a single definition of a runtime symbol such that codegen isn't littered
@@ -12,12 +11,12 @@ import software.amazon.smithy.swift.codegen.model.buildSymbol
  * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
  */
 object SmithyRetriesAPITypes {
-    val RetryStrategyOptions = runtimeSymbol("RetryStrategyOptions")
+    val RetryStrategyOptions = runtimeSymbol("RetryStrategyOptions", SwiftDeclaration.STRUCT)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = buildSymbol {
-    this.name = name
-    this.namespace = SwiftDependency.SMITHY_RETRIES_API.target
-    declaration?.let { this.setProperty("decl", it.keyword) }
-    dependency(SwiftDependency.SMITHY_RETRIES_API)
-}
+private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+    name,
+    declaration,
+    SwiftDependency.SMITHY_RETRIES_API,
+    null,
+)

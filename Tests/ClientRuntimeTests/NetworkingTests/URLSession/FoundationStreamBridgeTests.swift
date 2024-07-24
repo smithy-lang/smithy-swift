@@ -13,6 +13,10 @@
 import Foundation
 import XCTest
 @testable import ClientRuntime
+import SmithyTestUtil
+import enum Smithy.LogAgentLevel
+import protocol Smithy.LogAgent
+import class SmithyStreams.BufferedStream
 
 class FoundationStreamBridgeTests: XCTestCase {
 
@@ -61,7 +65,12 @@ class FoundationStreamBridgeTests: XCTestCase {
 
             // Create a stream bridge with our original data & open it
             let bufferedStream = BufferedStream(data: originalData, isClosed: true)
-            let subject = FoundationStreamBridge(readableStream: bufferedStream, bridgeBufferSize: bridgeBufferSize, boundStreamBufferSize: boundStreamBufferSize, logger: TestLogger())
+            let subject = FoundationStreamBridge(
+                readableStream: bufferedStream,
+                bridgeBufferSize: bridgeBufferSize,
+                boundStreamBufferSize: boundStreamBufferSize,
+                logger: TestLogger(),
+                telemetry: HttpTelemetry(httpScope: "FoundationStreamBridgeTests"))
             await subject.open()
 
             // This will hold the data that is bridged from the ReadableStream to the Foundation InputStream
@@ -92,6 +101,24 @@ class FoundationStreamBridgeTests: XCTestCase {
             // Verify data was all bridged
             XCTAssertEqual(bridgedData, originalData, "Run \(run) failed (dataSize: \(dataSize), bridgeBufferSize: \(bridgeBufferSize), boundStreamBufferSize: \(boundStreamBufferSize)")
         }
+    }
+}
+
+class TestLogger: LogAgent {
+    var name: String
+
+    var messages: [(level: LogAgentLevel, message: String)] = []
+
+    var level: LogAgentLevel
+
+    init(name: String = "Test", messages: [(level: LogAgentLevel, message: String)] = [], level: LogAgentLevel = .info) {
+        self.name = name
+        self.messages = messages
+        self.level = level
+    }
+
+    func log(level: LogAgentLevel = .info, message: String, metadata: [String : String]? = nil, source: String = "ChecksumUnitTests", file: String = #file, function: String = #function, line: UInt = #line) {
+        messages.append((level: level, message: message))
     }
 }
 

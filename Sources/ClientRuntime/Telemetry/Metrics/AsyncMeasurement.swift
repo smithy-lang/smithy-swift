@@ -8,7 +8,7 @@
 import struct Smithy.Attributes
 
 /// Handle to stop recording values of an AsyncMeasurement.
-public protocol AsyncMeasurementHandle {
+public protocol AsyncMeasurementHandle: Sendable {
 
     /// Stop recording values of an AsyncMeasurement.
     ///
@@ -16,7 +16,6 @@ public protocol AsyncMeasurementHandle {
     func stop()
 }
 
-// in opentelemetry-swift this is Int instead of Int64
 public typealias LongAsyncMeasurement = AsyncMeasurement<Int>
 
 public typealias DoubleAsyncMeasurement = AsyncMeasurement<Double>

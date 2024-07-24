@@ -8,7 +8,6 @@ package software.amazon.smithy.swift.codegen.waiters
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftDelegator
-import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.expectShape
@@ -28,9 +27,8 @@ class WaiterGenerator(
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
 
         // Open a new file Waiters.swift to hold the waiter definitions for this service
-        val waiterFilename = "${ctx.settings.moduleName}/Waiters.swift"
+        val waiterFilename = "Sources/${ctx.settings.moduleName}/Waiters.swift"
         delegator.useFileWriter(waiterFilename) { writer ->
-            writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
             val serviceSymbol = ctx.symbolProvider.toSymbol(service)
 
             // Render an extension on the service client, which will hold the waitUntil... methods

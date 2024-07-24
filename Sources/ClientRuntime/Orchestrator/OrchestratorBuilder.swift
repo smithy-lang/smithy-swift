@@ -6,9 +6,9 @@
 //
 
 import class Smithy.Context
+import class Smithy.ContextBuilder
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
-import protocol Smithy.HasAttributes
 import protocol Smithy.RequestMessageSerializer
 import protocol Smithy.ResponseMessageDeserializer
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
@@ -25,18 +25,19 @@ public class OrchestratorBuilder<
     ResponseType: ResponseMessage
 > {
     /// A mutable container of the interceptors the orchestrator will use
-    public var interceptors: Interceptors<InputType, OutputType, RequestType, ResponseType, Context> =
+    public var interceptors: Interceptors<InputType, OutputType, RequestType, ResponseType> =
         Interceptors()
 
-    internal var attributes: Smithy.Context?
+    internal var attributes: Smithy.Context = Smithy.ContextBuilder().build()
     internal var serialize: (InputType, RequestType.RequestBuilderType, Context) throws -> Void = { _, _, _ in }
-    internal var deserialize: ((ResponseType, Context) async throws -> Result<OutputType, Error>)?
+    internal var deserialize: ((ResponseType, Context) async throws -> OutputType)?
     internal var retryStrategy: (any RetryStrategy)?
     internal var retryErrorInfoProvider: ((Error) -> RetryErrorInfo?)?
-    internal var selectAuthScheme: (any SelectAuthScheme<Context>)?
-    internal var applyEndpoint: (any ApplyEndpoint<RequestType, Context>)?
-    internal var applySigner: (any ApplySigner<RequestType, Context>)?
-    internal var executeRequest: (any ExecuteRequest<RequestType, ResponseType, Context>)?
+    internal var telemetry: OrchestratorTelemetry?
+    internal var selectAuthScheme: SelectAuthScheme?
+    internal var applyEndpoint: (any ApplyEndpoint<RequestType>)?
+    internal var applySigner: (any ApplySigner<RequestType>)?
+    internal var executeRequest: (any ExecuteRequest<RequestType, ResponseType>)?
 
     public init() {}
 
@@ -73,7 +74,7 @@ public class OrchestratorBuilder<
     /// - Returns: Builder
     @discardableResult
     public func deserialize(
-        _ deserializer: @escaping (ResponseType, Context) async throws -> Result<OutputType, Error>
+        _ deserializer: @escaping (ResponseType, Context) async throws -> OutputType
     ) -> Self {
         self.deserialize = deserializer
         return self
@@ -83,7 +84,7 @@ public class OrchestratorBuilder<
     /// - Returns: Builder
     @discardableResult
     public func deserialize(
-        _ deserializer: some ResponseMessageDeserializer<OutputType, ResponseType, Context>
+        _ deserializer: some ResponseMessageDeserializer<OutputType, ResponseType>
     ) -> Self {
         return self.deserialize(deserializer.deserialize(response:attributes:))
     }
@@ -104,10 +105,18 @@ public class OrchestratorBuilder<
         return self
     }
 
+    /// - Parameter telemetry: container for telemetry
+    /// - Returns: Builder
+    @discardableResult
+    public func telemetry(_ telemetry: OrchestratorTelemetry) -> Self {
+        self.telemetry = telemetry
+        return self
+    }
+
     /// - Parameter selectAuthScheme: Runtime component that selects the auth scheme
     /// - Returns: Builder
     @discardableResult
-    public func selectAuthScheme(_ selectAuthScheme: some SelectAuthScheme<Context>) -> Self {
+    public func selectAuthScheme(_ selectAuthScheme: SelectAuthScheme) -> Self {
         self.selectAuthScheme = selectAuthScheme
         return self
     }
@@ -125,7 +134,7 @@ public class OrchestratorBuilder<
     /// - Parameter applyEndpoint: Runtime component that applies the endpoint to the request
     /// - Returns: Builder
     @discardableResult
-    public func applyEndpoint(_ applyEndpoint: some ApplyEndpoint<RequestType, Context>) -> Self {
+    public func applyEndpoint(_ applyEndpoint: some ApplyEndpoint<RequestType>) -> Self {
         self.applyEndpoint = applyEndpoint
         return self
     }
@@ -143,7 +152,7 @@ public class OrchestratorBuilder<
     /// - Parameter applySigner: Runtime component that applies the signer to the request
     /// - Returns: Builder
     @discardableResult
-    public func applySigner(_ applySigner: some ApplySigner<RequestType, Context>) -> Self {
+    public func applySigner(_ applySigner: some ApplySigner<RequestType>) -> Self {
         self.applySigner = applySigner
         return self
     }
@@ -162,7 +171,7 @@ public class OrchestratorBuilder<
     /// - Returns: Builder
     @discardableResult
     public func executeRequest(
-        _ executeRequest: some ExecuteRequest<RequestType, ResponseType, Context>
+        _ executeRequest: some ExecuteRequest<RequestType, ResponseType>
     ) -> Self {
         self.executeRequest = executeRequest
         return self

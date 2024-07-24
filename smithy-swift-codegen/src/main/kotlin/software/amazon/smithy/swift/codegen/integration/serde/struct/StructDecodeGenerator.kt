@@ -9,14 +9,12 @@ import software.amazon.smithy.aws.traits.customizations.S3UnwrappedXmlOutputTrai
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.swift.codegen.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.addImports
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 
 open class StructDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -27,7 +25,6 @@ open class StructDecodeGenerator(
 ) : MemberShapeDecodeGenerator(ctx, writer, shapeContainingMembers) {
 
     fun render() {
-        writer.addImports(ctx.service.responseWireProtocol)
         val symbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
             "static func read(from reader: \$N) throws -> \$N {", "}",

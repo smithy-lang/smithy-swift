@@ -1,9 +1,7 @@
 excluded:
   - .build
   - Sources/SmithyTestUtil/*
-  - Sources/WeatherSDK/*
   - Tests/*
-  - smithy-swift-codegen-test/build/*
 
 analyzer_rules:
   - unused_import
@@ -24,9 +22,12 @@ disabled_rules:
   - large_tuple
   - type_body_length
   - trailing_comma
+  - non_optional_string_data_conversion
 
 opt_in_rules:
   - empty_count
+  - sorted_imports
+  - unused_imports
 
 # configurable rules can be customized from this configuration file
 force_cast: warning

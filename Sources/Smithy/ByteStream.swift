@@ -77,5 +77,5 @@ public enum ByteStreamError: Error {
     case streamNotSeeakble
     case invalidStreamTypeForChunkedBody(String)
     case streamClosedOrEmpty
-    case streamDoesNotConformToAwsChunkedStream(String)
+    case streamDoesNotConformToChunkedStream(String)
 }

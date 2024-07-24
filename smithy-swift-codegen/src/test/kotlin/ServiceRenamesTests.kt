@@ -17,7 +17,7 @@ class ServiceRenamesTests {
             ),
             "aws.protocoltests.restjson#RestJson"
         )
-        val contents = getFileContents(context.manifest, "/RestJson/models/MyTestOperationInput.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/models/MyTestOperationInput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -45,7 +45,7 @@ class ServiceRenamesTests {
             ),
             "aws.protocoltests.restjson#RestJson"
         )
-        val contents = getFileContents(context.manifest, "/RestJson/models/MyTestOperationOutput.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/models/MyTestOperationOutput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -73,7 +73,7 @@ class ServiceRenamesTests {
             ),
             "aws.protocoltests.restjson#RestJson"
         )
-        val contents = getFileContents(context.manifest, "/RestJson/models/GreetingStruct.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/models/GreetingStruct.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -104,7 +104,7 @@ class ServiceRenamesTests {
             ),
             "aws.protocoltests.restjson#RestJson"
         )
-        val contents = getFileContents(context.manifest, "/RestJson/models/RenamedGreeting.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/models/RenamedGreeting.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents =
             """
@@ -135,7 +135,7 @@ class ServiceRenamesTests {
             ),
             "aws.protocoltests.restjson#RestJson"
         )
-        val contents = getFileContents(context.manifest, "/RestJson/models/RenamedGreeting+ReadWrite.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/models/RenamedGreeting+ReadWrite.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension RestJsonProtocolClientTypes.RenamedGreeting {

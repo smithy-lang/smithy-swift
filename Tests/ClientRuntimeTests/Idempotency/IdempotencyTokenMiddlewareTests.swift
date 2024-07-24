@@ -30,18 +30,18 @@ class IdempotencyTokenMiddlewareTests: XCTestCase {
 
     func test_handle_itSetsAnIdempotencyTokenIfNoneIsSet() async throws {
         let input = TestInputType(tokenMember: nil)
-        let next = MockHandler<TestInputType, TestOutputType> { (context, input) in
-            XCTAssertEqual(input.tokenMember, self.token)
-        }
-        _ = try await subject.handle(context: context, input: input, next: next)
+        let ctx = DefaultInterceptorContext<TestInputType, TestOutputType, HTTPRequest, HTTPResponse>(input: input, attributes: context)
+        try await subject.modifyBeforeSerialization(context: ctx)
+
+        XCTAssertEqual(ctx.getInput().tokenMember, self.token)
     }
 
     func test_handle_itDoesNotChangeTheIdempotencyTokenIfAlreadySet() async throws {
         let input = TestInputType(tokenMember: previousToken)
-        let next = MockHandler<TestInputType, TestOutputType> { (context, input) in
-            XCTAssertEqual(input.tokenMember, self.previousToken)
-        }
-        _ = try await subject.handle(context: context, input: input, next: next)
+        let ctx = DefaultInterceptorContext<TestInputType, TestOutputType, HTTPRequest, HTTPResponse>(input: input, attributes: context)
+        try await subject.modifyBeforeSerialization(context: ctx)
+
+        XCTAssertEqual(ctx.getInput().tokenMember, self.previousToken)
     }
 }
 
@@ -57,19 +57,3 @@ private struct TestInputType {
 }
 
 private struct TestOutputType {}
-
-private struct MockHandler<I, O>: Handler {
-    typealias Output = OperationOutput<O>
-    typealias MockHandlerCallback = (Context, I) async throws -> Void
-
-    private let handleCallback: MockHandlerCallback
-
-    init(handleCallback: @escaping MockHandlerCallback) {
-        self.handleCallback = handleCallback
-    }
-
-    func handle(context: Context, input: I) async throws -> Output {
-        try await handleCallback(context, input)
-        return OperationOutput(httpResponse: HttpResponse())
-    }
-}

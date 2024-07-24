@@ -44,14 +44,14 @@ class WaiterIntegrationTests {
     fun `renders waiters swift file for service with waiters`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
         val filePaths = context.manifest.files
-        filePaths.shouldContain(Path("/Test/Waiters.swift"))
+        filePaths.shouldContain(Path("/Sources/Test/Waiters.swift"))
     }
 
     @Test
     fun `renders no waiters Swift file for service without waiters`() {
         val context = setupTests("waiters-none.smithy", "com.test#TestHasNoWaiters")
         val filePaths = context.manifest.files
-        filePaths.shouldNotContain(Path("/Test/Waiters.swift"))
+        filePaths.shouldNotContain(Path("Sources/Test/Waiters.swift"))
     }
 
     private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {

@@ -31,7 +31,7 @@ class StructureGeneratorTests {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
+        contents.shouldContain(swiftSettings.copyrightNotice)
         val expectedGeneratedStructure =
             """
             /// This is documentation about the shape.
@@ -64,7 +64,7 @@ class StructureGeneratorTests {
         SwiftCodegenPlugin().execute(context)
 
         val primitiveTypesInput = manifest
-            .getFileString("example/models/PrimitiveTypesInput.swift").get()
+            .getFileString("Sources/example/models/PrimitiveTypesInput.swift").get()
         Assertions.assertNotNull(primitiveTypesInput)
         val expected =
             """
@@ -253,7 +253,7 @@ public struct RecursiveShapesInputOutputLists {
 
         val contents = writer.toString()
 
-        contents.shouldContain(SwiftWriter.GENERATED_FILE_HEADER)
+        contents.shouldContain(swiftSettings.copyrightNotice)
         val expectedGeneratedStructure = """
 public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError, Swift.Error {
 
@@ -265,10 +265,10 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
 
     public internal(set) var properties = Properties()
     public static var typeName: Swift.String { "MyError" }
-    public static var fault: ErrorFault { .client }
+    public static var fault: ClientRuntime.ErrorFault { .client }
     public static var isRetryable: Swift.Bool { true }
     public static var isThrottling: Swift.Bool { false }
-    public internal(set) var httpResponse = HttpResponse()
+    public internal(set) var httpResponse = SmithyHTTPAPI.HTTPResponse()
     public internal(set) var message: Swift.String?
     public internal(set) var requestID: Swift.String?
 
@@ -282,7 +282,6 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
     }
 }
 """
-
         contents.shouldContain(expectedGeneratedStructure)
     }
 
@@ -306,7 +305,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
-        val contents = getModelFileContents("example", "JsonListsInput.swift", manifest)
+        val contents = getModelFileContents("Sources/example", "JsonListsInput.swift", manifest)
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents = """
@@ -354,82 +353,79 @@ public struct JsonListsInput {
         SwiftCodegenPlugin().execute(context)
 
         val jsonMapsInput = manifest
-            .getFileString("example/models/JsonMapsInput.swift").get()
+            .getFileString("Sources/example/models/JsonMapsInput.swift").get()
         Assertions.assertNotNull(jsonMapsInput)
-        val expectedJsonMapsInput =
-            """
-            public struct JsonMapsInput {
-                public var denseBooleanMap: [Swift.String:Swift.Bool]?
-                public var denseNumberMap: [Swift.String:Swift.Int]?
-                public var denseStringMap: [Swift.String:Swift.String]?
-                public var denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]?
-                public var sparseBooleanMap: [Swift.String:Swift.Bool?]?
-                public var sparseNumberMap: [Swift.String:Swift.Int?]?
-                public var sparseStringMap: [Swift.String:Swift.String?]?
-                public var sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]?
-            
-                public init(
-                    denseBooleanMap: [Swift.String:Swift.Bool]? = nil,
-                    denseNumberMap: [Swift.String:Swift.Int]? = nil,
-                    denseStringMap: [Swift.String:Swift.String]? = nil,
-                    denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]? = nil,
-                    sparseBooleanMap: [Swift.String:Swift.Bool?]? = nil,
-                    sparseNumberMap: [Swift.String:Swift.Int?]? = nil,
-                    sparseStringMap: [Swift.String:Swift.String?]? = nil,
-                    sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]? = nil
-                )
-                {
-                    self.denseBooleanMap = denseBooleanMap
-                    self.denseNumberMap = denseNumberMap
-                    self.denseStringMap = denseStringMap
-                    self.denseStructMap = denseStructMap
-                    self.sparseBooleanMap = sparseBooleanMap
-                    self.sparseNumberMap = sparseNumberMap
-                    self.sparseStringMap = sparseStringMap
-                    self.sparseStructMap = sparseStructMap
-                }
-            }
-            """.trimIndent()
+        val expectedJsonMapsInput = """
+public struct JsonMapsInput {
+    public var denseBooleanMap: [Swift.String: Swift.Bool]?
+    public var denseNumberMap: [Swift.String: Swift.Int]?
+    public var denseStringMap: [Swift.String: Swift.String]?
+    public var denseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct]?
+    public var sparseBooleanMap: [Swift.String: Swift.Bool?]?
+    public var sparseNumberMap: [Swift.String: Swift.Int?]?
+    public var sparseStringMap: [Swift.String: Swift.String?]?
+    public var sparseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct?]?
+
+    public init(
+        denseBooleanMap: [Swift.String: Swift.Bool]? = nil,
+        denseNumberMap: [Swift.String: Swift.Int]? = nil,
+        denseStringMap: [Swift.String: Swift.String]? = nil,
+        denseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct]? = nil,
+        sparseBooleanMap: [Swift.String: Swift.Bool?]? = nil,
+        sparseNumberMap: [Swift.String: Swift.Int?]? = nil,
+        sparseStringMap: [Swift.String: Swift.String?]? = nil,
+        sparseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct?]? = nil
+    )
+    {
+        self.denseBooleanMap = denseBooleanMap
+        self.denseNumberMap = denseNumberMap
+        self.denseStringMap = denseStringMap
+        self.denseStructMap = denseStructMap
+        self.sparseBooleanMap = sparseBooleanMap
+        self.sparseNumberMap = sparseNumberMap
+        self.sparseStringMap = sparseStringMap
+        self.sparseStructMap = sparseStructMap
+    }
+}
+"""
         jsonMapsInput.shouldContain(expectedJsonMapsInput)
 
         val jsonMapsOutput = manifest
-            .getFileString("example/models/JsonMapsOutput.swift").get()
+            .getFileString("Sources/example/models/JsonMapsOutput.swift").get()
         Assertions.assertNotNull(jsonMapsOutput)
-        val expectedJsonMapsOutput =
-            """
-            public struct JsonMapsOutput {
-                public var denseBooleanMap: [Swift.String:Swift.Bool]?
-                public var denseNumberMap: [Swift.String:Swift.Int]?
-                public var denseStringMap: [Swift.String:Swift.String]?
-                public var denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]?
-                public var sparseBooleanMap: [Swift.String:Swift.Bool?]?
-                public var sparseNumberMap: [Swift.String:Swift.Int?]?
-                public var sparseStringMap: [Swift.String:Swift.String?]?
-                public var sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]?
-            
-                public init(
-                    denseBooleanMap: [Swift.String:Swift.Bool]? = nil,
-                    denseNumberMap: [Swift.String:Swift.Int]? = nil,
-                    denseStringMap: [Swift.String:Swift.String]? = nil,
-                    denseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct]? = nil,
-                    sparseBooleanMap: [Swift.String:Swift.Bool?]? = nil,
-                    sparseNumberMap: [Swift.String:Swift.Int?]? = nil,
-                    sparseStringMap: [Swift.String:Swift.String?]? = nil,
-                    sparseStructMap: [Swift.String:ExampleClientTypes.GreetingStruct?]? = nil
-                )
-                {
-                    self.denseBooleanMap = denseBooleanMap
-                    self.denseNumberMap = denseNumberMap
-                    self.denseStringMap = denseStringMap
-                    self.denseStructMap = denseStructMap
-                    self.sparseBooleanMap = sparseBooleanMap
-                    self.sparseNumberMap = sparseNumberMap
-                    self.sparseStringMap = sparseStringMap
-                    self.sparseStructMap = sparseStructMap
-                }
-            }
-            """.trimIndent()
+        val expectedJsonMapsOutput = """
+public struct JsonMapsOutput {
+    public var denseBooleanMap: [Swift.String: Swift.Bool]?
+    public var denseNumberMap: [Swift.String: Swift.Int]?
+    public var denseStringMap: [Swift.String: Swift.String]?
+    public var denseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct]?
+    public var sparseBooleanMap: [Swift.String: Swift.Bool?]?
+    public var sparseNumberMap: [Swift.String: Swift.Int?]?
+    public var sparseStringMap: [Swift.String: Swift.String?]?
+    public var sparseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct?]?
 
+    public init(
+        denseBooleanMap: [Swift.String: Swift.Bool]? = nil,
+        denseNumberMap: [Swift.String: Swift.Int]? = nil,
+        denseStringMap: [Swift.String: Swift.String]? = nil,
+        denseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct]? = nil,
+        sparseBooleanMap: [Swift.String: Swift.Bool?]? = nil,
+        sparseNumberMap: [Swift.String: Swift.Int?]? = nil,
+        sparseStringMap: [Swift.String: Swift.String?]? = nil,
+        sparseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct?]? = nil
+    )
+    {
+        self.denseBooleanMap = denseBooleanMap
+        self.denseNumberMap = denseNumberMap
+        self.denseStringMap = denseStringMap
+        self.denseStructMap = denseStructMap
+        self.sparseBooleanMap = sparseBooleanMap
+        self.sparseNumberMap = sparseNumberMap
+        self.sparseStringMap = sparseStringMap
+        self.sparseStructMap = sparseStructMap
+    }
+}
+"""
         jsonMapsOutput.shouldContain(expectedJsonMapsOutput)
     }
 
@@ -441,7 +437,7 @@ public struct JsonListsInput {
         SwiftCodegenPlugin().execute(context)
 
         var structWithDeprecatedTrait = manifest
-            .getFileString("example/models/StructWithDeprecatedTrait.swift").get()
+            .getFileString("Sources/example/models/StructWithDeprecatedTrait.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTrait)
         var structContainsDeprecatedTrait = """
         extension ExampleClientTypes {
@@ -451,7 +447,7 @@ public struct JsonListsInput {
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
 
         structWithDeprecatedTrait = manifest
-            .getFileString("example/models/StructSincePropertySet.swift").get()
+            .getFileString("Sources/example/models/StructSincePropertySet.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTrait)
         structContainsDeprecatedTrait = """
         extension ExampleClientTypes {
@@ -469,7 +465,7 @@ public struct JsonListsInput {
         SwiftCodegenPlugin().execute(context)
 
         val structWithDeprecatedTraitMember = manifest
-            .getFileString("example/models/OperationWithDeprecatedTraitInput.swift").get()
+            .getFileString("Sources/example/models/OperationWithDeprecatedTraitInput.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
         @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
@@ -495,7 +491,7 @@ public struct JsonListsInput {
         SwiftCodegenPlugin().execute(context)
 
         val structWithDeprecatedTraitMember = manifest
-            .getFileString("example/models/Foo.swift").get()
+            .getFileString("Sources/example/models/Foo.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
         extension ExampleClientTypes {

@@ -9,7 +9,7 @@ interface Plugin {
         get() = false
 
     fun customInitialization(writer: SwiftWriter) {
-        writer.writeInline("\$L()", className)
+        writer.writeInline("\$N()", className)
     }
 
     fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {

@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyReadWrite
 import SmithyFormURL
 @testable import ClientRuntime
 
@@ -26,7 +27,7 @@ extension QueryMapsInput: Encodable {
 
     static func write(value: QueryMapsInput?, to writer: SmithyFormURL.Writer) throws {
         guard let value else { return }
-        try writer["FlattenedMap"].writeMap(value.flattenedMap, valueWritingClosure: String.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
-        try writer["MapArg"].writeMap(value.mapArg, valueWritingClosure: String.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["FlattenedMap"].writeMap(value.flattenedMap, valueWritingClosure: WritingClosures.writeString(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        try writer["MapArg"].writeMap(value.mapArg, valueWritingClosure: WritingClosures.writeString(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }

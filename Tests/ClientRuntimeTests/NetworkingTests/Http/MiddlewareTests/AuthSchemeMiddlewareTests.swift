@@ -15,7 +15,6 @@ import SmithyTestUtil
 
 class AuthSchemeMiddlewareTests: XCTestCase {
     private var contextBuilder: ContextBuilder!
-    private var operationStack: OperationStack<MockInput, MockOutput>!
 
     override func setUp() async throws {
         try await super.setUp()
@@ -25,7 +24,6 @@ class AuthSchemeMiddlewareTests: XCTestCase {
             .withIdentityResolver(value: MockIdentityResolver(), schemeID: "MockAuthSchemeA")
             .withIdentityResolver(value: MockIdentityResolver(), schemeID: "MockAuthSchemeB")
             .withIdentityResolver(value: MockIdentityResolver(), schemeID: "MockAuthSchemeC")
-        operationStack = OperationStack<MockInput, MockOutput>(id: "auth scheme middleware test stack")
     }
 
     // Test exception cases
@@ -133,17 +131,8 @@ class AuthSchemeMiddlewareTests: XCTestCase {
         file: StaticString = #file,
         line: UInt = #line
     ) async throws {
-        operationStack.buildStep.intercept(position: .before, middleware: AuthSchemeMiddleware<MockOutput>())
-
-        let mockHandler = MockHandler<MockOutput>(handleCallback: { (context, input) in
-            let selectedAuthScheme = context.selectedAuthScheme
-            XCTAssertEqual(expectedAuthScheme, selectedAuthScheme?.schemeID, file: file, line: line)
-            let httpResponse = HttpResponse(body: .noStream, statusCode: HttpStatusCode.ok)
-            let mockOutput = MockOutput()
-            let output = OperationOutput<MockOutput>(httpResponse: httpResponse, output: mockOutput)
-            return output
-        })
-
-        _ = try await operationStack.handleMiddleware(context: builtContext, input: MockInput(), next: mockHandler)
+        let middleware = AuthSchemeMiddleware<MockOutput>()
+        let selectedAuthScheme = try await middleware.select(attributes: builtContext)
+        XCTAssertEqual(expectedAuthScheme, selectedAuthScheme?.schemeID, file: file, line: line)
     }
 }

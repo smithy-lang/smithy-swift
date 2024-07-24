@@ -7,7 +7,7 @@ class EventStreamTests {
     fun `test MessageMarshallable`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
         println(context.manifest.files)
-        val contents = getFileContents(context.manifest, "/Example/models/TestStream+MessageMarshallable.swift")
+        val contents = getFileContents(context.manifest, "Sources/Example/models/TestStream+MessageMarshallable.swift")
         val expected = """
 extension EventStreamTestClientTypes.TestStream {
     static var marshal: SmithyEventStreamsAPI.MarshalClosure<EventStreamTestClientTypes.TestStream> {
@@ -68,8 +68,8 @@ extension EventStreamTestClientTypes.TestStream {
                 headers.append(.init(name: ":event-type", value: .string("MessageWithNoHeaderPayloadTraits")))
                 headers.append(.init(name: ":content-type", value: .string("application/json")))
                 let writer = SmithyJSON.Writer(nodeInfo: "")
-                try writer["someInt"].write(value.someInt, with: Swift.Int.write(value:to:))
-                try writer["someString"].write(value.someString, with: Swift.String.write(value:to:))
+                try writer["someInt"].write(value.someInt, with: SmithyReadWrite.WritingClosures.writeInt(value:to:))
+                try writer["someString"].write(value.someString, with: SmithyReadWrite.WritingClosures.writeString(value:to:))
                 payload = try writer.data()
             case .messagewithunboundpayloadtraits(let value):
                 headers.append(.init(name: ":event-type", value: .string("MessageWithUnboundPayloadTraits")))
@@ -78,7 +78,7 @@ extension EventStreamTestClientTypes.TestStream {
                 }
                 headers.append(.init(name: ":content-type", value: .string("application/json")))
                 let writer = SmithyJSON.Writer(nodeInfo: "")
-                try writer["unboundString"].write(value.unboundString, with: Swift.String.write(value:to:))
+                try writer["unboundString"].write(value.unboundString, with: SmithyReadWrite.WritingClosures.writeString(value:to:))
                 payload = try writer.data()
             case .sdkUnknown(_):
                 throw Smithy.ClientError.unknownError("cannot serialize the unknown event type!")
@@ -94,7 +94,7 @@ extension EventStreamTestClientTypes.TestStream {
     @Test
     fun `test MessageUnmarshallable`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
-        val contents = getFileContents(context.manifest, "/Example/models/TestStream+MessageUnmarshallable.swift")
+        val contents = getFileContents(context.manifest, "Sources/Example/models/TestStream+MessageUnmarshallable.swift")
         val expected = """
 extension EventStreamTestClientTypes.TestStream {
     static var unmarshal: SmithyEventStreamsAPI.UnmarshalClosure<EventStreamTestClientTypes.TestStream> {
@@ -162,7 +162,7 @@ extension EventStreamTestClientTypes.TestStream {
                     if case .string(let value) = message.headers.value(name: "header") {
                         event.header = value
                     }
-                    let value = try SmithyJSON.Reader.readFrom(message.payload, with: Swift.String.read(from:))
+                    let value = try SmithyJSON.Reader.readFrom(message.payload, with: SmithyReadWrite.ReadingClosures.readString(from:))
                     event.unboundString = value
                     return .messagewithunboundpayloadtraits(event)
                 default:
@@ -175,14 +175,14 @@ extension EventStreamTestClientTypes.TestStream {
                         let value = try SmithyJSON.Reader.readFrom(message.payload, with: SomeError.read(from:))
                         return value
                     default:
-                        let httpResponse = SmithyHTTPAPI.HttpResponse(body: .data(message.payload), statusCode: .ok)
+                        let httpResponse = SmithyHTTPAPI.HTTPResponse(body: .data(message.payload), statusCode: .ok)
                         return ClientRuntime.UnknownHTTPServiceError(httpResponse: httpResponse, message: "error processing event stream, unrecognized ':exceptionType': \(params.exceptionType); contentType: \(params.contentType ?? "nil")", requestID: nil, typeName: nil)
                     }
                 }
                 let error = try makeError(message, params)
                 throw error
             case .error(let params):
-                let httpResponse = SmithyHTTPAPI.HttpResponse(body: .data(message.payload), statusCode: .ok)
+                let httpResponse = SmithyHTTPAPI.HTTPResponse(body: .data(message.payload), statusCode: .ok)
                 throw ClientRuntime.UnknownHTTPServiceError(httpResponse: httpResponse, message: "error processing event stream, unrecognized ':errorType': \(params.errorCode); message: \(params.message ?? "nil")", requestID: nil, typeName: nil)
             case .unknown(messageType: let messageType):
                 throw Smithy.ClientError.unknownError("unrecognized event stream message ':message-type': \(messageType)")
@@ -198,7 +198,7 @@ extension EventStreamTestClientTypes.TestStream {
     fun `operation stack`() {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
         println(context.manifest.files)
-        val contents = getFileContents(context.manifest, "/Example/EventStreamTestClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/Example/EventStreamTestClient.swift")
         var expected = """
     public func testStreamOp(input: TestStreamOpInput) async throws -> TestStreamOpOutput {
         let context = Smithy.ContextBuilder()
@@ -213,19 +213,36 @@ extension EventStreamTestClientTypes.TestStream {
                       .withUnsignedPayloadTrait(value: false)
                       .withSocketTimeout(value: config.httpClientConfiguration.socketTimeout)
                       .build()
-        var operation = ClientRuntime.OperationStack<TestStreamOpInput, TestStreamOpOutput>(id: "testStreamOp")
-        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLPathMiddleware<TestStreamOpInput, TestStreamOpOutput>(TestStreamOpInput.urlPathProvider(_:)))
-        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.URLHostMiddleware<TestStreamOpInput, TestStreamOpOutput>())
-        operation.buildStep.intercept(position: .before, middleware: ClientRuntime.AuthSchemeMiddleware<TestStreamOpOutput>())
-        operation.serializeStep.intercept(position: .after, middleware: ContentTypeMiddleware<TestStreamOpInput, TestStreamOpOutput>(contentType: "application/json"))
-        operation.serializeStep.intercept(position: .after, middleware: ClientRuntime.EventStreamBodyMiddleware<TestStreamOpInput, TestStreamOpOutput, EventStreamTestClientTypes.TestStream>(keyPath: \.value, defaultBody: "{}", marshalClosure: EventStreamTestClientTypes.TestStream.marshal))
-        operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.ContentLengthMiddleware<TestStreamOpInput, TestStreamOpOutput>())
-        operation.finalizeStep.intercept(position: .after, middleware: ClientRuntime.RetryMiddleware<SmithyRetries.DefaultRetryStrategy, ClientRuntime.DefaultRetryErrorInfoProvider, TestStreamOpOutput>(options: config.retryStrategyOptions))
-        operation.finalizeStep.intercept(position: .before, middleware: ClientRuntime.SignerMiddleware<TestStreamOpOutput>())
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.DeserializeMiddleware<TestStreamOpOutput>(TestStreamOpOutput.httpOutput(from:), TestStreamOpOutputError.httpError(from:)))
-        operation.deserializeStep.intercept(position: .after, middleware: ClientRuntime.LoggerMiddleware<TestStreamOpInput, TestStreamOpOutput>(clientLogMode: config.clientLogMode))
-        let result = try await operation.handleMiddleware(context: context, input: input, next: client.getHandler())
-        return result
+        let builder = ClientRuntime.OrchestratorBuilder<TestStreamOpInput, TestStreamOpOutput, SmithyHTTPAPI.HTTPRequest, SmithyHTTPAPI.HTTPResponse>()
+        config.interceptorProviders.forEach { provider in
+            builder.interceptors.add(provider.create())
+        }
+        config.httpInterceptorProviders.forEach { provider in
+            let i: any ClientRuntime.HttpInterceptor<TestStreamOpInput, TestStreamOpOutput> = provider.create()
+            builder.interceptors.add(i)
+        }
+        builder.interceptors.add(ClientRuntime.URLPathMiddleware<TestStreamOpInput, TestStreamOpOutput>(TestStreamOpInput.urlPathProvider(_:)))
+        builder.interceptors.add(ClientRuntime.URLHostMiddleware<TestStreamOpInput, TestStreamOpOutput>())
+        builder.interceptors.add(ClientRuntime.ContentTypeMiddleware<TestStreamOpInput, TestStreamOpOutput>(contentType: "application/json"))
+        builder.serialize(ClientRuntime.EventStreamBodyMiddleware<TestStreamOpInput, TestStreamOpOutput, EventStreamTestClientTypes.TestStream>(keyPath: \.value, defaultBody: "{}", marshalClosure: EventStreamTestClientTypes.TestStream.marshal))
+        builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<TestStreamOpInput, TestStreamOpOutput>())
+        builder.deserialize(ClientRuntime.DeserializeMiddleware<TestStreamOpOutput>(TestStreamOpOutput.httpOutput(from:), TestStreamOpOutputError.httpError(from:)))
+        builder.interceptors.add(ClientRuntime.LoggerMiddleware<TestStreamOpInput, TestStreamOpOutput>(clientLogMode: config.clientLogMode))
+        builder.retryStrategy(SmithyRetries.DefaultRetryStrategy(options: config.retryStrategyOptions))
+        builder.retryErrorInfoProvider(ClientRuntime.DefaultRetryErrorInfoProvider.errorInfo(for:))
+        builder.applySigner(ClientRuntime.SignerMiddleware<TestStreamOpOutput>())
+        builder.selectAuthScheme(ClientRuntime.AuthSchemeMiddleware<TestStreamOpOutput>())
+        var metricsAttributes = Smithy.Attributes()
+        metricsAttributes.set(key: ClientRuntime.OrchestratorMetricsAttributesKeys.service, value: "EventStreamTest")
+        metricsAttributes.set(key: ClientRuntime.OrchestratorMetricsAttributesKeys.method, value: "TestStreamOp")
+        let op = builder.attributes(context)
+            .telemetry(ClientRuntime.OrchestratorTelemetry(
+                telemetryProvider: config.telemetryProvider,
+                metricsAttributes: metricsAttributes
+            ))
+            .executeRequest(client)
+            .build()
+        return try await op.execute(input: input)
     }
 """
         contents.shouldContainOnlyOnce(expected)

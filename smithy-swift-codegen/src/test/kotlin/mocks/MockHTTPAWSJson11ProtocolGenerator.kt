@@ -59,7 +59,6 @@ class MockHTTPAWSJson11ProtocolGenerator() : HTTPBindingProtocolGenerator(MockAW
             responseTestBuilder,
             errorTestBuilder,
             customizations,
-            operationMiddleware,
             getProtocolHttpBindingResolver(ctx, defaultContentType),
         ).generateProtocolTests()
     }

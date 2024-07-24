@@ -5,23 +5,23 @@
 
 import SmithyHTTPAPI
 
-/// General Service Error structure used when exact error could not be deduced from the `HttpResponse`
+/// General Service Error structure used when exact error could not be deduced from the `HTTPResponse`
 public struct UnknownHTTPServiceError: ServiceError, HTTPError, Error {
     public var typeName: String?
 
     public var message: String?
 
-    public var httpResponse: HttpResponse
+    public var httpResponse: HTTPResponse
 }
 
 extension UnknownHTTPServiceError {
 
     /// Creates an `UnknownHTTPServiceError` from a HTTP response.
     /// - Parameters:
-    ///   - httpResponse: The `HttpResponse` for this error.
+    ///   - httpResponse: The `HTTPResponse` for this error.
     ///   - message: The message associated with this error. Defaults to `nil`.
     ///   - errorType: The error type associated with this error.  Defaults to `nil`.
-    public init(httpResponse: HttpResponse, message: String? = nil, typeName: String? = nil) {
+    public init(httpResponse: HTTPResponse, message: String? = nil, typeName: String? = nil) {
         self.typeName = typeName
         self.httpResponse = httpResponse
         self.message = message

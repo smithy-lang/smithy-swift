@@ -4,9 +4,9 @@ class IdempotencyTokenTraitTests {
     @Test
     fun `generates idempotent middleware`() {
         val context = setupTests("Isolated/idempotencyToken.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "/RestXml/RestXmlProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestXml/RestXmlProtocolClient.swift")
         val expectedContents = """
-        operation.initializeStep.intercept(position: .after, middleware: ClientRuntime.IdempotencyTokenMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>(keyPath: \.token))
+        builder.interceptors.add(ClientRuntime.IdempotencyTokenMiddleware<IdempotencyTokenWithStructureInput, IdempotencyTokenWithStructureOutput>(keyPath: \.token))
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }

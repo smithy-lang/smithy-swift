@@ -9,31 +9,18 @@ import enum Smithy.ClientError
 import struct Smithy.Attributes
 import struct Smithy.AttributeKey
 import class Smithy.Context
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequestBuilder
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 import protocol SmithyHTTPAuthAPI.AuthScheme
+import struct SmithyHTTPAuth.DefaultIdentityResolverConfiguration
 
-public struct AuthSchemeMiddleware<OperationStackOutput>: Middleware {
+public struct AuthSchemeMiddleware<OperationStackOutput> {
     public let id: String = "AuthSchemeMiddleware"
 
-    public init () {}
-
-    public typealias MInput = SdkHttpRequestBuilder
-    public typealias MOutput = OperationOutput<OperationStackOutput>
-
-    public func handle<H>(context: Context,
-                          input: SdkHttpRequestBuilder,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-    Self.MInput == H.Input,
-    Self.MOutput == H.Output {
-        _ = try await select(attributes: context)
-        return try await next.handle(context: context, input: input)
-    }
+    public init() {}
 }
 
 extension AuthSchemeMiddleware: SelectAuthScheme {
-
     public func select(attributes: Context) async throws -> SelectedAuthScheme? {
         // Get auth scheme resolver from middleware context
         guard let resolver = attributes.getAuthSchemeResolver() else {

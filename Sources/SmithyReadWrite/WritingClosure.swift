@@ -49,79 +49,54 @@ public func timestampWritingClosure<Writer: SmithyWriter>(format: TimestampForma
     }
 }
 
-public extension String {
+public struct WritingClosureBox<Value: RawRepresentable> {
 
-    static func write<Writer: SmithyWriter>(value: String?, to writer: Writer) throws {
+    public init() {}
+
+    public func write<Writer: SmithyWriter>(value: Value?, to writer: Writer) throws where Value.RawValue == Int {
+        try writer.write(value)
+    }
+
+    public func write<Writer: SmithyWriter>(value: Value?, to writer: Writer) throws where Value.RawValue == String {
         try writer.write(value)
     }
 }
 
-public extension RawRepresentable where RawValue == Int {
+public enum WritingClosures {
 
-    static func write<Writer: SmithyWriter>(value: Self?, to writer: Writer) throws {
-        try writer.write(value?.rawValue)
-    }
-}
-
-public extension RawRepresentable where RawValue == String {
-
-    static func write<Writer: SmithyWriter>(value: Self?, to writer: Writer) throws {
-        try writer.write(value?.rawValue)
-    }
-}
-
-public extension Bool {
-
-    static func write<Writer: SmithyWriter>(value: Bool?, to writer: Writer) throws {
+    public static func writeString<Writer: SmithyWriter>(value: String?, to writer: Writer) throws {
         try writer.write(value)
     }
-}
 
-public extension Int {
-
-    static func write<Writer: SmithyWriter>(value: Int?, to writer: Writer) throws {
+    public static func writeBool<Writer: SmithyWriter>(value: Bool?, to writer: Writer) throws {
         try writer.write(value)
     }
-}
 
-public extension Int8 {
-
-    static func write<Writer: SmithyWriter>(value: Int8?, to writer: Writer) throws {
+    public static func writeInt<Writer: SmithyWriter>(value: Int?, to writer: Writer) throws {
         try writer.write(value)
     }
-}
 
-public extension Int16 {
-
-    static func write<Writer: SmithyWriter>(value: Int16?, to writer: Writer) throws {
+    public static func writeInt8<Writer: SmithyWriter>(value: Int8?, to writer: Writer) throws {
         try writer.write(value)
     }
-}
 
-public extension Double {
-
-    static func write<Writer: SmithyWriter>(value: Double?, to writer: Writer) throws {
+    public static func writeInt16<Writer: SmithyWriter>(value: Int16?, to writer: Writer) throws {
         try writer.write(value)
     }
-}
 
-public extension Float {
-
-    static func write<Writer: SmithyWriter>(value: Float?, to writer: Writer) throws {
+    public static func writeDouble<Writer: SmithyWriter>(value: Double?, to writer: Writer) throws {
         try writer.write(value)
     }
-}
 
-public extension Data {
-
-    static func write<Writer: SmithyWriter>(value: Data?, to writer: Writer) throws {
+    public static func writeFloat<Writer: SmithyWriter>(value: Float?, to writer: Writer) throws {
         try writer.write(value)
     }
-}
 
-public extension Document {
+    public static func writeData<Writer: SmithyWriter>(value: Data?, to writer: Writer) throws {
+        try writer.write(value)
+    }
 
-    static func write<Writer: SmithyWriter>(value: Document?, to writer: Writer) throws {
+    public static func writeDocument<Writer: SmithyWriter>(value: Document?, to writer: Writer) throws {
         try writer.write(value)
     }
 }

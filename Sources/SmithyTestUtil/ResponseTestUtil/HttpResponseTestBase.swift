@@ -15,21 +15,21 @@ import class AwsCommonRuntimeKit.ByteBuffer
  */
 open class HttpResponseTestBase: XCTestCase {
     /**
-     Create `HttpResponse` from its components
+     Create `HTTPResponse` from its components
      */
     public func buildHttpResponse(code: Int,
                                   path: String? = nil,
                                   headers: [String: String]? = nil,
-                                  content: ByteStream?) -> HttpResponse? {
+                                  content: ByteStream?) -> HTTPResponse? {
 
         var internalHeaders: Headers = Headers()
         if let headers = headers {
             internalHeaders = Headers(headers)
         }
 
-        return HttpResponse(headers: internalHeaders,
+        return HTTPResponse(headers: internalHeaders,
                             body: content ?? .noStream,
-                            statusCode: HttpStatusCode(rawValue: Int(code)) ?? HttpStatusCode.badRequest)
+                            statusCode: HTTPStatusCode(rawValue: Int(code)) ?? HTTPStatusCode.badRequest)
 
     }
 }

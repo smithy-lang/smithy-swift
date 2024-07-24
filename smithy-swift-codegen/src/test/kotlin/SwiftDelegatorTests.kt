@@ -12,7 +12,6 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
-import software.amazon.smithy.swift.codegen.SwiftWriter
 
 class SwiftDelegatorTests {
     @Test
@@ -24,9 +23,9 @@ class SwiftDelegatorTests {
 
         SwiftCodegenPlugin().execute(context)
 
-        assertTrue(manifest.hasFile("example/models/GetFooInput.swift"))
-        assertTrue(manifest.hasFile("example/models/GetFooOutput.swift"))
-        assertTrue(manifest.hasFile("example/models/GetFooError.swift"))
+        assertTrue(manifest.hasFile("Sources/example/models/GetFooInput.swift"))
+        assertTrue(manifest.hasFile("Sources/example/models/GetFooOutput.swift"))
+        assertTrue(manifest.hasFile("Sources/example/models/GetFooError.swift"))
     }
 
     @Test
@@ -43,8 +42,8 @@ class SwiftDelegatorTests {
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Hello!") })
         delegator.flushWriters()
         assertEquals(
-            SwiftWriter.GENERATED_FILE_HEADER + "\n\nHello!\n",
-            manifest.getFileString("example/models/GetFooInput.swift").get()
+            settings.copyrightNotice + "\n\nHello!\n",
+            manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
         )
     }
 
@@ -62,8 +61,8 @@ class SwiftDelegatorTests {
         delegator.useShapeWriter(getFooInputShape, { writer -> writer.write("Goodbye!") })
         delegator.flushWriters()
         assertEquals(
-            SwiftWriter.GENERATED_FILE_HEADER + "\n\nHello!\n\nGoodbye!\n",
-            manifest.getFileString("example/models/GetFooInput.swift").get()
+            settings.copyrightNotice + "\n\nHello!\n\nGoodbye!\n",
+            manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
         )
     }
 }

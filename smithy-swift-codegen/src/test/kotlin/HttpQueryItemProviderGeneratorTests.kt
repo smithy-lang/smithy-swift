@@ -13,7 +13,7 @@ class HttpQueryItemProviderGeneratorTests {
     fun `001 it creates query item provider with idempotency token trait for httpQuery`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
         val contents =
-            getModelFileContents("example", "QueryIdempotencyTokenAutoFillInput+QueryItemProvider.swift", context.manifest)
+            getModelFileContents("Sources/example", "QueryIdempotencyTokenAutoFillInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension QueryIdempotencyTokenAutoFillInput {
@@ -34,7 +34,7 @@ extension QueryIdempotencyTokenAutoFillInput {
     @Test
     fun `002 it creates query item middleware for timestamps with format`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
-        val contents = getModelFileContents("example", "TimestampInputInput+QueryItemProvider.swift", context.manifest)
+        val contents = getModelFileContents("Sources/example", "TimestampInputInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension TimestampInputInput {
@@ -42,12 +42,12 @@ extension TimestampInputInput {
     static func queryItemProvider(_ value: TimestampInputInput) throws -> [Smithy.URIQueryItem] {
         var items = [Smithy.URIQueryItem]()
         if let queryTimestamp = value.queryTimestamp {
-            let queryTimestampQueryItem = Smithy.URIQueryItem(name: "qtime".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryTimestamp)).urlPercentEncoding())
+            let queryTimestampQueryItem = Smithy.URIQueryItem(name: "qtime".urlPercentEncoding(), value: Swift.String(SmithyTimestamps.TimestampFormatter(format: .dateTime).string(from: queryTimestamp)).urlPercentEncoding())
             items.append(queryTimestampQueryItem)
         }
         if let queryTimestampList = value.queryTimestampList {
             queryTimestampList.forEach { queryItemValue in
-                let queryItem = Smithy.URIQueryItem(name: "qtimeList".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
+                let queryItem = Smithy.URIQueryItem(name: "qtimeList".urlPercentEncoding(), value: Swift.String(SmithyTimestamps.TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
                 items.append(queryItem)
             }
         }
@@ -61,7 +61,7 @@ extension TimestampInputInput {
     @Test
     fun `003 it creates query item middleware smoke test`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
-        val contents = getModelFileContents("example", "SmokeTestInput+QueryItemProvider.swift", context.manifest)
+        val contents = getModelFileContents("Sources/example", "SmokeTestInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension SmokeTestInput {
@@ -84,14 +84,14 @@ extension SmokeTestInput {
         val context = setupTests("http-query-params-stringmap.smithy", "com.test#Example")
         Assertions.assertEquals(
             Optional.empty<String>(),
-            context.manifest.getFileString("/example/models/AllQueryStringTypesInput+BodyMiddleware.swift")
+            context.manifest.getFileString("Sources/example/models/AllQueryStringTypesInput+BodyMiddleware.swift")
         )
     }
 
     @Test
     fun `005 httpQueryParams on StringMap`() {
         val context = setupTests("http-query-params-stringmap.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/example/models/AllQueryStringTypesInput+QueryItemProvider.swift")
+        val contents = getFileContents(context.manifest, "Sources/example/models/AllQueryStringTypesInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension AllQueryStringTypesInput {
@@ -127,7 +127,7 @@ extension AllQueryStringTypesInput {
     @Test
     fun `006 httpQueryParams on stringListMap`() {
         val context = setupTests("http-query-params-stringlistmap.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/example/models/QueryParamsAsStringListMapInput+QueryItemProvider.swift")
+        val contents = getFileContents(context.manifest, "Sources/example/models/QueryParamsAsStringListMapInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension QueryParamsAsStringListMapInput {
@@ -159,7 +159,7 @@ extension QueryParamsAsStringListMapInput {
     @Test
     fun `007 query precedence with httpQuery and httpQueryParams`() {
         val context = setupTests("http-query-params-precedence.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "/example/models/QueryPrecedenceInput+QueryItemProvider.swift")
+        val contents = getFileContents(context.manifest, "Sources/example/models/QueryPrecedenceInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension QueryPrecedenceInput {
@@ -189,7 +189,7 @@ extension QueryPrecedenceInput {
     @Test
     fun `008 it handles required http query items`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
-        val contents = getModelFileContents("example", "RequiredHttpFieldsInput+QueryItemProvider.swift", context.manifest)
+        val contents = getModelFileContents("Sources/example", "RequiredHttpFieldsInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension RequiredHttpFieldsInput {
@@ -207,7 +207,7 @@ extension RequiredHttpFieldsInput {
             throw Smithy.ClientError.unknownError(message)
         }
         query2.forEach { queryItemValue in
-            let queryItem = Smithy.URIQueryItem(name: "Query2".urlPercentEncoding(), value: Swift.String(TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
+            let queryItem = Smithy.URIQueryItem(name: "Query2".urlPercentEncoding(), value: Swift.String(SmithyTimestamps.TimestampFormatter(format: .dateTime).string(from: queryItemValue)).urlPercentEncoding())
             items.append(queryItem)
         }
         guard let query3 = value.query3 else {

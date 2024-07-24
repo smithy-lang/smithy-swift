@@ -7,12 +7,11 @@
 
 import protocol Smithy.RequestMessageSerializer
 import class Smithy.Context
-import class SmithyHTTPAPI.SdkHttpRequest
-import class SmithyHTTPAPI.SdkHttpRequestBuilder
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPRequestBuilder
 import struct Foundation.Data
 
-public struct BlobBodyMiddleware<OperationStackInput,
-                                    OperationStackOutput>: Middleware {
+public struct BlobBodyMiddleware<OperationStackInput, OperationStackOutput> {
     public let id: Swift.String = "BlobBodyMiddleware"
 
     let keyPath: KeyPath<OperationStackInput, Data?>
@@ -20,28 +19,13 @@ public struct BlobBodyMiddleware<OperationStackInput,
     public init(keyPath: KeyPath<OperationStackInput, Data?>) {
         self.keyPath = keyPath
     }
-
-    public func handle<H>(context: Smithy.Context,
-                          input: SerializeStepInput<OperationStackInput>,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-          Self.MInput == H.Input,
-          Self.MOutput == H.Output {
-              try apply(input: input.operationInput, builder: input.builder, attributes: context)
-              return try await next.handle(context: context, input: input)
-          }
-
-    public typealias MInput = SerializeStepInput<OperationStackInput>
-    public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = Smithy.Context
 }
 
 extension BlobBodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
-    public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = Smithy.Context
+    public typealias RequestType = HTTPRequest
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
+    public func apply(input: OperationStackInput, builder: HTTPRequestBuilder, attributes: Smithy.Context) throws {
         builder.withBody(.data(input[keyPath: keyPath]))
     }
 }

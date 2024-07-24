@@ -2,29 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0.
 
 import class Smithy.Context
-import let SmithyChecksumsAPI.CHUNK_SIZE_BYTES
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import AwsCommonRuntimeKit
+import SmithyChecksums
 import SmithyHTTPAPI
 
-public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: Middleware {
+public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput> {
     public let id: String = "ContentMD5"
 
     private let contentMD5HeaderName = "Content-MD5"
 
     public init() {}
 
-    public func handle<H>(context: Context,
-                          input: MInput,
-                          next: H) async throws -> MOutput
-    where H: Handler,
-    Self.MInput == H.Input,
-    Self.MOutput == H.Output {
-        try await addHeaders(builder: input, attributes: context)
-        return try await next.handle(context: context, input: input)
-    }
-
-    private func addHeaders(builder: SdkHttpRequestBuilder, attributes: Context) async throws {
+    private func addHeaders(builder: HTTPRequestBuilder, attributes: Context) async throws {
         // Skip MD5 hash if using checksums
         if builder.headers.exists(name: "x-amz-sdk-checksum-algorithm") {
             return
@@ -64,9 +54,6 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
             logger.error("Unhandled case for Content-MD5")
         }
     }
-
-    public typealias MInput = SdkHttpRequestBuilder
-    public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension ContentMD5Middleware: HttpInterceptor {
@@ -74,7 +61,7 @@ extension ContentMD5Middleware: HttpInterceptor {
     public typealias OutputType = OperationStackOutput
 
     public func modifyBeforeTransmit(
-        context: some MutableRequest<InputType, RequestType, AttributesType>
+        context: some MutableRequest<InputType, RequestType>
     ) async throws {
         let builder = context.getRequest().toBuilder()
         try await addHeaders(builder: builder, attributes: context.getAttributes())

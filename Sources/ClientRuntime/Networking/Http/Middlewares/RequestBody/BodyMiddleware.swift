@@ -13,7 +13,7 @@ import typealias SmithyReadWrite.WritingClosure
 
 public struct BodyMiddleware<OperationStackInput,
                              OperationStackOutput,
-                             Writer: SmithyWriter>: Middleware {
+                             Writer: SmithyWriter> {
     public let id: Swift.String = "BodyMiddleware"
 
     let rootNodeInfo: Writer.NodeInfo
@@ -26,28 +26,13 @@ public struct BodyMiddleware<OperationStackInput,
         self.rootNodeInfo = rootNodeInfo
         self.inputWritingClosure = inputWritingClosure
     }
-
-    public func handle<H>(context: Smithy.Context,
-                          input: SerializeStepInput<OperationStackInput>,
-                          next: H) async throws -> OperationOutput<OperationStackOutput>
-    where H: Handler,
-          Self.MInput == H.Input,
-          Self.MOutput == H.Output {
-              try apply(input: input.operationInput, builder: input.builder, attributes: context)
-              return try await next.handle(context: context, input: input)
-          }
-
-    public typealias MInput = SerializeStepInput<OperationStackInput>
-    public typealias MOutput = OperationOutput<OperationStackOutput>
-    public typealias Context = Smithy.Context
 }
 
 extension BodyMiddleware: RequestMessageSerializer {
     public typealias InputType = OperationStackInput
-    public typealias RequestType = SdkHttpRequest
-    public typealias AttributesType = Smithy.Context
+    public typealias RequestType = HTTPRequest
 
-    public func apply(input: OperationStackInput, builder: SdkHttpRequestBuilder, attributes: Smithy.Context) throws {
+    public func apply(input: OperationStackInput, builder: HTTPRequestBuilder, attributes: Smithy.Context) throws {
         do {
             let data = try Writer.write(
                 input,
