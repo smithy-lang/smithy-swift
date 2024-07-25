@@ -83,7 +83,7 @@ public struct Orchestrator<
 
     internal init(builder: OrchestratorBuilder<InputType, OutputType, RequestType, ResponseType>) {
         self.interceptors = builder.interceptors
-        self.attributes = builder.attributes!
+        self.attributes = builder.attributes
         self.serialize = builder.serialize
         self.deserialize = builder.deserialize!
         self.retryStrategy = builder.retryStrategy

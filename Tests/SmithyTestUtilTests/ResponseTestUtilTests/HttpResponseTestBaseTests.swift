@@ -32,7 +32,7 @@ class HttpResponseTestBaseTests: HttpResponseTestBase {
         if case .data(let actualData) = httpResponse.body {
             XCTAssertEqual(bodyData, actualData)
         } else {
-            XCTFail("HttpResponse Content unexpectedly found to be nil")
+            XCTFail("HTTPResponse Content unexpectedly found to be nil")
         }
     }
 }
