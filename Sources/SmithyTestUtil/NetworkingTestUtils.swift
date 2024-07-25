@@ -9,14 +9,14 @@ import Foundation
 import ClientRuntime
 import XCTest
 
-class NetworkingTestUtils: XCTestCase {
+open class NetworkingTestUtils: XCTestCase {
 
-    var mockHttpDataRequest: HTTPRequest!
-    var mockHttpStreamRequest: HTTPRequest!
-    var expectedMockRequestURL: URL!
-    var expectedMockRequestData: Data!
+    public var mockHttpDataRequest: HTTPRequest!
+    public var mockHttpStreamRequest: HTTPRequest!
+    public var expectedMockRequestURL: URL!
+    public var expectedMockRequestData: Data!
 
-    override func setUp() {
+    override open func setUp() {
         super.setUp()
         expectedMockRequestURL = URL(string: "https://myapi.host.com/path/to/endpoint?qualifier=qualifier-value")!
         let mockRequestBody = "{\"parameter\": \"value\"}"
@@ -28,7 +28,7 @@ class NetworkingTestUtils: XCTestCase {
     /*
      Create a mock HttpRequest with valid data payload
      */
-    func setMockHttpDataRequest() {
+    open func setMockHttpDataRequest() {
         let headers = Headers(["header-item-name": "header-item-value"])
         let endpoint = getMockEndpoint(headers: headers)
 
@@ -39,7 +39,7 @@ class NetworkingTestUtils: XCTestCase {
     /*
      Create a mock HttpRequest with valid InputStream
      */
-    func setMockHttpStreamRequest() {
+    open func setMockHttpStreamRequest() {
         let headers = Headers(["header-item-name": "header-item-value"])
         let endpoint = getMockEndpoint(headers: headers)
 
@@ -47,7 +47,7 @@ class NetworkingTestUtils: XCTestCase {
         mockHttpStreamRequest = HTTPRequest(method: .get, endpoint: endpoint, body: httpBody)
     }
 
-    func getMockEndpoint(headers: Headers) -> Endpoint {
+    open func getMockEndpoint(headers: Headers) -> Endpoint {
         let path = "/path/to/endpoint"
         let host = "myapi.host.com"
         var queryItems: [URIQueryItem] = []
@@ -58,7 +58,7 @@ class NetworkingTestUtils: XCTestCase {
         return endpoint
     }
 
-    func testHttpStatusCodeDescriptionWorks() {
+    open func testHttpStatusCodeDescriptionWorks() {
         let httpStatusCode = HTTPStatusCode.ok
         let httpStatusCodeDescription = httpStatusCode.description
 

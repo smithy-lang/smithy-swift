@@ -5,8 +5,10 @@
 
 import Smithy
 import SmithyHTTPAPI
+import SmithyHTTPClient
 import XCTest
 import AwsCommonRuntimeKit
+import SmithyTestUtil
 import struct Foundation.URLQueryItem
 @testable import ClientRuntime
 // In Linux, Foundation.URLRequest is moved to FoundationNetworking.

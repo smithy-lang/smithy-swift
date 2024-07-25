@@ -40,6 +40,7 @@ let package = Package(
         .library(name: "SmithyIdentity", targets: ["SmithyIdentity"]),
         .library(name: "SmithyIdentityAPI", targets: ["SmithyIdentityAPI"]),
         .library(name: "SmithyHTTPAPI", targets: ["SmithyHTTPAPI"]),
+        .library(name: "SmithyHTTPClient", targets: ["SmithyHTTPClient"]),
         .library(name: "SmithyHTTPAuth", targets: ["SmithyHTTPAuth"]),
         .library(name: "SmithyHTTPAuthAPI", targets: ["SmithyHTTPAuthAPI"]),
         .library(name: "SmithyEventStreamsAPI", targets: ["SmithyEventStreamsAPI"]),
@@ -75,6 +76,7 @@ let package = Package(
                 "SmithyIdentity",
                 "SmithyIdentityAPI",
                 "SmithyHTTPAPI",
+                "SmithyHTTPClient",
                 "SmithyHTTPAuth",
                 "SmithyHTTPAuthAPI",
                 "SmithyEventStreamsAPI",
@@ -151,12 +153,24 @@ let package = Package(
             dependencies: ["Smithy"]
         ),
         .target(
+            name: "SmithyHTTPClient",
+            dependencies: [
+                "Smithy",
+                "SmithyHTTPAPI",
+                "SmithyStreams",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .target(
             name: "SmithyHTTPAuth",
             dependencies: [
                 "Smithy",
+                "SmithyHTTPAPI",
                 "SmithyHTTPAuthAPI",
                 "SmithyIdentity",
                 "SmithyIdentityAPI",
+                "SmithyChecksumsAPI",
+                "SmithyHTTPClient",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
             ]
         ),
@@ -199,7 +213,7 @@ let package = Package(
                 "Smithy",
                 "SmithyChecksumsAPI",
                 "SmithyStreams",
-                "SmithyHTTPAuth",
+                "SmithyHTTPClient",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
             ]
         ),
@@ -212,8 +226,22 @@ let package = Package(
             resources: [ .process("Resources") ]
         ),
         .testTarget(
+            name: "SmithyHTTPClientTests",
+            dependencies: [
+                "SmithyHTTPClient",
+                "SmithyHTTPAPI",
+                "Smithy",
+                "SmithyTestUtil",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .testTarget(
             name: "SmithyXMLTests",
             dependencies: ["SmithyXML", "ClientRuntime"]
+        ),
+        .testTarget(
+            name: "SmithyHTTPAuthTests",
+            dependencies: ["SmithyHTTPAuth", "SmithyHTTPAPI", "Smithy", "SmithyIdentity", "ClientRuntime"]
         ),
         .testTarget(
             name: "SmithyJSONTests",
