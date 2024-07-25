@@ -21,18 +21,16 @@ open class AuthUtils(
         writer: SwiftWriter,
     ): String {
         val effectiveAuthSchemes = ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service)
-        var authSchemeList = arrayOf<String>()
+        var authSchemeList = mutableListOf<String>()
 
         if (effectiveAuthSchemes.contains(HttpBearerAuthTrait.ID)) {
             authSchemeList += writer.format("\$N()", SmithyHTTPAuthTypes.BearerTokenAuthScheme)
         }
 
-        authSchemeList = addAdditionalSchemes(writer, authSchemeList)
-
-        return "[${authSchemeList.joinToString(", ")}]"
+        return addAdditionalSchemes(writer, authSchemeList).joinToString(prefix = "[", postfix = "]")
     }
 
-    open fun addAdditionalSchemes(writer: SwiftWriter, authSchemeList: Array<String>): Array<String> {
+    open fun addAdditionalSchemes(writer: SwiftWriter, authSchemeList: MutableList<String>): List<String> {
         // Override to add any additional auth schemes supported
         return authSchemeList
     }
