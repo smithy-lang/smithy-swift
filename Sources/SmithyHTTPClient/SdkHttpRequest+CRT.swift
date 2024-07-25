@@ -42,7 +42,7 @@ extension HTTPRequest {
 
 extension HTTPRequest {
 
-    var isChunked: Bool {
+    public var isChunked: Bool {
 
         // Check if body is a stream
         let isStreamBody: Bool
