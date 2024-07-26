@@ -19,9 +19,9 @@ public typealias OpenTelemetryStatus = OpenTelemetryApi.Status
 public final class OTelTracerProvider: TracerProvider {
     private let sdkTracerProvider: TracerProviderSdk
 
-    public init() {
+    public init(spanExporter: SpanExporter) {
         self.sdkTracerProvider = TracerProviderBuilder()
-            .add(spanProcessor: SimpleSpanProcessor(spanExporter: StdoutSpanExporter(isDebug: true)))
+            .add(spanProcessor: SimpleSpanProcessor(spanExporter: spanExporter))
             .with(resource: Resource())
             .build()
     }

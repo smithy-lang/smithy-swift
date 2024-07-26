@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import InMemoryExporter
 import OpenTelemetryApi
 import OpenTelemetrySdk
 import Smithy
@@ -17,13 +18,20 @@ public enum TelemetryProviderOTel {
     /// - loggerProvider: provides SwiftLoggers
     /// - meterProvider: no-op
     /// - tracerProvider: no-op
-    public static let provider: TelemetryProvider = OpenTelemetryProvider()
+    public static let provider: TelemetryProvider = OpenTelemetryProvider(spanExporter: InMemoryExporter())
 
-    fileprivate final class OpenTelemetryProvider: TelemetryProvider {
-        let contextManager: TelemetryContextManager = defaultContextManager
-        let loggerProvider: LoggerProvider = defaultLoggerProvider
-        let meterProvider: MeterProvider = OTelMeterProvider()
-        let tracerProvider: TracerProvider = OTelTracerProvider()
+    public final class OpenTelemetryProvider: TelemetryProvider {
+        public let contextManager: TelemetryContextManager
+        public let loggerProvider: LoggerProvider
+        public let meterProvider: MeterProvider
+        public let tracerProvider: TracerProvider
+
+        public init(spanExporter: SpanExporter) {
+            self.contextManager = defaultContextManager
+            self.loggerProvider = defaultLoggerProvider
+            self.meterProvider = OTelMeterProvider()
+            self.tracerProvider = OTelTracerProvider(spanExporter: spanExporter)
+        }
     }
 }
 
