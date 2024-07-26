@@ -1,6 +1,7 @@
 package software.amazon.smithy.swift.codegen.utils
 
 import software.amazon.smithy.model.knowledge.ServiceIndex
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.config.DefaultProvider
@@ -15,6 +16,10 @@ open class AuthUtils(
         isThrowable = false,
         isAsync = false
     )
+
+    fun isSupportedAuthScheme(authSchemeID: ShapeId): Boolean {
+        return ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service).contains(authSchemeID)
+    }
 
     fun getModeledAuthSchemesSupportedBySDK(
         ctx: ProtocolGenerator.GenerationContext,
