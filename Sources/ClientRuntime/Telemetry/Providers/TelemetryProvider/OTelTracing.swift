@@ -8,7 +8,6 @@
 import OpenTelemetryApi
 import OpenTelemetrySdk
 import Smithy
-import StdoutExporter
 
 public typealias OpenTelemetryTracer = OpenTelemetryApi.Tracer
 public typealias OpenTelemetrySpanKind = OpenTelemetryApi.SpanKind
