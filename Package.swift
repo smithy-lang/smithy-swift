@@ -86,6 +86,7 @@ let package = Package(
                 "SmithyChecksumsAPI",
                 "SmithyChecksums",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+                .product(name: "StdoutExporter", package: "opentelemetry-swift"),
                 .product(name: "OpenTelemetryApi", package: "opentelemetry-swift"),
                 .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift"),
             ],

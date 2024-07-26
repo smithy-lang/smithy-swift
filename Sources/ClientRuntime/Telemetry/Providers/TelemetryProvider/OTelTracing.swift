@@ -8,6 +8,7 @@
 import OpenTelemetryApi
 import OpenTelemetrySdk
 import Smithy
+import StdoutExporter
 
 public typealias OpenTelemetryTracer = OpenTelemetryApi.Tracer
 public typealias OpenTelemetrySpanKind = OpenTelemetryApi.SpanKind
@@ -19,7 +20,10 @@ public final class OTelTracerProvider: TracerProvider {
     private let sdkTracerProvider: TracerProviderSdk
 
     public init() {
-        self.sdkTracerProvider = TracerProviderBuilder().build()
+        self.sdkTracerProvider = TracerProviderBuilder()
+            .add(spanProcessor: SimpleSpanProcessor(spanExporter: StdoutSpanExporter(isDebug: true)))
+            .with(resource: Resource())
+            .build()
     }
 
     public func getTracer(scope: String, attributes: Attributes?) -> any Tracer {
