@@ -1,28 +1,18 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-import class Smithy.Context
+import Smithy
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import AwsCommonRuntimeKit
 import SmithyChecksums
 import SmithyHTTPAPI
 
-public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: Middleware {
+public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput> {
     public let id: String = "ContentMD5"
 
     private let contentMD5HeaderName = "Content-MD5"
 
     public init() {}
-
-    public func handle<H>(context: Context,
-                          input: MInput,
-                          next: H) async throws -> MOutput
-    where H: Handler,
-    Self.MInput == H.Input,
-    Self.MOutput == H.Output {
-        try await addHeaders(builder: input, attributes: context)
-        return try await next.handle(context: context, input: input)
-    }
 
     private func addHeaders(builder: HTTPRequestBuilder, attributes: Context) async throws {
         // Skip MD5 hash if using checksums
@@ -64,9 +54,6 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput>: M
             logger.error("Unhandled case for Content-MD5")
         }
     }
-
-    public typealias MInput = HTTPRequestBuilder
-    public typealias MOutput = OperationOutput<OperationStackOutput>
 }
 
 extension ContentMD5Middleware: HttpInterceptor {

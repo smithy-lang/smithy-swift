@@ -53,7 +53,7 @@ class HTTPResponseBindingOutputGenerator(
                 writer.openBlock(
                     "static func httpOutput(from httpResponse: \$N) async throws -> \$N {",
                     "}",
-                    SmithyHTTPAPITypes.HttpResponse,
+                    SmithyHTTPAPITypes.HTTPResponse,
                     outputSymbol,
                 ) {
                     if (responseBindings.isEmpty()) {

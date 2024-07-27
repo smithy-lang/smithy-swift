@@ -24,9 +24,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProt
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
-import software.amazon.smithy.swift.codegen.middleware.MiddlewarePosition
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
-import software.amazon.smithy.swift.codegen.middleware.MiddlewareStep
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
@@ -39,10 +37,6 @@ class OperationInputBodyMiddleware(
 ) : MiddlewareRenderable {
 
     override val name = "OperationInputBodyMiddleware"
-
-    override val middlewareStep = MiddlewareStep.SERIALIZESTEP
-
-    override val position = MiddlewarePosition.AFTER
 
     override fun render(
         ctx: ProtocolGenerator.GenerationContext,

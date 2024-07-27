@@ -6,6 +6,7 @@
 import SmithyHTTPAPI
 import XCTest
 @testable import ClientRuntime
+import SmithyTestUtil
 
 class HttpClientTests: NetworkingTestUtils {
 

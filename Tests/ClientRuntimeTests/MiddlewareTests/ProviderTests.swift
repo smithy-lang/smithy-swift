@@ -13,6 +13,12 @@ import SmithyTestUtil
 
 class ProviderTests: HttpRequestTestBase {
 
+    func orchestratorBuilder() -> OrchestratorBuilder<MockInput, MockOutput, HTTPRequest, HTTPResponse> {
+        return TestOrchestrator.httpBuilder()
+            .serialize(MockSerializeMiddleware(id: "TestMiddleware", headerName: "TestName", headerValue: "TestValue"))
+            .deserialize(MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
+    }
+
     func testURLPathProvider() {
         var mockInput = MockInput()
         mockInput.value = 3
@@ -26,41 +32,35 @@ class ProviderTests: HttpRequestTestBase {
 
         let context = ContextBuilder().build()
 
-        var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
-        operationStack.initializeStep.intercept(position: .after, middleware: URLPathMiddleware<MockInput, MockOutput>(MockInput.urlPathProvider(_:)))
-        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
-        _ = try await operationStack.handleMiddleware(context: context,
-                                        input: mockInput,
-                                        next: MockHandler { (context, request) in
-
+        let builder = orchestratorBuilder()
+        builder.attributes(context)
+        builder.interceptors.add(URLPathMiddleware<MockInput, MockOutput>(MockInput.urlPathProvider(_:)))
+        builder.deserialize(MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
+        builder.executeRequest({ _, context in
             XCTAssertEqual(context.path, "/3")
-            let httpResponse = HTTPResponse(body: ByteStream.noStream, statusCode: HTTPStatusCode.ok)
-            let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
-            return output
+            return HTTPResponse(body: ByteStream.noStream, statusCode: HTTPStatusCode.ok)
         })
+        _ = try await builder.build().execute(input: mockInput)
     }
 
     func testQueryItemMiddleware() async throws {
         var mockInput = MockInput()
         mockInput.value = 3
 
-        let context = ContextBuilder().build()
+        let context = ContextBuilder().withPath(value: "/").build()
 
-        var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
-        operationStack.serializeStep.intercept(position: .after, middleware: QueryItemMiddleware(MockInput.queryItemProvider(_:)))
-        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
-        _ = try await operationStack.handleMiddleware(context: context,
-                                        input: mockInput,
-                                        next: MockHandler { (context, request) in
-
+        let builder = orchestratorBuilder()
+        builder.attributes(context)
+        builder.serialize(QueryItemMiddleware<MockInput, MockOutput>(MockInput.queryItemProvider(_:)))
+        builder.deserialize(MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
+        builder.executeRequest({ request, context in
             XCTAssert(request.queryItems?.count == 1)
             XCTAssert(request.queryItems?.first(where: { queryItem in
                 queryItem.value == "3"
             }) != nil)
-            let httpResponse = HTTPResponse(body: ByteStream.noStream, statusCode: HTTPStatusCode.ok)
-            let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
-            return output
+            return HTTPResponse(body: ByteStream.noStream, statusCode: HTTPStatusCode.ok)
         })
+        _ = try await builder.build().execute(input: mockInput)
     }
 
     func testHeaderProvider() {
@@ -74,23 +74,19 @@ class ProviderTests: HttpRequestTestBase {
         var mockInput = MockInput()
         mockInput.value = 3
 
-        let context = ContextBuilder().build()
+        let context = ContextBuilder().withPath(value: "/").build()
 
-        var operationStack = OperationStack<MockInput, MockOutput>(id: "testURLPathOperation")
-        operationStack.serializeStep.intercept(position: .after, middleware: HeaderMiddleware(MockInput.headerProvider(_:)))
-        operationStack.deserializeStep.intercept(position: .after, middleware: MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
-        _ = try await operationStack.handleMiddleware(context: context,
-                                        input: mockInput,
-                                        next: MockHandler { (context, request) in
-
-            XCTAssert(request.headers.headers.count == 1)
+        let builder = orchestratorBuilder()
+        builder.attributes(context)
+        builder.serialize(HeaderMiddleware<MockInput, MockOutput>(MockInput.headerProvider(_:)))
+        builder.deserialize(MockDeserializeMiddleware<MockOutput>(id: "TestDeserializeMiddleware", responseClosure: MockOutput.responseClosure(_:)))
+        builder.executeRequest({ (request, context) in
             XCTAssert(request.headers.headers.first(where: { header in
                 header.value == ["3"]
             }) != nil)
-            let httpResponse = HTTPResponse(body: ByteStream.noStream, statusCode: HTTPStatusCode.ok)
-            let output = OperationOutput<MockOutput>(httpResponse: httpResponse)
-            return output
+            return HTTPResponse(body: ByteStream.noStream, statusCode: HTTPStatusCode.ok)
         })
+        _ = try await builder.build().execute(input: mockInput)
     }
 }
 

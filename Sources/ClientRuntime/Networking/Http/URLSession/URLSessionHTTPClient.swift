@@ -579,7 +579,7 @@ public final class URLSessionHTTPClient: HTTPClient {
 
     /// Create a `URLRequest` for the Smithy operation to be performed.
     /// - Parameters:
-    ///   - request: The SDK-native, signed `SdkHttpRequest` ready to be transmitted.
+    ///   - request: The SDK-native, signed `HTTPRequest` ready to be transmitted.
     ///   - httpBodyStream: A Foundation `InputStream` carrying the HTTP body for this request.
     /// - Returns: A `URLRequest` ready to be transmitted by `URLSession` for this operation.
     private func makeURLRequest(from request: HTTPRequest, body: Body) throws -> URLRequest {
@@ -643,7 +643,7 @@ public final class URLSessionHTTPClient: HTTPClient {
 /// Errors that are particular to the URLSession-based Smithy HTTP client.
 public enum URLSessionHTTPClientError: Error {
 
-    /// A URL could not be formed from the `SdkHttpRequest`.
+    /// A URL could not be formed from the `HTTPRequest`.
     /// Please file a bug with aws-sdk-swift if you experience this error.
     case incompleteHTTPRequest
 

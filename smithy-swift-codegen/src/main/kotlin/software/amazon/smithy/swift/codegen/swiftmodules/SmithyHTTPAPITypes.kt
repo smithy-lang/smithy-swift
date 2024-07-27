@@ -15,9 +15,9 @@ object SmithyHTTPAPITypes {
     val HttpClient = runtimeSymbol("HTTPClient", SwiftDeclaration.PROTOCOL)
     val Header = runtimeSymbol("Header", SwiftDeclaration.STRUCT)
     val Headers = runtimeSymbol("Headers", SwiftDeclaration.STRUCT)
-    val SdkHttpRequestBuilder = runtimeSymbol("HTTPRequestBuilder", SwiftDeclaration.CLASS)
-    val SdkHttpRequest = runtimeSymbol("HTTPRequest", SwiftDeclaration.CLASS)
-    val HttpResponse = runtimeSymbol("HTTPResponse", SwiftDeclaration.CLASS)
+    val HTTPRequestBuilder = runtimeSymbol("HTTPRequestBuilder", SwiftDeclaration.CLASS)
+    val HTTPRequest = runtimeSymbol("HTTPRequest", SwiftDeclaration.CLASS)
+    val HTTPResponse = runtimeSymbol("HTTPResponse", SwiftDeclaration.CLASS)
     val HTTPStatusCode = runtimeSymbol("HTTPStatusCode", SwiftDeclaration.ENUM)
 }
 

@@ -26,7 +26,6 @@ private const val HOMEPAGE = "homepage"
 private const val SDK_ID = "sdkId"
 private const val GIT_REPO = "gitRepo"
 private const val SWIFT_VERSION = "swiftVersion"
-private const val USE_INTERCEPTORS = "useInterceptors"
 private const val MERGE_MODELS = "mergeModels"
 private const val COPYRIGHT_NOTICE = "copyrightNotice"
 
@@ -40,7 +39,6 @@ class SwiftSettings(
     val sdkId: String,
     val gitRepo: String,
     val swiftVersion: String,
-    var useInterceptors: Boolean,
     val mergeModels: Boolean,
     val copyrightNotice: String,
 ) {
@@ -69,7 +67,6 @@ class SwiftSettings(
                     HOMEPAGE,
                     GIT_REPO,
                     SWIFT_VERSION,
-                    USE_INTERCEPTORS,
                     MERGE_MODELS,
                     COPYRIGHT_NOTICE,
                 )
@@ -87,7 +84,6 @@ class SwiftSettings(
             val gitRepo = config.expectStringMember(GIT_REPO).value
             val swiftVersion = config.expectStringMember(SWIFT_VERSION).value
             val sdkId = sanitizeSdkId(config.getStringMemberOrDefault(SDK_ID, serviceId.name))
-            val useInterceptors = config.getBooleanMemberOrDefault(USE_INTERCEPTORS)
             val mergeModels = config.getBooleanMemberOrDefault(MERGE_MODELS)
             val copyrightNotice = config.getStringMemberOrDefault(
                 COPYRIGHT_NOTICE,
@@ -104,7 +100,6 @@ class SwiftSettings(
                 sdkId,
                 gitRepo,
                 swiftVersion,
-                useInterceptors,
                 mergeModels,
                 copyrightNotice,
             )
