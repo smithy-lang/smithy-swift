@@ -56,6 +56,7 @@ class SwiftDependency(
         val SMITHY_RETRIES = smithySwiftTargetNamed("SmithyRetries")
         val SMITHY_HTTP_API = smithySwiftTargetNamed("SmithyHTTPAPI")
         val SMITHY_HTTP_AUTH_API = smithySwiftTargetNamed("SmithyHTTPAuthAPI")
+        val SMITHY_HTTP_AUTH = smithySwiftTargetNamed("SmithyHTTPAuth")
         val SMITHY_STREAMS = smithySwiftTargetNamed("SmithyStreams")
         val SMITHY_EVENT_STREAMS_API = smithySwiftTargetNamed("SmithyEventStreamsAPI")
         val SMITHY_EVENT_STREAMS = smithySwiftTargetNamed("SmithyEventStreams")
