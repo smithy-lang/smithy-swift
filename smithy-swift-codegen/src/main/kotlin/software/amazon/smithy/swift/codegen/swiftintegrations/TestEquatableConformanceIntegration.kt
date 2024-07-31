@@ -28,7 +28,7 @@ class TestEquatableConformanceIntegration : SwiftIntegration {
         // SDK, generate Equatable conformance & place it in the protocol test target.
         ctx.model.shapes()
             .filter { it.hasTrait<TestEquatableConformanceTrait>() }
-            .filter { !it.hasTrait<EquatableConformanceTrait>()}
+            .filter { !it.hasTrait<EquatableConformanceTrait>() }
             .forEach { writeEquatableFor(it, ctx, delegator) }
     }
 
