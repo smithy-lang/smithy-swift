@@ -5,24 +5,14 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.model.shapes.DoubleShape
-import software.amazon.smithy.model.shapes.FloatShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.shapes.UnionShape
-import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
-import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTrait
 import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
-import software.amazon.smithy.swift.codegen.model.getNestedShapes
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 /**
  * Generates HTTP protocol unit tests for `httpResponseTest` cases
@@ -119,75 +109,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     protected open fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
-        val nestedShapes = model.getNestedShapes(operation)
-        for (shape in nestedShapes) {
-            when (shape.type) {
-                ShapeType.STRUCTURE -> renderEquatable(shape)
-                ShapeType.UNION -> renderEquatable(shape)
-                else -> {}
-            }
-        }
         writer.write("XCTAssertEqual(actual, expected)")
-    }
-
-    private fun identifier(ctx: ProtocolGenerator.GenerationContext, shape: Shape): String {
-        return "${ctx.service.id}.${shape.id}"
-    }
-
-    private fun renderEquatable(shape: Shape) {
-        if (hasBeenRenderedEquatable.contains(identifier(ctx, shape)) ||
-            shape.hasTrait<EquatableConformanceTrait>()
-        ) { return }
-        hasBeenRenderedEquatable.add(identifier(ctx, shape))
-        val symbol = ctx.symbolProvider.toSymbol(shape)
-        val httpBindingSymbol = Symbol.builder()
-            .definitionFile("Tests/${ctx.settings.moduleName}Tests/models/${symbol.name}+Equatable.swift")
-            .name(symbol.name)
-            .build()
-        ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
-            writer.addImport(ctx.settings.moduleName)
-            writer.addImport(SwiftDependency.SMITHY_TEST_UTIL.target)
-            writer.openBlock("extension \$L: \$N {", "}", symbol.fullName, SwiftTypes.Protocols.Equatable) {
-                writer.write("")
-                writer.openBlock("public static func ==(lhs: \$L, rhs: \$L) -> Bool {", "}", symbol.fullName, symbol.fullName) {
-                    when (shape) {
-                        is StructureShape -> {
-                            shape.members().forEach { member ->
-                                val propertyName = ctx.symbolProvider.toMemberName(member)
-                                val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
-                                val propertyAccessor = "$path$propertyName"
-                                val target = ctx.model.expectShape(member.target)
-                                when (target) {
-                                    is FloatShape, is DoubleShape -> {
-                                        writer.write(
-                                            "if (!floatingPointValuesMatch(lhs: lhs.\$L, rhs: rhs.\$L)) { return false }",
-                                            propertyAccessor,
-                                            propertyAccessor
-                                        )
-                                    }
-                                    else -> {
-                                        writer.write("if lhs.\$L != rhs.\$L { return false }", propertyAccessor, propertyAccessor)
-                                    }
-                                }
-                            }
-                            writer.write("return true")
-                        }
-                        is UnionShape -> {
-                            writer.openBlock("switch (lhs, rhs) {", "}") {
-                                shape.members().forEach { member ->
-                                    val enumCaseName = ctx.symbolProvider.toMemberName(member)
-                                    writer.write("case (.\$L(let lhs), .\$L(let rhs)):", enumCaseName, enumCaseName)
-                                    writer.indent {
-                                        writer.write("return lhs == rhs")
-                                    }
-                                }
-                                writer.write("default: return false")
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpResponseTestCase>() {
@@ -196,5 +118,3 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         }
     }
 }
-
-val hasBeenRenderedEquatable = mutableSetOf<String>()
