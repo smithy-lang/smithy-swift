@@ -10,6 +10,7 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
+import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTrait
 import software.amazon.smithy.swift.codegen.customtraits.TestEquatableConformanceTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
@@ -23,8 +24,11 @@ class TestEquatableConformanceIntegration : SwiftIntegration {
         protocolGenerationContext: ProtocolGenerator.GenerationContext,
         delegator: SwiftDelegator,
     ) {
+        // For shapes that need Equatable conformance for testing and didn't already get it in the
+        // SDK, generate Equatable conformance & place it in the protocol test target.
         ctx.model.shapes()
             .filter { it.hasTrait<TestEquatableConformanceTrait>() }
+            .filter { !it.hasTrait<EquatableConformanceTrait>()}
             .forEach { writeEquatableFor(it, ctx, delegator) }
     }
 
