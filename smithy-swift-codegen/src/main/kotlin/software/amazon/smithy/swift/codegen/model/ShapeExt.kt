@@ -138,15 +138,17 @@ fun Model.getNestedShapes(serviceShape: ServiceShape): Set<Shape> {
         .select(this)
 }
 
+fun Model.getNestedErrors(serviceShape: ServiceShape): Set<StructureShape> {
+    return Selector
+        .parse("service[id=${serviceShape.id}] ~> structure[trait|error]")
+        .select(this)
+        .map { it as StructureShape }
+        .toSet()
+}
+
 fun Model.getNestedShapes(memberShape: MemberShape): Set<Shape> {
     return Selector
         .parse("member [id='${memberShape.id}'] ~> *")
-        .select(this)
-}
-
-fun Model.getNestedShapes(shape: Shape): Set<Shape> {
-    return Selector
-        .parse("operation [id='${shape.id}'] ~> *")
         .select(this)
 }
 
