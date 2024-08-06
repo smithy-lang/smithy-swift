@@ -16,8 +16,10 @@ public typealias OpenTelemetryMeter = OpenTelemetryApi.StableMeter
 public final class OTelMeterProvider: MeterProvider {
     private let sdkMeterProvider: StableMeterProviderSdk
 
-    public init() {
-        self.sdkMeterProvider = StableMeterProviderBuilder().build()
+    public init(metricExporter: StableMetricExporter) {
+        self.sdkMeterProvider = StableMeterProviderBuilder()
+            .registerMetricReader(reader: StablePeriodicMetricReaderBuilder(exporter: metricExporter).build())
+            .build()
     }
 
     /// Provides a Meter.

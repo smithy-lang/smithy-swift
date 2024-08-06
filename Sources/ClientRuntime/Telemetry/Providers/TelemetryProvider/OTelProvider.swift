@@ -9,6 +9,8 @@ import InMemoryExporter
 import OpenTelemetryApi
 import OpenTelemetrySdk
 import Smithy
+import OpenTelemetryProtocolExporterHttp
+import Foundation
 
 /// Namespace for the SDK Telemetry implementation.
 public enum TelemetryProviderOTel {
@@ -18,7 +20,12 @@ public enum TelemetryProviderOTel {
     /// - loggerProvider: provides SwiftLoggers
     /// - meterProvider: no-op
     /// - tracerProvider: no-op
-    public static let provider: TelemetryProvider = OpenTelemetryProvider(spanExporter: InMemoryExporter())
+    public static let provider: TelemetryProvider = OpenTelemetryProvider(
+        spanExporter: InMemoryExporter(),
+        metricExporter: OpenTelemetryProtocolExporterHttp.StableOtlpHTTPMetricExporter(
+            endpoint: URL(string: "http://localhost:4318/v1/traces")!
+        )
+    )
 
     public final class OpenTelemetryProvider: TelemetryProvider {
         public let contextManager: TelemetryContextManager
@@ -26,10 +33,10 @@ public enum TelemetryProviderOTel {
         public let meterProvider: MeterProvider
         public let tracerProvider: TracerProvider
 
-        public init(spanExporter: SpanExporter) {
+        public init(spanExporter: SpanExporter, metricExporter: StableMetricExporter) {
             self.contextManager = defaultContextManager
             self.loggerProvider = defaultLoggerProvider
-            self.meterProvider = OTelMeterProvider()
+            self.meterProvider = OTelMeterProvider(metricExporter: metricExporter)
             self.tracerProvider = OTelTracerProvider(spanExporter: spanExporter)
         }
     }

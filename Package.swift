@@ -89,6 +89,7 @@ let package = Package(
                 .product(name: "InMemoryExporter", package: "opentelemetry-swift"),
                 .product(name: "OpenTelemetryApi", package: "opentelemetry-swift"),
                 .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift"),
+                .product(name: "OpenTelemetryProtocolHttp", package: "opentelemetry-swift"),
             ],
             resources: [
                 .copy("PrivacyInfo.xcprivacy")
