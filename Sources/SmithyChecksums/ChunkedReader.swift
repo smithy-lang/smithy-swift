@@ -114,11 +114,6 @@ public class ChunkedReader {
 
         self.chunkBody = chunk
 
-        // Early exit for empty chunk when already signed
-        if chunk.isEmpty {
-            return nil
-        }
-
         return constructChunk(chunk: chunk, signature: nil)
     }
 
