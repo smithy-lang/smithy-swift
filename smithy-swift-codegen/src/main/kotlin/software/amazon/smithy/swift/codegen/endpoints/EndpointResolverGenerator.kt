@@ -57,7 +57,7 @@ class EndpointResolverGenerator(
             }
             writer.write("")
             writer.openBlock("init() throws {", "}") {
-                writer.write("try self.init(partitions: \$N(), ruleSet: Self.ruleSet)", partitionDefinition)
+                writer.write("try self.init(partitions: \$N.loadAWSPartitionJSON(), ruleSet: Self.ruleSet)", partitionDefinition)
             }
         }
         writer.write("")
