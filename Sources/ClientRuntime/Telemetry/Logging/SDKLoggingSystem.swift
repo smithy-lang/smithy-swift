@@ -11,12 +11,14 @@ public actor SDKLoggingSystem {
     private var isInitialized = false
     private var factories: [String: SDKLogHandlerFactory] = [:]
 
+    public init() {}
+
     public func add(logHandlerFactory: SDKLogHandlerFactory) {
         let label = logHandlerFactory.label
         factories[label] = logHandlerFactory
     }
 
-    public func initialize(defaultLogLevel: SDKLogLevel = .info) async {
+    public func initialize(defaultLogLevel: SDKLogLevel = .error) async {
         if isInitialized { return } else { isInitialized = true }
         let ptr = factories
         LoggingSystem.bootstrap { label in
