@@ -16,6 +16,12 @@ public struct SwiftLogger: LogAgent {
         self.logLevel = LogAgentLevel.info
     }
 
+    public init(label: String, logLevel: LogAgentLevel) {
+        self.label = label
+        self.logger = Logger(label: label)
+        self.logLevel = logLevel
+    }
+
     public var level: LogAgentLevel {
         get {
             return logLevel
@@ -39,7 +45,7 @@ public struct SwiftLogger: LogAgent {
         let mappedDict = metadata?.mapValues { (value) -> Logger.MetadataValue in
             return Logger.MetadataValue.string(value)
         }
-        self.logger.log(level: logLevel.toLoggerLevel(),
+        self.logger.log(level: level.toLoggerLevel(),
                         Logger.Message(stringLiteral: message),
                         metadata: mappedDict,
                         source: source,
