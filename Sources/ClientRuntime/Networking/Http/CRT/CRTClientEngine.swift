@@ -223,7 +223,7 @@ public class CRTClientEngine: HTTPClient {
             // TICK - smithy.client.http.connections.limit
             telemetry.httpMetricsUsage.connectionsLimit = serialExecutor.maxConnectionsPerEndpoint
 
-            let connectionMgrMetrics = try connectionMgr.fetchMetrics()
+            let connectionMgrMetrics = connectionMgr.fetchMetrics()
 
             // TICK - smithy.client.http.connections.usage
             telemetry.httpMetricsUsage.idleConnections = connectionMgrMetrics.availableConcurrency
@@ -286,7 +286,10 @@ public class CRTClientEngine: HTTPClient {
                                         while hasMoreChunks {
                                             // Process the first chunk and determine if there are more to send
                                             hasMoreChunks = try await chunkedStream.chunkedReader.processNextChunk()
-                                            currentChunkBodyIsEmpty = chunkedStream.chunkedReader.getCurrentChunkBody().isEmpty
+                                            currentChunkBodyIsEmpty = chunkedStream
+                                                .chunkedReader
+                                                .getCurrentChunkBody()
+                                                .isEmpty
 
                                             if !hasMoreChunks || currentChunkBodyIsEmpty {
                                                 // Send the final chunk
@@ -433,7 +436,7 @@ public class CRTClientEngine: HTTPClient {
                     // TICK - smithy.client.http.connections.limit
                     telemetry.httpMetricsUsage.connectionsLimit = serialExecutor.maxConnectionsPerEndpoint
 
-                    let connectionMgrMetrics = try connectionMgr.fetchMetrics()
+                    let connectionMgrMetrics = connectionMgr.fetchMetrics()
 
                     // TICK - smithy.client.http.connections.usage
                     telemetry.httpMetricsUsage.idleConnections = connectionMgrMetrics.availableConcurrency
