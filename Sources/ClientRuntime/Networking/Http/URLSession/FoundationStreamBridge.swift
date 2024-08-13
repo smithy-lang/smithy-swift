@@ -281,7 +281,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                 // `writeCount` will be a positive number if bytes were written.
                 // Remove the written bytes from the front of the buffer.
                 if writeCount > 0 {
-                    logger.info("FoundationStreamBridge: wrote \(writeCount) bytes to request body")
+                    logger.debug("FoundationStreamBridge: wrote \(writeCount) bytes to request body")
                     buffer.removeFirst(writeCount)
                     // TICK - smithy.client.http.bytes_sent
                     var attributes = Attributes()

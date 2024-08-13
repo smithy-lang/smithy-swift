@@ -25,10 +25,18 @@ extension Ec2QueryListsInput {
 
     static func write(value: Ec2QueryListsInput?, to writer: SmithyFormURL.Writer) throws {
         guard let value else { return }
-        try writer["ComplexListArg"].writeList(value.complexListArg, memberWritingClosure: Ec2queryprotocolClientTypes.GreetingStruct.write(value:to:), memberNodeInfo: "Member", isFlattened: true)
-        try writer["ListArg"].writeList(value.listArg, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "Member", isFlattened: true)
-        try writer["Hi"].writeList(value.listArgWithXmlName, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "Item", isFlattened: true)
-        try writer["ListArgWithXmlNameMember"].writeList(value.listArgWithXmlNameMember, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "Item", isFlattened: true)
+        if !(value.complexListArg?.isEmpty ?? true) {
+            try writer["ComplexListArg"].writeList(value.complexListArg, memberWritingClosure: Ec2queryprotocolClientTypes.GreetingStruct.write(value:to:), memberNodeInfo: "Member", isFlattened: true)
+        }
+        if !(value.listArg?.isEmpty ?? true) {
+            try writer["ListArg"].writeList(value.listArg, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "Member", isFlattened: true)
+        }
+        if !(value.listArgWithXmlName?.isEmpty ?? true) {
+            try writer["Hi"].writeList(value.listArgWithXmlName, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "Item", isFlattened: true)
+        }
+        if !(value.listArgWithXmlNameMember?.isEmpty ?? true) {
+            try writer["ListArgWithXmlNameMember"].writeList(value.listArgWithXmlNameMember, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "Item", isFlattened: true)
+        }
         try writer["Action"].write("Ec2QueryLists")
         try writer["Version"].write("2020-01-08")
     }

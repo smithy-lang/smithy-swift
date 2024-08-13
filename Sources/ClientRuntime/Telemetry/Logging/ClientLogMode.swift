@@ -6,6 +6,7 @@
 //
 
 public enum ClientLogMode {
+    case none
     case request
     case requestWithBody
     case response
