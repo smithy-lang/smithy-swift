@@ -223,7 +223,7 @@ public class CRTClientEngine: HTTPClient {
             // TICK - smithy.client.http.connections.limit
             telemetry.httpMetricsUsage.connectionsLimit = serialExecutor.maxConnectionsPerEndpoint
 
-            let connectionMgrMetrics = try connectionMgr.fetchMetrics()
+            let connectionMgrMetrics = connectionMgr.fetchMetrics()
 
             // TICK - smithy.client.http.connections.usage
             telemetry.httpMetricsUsage.idleConnections = connectionMgrMetrics.availableConcurrency
@@ -282,11 +282,16 @@ public class CRTClientEngine: HTTPClient {
                                         }
 
                                         var hasMoreChunks = true
+                                        var currentChunkBodyIsEmpty = false
                                         while hasMoreChunks {
                                             // Process the first chunk and determine if there are more to send
                                             hasMoreChunks = try await chunkedStream.chunkedReader.processNextChunk()
+                                            currentChunkBodyIsEmpty = chunkedStream
+                                                .chunkedReader
+                                                .getCurrentChunkBody()
+                                                .isEmpty
 
-                                            if !hasMoreChunks {
+                                            if !hasMoreChunks || currentChunkBodyIsEmpty {
                                                 // Send the final chunk
                                                 let finalChunk = try await chunkedStream.chunkedReader.getFinalChunk()
                                                 // TICK - smithy.client.http.bytes_sent
@@ -299,23 +304,22 @@ public class CRTClientEngine: HTTPClient {
                                                     value: finalChunk.count,
                                                     attributes: bytesSentAttributes,
                                                     context: telemetry.contextManager.current())
+                                                hasMoreChunks = false
                                             } else {
-                                                let currentChunkBody = chunkedStream.chunkedReader.getCurrentChunkBody()
-                                                if !currentChunkBody.isEmpty {
-                                                    // TICK - smithy.client.http.bytes_sent
-                                                    try await http1Stream.writeChunk(
-                                                        chunk: chunkedStream.chunkedReader.getCurrentChunk(),
-                                                        endOfStream: false
-                                                    )
-                                                    var bytesSentAttributes = Attributes()
-                                                    bytesSentAttributes.set(
-                                                        key: HttpMetricsAttributesKeys.serverAddress,
-                                                        value: CRTClientEngine.makeServerAddress(request: request))
-                                                    telemetry.bytesSent.add(
-                                                        value: currentChunkBody.count,
-                                                        attributes: bytesSentAttributes,
-                                                        context: telemetry.contextManager.current())
-                                                }
+                                                let currentChunk = chunkedStream.chunkedReader.getCurrentChunk()
+                                                // TICK - smithy.client.http.bytes_sent
+                                                try await http1Stream.writeChunk(
+                                                    chunk: currentChunk,
+                                                    endOfStream: false
+                                                )
+                                                var bytesSentAttributes = Attributes()
+                                                bytesSentAttributes.set(
+                                                    key: HttpMetricsAttributesKeys.serverAddress,
+                                                    value: CRTClientEngine.makeServerAddress(request: request))
+                                                telemetry.bytesSent.add(
+                                                    value: currentChunk.count,
+                                                    attributes: bytesSentAttributes,
+                                                    context: telemetry.contextManager.current())
                                             }
                                         }
                                     } catch {
@@ -432,7 +436,7 @@ public class CRTClientEngine: HTTPClient {
                     // TICK - smithy.client.http.connections.limit
                     telemetry.httpMetricsUsage.connectionsLimit = serialExecutor.maxConnectionsPerEndpoint
 
-                    let connectionMgrMetrics = try connectionMgr.fetchMetrics()
+                    let connectionMgrMetrics = connectionMgr.fetchMetrics()
 
                     // TICK - smithy.client.http.connections.usage
                     telemetry.httpMetricsUsage.idleConnections = connectionMgrMetrics.availableConcurrency
