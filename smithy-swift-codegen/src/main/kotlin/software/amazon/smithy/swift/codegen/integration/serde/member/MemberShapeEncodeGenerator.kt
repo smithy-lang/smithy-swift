@@ -104,6 +104,12 @@ abstract class MemberShapeEncodeGenerator(
         val listKey = nodeInfoUtils.nodeInfo(member)
         val isFlattened = member.hasTrait<XmlFlattenedTrait>() || ctx.service.awsProtocol == AWSProtocol.EC2_QUERY
         val memberNodeInfo = nodeInfoUtils.nodeInfo(listShape.member)
+        // AWS Query protocol keeps a list member in the request even if it is empty, e.g., List=&Version=2020-01-08
+        // EC2 Query protocol leaves out a list member from the request if it is empty, e.g., Version=2020-01-08
+        if (ctx.service.awsProtocol == AWSProtocol.EC2_QUERY) {
+            writer.write("if !(\$L\$L?.isEmpty ?? true) {", prefix, memberName)
+            writer.indent()
+        }
         writer.write(
             "try writer[\$L].writeList(\$L\$L, memberWritingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
             listKey,
@@ -113,6 +119,10 @@ abstract class MemberShapeEncodeGenerator(
             memberNodeInfo,
             isFlattened
         )
+        if (ctx.service.awsProtocol == AWSProtocol.EC2_QUERY) {
+            writer.dedent()
+            writer.write("}")
+        }
     }
 
     private fun writeMapMember(member: MemberShape, mapShape: MapShape, prefix: String, isSparse: Boolean) {
