@@ -15,7 +15,7 @@ public protocol DefaultClientConfiguration: ClientConfiguration {
 
     /// The log mode to use for client logging.
     ///
-    /// If none is provided, `.request` will be used.
+    /// If none is provided, `.none` will be used.
     var clientLogMode: ClientLogMode { get set }
 
     /// The network endpoint to use.
