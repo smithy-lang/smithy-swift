@@ -1,5 +1,6 @@
 // swift-tools-version:5.9
 
+import Foundation
 import PackageDescription
 
 // Define libxml2 only on Linux, since it causes warnings
@@ -53,7 +54,7 @@ let package = Package(
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.32.0"),
+        .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.33.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
@@ -274,3 +275,12 @@ let package = Package(
         ),
     ].compactMap { $0 }
 )
+
+func addDoccDependency() {
+    guard ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil else { return }
+    package.dependencies += [
+        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0")
+    ]
+}
+
+addDoccDependency()
