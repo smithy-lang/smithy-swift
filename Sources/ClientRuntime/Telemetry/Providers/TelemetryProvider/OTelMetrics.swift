@@ -15,11 +15,20 @@ public typealias OpenTelemetryMeter = OpenTelemetryApi.StableMeter
 // Metrics
 public final class OTelMeterProvider: MeterProvider {
     private let sdkMeterProvider: StableMeterProviderSdk
+    private let metricExporter: StableMetricExporter
+    private let stablePeriodicMetricReader: StablePeriodicMetricReaderSdk
 
     public init(metricExporter: StableMetricExporter) {
+        self.metricExporter = metricExporter
+        self.stablePeriodicMetricReader = StablePeriodicMetricReaderBuilder(exporter: metricExporter).build()
         self.sdkMeterProvider = StableMeterProviderBuilder()
-            .registerMetricReader(reader: StablePeriodicMetricReaderBuilder(exporter: metricExporter).build())
+            .registerView(
+                selector: InstrumentSelector.builder().setInstrument(name: ".*").build(),
+                view: StableView.builder().build()
+            )
+            .registerMetricReader(reader: self.stablePeriodicMetricReader)
             .build()
+        OpenTelemetry.registerStableMeterProvider(meterProvider: self.sdkMeterProvider)
     }
 
     /// Provides a Meter.
@@ -28,7 +37,7 @@ public final class OTelMeterProvider: MeterProvider {
     /// - Parameter attributes: instrumentation scope attributes to associate with emitted telemetry data
     /// - Returns: a Meter
     public func getMeter(scope: String, attributes: Attributes?) -> any Meter {
-        let meter = self.sdkMeterProvider.get(name: scope)
+        let meter = OpenTelemetry.instance.stableMeterProvider!.meterBuilder(name: scope).build()
         return OTelMeter(meter)
     }
 }
