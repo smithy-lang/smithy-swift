@@ -461,7 +461,6 @@ class JMESPathVisitor(
     }
 
     // Returns a subexpression derived from a parent expression.
-    // Only accessing fields is supported.
     override fun visitSubexpression(expression: Subexpression): JMESVariable {
         val leftVar = expression.left!!.accept(this)
         return processRightSubexpression(expression.right, leftVar)
