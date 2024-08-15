@@ -63,7 +63,8 @@ class MiddlewareExecutionGenerator(
             "}",
             ClientRuntimeTypes.Core.HttpInterceptorProvider,
         ) {
-            writer.write("let i: any \$N<\$N, \$N> = provider.create()",
+            writer.write(
+                "let i: any \$N<\$N, \$N> = provider.create()",
                 ClientRuntimeTypes.Core.HttpInterceptor,
                 inputShape,
                 outputShape,
