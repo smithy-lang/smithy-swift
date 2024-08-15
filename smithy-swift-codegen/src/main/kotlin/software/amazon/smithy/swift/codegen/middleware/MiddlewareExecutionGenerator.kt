@@ -58,18 +58,18 @@ class MiddlewareExecutionGenerator(
             }
             """.trimIndent()
         )
-        // Swift can't infer the generic arguments to `create` for some reason
-        writer.write(
-            """
-            config.httpInterceptorProviders.forEach { provider in
-                let i: any ${'$'}N<${'$'}N, ${'$'}N> = provider.create()
-                builder.interceptors.add(i)
-            }
-            """.trimIndent(),
-            ClientRuntimeTypes.Core.HttpInterceptor,
-            inputShape,
-            outputShape,
-        )
+        writer.openBlock(
+            "config.httpInterceptorProviders.forEach { (provider: any \$N) -> Void in",
+            "}",
+            ClientRuntimeTypes.Core.HttpInterceptorProvider,
+        ) {
+            writer.write("let i: any \$N<\$N, \$N> = provider.create()",
+                ClientRuntimeTypes.Core.HttpInterceptor,
+                inputShape,
+                outputShape,
+            )
+            writer.write("builder.interceptors.add(i)")
+        }
 
         renderMiddlewares(ctx, op, operationStackName)
 
