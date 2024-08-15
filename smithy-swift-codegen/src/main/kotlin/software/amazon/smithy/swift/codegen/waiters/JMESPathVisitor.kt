@@ -54,14 +54,12 @@ class JMESPathVisitor(
     val writer: SwiftWriter,
     val currentExpression: JMESVariable,
     val model: Model,
-    val symbolProvider: SymbolProvider
+    val symbolProvider: SymbolProvider,
+    val tempVars: MutableSet<String> = mutableSetOf() // Storage for variable names already used in this scope / expression.
 ) : ExpressionVisitor<JMESVariable> {
 
     // A few methods are provided here for generating unique yet still somewhat
     // descriptive variable names when needed.
-
-    // Storage for variable names already used in this scope / expression.
-    private val tempVars = mutableSetOf<String>()
 
     // Returns a name, based on preferredName, that is guaranteed to be unique among those issued
     // by this visitor.
@@ -152,6 +150,26 @@ class JMESPathVisitor(
                 throw Exception("Accessed subfield on parent: $parentVar")
             }
         }
+    }
+
+    private fun projection(expression: ProjectionExpression, parentVar: JMESVariable): JMESVariable {
+        val left = when (val left = expression.left) {
+            is FieldExpression -> subfield(left, parentVar)
+            is Subexpression -> subexpression(left, parentVar)
+            is ProjectionExpression -> projection(left, parentVar)
+            else -> left.accept(this)
+        }
+        requireNotNull(left.shape) { "projection is operating on nothing" }
+        return mappingBlock(expression.right, left)
+    }
+
+    private fun subexpression(expression: Subexpression, parentVar: JMESVariable): JMESVariable {
+        val left = when (val left = expression.left) {
+            is FieldExpression -> subfield(left, parentVar)
+            is Subexpression -> subexpression(left, parentVar)
+            else -> throw Exception("Subexpression type $left is unsupported")
+        }
+        return processRightSubexpression(expression.right, left)
     }
 
     // Performs a Boolean "and" of the left & right expressions
@@ -262,11 +280,12 @@ class JMESPathVisitor(
         }
     }
 
-    // Implement contains() and length() free functions which are the only 2 JMESPath methods we support.
+    // Implement contains(), length(), and keys() free functions which are the only 3 JMESPath methods we support.
     // contains() returns true if its 1st param is a collection that contains an element equal
     // to the 2nd param, false otherwise.
     // length() returns the number of elements of an array, the number of key/value pairs for a map,
     // or the number of characters for a string.  Zero is returned if the argument is nil.
+    // keys() returns the keys of a map as an array of strings.
     override fun visitFunction(expression: FunctionExpression): JMESVariable {
         when (expression.name) {
             "contains" -> {
@@ -317,6 +336,37 @@ class JMESPathVisitor(
                             subject.name,
                             optionalityMark,
                             nilCoalescense
+                        )
+                    }
+                    else -> throw Exception("length function called on unsupported type: ${currentExpression.shape}")
+                }
+            }
+            "keys" -> {
+                if (expression.arguments.size != 1) {
+                    throw Exception("Unexpected number of arguments to $expression")
+                }
+                val subjectExp = expression.arguments[0]
+                val subject = subjectExp.accept(this)
+
+                return when (subject.shape) {
+                    is MapShape -> {
+                        val memberShape = MemberShape.builder()
+                            .id("smithy.swift.synthetic#KeyList\$member")
+                            .target(stringShape)
+                            .build()
+                        val keyListShape = ListShape.builder()
+                            .id("smithy.swift.synthetic#KeyList")
+                            .member(memberShape)
+                            .build()
+                        val keysVar = JMESVariable("keys", false, keyListShape)
+                        val optionalityMark = "?".takeIf { subject.isOptional } ?: ""
+                        // example output:
+                        // let keys = subjectExp?.keys.map { String($0) }
+                        addTempVar(
+                            keysVar,
+                            "\$L\$L.keys.map { String($$0) }",
+                            subject.name,
+                            optionalityMark
                         )
                     }
                     else -> throw Exception("length function called on unsupported type: ${currentExpression.shape}")
@@ -414,10 +464,14 @@ class JMESPathVisitor(
     // Only accessing fields is supported.
     override fun visitSubexpression(expression: Subexpression): JMESVariable {
         val leftVar = expression.left!!.accept(this)
+        return processRightSubexpression(expression.right, leftVar)
+    }
 
-        return when (val right = expression.right!!) {
-            is FieldExpression -> subfield(right, leftVar)
-            else -> throw Exception("Subexpression type $right is unsupported")
+    private fun processRightSubexpression(expression: JmespathExpression, parentVar: JMESVariable): JMESVariable {
+        return when (expression) {
+            is FieldExpression -> subfield(expression, parentVar)
+            is ProjectionExpression -> projection(expression, parentVar)
+            else -> throw Exception("Subexpression type $expression is unsupported")
         }
     }
 
