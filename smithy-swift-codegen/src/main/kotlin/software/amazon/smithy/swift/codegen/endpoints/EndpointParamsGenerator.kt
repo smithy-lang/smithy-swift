@@ -135,7 +135,7 @@ fun Parameter.toSymbol(): Symbol {
 
     default.ifPresent { defaultValue ->
         if (type.equals(ParameterType.STRING)) {
-           builder.defaultValue("\"$defaultValue\"")
+            builder.defaultValue("\"$defaultValue\"")
         } else if (type.equals(ParameterType.STRING_ARRAY)) {
             val elementsWrappedWithEscapedQuotes = defaultValue.toString()
                 .removeSurrounding("[", "]")
