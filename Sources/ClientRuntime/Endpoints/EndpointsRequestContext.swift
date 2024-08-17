@@ -20,6 +20,10 @@ public class EndpointsRequestContext {
         try crtContext.add(name: name, value: value)
     }
 
+    public func add(name: String, value: [String]?) throws {
+        try crtContext.add(name: name, value: value)
+    }
+
     public func toCRT() -> AwsCommonRuntimeKit.EndpointsRequestContext {
         crtContext
     }
