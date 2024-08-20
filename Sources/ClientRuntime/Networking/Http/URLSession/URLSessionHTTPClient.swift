@@ -198,7 +198,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             guard let tlsOptions = tlsOptions, tlsOptions.useSelfSignedCertificate,
                   let certFile = tlsOptions.certificate,
                   let serverTrust = challenge.protectionSpace.serverTrust else {
-                logger.error(
+                logger.info(
                     "Either TLSOptions not set or missing values! Using default trust store."
                 )
                 completionHandler(.performDefaultHandling, nil)
@@ -206,7 +206,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             }
 
             guard let customRoot = Bundle.main.certificate(named: certFile) else {
-                logger.error("Certificate not found! Using default trust store.")
+                logger.info("Certificate not found! Using default trust store.")
                 completionHandler(.performDefaultHandling, nil)
                 return
             }
@@ -232,7 +232,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             guard let tlsOptions, tlsOptions.useProvidedKeystore,
                   let keystoreName = tlsOptions.pkcs12Path,
                   let keystorePasword = tlsOptions.pkcs12Password else {
-                logger.error(
+                logger.info(
                     "Either TLSOptions not set or missing values! Using default keystore."
                 )
                 completionHandler(.performDefaultHandling, nil)

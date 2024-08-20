@@ -46,6 +46,23 @@ public class HTTPResponse: HTTPURLResponse, ResponseMessage {
         self._statusCode = statusCode
         self.headers = headers
     }
+
+    /**
+     * Replace the response body
+     */
+    public func copy(
+        headers: Headers? = nil,
+        body: ByteStream? = nil,
+        statusCode: HTTPStatusCode? = nil,
+        reason: String? = nil
+    ) -> HTTPResponse {
+        return HTTPResponse(
+            headers: headers ?? self.headers,
+            body: body ?? self.body,
+            statusCode: statusCode ?? self.statusCode,
+            reason: reason ?? self.reason
+        )
+    }
 }
 
 extension HTTPResponse: CustomDebugStringConvertible {

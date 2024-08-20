@@ -54,7 +54,7 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
 
     /// The log mode to use for client logging.
     ///
-    /// If none is provided, `.request` will be used.
+    /// If none is provided, `.none` will be used.
     public var clientLogMode: ClientLogMode
 
     /// The network endpoint to use.
@@ -126,8 +126,8 @@ public extension DefaultSDKRuntimeConfiguration {
 
     /// The log mode to use when none is provided
     ///
-    /// Defaults to `.request`.
-    static var defaultClientLogMode: ClientLogMode { .requestWithoutAuthorizationHeader }
+    /// Defaults to `.none`.
+    static var defaultClientLogMode: ClientLogMode { .none }
 
     static var defaultAuthSchemeResolver: AuthSchemeResolver { DefaultAuthSchemeResolver() }
 }

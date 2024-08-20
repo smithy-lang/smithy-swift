@@ -63,14 +63,29 @@ fun ServiceShape.hasIdempotentTokenMember(model: Model) =
 val Shape.isDeprecated: Boolean
     get() = hasTrait<DeprecatedTrait>()
 
+/**
+ * Test if a shape represents a string enumeration shape
+ */
 val Shape.isEnum: Boolean
     get() = isStringShape && hasTrait<EnumTrait>()
 
+/**
+ * Test if a shape is an error.
+ */
 val Shape.isError: Boolean
     get() = hasTrait<ErrorTrait>()
 
+/**
+ * Test if a shape represents a Kotlin number type
+ */
 val Shape.isNumberShape: Boolean
     get() = this is NumberShape
+
+/**
+ * Test if a shape has the streaming trait applied.
+ */
+val Shape.isStreaming: Boolean
+    get() = hasTrait<StreamingTrait>()
 
 fun Shape.toUpperCamelCase(): String {
     return this.id.name.toUpperCamelCase()
@@ -123,15 +138,17 @@ fun Model.getNestedShapes(serviceShape: ServiceShape): Set<Shape> {
         .select(this)
 }
 
+fun Model.getNestedErrors(serviceShape: ServiceShape): Set<StructureShape> {
+    return Selector
+        .parse("service[id=${serviceShape.id}] ~> structure[trait|error]")
+        .select(this)
+        .map { it as StructureShape }
+        .toSet()
+}
+
 fun Model.getNestedShapes(memberShape: MemberShape): Set<Shape> {
     return Selector
         .parse("member [id='${memberShape.id}'] ~> *")
-        .select(this)
-}
-
-fun Model.getNestedShapes(shape: Shape): Set<Shape> {
-    return Selector
-        .parse("operation [id='${shape.id}'] ~> *")
         .select(this)
 }
 
