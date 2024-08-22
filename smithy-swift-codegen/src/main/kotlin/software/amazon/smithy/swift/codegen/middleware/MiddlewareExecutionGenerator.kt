@@ -84,7 +84,9 @@ class MiddlewareExecutionGenerator(
             let op = builder.attributes(context)
                 .telemetry(${"$"}N(
                     telemetryProvider: config.telemetryProvider,
-                    metricsAttributes: metricsAttributes
+                    metricsAttributes: metricsAttributes,
+                    meterScope: serviceName,
+                    tracerScope: serviceName
                 ))
                 .executeRequest(client)
                 .build()
