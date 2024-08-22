@@ -56,8 +56,8 @@ class EndpointResolverGenerator(
                 writer.write("private static let ruleSet = \"{}\"")
             }
             writer.write("")
-            writer.openBlock("init() throws {", "}") {
-                writer.write("try self.init(partitions: \$N.loadAWSPartitionJSON(), ruleSet: Self.ruleSet)", partitionDefinition)
+            writer.openBlock("init() async throws {", "}") {
+                writer.write("try await self.init(partitions: \$N.loadAWSPartitionJSON(), ruleSet: Self.ruleSet)", partitionDefinition)
             }
         }
         writer.write("")
