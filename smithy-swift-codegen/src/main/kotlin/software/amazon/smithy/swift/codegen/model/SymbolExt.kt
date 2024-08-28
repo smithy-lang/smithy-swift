@@ -42,12 +42,14 @@ fun Symbol.isBoxed(): Boolean {
  * Gets the default value for the symbol if present, else null
  */
 fun Symbol.defaultValue(): String? {
-    // boxed types should always be defaulted to null
-    if (isBoxed()) {
+    val default = getProperty(SymbolProperty.DEFAULT_VALUE_KEY, String::class.java)
+
+    // If shape is boxed (nullable) AND there is no default value set, return nil as default value
+    if (isBoxed() && !default.isPresent) {
         return "nil"
     }
 
-    val default = getProperty(SymbolProperty.DEFAULT_VALUE_KEY, String::class.java)
+    // If default value is present, return default value. Otherwise, return null
     return if (default.isPresent) default.get() else null
 }
 
