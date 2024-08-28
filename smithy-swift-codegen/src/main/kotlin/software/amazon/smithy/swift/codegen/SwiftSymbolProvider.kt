@@ -381,9 +381,13 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
             is TimestampShape -> {
                 resolvedDefaultValue = "Date(timeIntervalSince1970: $defaultValueLiteral)"
             }
+            is FloatShape, is DoubleShape -> {
+                val decimal = ".0".takeIf { !defaultValueLiteral.contains(".") } ?: ""
+                resolvedDefaultValue = defaultValueLiteral + decimal
+            }
             else -> {
                 /*
-                 For: boolean, byte, short, integer, long, bigInteger, float, double, bigDecimal
+                 For: boolean, byte, short, integer, long, bigInteger, bigDecimal
                     just take the literal string value from the trait.
                  */
                 resolvedDefaultValue = defaultValueLiteral
