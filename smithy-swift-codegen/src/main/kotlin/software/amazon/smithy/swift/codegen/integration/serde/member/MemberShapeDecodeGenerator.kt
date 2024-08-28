@@ -160,6 +160,7 @@ open class MemberShapeDecodeGenerator(
         // If member is required but there isn't a default value, use zero-equivalents for error correction
         if (requiredTrait != null && defaultTrait == null) {
             return when (targetShape) {
+                is EnumShape, is IntEnumShape -> " ?? .sdkUnknown(\"\")"
                 is StringShape -> " ?? \"\""
                 is ByteShape, is ShortShape, is IntegerShape, is LongShape -> " ?? 0"
                 is FloatShape, is DoubleShape -> " ?? 0.0"
