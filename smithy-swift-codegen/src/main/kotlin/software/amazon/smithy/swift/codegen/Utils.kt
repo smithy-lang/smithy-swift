@@ -19,7 +19,7 @@ fun String.removeSurroundingBackticks() = removeSurrounding("`", "`")
  */
 fun swiftEnumCaseName(name: String?, value: String, shouldBeEscaped: Boolean = true): String {
     val resolvedName = name ?: value
-    var enumCaseName = CaseUtils.toCamelCase(resolvedName.replace(Regex("[^a-zA-Z0-9_ ]"), ""))
+    var enumCaseName = CaseUtils.toCamelCase(resolvedName.replace(Regex("[^a-zA-Z0-9_ -]"), ""))
     if (!SwiftSymbolProvider.isValidSwiftIdentifier(enumCaseName)) {
         enumCaseName = "_$enumCaseName"
     }

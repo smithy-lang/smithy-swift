@@ -343,7 +343,7 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
                 val enumMemberName = targetShape.enumValues.entries.firstOrNull {
                     it.value == defaultValueLiteral.toInt()
                 }!!.key
-                resolvedDefaultValue = ".${swiftEnumCaseName(enumMemberName, defaultValueLiteral)}"
+                resolvedDefaultValue = ".${swiftEnumCaseName(null, defaultValueLiteral)}"
             }
             is StringShape -> {
                 resolvedDefaultValue = "\"$defaultValueLiteral\"" // Swift string literal
