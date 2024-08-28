@@ -5,13 +5,17 @@
 
 package software.amazon.smithy.swift.codegen.integration.serde.member
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.node.NodeType
 import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.BigDecimalShape
 import software.amazon.smithy.model.shapes.BigIntegerShape
+import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.BooleanShape
 import software.amazon.smithy.model.shapes.ByteShape
+import software.amazon.smithy.model.shapes.DocumentShape
 import software.amazon.smithy.model.shapes.DoubleShape
 import software.amazon.smithy.model.shapes.EnumShape
 import software.amazon.smithy.model.shapes.FloatShape
@@ -30,7 +34,9 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.EnumValueTrait
+import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.SparseTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -88,12 +94,13 @@ open class MemberShapeDecodeGenerator(
         val memberNodeInfo = nodeInfoUtils.nodeInfo(listShape.member)
         val isFlattened = memberShape.hasTrait<XmlFlattenedTrait>()
         return writer.format(
-            "try \$L.\$L(memberReadingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+            "try \$L.\$L(memberReadingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)\$L",
             reader(memberShape, false),
             readMethodName("readList"),
             memberReadingClosure,
             memberNodeInfo,
-            isFlattened
+            isFlattened,
+            default(memberShape)
         )
     }
 
@@ -104,13 +111,14 @@ open class MemberShapeDecodeGenerator(
         val valueNodeInfo = nodeInfoUtils.nodeInfo(mapShape.value)
         val isFlattened = memberShape.hasTrait<XmlFlattenedTrait>()
         return writer.format(
-            "try \$L.\$L(valueReadingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+            "try \$L.\$L(valueReadingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)\$L",
             reader(memberShape, false),
             readMethodName("readMap"),
             valueReadingClosure,
             keyNodeInfo,
             valueNodeInfo,
-            isFlattened
+            isFlattened,
+            default(memberShape)
         )
     }
 
@@ -118,10 +126,11 @@ open class MemberShapeDecodeGenerator(
         val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
         val swiftTimestampFormatCase = TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, timestampShape)
         return writer.format(
-            "try \$L.\$L(format: \$L)",
+            "try \$L.\$L(format: \$L)\$L",
             reader(memberShape, false),
             readMethodName("readTimestamp"),
-            swiftTimestampFormatCase
+            swiftTimestampFormatCase,
+            default(memberShape)
         )
     }
 
@@ -147,6 +156,39 @@ open class MemberShapeDecodeGenerator(
     private fun default(memberShape: MemberShape): String {
         val targetShape = ctx.model.expectShape(memberShape.target)
         val defaultTrait = memberShape.getTrait<DefaultTrait>() ?: targetShape.getTrait<DefaultTrait>()
+        val requiredTrait = memberShape.getTrait<RequiredTrait>()
+        // If member is required but there isn't a default value, use zero-equivalents for error correction
+        if (requiredTrait != null && defaultTrait == null) {
+            return when (targetShape) {
+                is StringShape -> " ?? \"\""
+                is ByteShape, is ShortShape, is IntegerShape, is LongShape -> " ?? 0"
+                is FloatShape, is DoubleShape -> " ?? 0.0"
+                is BooleanShape -> " ?? false"
+                is ListShape -> " ?? []"
+                is MapShape -> " ?? [:]"
+                is TimestampShape -> " ?? Date(timeIntervalSince1970: 0)"
+                is DocumentShape -> {
+                    val underlyingNode = requiredTrait.toNode()
+                    when (underlyingNode.type) {
+                        NodeType.OBJECT -> { " ?? Document.object([:])" }
+                        NodeType.ARRAY -> { " ?? Document.array([])" }
+                        NodeType.BOOLEAN -> { " ?? Document.boolean(false)" }
+                        NodeType.STRING -> { " ?? Document.string(\"\")" }
+                        NodeType.NUMBER -> { " ?? Document.number(0)" }
+                        NodeType.NULL -> { throw CodegenException("Unreachable statement") } // This will never happen
+                    }
+                }
+                is BlobShape -> {
+                    if (targetShape.hasTrait<StreamingTrait>()) {
+                        " ?? ByteStream.data(\"\".data(using: .utf8))"
+                    } else {
+                        " ?? \"\".data(using: .utf8)"
+                    }
+                }
+                // No default provided for other types
+                else -> { "" }
+            }
+        }
         return defaultTrait?.toNode()?.let {
             // If the default value is null, provide no default.
             if (it.isNullNode) { return "" }
@@ -168,6 +210,26 @@ open class MemberShapeDecodeGenerator(
                 is ListShape, is SetShape -> " ?? []"
                 // Maps can only have empty map as default value
                 is MapShape -> " ?? [:]"
+                is TimestampShape -> " ?? Date(timeIntervalSince1970: ${it.expectNumberNode().value})"
+                is DocumentShape -> {
+                    when {
+                        it.isObjectNode -> { " ?? Document.object([:])" }
+                        it.isArrayNode -> { " ?? Document.array([])" }
+                        it.isBooleanNode -> { " ?? Document.boolean(${it.expectBooleanNode().value})" }
+                        it.isStringNode -> { " ?? Document.string(\"${it.expectStringNode().value}\")" }
+                        it.isNumberNode -> { " ?? Document.number(${it.expectNumberNode().value})" }
+                        else -> {
+                            throw CodegenException("Document shape cannot have a default trait of ${it.type} type.")
+                        }
+                    }
+                }
+                is BlobShape -> {
+                    if (targetShape.hasTrait<StreamingTrait>()) {
+                        " ?? ByteStream.data(\"$it\".data(using: .utf8))"
+                    } else {
+                        " ?? \"$it\".data(using: .utf8)"
+                    }
+                }
                 // No default provided for other shapes
                 else -> ""
             }
