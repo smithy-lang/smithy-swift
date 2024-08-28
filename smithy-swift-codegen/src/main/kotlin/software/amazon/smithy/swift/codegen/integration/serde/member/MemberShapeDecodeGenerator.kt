@@ -33,6 +33,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.DefaultTrait
+import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.EnumValueTrait
 import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.SparseTrait
@@ -161,7 +162,14 @@ open class MemberShapeDecodeGenerator(
         if (requiredTrait != null && defaultTrait == null) {
             return when (targetShape) {
                 is EnumShape, is IntEnumShape -> " ?? .sdkUnknown(\"\")"
-                is StringShape -> " ?? \"\""
+                is StringShape -> {
+                    // Enum trait is deprecated but many services still use it in their models
+                    if (targetShape.hasTrait<EnumTrait>()) {
+                        " ?? .sdkUnknown(\"\")"
+                    } else {
+                        " ?? \"\""
+                    }
+                }
                 is ByteShape, is ShortShape, is IntegerShape, is LongShape -> " ?? 0"
                 is FloatShape, is DoubleShape -> " ?? 0.0"
                 is BooleanShape -> " ?? false"
