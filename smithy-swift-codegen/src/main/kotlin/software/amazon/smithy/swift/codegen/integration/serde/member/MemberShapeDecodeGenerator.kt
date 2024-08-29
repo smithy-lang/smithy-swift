@@ -51,6 +51,7 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.swiftEnumCaseName
+import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 
 open class MemberShapeDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -177,23 +178,10 @@ open class MemberShapeDecodeGenerator(
                 is MapShape -> " ?? [:]"
                 is TimestampShape -> " ?? Date(timeIntervalSince1970: 0)"
                 is DocumentShape -> {
-                    val underlyingNode = requiredTrait.toNode()
-                    when (underlyingNode.type) {
-                        NodeType.OBJECT -> { " ?? Document.object([:])" }
-                        NodeType.ARRAY -> { " ?? Document.array([])" }
-                        NodeType.BOOLEAN -> { " ?? Document.boolean(false)" }
-                        NodeType.STRING -> { " ?? Document.string(\"\")" }
-                        NodeType.NUMBER -> { " ?? Document.number(0)" }
-                        NodeType.NULL -> { throw CodegenException("Unreachable statement") } // This will never happen
-                    }
+                    val node = requiredTrait.toNode()
+                    resolveDocumentDefault(true, node)
                 }
-                is BlobShape -> {
-                    if (targetShape.hasTrait<StreamingTrait>()) {
-                        " ?? ByteStream.data(\"\".data(using: .utf8))"
-                    } else {
-                        " ?? \"\".data(using: .utf8)"
-                    }
-                }
+                is BlobShape -> { resolveBlobDefault(targetShape) }
                 // No default provided for other types
                 else -> { "" }
             }
@@ -220,25 +208,8 @@ open class MemberShapeDecodeGenerator(
                 // Maps can only have empty map as default value
                 is MapShape -> " ?? [:]"
                 is TimestampShape -> " ?? Date(timeIntervalSince1970: ${it.expectNumberNode().value})"
-                is DocumentShape -> {
-                    when {
-                        it.isObjectNode -> { " ?? Document.object([:])" }
-                        it.isArrayNode -> { " ?? Document.array([])" }
-                        it.isBooleanNode -> { " ?? Document.boolean(${it.expectBooleanNode().value})" }
-                        it.isStringNode -> { " ?? Document.string(\"${it.expectStringNode().value}\")" }
-                        it.isNumberNode -> { " ?? Document.number(${it.expectNumberNode().value})" }
-                        else -> {
-                            throw CodegenException("Document shape cannot have a default trait of ${it.type} type.")
-                        }
-                    }
-                }
-                is BlobShape -> {
-                    if (targetShape.hasTrait<StreamingTrait>()) {
-                        " ?? ByteStream.data(\"$it\".data(using: .utf8))"
-                    } else {
-                        " ?? \"$it\".data(using: .utf8)"
-                    }
-                }
+                is DocumentShape -> { resolveDocumentDefault(false, it) }
+                is BlobShape -> { resolveBlobDefault(targetShape, it.toString()) }
                 // No default provided for other shapes
                 else -> ""
             }
@@ -262,6 +233,35 @@ open class MemberShapeDecodeGenerator(
             is StringNode -> " ?? .${node.value}"
             is NumberNode -> " ?? .init(rawValue: ${node.value})"
             else -> ""
+        }
+    }
+
+    private fun resolveBlobDefault(targetShape: Shape, value: String = ""): String {
+        writer.addImport(FoundationTypes.Data)
+        return if (targetShape.hasTrait<StreamingTrait>()) {
+            " ?? ByteStream.data(Data(\"$value\".utf8))"
+        } else {
+            " ?? Data(\"$value\".utf8)"
+        }
+    }
+
+    private fun resolveDocumentDefault(useZeroValue: Boolean, node: Node): String {
+        return when {
+            node.isObjectNode -> { " ?? Document.object([:])" }
+            node.isArrayNode -> { " ?? Document.array([])" }
+            node.isStringNode -> {
+                val resolvedValue = "".takeIf { useZeroValue } ?: node.expectStringNode().value
+                " ?? Document.string(\"$resolvedValue\")"
+            }
+            node.isBooleanNode -> {
+                val resolvedValue = "false".takeIf { useZeroValue } ?: node.expectBooleanNode().value
+                " ?? Document.boolean($resolvedValue)"
+            }
+            node.isNumberNode -> {
+                val resolvedValue = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
+                " ?? Document.number($resolvedValue)"
+            }
+            else -> { throw CodegenException("Unreachable statement") } // This will never happen
         }
     }
 }
