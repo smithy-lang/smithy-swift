@@ -7,6 +7,7 @@
 
 import struct Foundation.Data
 
+@_spi(SmithyReadWrite)
 public protocol WireDataProviding: AnyObject {
 
     func data() async throws -> Data

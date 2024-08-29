@@ -13,7 +13,8 @@ import XCTest
 @testable import ClientRuntime
 import SmithyRetriesAPI
 import SmithyRetries
-import SmithyJSON
+@_spi(SmithyReadWrite) import SmithyJSON
+@_spi(SmithyReadWrite) import SmithyReadWrite
 
 class OrchestratorTests: XCTestCase {
     struct TestInput {

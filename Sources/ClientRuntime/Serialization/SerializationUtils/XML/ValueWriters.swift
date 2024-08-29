@@ -5,9 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyReadWrite.SmithyWriter
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
 import enum Smithy.ByteStream
 
+@_spi(SmithyReadWrite)
 extension SmithyWriter {
 
     public func write(_ value: ByteStream?) throws {

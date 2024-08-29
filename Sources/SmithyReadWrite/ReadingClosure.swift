@@ -7,10 +7,12 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 
+@_spi(SmithyReadWrite)
 public typealias ReadingClosure<T, Reader> = (Reader) throws -> T
 
+@_spi(SmithyReadWrite)
 public func mapReadingClosure<T, Reader: SmithyReader>(
     valueReadingClosure: @escaping ReadingClosure<T, Reader>,
     keyNodeInfo: Reader.NodeInfo,
@@ -27,6 +29,7 @@ public func mapReadingClosure<T, Reader: SmithyReader>(
     }
 }
 
+@_spi(SmithyReadWrite)
 public func mapReadingClosure<T, Reader: SmithyReader>(
     valueReadingClosure: @escaping ReadingClosure<T, Reader>,
     keyNodeInfo: Reader.NodeInfo,
@@ -43,6 +46,7 @@ public func mapReadingClosure<T, Reader: SmithyReader>(
     }
 }
 
+@_spi(SmithyReadWrite)
 public func listReadingClosure<T, Reader: SmithyReader>(
     memberReadingClosure: @escaping ReadingClosure<T, Reader>,
     memberNodeInfo: Reader.NodeInfo,
@@ -57,6 +61,7 @@ public func listReadingClosure<T, Reader: SmithyReader>(
     }
 }
 
+@_spi(SmithyReadWrite)
 public func listReadingClosure<T, Reader: SmithyReader>(
     memberReadingClosure: @escaping ReadingClosure<T, Reader>,
     memberNodeInfo: Reader.NodeInfo,
@@ -71,18 +76,21 @@ public func listReadingClosure<T, Reader: SmithyReader>(
     }
 }
 
+@_spi(SmithyReadWrite)
 public func timestampReadingClosure<Reader: SmithyReader>(format: TimestampFormat) -> ReadingClosure<Date, Reader> {
     return { reader in
         try reader.readTimestamp(format: format)
     }
 }
 
+@_spi(SmithyReadWrite)
 public func timestampReadingClosure<Reader: SmithyReader>(format: TimestampFormat) -> ReadingClosure<Date?, Reader> {
     return { reader in
         try reader.readTimestampIfPresent(format: format)
     }
 }
 
+@_spi(SmithyReadWrite)
 public struct ReadingClosureBox<Value: RawRepresentable> {
 
     public init() {}
@@ -104,6 +112,7 @@ public struct ReadingClosureBox<Value: RawRepresentable> {
     }
 }
 
+@_spi(SmithyReadWrite)
 public enum ReadingClosures {
 
     public static func readString<Reader: SmithyReader>(from reader: Reader) throws -> String {
@@ -163,6 +172,7 @@ public enum ReadingClosures {
     }
 }
 
+@_spi(SmithyReadWrite)
 public func optionalFormOf<T, Reader: SmithyReader>(
     readingClosure: @escaping ReadingClosure<T, Reader>
 ) -> ReadingClosure<T?, Reader> {

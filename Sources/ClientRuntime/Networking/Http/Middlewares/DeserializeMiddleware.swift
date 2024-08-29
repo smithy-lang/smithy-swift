@@ -6,7 +6,7 @@
 //
 
 import SmithyHTTPAPI
-import SmithyReadWrite
+@_spi(SmithyReadWrite) import SmithyReadWrite
 import class Foundation.DateFormatter
 import struct Foundation.Locale
 import struct Foundation.TimeInterval
@@ -15,6 +15,7 @@ import struct Foundation.UUID
 import class Smithy.Context
 import protocol Smithy.ResponseMessageDeserializer
 
+@_spi(SmithyReadWrite)
 public struct DeserializeMiddleware<OperationStackOutput> {
     public var id: String = "Deserialize"
     let wireResponseClosure: WireResponseOutputClosure<HTTPResponse, OperationStackOutput>

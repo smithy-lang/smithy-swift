@@ -8,8 +8,9 @@
 import protocol ClientRuntime.BaseError
 import enum ClientRuntime.BaseErrorDecodeError
 import class SmithyHTTPAPI.HTTPResponse
-import class SmithyJSON.Reader
+@_spi(SmithyReadWrite) import class SmithyJSON.Reader
 
+@_spi(SmithyReadWrite)
 public struct TestBaseError: BaseError {
     public let code: String
     public let message: String?

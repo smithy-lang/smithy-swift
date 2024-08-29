@@ -6,5 +6,6 @@
 //
 
 /// Defines a closure that can be used to convert a wire response to an output value.
+@_spi(SmithyReadWrite)
 public typealias WireResponseOutputClosure<WireResponse, OperationStackOutput> =
     (WireResponse) async throws -> OperationStackOutput

@@ -6,9 +6,8 @@
 //
 
 import SmithyHTTPAPI
-import SmithyReadWrite
-import SmithyXML
-import SmithyReadWrite
+@_spi(SmithyReadWrite) import SmithyXML
+@_spi(SmithyReadWrite) import SmithyReadWrite
 import ClientRuntime
 import XCTest
 
