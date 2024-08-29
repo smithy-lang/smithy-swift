@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.swift.codegen.integration.serde.member
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.node.StringNode

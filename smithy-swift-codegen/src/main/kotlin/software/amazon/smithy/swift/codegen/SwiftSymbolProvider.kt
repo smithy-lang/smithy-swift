@@ -344,11 +344,13 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
             is MapShape -> { builder.defaultValue("[:]") }
             is BlobShape -> {
                 builder.putProperty("NeedsDataImport", FoundationTypes.Data)
-                builder.defaultValue(if (targetShape.hasTrait<StreamingTrait>()) {
-                    "ByteStream.data(Data(\"$defaultValueLiteral\".utf8))"
-                } else {
-                    "Data(\"$defaultValueLiteral\".utf8)"
-                })
+                builder.defaultValue(
+                    if (targetShape.hasTrait<StreamingTrait>()) {
+                        "ByteStream.data(Data(\"$defaultValueLiteral\".utf8))"
+                    } else {
+                        "Data(\"$defaultValueLiteral\".utf8)"
+                    }
+                )
             }
             is DocumentShape -> {
                 val node = shape.getTrait<DefaultTrait>()!!.toNode()
