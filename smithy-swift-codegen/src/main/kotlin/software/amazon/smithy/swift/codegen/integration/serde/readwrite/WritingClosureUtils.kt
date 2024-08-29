@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtil
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 
 class WritingClosureUtils(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -68,6 +69,7 @@ class WritingClosureUtils(
                 )
             }
             shape is TimestampShape -> {
+                writer.addImport(SmithyTimestampsTypes.TimestampFormat)
                 writer.format(
                     "\$N(format: \$L)",
                     SmithyReadWriteTypes.timestampWritingClosure,

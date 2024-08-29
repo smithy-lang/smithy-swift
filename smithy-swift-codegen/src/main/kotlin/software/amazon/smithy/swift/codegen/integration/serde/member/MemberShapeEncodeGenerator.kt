@@ -94,6 +94,7 @@ abstract class MemberShapeEncodeGenerator(
     private fun writePropertyMember(memberShape: MemberShape, prefix: String) {
         val propertyNodeInfo = nodeInfoUtils.nodeInfo(memberShape)
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
+        writer.addImport(SmithyReadWriteTypes.SmithyWriter)
         writer.write(
             "try writer[\$L].write(\$L\$L)",
             propertyNodeInfo,

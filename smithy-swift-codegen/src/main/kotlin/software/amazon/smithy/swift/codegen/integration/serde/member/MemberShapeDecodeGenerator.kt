@@ -39,6 +39,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtil
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ReadingClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.expectTrait
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -66,6 +67,7 @@ open class MemberShapeDecodeGenerator(
         }
         val memberName = ctx.symbolProvider.toMemberName(member)
         if (shapeContainingMembers.isUnionShape) {
+            writer.addImport(SmithyReadWriteTypes.SmithyReader)
             writer.write("return .\$L(\$L)", memberName, readExp)
         } else if (shapeContainingMembers.isError) {
             writer.write("value.properties.\$L = \$L", memberName, readExp)
@@ -130,6 +132,7 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun renderMemberExp(memberShape: MemberShape, isPayload: Boolean): String {
+        writer.addImport(SmithyReadWriteTypes.SmithyReader)
         return writer.format(
             "try \$L.\$L()\$L",
             reader(memberShape, isPayload),
