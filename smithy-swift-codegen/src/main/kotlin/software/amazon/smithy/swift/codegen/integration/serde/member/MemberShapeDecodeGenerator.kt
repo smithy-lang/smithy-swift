@@ -39,7 +39,6 @@ import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtil
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ReadingClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.expectTrait
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
