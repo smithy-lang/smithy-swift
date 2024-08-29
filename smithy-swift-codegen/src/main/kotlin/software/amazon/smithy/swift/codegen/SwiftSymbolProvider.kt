@@ -13,6 +13,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
+import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.BigDecimalShape
 import software.amazon.smithy.model.shapes.BigIntegerShape
 import software.amazon.smithy.model.shapes.BlobShape
@@ -305,7 +306,7 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
      * There exist default value restrictions for the following shapes:
      *  - enum: can be set to any valid string value of the enum.
      *  - intEnum: can be set to any valid integer value of the enum.
-     *  - document: can be set to null, `true, false, string, numbers, an empty list, or an empty map.
+     *  - document: can be set to null, true, false, string, numbers, an empty list, or an empty map.
      *  - list: can only be set to an empty list.
      *  - map: can only be set to an empty map.
      */
@@ -319,9 +320,6 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         // If default value is "null", it is explicit notation for no default value. Return unmodified builder.
         if (defaultValueLiteral.equals("null")) { return builder }
 
-        // The return value
-        var resolvedDefaultValue = ""
-
         // The current shape may be a member shape or a root level shape.
         val targetShape = when (shape) {
             is MemberShape -> {
@@ -332,72 +330,51 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
             else -> { shape }
         }
 
-        when (targetShape) {
-            is ListShape -> {
-                resolvedDefaultValue = "[]" // Empty list is the only valid default value
-            }
-            is EnumShape -> {
-                resolvedDefaultValue = ".${swiftEnumCaseName(null, defaultValueLiteral)}"
-            }
+        return when (targetShape) {
+            is ListShape -> { builder.defaultValue("[]") }
+            is EnumShape -> { builder.defaultValue(".${swiftEnumCaseName(null, defaultValueLiteral)}") }
             is IntEnumShape -> {
                 // Get the corresponding enum member name (enum case name) for the int value from default trait
                 val enumMemberName = targetShape.enumValues.entries.firstOrNull {
                     it.value == defaultValueLiteral.toInt()
                 }!!.key
-                resolvedDefaultValue = ".${swiftEnumCaseName(enumMemberName, defaultValueLiteral)}"
+                builder.defaultValue(".${swiftEnumCaseName(enumMemberName, defaultValueLiteral)}")
             }
-            is StringShape -> {
-                resolvedDefaultValue = "\"$defaultValueLiteral\"" // Swift string literal
-            }
-            is MapShape -> {
-                resolvedDefaultValue = "[:]" // Empty dictionary is the only valid default value
-            }
+            is StringShape -> { builder.defaultValue("\"$defaultValueLiteral\"") }
+            is MapShape -> { builder.defaultValue("[:]") }
             is BlobShape -> {
                 builder.putProperty("NeedsDataImport", FoundationTypes.Data)
-                resolvedDefaultValue = if (targetShape.hasTrait<StreamingTrait>()) {
+                builder.defaultValue(if (targetShape.hasTrait<StreamingTrait>()) {
                     "ByteStream.data(Data(\"$defaultValueLiteral\".utf8))"
                 } else {
                     "Data(\"$defaultValueLiteral\".utf8)"
-                }
+                })
             }
             is DocumentShape -> {
                 val node = shape.getTrait<DefaultTrait>()!!.toNode()
-                when {
-                    node.isObjectNode -> {
-                        resolvedDefaultValue = "Document.object([:])" // Empty map is the only valid default value
-                    }
-                    node.isArrayNode -> {
-                        resolvedDefaultValue = "Document.array([])" // Empty array is the only valid default value
-                    }
-                    node.isBooleanNode -> {
-                        resolvedDefaultValue = "Document.boolean($defaultValueLiteral)"
-                    }
-                    node.isStringNode -> {
-                        resolvedDefaultValue = "Document.string(\"$defaultValueLiteral\")"
-                    }
-                    node.isNumberNode -> {
-                        resolvedDefaultValue = "Document.number($defaultValueLiteral)"
-                    }
-                }
+                handleDocumentDefaultValue(defaultValueLiteral, node, builder)
             }
-            is TimestampShape -> {
-                resolvedDefaultValue = "Date(timeIntervalSince1970: $defaultValueLiteral)"
-            }
+            is TimestampShape -> { builder.defaultValue("Date(timeIntervalSince1970: $defaultValueLiteral)") }
             is FloatShape, is DoubleShape -> {
                 val decimal = ".0".takeIf { !defaultValueLiteral.contains(".") } ?: ""
-                resolvedDefaultValue = defaultValueLiteral + decimal
+                builder.defaultValue(defaultValueLiteral + decimal)
             }
-            else -> {
-                /*
-                 For: boolean, byte, short, integer, long, bigInteger, bigDecimal
-                    just take the literal string value from the trait.
-                 */
-                resolvedDefaultValue = defaultValueLiteral
-            }
+            // For: boolean, byte, short, integer, long, bigInteger, bigDecimal,
+            //      just take the literal string value from the trait.
+            else -> { builder.defaultValue(defaultValueLiteral) }
         }
+    }
 
-        // Return Symbol.Builder with resolved default value saved to Symbol.Builder's property bag
-        return builder.defaultValue(resolvedDefaultValue)
+    // Document: default value can be set to null, true, false, string, numbers, an empty list, or an empty map.
+    private fun handleDocumentDefaultValue(literal: String, node: Node, builder: Symbol.Builder): Symbol.Builder {
+        return when {
+            node.isObjectNode -> { builder.defaultValue("Document.object([:])") }
+            node.isArrayNode -> { builder.defaultValue("Document.array([])") }
+            node.isBooleanNode -> { builder.defaultValue("Document.boolean($literal)") }
+            node.isStringNode -> { builder.defaultValue("Document.string(\"$literal\")") }
+            node.isNumberNode -> { builder.defaultValue("Document.number($literal)") }
+            else -> { builder }
+        }
     }
 
     /**

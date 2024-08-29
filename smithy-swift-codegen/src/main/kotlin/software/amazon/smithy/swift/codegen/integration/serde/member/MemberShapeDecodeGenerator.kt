@@ -260,7 +260,7 @@ open class MemberShapeDecodeGenerator(
                 val resolvedValue = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
                 " ?? Document.number($resolvedValue)"
             }
-            else -> { throw CodegenException("Unreachable statement") } // This will never happen
+            else -> { return "" } // null node type means no default value but explicit
         }
     }
 }
