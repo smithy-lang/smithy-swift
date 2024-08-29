@@ -11,6 +11,8 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
  * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
  */
 object SmithyReadWriteTypes {
+    val SmithyReader = runtimeSymbol("SmithyReader", SwiftDeclaration.PROTOCOL)
+    val SmithyWriter = runtimeSymbol("SmithyWriter", SwiftDeclaration.PROTOCOL)
     val Document = runtimeSymbol("Document", SwiftDeclaration.ENUM, null)
     val ReaderError = runtimeSymbol("ReaderError", SwiftDeclaration.ENUM, null)
     val mapWritingClosure = runtimeSymbol("mapWritingClosure", SwiftDeclaration.FUNC)

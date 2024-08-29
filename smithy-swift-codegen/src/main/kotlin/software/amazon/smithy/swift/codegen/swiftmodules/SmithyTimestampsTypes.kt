@@ -10,6 +10,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object SmithyTimestampsTypes {
     val TimestampFormatter = runtimeSymbol("TimestampFormatter", SwiftDeclaration.STRUCT)
+    val TimestampFormat = runtimeSymbol("TimestampFormat", SwiftDeclaration.ENUM)
 }
 
 private fun runtimeSymbol(

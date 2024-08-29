@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
@@ -193,6 +194,7 @@ class MessageMarshallableGenerator(
         val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.responseWireProtocol)
         val rootNodeInfo = nodeInfoUtils.nodeInfo(memberShape, true)
         val valueWritingClosure = WritingClosureUtils(ctx, writer).writingClosure(memberShape)
+        writer.addImport(SmithyReadWriteTypes.SmithyReader)
         writer.write(
             "payload = try \$N.write(value.\$L, rootNodeInfo: \$L, with: \$L)",
             ctx.service.writerSymbol,

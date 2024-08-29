@@ -23,7 +23,7 @@ object ClientRuntimeTypes {
         val ContentLengthMiddleware = runtimeSymbol("ContentLengthMiddleware", SwiftDeclaration.STRUCT)
         val ContentTypeMiddleware = runtimeSymbol("ContentTypeMiddleware", SwiftDeclaration.STRUCT)
         val ContentMD5Middleware = runtimeSymbol("ContentMD5Middleware", SwiftDeclaration.STRUCT)
-        val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware", SwiftDeclaration.STRUCT)
+        val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware", SwiftDeclaration.STRUCT, "SmithyReadWrite")
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware", SwiftDeclaration.STRUCT)
         val URLHostMiddleware = runtimeSymbol("URLHostMiddleware", SwiftDeclaration.STRUCT)
         val URLPathMiddleware = runtimeSymbol("URLPathMiddleware", SwiftDeclaration.STRUCT)
@@ -33,7 +33,7 @@ object ClientRuntimeTypes {
             runtimeSymbol("IdempotencyTokenMiddleware", SwiftDeclaration.STRUCT)
         val SignerMiddleware = runtimeSymbol("SignerMiddleware", SwiftDeclaration.STRUCT)
         val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware", SwiftDeclaration.STRUCT)
-        val BodyMiddleware = runtimeSymbol("BodyMiddleware", SwiftDeclaration.STRUCT)
+        val BodyMiddleware = runtimeSymbol("BodyMiddleware", SwiftDeclaration.STRUCT, "SmithyReadWrite")
         val PayloadBodyMiddleware = runtimeSymbol("PayloadBodyMiddleware", SwiftDeclaration.STRUCT)
         val EventStreamBodyMiddleware = runtimeSymbol("EventStreamBodyMiddleware", SwiftDeclaration.STRUCT)
         val BlobStreamBodyMiddleware = runtimeSymbol("BlobStreamBodyMiddleware", SwiftDeclaration.STRUCT)
@@ -94,11 +94,15 @@ object ClientRuntimeTypes {
     }
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration,
+    spiName: String? = null,
+): Symbol = SwiftSymbol.make(
     name,
     declaration,
     SwiftDependency.CLIENT_RUNTIME,
-    null,
+    spiName,
 )
 
 private fun runtimeSymbolWithoutNamespace(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(

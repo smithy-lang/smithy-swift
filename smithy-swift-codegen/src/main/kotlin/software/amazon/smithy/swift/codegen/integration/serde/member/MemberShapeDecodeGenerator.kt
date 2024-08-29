@@ -44,6 +44,8 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.swiftEnumCaseName
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 
 open class MemberShapeDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -74,6 +76,7 @@ open class MemberShapeDecodeGenerator(
 
     private fun renderStructOrUnionExp(memberShape: MemberShape, isPayload: Boolean): String {
         val readingClosure = readingClosureUtils.readingClosure(memberShape)
+        writer.addImport(SmithyReadWriteTypes.SmithyReader)
         return writer.format(
             "try \$L.\$L(with: \$L)",
             reader(memberShape, isPayload),
@@ -117,6 +120,7 @@ open class MemberShapeDecodeGenerator(
     private fun renderTimestampExp(memberShape: MemberShape, timestampShape: TimestampShape): String {
         val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
         val swiftTimestampFormatCase = TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, timestampShape)
+        writer.addImport(SmithyTimestampsTypes.TimestampFormat)
         return writer.format(
             "try \$L.\$L(format: \$L)",
             reader(memberShape, false),

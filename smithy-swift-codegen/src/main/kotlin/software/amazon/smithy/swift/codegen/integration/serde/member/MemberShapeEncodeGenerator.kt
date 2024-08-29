@@ -23,6 +23,8 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProto
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 
 abstract class MemberShapeEncodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -64,6 +66,7 @@ abstract class MemberShapeEncodeGenerator(
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val propertyKey = nodeInfoUtils.nodeInfo(memberShape)
         val writingClosure = writingClosureUtils.writingClosure(memberShape)
+        writer.addImport(SmithyReadWriteTypes.SmithyWriter)
         writer.write(
             "try writer[\$L].write(\$L\$L, with: \$L)",
             propertyKey,
@@ -78,6 +81,7 @@ abstract class MemberShapeEncodeGenerator(
         val timestampKey = nodeInfoUtils.nodeInfo(memberShape)
         val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
         val swiftTimestampFormatCase = TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, timestampShape)
+        writer.addImport(SmithyTimestampsTypes.TimestampFormat)
         writer.write(
             "try writer[\$L].writeTimestamp(\$L\$L, format: \$L)",
             timestampKey,
