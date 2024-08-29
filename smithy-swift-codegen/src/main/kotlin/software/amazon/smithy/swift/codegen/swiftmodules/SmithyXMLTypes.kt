@@ -12,9 +12,12 @@ object SmithyXMLTypes {
     val Reader = runtimeSymbol("Reader", SwiftDeclaration.CLASS)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration,
+): Symbol = SwiftSymbol.make(
     name,
     declaration,
     SwiftDependency.SMITHY_XML,
-    null,
+    "SmithyReadWrite",
 )

@@ -12,9 +12,12 @@ object SmithyTimestampsTypes {
     val TimestampFormatter = runtimeSymbol("TimestampFormatter", SwiftDeclaration.STRUCT)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration
+): Symbol = SwiftSymbol.make(
     name,
     declaration,
     SwiftDependency.SMITHY_TIMESTAMPS,
-    null,
+    "SmithyTimestamps",
 )
