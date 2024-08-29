@@ -57,6 +57,7 @@ import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
+import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 import software.amazon.smithy.swift.codegen.utils.clientName
@@ -343,7 +344,7 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
                 val enumMemberName = targetShape.enumValues.entries.firstOrNull {
                     it.value == defaultValueLiteral.toInt()
                 }!!.key
-                resolvedDefaultValue = ".${swiftEnumCaseName(null, defaultValueLiteral)}"
+                resolvedDefaultValue = ".${swiftEnumCaseName(enumMemberName, defaultValueLiteral)}"
             }
             is StringShape -> {
                 resolvedDefaultValue = "\"$defaultValueLiteral\"" // Swift string literal
@@ -352,10 +353,11 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
                 resolvedDefaultValue = "[:]" // Empty dictionary is the only valid default value
             }
             is BlobShape -> {
+                builder.putProperty("NeedsDataImport", FoundationTypes.Data)
                 resolvedDefaultValue = if (targetShape.hasTrait<StreamingTrait>()) {
-                    "ByteStream.data(\"$defaultValueLiteral\".data(using: .utf8))"
+                    "ByteStream.data(Data(\"$defaultValueLiteral\".utf8))"
                 } else {
-                    "\"$defaultValueLiteral\".data(using: .utf8)"
+                    "Data(\"$defaultValueLiteral\".utf8)"
                 }
             }
             is DocumentShape -> {
