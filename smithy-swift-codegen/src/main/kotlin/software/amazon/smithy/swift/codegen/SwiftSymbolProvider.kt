@@ -311,12 +311,12 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
      *  - map: can only be set to an empty map.
      */
     private fun handleDefaultValue(shape: Shape, builder: Symbol.Builder): Symbol.Builder {
-        // Skip if the current shape does not have a default trait or if it's a member shape with @clientOptional trait
-        if (!shape.hasTrait<DefaultTrait>() || shape.hasTrait<ClientOptionalTrait>()) { return builder }
-        // Retrieve literal default value as a string from default trait
-        val defaultValueLiteral = shape.getTrait<DefaultTrait>()!!.toNode().toString()
+        // Skip if the current shape is a member shape with @clientOptional trait
+        if (shape.hasTrait<ClientOptionalTrait>()) return builder
+        // Skip if the current shape doesn't have default trait. Otherwise, get the default value as literal string
+        val defaultValueLiteral = shape.getTrait<DefaultTrait>()?.toNode()?.toString() ?: return builder
         // If default value is "null", it is explicit notation for no default value. Return unmodified builder.
-        if (defaultValueLiteral == "null") { return builder }
+        if (defaultValueLiteral == "null") return builder
 
         // The current shape may be a member shape or a root level shape.
         val targetShape = when (shape) {
