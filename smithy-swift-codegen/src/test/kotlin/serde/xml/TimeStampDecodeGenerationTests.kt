@@ -25,10 +25,10 @@ extension XmlTimestampsOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlTimestampsOutput()
-        value.dateTime = try reader["dateTime"].readTimestampIfPresent(format: .dateTime)
-        value.epochSeconds = try reader["epochSeconds"].readTimestampIfPresent(format: .epochSeconds)
-        value.httpDate = try reader["httpDate"].readTimestampIfPresent(format: .httpDate)
-        value.normal = try reader["normal"].readTimestampIfPresent(format: .dateTime)
+        value.dateTime = try reader["dateTime"].readTimestampIfPresent(format: SmithyTimestamps.TimestampFormat.dateTime)
+        value.epochSeconds = try reader["epochSeconds"].readTimestampIfPresent(format: SmithyTimestamps.TimestampFormat.epochSeconds)
+        value.httpDate = try reader["httpDate"].readTimestampIfPresent(format: SmithyTimestamps.TimestampFormat.httpDate)
+        value.normal = try reader["normal"].readTimestampIfPresent(format: SmithyTimestamps.TimestampFormat.dateTime)
         return value
     }
 }
@@ -48,7 +48,7 @@ extension XmlTimestampsNestedOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlTimestampsNestedOutput()
-        value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: SmithyReadWrite.listReadingClosure(memberReadingClosure: SmithyReadWrite.timestampReadingClosure(format: .epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: SmithyReadWrite.listReadingClosure(memberReadingClosure: SmithyReadWrite.timestampReadingClosure(format: SmithyTimestamps.TimestampFormat.epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
         return value
     }
 }
@@ -68,7 +68,7 @@ extension XmlTimestampsNestedHTTPDateOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlTimestampsNestedHTTPDateOutput()
-        value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: SmithyReadWrite.listReadingClosure(memberReadingClosure: SmithyReadWrite.timestampReadingClosure(format: .httpDate), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: SmithyReadWrite.listReadingClosure(memberReadingClosure: SmithyReadWrite.timestampReadingClosure(format: SmithyTimestamps.TimestampFormat.httpDate), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
         return value
     }
 }
@@ -88,7 +88,7 @@ extension XmlTimestampsNestedXmlNameOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlTimestampsNestedXmlNameOutput()
-        value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: SmithyReadWrite.listReadingClosure(memberReadingClosure: SmithyReadWrite.timestampReadingClosure(format: .epochSeconds), memberNodeInfo: "nestedTag2", isFlattened: false), memberNodeInfo: "nestedTag1", isFlattened: false)
+        value.nestedTimestampList = try reader["nestedTimestampList"].readListIfPresent(memberReadingClosure: SmithyReadWrite.listReadingClosure(memberReadingClosure: SmithyReadWrite.timestampReadingClosure(format: SmithyTimestamps.TimestampFormat.epochSeconds), memberNodeInfo: "nestedTag2", isFlattened: false), memberNodeInfo: "nestedTag1", isFlattened: false)
         return value
     }
 }

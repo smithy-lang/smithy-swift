@@ -153,7 +153,7 @@ extension XmlTimestampsNestedFlattenedInput {
 
     static func write(value: XmlTimestampsNestedFlattenedInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: .init("nestedMember", namespaceDef: .init(prefix: "baz", uri: "http://baz.com")), isFlattened: true)
+        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: SmithyTimestamps.TimestampFormat.epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: .init("nestedMember", namespaceDef: .init(prefix: "baz", uri: "http://baz.com")), isFlattened: true)
     }
 }
 """

@@ -95,12 +95,12 @@ extension TimestampInputInput {
 
     static func write(value: TimestampInputInput?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
-        try writer["dateTime"].writeTimestamp(value.dateTime, format: .dateTime)
-        try writer["epochSeconds"].writeTimestamp(value.epochSeconds, format: .epochSeconds)
-        try writer["httpDate"].writeTimestamp(value.httpDate, format: .httpDate)
-        try writer["inheritedTimestamp"].writeTimestamp(value.inheritedTimestamp, format: .httpDate)
-        try writer["normal"].writeTimestamp(value.normal, format: .epochSeconds)
-        try writer["timestampList"].writeList(value.timestampList, memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .dateTime), memberNodeInfo: "member", isFlattened: false)
+        try writer["dateTime"].writeTimestamp(value.dateTime, format: SmithyTimestamps.TimestampFormat.dateTime)
+        try writer["epochSeconds"].writeTimestamp(value.epochSeconds, format: SmithyTimestamps.TimestampFormat.epochSeconds)
+        try writer["httpDate"].writeTimestamp(value.httpDate, format: SmithyTimestamps.TimestampFormat.httpDate)
+        try writer["inheritedTimestamp"].writeTimestamp(value.inheritedTimestamp, format: SmithyTimestamps.TimestampFormat.httpDate)
+        try writer["normal"].writeTimestamp(value.normal, format: SmithyTimestamps.TimestampFormat.epochSeconds)
+        try writer["timestampList"].writeList(value.timestampList, memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: SmithyTimestamps.TimestampFormat.dateTime), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """
@@ -117,7 +117,7 @@ extension MapInputInput {
     static func write(value: MapInputInput?, to writer: SmithyJSON.Writer) throws {
         guard let value else { return }
         try writer["blobMap"].writeMap(value.blobMap, valueWritingClosure: SmithyReadWrite.WritingClosures.writeData(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
-        try writer["dateMap"].writeMap(value.dateMap, valueWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .httpDate), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["dateMap"].writeMap(value.dateMap, valueWritingClosure: SmithyReadWrite.timestampWritingClosure(format: SmithyTimestamps.TimestampFormat.httpDate), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["enumMap"].writeMap(value.enumMap, valueWritingClosure: SmithyReadWrite.WritingClosureBox<MyEnum>().write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["intMap"].writeMap(value.intMap, valueWritingClosure: SmithyReadWrite.WritingClosures.writeInt(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         try writer["structMap"].writeMap(value.structMap, valueWritingClosure: ReachableOnlyThroughMap.write(value:to:), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
@@ -229,7 +229,7 @@ extension JsonListsInput {
         try writer["sparseStringList"].writeList(value.sparseStringList, memberWritingClosure: SmithyReadWrite.sparseFormOf(writingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:)), memberNodeInfo: "member", isFlattened: false)
         try writer["stringList"].writeList(value.stringList, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "member", isFlattened: false)
         try writer["stringSet"].writeList(value.stringSet, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "member", isFlattened: false)
-        try writer["timestampList"].writeList(value.timestampList, memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .dateTime), memberNodeInfo: "member", isFlattened: false)
+        try writer["timestampList"].writeList(value.timestampList, memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: SmithyTimestamps.TimestampFormat.dateTime), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """
