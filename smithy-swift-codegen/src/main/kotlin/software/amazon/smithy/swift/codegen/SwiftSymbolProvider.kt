@@ -331,8 +331,8 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         }
 
         return when (targetShape) {
-            is ListShape -> { builder.defaultValue("[]") }
-            is EnumShape -> { builder.defaultValue(".${swiftEnumCaseName(null, defaultValueLiteral)}") }
+            is ListShape -> builder.defaultValue("[]")
+            is EnumShape -> builder.defaultValue(".${swiftEnumCaseName(null, defaultValueLiteral)}")
             is IntEnumShape -> {
                 // Get the corresponding enum member name (enum case name) for the int value from default trait
                 val enumMemberName = targetShape.enumValues.entries.firstOrNull {
@@ -340,8 +340,8 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
                 }!!.key
                 builder.defaultValue(".${swiftEnumCaseName(enumMemberName, defaultValueLiteral)}")
             }
-            is StringShape -> { builder.defaultValue("\"$defaultValueLiteral\"") }
-            is MapShape -> { builder.defaultValue("[:]") }
+            is StringShape -> builder.defaultValue("\"$defaultValueLiteral\"")
+            is MapShape -> builder.defaultValue("[:]")
             is BlobShape -> {
                 builder.putProperty("NeedsDataImport", FoundationTypes.Data)
                 builder.defaultValue(
@@ -356,26 +356,26 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
                 val node = shape.getTrait<DefaultTrait>()!!.toNode()
                 handleDocumentDefaultValue(defaultValueLiteral, node, builder)
             }
-            is TimestampShape -> { builder.defaultValue("Date(timeIntervalSince1970: $defaultValueLiteral)") }
+            is TimestampShape -> builder.defaultValue("Date(timeIntervalSince1970: $defaultValueLiteral)")
             is FloatShape, is DoubleShape -> {
                 val decimal = ".0".takeIf { !defaultValueLiteral.contains(".") } ?: ""
                 builder.defaultValue(defaultValueLiteral + decimal)
             }
             // For: boolean, byte, short, integer, long, bigInteger, bigDecimal,
             //      just take the literal string value from the trait.
-            else -> { builder.defaultValue(defaultValueLiteral) }
+            else -> builder.defaultValue(defaultValueLiteral)
         }
     }
 
     // Document: default value can be set to null, true, false, string, numbers, an empty list, or an empty map.
     private fun handleDocumentDefaultValue(literal: String, node: Node, builder: Symbol.Builder): Symbol.Builder {
         return when {
-            node.isObjectNode -> { builder.defaultValue("Document.object([:])") }
-            node.isArrayNode -> { builder.defaultValue("Document.array([])") }
-            node.isBooleanNode -> { builder.defaultValue("Document.boolean($literal)") }
-            node.isStringNode -> { builder.defaultValue("Document.string(\"$literal\")") }
-            node.isNumberNode -> { builder.defaultValue("Document.number($literal)") }
-            else -> { builder }
+            node.isObjectNode -> builder.defaultValue("Document.object([:])")
+            node.isArrayNode -> builder.defaultValue("Document.array([])")
+            node.isBooleanNode -> builder.defaultValue("Document.boolean($literal)")
+            node.isStringNode -> builder.defaultValue("Document.string(\"$literal\")")
+            node.isNumberNode -> builder.defaultValue("Document.number($literal)")
+            else -> builder
         }
     }
 

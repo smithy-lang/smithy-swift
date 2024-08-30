@@ -179,9 +179,9 @@ open class MemberShapeDecodeGenerator(
                     val node = requiredTrait.toNode()
                     resolveDocumentDefault(true, node)
                 }
-                is BlobShape -> { resolveBlobDefault(targetShape) }
+                is BlobShape -> resolveBlobDefault(targetShape)
                 // No default provided for other types
-                else -> { "" }
+                else -> ""
             }
         }
         return defaultTrait?.toNode()?.let {
@@ -206,8 +206,8 @@ open class MemberShapeDecodeGenerator(
                 // Maps can only have empty map as default value
                 is MapShape -> " ?? [:]"
                 is TimestampShape -> " ?? Date(timeIntervalSince1970: ${it.expectNumberNode().value})"
-                is DocumentShape -> { resolveDocumentDefault(false, it) }
-                is BlobShape -> { resolveBlobDefault(targetShape, it.toString()) }
+                is DocumentShape -> resolveDocumentDefault(false, it)
+                is BlobShape -> resolveBlobDefault(targetShape, it.toString())
                 // No default provided for other shapes
                 else -> ""
             }
@@ -245,8 +245,8 @@ open class MemberShapeDecodeGenerator(
 
     private fun resolveDocumentDefault(useZeroValue: Boolean, node: Node): String {
         return when {
-            node.isObjectNode -> { " ?? Document.object([:])" }
-            node.isArrayNode -> { " ?? Document.array([])" }
+            node.isObjectNode -> " ?? Document.object([:])"
+            node.isArrayNode -> " ?? Document.array([])"
             node.isStringNode -> {
                 val resolvedValue = "".takeIf { useZeroValue } ?: node.expectStringNode().value
                 " ?? Document.string(\"$resolvedValue\")"
@@ -259,7 +259,7 @@ open class MemberShapeDecodeGenerator(
                 val resolvedValue = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
                 " ?? Document.number($resolvedValue)"
             }
-            else -> { return "" } // null node type means no default value but explicit
+            else -> "" // null node type means no default value but explicit
         }
     }
 }
