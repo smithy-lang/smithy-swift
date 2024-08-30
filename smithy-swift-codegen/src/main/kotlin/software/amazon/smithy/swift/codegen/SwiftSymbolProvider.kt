@@ -312,22 +312,20 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
      */
     private fun handleDefaultValue(shape: Shape, builder: Symbol.Builder): Symbol.Builder {
         // Skip if the current shape does not have a default trait or if it's a member shape with @clientOptional trait
-        if (!shape.hasTrait<DefaultTrait>() || shape.hasTrait<ClientOptionalTrait>()) {
-            return builder
-        }
+        if (!shape.hasTrait<DefaultTrait>() || shape.hasTrait<ClientOptionalTrait>()) { return builder }
         // Retrieve literal default value as a string from default trait
         val defaultValueLiteral = shape.getTrait<DefaultTrait>()!!.toNode().toString()
         // If default value is "null", it is explicit notation for no default value. Return unmodified builder.
-        if (defaultValueLiteral.equals("null")) { return builder }
+        if (defaultValueLiteral == "null") { return builder }
 
         // The current shape may be a member shape or a root level shape.
         val targetShape = when (shape) {
             is MemberShape -> {
                 // If containing shape is an input shape, return unmodified builder.
-                if (model.expectShape(shape.container).hasTrait<InputTrait>()) { return builder }
+                if (model.expectShape(shape.container).hasTrait<InputTrait>()) return builder
                 model.expectShape(shape.target)
             }
-            else -> { shape }
+            else -> shape
         }
 
         return when (targetShape) {
@@ -342,16 +340,7 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
             }
             is StringShape -> builder.defaultValue("\"$defaultValueLiteral\"")
             is MapShape -> builder.defaultValue("[:]")
-            is BlobShape -> {
-                builder.putProperty("NeedsDataImport", FoundationTypes.Data)
-                builder.defaultValue(
-                    if (targetShape.hasTrait<StreamingTrait>()) {
-                        "ByteStream.data(Data(\"$defaultValueLiteral\".utf8))"
-                    } else {
-                        "Data(\"$defaultValueLiteral\".utf8)"
-                    }
-                )
-            }
+            is BlobShape -> handleBlobDefaultValue(defaultValueLiteral, targetShape, builder)
             is DocumentShape -> {
                 val node = shape.getTrait<DefaultTrait>()!!.toNode()
                 handleDocumentDefaultValue(defaultValueLiteral, node, builder)
@@ -377,6 +366,17 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
             node.isNumberNode -> builder.defaultValue("Document.number($literal)")
             else -> builder
         }
+    }
+
+    private fun handleBlobDefaultValue(literal: String, shape: Shape, builder: Symbol.Builder): Symbol.Builder {
+        builder.putProperty("NeedsDataImport", FoundationTypes.Data)
+        return builder.defaultValue(
+            if (shape.hasTrait<StreamingTrait>()) {
+                "ByteStream.data(Data(\"$literal\".utf8))"
+            } else {
+                "Data(\"$literal\".utf8)"
+            }
+        )
     }
 
     /**
