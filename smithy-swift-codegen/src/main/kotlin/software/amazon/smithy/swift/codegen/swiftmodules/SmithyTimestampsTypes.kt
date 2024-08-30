@@ -20,5 +20,6 @@ private fun runtimeSymbol(
     name,
     declaration,
     SwiftDependency.SMITHY_TIMESTAMPS,
-    "SmithyTimestamps",
+    emptyList(),
+    listOf("SmithyTimestamps"),
 )

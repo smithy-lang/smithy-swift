@@ -66,7 +66,6 @@ open class MemberShapeDecodeGenerator(
         }
         val memberName = ctx.symbolProvider.toMemberName(member)
         if (shapeContainingMembers.isUnionShape) {
-            writer.addImport(SmithyReadWriteTypes.SmithyReader)
             writer.write("return .\$L(\$L)", memberName, readExp)
         } else if (shapeContainingMembers.isError) {
             writer.write("value.properties.\$L = \$L", memberName, readExp)
@@ -77,7 +76,6 @@ open class MemberShapeDecodeGenerator(
 
     private fun renderStructOrUnionExp(memberShape: MemberShape, isPayload: Boolean): String {
         val readingClosure = readingClosureUtils.readingClosure(memberShape)
-        writer.addImport(SmithyReadWriteTypes.SmithyReader)
         return writer.format(
             "try \$L.\$L(with: \$L)",
             reader(memberShape, isPayload),
@@ -121,17 +119,16 @@ open class MemberShapeDecodeGenerator(
     private fun renderTimestampExp(memberShape: MemberShape, timestampShape: TimestampShape): String {
         val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
         val swiftTimestampFormatCase = TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, timestampShape)
-        writer.addImport(SmithyTimestampsTypes.TimestampFormat)
         return writer.format(
-            "try \$L.\$L(format: \$L)",
+            "try \$L.\$L(format: \$N\$L)",
             reader(memberShape, false),
             readMethodName("readTimestamp"),
-            swiftTimestampFormatCase
+            SmithyTimestampsTypes.TimestampFormat,
+            swiftTimestampFormatCase,
         )
     }
 
     private fun renderMemberExp(memberShape: MemberShape, isPayload: Boolean): String {
-        writer.addImport(SmithyReadWriteTypes.SmithyReader)
         return writer.format(
             "try \$L.\$L()\$L",
             reader(memberShape, isPayload),

@@ -14,7 +14,7 @@ class SwiftImportContainer : ImportContainer {
     fun addImport(
         packageName: String,
         isTestable: Boolean = false,
-        internalSPIName: String? = null,
+        internalSPINames: List<String> = emptyList(),
         importOnlyIfCanImport: Boolean = false
     ) {
         if (packageName.isEmpty()) { return }
@@ -22,14 +22,11 @@ class SwiftImportContainer : ImportContainer {
             // Update isTestable to true if needed
             it.isTestable = it.isTestable || isTestable
             // If we have an existing import with the same package name, then add the SPI name to the existing list
-            if (internalSPIName != null) {
-                it.internalSPINames.add(internalSPIName)
-            }
+            internalSPINames.forEach { name -> it.internalSPINames.add(name) }
             // Update importOnlyIfCanImport to true if needed
             it.importOnlyIfCanImport = it.importOnlyIfCanImport || importOnlyIfCanImport
         } ?: run {
-            val internalSPINames = listOf(internalSPIName).mapNotNull { it }.toMutableSet()
-            importStatements.add(ImportStatement(packageName, isTestable, internalSPINames, importOnlyIfCanImport))
+            importStatements.add(ImportStatement(packageName, isTestable, internalSPINames.toMutableSet(), importOnlyIfCanImport))
         }
     }
 

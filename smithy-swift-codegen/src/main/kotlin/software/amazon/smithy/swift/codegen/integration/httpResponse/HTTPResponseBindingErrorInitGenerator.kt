@@ -52,7 +52,6 @@ class HTTPResponseBindingErrorInitGenerator(
                     errorShape,
                 ) {
                     if (needsReader) {
-                        writer.addImport(SmithyReadWriteTypes.SmithyReader)
                         writer.addImport(ctx.service.readerSymbol)
                         writer.write("let reader = baseError.errorBodyReader")
                     }

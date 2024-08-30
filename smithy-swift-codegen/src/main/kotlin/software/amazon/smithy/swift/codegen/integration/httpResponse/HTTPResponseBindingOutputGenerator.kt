@@ -62,7 +62,7 @@ class HTTPResponseBindingOutputGenerator(
                         writer.write("return \$N()", outputSymbol)
                     } else {
                         if (needsAReader(ctx, responseBindings)) {
-                            writer.addImport(SwiftSymbol.make("ClientRuntime", null, SwiftDependency.CLIENT_RUNTIME, "SmithyReadWrite"))
+                            writer.addImport(SwiftSymbol.make("ClientRuntime", null, SwiftDependency.CLIENT_RUNTIME, emptyList(), listOf("SmithyReadWrite")))
                             writer.write("let data = try await httpResponse.data()")
                             writer.write("let responseReader = try \$N.from(data: data)", ctx.service.readerSymbol)
                             writer.write("let reader = \$L", reader(ctx, op, writer))

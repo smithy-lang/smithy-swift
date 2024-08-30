@@ -207,7 +207,6 @@ class MessageUnmarshallableGenerator(
 
     private fun renderReadToValue(writer: SwiftWriter, memberShape: MemberShape) {
         val readingClosure = ReadingClosureUtils(ctx, writer).readingClosure(memberShape)
-        writer.addImport(SmithyReadWriteTypes.SmithyReader)
         writer.write(
             "let value = try \$N.readFrom(message.payload, with: \$L)",
             ctx.service.readerSymbol,

@@ -66,7 +66,6 @@ abstract class MemberShapeEncodeGenerator(
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val propertyKey = nodeInfoUtils.nodeInfo(memberShape)
         val writingClosure = writingClosureUtils.writingClosure(memberShape)
-        writer.addImport(SmithyReadWriteTypes.SmithyWriter)
         writer.write(
             "try writer[\$L].write(\$L\$L, with: \$L)",
             propertyKey,
@@ -81,20 +80,19 @@ abstract class MemberShapeEncodeGenerator(
         val timestampKey = nodeInfoUtils.nodeInfo(memberShape)
         val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
         val swiftTimestampFormatCase = TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, timestampShape)
-        writer.addImport(SmithyTimestampsTypes.TimestampFormat)
         writer.write(
-            "try writer[\$L].writeTimestamp(\$L\$L, format: \$L)",
+            "try writer[\$L].writeTimestamp(\$L\$L, format: \$N\$L)",
             timestampKey,
             prefix,
             memberName,
-            swiftTimestampFormatCase
+            SmithyTimestampsTypes.TimestampFormat,
+            swiftTimestampFormatCase,
         )
     }
 
     private fun writePropertyMember(memberShape: MemberShape, prefix: String) {
         val propertyNodeInfo = nodeInfoUtils.nodeInfo(memberShape)
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
-        writer.addImport(SmithyReadWriteTypes.SmithyWriter)
         writer.write(
             "try writer[\$L].write(\$L\$L)",
             propertyNodeInfo,

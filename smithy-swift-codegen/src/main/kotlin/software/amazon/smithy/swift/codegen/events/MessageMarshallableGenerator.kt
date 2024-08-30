@@ -194,7 +194,6 @@ class MessageMarshallableGenerator(
         val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.responseWireProtocol)
         val rootNodeInfo = nodeInfoUtils.nodeInfo(memberShape, true)
         val valueWritingClosure = WritingClosureUtils(ctx, writer).writingClosure(memberShape)
-        writer.addImport(SmithyReadWriteTypes.SmithyReader)
         writer.write(
             "payload = try \$N.write(value.\$L, rootNodeInfo: \$L, with: \$L)",
             ctx.service.writerSymbol,

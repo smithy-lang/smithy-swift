@@ -61,11 +61,11 @@ class ReadingClosureUtils(
                 )
             }
             shape is TimestampShape -> {
-                writer.addImport(SmithyTimestampsTypes.TimestampFormat)
                 writer.format(
-                    "\$N(format: \$L)",
+                    "\$N(format: \$N\$L)",
                     SmithyReadWriteTypes.timestampReadingClosure,
-                    TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape)
+                    SmithyTimestampsTypes.TimestampFormat,
+                    TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape),
                 )
             }
             shape is EnumShape || shape is IntEnumShape || shape.hasTrait<EnumTrait>() -> {
