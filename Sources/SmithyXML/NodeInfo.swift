@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SmithyReadWrite)
 public struct NodeInfo: Equatable {
 
     public enum Location {

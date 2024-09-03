@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyReadWrite.SmithyWriter
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
 import enum SmithyReadWrite.Document
 import struct Foundation.Date
 import struct Foundation.Data
-import typealias SmithyReadWrite.WritingClosure
-import enum SmithyTimestamps.TimestampFormat
-import struct SmithyTimestamps.TimestampFormatter
+@_spi(SmithyReadWrite) import typealias SmithyReadWrite.WritingClosure
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
 /// A class used to encode a tree of model data as XML.
 ///
@@ -21,6 +21,7 @@ import struct SmithyTimestamps.TimestampFormatter
 /// This writer will write all Swift types used by Smithy models, and will also write Swift
 /// `Array` and `Dictionary` (optionally as flattened XML) given a writing closure for
 /// their enclosed data types.
+@_spi(SmithyReadWrite)
 public final class Writer: SmithyWriter {
     var content: String?
     var children: [Writer] = []

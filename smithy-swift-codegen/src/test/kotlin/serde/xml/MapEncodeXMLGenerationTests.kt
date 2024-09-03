@@ -273,7 +273,7 @@ extension XmlMapsTimestampsInput {
 
     static func write(value: XmlMapsTimestampsInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["timestampMap"].writeMap(value.timestampMap, valueWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        try writer["timestampMap"].writeMap(value.timestampMap, valueWritingClosure: SmithyReadWrite.timestampWritingClosure(format: SmithyTimestamps.TimestampFormat.epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
     }
 }
 """
@@ -289,7 +289,7 @@ extension XmlMapsFlattenedTimestampsInput {
 
     static func write(value: XmlMapsFlattenedTimestampsInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["timestampMap"].writeMap(value.timestampMap, valueWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        try writer["timestampMap"].writeMap(value.timestampMap, valueWritingClosure: SmithyReadWrite.timestampWritingClosure(format: SmithyTimestamps.TimestampFormat.epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
     }
 }
 """

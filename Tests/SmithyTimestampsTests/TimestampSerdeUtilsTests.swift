@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import SmithyTimestamps
+@_spi(SmithyTimestamps) @testable import SmithyTimestamps
 
 class TimestampSerdeUtilsTests: XCTestCase {
 

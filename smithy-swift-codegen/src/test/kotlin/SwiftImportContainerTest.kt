@@ -51,32 +51,32 @@ class SwiftImportContainerTest {
     @Test
     fun `it renders a single @_spi() declaration`() {
         val subject = SwiftImportContainer()
-        subject.addImport("MyPackage", false, "MyInternalAPI")
+        subject.addImport("MyPackage", false, listOf("MyInternalAPI"))
         assertEquals("@_spi(MyInternalAPI) import MyPackage", subject.toString())
     }
 
     @Test
     fun `it renders a single @_spi() and @testable declaration`() {
         val subject = SwiftImportContainer()
-        subject.addImport("MyPackage", true, "MyInternalAPI")
+        subject.addImport("MyPackage", true, listOf("MyInternalAPI"))
         assertEquals("@testable @_spi(MyInternalAPI) import MyPackage", subject.toString())
     }
 
     @Test
     fun `it renders multiple @_spi() declarations`() {
         val subject = SwiftImportContainer()
-        subject.addImport("MyPackage", false, "MyInternalAPI1")
-        subject.addImport("MyPackage", false, "MyInternalAPI2")
+        subject.addImport("MyPackage", false, listOf("MyInternalAPI1"))
+        subject.addImport("MyPackage", false, listOf("MyInternalAPI2"))
         assertEquals("@_spi(MyInternalAPI1) @_spi(MyInternalAPI2) import MyPackage", subject.toString())
     }
 
     @Test
     fun `it deduplicates @_spi() declarations`() {
         val subject = SwiftImportContainer()
-        subject.addImport("MyPackage", false, "MyInternalAPI1")
-        subject.addImport("MyPackage", false, "MyInternalAPI2")
-        subject.addImport("MyPackage", false, "MyInternalAPI1")
-        subject.addImport("MyPackage", false, "MyInternalAPI2")
+        subject.addImport("MyPackage", false, listOf("MyInternalAPI1"))
+        subject.addImport("MyPackage", false, listOf("MyInternalAPI2"))
+        subject.addImport("MyPackage", false, listOf("MyInternalAPI1"))
+        subject.addImport("MyPackage", false, listOf("MyInternalAPI2"))
         assertEquals("@_spi(MyInternalAPI1) @_spi(MyInternalAPI2) import MyPackage", subject.toString())
     }
 }

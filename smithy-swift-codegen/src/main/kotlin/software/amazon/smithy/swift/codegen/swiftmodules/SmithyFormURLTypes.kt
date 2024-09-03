@@ -9,12 +9,17 @@ import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object SmithyFormURLTypes {
-    val Writer = runtimeSymbol("Writer", SwiftDeclaration.CLASS)
+    val Writer = runtimeSymbol("Writer", SwiftDeclaration.CLASS, listOf(SmithyReadWriteTypes.SmithyWriter))
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration,
+    additionalImports: List<Symbol> = emptyList(),
+): Symbol = SwiftSymbol.make(
     name,
     declaration,
     SwiftDependency.SMITHY_FORM_URL,
-    null,
+    additionalImports,
+    listOf("SmithyReadWrite"),
 )

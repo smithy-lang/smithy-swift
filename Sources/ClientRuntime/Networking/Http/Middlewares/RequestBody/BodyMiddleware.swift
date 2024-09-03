@@ -8,9 +8,10 @@
 import Smithy
 import SmithyHTTPAPI
 import struct Foundation.Data
-import protocol SmithyReadWrite.SmithyWriter
-import typealias SmithyReadWrite.WritingClosure
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
+@_spi(SmithyReadWrite) import typealias SmithyReadWrite.WritingClosure
 
+@_spi(SmithyReadWrite)
 public struct BodyMiddleware<OperationStackInput,
                              OperationStackOutput,
                              Writer: SmithyWriter> {
