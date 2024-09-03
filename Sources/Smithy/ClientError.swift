@@ -10,4 +10,5 @@ public enum ClientError: Error {
     case dataNotFound(String)
     case unknownError(String)
     case authError(String)
+    case invalidValue(String)
 }
