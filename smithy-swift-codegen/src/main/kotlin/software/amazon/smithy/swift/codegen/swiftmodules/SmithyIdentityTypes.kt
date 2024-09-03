@@ -15,5 +15,6 @@ private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): 
     name,
     declaration,
     SwiftDependency.SMITHY_IDENTITY,
-    null,
+    emptyList(),
+    emptyList(),
 )

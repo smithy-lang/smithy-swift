@@ -6,8 +6,8 @@
 //
 
 import XCTest
-import SmithyXML
-import SmithyReadWrite
+@_spi(SmithyReadWrite) import SmithyXML
+@_spi(SmithyReadWrite) import SmithyReadWrite
 
 class FloatWriterTests: XCTestCase {
 

@@ -28,6 +28,7 @@ import software.amazon.smithy.swift.codegen.model.isGeneric
 import software.amazon.smithy.swift.codegen.model.isOptional
 import software.amazon.smithy.swift.codegen.model.isServiceNestedNamespace
 import java.util.function.BiFunction
+import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -104,7 +105,7 @@ class SwiftWriter(
     fun addImport(symbol: Symbol) {
         symbol.references.forEach { addImport(it.symbol) }
         if (symbol.isBuiltIn || symbol.isServiceNestedNamespace || symbol.namespace.isEmpty()) return
-        val spiName = symbol.getProperty("spiName").getOrNull()?.toString()
+        val spiNames = symbol.getProperty("spiNames").getOrElse { emptyList<String>() } as List<String>
         val decl = symbol.getProperty("decl").getOrNull()?.toString()
         decl?.let {
             // No need to import Foundation types individually because:
@@ -118,21 +119,23 @@ class SwiftWriter(
             if (symbol.namespace == "Foundation") {
                 addImport(symbol.namespace)
             } else {
-                addImport("$it ${symbol.namespace}.${symbol.name}", internalSPIName = spiName)
+                addImport("$it ${symbol.namespace}.${symbol.name}", internalSPINames = spiNames)
             }
         } ?: run {
-            addImport(symbol.namespace, internalSPIName = spiName)
+            addImport(symbol.namespace, internalSPINames = spiNames)
         }
         symbol.dependencies.forEach { addDependency(it) }
+        val additionalImports = symbol.getProperty("additionalImports").getOrElse { emptyList<Symbol>() } as List<Symbol>
+        additionalImports.forEach { addImport(it) }
     }
 
     fun addImport(
         packageName: String,
         isTestable: Boolean = false,
-        internalSPIName: String? = null,
+        internalSPINames: List<String> = emptyList(),
         importOnlyIfCanImport: Boolean = false
     ) {
-        importContainer.addImport(packageName, isTestable, internalSPIName, importOnlyIfCanImport)
+        importContainer.addImport(packageName, isTestable, internalSPINames, importOnlyIfCanImport)
     }
 
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {

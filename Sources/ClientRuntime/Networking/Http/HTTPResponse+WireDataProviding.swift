@@ -7,9 +7,10 @@
 
 import class SmithyHTTPAPI.HTTPResponse
 import enum Smithy.ByteStream
-import protocol SmithyReadWrite.WireDataProviding
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.WireDataProviding
 import struct Foundation.Data
 
+@_spi(SmithyReadWrite)
 extension HTTPResponse: WireDataProviding {
 
     public func data() async throws -> Data {

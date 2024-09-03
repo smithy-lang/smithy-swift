@@ -9,13 +9,18 @@ import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object SmithyJSONTypes {
-    val Writer = runtimeSymbol("Writer", SwiftDeclaration.CLASS)
-    val Reader = runtimeSymbol("Reader", SwiftDeclaration.CLASS)
+    val Writer = runtimeSymbol("Writer", SwiftDeclaration.CLASS, listOf(SmithyReadWriteTypes.SmithyWriter))
+    val Reader = runtimeSymbol("Reader", SwiftDeclaration.CLASS, listOf(SmithyReadWriteTypes.SmithyReader))
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration,
+    additionalImports: List<Symbol> = emptyList(),
+): Symbol = SwiftSymbol.make(
     name,
     declaration,
     SwiftDependency.SMITHY_JSON,
-    null,
+    additionalImports,
+    listOf("SmithyReadWrite"),
 )

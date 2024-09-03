@@ -23,12 +23,6 @@ private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): 
     name,
     declaration,
     SwiftDependency.SMITHY_HTTP_AUTH_API,
-    null,
-)
-
-private fun runtimeSymbolWithoutNamespace(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    null,
-    null,
+    emptyList(),
+    emptyList()
 )

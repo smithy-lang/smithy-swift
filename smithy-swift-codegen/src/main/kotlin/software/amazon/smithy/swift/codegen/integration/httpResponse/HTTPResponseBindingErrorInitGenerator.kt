@@ -13,6 +13,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitPayload
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitResponseCode
+import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class HTTPResponseBindingErrorInitGenerator(
@@ -50,6 +51,7 @@ class HTTPResponseBindingErrorInitGenerator(
                     errorShape,
                 ) {
                     if (needsReader) {
+                        writer.addImport(ctx.service.readerSymbol)
                         writer.write("let reader = baseError.errorBodyReader")
                     }
                     if (needsResponse) {

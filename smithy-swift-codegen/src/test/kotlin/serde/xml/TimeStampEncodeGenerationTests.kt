@@ -22,10 +22,10 @@ extension XmlTimestampsInput {
 
     static func write(value: XmlTimestampsInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["dateTime"].writeTimestamp(value.dateTime, format: .dateTime)
-        try writer["epochSeconds"].writeTimestamp(value.epochSeconds, format: .epochSeconds)
-        try writer["httpDate"].writeTimestamp(value.httpDate, format: .httpDate)
-        try writer["normal"].writeTimestamp(value.normal, format: .dateTime)
+        try writer["dateTime"].writeTimestamp(value.dateTime, format: SmithyTimestamps.TimestampFormat.dateTime)
+        try writer["epochSeconds"].writeTimestamp(value.epochSeconds, format: SmithyTimestamps.TimestampFormat.epochSeconds)
+        try writer["httpDate"].writeTimestamp(value.httpDate, format: SmithyTimestamps.TimestampFormat.httpDate)
+        try writer["normal"].writeTimestamp(value.normal, format: SmithyTimestamps.TimestampFormat.dateTime)
     }
 }
 """
@@ -41,7 +41,7 @@ extension XmlTimestampsNestedInput {
 
     static func write(value: XmlTimestampsNestedInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: SmithyTimestamps.TimestampFormat.epochSeconds), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """
@@ -57,7 +57,7 @@ extension XmlTimestampsNestedHTTPDateInput {
 
     static func write(value: XmlTimestampsNestedHTTPDateInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .httpDate), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
+        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: SmithyTimestamps.TimestampFormat.httpDate), memberNodeInfo: "member", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
     }
 }
 """
@@ -73,7 +73,7 @@ extension XmlTimestampsNestedXmlNameInput {
 
     static func write(value: XmlTimestampsNestedXmlNameInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: .epochSeconds), memberNodeInfo: "nestedTag2", isFlattened: false), memberNodeInfo: "nestedTag1", isFlattened: false)
+        try writer["nestedTimestampList"].writeList(value.nestedTimestampList, memberWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.timestampWritingClosure(format: SmithyTimestamps.TimestampFormat.epochSeconds), memberNodeInfo: "nestedTag2", isFlattened: false), memberNodeInfo: "nestedTag1", isFlattened: false)
     }
 }
 """
@@ -89,8 +89,8 @@ extension XmlTimestampsXmlNameInput {
 
     static func write(value: XmlTimestampsXmlNameInput?, to writer: SmithyXML.Writer) throws {
         guard let value else { return }
-        try writer["dateTime"].writeTimestamp(value.dateTime, format: .dateTime)
-        try writer["notNormalName"].writeTimestamp(value.normal, format: .dateTime)
+        try writer["dateTime"].writeTimestamp(value.dateTime, format: SmithyTimestamps.TimestampFormat.dateTime)
+        try writer["notNormalName"].writeTimestamp(value.normal, format: SmithyTimestamps.TimestampFormat.dateTime)
     }
 }
 """
