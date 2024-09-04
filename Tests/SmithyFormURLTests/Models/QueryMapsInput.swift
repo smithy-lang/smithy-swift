@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyReadWrite
-import SmithyFormURL
+@_spi(SmithyReadWrite) import SmithyReadWrite
+@_spi(SmithyReadWrite) import SmithyFormURL
 @testable import ClientRuntime
 
 public struct QueryMapsInput: Equatable {
@@ -23,6 +23,7 @@ public struct QueryMapsInput: Equatable {
     }
 }
 
+@_spi(SmithyReadWrite)
 extension QueryMapsInput: Encodable {
 
     static func write(value: QueryMapsInput?, to writer: SmithyFormURL.Writer) throws {

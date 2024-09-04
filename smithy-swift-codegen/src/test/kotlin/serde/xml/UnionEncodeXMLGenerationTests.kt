@@ -34,7 +34,7 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
             case let .structvalue(structvalue):
                 try writer["structValue"].write(structvalue, with: RestXmlProtocolClientTypes.XmlNestedUnionStruct.write(value:to:))
             case let .timestampvalue(timestampvalue):
-                try writer["timeStampValue"].writeTimestamp(timestampvalue, format: .dateTime)
+                try writer["timeStampValue"].writeTimestamp(timestampvalue, format: SmithyTimestamps.TimestampFormat.dateTime)
             case let .unionvalue(unionvalue):
                 try writer["unionValue"].write(unionvalue, with: RestXmlProtocolClientTypes.XmlUnionShape.write(value:to:))
             case let .sdkUnknown(sdkUnknown):
@@ -59,7 +59,7 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
             case "stringList":
                 return .stringlist(try reader["stringList"].readList(memberReadingClosure: SmithyReadWrite.ReadingClosures.readString(from:), memberNodeInfo: "member", isFlattened: false))
             case "timeStampValue":
-                return .timestampvalue(try reader["timeStampValue"].readTimestamp(format: .dateTime))
+                return .timestampvalue(try reader["timeStampValue"].readTimestamp(format: SmithyTimestamps.TimestampFormat.dateTime))
             default:
                 return .sdkUnknown(name ?? "")
         }

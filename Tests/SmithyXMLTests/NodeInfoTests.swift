@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import SmithyXML
+@testable @_spi(SmithyReadWrite) import SmithyXML
 
 class NodeInfoTests: XCTestCase {
     

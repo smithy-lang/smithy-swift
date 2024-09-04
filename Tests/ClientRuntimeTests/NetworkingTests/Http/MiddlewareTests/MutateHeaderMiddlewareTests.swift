@@ -9,7 +9,7 @@ import Smithy
 import SmithyHTTPAPI
 import XCTest
 @testable import ClientRuntime
-import SmithyTestUtil
+@_spi(SmithyReadWrite) import SmithyTestUtil
 
 class MutateHeaderMiddlewareTests: XCTestCase {
     var httpClientConfiguration: HttpClientConfiguration! = nil

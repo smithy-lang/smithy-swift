@@ -44,7 +44,7 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
         ),
         ConfigProperty(
             "httpInterceptorProviders",
-            ClientRuntimeTypes.Core.HttpInterceptorProviders,
+            ClientRuntimeTypes.Composite.HttpInterceptorProviders,
             { "[]" },
             accessModifier = AccessModifier.PublicPrivateSet
         ),

@@ -11,7 +11,7 @@ import SmithyEventStreams
 import SmithyEventStreamsAPI
 import SmithyEventStreamsAuthAPI
 import struct Foundation.Data
-import typealias SmithyReadWrite.WritingClosure
+@_spi(SmithyReadWrite) import typealias SmithyReadWrite.WritingClosure
 import SmithyHTTPAPI
 
 public struct EventStreamBodyMiddleware<OperationStackInput,

@@ -7,8 +7,10 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
+import enum Smithy.ByteStream
 
+@_spi(SmithyReadWrite)
 public protocol SmithyWriter: AnyObject {
     associatedtype NodeInfo
 
@@ -46,6 +48,17 @@ public protocol SmithyWriter: AnyObject {
 }
 
 public extension SmithyWriter {
+
+    func write(_ value: ByteStream?) throws {
+        // This serialization will never be performed in practice, since
+        // a ByteStream will never be a part of
+        // a XML body - if there is a streaming member in a restXml
+        // input shape, the rest of the input members must all be bound
+        // to HTML components outside the body.
+        //
+        // This empty implementation is only provided to quiet the
+        // compiler when a structure with a ByteSteam is code-generated.
+    }
 
     static func write<T>(
         _ value: T,

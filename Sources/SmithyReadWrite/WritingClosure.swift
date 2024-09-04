@@ -7,10 +7,12 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 
+@_spi(SmithyReadWrite)
 public typealias WritingClosure<T, Writer> = (T, Writer) throws -> Void
 
+@_spi(SmithyReadWrite)
 public func mapWritingClosure<T, Writer: SmithyWriter>(
     valueWritingClosure: @escaping WritingClosure<T, Writer>,
     keyNodeInfo: Writer.NodeInfo,
@@ -28,6 +30,7 @@ public func mapWritingClosure<T, Writer: SmithyWriter>(
     }
 }
 
+@_spi(SmithyReadWrite)
 public func listWritingClosure<T, Writer: SmithyWriter>(
     memberWritingClosure: @escaping WritingClosure<T, Writer>,
     memberNodeInfo: Writer.NodeInfo,
@@ -43,12 +46,14 @@ public func listWritingClosure<T, Writer: SmithyWriter>(
     }
 }
 
+@_spi(SmithyReadWrite)
 public func timestampWritingClosure<Writer: SmithyWriter>(format: TimestampFormat) -> WritingClosure<Date, Writer> {
     return { date, writer in
         try writer.writeTimestamp(date, format: format)
     }
 }
 
+@_spi(SmithyReadWrite)
 public struct WritingClosureBox<Value: RawRepresentable> {
 
     public init() {}
@@ -62,6 +67,7 @@ public struct WritingClosureBox<Value: RawRepresentable> {
     }
 }
 
+@_spi(SmithyReadWrite)
 public enum WritingClosures {
 
     public static func writeString<Writer: SmithyWriter>(value: String?, to writer: Writer) throws {
@@ -101,6 +107,7 @@ public enum WritingClosures {
     }
 }
 
+@_spi(SmithyReadWrite)
 public func sparseFormOf<T, Writer: SmithyWriter>(
     writingClosure: @escaping WritingClosure<T?, Writer>
 ) -> WritingClosure<T?, Writer> {

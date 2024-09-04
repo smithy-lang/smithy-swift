@@ -8,6 +8,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
@@ -21,6 +22,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProto
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftSymbol
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class HTTPResponseBindingOutputGenerator(
@@ -60,6 +62,7 @@ class HTTPResponseBindingOutputGenerator(
                         writer.write("return \$N()", outputSymbol)
                     } else {
                         if (needsAReader(ctx, responseBindings)) {
+                            writer.addImport(SwiftSymbol.make("ClientRuntime", null, SwiftDependency.CLIENT_RUNTIME, emptyList(), listOf("SmithyReadWrite")))
                             writer.write("let data = try await httpResponse.data()")
                             writer.write("let responseReader = try \$N.from(data: data)", ctx.service.readerSymbol)
                             writer.write("let reader = \$L", reader(ctx, op, writer))
