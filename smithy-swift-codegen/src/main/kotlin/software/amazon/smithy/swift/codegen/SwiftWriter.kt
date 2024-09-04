@@ -23,7 +23,6 @@ import software.amazon.smithy.swift.codegen.integration.SectionWriter
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.defaultValue
-import software.amazon.smithy.swift.codegen.model.defaultValueClosure
 import software.amazon.smithy.swift.codegen.model.defaultValueFromClosure
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.isBuiltIn
