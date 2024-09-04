@@ -221,17 +221,17 @@ public class CRTClientEngine: HTTPClient {
             // END - smithy.client.http.requests.queued_duration
 
             // TICK - smithy.client.http.connections.limit
-            telemetry.httpMetricsUsage.connectionsLimit = serialExecutor.maxConnectionsPerEndpoint
+            await telemetry.httpMetricsUsage.setConnectionsLimit(serialExecutor.maxConnectionsPerEndpoint)
 
             let connectionMgrMetrics = connectionMgr.fetchMetrics()
 
             // TICK - smithy.client.http.connections.usage
-            telemetry.httpMetricsUsage.idleConnections = connectionMgrMetrics.availableConcurrency
-            telemetry.httpMetricsUsage.acquiredConnections = connectionMgrMetrics.leasedConcurrency
+            await telemetry.httpMetricsUsage.setIdleConnections(connectionMgrMetrics.availableConcurrency)
+            await telemetry.httpMetricsUsage.setAcquiredConnections(connectionMgrMetrics.leasedConcurrency)
 
             // TICK - smithy.client.http.requests.usage
-            telemetry.httpMetricsUsage.inflightRequests = connectionMgrMetrics.leasedConcurrency
-            telemetry.httpMetricsUsage.queuedRequests = connectionMgrMetrics.pendingConcurrencyAcquires
+            await telemetry.httpMetricsUsage.setInflightRequests(connectionMgrMetrics.leasedConcurrency)
+            await telemetry.httpMetricsUsage.setQueuedRequests(connectionMgrMetrics.pendingConcurrencyAcquires)
 
             do {
                 // DURATION - smithy.client.http.connections.uptime
@@ -434,17 +434,17 @@ public class CRTClientEngine: HTTPClient {
                         return
                     }
                     // TICK - smithy.client.http.connections.limit
-                    telemetry.httpMetricsUsage.connectionsLimit = serialExecutor.maxConnectionsPerEndpoint
+                    await telemetry.httpMetricsUsage.setConnectionsLimit(serialExecutor.maxConnectionsPerEndpoint)
 
                     let connectionMgrMetrics = connectionMgr.fetchMetrics()
 
                     // TICK - smithy.client.http.connections.usage
-                    telemetry.httpMetricsUsage.idleConnections = connectionMgrMetrics.availableConcurrency
-                    telemetry.httpMetricsUsage.acquiredConnections = connectionMgrMetrics.leasedConcurrency
+                    await telemetry.httpMetricsUsage.setIdleConnections(connectionMgrMetrics.availableConcurrency)
+                    await telemetry.httpMetricsUsage.setAcquiredConnections(connectionMgrMetrics.leasedConcurrency)
 
                     // TICK - smithy.client.http.requests.usage
-                    telemetry.httpMetricsUsage.inflightRequests = connectionMgrMetrics.leasedConcurrency
-                    telemetry.httpMetricsUsage.queuedRequests = connectionMgrMetrics.pendingConcurrencyAcquires
+                    await telemetry.httpMetricsUsage.setInflightRequests(connectionMgrMetrics.leasedConcurrency)
+                    await telemetry.httpMetricsUsage.setQueuedRequests(connectionMgrMetrics.pendingConcurrencyAcquires)
 
                     // At this point, continuation is resumed when the initial headers are received
                     // it is now safe to write the body

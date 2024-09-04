@@ -10,7 +10,7 @@ import struct Smithy.AttributeKey
 /// Container for HTTPClient telemetry, including configurable attributes and names.
 ///
 /// Note: This is intended to be used within generated code, not directly.
-public class HttpTelemetry {
+public actor HttpTelemetry {
     private static var idleConnectionAttributes: Attributes {
         var attributes = Attributes()
         attributes.set(key: HttpMetricsAttributesKeys.state, value: ConnectionState.idle)
@@ -81,7 +81,7 @@ public class HttpTelemetry {
             name: "smithy.client.http.connections.limit",
             callback: { handle in
                 handle.record(
-                    value: httpMetricsUsage.connectionsLimit,
+                    value: await httpMetricsUsage.connectionsLimit,
                     attributes: Attributes(),
                     context: telemetryProvider.contextManager.current()
                 )
@@ -92,12 +92,12 @@ public class HttpTelemetry {
             name: "smithy.client.http.connections.usage",
             callback: { handle in
                 handle.record(
-                    value: httpMetricsUsage.idleConnections,
+                    value: await httpMetricsUsage.idleConnections,
                     attributes: HttpTelemetry.idleConnectionAttributes,
                     context: telemetryProvider.contextManager.current()
                 )
                 handle.record(
-                    value: httpMetricsUsage.acquiredConnections,
+                    value: await httpMetricsUsage.acquiredConnections,
                     attributes: HttpTelemetry.acquiredConnectionAttributes,
                     context: telemetryProvider.contextManager.current()
                 )
@@ -112,12 +112,12 @@ public class HttpTelemetry {
             name: "smithy.client.http.requests.usage",
             callback: { handle in
                 handle.record(
-                    value: httpMetricsUsage.idleConnections,
+                    value: await httpMetricsUsage.idleConnections,
                     attributes: HttpTelemetry.idleConnectionAttributes,
                     context: telemetryProvider.contextManager.current()
                 )
                 handle.record(
-                    value: httpMetricsUsage.acquiredConnections,
+                    value: await httpMetricsUsage.acquiredConnections,
                     attributes: HttpTelemetry.acquiredConnectionAttributes,
                     context: telemetryProvider.contextManager.current()
                 )
@@ -160,10 +160,30 @@ internal enum HttpMetricsAttributesKeys {
     internal static let serverAddress = AttributeKey<String>(name: "server.address")
 }
 
-internal struct HttpMetricsUsage {
+internal actor HttpMetricsUsage {
     public var connectionsLimit: Int = 0
     public var idleConnections: Int = 0
     public var acquiredConnections: Int = 0
     public var inflightRequests: Int = 0
     public var queuedRequests: Int = 0
+
+    public func setConnectionsLimit(_ n: Int) async {
+        connectionsLimit = n
+    }
+
+    public func setIdleConnections(_ n: Int) async {
+        idleConnections = n
+    }
+
+    public func setAcquiredConnections(_ n: Int) async {
+        acquiredConnections = n
+    }
+
+    public func setInflightRequests(_ n: Int) async {
+        inflightRequests = n
+    }
+
+    public func setQueuedRequests(_ n: Int) async {
+        queuedRequests = n
+    }
 }

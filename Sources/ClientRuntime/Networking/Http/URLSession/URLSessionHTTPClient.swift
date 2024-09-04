@@ -502,34 +502,37 @@ public final class URLSessionHTTPClient: HTTPClient {
                     body = .data(nil)
                 }
 
+                // Capture current time, then spawn a Task to write HTTP telemetry
                 let acquireConnectionEnd = Date().timeIntervalSinceReferenceDate
-                telemetry.connectionsAcquireDuration.record(
-                    value: acquireConnectionEnd - acquireConnectionStart,
-                    attributes: Attributes(),
-                    context: telemetryContext)
-                // END - smithy.client.http.connections.acquire_duration
-                let queuedEnd = acquireConnectionEnd
-                telemetry.requestsQueuedDuration.record(
-                    value: queuedEnd - queuedStart,
-                    attributes: Attributes(),
-                    context: telemetryContext)
-                // END - smithy.client.http.requests.queued_duration
+                Task {
+                    telemetry.connectionsAcquireDuration.record(
+                        value: acquireConnectionEnd - acquireConnectionStart,
+                        attributes: Attributes(),
+                        context: telemetryContext)
+                    // END - smithy.client.http.connections.acquire_duration
+                    let queuedEnd = acquireConnectionEnd
+                    telemetry.requestsQueuedDuration.record(
+                        value: queuedEnd - queuedStart,
+                        attributes: Attributes(),
+                        context: telemetryContext)
+                    // END - smithy.client.http.requests.queued_duration
 
-                // TICK - smithy.client.http.connections.limit
-                telemetry.httpMetricsUsage.connectionsLimit = session.configuration.httpMaximumConnectionsPerHost
+                    // TICK - smithy.client.http.connections.limit
+                    await telemetry.httpMetricsUsage.setConnectionsLimit(session.configuration.httpMaximumConnectionsPerHost)
 
-                // TICK - smithy.client.http.connections.usage
-                // TODO(observability): instead of the transient stores, should rely on the Key/Value observer patttern
-                let totalCount = session.delegateQueue.operationCount
-                let maxConcurrentOperationCount = session.delegateQueue.maxConcurrentOperationCount
-                telemetry.httpMetricsUsage.acquiredConnections = totalCount < maxConcurrentOperationCount
-                    ? totalCount
-                    : maxConcurrentOperationCount
-                telemetry.httpMetricsUsage.idleConnections = totalCount - telemetry.httpMetricsUsage.acquiredConnections
+                    // TICK - smithy.client.http.connections.usage
+                    // TODO(observability): instead of the transient stores, should rely on the Key/Value observer patttern
+                    let totalCount = session.delegateQueue.operationCount
+                    let maxConcurrentOperationCount = session.delegateQueue.maxConcurrentOperationCount
+                    await telemetry.httpMetricsUsage.setAcquiredConnections(totalCount < maxConcurrentOperationCount
+                        ? totalCount
+                        : maxConcurrentOperationCount)
+                    await telemetry.httpMetricsUsage.setIdleConnections(totalCount - telemetry.httpMetricsUsage.acquiredConnections)
 
-                // TICK - smithy.client.http.requests.usage
-                telemetry.httpMetricsUsage.inflightRequests = telemetry.httpMetricsUsage.acquiredConnections
-                telemetry.httpMetricsUsage.queuedRequests = telemetry.httpMetricsUsage.idleConnections
+                    // TICK - smithy.client.http.requests.usage
+                    await telemetry.httpMetricsUsage.setInflightRequests(telemetry.httpMetricsUsage.acquiredConnections)
+                    await telemetry.httpMetricsUsage.setQueuedRequests(telemetry.httpMetricsUsage.idleConnections)
+                }
 
                 // Create the request (with a streaming body when needed.)
                 do {

@@ -28,7 +28,7 @@ public protocol Meter: Sendable {
     /// - Returns: handle to stop recording Gauge metrics
     func createGauge(
         name: String,
-        callback: @escaping (any DoubleAsyncMeasurement) -> Void,
+        callback: @escaping (any DoubleAsyncMeasurement) async -> Void,
         units: String?,
         description: String?
     ) -> AsyncMeasurementHandle
@@ -59,7 +59,7 @@ public protocol Meter: Sendable {
     /// - Returns: handle to stop recording UpDownCounter metrics
     func createAsyncUpDownCounter(
         name: String,
-        callback: @escaping (any LongAsyncMeasurement) -> Void,
+        callback: @escaping (any LongAsyncMeasurement) async -> Void,
         units: String?,
         description: String?
     ) -> AsyncMeasurementHandle
@@ -90,7 +90,7 @@ public protocol Meter: Sendable {
     /// - Returns: handle to stop recording MonotonicCounter metrics
     func createAsyncMonotonicCounter(
         name: String,
-        callback: @escaping (any LongAsyncMeasurement) -> Void,
+        callback: @escaping (any LongAsyncMeasurement) async -> Void,
         units: String?,
         description: String?
     ) -> AsyncMeasurementHandle

@@ -72,7 +72,7 @@ extension DefaultTelemetry {
     fileprivate final class NoOpMeter: Meter {
         func createGauge(
             name: String,
-            callback: @escaping (any DoubleAsyncMeasurement) -> Void,
+            callback: @escaping (any DoubleAsyncMeasurement) async -> Void,
             units: String?,
             description: String?
         ) -> AsyncMeasurementHandle {
@@ -89,7 +89,7 @@ extension DefaultTelemetry {
 
         func createAsyncUpDownCounter(
             name: String,
-            callback: @escaping (any LongAsyncMeasurement) -> Void,
+            callback: @escaping (any LongAsyncMeasurement) async -> Void,
             units: String?,
             description: String?
         ) -> AsyncMeasurementHandle {
@@ -106,7 +106,7 @@ extension DefaultTelemetry {
 
         func createAsyncMonotonicCounter(
             name: String,
-            callback: @escaping (any LongAsyncMeasurement) -> Void,
+            callback: @escaping (any LongAsyncMeasurement) async -> Void,
             units: String?,
             description: String?
         ) -> AsyncMeasurementHandle {
