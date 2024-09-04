@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import SmithyJSON
+@testable @_spi(SmithyReadWrite) import SmithyJSON
 
 class WriterTests: XCTestCase {
 

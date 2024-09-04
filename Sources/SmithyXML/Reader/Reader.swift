@@ -5,14 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyReadWrite.SmithyReader
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
 import enum SmithyReadWrite.Document
-import typealias SmithyReadWrite.ReadingClosure
+@_spi(SmithyReadWrite) import typealias SmithyReadWrite.ReadingClosure
 import struct Foundation.Date
 import struct Foundation.Data
-import enum SmithyTimestamps.TimestampFormat
-import struct SmithyTimestamps.TimestampFormatter
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
+@_spi(SmithyReadWrite)
 public final class Reader: SmithyReader {
     public typealias ReaderNodeInfo = NodeInfo
     public internal(set) var children: [Reader] = []

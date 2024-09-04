@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyReadWrite.SmithyReader
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
 import enum SmithyReadWrite.Document
 import typealias SmithyReadWrite.ReadingClosure
 import enum SmithyReadWrite.ReaderError
-import enum SmithyTimestamps.TimestampFormat
-import struct SmithyTimestamps.TimestampFormatter
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.NSNull
@@ -18,6 +18,7 @@ import class Foundation.NSNumber
 import func CoreFoundation.CFGetTypeID
 import func CoreFoundation.CFBooleanGetTypeID
 
+@_spi(SmithyReadWrite)
 public final class Reader: SmithyReader {
     public typealias NodeInfo = SmithyJSON.NodeInfo
 

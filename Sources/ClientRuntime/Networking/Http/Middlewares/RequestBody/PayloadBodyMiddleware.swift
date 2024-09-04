@@ -10,10 +10,11 @@ import enum Smithy.ClientError
 import protocol Smithy.RequestMessageSerializer
 import class Smithy.Context
 import struct Foundation.Data
-import protocol SmithyReadWrite.SmithyWriter
-import typealias SmithyReadWrite.WritingClosure
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
+@_spi(SmithyReadWrite) import typealias SmithyReadWrite.WritingClosure
 import SmithyHTTPAPI
 
+@_spi(SmithyReadWrite)
 public struct PayloadBodyMiddleware<OperationStackInput,
                                     OperationStackOutput,
                                     OperationStackInputPayload,

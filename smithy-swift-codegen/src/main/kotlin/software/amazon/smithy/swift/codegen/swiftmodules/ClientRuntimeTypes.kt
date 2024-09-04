@@ -3,6 +3,8 @@ package software.amazon.smithy.swift.codegen.swiftmodules
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes.Core.HttpInterceptorProvider
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes.Core.InterceptorProvider
 
 /**
  * Commonly used runtime types. Provides a single definition of a runtime symbol such that codegen isn't littered
@@ -23,7 +25,7 @@ object ClientRuntimeTypes {
         val ContentLengthMiddleware = runtimeSymbol("ContentLengthMiddleware", SwiftDeclaration.STRUCT)
         val ContentTypeMiddleware = runtimeSymbol("ContentTypeMiddleware", SwiftDeclaration.STRUCT)
         val ContentMD5Middleware = runtimeSymbol("ContentMD5Middleware", SwiftDeclaration.STRUCT)
-        val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware", SwiftDeclaration.STRUCT)
+        val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware", SwiftDeclaration.STRUCT)
         val URLHostMiddleware = runtimeSymbol("URLHostMiddleware", SwiftDeclaration.STRUCT)
         val URLPathMiddleware = runtimeSymbol("URLPathMiddleware", SwiftDeclaration.STRUCT)
@@ -33,7 +35,7 @@ object ClientRuntimeTypes {
             runtimeSymbol("IdempotencyTokenMiddleware", SwiftDeclaration.STRUCT)
         val SignerMiddleware = runtimeSymbol("SignerMiddleware", SwiftDeclaration.STRUCT)
         val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware", SwiftDeclaration.STRUCT)
-        val BodyMiddleware = runtimeSymbol("BodyMiddleware", SwiftDeclaration.STRUCT)
+        val BodyMiddleware = runtimeSymbol("BodyMiddleware", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
         val PayloadBodyMiddleware = runtimeSymbol("PayloadBodyMiddleware", SwiftDeclaration.STRUCT)
         val EventStreamBodyMiddleware = runtimeSymbol("EventStreamBodyMiddleware", SwiftDeclaration.STRUCT)
         val BlobStreamBodyMiddleware = runtimeSymbol("BlobStreamBodyMiddleware", SwiftDeclaration.STRUCT)
@@ -86,24 +88,26 @@ object ClientRuntimeTypes {
         val splitHeaderListValues = runtimeSymbol("splitHeaderListValues", SwiftDeclaration.FUNC)
         val splitHttpDateHeaderListValues = runtimeSymbol("splitHttpDateHeaderListValues", SwiftDeclaration.FUNC)
         val OrchestratorBuilder = runtimeSymbol("OrchestratorBuilder", SwiftDeclaration.CLASS)
-        val InterceptorProviders = runtimeSymbolWithoutNamespace("[ClientRuntime.InterceptorProvider]")
         val InterceptorProvider = runtimeSymbol("InterceptorProvider", SwiftDeclaration.PROTOCOL)
-        val HttpInterceptorProviders = runtimeSymbolWithoutNamespace("[ClientRuntime.HttpInterceptorProvider]")
         val HttpInterceptorProvider = runtimeSymbol("HttpInterceptorProvider", SwiftDeclaration.PROTOCOL)
         val HttpInterceptor = runtimeSymbol("HttpInterceptor", SwiftDeclaration.PROTOCOL)
     }
+
+    object Composite {
+        val InterceptorProviders = runtimeSymbol("[ClientRuntime.InterceptorProvider]", null, listOf(InterceptorProvider))
+        val HttpInterceptorProviders = runtimeSymbol("[ClientRuntime.HttpInterceptorProvider]", null, listOf(HttpInterceptorProvider))
+    }
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration?,
+    additionalImports: List<Symbol> = emptyList(),
+    spiName: List<String> = emptyList(),
+): Symbol = SwiftSymbol.make(
     name,
     declaration,
-    SwiftDependency.CLIENT_RUNTIME,
-    null,
-)
-
-private fun runtimeSymbolWithoutNamespace(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    null,
-    null,
+    SwiftDependency.CLIENT_RUNTIME.takeIf { additionalImports.isEmpty() },
+    additionalImports,
+    spiName,
 )

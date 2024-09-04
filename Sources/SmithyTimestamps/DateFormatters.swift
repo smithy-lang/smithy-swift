@@ -10,6 +10,7 @@ import struct Foundation.Date
 
 public typealias DateFormatter = Foundation.DateFormatter
 
+@_spi(SmithyTimestamps)
 extension DateFormatter {
     /// A date formatter that converts between dates and the IMF-fixdate, with fractional seconds, string representation in RFC 7231#section-7.1.1.1 (for example, Sun, 02 Jan 2000 20:34:56.000 GMT)
     /// https://tools.ietf.org/html/rfc7231.html#section-7.1.1.1
@@ -44,6 +45,7 @@ extension DateFormatter {
     }
 }
 
+@_spi(SmithyTimestamps)
 extension Date {
     /// Returns a string representation of the date in the ISO8601 format using the date-time production in RFC3339 section 5.6 with no UTC offset and with fractional seconds (for example, 1985-04-12T23:20:50.52Z)
     func iso8601WithFractionalSeconds() -> String {

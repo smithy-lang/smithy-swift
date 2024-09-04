@@ -7,9 +7,10 @@
 
 import Smithy
 import SmithyHTTPAPI
-import SmithyReadWrite
+@_spi(SmithyReadWrite) import SmithyReadWrite
 import ClientRuntime
 
+@_spi(SmithyReadWrite)
 public struct MockDeserializeMiddleware<OperationStackOutput> {
     public var id: String
     let responseClosure: WireResponseOutputClosure<HTTPResponse, OperationStackOutput>

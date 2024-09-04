@@ -11,9 +11,10 @@ object SmithyStreamsTypes {
     }
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null, spiName: String? = null): Symbol = SwiftSymbol.make(
+private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
     name,
     declaration,
     SwiftDependency.SMITHY_STREAMS,
-    spiName,
+    emptyList(),
+    emptyList(),
 )

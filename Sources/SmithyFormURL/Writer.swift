@@ -5,14 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyReadWrite.SmithyWriter
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
 import enum SmithyReadWrite.Document
-import enum SmithyTimestamps.TimestampFormat
-import struct SmithyTimestamps.TimestampFormatter
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 import struct Foundation.Data
 import struct Foundation.Date
 import struct Foundation.CharacterSet
 
+@_spi(SmithyReadWrite)
 public final class Writer: SmithyWriter {
     public typealias NodeInfo = SmithyFormURL.NodeInfo
 

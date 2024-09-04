@@ -4,7 +4,7 @@
 import Smithy
 import SmithyHTTPAPI
 import XCTest
-import SmithyTestUtil
+@_spi(SmithyReadWrite) import SmithyTestUtil
 @testable import ClientRuntime
 import class SmithyStreams.BufferedStream
 

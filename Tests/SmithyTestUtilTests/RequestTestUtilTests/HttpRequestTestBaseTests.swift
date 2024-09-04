@@ -5,9 +5,9 @@
 
 import Smithy
 import SmithyHTTPAPI
-import SmithyReadWrite
-import SmithyJSON
-import SmithyTestUtil
+@_spi(SmithyReadWrite) import SmithyReadWrite
+@_spi(SmithyReadWrite) import SmithyJSON
+@_spi(SmithyReadWrite) import SmithyTestUtil
 import ClientRuntime
 import XCTest
 
