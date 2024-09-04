@@ -502,8 +502,12 @@ public final class URLSessionHTTPClient: HTTPClient {
                     body = .data(nil)
                 }
 
-                // Capture current time, then spawn a Task to write HTTP telemetry
+                // Capture values, then spawn a Task to write HTTP telemetry
                 let acquireConnectionEnd = Date().timeIntervalSinceReferenceDate
+                let totalCount = session.delegateQueue.operationCount
+                let maxConcurrentOperationCount = session.delegateQueue.maxConcurrentOperationCount
+                let connectionsLimit = session.configuration.httpMaximumConnectionsPerHost
+
                 Task {
                     telemetry.connectionsAcquireDuration.record(
                         value: acquireConnectionEnd - acquireConnectionStart,
@@ -518,16 +522,16 @@ public final class URLSessionHTTPClient: HTTPClient {
                     // END - smithy.client.http.requests.queued_duration
 
                     // TICK - smithy.client.http.connections.limit
-                    await telemetry.httpMetricsUsage.setConnectionsLimit(session.configuration.httpMaximumConnectionsPerHost)
+                    await telemetry.httpMetricsUsage.setConnectionsLimit(connectionsLimit)
 
                     // TICK - smithy.client.http.connections.usage
-                    // TODO(observability): instead of the transient stores, should rely on the Key/Value observer patttern
-                    let totalCount = session.delegateQueue.operationCount
-                    let maxConcurrentOperationCount = session.delegateQueue.maxConcurrentOperationCount
-                    await telemetry.httpMetricsUsage.setAcquiredConnections(totalCount < maxConcurrentOperationCount
-                        ? totalCount
-                        : maxConcurrentOperationCount)
-                    await telemetry.httpMetricsUsage.setIdleConnections(totalCount - telemetry.httpMetricsUsage.acquiredConnections)
+                    // TODO(observability): instead of the transient stores, should rely on the Key/Value observer pattern
+                    await telemetry.httpMetricsUsage.setAcquiredConnections(
+                        totalCount < maxConcurrentOperationCount ? totalCount : maxConcurrentOperationCount
+                    )
+                    await telemetry.httpMetricsUsage.setIdleConnections(
+                        totalCount - telemetry.httpMetricsUsage.acquiredConnections
+                    )
 
                     // TICK - smithy.client.http.requests.usage
                     await telemetry.httpMetricsUsage.setInflightRequests(telemetry.httpMetricsUsage.acquiredConnections)
