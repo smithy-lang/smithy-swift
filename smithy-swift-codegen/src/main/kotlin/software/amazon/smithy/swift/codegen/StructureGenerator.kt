@@ -149,9 +149,6 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
                     val terminator = if (index == membersSortedByName.size - 1) "" else ","
-                    if (memberSymbol.properties.containsKey("NeedsDataImport")) {
-                        writer.addImport(FoundationTypes.Data)
-                    }
                     writer.write("\$L: \$D$terminator", memberName, memberSymbol)
                 }
             }

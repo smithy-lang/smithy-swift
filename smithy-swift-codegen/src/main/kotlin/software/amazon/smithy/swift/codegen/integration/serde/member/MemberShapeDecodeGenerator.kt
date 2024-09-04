@@ -50,7 +50,9 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.swiftEnumCaseName
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 open class MemberShapeDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -176,11 +178,8 @@ open class MemberShapeDecodeGenerator(
                 is BooleanShape -> " ?? false"
                 is ListShape -> " ?? []"
                 is MapShape -> " ?? [:]"
-                is TimestampShape -> " ?? Date(timeIntervalSince1970: 0)"
-                is DocumentShape -> {
-                    val node = requiredTrait.toNode()
-                    resolveDocumentDefault(true, node)
-                }
+                is TimestampShape -> resolveTimestampDefault(true, requiredTrait.toNode())
+                is DocumentShape -> resolveDocumentDefault(true, requiredTrait.toNode())
                 is BlobShape -> resolveBlobDefault(targetShape)
                 // No default provided for other types
                 else -> ""
@@ -207,7 +206,7 @@ open class MemberShapeDecodeGenerator(
                 is ListShape, is SetShape -> " ?? []"
                 // Maps can only have empty map as default value
                 is MapShape -> " ?? [:]"
-                is TimestampShape -> " ?? Date(timeIntervalSince1970: ${it.expectNumberNode().value})"
+                is TimestampShape -> resolveTimestampDefault(false, it)
                 is DocumentShape -> resolveDocumentDefault(false, it)
                 is BlobShape -> resolveBlobDefault(targetShape, it.toString())
                 // No default provided for other shapes
@@ -239,29 +238,54 @@ open class MemberShapeDecodeGenerator(
     private fun resolveBlobDefault(targetShape: Shape, value: String = ""): String {
         writer.addImport(FoundationTypes.Data)
         return if (targetShape.hasTrait<StreamingTrait>()) {
-            " ?? ByteStream.data(Data(\"$value\".utf8))"
+            writer.format(
+                " ?? \$N.data(\$N(\"$value\".utf8))",
+                SmithyTypes.ByteStream,
+                FoundationTypes.Data
+            )
         } else {
-            " ?? Data(\"$value\".utf8)"
+            writer.format(
+                " ?? \$N(\"$value\".utf8)",
+                FoundationTypes.Data
+            )
         }
     }
 
     private fun resolveDocumentDefault(useZeroValue: Boolean, node: Node): String {
         return when {
-            node.isObjectNode -> " ?? Document.object([:])"
-            node.isArrayNode -> " ?? Document.array([])"
+            node.isObjectNode -> writer.format(" ?? \$N.object([:])", SmithyReadWriteTypes.Document)
+            node.isArrayNode -> writer.format(" ?? \$N.array([])", SmithyReadWriteTypes.Document)
             node.isStringNode -> {
                 val resolvedValue = "".takeIf { useZeroValue } ?: node.expectStringNode().value
-                " ?? Document.string(\"$resolvedValue\")"
+                writer.format(" ?? \$N.string(\"$resolvedValue\")", SmithyReadWriteTypes.Document)
             }
             node.isBooleanNode -> {
                 val resolvedValue = "false".takeIf { useZeroValue } ?: node.expectBooleanNode().value
-                " ?? Document.boolean($resolvedValue)"
+                writer.format(" ?? \$N.boolean($resolvedValue)", SmithyReadWriteTypes.Document)
             }
             node.isNumberNode -> {
                 val resolvedValue = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
-                " ?? Document.number($resolvedValue)"
+                writer.format(" ?? \$N.number($resolvedValue)", SmithyReadWriteTypes.Document)
             }
             else -> "" // null node type means no default value but explicit
+        }
+    }
+
+    private fun resolveTimestampDefault(useZeroValue: Boolean, node: Node): String {
+        // Smithy validates that default value given to timestamp shape must either be a
+        // number (for epoch-seconds) or a date-time string compliant with RFC3339.
+        return if (node.isNumberNode) {
+            val value = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
+            writer.format(
+                " ?? \$N(timeIntervalSince1970: $value)",
+                FoundationTypes.Date
+            )
+        } else {
+            val value = "1970-01-01T00:00:00Z".takeIf { useZeroValue } ?: node.expectStringNode().value
+            writer.format(
+                " ?? \$N(format: .dateTime).date(from: \"$value\")",
+                SmithyTimestampsTypes.TimestampFormatter
+            )
         }
     }
 }

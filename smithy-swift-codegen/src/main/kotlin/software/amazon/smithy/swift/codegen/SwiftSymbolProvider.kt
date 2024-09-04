@@ -55,10 +55,14 @@ import software.amazon.smithy.swift.codegen.model.boxed
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 import software.amazon.smithy.swift.codegen.model.defaultName
 import software.amazon.smithy.swift.codegen.model.defaultValue
+import software.amazon.smithy.swift.codegen.model.defaultValueClosure
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 import software.amazon.smithy.swift.codegen.utils.clientName
@@ -327,6 +331,7 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
             }
             else -> shape
         }
+        val node = shape.getTrait<DefaultTrait>()!!.toNode()
 
         return when (targetShape) {
             is ListShape -> builder.defaultValue("[]")
@@ -342,10 +347,9 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
             is MapShape -> builder.defaultValue("[:]")
             is BlobShape -> handleBlobDefaultValue(defaultValueLiteral, targetShape, builder)
             is DocumentShape -> {
-                val node = shape.getTrait<DefaultTrait>()!!.toNode()
                 handleDocumentDefaultValue(defaultValueLiteral, node, builder)
             }
-            is TimestampShape -> builder.defaultValue("Date(timeIntervalSince1970: $defaultValueLiteral)")
+            is TimestampShape -> handleTimestampDefaultValue(defaultValueLiteral, node, builder)
             is FloatShape, is DoubleShape -> {
                 val decimal = ".0".takeIf { !defaultValueLiteral.contains(".") } ?: ""
                 builder.defaultValue(defaultValueLiteral + decimal)
@@ -358,23 +362,52 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
 
     // Document: default value can be set to null, true, false, string, numbers, an empty list, or an empty map.
     private fun handleDocumentDefaultValue(literal: String, node: Node, builder: Symbol.Builder): Symbol.Builder {
-        return when {
-            node.isObjectNode -> builder.defaultValue("Document.object([:])")
-            node.isArrayNode -> builder.defaultValue("Document.array([])")
-            node.isBooleanNode -> builder.defaultValue("Document.boolean($literal)")
-            node.isStringNode -> builder.defaultValue("Document.string(\"$literal\")")
-            node.isNumberNode -> builder.defaultValue("Document.number($literal)")
-            else -> builder
+        var formatString = when {
+            node.isObjectNode -> "\$N.object([:])"
+            node.isArrayNode -> "\$N.array([])"
+            node.isBooleanNode -> "\$N.boolean($literal)"
+            node.isStringNode -> "\$N.string(\"$literal\")"
+            node.isNumberNode -> "\$N.number($literal)"
+            else -> return builder // no-op
+        }
+        return builder.defaultValueClosure { writer ->
+            writer.format(formatString, SmithyReadWriteTypes.Document)
         }
     }
 
     private fun handleBlobDefaultValue(literal: String, shape: Shape, builder: Symbol.Builder): Symbol.Builder {
-        builder.putProperty("NeedsDataImport", FoundationTypes.Data)
-        return builder.defaultValue(
+        return builder.defaultValueClosure(
             if (shape.hasTrait<StreamingTrait>()) {
-                "ByteStream.data(Data(\"$literal\".utf8))"
+                { writer ->
+                    writer.format(
+                        "\$N.data(\$N(\"$literal\".utf8))",
+                        SmithyTypes.ByteStream,
+                        FoundationTypes.Data
+                    )
+                }
             } else {
-                "Data(\"$literal\".utf8)"
+                { writer ->
+                    writer.format("\$N(\"$literal\".utf8)", FoundationTypes.Data)
+                }
+            }
+        )
+    }
+
+    private fun handleTimestampDefaultValue(literal: String, node: Node, builder: Symbol.Builder): Symbol.Builder {
+        // Smithy validates that default value given to timestamp shape must either be a
+        // number (for epoch-seconds) or a date-time string compliant with RFC3339.
+        return builder.defaultValueClosure(
+            if (node.isNumberNode) {
+                { writer ->
+                    writer.format("\$N(timeIntervalSince1970: $literal)", FoundationTypes.Date)
+                }
+            } else {
+                { writer ->
+                    writer.format(
+                        "\$N(format: .dateTime).date(from: \"$literal\")",
+                        SmithyTimestampsTypes.TimestampFormatter
+                    )
+                }
             }
         )
     }
