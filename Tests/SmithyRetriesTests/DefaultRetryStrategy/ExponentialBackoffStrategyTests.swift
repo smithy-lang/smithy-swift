@@ -16,15 +16,15 @@ final class ExponentialBackoffStrategyTests: XCTestCase {
     override func setUp() {
         subject = ExponentialBackoffStrategy()
         // Randomization is disabled to allow easy, repeatable verification of basic behavior.
-        subject.random = { 1.0 }
+        subject.random = { @Sendable () -> Double in 1.0 }
     }
 
     func test_backoffStrategy_multipliesByBackoffFactor() {
-        subject.random = { 0.25 }
+        subject.random = { @Sendable () -> Double in 0.25 }
         XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 0), 0.25)
-        subject.random = { 0.5 }
+        subject.random = { @Sendable () -> Double in 0.5 }
         XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 0), 0.5)
-        subject.random = { 0.75 }
+        subject.random = { @Sendable () -> Double in 0.75 }
         XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 0), 0.75)
     }
 
