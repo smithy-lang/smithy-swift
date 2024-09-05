@@ -343,7 +343,7 @@ extension XmlMapsTimestampsOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsTimestampsOutput()
-        value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.timestampReadingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
+        value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.timestampReadingClosure(format: SmithyTimestamps.TimestampFormat.epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false)
         return value
     }
 }
@@ -363,7 +363,7 @@ extension XmlMapsFlattenedTimestampsOutput {
         let responseReader = try SmithyXML.Reader.from(data: data)
         let reader = responseReader
         var value = XmlMapsFlattenedTimestampsOutput()
-        value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.timestampReadingClosure(format: .epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
+        value.timestampMap = try reader["timestampMap"].readMapIfPresent(valueReadingClosure: SmithyReadWrite.timestampReadingClosure(format: SmithyTimestamps.TimestampFormat.epochSeconds), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: true)
         return value
     }
 }

@@ -16,5 +16,6 @@ private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): 
     name,
     declaration,
     SwiftDependency.SMITHY_WAITERS_API,
-    null,
+    emptyList(),
+    emptyList(),
 )

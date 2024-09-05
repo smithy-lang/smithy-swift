@@ -7,8 +7,9 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 
+@_spi(SmithyReadWrite)
 public protocol SmithyReader: AnyObject {
     associatedtype NodeInfo
 

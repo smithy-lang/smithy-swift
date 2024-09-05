@@ -9,7 +9,7 @@ import Smithy
 import SmithyHTTPAPI
 import XCTest
 import ClientRuntime
-import SmithyTestUtil
+@_spi(SmithyReadWrite) import SmithyTestUtil
 
 class ProviderTests: HttpRequestTestBase {
 

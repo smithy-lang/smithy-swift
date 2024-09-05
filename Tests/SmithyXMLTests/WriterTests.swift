@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyReadWrite
+@_spi(SmithyReadWrite) import SmithyReadWrite
+@_spi(SmithyReadWrite) import SmithyXML
 import XCTest
-@_spi(SmithyXML) import SmithyXML
 
 class WriterTests: XCTestCase {
 

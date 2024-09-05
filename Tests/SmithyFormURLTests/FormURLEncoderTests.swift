@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyFormURL
+@_spi(SmithyReadWrite) import SmithyFormURL
 import XCTest
 @testable import ClientRuntime
 

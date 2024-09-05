@@ -108,7 +108,7 @@ let package = Package(
         ),
         .target(
             name: "SmithyReadWrite",
-            dependencies: ["SmithyTimestamps"]
+            dependencies: ["Smithy", "SmithyTimestamps"]
         ),
         .target(
             name: "SmithyXML",

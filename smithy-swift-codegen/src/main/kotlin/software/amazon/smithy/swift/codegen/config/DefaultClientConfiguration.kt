@@ -42,7 +42,7 @@ class DefaultClientConfiguration : ClientConfiguration {
         ),
         ConfigProperty(
             "interceptorProviders",
-            ClientRuntimeTypes.Core.InterceptorProviders,
+            ClientRuntimeTypes.Composite.InterceptorProviders,
             { "[]" },
             accessModifier = AccessModifier.PublicPrivateSet
         )

@@ -38,5 +38,6 @@ private fun builtInSymbol(name: String, declaration: SwiftDeclaration? = null): 
     name,
     declaration,
     SwiftDependency.SWIFT,
-    null,
+    emptyList(),
+    emptyList(),
 )

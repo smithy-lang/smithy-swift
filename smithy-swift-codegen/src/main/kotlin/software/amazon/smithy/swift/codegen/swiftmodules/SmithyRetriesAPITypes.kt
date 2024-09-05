@@ -18,5 +18,6 @@ private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): 
     name,
     declaration,
     SwiftDependency.SMITHY_RETRIES_API,
-    null,
+    emptyList(),
+    emptyList(),
 )

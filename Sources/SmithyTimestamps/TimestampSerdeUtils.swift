@@ -10,6 +10,7 @@ import struct Foundation.Date
 
 /// Custom timestamp serialization formats
 /// https://smithy.io/2.0/spec/protocol-traits.html#smithy-api-timestampformat-trait
+@_spi(SmithyTimestamps)
 public enum TimestampFormat: CaseIterable {
     /// Also known as Unix time, the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970, with optional fractional precision (for example, 1515531081.1234).
     case epochSeconds
@@ -22,6 +23,7 @@ public enum TimestampFormat: CaseIterable {
 }
 
 /// A formatter that converts between dates and their smithy timestamp string representations.
+@_spi(SmithyTimestamps)
 public struct TimestampFormatter {
     /// The timestamp serialization format
     let format: TimestampFormat
@@ -84,6 +86,7 @@ public struct TimestampFormatter {
     }
 }
 
+@_spi(SmithyTimestamps)
 extension Date {
     /// Creates a date from a string using the given formatters.
     /// The date returned will be from the first formatter, in the given formatters list, that is able to successfully convert the date to a string.

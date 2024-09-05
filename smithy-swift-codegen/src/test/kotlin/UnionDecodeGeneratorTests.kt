@@ -49,7 +49,7 @@ extension ExampleClientTypes.MyUnion {
             case let .enumvalue(enumvalue):
                 try writer["enumValue"].write(enumvalue)
             case let .inheritedtimestamp(inheritedtimestamp):
-                try writer["inheritedTimestamp"].writeTimestamp(inheritedtimestamp, format: .httpDate)
+                try writer["inheritedTimestamp"].writeTimestamp(inheritedtimestamp, format: SmithyTimestamps.TimestampFormat.httpDate)
             case let .listvalue(listvalue):
                 try writer["listValue"].writeList(listvalue, memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "member", isFlattened: false)
             case let .mapvalue(mapvalue):
@@ -61,7 +61,7 @@ extension ExampleClientTypes.MyUnion {
             case let .structurevalue(structurevalue):
                 try writer["structureValue"].write(structurevalue, with: ExampleClientTypes.GreetingWithErrorsOutput.write(value:to:))
             case let .timestampvalue(timestampvalue):
-                try writer["timestampValue"].writeTimestamp(timestampvalue, format: .epochSeconds)
+                try writer["timestampValue"].writeTimestamp(timestampvalue, format: SmithyTimestamps.TimestampFormat.epochSeconds)
             case let .sdkUnknown(sdkUnknown):
                 try writer["sdkUnknown"].write(sdkUnknown)
         }
@@ -80,9 +80,9 @@ extension ExampleClientTypes.MyUnion {
             case "blobValue":
                 return .blobvalue(try reader["blobValue"].read())
             case "timestampValue":
-                return .timestampvalue(try reader["timestampValue"].readTimestamp(format: .epochSeconds))
+                return .timestampvalue(try reader["timestampValue"].readTimestamp(format: SmithyTimestamps.TimestampFormat.epochSeconds))
             case "inheritedTimestamp":
-                return .inheritedtimestamp(try reader["inheritedTimestamp"].readTimestamp(format: .httpDate))
+                return .inheritedtimestamp(try reader["inheritedTimestamp"].readTimestamp(format: SmithyTimestamps.TimestampFormat.httpDate))
             case "enumValue":
                 return .enumvalue(try reader["enumValue"].read())
             case "listValue":

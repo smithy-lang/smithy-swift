@@ -7,23 +7,20 @@
 
 import struct Foundation.Data
 
-// Code left indented to prevent Git diff from being blown up by whitespace changes.
-// Will fix after event stream modularizaion has been reviewed.
+/// A message in an event stream that can be sent or received.
+public struct Message: Equatable {
 
-    /// A message in an event stream that can be sent or received.
-    public struct Message: Equatable {
+    /// The headers associated with the message.
+    public let headers: [Header]
 
-        /// The headers associated with the message.
-        public let headers: [Header]
+    /// The payload associated with the message.
+    public let payload: Data
 
-        /// The payload associated with the message.
-        public let payload: Data
-
-        public init(headers: [Header] = [], payload: Data = .init()) {
-            self.headers = headers
-            self.payload = payload
-        }
+    public init(headers: [Header] = [], payload: Data = .init()) {
+        self.headers = headers
+        self.payload = payload
     }
+}
 
 extension Message: CustomDebugStringConvertible {
     public var debugDescription: String {
