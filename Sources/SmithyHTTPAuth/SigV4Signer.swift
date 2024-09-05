@@ -52,7 +52,7 @@ public class SigV4Signer: SmithyHTTPAuthAPI.Signer {
             )
         }
 
-        var signingConfig = try constructSigningConfig(identity: identity, signingProperties: signingProperties)
+        let signingConfig = try constructSigningConfig(identity: identity, signingProperties: signingProperties)
 
         let unsignedRequest = requestBuilder.build()
         let crtUnsignedRequest: HTTPRequestBase = isBidirectionalStreamingEnabled ?
