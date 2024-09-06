@@ -524,7 +524,7 @@ public final class URLSessionHTTPClient: HTTPClient {
 
                     // TICK - smithy.client.http.connections.usage
                     // TODO(observability): instead of the transient stores, should rely on the Key/Value observer patttern
-                    httpMetricsUsage.acquiredConnections = 
+                    httpMetricsUsage.acquiredConnections =
                         totalCount < maxConcurrentOperationCount ? totalCount : maxConcurrentOperationCount
                     httpMetricsUsage.idleConnections = totalCount - httpMetricsUsage.acquiredConnections
 
