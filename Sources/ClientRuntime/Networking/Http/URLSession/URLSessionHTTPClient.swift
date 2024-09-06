@@ -515,21 +515,23 @@ public final class URLSessionHTTPClient: HTTPClient {
                     context: telemetryContext)
                 // END - smithy.client.http.requests.queued_duration
 
-                // TICK - smithy.client.http.connections.limit
-                telemetry.httpMetricsUsage.connectionsLimit = session.configuration.httpMaximumConnectionsPerHost
-
-                // TICK - smithy.client.http.connections.usage
-                // TODO(observability): instead of the transient stores, should rely on the Key/Value observer patttern
+                let connectionsLimit = session.configuration.httpMaximumConnectionsPerHost
                 let totalCount = session.delegateQueue.operationCount
                 let maxConcurrentOperationCount = session.delegateQueue.maxConcurrentOperationCount
-                telemetry.httpMetricsUsage.acquiredConnections = totalCount < maxConcurrentOperationCount
-                    ? totalCount
-                    : maxConcurrentOperationCount
-                telemetry.httpMetricsUsage.idleConnections = totalCount - telemetry.httpMetricsUsage.acquiredConnections
+                telemetry.updateHTTPMetricsUsage { httpMetricsUsage in
+                    // TICK - smithy.client.http.connections.limit
+                    httpMetricsUsage.connectionsLimit = connectionsLimit
 
-                // TICK - smithy.client.http.requests.usage
-                telemetry.httpMetricsUsage.inflightRequests = telemetry.httpMetricsUsage.acquiredConnections
-                telemetry.httpMetricsUsage.queuedRequests = telemetry.httpMetricsUsage.idleConnections
+                    // TICK - smithy.client.http.connections.usage
+                    // TODO(observability): instead of the transient stores, should rely on the Key/Value observer patttern
+                    httpMetricsUsage.acquiredConnections = 
+                        totalCount < maxConcurrentOperationCount ? totalCount : maxConcurrentOperationCount
+                    httpMetricsUsage.idleConnections = totalCount - httpMetricsUsage.acquiredConnections
+
+                    // TICK - smithy.client.http.requests.usage
+                    httpMetricsUsage.inflightRequests = httpMetricsUsage.acquiredConnections
+                    httpMetricsUsage.queuedRequests = httpMetricsUsage.idleConnections
+                }
 
                 // Create the request (with a streaming body when needed.)
                 do {

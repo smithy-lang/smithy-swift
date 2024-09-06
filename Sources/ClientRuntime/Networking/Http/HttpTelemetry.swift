@@ -6,11 +6,12 @@
 import protocol SmithyHTTPAPI.HTTPClient
 import struct Smithy.Attributes
 import struct Smithy.AttributeKey
+import class Foundation.NSRecursiveLock
 
 /// Container for HTTPClient telemetry, including configurable attributes and names.
 ///
 /// Note: This is intended to be used within generated code, not directly.
-public class HttpTelemetry {
+public class HttpTelemetry: @unchecked Sendable {
     private static var idleConnectionAttributes: Attributes {
         var attributes = Attributes()
         attributes.set(key: HttpMetricsAttributesKeys.state, value: ConnectionState.idle)
@@ -37,19 +38,51 @@ public class HttpTelemetry {
     internal let loggerProvider: any LoggerProvider
 
     internal let tracerScope: String
-    internal let tracerAttributes: Attributes?
     internal let spanName: String
-    internal let spanAttributes: Attributes?
 
     internal let connectionsAcquireDuration: any Histogram
     private let connectionsLimit: any AsyncMeasurementHandle
     private let connectionsUsage: any AsyncMeasurementHandle
-    internal var httpMetricsUsage: HttpMetricsUsage
     internal let connectionsUptime: any Histogram
     private let requestsUsage: any AsyncMeasurementHandle
     internal let requestsQueuedDuration: any Histogram
     internal let bytesSent: any MonotonicCounter
     internal let bytesReceived: any MonotonicCounter
+
+    // Lock to enforce exclusive access to non-Sendable properties
+    private let lock = NSRecursiveLock()
+
+    // The properties _tracerAttributes, _spanAttributes, and _httpMetricsUsage
+    // are not Sendable & must be protected by lock.
+    private let _tracerAttributes: Attributes?
+
+    var tracerAttributes: Attributes? {
+        lock.lock()
+        defer { lock.unlock() }
+        return _tracerAttributes
+    }
+
+    private let _spanAttributes: Attributes?
+
+    var spanAttributes: Attributes? {
+        lock.lock()
+        defer { lock.unlock() }
+        return _spanAttributes
+    }
+
+    private var _httpMetricsUsage: HttpMetricsUsage
+
+    var httpMetricsUsage: HttpMetricsUsage {
+        lock.lock()
+        defer { lock.unlock() }
+        return _httpMetricsUsage
+    }
+
+    func updateHTTPMetricsUsage(_ block: (inout HttpMetricsUsage) -> Void) {
+        lock.lock()
+        defer { lock.unlock() }
+        block(&_httpMetricsUsage)
+    }
 
     public init(
         httpScope: String,
@@ -66,11 +99,11 @@ public class HttpTelemetry {
         self.loggerProvider = telemetryProvider.loggerProvider
         let meterScope: String = meterScope != nil ? meterScope! : httpScope
         self.tracerScope = tracerScope != nil ? tracerScope! : httpScope
-        self.tracerAttributes = tracerAttributes
+        self._tracerAttributes = tracerAttributes
         self.spanName = spanName != nil ? spanName! : "HTTP"
-        self.spanAttributes = spanAttributes
+        self._spanAttributes = spanAttributes
         let httpMetricsUsage = HttpMetricsUsage()
-        self.httpMetricsUsage = httpMetricsUsage
+        self._httpMetricsUsage = httpMetricsUsage
 
         let meter = telemetryProvider.meterProvider.getMeter(scope: meterScope, attributes: meterAttributes)
         self.connectionsAcquireDuration = meter.createHistogram(
