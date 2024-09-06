@@ -47,6 +47,8 @@ fileprivate func anyValuesAreEqual(_ lhs: Any?, _ rhs: Any?) -> Bool {
         return anyDictsAreEqual(lhsDict, rhsDict)
     } else if let lhsArray = lhs as? [Any], let rhsArray = rhs as? [Any] {
         return anyArraysAreEqual(lhsArray, rhsArray)
+    } else if let lhn = lhs as? NSNumber, let rhn = rhs as? NSNumber {
+        return lhn == rhn
     } else {
         return type(of: lhs) == type(of: rhs) && "\(lhs)" == "\(rhs)"
     }
