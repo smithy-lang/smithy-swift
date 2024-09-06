@@ -21,7 +21,9 @@ import software.amazon.smithy.swift.cod.DocumentationConverter
 import software.amazon.smithy.swift.codegen.integration.SectionId
 import software.amazon.smithy.swift.codegen.integration.SectionWriter
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import software.amazon.smithy.swift.codegen.model.SymbolProperty
 import software.amazon.smithy.swift.codegen.model.defaultValue
+import software.amazon.smithy.swift.codegen.model.defaultValueFromClosure
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.isBuiltIn
 import software.amazon.smithy.swift.codegen.model.isGeneric
@@ -190,7 +192,7 @@ class SwiftWriter(
                     }
 
                     if (shouldSetDefault) {
-                        type.defaultValue()?.let {
+                        getDefaultValue(type)?.let {
                             formatted += " = $it"
                         }
                     }
@@ -198,6 +200,14 @@ class SwiftWriter(
                     return formatted
                 }
                 else -> throw CodegenException("Invalid type provided for \$T. Expected a Symbol, but found `$type`")
+            }
+        }
+
+        private fun getDefaultValue(symbol: Symbol): String? {
+            return if (symbol.properties.containsKey(SymbolProperty.DEFAULT_VALUE_CLOSURE_KEY)) {
+                symbol.defaultValueFromClosure(writer)
+            } else {
+                symbol.defaultValue()
             }
         }
     }
