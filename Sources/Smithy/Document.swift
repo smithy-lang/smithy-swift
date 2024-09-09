@@ -6,6 +6,7 @@
 //
 
 import struct Foundation.Data
+import struct Foundation.Date
 import class Foundation.JSONSerialization
 import class Foundation.NSNull
 import class Foundation.NSNumber
@@ -13,11 +14,13 @@ import func CoreFoundation.CFGetTypeID
 import func CoreFoundation.CFBooleanGetTypeID
 
 public enum Document {
-    case array([Document])
+    case list([Document])
     case boolean(Bool)
     case number(Double)
-    case object([String: Document])
+    case map([String: Document])
     case string(String)
+    case blob(Data)
+    case timestamp(Date)
     case null
 }
 
@@ -25,7 +28,7 @@ extension Document: Equatable { }
 
 extension Document: ExpressibleByArrayLiteral {
     public init(arrayLiteral elements: Document...) {
-        self = .array(elements)
+        self = .list(elements)
     }
 }
 
@@ -42,7 +45,7 @@ extension Document: ExpressibleByDictionaryLiteral {
             newValue[curr.0] = curr.1
             return newValue
         }
-        self = .object(dictionary)
+        self = .map(dictionary)
     }
 }
 
@@ -74,7 +77,7 @@ extension Document: ExpressibleByStringLiteral {
 public extension Document {
 
     subscript(_ key: String) -> Document? {
-        guard case .object(let object) = self else {
+        guard case .map(let object) = self else {
             return nil
         }
         return object[key]
@@ -82,9 +85,9 @@ public extension Document {
 
     subscript(_ key: Int) -> Document? {
         switch self {
-        case .array(let array):
+        case .list(let array):
             return array[key]
-        case .object(let object):
+        case .map(let object):
             return object["\(key)"]
         default:
             return nil
@@ -94,18 +97,23 @@ public extension Document {
 
 extension Document {
 
+    @available(macOS 12.0, *)
     private var jsonObject: Any {
         switch self {
-        case .array(let array):
+        case .list(let array):
             return array.map { $0.jsonObject }
         case .boolean(let bool):
             return bool
         case .number(let double):
             return double
-        case .object(let object):
+        case .map(let object):
             return object.mapValues { $0.jsonObject }
         case .string(let string):
             return string
+        case .blob(let data):
+            return data.base64EncodedString()
+        case .timestamp(let date):
+            return date.formatted()
         case .null:
             return NSNull()
         }
@@ -113,15 +121,19 @@ extension Document {
 
     public static func make(from jsonObject: Any) throws -> Document {
         if let object = jsonObject as? [String: Any] {
-            return .object(try object.mapValues { try Document.make(from: $0) })
+            return .map(try object.mapValues { try Document.make(from: $0) })
         } else if let array = jsonObject as? [Any] {
-            return .array(try array.map { try Document.make(from: $0) })
+            return .list(try array.map { try Document.make(from: $0) })
         } else if let nsNumber = jsonObject as? NSNumber, CFGetTypeID(nsNumber) == CFBooleanGetTypeID() {
             return .boolean(nsNumber.boolValue)
         } else if let nsNumber = jsonObject as? NSNumber {
             return .number(nsNumber.doubleValue)
         } else if let string = jsonObject as? String {
             return .string(string)
+        } else if let data = jsonObject as? Data {
+            return .blob(data)
+        } else if let date = jsonObject as? Date {
+            return .timestamp(date)
         } else if jsonObject is NSNull {
             return .null
         } else {
