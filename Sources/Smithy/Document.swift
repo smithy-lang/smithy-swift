@@ -7,6 +7,7 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
+import class Foundation.DateFormatter
 import class Foundation.JSONSerialization
 import class Foundation.NSNull
 import class Foundation.NSNumber
@@ -97,7 +98,6 @@ public extension Document {
 
 extension Document {
 
-    @available(macOS 12.0, *)
     private var jsonObject: Any {
         switch self {
         case .list(let array):
@@ -113,7 +113,10 @@ extension Document {
         case .blob(let data):
             return data.base64EncodedString()
         case .timestamp(let date):
-            return date.formatted()
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .medium
+            return formatter.string(from: date)
         case .null:
             return NSNull()
         }
