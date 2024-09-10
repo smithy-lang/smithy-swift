@@ -9,6 +9,7 @@ import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 import enum Smithy.ByteStream
+import enum Smithy.Document
 
 @_spi(SmithyReadWrite)
 public protocol SmithyWriter: AnyObject {

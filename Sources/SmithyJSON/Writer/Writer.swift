@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
-import enum SmithyReadWrite.Document
+import enum Smithy.Document
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 import struct Foundation.Data
@@ -92,11 +92,11 @@ public extension Writer {
     func write(_ value: Document?) throws {
         guard let value else { return }
         switch value {
-        case .object(let object):
-            try object.forEach { try self[.init($0.key)].write($0.value) }
+        case .map(let map):
+            try map.forEach { try self[.init($0.key)].write($0.value) }
             self.jsonNode = .object
-        case .array(let array):
-            try array.enumerated().forEach { try self[.init("\($0.offset)")].write($0.element) }
+        case .list(let list):
+            try list.enumerated().forEach { try self[.init("\($0.offset)")].write($0.element) }
             self.jsonNode = .array
         case .boolean(let bool):
             try write(bool)
@@ -104,6 +104,10 @@ public extension Writer {
             try write(number)
         case .string(let string):
             try write(string)
+        case .blob(let data):
+            try write(data)
+        case .timestamp(let date):
+            try writeTimestamp(date, format: .dateTime)
         case .null:
             self.jsonNode = .null
         }
