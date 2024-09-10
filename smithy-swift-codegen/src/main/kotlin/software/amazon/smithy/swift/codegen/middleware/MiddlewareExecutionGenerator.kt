@@ -51,25 +51,11 @@ class MiddlewareExecutionGenerator(
             SmithyHTTPAPITypes.HTTPRequest,
             SmithyHTTPAPITypes.HTTPResponse,
         )
-        writer.write(
-            """
-            config.interceptorProviders.forEach { provider in
-                builder.interceptors.add(provider.create())
-            }
-            """.trimIndent()
-        )
-        writer.openBlock(
-            "config.httpInterceptorProviders.forEach { (provider: any \$N) -> Void in",
-            "}",
-            ClientRuntimeTypes.Core.HttpInterceptorProvider,
-        ) {
-            writer.write(
-                "let i: any \$N<\$N, \$N> = provider.create()",
-                ClientRuntimeTypes.Core.HttpInterceptor,
-                inputShape,
-                outputShape,
-            )
-            writer.write("builder.interceptors.add(i)")
+        writer.openBlock("config.interceptorProviders.forEach { provider in", "}") {
+            writer.write("builder.interceptors.add(provider.create())")
+        }
+        writer.openBlock("config.httpInterceptorProviders.forEach { provider in", "}") {
+            writer.write("builder.interceptors.add(provider.create())")
         }
 
         renderMiddlewares(ctx, op, operationStackName)

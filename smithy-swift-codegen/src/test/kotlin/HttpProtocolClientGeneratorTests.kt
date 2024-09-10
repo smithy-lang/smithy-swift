@@ -158,9 +158,8 @@ extension RestJsonProtocolClient {
         config.interceptorProviders.forEach { provider in
             builder.interceptors.add(provider.create())
         }
-        config.httpInterceptorProviders.forEach { (provider: any ClientRuntime.HttpInterceptorProvider) -> Void in
-            let i: any ClientRuntime.HttpInterceptor<AllocateWidgetInput, AllocateWidgetOutput> = provider.create()
-            builder.interceptors.add(i)
+        config.httpInterceptorProviders.forEach { provider in
+            builder.interceptors.add(provider.create())
         }
         builder.interceptors.add(ClientRuntime.IdempotencyTokenMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(keyPath: \.clientToken))
         builder.interceptors.add(ClientRuntime.URLPathMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(AllocateWidgetInput.urlPathProvider(_:)))
