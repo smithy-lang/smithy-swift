@@ -76,20 +76,16 @@ extension Document: ExpressibleByStringLiteral {
 
 // extension to use subscribts to get the values from objects/arrays as normal
 public extension Document {
-
     subscript(_ key: String) -> Document? {
-        guard case .map(let object) = self else {
-            return nil
-        }
-        return object[key]
+        getMember(key)
     }
 
     subscript(_ key: Int) -> Document? {
         switch self {
         case .list(let array):
             return array[key]
-        case .map(let object):
-            return object["\(key)"]
+        case .map:
+            return getMember("\(key)")
         default:
             return nil
         }
@@ -99,25 +95,29 @@ public extension Document {
 extension Document {
 
     private var jsonObject: Any {
-        switch self {
-        case .list(let array):
-            return array.map { $0.jsonObject }
-        case .boolean(let bool):
-            return bool
-        case .number(let double):
-            return double
-        case .map(let object):
-            return object.mapValues { $0.jsonObject }
-        case .string(let string):
-            return string
-        case .blob(let data):
-            return data.base64EncodedString()
-        case .timestamp(let date):
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .medium
-            return formatter.string(from: date)
-        case .null:
+        do {
+            switch self {
+            case .list:
+                return try asList().map { $0.jsonObject }
+            case .boolean:
+                return try asBoolean()
+            case .number:
+                return try asDouble()
+            case .map:
+                return try asStringMap().mapValues { $0.jsonObject }
+            case .string:
+                return try asString()
+            case .blob:
+                return try asBlob().base64EncodedString()
+            case .timestamp:
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                return formatter.string(from: try asTimestamp())
+            case .null:
+                return NSNull()
+            }
+        } catch {
+            // Handle or propagate the error as needed
             return NSNull()
         }
     }
@@ -152,4 +152,8 @@ extension Document {
 
 enum SmithyDocumentError: Error {
     case invalidJSONData
+    case typeMismatch(String)
+    case numberOverflow(String)
+    case invalidBase64(String)
+    case invalidDateFormat(String)
 }

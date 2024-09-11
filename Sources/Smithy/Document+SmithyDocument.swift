@@ -1,0 +1,125 @@
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+import struct Foundation.Data
+import struct Foundation.Date
+import class Foundation.DateFormatter
+
+extension Document: SmithyDocument {
+    func asBoolean() throws -> Bool {
+        guard case .boolean(let value) = self else {
+            throw SmithyDocumentError.typeMismatch("Expected boolean, got \(self)")
+        }
+        return value
+    }
+
+    func asString() throws -> String {
+        guard case .string(let value) = self else {
+            throw SmithyDocumentError.typeMismatch("Expected string, got \(self)")
+        }
+        return value
+    }
+
+    func asList() throws -> [Document] {
+        guard case .list(let value) = self else {
+            throw SmithyDocumentError.typeMismatch("Expected list, got \(self)")
+        }
+        return value
+    }
+
+    func asStringMap() throws -> [String: Document] {
+        guard case .map(let value) = self else {
+            throw SmithyDocumentError.typeMismatch("Expected map, got \(self)")
+        }
+        return value
+    }
+
+    func size() -> Int {
+        switch self {
+        case .list(let array): return array.count
+        case .map(let dict): return dict.count
+        default: return -1
+        }
+    }
+
+    func asByte() throws -> UInt8 {
+        let value = try asDouble()
+        guard let byteValue = UInt8(exactly: value) else {
+            throw SmithyDocumentError.numberOverflow("Value \(value) cannot be represented as UInt8")
+        }
+        return byteValue
+    }
+
+    func asShort() throws -> Int16 {
+        let value = try asDouble()
+        guard let shortValue = Int16(exactly: value) else {
+            throw SmithyDocumentError.numberOverflow("Value \(value) cannot be represented as Int16")
+        }
+        return shortValue
+    }
+
+    func asInteger() throws -> Int {
+        let value = try asDouble()
+        guard let intValue = Int(exactly: value) else {
+            throw SmithyDocumentError.numberOverflow("Value \(value) cannot be represented as Int")
+        }
+        return intValue
+    }
+
+    func asLong() throws -> Int64 {
+        let value = try asDouble()
+        guard let longValue = Int64(exactly: value) else {
+            throw SmithyDocumentError.numberOverflow("Value \(value) cannot be represented as Int64")
+        }
+        return longValue
+    }
+
+    func asFloat() throws -> Float {
+        return Float(try asDouble())
+    }
+
+    func asDouble() throws -> Double {
+        guard case .number(let value) = self else {
+            throw SmithyDocumentError.typeMismatch("Expected number, got \(self)")
+        }
+        return value
+    }
+
+    func asBlob() throws -> Data {
+        switch self {
+        case .blob(let data):
+            return data
+        case .string(let str):
+            guard let data = Data(base64Encoded: str) else {
+                throw SmithyDocumentError.invalidBase64("Invalid base64 string")
+            }
+            return data
+        default:
+            throw SmithyDocumentError.typeMismatch("Expected blob or base64 string, got \(self)")
+        }
+    }
+
+    func asTimestamp() throws -> Date {
+        switch self {
+        case .timestamp(let date):
+            return date
+        case .string(let str):
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            guard let date = formatter.date(from: str) else {
+                throw SmithyDocumentError.invalidDateFormat("Invalid date format: \(str)")
+            }
+            return date
+        default:
+            throw SmithyDocumentError.typeMismatch("Expected timestamp or date string, got \(self)")
+        }
+    }
+
+    func getMember(_ memberName: String) -> Document? {
+        self[memberName]
+    }
+}
