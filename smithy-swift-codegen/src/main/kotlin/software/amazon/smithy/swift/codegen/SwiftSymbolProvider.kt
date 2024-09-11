@@ -243,7 +243,7 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
     }
 
     override fun documentShape(shape: DocumentShape): Symbol {
-        return createSymbolBuilder(shape, "Document", "SmithyReadWrite", SwiftDeclaration.ENUM, true)
+        return createSymbolBuilder(shape, "Document", "Smithy", SwiftDeclaration.ENUM, true)
             .addDependency(SwiftDependency.SMITHY_READ_WRITE)
             .build()
     }
