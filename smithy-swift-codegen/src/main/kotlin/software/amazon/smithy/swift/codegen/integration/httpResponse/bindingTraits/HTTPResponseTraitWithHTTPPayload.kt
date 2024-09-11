@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isEnum
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class HTTPResponseTraitWithHTTPPayload(
