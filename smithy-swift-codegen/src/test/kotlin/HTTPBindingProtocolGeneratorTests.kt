@@ -108,7 +108,7 @@ extension InlineDocumentAsPayloadOutput {
     static func httpOutput(from httpResponse: SmithyHTTPAPI.HTTPResponse) async throws -> InlineDocumentAsPayloadOutput {
         var value = InlineDocumentAsPayloadOutput()
         if let data = try await httpResponse.body.readData() {
-            value.documentValue = try SmithyReadWrite.Document.make(from: data)
+            value.documentValue = try Smithy.Document.make(from: data)
         }
         return value
     }

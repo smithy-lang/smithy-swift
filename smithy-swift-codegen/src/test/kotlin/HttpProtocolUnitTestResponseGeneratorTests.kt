@@ -258,7 +258,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let actual: InlineDocumentOutput = try await InlineDocumentOutput.httpOutput(from:)(httpResponse)
 
         let expected = InlineDocumentOutput(
-            documentValue: try SmithyReadWrite.Document.make(from: Data(""${'"'}
+            documentValue: try Smithy.Document.make(from: Data(""${'"'}
                 {
                     "foo": "bar"
                 }
@@ -298,7 +298,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         let actual: InlineDocumentAsPayloadOutput = try await InlineDocumentAsPayloadOutput.httpOutput(from:)(httpResponse)
 
         let expected = InlineDocumentAsPayloadOutput(
-            documentValue: try SmithyReadWrite.Document.make(from: Data(""${'"'}
+            documentValue: try Smithy.Document.make(from: Data(""${'"'}
                 {
                     "foo": "bar"
                 }

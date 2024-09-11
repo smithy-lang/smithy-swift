@@ -252,8 +252,8 @@ open class MemberShapeDecodeGenerator(
 
     private fun resolveDocumentDefault(useZeroValue: Boolean, node: Node): String {
         return when {
-            node.isObjectNode -> writer.format(" ?? \$N.object([:])", SmithyTypes.Document)
-            node.isArrayNode -> writer.format(" ?? \$N.array([])", SmithyTypes.Document)
+            node.isObjectNode -> writer.format(" ?? \$N.map([:])", SmithyTypes.Document)
+            node.isArrayNode -> writer.format(" ?? \$N.list([])", SmithyTypes.Document)
             node.isStringNode -> {
                 val resolvedValue = "".takeIf { useZeroValue } ?: node.expectStringNode().value
                 writer.format(" ?? \$N.string(\"$resolvedValue\")", SmithyTypes.Document)
