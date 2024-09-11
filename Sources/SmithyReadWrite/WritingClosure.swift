@@ -47,7 +47,7 @@ public func listWritingClosure<T, Writer: SmithyWriter>(
 }
 
 @_spi(SmithyReadWrite)
-public func timestampWritingClosure<Writer: SmithyWriter>(format: TimestampFormat) -> WritingClosure<Date, Writer> {
+public func timestampWritingClosure<Writer: SmithyWriter>(format: TimestampFormat) -> WritingClosure<Date?, Writer> {
     return { date, writer in
         try writer.writeTimestamp(date, format: format)
     }
