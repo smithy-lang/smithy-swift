@@ -60,7 +60,6 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
@@ -371,7 +370,7 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
             else -> return builder // no-op
         }
         return builder.defaultValueClosure { writer ->
-            writer.format(formatString, SmithyReadWriteTypes.Document)
+            writer.format(formatString, SmithyTypes.Document)
         }
     }
 

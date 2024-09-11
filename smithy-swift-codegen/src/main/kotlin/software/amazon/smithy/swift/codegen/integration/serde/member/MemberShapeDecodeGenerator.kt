@@ -50,7 +50,6 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.swiftEnumCaseName
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
@@ -253,19 +252,19 @@ open class MemberShapeDecodeGenerator(
 
     private fun resolveDocumentDefault(useZeroValue: Boolean, node: Node): String {
         return when {
-            node.isObjectNode -> writer.format(" ?? \$N.object([:])", SmithyReadWriteTypes.Document)
-            node.isArrayNode -> writer.format(" ?? \$N.array([])", SmithyReadWriteTypes.Document)
+            node.isObjectNode -> writer.format(" ?? \$N.object([:])", SmithyTypes.Document)
+            node.isArrayNode -> writer.format(" ?? \$N.array([])", SmithyTypes.Document)
             node.isStringNode -> {
                 val resolvedValue = "".takeIf { useZeroValue } ?: node.expectStringNode().value
-                writer.format(" ?? \$N.string(\"$resolvedValue\")", SmithyReadWriteTypes.Document)
+                writer.format(" ?? \$N.string(\"$resolvedValue\")", SmithyTypes.Document)
             }
             node.isBooleanNode -> {
                 val resolvedValue = "false".takeIf { useZeroValue } ?: node.expectBooleanNode().value
-                writer.format(" ?? \$N.boolean($resolvedValue)", SmithyReadWriteTypes.Document)
+                writer.format(" ?? \$N.boolean($resolvedValue)", SmithyTypes.Document)
             }
             node.isNumberNode -> {
                 val resolvedValue = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
-                writer.format(" ?? \$N.number($resolvedValue)", SmithyReadWriteTypes.Document)
+                writer.format(" ?? \$N.number($resolvedValue)", SmithyTypes.Document)
             }
             else -> "" // null node type means no default value but explicit
         }
