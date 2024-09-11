@@ -10,8 +10,10 @@ import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.BigDecimalShape
 import software.amazon.smithy.model.shapes.BigIntegerShape
+import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.BooleanShape
 import software.amazon.smithy.model.shapes.ByteShape
+import software.amazon.smithy.model.shapes.DocumentShape
 import software.amazon.smithy.model.shapes.DoubleShape
 import software.amazon.smithy.model.shapes.EnumShape
 import software.amazon.smithy.model.shapes.FloatShape
@@ -29,8 +31,11 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.DefaultTrait
+import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.EnumValueTrait
+import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.SparseTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -44,7 +49,10 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.swiftEnumCaseName
+import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 open class MemberShapeDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -89,12 +97,13 @@ open class MemberShapeDecodeGenerator(
         val memberNodeInfo = nodeInfoUtils.nodeInfo(listShape.member)
         val isFlattened = memberShape.hasTrait<XmlFlattenedTrait>()
         return writer.format(
-            "try \$L.\$L(memberReadingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)",
+            "try \$L.\$L(memberReadingClosure: \$L, memberNodeInfo: \$L, isFlattened: \$L)\$L",
             reader(memberShape, false),
             readMethodName("readList"),
             memberReadingClosure,
             memberNodeInfo,
-            isFlattened
+            isFlattened,
+            default(memberShape)
         )
     }
 
@@ -105,13 +114,14 @@ open class MemberShapeDecodeGenerator(
         val valueNodeInfo = nodeInfoUtils.nodeInfo(mapShape.value)
         val isFlattened = memberShape.hasTrait<XmlFlattenedTrait>()
         return writer.format(
-            "try \$L.\$L(valueReadingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)",
+            "try \$L.\$L(valueReadingClosure: \$L, keyNodeInfo: \$L, valueNodeInfo: \$L, isFlattened: \$L)\$L",
             reader(memberShape, false),
             readMethodName("readMap"),
             valueReadingClosure,
             keyNodeInfo,
             valueNodeInfo,
-            isFlattened
+            isFlattened,
+            default(memberShape)
         )
     }
 
@@ -119,11 +129,12 @@ open class MemberShapeDecodeGenerator(
         val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
         val swiftTimestampFormatCase = TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, timestampShape)
         return writer.format(
-            "try \$L.\$L(format: \$N\$L)",
+            "try \$L.\$L(format: \$N\$L)\$L",
             reader(memberShape, false),
             readMethodName("readTimestamp"),
             SmithyTimestampsTypes.TimestampFormat,
             swiftTimestampFormatCase,
+            default(memberShape)
         )
     }
 
@@ -149,6 +160,31 @@ open class MemberShapeDecodeGenerator(
     private fun default(memberShape: MemberShape): String {
         val targetShape = ctx.model.expectShape(memberShape.target)
         val defaultTrait = memberShape.getTrait<DefaultTrait>() ?: targetShape.getTrait<DefaultTrait>()
+        val requiredTrait = memberShape.getTrait<RequiredTrait>()
+        // If member is required but there isn't a default value, use zero-equivalents for error correction
+        if (requiredTrait != null && defaultTrait == null) {
+            return when (targetShape) {
+                is EnumShape, is IntEnumShape -> " ?? .sdkUnknown(\"\")"
+                is StringShape -> {
+                    // Enum trait is deprecated but many services still use it in their models
+                    if (targetShape.hasTrait<EnumTrait>()) {
+                        " ?? .sdkUnknown(\"\")"
+                    } else {
+                        " ?? \"\""
+                    }
+                }
+                is ByteShape, is ShortShape, is IntegerShape, is LongShape -> " ?? 0"
+                is FloatShape, is DoubleShape -> " ?? 0.0"
+                is BooleanShape -> " ?? false"
+                is ListShape -> " ?? []"
+                is MapShape -> " ?? [:]"
+                is TimestampShape -> resolveTimestampDefault(true, requiredTrait.toNode())
+                is DocumentShape -> resolveDocumentDefault(true, requiredTrait.toNode())
+                is BlobShape -> resolveBlobDefault(targetShape)
+                // No default provided for other types
+                else -> ""
+            }
+        }
         return defaultTrait?.toNode()?.let {
             // If the default value is null, provide no default.
             if (it.isNullNode) { return "" }
@@ -170,6 +206,9 @@ open class MemberShapeDecodeGenerator(
                 is ListShape, is SetShape -> " ?? []"
                 // Maps can only have empty map as default value
                 is MapShape -> " ?? [:]"
+                is TimestampShape -> resolveTimestampDefault(false, it)
+                is DocumentShape -> resolveDocumentDefault(false, it)
+                is BlobShape -> resolveBlobDefault(targetShape, it.toString())
                 // No default provided for other shapes
                 else -> ""
             }
@@ -193,6 +232,60 @@ open class MemberShapeDecodeGenerator(
             is StringNode -> " ?? .${node.value}"
             is NumberNode -> " ?? .init(rawValue: ${node.value})"
             else -> ""
+        }
+    }
+
+    private fun resolveBlobDefault(targetShape: Shape, value: String = ""): String {
+        writer.addImport(FoundationTypes.Data)
+        return if (targetShape.hasTrait<StreamingTrait>()) {
+            writer.format(
+                " ?? \$N.data(\$N(\"$value\".utf8))",
+                SmithyTypes.ByteStream,
+                FoundationTypes.Data
+            )
+        } else {
+            writer.format(
+                " ?? \$N(\"$value\".utf8)",
+                FoundationTypes.Data
+            )
+        }
+    }
+
+    private fun resolveDocumentDefault(useZeroValue: Boolean, node: Node): String {
+        return when {
+            node.isObjectNode -> writer.format(" ?? \$N.object([:])", SmithyReadWriteTypes.Document)
+            node.isArrayNode -> writer.format(" ?? \$N.array([])", SmithyReadWriteTypes.Document)
+            node.isStringNode -> {
+                val resolvedValue = "".takeIf { useZeroValue } ?: node.expectStringNode().value
+                writer.format(" ?? \$N.string(\"$resolvedValue\")", SmithyReadWriteTypes.Document)
+            }
+            node.isBooleanNode -> {
+                val resolvedValue = "false".takeIf { useZeroValue } ?: node.expectBooleanNode().value
+                writer.format(" ?? \$N.boolean($resolvedValue)", SmithyReadWriteTypes.Document)
+            }
+            node.isNumberNode -> {
+                val resolvedValue = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
+                writer.format(" ?? \$N.number($resolvedValue)", SmithyReadWriteTypes.Document)
+            }
+            else -> "" // null node type means no default value but explicit
+        }
+    }
+
+    private fun resolveTimestampDefault(useZeroValue: Boolean, node: Node): String {
+        // Smithy validates that default value given to timestamp shape must either be a
+        // number (for epoch-seconds) or a date-time string compliant with RFC3339.
+        return if (node.isNumberNode) {
+            val value = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
+            writer.format(
+                " ?? \$N(timeIntervalSince1970: $value)",
+                FoundationTypes.Date
+            )
+        } else {
+            val value = "1970-01-01T00:00:00Z".takeIf { useZeroValue } ?: node.expectStringNode().value
+            writer.format(
+                " ?? \$N(format: .dateTime).date(from: \"$value\")",
+                SmithyTimestampsTypes.TimestampFormatter
+            )
         }
     }
 }

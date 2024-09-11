@@ -7,11 +7,16 @@ package software.amazon.smithy.swift.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.DefaultTrait
+import software.amazon.smithy.model.traits.HttpHeaderTrait
+import software.amazon.smithy.model.traits.HttpPayloadTrait
+import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 
 /**
@@ -55,21 +60,61 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     open fun renderExpectedBody(test: HttpResponseTestCase) {
-        if (test.body.isPresent && test.body.get().isNotBlank()) {
+        if (test.body.isPresent) {
             operation.output.ifPresent {
-                val outputShape = model.expectShape(it) as StructureShape
-                val data = writer.format("Data(\"\"\"\n\$L\n\"\"\".utf8)", test.body.get().replace("\\\"", "\\\\\""))
-                // depending on the shape of the output, we may need to wrap the body in a stream
-                if (outputShape.hasStreamingMember(model)) {
-                    // wrapping to CachingStream required for test asserts which reads body multiple times
-                    writer.write("content: .stream(\$N(data: \$L, isClosed: true))", SmithyStreamsTypes.Core.BufferedStream, data)
+                if (test.body.get().isNotBlank()) {
+                    val outputShape = model.expectShape(it) as StructureShape
+                    val data = writer.format(
+                        "Data(\"\"\"\n\$L\n\"\"\".utf8)",
+                        test.body.get().replace("\\\"", "\\\\\"")
+                    )
+                    // depending on the shape of the output, we may need to wrap the body in a stream
+                    if (outputShape.hasStreamingMember(model)) {
+                        // wrapping to CachingStream required for test asserts which reads body multiple times
+                        writer.write(
+                            "content: .stream(\$N(data: \$L, isClosed: true))",
+                            SmithyStreamsTypes.Core.BufferedStream,
+                            data
+                        )
+                    } else {
+                        writer.write("content: .data(\$L)", data)
+                    }
+                } else if (test.body.get().isBlank() && bodyHasDefaultValue()) {
+                    // Expected body is blank but not because it's nil, but because it's a default empty blob value
+                    writer.write("content: .data(Data(\"\".utf8))")
                 } else {
-                    writer.write("content: .data(\$L)", data)
+                    // Expected body is blank and underlying member shape does not have default values.
+                    writer.write("content: nil")
                 }
             }
         } else {
             writer.write("content: nil")
         }
+    }
+
+    private fun bodyHasDefaultValue(): Boolean {
+        var result = false
+        operation.output.ifPresent {
+            val outputShape = model.expectShape(it) as StructureShape
+            outputShape.allMembers.forEach {
+                val member = it.value
+                val target = model.expectShape(member.target)
+                val defaultValueExists = member.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()
+                // If a top level input member shape has the payload trait, it's a bound payload member
+                val isBoundPayloadMember = member.hasTrait<HttpPayloadTrait>()
+                // If a top level input member doesn't have payload trait, header trait nor prefix header trait,
+                //  it is an unbound payload member.
+                val isUnboundPayloadMember = !member.hasTrait<HttpHeaderTrait>() &&
+                    !member.hasTrait<HttpPrefixHeadersTrait>() &&
+                    !member.hasTrait<HttpPayloadTrait>()
+                // If a member has default value and goes in payload, return true
+                if (defaultValueExists && (isBoundPayloadMember || isUnboundPayloadMember)) {
+                    result = true
+                    return@ifPresent
+                }
+            }
+        }
+        return result
     }
 
     private fun renderBuildHttpResponseParams(test: HttpResponseTestCase) {

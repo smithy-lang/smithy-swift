@@ -8,6 +8,7 @@ package software.amazon.smithy.swift.codegen.model
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.removeSurroundingBackticks
 
 /**
@@ -19,6 +20,9 @@ object SymbolProperty {
 
     // The key that holds the default value for a type (symbol) as a string
     const val DEFAULT_VALUE_KEY: String = "defaultValue"
+
+    // The key that holds the default value closure for a type (symbol) that returns a string
+    const val DEFAULT_VALUE_CLOSURE_KEY: String = "defaultValueClosure"
 
     // Boolean property indicating this symbol should be boxed
     const val BOXED_KEY: String = "boxed"
@@ -42,13 +46,34 @@ fun Symbol.isBoxed(): Boolean {
  * Gets the default value for the symbol if present, else null
  */
 fun Symbol.defaultValue(): String? {
-    // boxed types should always be defaulted to null
-    if (isBoxed()) {
+    val default = getProperty(SymbolProperty.DEFAULT_VALUE_KEY, String::class.java)
+
+    // If shape is boxed (nullable) AND there is no default value set, return nil as default value
+    if (isBoxed() && !default.isPresent) {
         return "nil"
     }
 
-    val default = getProperty(SymbolProperty.DEFAULT_VALUE_KEY, String::class.java)
+    // If default value is present, return default value. Otherwise, return null
     return if (default.isPresent) default.get() else null
+}
+
+/**
+ * Gets the default value for the symbol by processing closure if present, else null
+ */
+fun Symbol.defaultValueFromClosure(writer: SwiftWriter): String? {
+    val default = getProperty(SymbolProperty.DEFAULT_VALUE_CLOSURE_KEY)
+
+    // If shape is boxed (nullable) AND there is no default value set, return nil as default value
+    if (isBoxed() && !default.isPresent) {
+        return "nil"
+    }
+
+    // Suppress the warning and force-cast the closure to the expected type
+    @Suppress("UNCHECKED_CAST")
+    return if (default.isPresent) {
+        val closure = default.get() as Function1<SwiftWriter, String>
+        closure(writer)
+    } else null
 }
 
 /**
@@ -60,6 +85,19 @@ fun Symbol.Builder.boxed(): Symbol.Builder = apply { putProperty(SymbolProperty.
  * Set the default value used when formatting the symbol
  */
 fun Symbol.Builder.defaultValue(value: String): Symbol.Builder = apply { putProperty(SymbolProperty.DEFAULT_VALUE_KEY, value) }
+
+/**
+ * Set the closure that gets called with a SwiftWriter to import symbols needed for default value
+ * Used in SwiftSymbolProvider (which doesn't have access to SwiftWriter).
+ * Allows default value of a symbol X returned by SwiftSymbolProvider to have needed imports
+ *      for symbol Y at the time symbol X is printed by SwiftWriter.
+ *
+ * Example: Default value for a symbol called X could be "Data()", which means when the symbol X is printed by SwiftWriter,
+ *      we need to import Foundation.Data.
+ */
+fun Symbol.Builder.defaultValueClosure(closure: (SwiftWriter) -> String): Symbol.Builder = apply {
+    putProperty(SymbolProperty.DEFAULT_VALUE_CLOSURE_KEY, closure)
+}
 
 fun SymbolProvider.toMemberNames(shape: MemberShape): Pair<String, String> {
     val escapedName = toMemberName(shape)
