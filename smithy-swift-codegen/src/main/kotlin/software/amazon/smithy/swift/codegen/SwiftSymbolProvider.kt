@@ -362,8 +362,8 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
     // Document: default value can be set to null, true, false, string, numbers, an empty list, or an empty map.
     private fun handleDocumentDefaultValue(literal: String, node: Node, builder: Symbol.Builder): Symbol.Builder {
         var formatString = when {
-            node.isObjectNode -> "\$N.object([:])"
-            node.isArrayNode -> "\$N.array([])"
+            node.isObjectNode -> "\$N.map([:])"
+            node.isArrayNode -> "\$N.list([])"
             node.isBooleanNode -> "\$N.boolean($literal)"
             node.isStringNode -> "\$N.string(\"$literal\")"
             node.isNumberNode -> "\$N.number($literal)"
