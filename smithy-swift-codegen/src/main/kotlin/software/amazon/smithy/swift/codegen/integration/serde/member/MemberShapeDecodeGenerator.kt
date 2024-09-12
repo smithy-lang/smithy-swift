@@ -5,8 +5,6 @@
 
 package software.amazon.smithy.swift.codegen.integration.serde.member
 
-import java.math.BigDecimal
-import java.math.BigInteger
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.node.StringNode
@@ -54,6 +52,8 @@ import software.amazon.smithy.swift.codegen.swiftEnumCaseName
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import java.math.BigDecimal
+import java.math.BigInteger
 
 open class MemberShapeDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -275,12 +275,12 @@ open class MemberShapeDecodeGenerator(
                     is Byte -> "byte"
                     is BigInteger -> "bigInteger"
                     is BigDecimal -> "bigDecimal"
-                    else -> "double"  // Default case if not covered
+                    else -> "double" // Default case if not covered
                 }
 
                 writer.format(" ?? \$N.$documentType($resolvedValue)", SmithyTypes.Document)
             }
-            else -> ""// null node type means no default value but explicit
+            else -> "" // null node type means no default value but explicit
         }
     }
 
