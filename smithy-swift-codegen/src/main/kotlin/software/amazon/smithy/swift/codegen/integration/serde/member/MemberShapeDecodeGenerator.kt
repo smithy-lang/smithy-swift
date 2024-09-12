@@ -52,6 +52,8 @@ import software.amazon.smithy.swift.codegen.swiftEnumCaseName
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import java.math.BigInteger
+import java.math.BigDecimal
 
 open class MemberShapeDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -264,7 +266,19 @@ open class MemberShapeDecodeGenerator(
             }
             node.isNumberNode -> {
                 val resolvedValue = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
-                writer.format(" ?? \$N.number($resolvedValue)", SmithyTypes.Document)
+                val documentType = when (resolvedValue) {
+                    is Int -> "integer"
+                    is Long -> "long"
+                    is Double -> "double"
+                    is Float -> "float"
+                    is Short -> "short"
+                    is Byte -> "byte"
+                    is BigInteger -> "bigInteger"
+                    is BigDecimal -> "bigDecimal"
+                    else -> "double"  // Default case if not covered
+                }
+
+                writer.format(" ?? \$N.$documentType($resolvedValue)", SmithyTypes.Document)
             }
             else -> "" // null node type means no default value but explicit
         }

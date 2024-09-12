@@ -9,15 +9,24 @@ import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.DateFormatter
 import class Foundation.JSONSerialization
+import struct Foundation.Locale
 import class Foundation.NSNull
 import class Foundation.NSNumber
 import func CoreFoundation.CFGetTypeID
 import func CoreFoundation.CFBooleanGetTypeID
+import func CoreFoundation.CFNumberGetType
 
 public enum Document {
     case list([Document])
     case boolean(Bool)
-    case number(Double)
+    case double(Double)
+    case integer(Int)
+    case byte(Int8)
+    case short(Int16)
+    case long(Int64)
+    case float(Float)
+    case bigDecimal(Double)
+    case bigInteger(Int64)
     case map([String: Document])
     case string(String)
     case blob(Data)
@@ -51,14 +60,14 @@ extension Document: ExpressibleByDictionaryLiteral {
 }
 
 extension Document: ExpressibleByFloatLiteral {
-    public init(floatLiteral value: Double) {
-        self = .number(value)
+    public init(floatLiteral value: Float) {
+        self = .float(value)
     }
 }
 
 extension Document: ExpressibleByIntegerLiteral {
     public init(integerLiteral value: Int) {
-        self = .number(Double(value))
+        self = .integer(value)
     }
 }
 
@@ -101,8 +110,22 @@ extension Document {
                 return try asList().map { $0.jsonObject }
             case .boolean:
                 return try asBoolean()
-            case .number:
+            case .byte:
+                return try asByte()
+            case .double:
                 return try asDouble()
+            case .integer:
+                return try asInteger()
+            case .float:
+                return try asFloat()
+            case .short:
+                return try asShort()
+            case .long:
+                return try asLong()
+            case .bigInteger:
+                return try asBigInteger()
+            case .bigDecimal:
+                return try asBigDecimal()
             case .map:
                 return try asStringMap().mapValues { $0.jsonObject }
             case .string:
@@ -111,6 +134,7 @@ extension Document {
                 return try asBlob().base64EncodedString()
             case .timestamp:
                 let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_US_POSIX")
                 formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                 return formatter.string(from: try asTimestamp())
             case .null:
@@ -130,7 +154,22 @@ extension Document {
         } else if let nsNumber = jsonObject as? NSNumber, CFGetTypeID(nsNumber) == CFBooleanGetTypeID() {
             return .boolean(nsNumber.boolValue)
         } else if let nsNumber = jsonObject as? NSNumber {
-            return .number(nsNumber.doubleValue)
+            switch CFNumberGetType(nsNumber) {
+            case .sInt8Type, .charType:
+                return .byte(nsNumber.int8Value)
+            case .sInt16Type, .shortType:
+                return .short(nsNumber.int16Value)
+            case .intType, .sInt32Type, .cfIndexType, .nsIntegerType:
+                return .integer(nsNumber.intValue)
+            case .longType, .longLongType, .sInt64Type:
+                return .long(nsNumber.int64Value)
+            case .floatType, .float32Type, .cgFloatType:
+                return .float(nsNumber.floatValue)
+            case .doubleType, .float64Type:
+                return .double(nsNumber.doubleValue)
+            @unknown default:
+                return .double(nsNumber.doubleValue)
+            }
         } else if let string = jsonObject as? String {
             return .string(string)
         } else if let data = jsonObject as? Data {

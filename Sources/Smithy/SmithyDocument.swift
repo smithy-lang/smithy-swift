@@ -21,7 +21,7 @@ protocol SmithyDocument {
 
     // Throw if not numeric. Numeric accessors should automatically coerce a value
     // to the requested numeric type, but throw if the value would overflow.
-    func asByte() throws -> UInt8
+    func asByte() throws -> Int8
     func asShort() throws -> Int16
     func asInteger() throws -> Int
     func asLong() throws -> Int64

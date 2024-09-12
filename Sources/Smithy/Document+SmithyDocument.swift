@@ -46,47 +46,84 @@ extension Document: SmithyDocument {
         }
     }
 
-    func asByte() throws -> UInt8 {
-        let value = try asDouble()
-        guard let byteValue = UInt8(exactly: value) else {
-            throw SmithyDocumentError.numberOverflow("Value \(value) cannot be represented as UInt8")
+    func asByte() throws -> Int8 {
+        guard case .byte(let value) = self else {
+            throw SmithyDocumentError.typeMismatch("\(self) is not of type byte")
         }
+
+        guard let byteValue = Int8(exactly: value) else {
+            throw SmithyDocumentError.numberOverflow("Value \(value) cannot fit in Int8")
+        }
+
         return byteValue
     }
 
     func asShort() throws -> Int16 {
-        let value = try asDouble()
-        guard let shortValue = Int16(exactly: value) else {
-            throw SmithyDocumentError.numberOverflow("Value \(value) cannot be represented as Int16")
+        guard case .short(let value) = self else {
+            throw SmithyDocumentError.typeMismatch("\(self) is not of type short")
         }
+
+        guard let shortValue = Int16(exactly: value) else {
+            throw SmithyDocumentError.numberOverflow("Value \(value) cannot fit in Int16")
+        }
+
         return shortValue
     }
 
     func asInteger() throws -> Int {
-        let value = try asDouble()
-        guard let intValue = Int(exactly: value) else {
-            throw SmithyDocumentError.numberOverflow("Value \(value) cannot be represented as Int")
+        guard case .integer(let value) = self else {
+            throw SmithyDocumentError.typeMismatch("\(self) is not of type integer")
         }
-        return intValue
+
+        guard let integerValue = Int(exactly: value) else {
+            throw SmithyDocumentError.numberOverflow("Value \(value) cannot fit in Int")
+        }
+
+        return integerValue
     }
 
     func asLong() throws -> Int64 {
-        let value = try asDouble()
-        guard let longValue = Int64(exactly: value) else {
-            throw SmithyDocumentError.numberOverflow("Value \(value) cannot be represented as Int64")
+        guard case .long(let value) = self else {
+            throw SmithyDocumentError.typeMismatch("\(self) is not of type long")
         }
+
+        guard let longValue = Int64(exactly: value) else {
+            throw SmithyDocumentError.numberOverflow("Value \(value) cannot fit in Int64")
+        }
+
         return longValue
     }
 
     func asFloat() throws -> Float {
-        return Float(try asDouble())
+        guard case .float(let value) = self else {
+            throw SmithyDocumentError.typeMismatch("\(self) is not of type float")
+        }
+
+        guard let floatValue = Float(exactly: value) else {
+            throw SmithyDocumentError.numberOverflow("Value \(value) cannot fit in Float")
+        }
+
+        return floatValue
     }
 
     func asDouble() throws -> Double {
-        guard case .number(let value) = self else {
-            throw SmithyDocumentError.typeMismatch("Expected number, got \(self)")
+        guard case .double(let value) = self else {
+            throw SmithyDocumentError.typeMismatch("\(self) is not of type double")
         }
-        return value
+
+        guard let doubleValue = Double(exactly: value) else {
+            throw SmithyDocumentError.numberOverflow("Value \(value) cannot fit in Double")
+        }
+
+        return doubleValue
+    }
+
+    func asBigInteger() throws -> Int64 {
+        return try asLong() // BigInteger is not supported at this time
+    }
+
+    func asBigDecimal() throws -> Double {
+        return try asDouble() // BigDecimal is not supported at this time
     }
 
     func asBlob() throws -> Data {
