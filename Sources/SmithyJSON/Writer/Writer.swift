@@ -85,6 +85,11 @@ public extension Writer {
         self.jsonNode = .number(NSNumber(value: value))
     }
 
+    func write(_ value: Int64?) throws {
+        guard let value else { return }
+        self.jsonNode = .number(NSNumber(value: value))
+    }
+
     func write(_ value: Data?) throws {
         try write(value?.base64EncodedString())
     }
@@ -100,7 +105,21 @@ public extension Writer {
             self.jsonNode = .array
         case .boolean(let bool):
             try write(bool)
-        case .number(let number):
+        case .double(let number):
+            try write(number)
+        case .integer(let number):
+            try write(number)
+        case .float(let number):
+            try write(number)
+        case .long(let number):
+            try write(number)
+        case .short(let number):
+            try write(number)
+        case .byte(let number):
+            try write(number)
+        case .bigInteger(let number):
+            try write(number)
+        case .bigDecimal(let number):
             try write(number)
         case .string(let string):
             try write(string)
