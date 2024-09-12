@@ -14,7 +14,6 @@ import class Foundation.NSNull
 import class Foundation.NSNumber
 import func CoreFoundation.CFGetTypeID
 import func CoreFoundation.CFBooleanGetTypeID
-import func CoreFoundation.CFNumberGetType
 
 public enum Document {
     case list([Document])
@@ -151,24 +150,29 @@ extension Document {
             return .map(try object.mapValues { try Document.make(from: $0) })
         } else if let array = jsonObject as? [Any] {
             return .list(try array.map { try Document.make(from: $0) })
-        } else if let nsNumber = jsonObject as? NSNumber, CFGetTypeID(nsNumber) == CFBooleanGetTypeID() {
-            return .boolean(nsNumber.boolValue)
         } else if let nsNumber = jsonObject as? NSNumber {
-            switch CFNumberGetType(nsNumber as CFNumber) {
-            case .sInt8Type, .charType:
+            // Check if the NSNumber is a boolean
+            if CFGetTypeID(nsNumber) == CFBooleanGetTypeID() {
+                return .boolean(nsNumber.boolValue)
+            }
+
+            // Check numeric types
+            let numberType = String(cString: nsNumber.objCType)
+            switch numberType {
+            case "c":  // char
                 return .byte(nsNumber.int8Value)
-            case .sInt16Type, .shortType:
+            case "s":  // short
                 return .short(nsNumber.int16Value)
-            case .intType, .sInt32Type, .cfIndexType, .nsIntegerType:
+            case "i", "l":  // int, long
                 return .integer(nsNumber.intValue)
-            case .longType, .longLongType, .sInt64Type:
+            case "q":  // long long
                 return .long(nsNumber.int64Value)
-            case .floatType, .float32Type, .cgFloatType:
+            case "f":  // float
                 return .float(nsNumber.floatValue)
-            case .doubleType, .float64Type:
+            case "d":  // double
                 return .double(nsNumber.doubleValue)
-            @unknown default:
-                return .double(nsNumber.doubleValue)
+            default:
+                throw SmithyDocumentError.invalidJSONData
             }
         } else if let string = jsonObject as? String {
             return .string(string)
