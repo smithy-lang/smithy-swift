@@ -8,6 +8,7 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.DateFormatter
+import struct Foundation.Locale
 
 extension Document: SmithyDocument {
     func asBoolean() throws -> Bool {
@@ -147,6 +148,7 @@ extension Document: SmithyDocument {
         case .string(let str):
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            formatter.locale = Locale(identifier: "en_US_POSIX")
             guard let date = formatter.date(from: str) else {
                 throw SmithyDocumentError.invalidDateFormat("Invalid date format: \(str)")
             }
