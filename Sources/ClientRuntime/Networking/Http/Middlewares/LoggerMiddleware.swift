@@ -39,9 +39,11 @@ public struct LoggerMiddleware<OperationStackInput, OperationStackOutput> {
     }
 }
 
-extension LoggerMiddleware: HttpInterceptor {
+extension LoggerMiddleware: Interceptor {
     public typealias InputType = OperationStackInput
     public typealias OutputType = OperationStackOutput
+    public typealias RequestType = HTTPRequest
+    public typealias ResponseType = HTTPResponse
 
     public func readBeforeTransmit(
         context: some AfterSerialization<InputType, RequestType>

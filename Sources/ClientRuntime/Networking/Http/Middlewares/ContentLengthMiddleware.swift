@@ -57,9 +57,11 @@ public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput>
     }
 }
 
-extension ContentLengthMiddleware: HttpInterceptor {
+extension ContentLengthMiddleware: Interceptor {
     public typealias InputType = OperationStackInput
     public typealias OutputType = OperationStackOutput
+    public typealias RequestType = HTTPRequest
+    public typealias ResponseType = HTTPResponse
 
     public func modifyBeforeTransmit(
         context: some MutableRequest<InputType, RequestType>

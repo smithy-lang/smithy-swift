@@ -7,6 +7,8 @@
 
 import class Smithy.Context
 import enum SmithyHTTPAPI.HTTPClientError
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPResponse
 
 public struct URLPathMiddleware<OperationStackInput, OperationStackOutput> {
     public let id: Swift.String = "\(String(describing: OperationStackInput.self))URLPathMiddleware"
@@ -31,9 +33,11 @@ public struct URLPathMiddleware<OperationStackInput, OperationStackOutput> {
     }
 }
 
-extension URLPathMiddleware: HttpInterceptor {
+extension URLPathMiddleware: Interceptor {
     public typealias InputType = OperationStackInput
     public typealias OutputType = OperationStackOutput
+    public typealias RequestType = HTTPRequest
+    public typealias ResponseType = HTTPResponse
 
     public func modifyBeforeSerialization(context: some MutableInput<InputType>) async throws {
         // This is an interceptor and not a serializer because endpoints are used to resolve the host
