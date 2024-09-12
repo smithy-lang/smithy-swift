@@ -154,7 +154,7 @@ extension Document {
         } else if let nsNumber = jsonObject as? NSNumber, CFGetTypeID(nsNumber) == CFBooleanGetTypeID() {
             return .boolean(nsNumber.boolValue)
         } else if let nsNumber = jsonObject as? NSNumber {
-            switch CFNumberGetType(nsNumber) {
+            switch CFNumberGetType(nsNumber as CFNumber) {
             case .sInt8Type, .charType:
                 return .byte(nsNumber.int8Value)
             case .sInt16Type, .shortType:
