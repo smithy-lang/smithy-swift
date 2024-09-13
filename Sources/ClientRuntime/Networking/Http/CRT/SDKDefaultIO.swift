@@ -26,12 +26,12 @@ public final class SDKDefaultIO: @unchecked Sendable {
     /// If any log level other than the default log level of `.none` is desired,
     /// this setter needs to be called as the first thing in the program.
     public func setLogLevel(level: LogLevel) {
-        Logger.initialize(pipe: stdout, level: level)
+        Self.setupLogger(level: level)
     }
 
     private init() {
         CommonRuntimeKit.initialize()
-        Logger.initialize(pipe: stdout, level: .none)
+        Self.setupLogger(level: .none)
 
         do {
             self.eventLoopGroup = try EventLoopGroup(threadCount: 0)
@@ -77,6 +77,17 @@ public final class SDKDefaultIO: @unchecked Sendable {
                         Tls Context failed to create. This should never happen.Please open a
                         Github issue with us at https://github.com/awslabs/aws-sdk-swift.
                         """)
+        }
+    }
+
+    private static func setupLogger(level: LogLevel) {
+        do {
+            try Logger.initialize(target: .standardOutput, level: level)
+        } catch {
+            fatalError("""
+            Logger failed to create. This should never happen. Please open a
+            Github issue with us at https://github.com/awslabs/aws-sdk-swift.
+            """)
         }
     }
 }
