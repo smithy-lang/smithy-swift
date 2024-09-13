@@ -165,7 +165,7 @@ open class MemberShapeDecodeGenerator(
         if (requiredTrait != null && defaultTrait == null) {
             return when (targetShape) {
                 is EnumShape -> " ?? .sdkUnknown(\"\")"
-                is IntEnumShape -> " ?? .sdkUnknown(-1)"
+                is IntEnumShape -> " ?? .sdkUnknown(0)"
                 is StringShape -> {
                     // Enum trait is deprecated but many services still use it in their models
                     if (targetShape.hasTrait<EnumTrait>()) {
