@@ -62,7 +62,7 @@ extension ContentMD5Middleware: Interceptor {
     public typealias RequestType = SmithyHTTPAPI.HTTPRequest
     public typealias ResponseType = HTTPResponse
 
-    public func modifyBeforeTransmit(
+    public func modifyBeforeSigning(
         context: some MutableRequest<InputType, RequestType>
     ) async throws {
         let builder = context.getRequest().toBuilder()
