@@ -43,7 +43,7 @@ object ClientRuntimeTypes {
         val EnumBodyMiddleware = runtimeSymbol("EnumBodyMiddleware", SwiftDeclaration.STRUCT)
         val IntEnumBodyMiddleware = runtimeSymbol("IntEnumBodyMiddleware", SwiftDeclaration.STRUCT)
         val StringBodyMiddleware = runtimeSymbol("StringBodyMiddleware", SwiftDeclaration.STRUCT)
-        val HttpInterceptor = runtimeSymbol("HttpInterceptor", SwiftDeclaration.PROTOCOL)
+        val Interceptor = runtimeSymbol("Interceptor", SwiftDeclaration.PROTOCOL)
         val MutableInput = runtimeSymbol("MutableInput", SwiftDeclaration.PROTOCOL)
         val OrchestratorBuilder = runtimeSymbol("OrchestratorBuilder", SwiftDeclaration.CLASS)
         val OrchestratorTelemetry = runtimeSymbol("OrchestratorTelemetry", SwiftDeclaration.CLASS)
