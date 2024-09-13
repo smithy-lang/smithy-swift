@@ -51,7 +51,10 @@ class InterceptorTests: XCTestCase {
         }
     }
 
-    struct AddHeaderInterceptor<InputType, OutputType>: HttpInterceptor {
+    struct AddHeaderInterceptor<InputType, OutputType>: Interceptor {
+        typealias RequestType = HTTPRequest
+        typealias ResponseType = HTTPResponse
+
         private let headerName: String
         private let headerValue: String
 
@@ -67,7 +70,10 @@ class InterceptorTests: XCTestCase {
         }
     }
 
-    struct ModifyMultipleInterceptor: HttpInterceptor {
+    struct ModifyMultipleInterceptor: Interceptor {
+        typealias RequestType = HTTPRequest
+        typealias ResponseType = HTTPResponse
+
         public typealias InputType = TestInput
         public typealias OutputType = TestOutput
 
