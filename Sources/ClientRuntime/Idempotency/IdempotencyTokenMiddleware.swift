@@ -6,6 +6,8 @@
 //
 
 import class Smithy.Context
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPResponse
 
 public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutput> {
     public let id: Swift.String = "IdempotencyTokenMiddleware"
@@ -25,9 +27,11 @@ public struct IdempotencyTokenMiddleware<OperationStackInput, OperationStackOutp
     }
 }
 
-extension IdempotencyTokenMiddleware: HttpInterceptor {
+extension IdempotencyTokenMiddleware: Interceptor {
     public typealias InputType = OperationStackInput
     public typealias OutputType = OperationStackOutput
+    public typealias RequestType = HTTPRequest
+    public typealias ResponseType = HTTPResponse
 
     public func modifyBeforeSerialization(context: some MutableInput<InputType>) async throws {
         let withToken = addToken(input: context.getInput(), attributes: context.getAttributes())

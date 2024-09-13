@@ -21,9 +21,11 @@ public struct ContentTypeMiddleware<OperationStackInput, OperationStackOutput> {
     }
 }
 
-extension ContentTypeMiddleware: HttpInterceptor {
+extension ContentTypeMiddleware: Interceptor {
     public typealias InputType = OperationStackInput
     public typealias OutputType = OperationStackOutput
+    public typealias RequestType = HTTPRequest
+    public typealias ResponseType = HTTPResponse
 
     public func modifyBeforeRetryLoop(
         context: some MutableRequest<InputType, RequestType>

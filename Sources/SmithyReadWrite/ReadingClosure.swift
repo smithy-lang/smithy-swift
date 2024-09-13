@@ -140,6 +140,22 @@ public enum ReadingClosures {
         try reader.readIfPresent()
     }
 
+    public static func readInt8<Reader: SmithyReader>(from reader: Reader) throws -> Int8 {
+        try reader.read()
+    }
+
+    public static func readInt8<Reader: SmithyReader>(from reader: Reader) throws -> Int8? {
+        try reader.readIfPresent()
+    }
+
+    public static func readInt16<Reader: SmithyReader>(from reader: Reader) throws -> Int16 {
+        try reader.read()
+    }
+
+    public static func readInt16<Reader: SmithyReader>(from reader: Reader) throws -> Int16? {
+        try reader.readIfPresent()
+    }
+
     public static func readFloat<Reader: SmithyReader>(from reader: Reader) throws -> Float {
         try reader.read()
     }

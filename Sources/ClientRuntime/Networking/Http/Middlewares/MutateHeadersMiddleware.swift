@@ -4,6 +4,8 @@
 import class Smithy.Context
 import struct SmithyHTTPAPI.Headers
 import class SmithyHTTPAPI.HTTPRequestBuilder
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPResponse
 
 public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput> {
 
@@ -40,9 +42,11 @@ public struct MutateHeadersMiddleware<OperationStackInput, OperationStackOutput>
     }
 }
 
-extension MutateHeadersMiddleware: HttpInterceptor {
+extension MutateHeadersMiddleware: Interceptor {
     public typealias InputType = OperationStackInput
     public typealias OutputType = OperationStackOutput
+    public typealias RequestType = HTTPRequest
+    public typealias ResponseType = HTTPResponse
 
     public func modifyBeforeTransmit(
         context: some MutableRequest<InputType, RequestType>
