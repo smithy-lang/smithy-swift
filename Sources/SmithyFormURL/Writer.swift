@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
-import enum Smithy.Document
+import protocol Smithy.Document
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 import struct Foundation.Data

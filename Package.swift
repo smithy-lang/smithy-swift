@@ -243,7 +243,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyJSONTests",
-            dependencies: ["SmithyJSON", "ClientRuntime"]
+            dependencies: ["SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
         ),
         .testTarget(
             name: "SmithyFormURLTests",

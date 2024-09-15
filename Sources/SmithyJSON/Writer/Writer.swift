@@ -6,7 +6,8 @@
 //
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
-import enum Smithy.Document
+@_spi(SmithyDocumentImpl) import protocol Smithy.Document
+import enum Smithy.DocumentError
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 import struct Foundation.Data
@@ -96,39 +97,55 @@ public extension Writer {
 
     func write(_ value: Document?) throws {
         guard let value else { return }
-        switch value {
-        case .map(let map):
+        switch value.type {
+        case .map:
+            let map = try value.asStringMap()
             try map.forEach { try self[.init($0.key)].write($0.value) }
             self.jsonNode = .object
-        case .list(let list):
+        case .list:
+            let list = try value.asList()
             try list.enumerated().forEach { try self[.init("\($0.offset)")].write($0.element) }
             self.jsonNode = .array
-        case .boolean(let bool):
+        case .boolean:
+            let bool = try value.asBoolean()
             try write(bool)
-        case .double(let number):
-            try write(number)
-        case .integer(let number):
-            try write(number)
-        case .float(let number):
-            try write(number)
-        case .long(let number):
-            try write(number)
-        case .short(let number):
-            try write(number)
-        case .byte(let number):
-            try write(number)
-        case .bigInteger(let number):
-            try write(number)
-        case .bigDecimal(let number):
-            try write(number)
-        case .string(let string):
+        case .double:
+            let double = try value.asDouble()
+            try write(double)
+        case .integer:
+            let int = try value.asInteger()
+            try write(int)
+        case .float:
+            let float = try value.asFloat()
+            try write(float)
+        case .long:
+            let long = try value.asLong()
+            try write(long)
+        case .short:
+            let short = try value.asShort()
+            try write(short)
+        case .byte:
+            let byte = try value.asByte()
+            try write(byte)
+        case .bigInteger:
+            let bigInteger = try value.asBigInteger()
+            try write(bigInteger)
+        case .bigDecimal:
+            let bigDecimal = try value.asBigDecimal()
+            try write(bigDecimal)
+        case .string:
+            let string = try value.asString()
             try write(string)
-        case .blob(let data):
+        case .blob:
+            let data = try value.asBlob()
             try write(data)
-        case .timestamp(let date):
+        case .timestamp:
+            let date = try value.asTimestamp()
             try writeTimestamp(date, format: .dateTime)
-        case .null:
+        case .structure:
             self.jsonNode = .null
+        default:
+            throw DocumentError.invalidJSONData
         }
     }
 

@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
-import enum Smithy.Document
+import protocol Smithy.Document
 @_spi(SmithyReadWrite) import typealias SmithyReadWrite.ReadingClosure
 import struct Foundation.Date
 import struct Foundation.Data

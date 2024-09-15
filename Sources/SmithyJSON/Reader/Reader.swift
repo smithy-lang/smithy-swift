@@ -6,7 +6,8 @@
 //
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
-import enum Smithy.Document
+import protocol Smithy.Document
+import struct Smithy.DocumentContainer
 import typealias SmithyReadWrite.ReadingClosure
 import enum SmithyReadWrite.ReaderError
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
@@ -153,7 +154,7 @@ public extension Reader {
 
     func readIfPresent() throws -> Document? {
         guard let jsonObject = self.jsonObject else { return nil }
-        return try Document.make(from: jsonObject)
+        return try DocumentContainer.make(from: jsonObject)
     }
 
     func readTimestampIfPresent(format: SmithyTimestamps.TimestampFormat) throws -> Date? {
