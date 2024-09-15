@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
-import protocol Smithy.SmithyDocument
+import struct Smithy.Document
 @_spi(SmithyReadWrite) import typealias SmithyReadWrite.ReadingClosure
 import struct Foundation.Date
 import struct Foundation.Data
@@ -114,7 +114,7 @@ public final class Reader: SmithyReader {
         return Data(base64Encoded: Data(content.utf8))
     }
 
-    public func readIfPresent() throws -> SmithyDocument? {
+    public func readIfPresent() throws -> Document? {
         // No operation.  Smithy document not supported in XML
         return nil
     }

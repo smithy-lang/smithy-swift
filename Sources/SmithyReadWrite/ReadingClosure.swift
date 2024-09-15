@@ -7,6 +7,7 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
+import struct Smithy.Document
 import protocol Smithy.SmithyDocument
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 
@@ -180,12 +181,12 @@ public enum ReadingClosures {
         try reader.readIfPresent()
     }
 
-    public static func readDocument<Reader: SmithyReader>(from reader: Reader) throws -> SmithyDocument {
-        try reader.read()
+    public static func readDocument<Reader: SmithyReader>(from reader: Reader) throws -> Document {
+        Document(document: try reader.read())
     }
 
-    public static func readDocument<Reader: SmithyReader>(from reader: Reader) throws -> SmithyDocument? {
-        try reader.readIfPresent()
+    public static func readDocument<Reader: SmithyReader>(from reader: Reader) throws -> Document? {
+        (try reader.readIfPresent()).map { Document(document: $0) }
     }
 }
 

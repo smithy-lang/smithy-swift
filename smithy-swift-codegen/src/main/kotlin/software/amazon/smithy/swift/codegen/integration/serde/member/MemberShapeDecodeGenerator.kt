@@ -38,6 +38,7 @@ import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtils
@@ -52,8 +53,6 @@ import software.amazon.smithy.swift.codegen.swiftEnumCaseName
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
-import java.math.BigDecimal
-import java.math.BigInteger
 
 open class MemberShapeDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -254,32 +253,21 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun resolveDocumentDefault(useZeroValue: Boolean, node: Node): String {
+        writer.addImport(SwiftDependency.SMITHY_JSON.target)
         return when {
-            node.isObjectNode -> writer.format(" ?? \$N.map([:])", SmithyTypes.Document)
-            node.isArrayNode -> writer.format(" ?? \$N.list([])", SmithyTypes.Document)
+            node.isObjectNode -> writer.format(" ?? [:]")
+            node.isArrayNode -> writer.format(" ?? []")
             node.isStringNode -> {
                 val resolvedValue = "".takeIf { useZeroValue } ?: node.expectStringNode().value
-                writer.format(" ?? \$N.string(\"$resolvedValue\")", SmithyTypes.Document)
+                writer.format(" ?? \"$resolvedValue\"")
             }
             node.isBooleanNode -> {
                 val resolvedValue = "false".takeIf { useZeroValue } ?: node.expectBooleanNode().value
-                writer.format(" ?? \$N.boolean($resolvedValue)", SmithyTypes.Document)
+                writer.format(" ?? $resolvedValue")
             }
             node.isNumberNode -> {
                 val resolvedValue = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
-                val documentType = when (resolvedValue) {
-                    is Int -> "integer"
-                    is Long -> "long"
-                    is Double -> "double"
-                    is Float -> "float"
-                    is Short -> "short"
-                    is Byte -> "byte"
-                    is BigInteger -> "bigInteger"
-                    is BigDecimal -> "bigDecimal"
-                    else -> "double" // Default case if not covered
-                }
-
-                writer.format(" ?? \$N.$documentType($resolvedValue)", SmithyTypes.Document)
+                writer.format(" ?? $resolvedValue")
             }
             else -> "" // null node type means no default value but explicit
         }
