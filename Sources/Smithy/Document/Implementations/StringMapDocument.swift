@@ -6,15 +6,15 @@
 //
 
 @_spi(SmithyDocumentImpl)
-public struct StringMapDocument: Document {
+public struct StringMapDocument: SmithyDocument {
     public var type: ShapeType { .map }
-    let value: [String: any Document]
+    let value: [String: SmithyDocument]
 
-    public init(value: [String: any Document]) {
+    public init(value: [String: SmithyDocument]) {
         self.value = value
     }
 
-    public func asStringMap() throws -> [String: any Document] {
+    public func asStringMap() throws -> [String: SmithyDocument] {
         return value
     }
 
@@ -22,7 +22,7 @@ public struct StringMapDocument: Document {
         value.count
     }
 
-    public func getMember(_ memberName: String) throws -> (any Document)? {
+    public func getMember(_ memberName: String) throws -> SmithyDocument? {
         value[memberName]
     }
 

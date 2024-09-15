@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyDocumentImpl)
-public struct FloatDocument: Document {
+public struct FloatDocument: SmithyDocument {
     public var type: ShapeType { .float }
     let value: Float
 

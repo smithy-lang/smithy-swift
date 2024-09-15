@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
-@_spi(SmithyDocumentImpl) import protocol Smithy.Document
+@_spi(SmithyDocumentImpl) import protocol Smithy.SmithyDocument
 import enum Smithy.DocumentError
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
@@ -95,7 +95,7 @@ public extension Writer {
         try write(value?.base64EncodedString())
     }
 
-    func write(_ value: Document?) throws {
+    func write(_ value: SmithyDocument?) throws {
         guard let value else { return }
         switch value.type {
         case .map:

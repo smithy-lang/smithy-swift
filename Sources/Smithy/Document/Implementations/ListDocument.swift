@@ -6,15 +6,15 @@
 //
 
 @_spi(SmithyDocumentImpl)
-public struct ListDocument: Document {
+public struct ListDocument: SmithyDocument {
     public var type: ShapeType { .list }
-    let value: [any Document]
+    let value: [SmithyDocument]
 
-    public init(value: [any Document]) {
+    public init(value: [SmithyDocument]) {
         self.value = value
     }
 
-    public func asList() throws -> [any Document] {
+    public func asList() throws -> [SmithyDocument] {
         return value
     }
 

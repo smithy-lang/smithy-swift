@@ -8,7 +8,7 @@
 import struct Foundation.Data
 
 @_spi(SmithyDocumentImpl)
-public struct BlobDocument: Document {
+public struct BlobDocument: SmithyDocument {
     public var type: ShapeType { .blob }
     let value: Data
 

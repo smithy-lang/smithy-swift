@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyDocumentImpl)
-public struct ByteDocument: Document {
+public struct ByteDocument: SmithyDocument {
     public var type: ShapeType { .byte }
     let value: Int8
 

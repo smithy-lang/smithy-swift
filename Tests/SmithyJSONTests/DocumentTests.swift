@@ -21,12 +21,12 @@ class DocumentTests: XCTestCase {
         "null": NSNull()
     ]
     lazy var jsonData: Data = { try! JSONSerialization.data(withJSONObject: json) }()
-    lazy var jsonDocument = { try! DocumentContainer.make(from: json) }()
+    lazy var jsonDocument = { try! Document.make(from: json) }()
 
     func test_encode_encodesJSON() throws {
 
         // Create a Smithy document from the JSON object
-        let document = try DocumentContainer.make(from: json)
+        let document = try Document.make(from: json)
 
         // Write the JSON to a JSON writer.
         let writer = SmithyJSON.Writer(nodeInfo: "")
@@ -39,7 +39,7 @@ class DocumentTests: XCTestCase {
 
     func test_decode_decodesJSON() throws {
         let reader = try SmithyJSON.Reader.from(data: jsonData)
-        let decodedJSONDocument = try reader.readIfPresent().map { DocumentContainer(document: $0) }
+        let decodedJSONDocument = try reader.readIfPresent().map { Document(document: $0) }
 
         XCTAssertEqual(jsonDocument, decodedJSONDocument)
     }

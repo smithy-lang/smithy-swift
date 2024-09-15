@@ -16,15 +16,15 @@ import class Foundation.NSNull
 import class Foundation.NSNumber
 @_spi(SmithyDocumentImpl) import Smithy
 
-public extension DocumentContainer {
+public extension Document {
 
-    static func make(from data: Data) throws -> DocumentContainer {
+    static func make(from data: Data) throws -> Document {
         let jsonObject = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
         return try Self.make(from: jsonObject)
     }
 
-    static func make(from jsonObject: Any) throws -> DocumentContainer {
-        let doc: any Document
+    static func make(from jsonObject: Any) throws -> Document {
+        let doc: SmithyDocument
         if let object = jsonObject as? [String: Any] {
             doc = StringMapDocument(value: try object.mapValues { try Self.make(from: $0) })
         } else if let array = jsonObject as? [Any] {
@@ -64,6 +64,6 @@ public extension DocumentContainer {
         } else {
             throw DocumentError.invalidJSONData
         }
-        return DocumentContainer(document: doc)
+        return Document(document: doc)
     }
 }

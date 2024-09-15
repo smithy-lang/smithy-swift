@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyDocumentImpl)
-public struct BooleanDocument: Document {
+public struct BooleanDocument: SmithyDocument {
     public var type: ShapeType { .boolean }
     let value: Bool
 

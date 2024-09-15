@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyDocumentImpl)
-public struct LongDocument: Document {
+public struct LongDocument: SmithyDocument {
     public var type: ShapeType { .long }
     let value: Int64
 

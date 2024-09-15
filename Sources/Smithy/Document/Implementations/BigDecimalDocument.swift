@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyDocumentImpl)
-public struct BigDecimalDocument: Document {
+public struct BigDecimalDocument: SmithyDocument {
     public var type: ShapeType { .bigDecimal }
     let value: Double
 

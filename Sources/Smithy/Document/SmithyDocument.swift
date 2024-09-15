@@ -8,15 +8,15 @@
 import struct Foundation.Data
 import struct Foundation.Date
 
-public protocol Document {
+public protocol SmithyDocument {
 
     var type: ShapeType { get }
 
     // "as" methods throw if the document doesn't match the requested type.
     func asBoolean() throws -> Bool
     func asString() throws -> String
-    func asList() throws -> [any Document]
-    func asStringMap() throws -> [String: any Document]
+    func asList() throws -> [SmithyDocument]
+    func asStringMap() throws -> [String: SmithyDocument]
 
     // Get the number of list elements or map entries. Returns -1 if the
     // document is not a list or map.
@@ -42,12 +42,12 @@ public protocol Document {
     func asTimestamp() throws -> Date
 
     // Get a member by name, taking protocol details like jsonName into account.
-    func getMember(_ memberName: String) throws -> (any Document)?
+    func getMember(_ memberName: String) throws -> SmithyDocument?
 }
 
 // Default implementations for a Document that either throw or (for size())
 // return a default value.
-public extension Document {
+public extension SmithyDocument {
 
     func asBoolean() throws -> Bool {
         throw DocumentError.typeMismatch("Expected boolean, got \(self)")
@@ -57,11 +57,11 @@ public extension Document {
         throw DocumentError.typeMismatch("Expected string, got \(self)")
     }
 
-    func asList() throws -> [any Document] {
+    func asList() throws -> [SmithyDocument] {
         throw DocumentError.typeMismatch("Expected list, got \(self)")
     }
 
-    func asStringMap() throws -> [String: any Document] {
+    func asStringMap() throws -> [String: SmithyDocument] {
         throw DocumentError.typeMismatch("Expected map, got \(self)")
     }
 
@@ -109,14 +109,14 @@ public extension Document {
         throw DocumentError.typeMismatch("Expected timestamp, got \(self)")
     }
 
-    func getMember(_ memberName: String) throws -> (any Document)? {
+    func getMember(_ memberName: String) throws -> SmithyDocument? {
         throw DocumentError.typeMismatch("Expected a map, structure, or union document, got \(self)")
     }
 }
 
-extension Document {
+extension SmithyDocument {
 
-    public static func isEqual(_ lhs: any Document, _ rhs: any Document) -> Bool {
+    public static func isEqual(_ lhs: SmithyDocument, _ rhs: SmithyDocument) -> Bool {
         switch (lhs.type, rhs.type) {
         case (.blob, .blob):
             return (try? lhs.asBlob() == rhs.asBlob()) ?? false

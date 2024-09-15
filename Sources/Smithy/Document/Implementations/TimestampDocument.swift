@@ -8,7 +8,7 @@
 import struct Foundation.Date
 
 @_spi(SmithyDocumentImpl)
-public struct TimestampDocument: Document {
+public struct TimestampDocument: SmithyDocument {
     public var type: ShapeType { .timestamp }
     let value: Date
 

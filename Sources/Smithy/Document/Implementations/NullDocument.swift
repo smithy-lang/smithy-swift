@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyDocumentImpl)
-public struct NullDocument: Document {
+public struct NullDocument: SmithyDocument {
     public var type: ShapeType { .structure }  // think of this as a Unit structure
 
     public init() {}

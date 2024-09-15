@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyDocumentImpl)
-public struct DoubleDocument: Document {
+public struct DoubleDocument: SmithyDocument {
     public var type: ShapeType { .double }
     let value: Double
 

@@ -8,24 +8,24 @@
 import struct Foundation.Data
 import struct Foundation.Date
 
-public struct DocumentContainer: Document {
+public struct Document: SmithyDocument {
     public var type: Smithy.ShapeType { document.type }
-    let document: any Document
+    let document: SmithyDocument
 
-    public init(document: any Document) {
+    public init(document: SmithyDocument) {
         self.document = document
     }
 }
 
-extension DocumentContainer: Equatable {
+extension Document: Equatable {
 
-    public static func ==(_ lhs: DocumentContainer, _ rhs: DocumentContainer) -> Bool {
+    public static func ==(_ lhs: Document, _ rhs: Document) -> Bool {
         isEqual(lhs.document, rhs.document)
     }
 }
 
 // All of these implementations simply delegate to the inner document.
-public extension DocumentContainer {
+public extension Document {
 
     func asBoolean() throws -> Bool {
         try document.asBoolean()
@@ -35,11 +35,11 @@ public extension DocumentContainer {
         try document.asString()
     }
 
-    func asList() throws -> [any Document] {
+    func asList() throws -> [SmithyDocument] {
         try document.asList()
     }
 
-    func asStringMap() throws -> [String: any Document] {
+    func asStringMap() throws -> [String: SmithyDocument] {
         try document.asStringMap()
     }
 
@@ -87,7 +87,7 @@ public extension DocumentContainer {
         try document.asTimestamp()
     }
 
-    func getMember(_ memberName: String) throws -> (any Document)? {
+    func getMember(_ memberName: String) throws -> SmithyDocument? {
         try document.getMember(memberName)
     }
 }
