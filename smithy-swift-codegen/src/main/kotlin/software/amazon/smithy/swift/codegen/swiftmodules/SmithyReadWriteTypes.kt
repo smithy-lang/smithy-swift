@@ -13,7 +13,6 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 object SmithyReadWriteTypes {
     val SmithyReader = runtimeSymbol("SmithyReader", SwiftDeclaration.PROTOCOL)
     val SmithyWriter = runtimeSymbol("SmithyWriter", SwiftDeclaration.PROTOCOL)
-    val Document = runtimeSymbol("Document", SwiftDeclaration.ENUM, emptyList())
     val ReaderError = runtimeSymbol("ReaderError", SwiftDeclaration.ENUM, emptyList())
     val mapWritingClosure = runtimeSymbol("mapWritingClosure", SwiftDeclaration.FUNC)
     val listWritingClosure = runtimeSymbol("listWritingClosure", SwiftDeclaration.FUNC)

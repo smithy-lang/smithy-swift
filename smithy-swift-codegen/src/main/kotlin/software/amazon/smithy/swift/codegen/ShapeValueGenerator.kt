@@ -27,8 +27,8 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toMemberNames
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
 
@@ -90,7 +90,7 @@ class ShapeValueGenerator(
     private fun documentDecl(writer: SwiftWriter, node: Node) {
         writer.openBlock(
             "try \$N.make(from: Data(\"\"\"", "\"\"\".utf8))",
-            SmithyReadWriteTypes.Document,
+            SmithyTypes.Document,
         ) {
             writer.write(Node.prettyPrintJson(node))
         }

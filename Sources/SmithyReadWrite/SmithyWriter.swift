@@ -9,6 +9,7 @@ import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 import enum Smithy.ByteStream
+import protocol Smithy.SmithyDocument
 
 @_spi(SmithyReadWrite)
 public protocol SmithyWriter: AnyObject {
@@ -27,7 +28,7 @@ public protocol SmithyWriter: AnyObject {
     func write(_ value: Int16?) throws
     func write(_ value: UInt8?) throws
     func write(_ value: Data?) throws
-    func write(_ value: Document?) throws
+    func write(_ value: SmithyDocument?) throws
     func writeTimestamp(_ value: Date?, format: TimestampFormat) throws
     func write<T: RawRepresentable>(_ value: T?) throws where T.RawValue == Int
     func write<T: RawRepresentable>(_ value: T?) throws where T.RawValue == String
