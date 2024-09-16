@@ -8,8 +8,8 @@
 import struct Foundation.Data
 import struct Foundation.Date
 
+/// A type-erased container for some value conforming to the `SmithyDocument` protocol.
 public struct Document: SmithyDocument {
-    public var type: Smithy.ShapeType { document.type }
     let document: SmithyDocument
 
     public init(document: SmithyDocument) {
@@ -17,6 +17,9 @@ public struct Document: SmithyDocument {
     }
 }
 
+// Since protocol-bound values cannot conform to Self-referencing
+// protocols like `Equatable`, the `Document` container provides the
+// `Equatable` conformance.
 extension Document: Equatable {
 
     public static func ==(_ lhs: Document, _ rhs: Document) -> Bool {
@@ -24,8 +27,13 @@ extension Document: Equatable {
     }
 }
 
-// All of these implementations simply delegate to the inner document.
+// All of these implementations of `SmithyDocument` methods simply delegate
+// to the inner document.
 public extension Document {
+
+    var type: Smithy.ShapeType {
+        document.type
+    }
 
     func asBoolean() throws -> Bool {
         try document.asBoolean()

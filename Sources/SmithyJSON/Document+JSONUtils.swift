@@ -22,7 +22,17 @@ public extension Document {
         let jsonObject = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
         return try Self.make(from: jsonObject)
     }
-
+    
+    /// Creates a Smithy `Document` from a Swift JSON object.
+    ///
+    /// The JSON object should obey the following:
+    /// - The top level object is an NSArray or NSDictionary.
+    /// - All objects are instances of NSString, NSNumber, NSArray, NSDictionary, or NSNull.
+    /// - All dictionary keys are instances of NSString.
+    /// - Numbers are neither NaN nor infinity.
+    /// The JSON object
+    /// - Parameter jsonObject: The JSON object
+    /// - Returns: A Smithy `Document` containing the JSON.
     static func make(from jsonObject: Any) throws -> Document {
         let doc: SmithyDocument
         if let object = jsonObject as? [String: Any] {
@@ -30,35 +40,14 @@ public extension Document {
         } else if let array = jsonObject as? [Any] {
             doc = ListDocument(value: try array.map { try Self.make(from: $0) })
         } else if let nsNumber = jsonObject as? NSNumber {
-            // Check if the NSNumber is a boolean
+            // Check if the NSNumber is a boolean, else treat it as double
             if CFGetTypeID(nsNumber) == CFBooleanGetTypeID() {
                 doc = BooleanDocument(value: nsNumber.boolValue)
             } else {
-                // Check numeric types
-                let numberType = String(cString: nsNumber.objCType)
-                switch numberType {
-                case "c":  // char
-                    doc = ByteDocument(value: nsNumber.int8Value)
-                case "s":  // short
-                    doc = ShortDocument(value: nsNumber.int16Value)
-                case "i", "l":  // int, long
-                    doc = IntegerDocument(value: nsNumber.intValue)
-                case "q":  // long long
-                    doc = LongDocument(value: nsNumber.int64Value)
-                case "f":  // float
-                    doc = FloatDocument(value: nsNumber.floatValue)
-                case "d":  // double
-                    doc = DoubleDocument(value: nsNumber.doubleValue)
-                default:
-                    throw DocumentError.invalidJSONData
-                }
+                doc = DoubleDocument(value: nsNumber.doubleValue)
             }
         } else if let string = jsonObject as? String {
             doc = StringDocument(value: string)
-        } else if let data = jsonObject as? Data {
-            doc = BlobDocument(value: data)
-        } else if let date = jsonObject as? Date {
-            doc = TimestampDocument(value: date)
         } else if jsonObject is NSNull {
             doc = NullDocument()
         } else {
