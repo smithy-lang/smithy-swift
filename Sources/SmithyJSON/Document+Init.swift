@@ -10,14 +10,14 @@
 extension Document: ExpressibleByArrayLiteral {
 
     public init(arrayLiteral value: Document...) {
-        self.init(document: ListDocument(value: value))
+        self.init(ListDocument(value: value))
     }
 }
 
 extension Document: ExpressibleByBooleanLiteral {
 
     public init(booleanLiteral value: Bool) {
-        self.init(document: BooleanDocument(value: value))
+        self.init(BooleanDocument(value: value))
     }
 }
 
@@ -29,34 +29,34 @@ extension Document: ExpressibleByDictionaryLiteral {
             newValue[curr.0] = curr.1
             return newValue
         }
-        self.init(document: StringMapDocument(value: value))
+        self.init(StringMapDocument(value: value))
     }
 }
 
 extension Document: ExpressibleByFloatLiteral {
 
     public init(floatLiteral value: Float) {
-        self.init(document: FloatDocument(value: value))
+        self.init(FloatDocument(value: value))
     }
 }
 
 extension Document: ExpressibleByIntegerLiteral {
 
     public init(integerLiteral value: Int) {
-        self.init(document: IntegerDocument(value: value))
+        self.init(IntegerDocument(value: value))
     }
 }
 
 extension Document: ExpressibleByNilLiteral {
 
     public init(nilLiteral: ()) {
-        self.init(document: NullDocument())
+        self.init(NullDocument())
     }
 }
 
 extension Document: ExpressibleByStringLiteral {
 
     public init(stringLiteral value: String) {
-        self.init(document: StringDocument(value: value))
+        self.init(StringDocument(value: value))
     }
 }

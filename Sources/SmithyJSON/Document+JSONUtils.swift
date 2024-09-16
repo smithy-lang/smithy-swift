@@ -22,7 +22,7 @@ public extension Document {
         let jsonObject = try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
         return try Self.make(from: jsonObject)
     }
-    
+
     /// Creates a Smithy `Document` from a Swift JSON object.
     ///
     /// The JSON object should obey the following:
@@ -53,6 +53,6 @@ public extension Document {
         } else {
             throw DocumentError.invalidJSONData
         }
-        return Document(document: doc)
+        return Document(doc)
     }
 }

@@ -29,7 +29,7 @@ extension HTTPRequestBuilder {
             replacingQueryItems(components.percentEncodedQueryItems?.map {
                 URIQueryItem(name: $0.name, value: $0.value)
             } ?? [URIQueryItem]())
-        } else if crtRequest as? HTTP2Request != nil {
+        } else if crtRequest is HTTP2Request {
             assertionFailure("HTTP2Request not supported")
         } else {
             assertionFailure("Unknown request type")

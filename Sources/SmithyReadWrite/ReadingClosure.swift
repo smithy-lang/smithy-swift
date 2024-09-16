@@ -182,11 +182,11 @@ public enum ReadingClosures {
     }
 
     public static func readDocument<Reader: SmithyReader>(from reader: Reader) throws -> Document {
-        Document(document: try reader.read())
+        Document(try reader.read())
     }
 
     public static func readDocument<Reader: SmithyReader>(from reader: Reader) throws -> Document? {
-        (try reader.readIfPresent()).map { Document(document: $0) }
+        (try reader.readIfPresent()).map { Document($0) }
     }
 }
 

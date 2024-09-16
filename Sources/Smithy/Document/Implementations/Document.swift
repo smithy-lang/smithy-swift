@@ -12,7 +12,7 @@ import struct Foundation.Date
 public struct Document: SmithyDocument {
     let document: SmithyDocument
 
-    public init(document: SmithyDocument) {
+    public init(_ document: SmithyDocument) {
         self.document = document
     }
 }
