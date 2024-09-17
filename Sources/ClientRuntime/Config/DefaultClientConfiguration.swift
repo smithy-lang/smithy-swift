@@ -10,10 +10,10 @@ import struct SmithyRetriesAPI.RetryStrategyOptions
 public protocol DefaultClientConfiguration: ClientConfiguration {
     /// The configuration for retry of failed network requests.
     ///
-    /// Default options are provided if none are set.
+    /// Default options are used if none are set.
     var retryStrategyOptions: RetryStrategyOptions { get set }
 
-    /// The log mode to use for client logging.
+    /// The log mode to use for request / response messages.
     ///
     /// If none is provided, `.none` will be used.
     var clientLogMode: ClientLogMode { get set }
@@ -31,7 +31,7 @@ public protocol DefaultClientConfiguration: ClientConfiguration {
     /// If none is provided, only a default logger provider will be used.
     var telemetryProvider: TelemetryProvider { get set }
 
-    /// Add an `InterceptorProvider` that will be used to provide interceptors for all operations.
+    /// Adds an `InterceptorProvider` that will be used to provide interceptors for all operations.
     ///
     /// - Parameter provider: The `InterceptorProvider` to add.
     func addInterceptorProvider(_ provider: InterceptorProvider)
