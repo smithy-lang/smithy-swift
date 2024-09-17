@@ -191,8 +191,8 @@ jobs:
         swift:
           - 5.9-amazonlinux2
           - 5.9-focal
-          - 5.10-amazonlinux2
-          - 5.10-jammy
+          - 6.0-amazonlinux2
+          - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}
     env:
@@ -245,8 +245,8 @@ jobs:
         swift:
           - 5.9-amazonlinux2
           - 5.9-focal
-          - 5.10-amazonlinux2
-          - 5.10-jammy
+          - 6.0-amazonlinux2
+          - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}
     env:
