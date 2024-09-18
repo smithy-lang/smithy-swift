@@ -6,12 +6,6 @@
 //
 
 import AwsCommonRuntimeKit
-import class Foundation.ProcessInfo
-#if os(Linux)
-import Glibc
-#else
-import Darwin
-#endif
 
 public final class SDKDefaultIO: @unchecked Sendable {
     public let eventLoopGroup: EventLoopGroup
@@ -25,13 +19,24 @@ public final class SDKDefaultIO: @unchecked Sendable {
     /// The setter for changing log level of SDKDefaultIO logger.
     /// If any log level other than the default log level of `.none` is desired,
     /// this setter needs to be called as the first thing in the program.
-    public func setLogLevel(level: LogLevel) {
-        Self.setupLogger(level: level)
+    public static func setLogLevel(level: LogLevel) {
+        do {
+            try Logger.initialize(target: .standardOutput, level: level)
+        } catch {
+            failOnLogger()
+        }
     }
 
     private init() {
         CommonRuntimeKit.initialize()
-        Self.setupLogger(level: .none)
+        do {
+            try Logger.initialize(target: .standardOutput, level: .none)
+        } catch CommonRunTimeError.crtError(let error)
+                    where error.code == 6 && error.name == "AWS_ERROR_UNSUPPORTED_OPERATION" {
+            // logger was already initialized, no need to initialize it
+        } catch {
+            Self.failOnLogger()
+        }
 
         do {
             self.eventLoopGroup = try EventLoopGroup(threadCount: 0)
@@ -89,5 +94,12 @@ public final class SDKDefaultIO: @unchecked Sendable {
             Github issue with us at https://github.com/awslabs/aws-sdk-swift.
             """)
         }
+    }
+
+    private static func failOnLogger() -> Never {
+        fatalError("""
+        Logger failed to create. This should never happen. Please open a
+        Github issue with us at https://github.com/awslabs/aws-sdk-swift.
+        """)
     }
 }
