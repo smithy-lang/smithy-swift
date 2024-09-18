@@ -536,14 +536,19 @@ public class CRTClientEngine: HTTPClient {
             switch result {
             case .success(let statusCode):
                 response.statusCode = makeStatusCode(statusCode)
+                stream.close()
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
+                let resumedAlready = continuation.continuation == nil
                 continuation.safeResume(error: error)
+                // If continuation was resumed already & therefore above resume was a no-op,
+                //    throw the error when closing stream. Otherwise, just close the stream.
+                if resumedAlready {
+                    stream.closeWithError(error)
+                } else {
+                    stream.close()
+                }
             }
-
-            // closing the stream is required to signal to the caller that the response is complete
-            // and no more data will be received in this stream
-            stream.close()
         }
 
         requestOptions.http2ManualDataWrites = http2ManualDataWrites
