@@ -15,6 +15,17 @@
 - Try out Smithy by following [the quick start guide](https://smithy.io/2.0/quickstart.html)
 - Apply the Smithy Swift codegen plugin to your Gradle project to generate Swift code
 
+## Feedback
+
+If you'd like to provide feedback, report a bug, request a feature, or would like to bring
+attention to an issue in general, please do so by submitting a GitHub issue to the repo [here](https://github.com/smithy-lang/smithy-swift/issues/new/choose).
+
+This is the preferred mechanism for user feedback as it allows anyone with similar issue or suggestion to engage in conversation as well.
+
+## Contributing
+
+If you are interested in contributing to Smithy Swift, see [CONTRIBUTING](CONTRIBUTING.md) for more information.
+
 ## Development
 
 ### Module Structure
@@ -56,18 +67,7 @@
   * `SmithyFormURL` - serde implementations specific to FormURL
   * `SmithyTestUtil` - helper methods for auto-generated Swift unit tests.
 
-> For more information on runtime modules, see [the Smithy Runtime Module Documentation](https://sdk.amazonaws.com/swift/api/awssdkforswift/latest/documentation/awssdkforswift#Smithy-Runtime-Module-Documentation).
-
-## Feedback
-
-If you'd like to provide feedback, report a bug, request a feature, or would like to bring
-attention to an issue in general, please do so by submitting a GitHub issue to the repo [here](https://github.com/smithy-lang/smithy-swift/issues/new/choose).
-
-This is the preferred mechanism for user feedback as it allows anyone with similar issue or suggestion to engage in conversation as well.
-
-## Contributing
-
-If you are interested in contributing to Smithy Swift, see [CONTRIBUTING](CONTRIBUTING.md) for more information.
+> For more information on runtime modules, see [the Smithy Runtime Module Documentation in API reference](https://sdk.amazonaws.com/swift/api/awssdkforswift/latest/documentation/awssdkforswift#Smithy-Runtime-Module-Documentation).
 
 ## License
 
@@ -76,4 +76,3 @@ This project is licensed under the Apache-2.0 License.
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md) for more information.
-
