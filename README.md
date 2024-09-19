@@ -67,7 +67,7 @@ If you are interested in contributing to Smithy Swift, see [CONTRIBUTING](CONTRI
   * `SmithyFormURL` - serde implementations specific to FormURL
   * `SmithyTestUtil` - helper methods for auto-generated Swift unit tests.
 
-> For more information on runtime modules, see [the Smithy Runtime Module Documentation in API reference](https://sdk.amazonaws.com/swift/api/awssdkforswift/latest/documentation/awssdkforswift#Smithy-Runtime-Module-Documentation).
+> 📖 For more information on runtime modules, see [the Smithy Runtime Module Documentation in API reference](https://sdk.amazonaws.com/swift/api/awssdkforswift/latest/documentation/awssdkforswift#Smithy-Runtime-Module-Documentation).
 
 ## License
 
