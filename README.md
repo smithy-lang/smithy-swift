@@ -51,9 +51,9 @@
   * `SmithyStreams` - concrete stream types
   * `SmithyTimestamps` - utility implementations for timestamp shapes in Smithy
   * `SmithyReadWrite` - generic implementations for runtime serde
-  * `SmithyJSON` - serde implementations for specific to JSON
-  * `SmithyXML` - serde implementations for specific to XML
-  * `SmithyFormURL` - serde implementations for specific to FormURL
+  * `SmithyJSON` - serde implementations specific to JSON
+  * `SmithyXML` - serde implementations specific to XML
+  * `SmithyFormURL` - serde implementations specific to FormURL
   * `SmithyTestUtil` - helper methods for auto-generated Swift unit tests.
 
 > For more information on runtime modules, see [the Smithy Runtime Module Documentation](https://sdk.amazonaws.com/swift/api/awssdkforswift/latest/documentation/awssdkforswift#Smithy-Runtime-Module-Documentation).
