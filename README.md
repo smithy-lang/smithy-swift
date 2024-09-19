@@ -56,6 +56,8 @@
   * `SmithyFormURL` - serde implementations for specific to FormURL
   * `SmithyTestUtil` - helper methods for auto-generated Swift unit tests.
 
+> For more information on runtime modules, see [the Smithy Runtime Module Documentation](https://sdk.amazonaws.com/swift/api/awssdkforswift/latest/documentation/awssdkforswift#Smithy-Runtime-Module-Documentation).
+
 ## Feedback
 
 If you'd like to provide feedback, report a bug, request a feature, or would like to bring
