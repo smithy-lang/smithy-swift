@@ -11,7 +11,7 @@ import SmithyEventStreamsAuthAPI
 import struct Foundation.Data
 
 /// Stream adapter that encodes input into `Data` objects.
-public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream {
+public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream, @unchecked Sendable {
 
     let stream: AsyncThrowingStream<Event, Error>
     let messageEncoder: MessageEncoder

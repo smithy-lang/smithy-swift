@@ -8,7 +8,7 @@
 import struct Foundation.Data
 
 /// Protocol that provides reading data from a stream
-public protocol ReadableStream: AnyObject {
+public protocol ReadableStream: AnyObject, Sendable {
     /// Returns the current position in the stream
     var position: Data.Index { get }
 
@@ -45,7 +45,7 @@ public protocol ReadableStream: AnyObject {
 }
 
 /// Protocol that provides writing data to a stream
-public protocol WriteableStream: AnyObject {
+public protocol WriteableStream: AnyObject, Sendable {
     ///  Writes the contents of `data` to the stream
     /// - Parameter data: data to write
     func write(contentsOf data: Data) throws
