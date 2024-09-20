@@ -23,9 +23,6 @@ import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
-import software.amazon.smithy.swift.codegen.SwiftCodegenPlugin
-import software.amazon.smithy.swift.codegen.SwiftDelegator
-import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator

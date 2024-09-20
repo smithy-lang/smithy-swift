@@ -6,11 +6,11 @@ package software.amazon.smithy.swift.codegen.protocolspecificserde.awsjson11
  */
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJson11ProtocolGenerator
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.TestContext
 import software.amazon.smithy.swift.codegen.defaultSettings
 import software.amazon.smithy.swift.codegen.getFileContents
+import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJson11ProtocolGenerator
 import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class NestedListEncodeJSONGenerationTests {

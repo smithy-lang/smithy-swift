@@ -6,12 +6,12 @@ package software.amazon.smithy.swift.codegen.manifestanddocs
  */
 
 import io.kotest.matchers.string.shouldContain
-import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJson11ProtocolGenerator
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.PackageManifestGenerator
 import software.amazon.smithy.swift.codegen.TestContext
 import software.amazon.smithy.swift.codegen.defaultSettings
+import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJson11ProtocolGenerator
 
 class PackageManifestGeneratorTests {
     private val testContext = setupTests("simple-service-with-operation-and-dependency.smithy", "smithy.example#Example")

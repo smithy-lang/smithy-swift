@@ -11,10 +11,6 @@ import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.WriterDelegator
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.swift.codegen.PaginatorGenerator
-import software.amazon.smithy.swift.codegen.SwiftDelegator
-import software.amazon.smithy.swift.codegen.SwiftSettings
-import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration

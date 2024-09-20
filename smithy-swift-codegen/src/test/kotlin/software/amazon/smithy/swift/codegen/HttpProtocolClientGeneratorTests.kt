@@ -8,7 +8,6 @@ package software.amazon.smithy.swift.codegen
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.DefaultClientConfigurationIntegration
 import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPRestJsonProtocolGenerator
 
 class HttpProtocolClientGeneratorTests {
