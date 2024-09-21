@@ -41,8 +41,9 @@ class IntEnumGenerator(
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(null, shape)
         writer.openBlock(
-            "public enum \$enum.name:L: \$N, \$N, \$N, \$N {",
+            "public enum \$enum.name:L: \$N, \$N, \$N, \$N, \$N {",
             "}",
+            SwiftTypes.Protocols.Sendable,
             SwiftTypes.Protocols.Equatable,
             SwiftTypes.Protocols.RawRepresentable,
             SwiftTypes.Protocols.CaseIterable,

@@ -5,12 +5,28 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Foundation.NSRecursiveLock
+
 @propertyWrapper
-public class Indirect<T> {
-    public var wrappedValue: Optional<T>
+public final class Indirect<T: Sendable>: @unchecked Sendable {
+    private let lock = NSRecursiveLock()
+    private var _wrappedValue: Optional<T>
+
+    public var wrappedValue: Optional<T> {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return _wrappedValue
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            _wrappedValue = newValue
+        }
+    }
 
     public init(wrappedValue: Optional<T>) {
-        self.wrappedValue = wrappedValue
+        self._wrappedValue = wrappedValue
     }
 }
 
