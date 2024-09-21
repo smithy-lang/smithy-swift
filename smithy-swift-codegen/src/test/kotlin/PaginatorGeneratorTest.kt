@@ -147,7 +147,7 @@ class PaginatorGeneratorTest {
         // Equatable conformance must have been generated for struct nested inside a pagination token.
         val contents = getFileContents(context.manifest, "Sources/Test/models/NestedInputTokenValue.swift")
         val expected = """
-    public struct NestedInputTokenValue : Swift.Equatable {
+    public struct NestedInputTokenValue: Swift.Sendable, Swift.Equatable {
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
     }
@@ -158,7 +158,7 @@ class PaginatorGeneratorTest {
         // Equatable conformance must have been generated for struct nested under pagination token.
         val contents = getFileContents(context.manifest, "Sources/Test/models/DoublyNestedInputTokenValue.swift")
         val expected = """
-    public struct DoublyNestedInputTokenValue : Swift.Equatable {
+    public struct DoublyNestedInputTokenValue: Swift.Sendable, Swift.Equatable {
         """.trimIndent()
         contents.shouldContainOnlyOnce(expected)
     }
@@ -169,8 +169,8 @@ class PaginatorGeneratorTest {
         // Equatable conformance must have been generated for union nested under pagination token.
         val contents = getFileContents(context.manifest, "Sources/Test/models/InputPaginationUnion.swift")
         val expected = """
-    public enum InputPaginationUnion : Swift.Equatable {
-        """.trimIndent()
+    public enum InputPaginationUnion: Swift.Sendable, Swift.Equatable {
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 

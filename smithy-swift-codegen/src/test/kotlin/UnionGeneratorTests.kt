@@ -41,18 +41,16 @@ class UnionGeneratorTests {
 
         contents.shouldContain(settings.copyrightNotice)
 
-        val expectedGeneratedEnum =
-            """
-            /// Really long multi-line Documentation for MyUnion
-            public enum MyUnion {
-                case foo(Swift.String)
-                case baz(Swift.Int)
-                /// Documentation for bar
-                case bar(Swift.Int)
-                case sdkUnknown(Swift.String)
-            }
-            """.trimIndent()
-
+        val expectedGeneratedEnum = """
+/// Really long multi-line Documentation for MyUnion
+public enum MyUnion: Swift.Sendable {
+    case foo(Swift.String)
+    case baz(Swift.Int)
+    /// Documentation for bar
+    case bar(Swift.Int)
+    case sdkUnknown(Swift.String)
+}
+"""
         contents.shouldContain(expectedGeneratedEnum)
     }
 
@@ -85,18 +83,16 @@ class UnionGeneratorTests {
 
         contents.shouldContain(settings.copyrightNotice)
 
-        val expectedGeneratedEnum =
-            """
-            /// Really long multi-line Documentation for MyUnion
-            public enum MyUnion {
-                case foo(Swift.String)
-                /// Documentation for bar
-                case bar(Swift.Int)
-                case mystruct(MyStruct)
-                case sdkUnknown(Swift.String)
-            }
-            """.trimIndent()
-
+        val expectedGeneratedEnum = """
+/// Really long multi-line Documentation for MyUnion
+public enum MyUnion: Swift.Sendable {
+    case foo(Swift.String)
+    /// Documentation for bar
+    case bar(Swift.Int)
+    case mystruct(MyStruct)
+    case sdkUnknown(Swift.String)
+}
+"""
         contents.shouldContain(expectedGeneratedEnum)
     }
 
@@ -125,19 +121,16 @@ class UnionGeneratorTests {
 
         contents.shouldContain(settings.copyrightNotice)
 
-        val expectedGeneratedEnum =
-            """
-            /// Really long multi-line Documentation for MyUnion
-            public indirect enum MyUnion {
-                /// Really long multi-line Documentation for MyUnion
-                case foo(MyUnion)
-                case baz(Swift.Int)
-                /// Documentation for bar
-                case bar(Swift.Int)
-                case sdkUnknown(Swift.String)
-            }
-            """.trimIndent()
-
+        val expectedGeneratedEnum = """
+public indirect enum MyUnion: Swift.Sendable {
+    /// Really long multi-line Documentation for MyUnion
+    case foo(MyUnion)
+    case baz(Swift.Int)
+    /// Documentation for bar
+    case bar(Swift.Int)
+    case sdkUnknown(Swift.String)
+}
+"""
         contents.shouldContain(expectedGeneratedEnum)
     }
 

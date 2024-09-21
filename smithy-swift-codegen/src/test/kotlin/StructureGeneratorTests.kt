@@ -32,27 +32,26 @@ class StructureGeneratorTests {
         val contents = writer.toString()
 
         contents.shouldContain(swiftSettings.copyrightNotice)
-        val expectedGeneratedStructure =
-            """
-            /// This is documentation about the shape.
-            public struct MyStruct {
-                public var bar: Swift.Int
-                /// This is documentation about the member.
-                public var baz: Swift.Int?
-                public var foo: Swift.String?
-            
-                public init(
-                    bar: Swift.Int = 0,
-                    baz: Swift.Int? = nil,
-                    foo: Swift.String? = nil
-                )
-                {
-                    self.bar = bar
-                    self.baz = baz
-                    self.foo = foo
-                }
-            }
-            """.trimIndent()
+        val expectedGeneratedStructure = """
+/// This is documentation about the shape.
+public struct MyStruct: Swift.Sendable {
+    public var bar: Swift.Int
+    /// This is documentation about the member.
+    public var baz: Swift.Int?
+    public var foo: Swift.String?
+
+    public init(
+        bar: Swift.Int = 0,
+        baz: Swift.Int? = nil,
+        foo: Swift.String? = nil
+    )
+    {
+        self.bar = bar
+        self.baz = baz
+        self.foo = foo
+    }
+}
+"""
         contents.shouldContain(expectedGeneratedStructure)
     }
 
@@ -66,61 +65,60 @@ class StructureGeneratorTests {
         val primitiveTypesInput = manifest
             .getFileString("Sources/example/models/PrimitiveTypesInput.swift").get()
         Assertions.assertNotNull(primitiveTypesInput)
-        val expected =
-            """
-        public struct PrimitiveTypesInput {
-            public var booleanVal: Swift.Bool?
-            public var byteVal: Swift.Int8?
-            public var doubleVal: Swift.Double?
-            public var floatVal: Swift.Float?
-            public var intVal: Swift.Int?
-            public var longVal: Swift.Int?
-            public var primitiveBooleanVal: Swift.Bool
-            public var primitiveByteVal: Swift.Int8
-            public var primitiveDoubleVal: Swift.Double
-            public var primitiveFloatVal: Swift.Float
-            public var primitiveIntVal: Swift.Int
-            public var primitiveLongVal: Swift.Int
-            public var primitiveShortVal: Swift.Int16
-            public var shortVal: Swift.Int16?
-            public var str: Swift.String?
-        
-            public init(
-                booleanVal: Swift.Bool? = nil,
-                byteVal: Swift.Int8? = nil,
-                doubleVal: Swift.Double? = nil,
-                floatVal: Swift.Float? = nil,
-                intVal: Swift.Int? = nil,
-                longVal: Swift.Int? = nil,
-                primitiveBooleanVal: Swift.Bool = false,
-                primitiveByteVal: Swift.Int8 = 0,
-                primitiveDoubleVal: Swift.Double = 0.0,
-                primitiveFloatVal: Swift.Float = 0.0,
-                primitiveIntVal: Swift.Int = 0,
-                primitiveLongVal: Swift.Int = 0,
-                primitiveShortVal: Swift.Int16 = 0,
-                shortVal: Swift.Int16? = nil,
-                str: Swift.String? = nil
-            )
-            {
-                self.booleanVal = booleanVal
-                self.byteVal = byteVal
-                self.doubleVal = doubleVal
-                self.floatVal = floatVal
-                self.intVal = intVal
-                self.longVal = longVal
-                self.primitiveBooleanVal = primitiveBooleanVal
-                self.primitiveByteVal = primitiveByteVal
-                self.primitiveDoubleVal = primitiveDoubleVal
-                self.primitiveFloatVal = primitiveFloatVal
-                self.primitiveIntVal = primitiveIntVal
-                self.primitiveLongVal = primitiveLongVal
-                self.primitiveShortVal = primitiveShortVal
-                self.shortVal = shortVal
-                self.str = str
-            }
-        }
-            """.trimIndent()
+        val expected = """
+public struct PrimitiveTypesInput: Swift.Sendable {
+    public var booleanVal: Swift.Bool?
+    public var byteVal: Swift.Int8?
+    public var doubleVal: Swift.Double?
+    public var floatVal: Swift.Float?
+    public var intVal: Swift.Int?
+    public var longVal: Swift.Int?
+    public var primitiveBooleanVal: Swift.Bool
+    public var primitiveByteVal: Swift.Int8
+    public var primitiveDoubleVal: Swift.Double
+    public var primitiveFloatVal: Swift.Float
+    public var primitiveIntVal: Swift.Int
+    public var primitiveLongVal: Swift.Int
+    public var primitiveShortVal: Swift.Int16
+    public var shortVal: Swift.Int16?
+    public var str: Swift.String?
+
+    public init(
+        booleanVal: Swift.Bool? = nil,
+        byteVal: Swift.Int8? = nil,
+        doubleVal: Swift.Double? = nil,
+        floatVal: Swift.Float? = nil,
+        intVal: Swift.Int? = nil,
+        longVal: Swift.Int? = nil,
+        primitiveBooleanVal: Swift.Bool = false,
+        primitiveByteVal: Swift.Int8 = 0,
+        primitiveDoubleVal: Swift.Double = 0.0,
+        primitiveFloatVal: Swift.Float = 0.0,
+        primitiveIntVal: Swift.Int = 0,
+        primitiveLongVal: Swift.Int = 0,
+        primitiveShortVal: Swift.Int16 = 0,
+        shortVal: Swift.Int16? = nil,
+        str: Swift.String? = nil
+    )
+    {
+        self.booleanVal = booleanVal
+        self.byteVal = byteVal
+        self.doubleVal = doubleVal
+        self.floatVal = floatVal
+        self.intVal = intVal
+        self.longVal = longVal
+        self.primitiveBooleanVal = primitiveBooleanVal
+        self.primitiveByteVal = primitiveByteVal
+        self.primitiveDoubleVal = primitiveDoubleVal
+        self.primitiveFloatVal = primitiveFloatVal
+        self.primitiveIntVal = primitiveIntVal
+        self.primitiveLongVal = primitiveLongVal
+        self.primitiveShortVal = primitiveShortVal
+        self.shortVal = shortVal
+        self.str = str
+    }
+}
+"""
         primitiveTypesInput.shouldContain(expected)
     }
 
@@ -137,9 +135,8 @@ class StructureGeneratorTests {
             generator.render()
         }
         val contents = writer.toString()
-        val expected =
-            """
-public struct RecursiveShapesInputOutputNested1 {
+        val expected = """
+public struct RecursiveShapesInputOutputNested1: Swift.Sendable {
     public var foo: Swift.String?
     @Indirect public var nested: RecursiveShapesInputOutputNested2?
 
@@ -153,7 +150,7 @@ public struct RecursiveShapesInputOutputNested1 {
     }
 }
 
-public struct RecursiveShapesInputOutputNested2 {
+public struct RecursiveShapesInputOutputNested2: Swift.Sendable {
     public var bar: Swift.String?
     public var recursiveMember: RecursiveShapesInputOutputNested1?
 
@@ -168,7 +165,7 @@ public struct RecursiveShapesInputOutputNested2 {
 }
 
 /// This is documentation about the shape.
-public struct RecursiveShapesInputOutput {
+public struct RecursiveShapesInputOutput: Swift.Sendable {
     public var nested: RecursiveShapesInputOutputNested1?
 
     public init(
@@ -178,7 +175,7 @@ public struct RecursiveShapesInputOutput {
         self.nested = nested
     }
 }
-            """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -195,9 +192,8 @@ public struct RecursiveShapesInputOutput {
             generator.render()
         }
         val contents = writer.toString()
-        val expected =
-            """
-public struct RecursiveShapesInputOutputNestedList1 {
+        val expected = """
+public struct RecursiveShapesInputOutputNestedList1: Swift.Sendable {
     public var foo: Swift.String?
     public var recursiveList: [RecursiveShapesInputOutputNested2]?
 
@@ -211,7 +207,7 @@ public struct RecursiveShapesInputOutputNestedList1 {
     }
 }
 
-public struct RecursiveShapesInputOutputNested2 {
+public struct RecursiveShapesInputOutputNested2: Swift.Sendable {
     public var bar: Swift.String?
     public var recursiveMember: RecursiveShapesInputOutputNested1?
 
@@ -226,7 +222,7 @@ public struct RecursiveShapesInputOutputNested2 {
 }
 
 /// This is documentation about the shape.
-public struct RecursiveShapesInputOutputLists {
+public struct RecursiveShapesInputOutputLists: Swift.Sendable {
     public var nested: RecursiveShapesInputOutputNested1?
 
     public init(
@@ -236,7 +232,7 @@ public struct RecursiveShapesInputOutputLists {
         self.nested = nested
     }
 }
-            """.trimIndent()
+"""
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -309,7 +305,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents = """
-public struct JsonListsInput {
+public struct JsonListsInput: Swift.Sendable {
     public var booleanList: [Swift.Bool]?
     public var integerList: [Swift.Int]?
     public var nestedStringList: [[Swift.String]]?
@@ -356,7 +352,7 @@ public struct JsonListsInput {
             .getFileString("Sources/example/models/JsonMapsInput.swift").get()
         Assertions.assertNotNull(jsonMapsInput)
         val expectedJsonMapsInput = """
-public struct JsonMapsInput {
+public struct JsonMapsInput: Swift.Sendable {
     public var denseBooleanMap: [Swift.String: Swift.Bool]?
     public var denseNumberMap: [Swift.String: Swift.Int]?
     public var denseStringMap: [Swift.String: Swift.String]?
@@ -394,7 +390,7 @@ public struct JsonMapsInput {
             .getFileString("Sources/example/models/JsonMapsOutput.swift").get()
         Assertions.assertNotNull(jsonMapsOutput)
         val expectedJsonMapsOutput = """
-public struct JsonMapsOutput {
+public struct JsonMapsOutput: Swift.Sendable {
     public var denseBooleanMap: [Swift.String: Swift.Bool]?
     public var denseNumberMap: [Swift.String: Swift.Int]?
     public var denseStringMap: [Swift.String: Swift.String]?
@@ -440,20 +436,22 @@ public struct JsonMapsOutput {
             .getFileString("Sources/example/models/StructWithDeprecatedTrait.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTrait)
         var structContainsDeprecatedTrait = """
-        extension ExampleClientTypes {
-            @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-            public struct StructWithDeprecatedTrait {
-        """.trimIndent()
+extension ExampleClientTypes {
+
+    @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
+    public struct StructWithDeprecatedTrait: Swift.Sendable {
+"""
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
 
         structWithDeprecatedTrait = manifest
             .getFileString("Sources/example/models/StructSincePropertySet.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTrait)
         structContainsDeprecatedTrait = """
-        extension ExampleClientTypes {
-            @available(*, deprecated, message: "API deprecated since 2019-03-21")
-            public struct StructSincePropertySet {
-        """.trimIndent()
+extension ExampleClientTypes {
+
+    @available(*, deprecated, message: "API deprecated since 2019-03-21")
+    public struct StructSincePropertySet: Swift.Sendable {
+"""
         structWithDeprecatedTrait.shouldContain(structContainsDeprecatedTrait)
     }
 
@@ -468,18 +466,18 @@ public struct JsonMapsOutput {
             .getFileString("Sources/example/models/OperationWithDeprecatedTraitInput.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
-        @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-        public struct OperationWithDeprecatedTraitInput {
-            public var bool: Swift.Bool?
-            public var foo: ExampleClientTypes.Foo?
-            public var intVal: Swift.Int?
-            @available(*, deprecated)
-            public var string: Swift.String?
-            @available(*, deprecated, message: "API deprecated since 2019-03-21")
-            public var structSincePropertySet: ExampleClientTypes.StructSincePropertySet?
-            @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
-            public var structWithDeprecatedTrait: ExampleClientTypes.StructWithDeprecatedTrait?
-        """.trimIndent()
+@available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
+public struct OperationWithDeprecatedTraitInput: Swift.Sendable {
+    public var bool: Swift.Bool?
+    public var foo: ExampleClientTypes.Foo?
+    public var intVal: Swift.Int?
+    @available(*, deprecated)
+    public var string: Swift.String?
+    @available(*, deprecated, message: "API deprecated since 2019-03-21")
+    public var structSincePropertySet: ExampleClientTypes.StructSincePropertySet?
+    @available(*, deprecated, message: "This shape is no longer used. API deprecated since 1.3")
+    public var structWithDeprecatedTrait: ExampleClientTypes.StructWithDeprecatedTrait?
+"""
         structWithDeprecatedTraitMember.shouldContain(structContainsDeprecatedMember)
     }
 
@@ -494,14 +492,15 @@ public struct JsonMapsOutput {
             .getFileString("Sources/example/models/Foo.swift").get()
         Assertions.assertNotNull(structWithDeprecatedTraitMember)
         val structContainsDeprecatedMember = """
-        extension ExampleClientTypes {
-            public struct Foo {
-                /// Test documentation with deprecated
-                @available(*, deprecated)
-                public var baz: Swift.String?
-                /// Test documentation with deprecated
-                public var qux: Swift.String?
-        """.trimIndent()
+extension ExampleClientTypes {
+
+    public struct Foo: Swift.Sendable {
+        /// Test documentation with deprecated
+        @available(*, deprecated)
+        public var baz: Swift.String?
+        /// Test documentation with deprecated
+        public var qux: Swift.String?
+"""
         structWithDeprecatedTraitMember.shouldContain(structContainsDeprecatedMember)
     }
 }

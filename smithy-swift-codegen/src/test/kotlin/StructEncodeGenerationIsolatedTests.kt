@@ -32,12 +32,21 @@ class StructEncodeGenerationIsolatedTests {
         val context = setupTests("Isolated/EnumInput.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "Sources/example/models/EnumInputInput.swift")
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            public struct EnumInputInput {
-                public var enumHeader: ExampleClientTypes.MyEnum?
-                public var nestedWithEnum: ExampleClientTypes.NestedEnum?
-            """.trimIndent()
+        val expectedContents = """
+public struct EnumInputInput: Swift.Sendable {
+    public var enumHeader: ExampleClientTypes.MyEnum?
+    public var nestedWithEnum: ExampleClientTypes.NestedEnum?
+
+    public init(
+        enumHeader: ExampleClientTypes.MyEnum? = nil,
+        nestedWithEnum: ExampleClientTypes.NestedEnum? = nil
+    )
+    {
+        self.enumHeader = enumHeader
+        self.nestedWithEnum = nestedWithEnum
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
     @Test

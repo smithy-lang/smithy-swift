@@ -64,6 +64,7 @@ class UnionGenerator(
         if (isNestedType) {
             val service = model.expectShape<ServiceShape>(settings.service)
             writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
+                writer.write("")
                 renderUnion()
             }
         } else {
@@ -77,7 +78,7 @@ class UnionGenerator(
         writer.writeAvailableAttribute(model, shape)
         val indirectOrNot = "indirect ".takeIf { shape.hasTrait<RecursiveUnionTrait>() } ?: ""
         val equatableConformance = writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
-        writer.openBlock("public ${indirectOrNot}enum \$union.name:L: \$N$equatableConformance {", "}\n", SwiftTypes.Protocols.Sendable) {
+        writer.openBlock("public ${indirectOrNot}enum \$union.name:L: \$N$equatableConformance {", "}", SwiftTypes.Protocols.Sendable) {
             // event streams (@streaming union) MAY have variants that target errors.
             // These errors if encountered on the stream will be thrown as an exception rather
             // than showing up as one of the possible events the consumer will see on the stream (AsyncThrowingStream<T>).

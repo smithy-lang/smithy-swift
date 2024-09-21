@@ -16,7 +16,7 @@ class IntEnumGeneratorTests {
             .getFileString("Sources/example/models/Abcs.swift").get()
         Assertions.assertNotNull(enumShape)
         var expectedGeneratedEnum = """
-public enum Abcs: Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Hashable {
+public enum Abcs: Swift.Sendable, Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Hashable {
     case a
     case b
     case c

@@ -29,6 +29,7 @@ class IntEnumGenerator(
         if (isNestedType) {
             val service = model.expectShape<ServiceShape>(settings.service)
             writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
+                writer.write("")
                 renderEnum()
             }
         } else {
