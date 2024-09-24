@@ -8,7 +8,7 @@
 import class Foundation.FileHandle
 import struct Foundation.Data
 
-public enum ByteStream {
+public enum ByteStream: Sendable {
     case data(Data?)
     case stream(Stream)
     case noStream

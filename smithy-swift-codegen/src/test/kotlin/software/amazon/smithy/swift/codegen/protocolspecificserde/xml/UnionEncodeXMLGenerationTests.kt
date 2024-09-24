@@ -72,7 +72,8 @@ extension RestXmlProtocolClientTypes.XmlUnionShape {
         val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlUnionShape.swift")
         val expectedContents = """
 extension ExampleClientTypes {
-    public indirect enum XmlUnionShape {
+
+    public indirect enum XmlUnionShape: Swift.Sendable {
         case doublevalue(Swift.Double)
         case datavalue(Foundation.Data)
         case unionvalue(ExampleClientTypes.XmlUnionShape)
@@ -82,7 +83,6 @@ extension ExampleClientTypes {
         case timestampvalue(Foundation.Date)
         case sdkUnknown(Swift.String)
     }
-
 }
 """
         contents.shouldContainOnlyOnce(expectedContents)
