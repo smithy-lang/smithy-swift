@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct Headers {
+public struct Headers: Sendable {
     public var headers: [Header] = []
 
     /// Creates an empty instance.
@@ -197,7 +197,7 @@ extension Array where Element == Header {
     }
 }
 
-public struct Header {
+public struct Header: Sendable {
     public var name: String
     public var value: [String]
 

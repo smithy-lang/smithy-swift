@@ -21,7 +21,7 @@ class NestedListEncodeJSONGenerationTests {
         val contents = getFileContents(context.manifest, "Sources/Example/models/ListOfMapsOperationInput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-public struct ListOfMapsOperationInput {
+public struct ListOfMapsOperationInput: Swift.Sendable {
     public var targetMaps: [[Swift.String: [Swift.String]]]?
 
     public init(

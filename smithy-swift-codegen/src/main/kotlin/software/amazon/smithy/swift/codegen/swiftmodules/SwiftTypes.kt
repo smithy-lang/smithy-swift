@@ -31,6 +31,7 @@ object SwiftTypes {
         val RawRepresentable = builtInSymbol("RawRepresentable", SwiftDeclaration.PROTOCOL)
         val CaseIterable = builtInSymbol("CaseIterable", SwiftDeclaration.PROTOCOL)
         val CustomDebugStringConvertible = builtInSymbol("CustomDebugStringConvertible", SwiftDeclaration.PROTOCOL)
+        val Sendable = builtInSymbol("Sendable", SwiftDeclaration.PROTOCOL)
     }
 }
 

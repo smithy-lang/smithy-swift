@@ -12,7 +12,7 @@ import struct Foundation.Data
 import AwsCommonRuntimeKit
 import class SmithyStreams.BufferedStream
 
-public class ValidatingBufferedStream {
+public class ValidatingBufferedStream: @unchecked Sendable {
     private var stream: BufferedStream
     private var checksumAlgorithm: ChecksumAlgorithm
     private var checksum: (any Checksum)

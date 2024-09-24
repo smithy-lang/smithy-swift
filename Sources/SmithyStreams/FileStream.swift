@@ -13,7 +13,7 @@ import protocol Smithy.Stream
 /// A `Stream` that wraps a `FileHandle` for reading the file.
 ///
 /// - Note: This class is thread-safe.
-public final class FileStream: Stream {
+public final class FileStream: Stream, @unchecked Sendable {
 
     /// Returns the length of the stream, if known
     public var length: Int? {
@@ -26,7 +26,7 @@ public final class FileStream: Stream {
     let fileHandle: FileHandle
 
     /// Returns the current position of the stream.
-    public var position: Data.Index
+    public private(set) var position: Data.Index
 
     /// Returns true if length is zero, false otherwise.
     public var isEmpty: Bool {

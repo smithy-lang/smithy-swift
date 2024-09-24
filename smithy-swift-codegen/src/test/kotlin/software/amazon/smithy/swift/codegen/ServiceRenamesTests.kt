@@ -21,19 +21,18 @@ class ServiceRenamesTests {
         )
         val contents = getFileContents(context.manifest, "Sources/RestJson/models/MyTestOperationInput.swift")
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            public struct MyTestOperationInput {
-                public var bar: ExampleClientTypes.RenamedGreeting?
-            
-                public init(
-                    bar: ExampleClientTypes.RenamedGreeting? = nil
-                )
-                {
-                    self.bar = bar
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+public struct MyTestOperationInput: Swift.Sendable {
+    public var bar: ExampleClientTypes.RenamedGreeting?
+
+    public init(
+        bar: ExampleClientTypes.RenamedGreeting? = nil
+    )
+    {
+        self.bar = bar
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -49,19 +48,18 @@ class ServiceRenamesTests {
         )
         val contents = getFileContents(context.manifest, "Sources/RestJson/models/MyTestOperationOutput.swift")
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            public struct MyTestOperationOutput {
-                public var baz: ExampleClientTypes.GreetingStruct?
-            
-                public init(
-                    baz: ExampleClientTypes.GreetingStruct? = nil
-                )
-                {
-                    self.baz = baz
-                }
-            }
-            """.trimIndent()
+        val expectedContents = """
+public struct MyTestOperationOutput: Swift.Sendable {
+    public var baz: ExampleClientTypes.GreetingStruct?
+
+    public init(
+        baz: ExampleClientTypes.GreetingStruct? = nil
+    )
+    {
+        self.baz = baz
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -77,22 +75,21 @@ class ServiceRenamesTests {
         )
         val contents = getFileContents(context.manifest, "Sources/RestJson/models/GreetingStruct.swift")
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension ExampleClientTypes {
-                public struct GreetingStruct {
-                    public var hi: Swift.String?
-            
-                    public init(
-                        hi: Swift.String? = nil
-                    )
-                    {
-                        self.hi = hi
-                    }
-                }
-            
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension ExampleClientTypes {
+
+    public struct GreetingStruct: Swift.Sendable {
+        public var hi: Swift.String?
+
+        public init(
+            hi: Swift.String? = nil
+        )
+        {
+            self.hi = hi
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
@@ -108,22 +105,21 @@ class ServiceRenamesTests {
         )
         val contents = getFileContents(context.manifest, "Sources/RestJson/models/RenamedGreeting.swift")
         contents.shouldSyntacticSanityCheck()
-        val expectedContents =
-            """
-            extension ExampleClientTypes {
-                public struct RenamedGreeting {
-                    public var salutation: Swift.String?
-            
-                    public init(
-                        salutation: Swift.String? = nil
-                    )
-                    {
-                        self.salutation = salutation
-                    }
-                }
-            
-            }
-            """.trimIndent()
+        val expectedContents = """
+extension ExampleClientTypes {
+
+    public struct RenamedGreeting: Swift.Sendable {
+        public var salutation: Swift.String?
+
+        public init(
+            salutation: Swift.String? = nil
+        )
+        {
+            self.salutation = salutation
+        }
+    }
+}
+"""
         contents.shouldContainOnlyOnce(expectedContents)
     }
 

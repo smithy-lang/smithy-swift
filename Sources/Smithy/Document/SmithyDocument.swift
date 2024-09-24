@@ -8,8 +8,9 @@
 import struct Foundation.Data
 import struct Foundation.Date
 
-public protocol SmithyDocument {
+public protocol SmithyDocument: Sendable {
 
+    /// The Smithy type corresponding to the data stored in this document.
     var type: ShapeType { get }
 
     // "as" methods throw if the document doesn't match the requested type.
@@ -116,6 +117,20 @@ public extension SmithyDocument {
 
 extension SmithyDocument {
 
+    /// Compares two `SmithyDocument`-conforming values, checking for equality.
+    ///
+    /// Two `SmithyDocument`s are equal if they have the same type and equal values.
+    ///
+    /// Two Smithy `list` documents are equal if they have equal documents at every index.
+    ///
+    /// Two Smithy `map` documents are equal if they have the same set of keys, and equal values for every key.
+    ///
+    /// - note: Because `SmithyDocument` is a protocol, it cannot conform to `Equatable`; the type-erased
+    /// container type ``Document`` is used to provide Smithy documents with equatability.
+    /// - Parameters:
+    ///   - lhs: The first `SmithyDocument` to compare.
+    ///   - rhs: The second `SmithyDocument` to compare.
+    /// - Returns: `true` if the two `SmithyDocument`s are equal, `false` otherwise.
     public static func isEqual(_ lhs: SmithyDocument, _ rhs: SmithyDocument) -> Bool {
         switch (lhs.type, rhs.type) {
         case (.blob, .blob):

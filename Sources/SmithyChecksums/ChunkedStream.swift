@@ -16,8 +16,8 @@ import class SmithyStreams.BufferedStream
 /// URLSessionHTTPClient streams chunked payloads using this stream type.
 /// CRTClientEngine uses only the reader provided by this type to create chunks, then it
 /// streams them itself.
-public class ChunkedStream {
-    private var inputStream: Stream
+public class ChunkedStream: @unchecked Sendable {
+    private let inputStream: Stream
     private var signingConfig: SigningConfig
     private var previousSignature: String
     private var trailingHeaders: Headers
