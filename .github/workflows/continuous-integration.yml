@@ -327,6 +327,9 @@ jobs:
           swift test
       - name: Build and Run aws-sdk-swift Protocol Tests
         run: |
+          export AWS_REGION=us-west-2
+          export AWS_ACCESS_KEY_ID=test-key-id
+          export AWS_SECRET_ACCESS_KEY=test-secret-access-key
           cd ../aws-sdk-swift/codegen
           swift test
 
