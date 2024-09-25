@@ -177,12 +177,22 @@ jobs:
         run: |
           cd ../aws-sdk-swift
           ./scripts/ci_steps/prepare_protocol_and_unit_tests.sh
-      - name: Build and Run aws-sdk-swift Protocol & Unit Tests
+      - name: Build and Run aws-sdk-swift Unit Tests
         run: |
           cd ../aws-sdk-swift
           set -o pipefail && \
           NSUnbufferedIO=YES xcodebuild \
             -scheme aws-sdk-swift-Package \
+            -destination '${{ matrix.destination }}' \
+            test 2>&1 \
+            | xcbeautify
+      - name: Build and Run aws-sdk-swift Protocol Tests
+        run: |
+          cd ../aws-sdk-swift/codegen
+          set -o pipefail && \
+          NSUnbufferedIO=YES xcodebuild \
+            -scheme aws-sdk-swift-protocol-tests-Package \
+            -testPlan ProtocolTestPlan \
             -destination '${{ matrix.destination }}' \
             test 2>&1 \
             | xcbeautify
@@ -311,8 +321,15 @@ jobs:
         run: |
           cd ../aws-sdk-swift
           ./scripts/ci_steps/prepare_protocol_and_unit_tests.sh
-      - name: Build and Run aws-sdk-swift Protocol & Unit Tests
+      - name: Build and Run aws-sdk-swift Unit Tests
         run: |
           cd ../aws-sdk-swift
+          swift test
+      - name: Build and Run aws-sdk-swift Protocol Tests
+        run: |
+          export AWS_REGION=us-west-2
+          export AWS_ACCESS_KEY_ID=test-key-id
+          export AWS_SECRET_ACCESS_KEY=test-secret-access-key
+          cd ../aws-sdk-swift/codegen
           swift test
 
