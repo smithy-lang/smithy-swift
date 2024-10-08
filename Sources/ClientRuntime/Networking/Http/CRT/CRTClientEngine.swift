@@ -22,7 +22,7 @@ import class SmithyStreams.BufferedStream
 import AwsCommonRuntimeKit
 #if os(Linux)
 import Glibc
-#else
+#elseif !os(Windows)
 import Darwin
 #endif
 
