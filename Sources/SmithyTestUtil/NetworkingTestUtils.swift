@@ -57,11 +57,4 @@ open class NetworkingTestUtils: XCTestCase {
         endpoint = Endpoint(host: host, path: path, queryItems: queryItems, headers: headers)
         return endpoint
     }
-
-    open func testHttpStatusCodeDescriptionWorks() {
-        let httpStatusCode = HTTPStatusCode.ok
-        let httpStatusCodeDescription = httpStatusCode.description
-
-        XCTAssertNotNil(httpStatusCodeDescription)
-    }
 }
