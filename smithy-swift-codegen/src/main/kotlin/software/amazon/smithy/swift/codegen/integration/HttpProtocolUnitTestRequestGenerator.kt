@@ -17,6 +17,7 @@ import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyIdentityTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTestUtilTypes
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
@@ -80,16 +81,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         val region = "us-west-2"
 
         writer.openBlock("let config = try await \$L.Config(", ")", clientName) {
-            writer.openBlock(
-                "awsCredentialIdentityResolver: try \$N(",
-                "),",
-                SmithyIdentityTypes.StaticAWSCredentialIdentityResolver,
-            ) {
-                writer.openBlock(".init(", ")") {
-                    writer.write("accessKey: \$S,", "dummy-aws-access-key-id")
-                    writer.write("secret: \$S", "dummy-aws-secret-access-key")
-                }
-            }
+            writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
             writer.write("signingRegion: \$S,", region)
             if (!ctx.service.getTrait(EndpointRuleSetTrait::class.java).isPresent) {
