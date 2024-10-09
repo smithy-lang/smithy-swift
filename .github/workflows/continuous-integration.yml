@@ -192,7 +192,6 @@ jobs:
           set -o pipefail && \
           NSUnbufferedIO=YES xcodebuild \
             -scheme aws-sdk-swift-protocol-tests-Package \
-            -testPlan ProtocolTestPlan \
             -destination '${{ matrix.destination }}' \
             test 2>&1 \
             | xcbeautify
