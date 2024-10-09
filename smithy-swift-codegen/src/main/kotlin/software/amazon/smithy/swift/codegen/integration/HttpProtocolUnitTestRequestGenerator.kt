@@ -15,6 +15,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestW
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyIdentityTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
@@ -75,20 +76,35 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     private fun renderClientBlock(test: HttpRequestTestCase) {
-        val serviceShape = ctx.service
         val clientName = "${ctx.settings.sdkId}Client"
+        val region = "us-west-2"
 
-        if (!serviceShape.getTrait(EndpointRuleSetTrait::class.java).isPresent) {
-            val host: String? = test.host.orElse(null)
-            val url = "http://${host ?: "example.com"}"
-            writer.write("\nlet config = try await $clientName.${clientName}Configuration(endpointResolver: StaticEndpointResolver(endpoint: try \$N(urlString: \$S)))", SmithyHTTPAPITypes.Endpoint, url)
-        } else {
-            writer.write("\nlet config = try await $clientName.${clientName}Configuration()")
+        writer.openBlock("let config = try await \$L.Config(", ")", clientName) {
+            writer.openBlock(
+                "awsCredentialIdentityResolver: try \$N(",
+                "),",
+                SmithyIdentityTypes.StaticAWSCredentialIdentityResolver,
+            ) {
+                writer.openBlock(".init(", ")") {
+                    writer.write("accessKey: \$S,", "dummy-aws-access-key-id")
+                    writer.write("secret: \$S", "dummy-aws-secret-access-key")
+                }
+            }
+            writer.write("region: \$S,", region)
+            writer.write("signingRegion: \$S,", region)
+            if (!ctx.service.getTrait(EndpointRuleSetTrait::class.java).isPresent) {
+                val host: String? = test.host.orElse(null)
+                val url = "https://${host ?: "example.com"}"
+                writer.write(
+                    "endpointResolver: StaticEndpointResolver(endpoint: try \$N(urlString: \$S)),",
+                    SmithyHTTPAPITypes.Endpoint,
+                    url,
+                )
+            }
+            writer.write("idempotencyTokenGenerator: ProtocolTestIdempotencyTokenGenerator(),")
+            writer.write("httpClientEngine: ProtocolTestClient()")
         }
-        writer.write("config.region = \"us-west-2\"")
-        writer.write("config.httpClientEngine = ProtocolTestClient()")
-        writer.write("config.idempotencyTokenGenerator = ProtocolTestIdempotencyTokenGenerator()")
-        writer.write("let client = $clientName(config: config)")
+        writer.write("let client = \$L(config: config)", clientName)
     }
 
     private fun renderOperationBlock(test: HttpRequestTestCase) {
