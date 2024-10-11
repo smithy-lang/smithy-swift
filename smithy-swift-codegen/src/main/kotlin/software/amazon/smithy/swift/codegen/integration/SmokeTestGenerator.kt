@@ -16,14 +16,17 @@ open class SmokeTestGenerator(
 ) {
     fun generateSmokeTests() {
         val serviceName = getServiceName()
+        val testRunnerName = serviceName + "SmokeTestRunner"
         val operationShapeIdToTestCases = getOperationShapeIdToTestCasesMapping()
         val testCaseNames = operationShapeIdToTestCases.values.flatten().map { it.id.toLowerCamelCase() }
-        ctx.delegator.useFileWriter("SmokeTests/${serviceName}SmokeTestRunner/${serviceName}SmokeTestRunner.swift") { writer ->
+        ctx.delegator.useFileWriter("SmokeTests/$testRunnerName/$testRunnerName.swift") { writer ->
             renderPrefixContent(serviceName, writer)
-            renderMainFunction(testCaseNames, serviceName, writer)
-            renderTestFunctions(operationShapeIdToTestCases, serviceName, writer)
-            // Main function call at the end of the file for executable entry-point.
-            writer.write("await main()")
+            addEmptyLine(writer)
+            writer.write("@main")
+            writer.openBlock("struct $testRunnerName {", "}") {
+                renderMainFunction(testCaseNames, serviceName, writer)
+                renderTestFunctions(operationShapeIdToTestCases, serviceName, writer)
+            }
         }
     }
 
@@ -62,21 +65,24 @@ open class SmokeTestGenerator(
     // Render content before main and test functions.
     private fun renderPrefixContent(serviceName: String, writer: SwiftWriter) {
         // Import statements
-        writer.write("import Foundation")
-        writer.write("import $serviceName")
+        writer.addImport("Foundation")
+        writer.addImport(serviceName)
+        writer.addImport("ClientRuntime")
         // Render fileprivate variables
         renderCustomFilePrivateVariables(writer)
     }
 
     private fun renderMainFunction(testCaseNames: List<String>, serviceName: String, writer: SwiftWriter) {
-        writer.openBlock("func main() async {", "}") {
+        writer.openBlock("static func main() async {", "}") {
+            // Silence trivial non-test logs
+            writer.write("await SDKLoggingSystem().initialize(logLevel: .error)")
             // Print diagnostic line & test plan line.
-            writer.write("print(\$S)", "# $serviceName Smoke Tests")
-            writer.write("print(\$S", "1..${testCaseNames.size}")
+            writer.write("print(\$S)", "# Running $serviceName Smoke Tests...")
+            writer.write("print(\$S)", "1..${testCaseNames.size}")
             // Call all test functions.
             writer.write("var allTestsPassed = true")
             testCaseNames.forEach {
-                writer.write("allTestsPassed = allTestsPassed && (await $it())")
+                writer.write("allTestsPassed = await $it() && allTestsPassed")
             }
             // Exit with 0 or 1 based on allTestsPassed boolean.
             renderExitBlock(writer)
@@ -104,6 +110,7 @@ open class SmokeTestGenerator(
         operationShapeIdToTestCases.forEach { mapping ->
             val operationShapeId = mapping.key
             mapping.value.forEach { testCase ->
+                addEmptyLine(writer)
                 renderTestFunction(operationShapeId, testCase, serviceName, writer)
             }
         }
@@ -112,17 +119,17 @@ open class SmokeTestGenerator(
     private fun renderTestFunction(operationShapeId: ShapeId, testCase: SmokeTestCase, serviceName: String, writer: SwiftWriter) {
         val testCaseName = testCase.id.toLowerCamelCase()
         writer.openBlock(
-            "func $testCaseName() async -> Bool {",
+            "static func $testCaseName() async -> Bool {",
             "}"
         ) {
             val commaSeparatedTags = testCase.tags.joinToString(", ") { "\"$it\"" }
-            writer.write("let tagsFromTrait = [$commaSeparatedTags]")
+            writer.write("let tagsFromTrait: [String] = [$commaSeparatedTags]")
             // If the test has a tag we need to skip, runtime code needs to output skipped success line and return true.
             writer.openBlock("if !Set(tagsToSkip).isDisjoint(with: tagsFromTrait) {", "}") {
                 renderPrintTestResult(writer, true, serviceName, operationShapeId.name, testCase.expectation.isFailure, true)
             }
             // Print diagnostic line with test name.
-            writer.write("print(\$S)", "# Running test: $testCaseName")
+            writer.write("print(\$S)", "# Running test case: [$testCaseName]...")
             // Construct input, client, and run test; output result accordingly.
             renderDoCatchBlock(operationShapeId, testCase, serviceName, writer)
         }
@@ -135,16 +142,16 @@ open class SmokeTestGenerator(
         operationName: String,
         errorExpected: Boolean,
         isSkipped: Boolean = false,
-        printStacktrace: Boolean = false
+        printCaughtError: Boolean = false
     ) {
         val result = if (isSuccess) "ok" else "not ok"
         val error = if (errorExpected) "error expected from service" else "no error expected from service"
         val skipped = if (isSkipped) " # skip" else ""
         writer.write("print(\$S)", "$result $serviceName $operationName - $error$skipped")
-        if (printStacktrace) {
-            writer.write("Thread.callStackSymbols.forEach { print(\"# \" + $0) }")
+        if (printCaughtError) {
+            writer.write("print(\"# Caught unexpected error: \\(error)\")")
         }
-        writer.write("return $result")
+        writer.write("return $isSuccess")
     }
 
     private fun renderDoCatchBlock(operationShapeId: ShapeId, testCase: SmokeTestCase, serviceName: String, writer: SwiftWriter) {
@@ -156,11 +163,19 @@ open class SmokeTestGenerator(
         writer.indent()
         // Construct input struct with params from trait.
         val inputShape = ctx.model.expectShape(ctx.model.expectShape(operationShapeId).asOperationShape().get().inputShape)
-        writer.writeInline("\nlet input = ")
-            .call {
-                ShapeValueGenerator(ctx.model, ctx.symbolProvider).writeShapeValueInline(writer, inputShape, testCase.params.orElse(ObjectNode.builder().build()))
-            }
-            .write("")
+        if (testCase.params?.get()?.size() == 0) {
+            writer.write("let input = ${inputShape.id.name}()")
+        } else {
+            writer.writeInline("let input = ")
+                .call {
+                    ShapeValueGenerator(ctx.model, ctx.symbolProvider).writeShapeValueInline(
+                        writer,
+                        inputShape,
+                        testCase.params.orElse(ObjectNode.builder().build())
+                    )
+                }
+                .write("")
+        }
         // Create empty config
         val clientName = getClientName()
         writer.write("let config = try await $clientName.${clientName}Configuration()")
@@ -169,7 +184,7 @@ open class SmokeTestGenerator(
         // Construct client with the config
         writer.write("let client = $clientName(config: config)")
         // Call the operation with client and input
-        writer.write("try await $clientName.${operationName.toLowerCamelCase()}(input: ${operationName}Input)")
+        writer.write("_ = try await client.${operationName.toLowerCamelCase()}(input: input)")
         // Writer after client call:
         if (errorExpected) {
             // If error was expected, print failure line and return false.
@@ -190,14 +205,14 @@ open class SmokeTestGenerator(
         writer.write("} catch {")
         writer.indent()
         if (specificErrorExpected) {
-            // Specific error was expected but some other error got caught; print failure, stacktrace of the error and return false.
-            renderPrintTestResult(writer, false, serviceName, operationName, true, printStacktrace = true)
+            // Specific error was expected but some other error got caught; print failure & the unexpected error and return false.
+            renderPrintTestResult(writer, false, serviceName, operationName, true, printCaughtError = true)
         } else if (errorExpected) {
             // If generic error was expected, print success and return true.
             renderPrintTestResult(writer, true, serviceName, operationName, true)
         } else {
-            // If expected success, print failure, stacktrace of error, and return false.
-            renderPrintTestResult(writer, false, serviceName, operationName, false, printStacktrace = true)
+            // If expected success, print failure, the unexpected error, and return false.
+            renderPrintTestResult(writer, false, serviceName, operationName, false, printCaughtError = true)
         }
         writer.dedent()
         writer.write("}")
@@ -222,5 +237,9 @@ open class SmokeTestGenerator(
         // Since a specific error was expected and caught by this point, print success and return true
         renderPrintTestResult(writer, true, serviceName, operationName, true)
         writer.dedent()
+    }
+
+    private fun addEmptyLine(writer: SwiftWriter) {
+        writer.write("")
     }
 }
