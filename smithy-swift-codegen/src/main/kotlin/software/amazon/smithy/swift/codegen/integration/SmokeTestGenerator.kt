@@ -16,10 +16,16 @@ import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 open class SmokeTestGenerator(
     private val ctx: ProtocolGenerator.GenerationContext
 ) {
+    // Filter out tests by name or tag at codegen time.
+    // Each element must have the prefix "<service-name>:" before the test name or tag name.
+    // E.g., "ServiceX:ProcessOrderTest" or "ServiceX:Order"
+    open val testIdsToIgnore = setOf<String>()
+    open val testTagsToIgnore = setOf<String>()
+
     fun generateSmokeTests() {
         val serviceName = getServiceName()
         val testRunnerName = serviceName + "SmokeTestRunner"
-        val operationShapeIdToTestCases = getOperationShapeIdToTestCasesMapping()
+        val operationShapeIdToTestCases = getOperationShapeIdToTestCasesMapping(serviceName)
         val testCaseNames = operationShapeIdToTestCases.values.flatten().map { it.id.toLowerCamelCase() }
         if (testCaseNames.isNotEmpty()) {
             ctx.delegator.useFileWriter("SmokeTests/$testRunnerName/$testRunnerName.swift") { writer ->
@@ -41,16 +47,29 @@ open class SmokeTestGenerator(
         return ctx.settings.sdkId.toUpperCamelCase()
     }
 
-    private fun getOperationShapeIdToTestCasesMapping(): Map<ShapeId, List<SmokeTestCase>> {
+    /**
+     * Returns map of operation shape IDs to smoke test cases to generate for that operation.
+     * Ignores test cases by name or tag, using `testIdsToIgnore` and `testTagsToIgnore` constants.
+     */
+    private fun getOperationShapeIdToTestCasesMapping(serviceName: String): Map<ShapeId, List<SmokeTestCase>> {
         val operationShapeIdToTestCases = mutableMapOf<ShapeId, List<SmokeTestCase>>()
         ctx.service.allOperations.forEach { op ->
             if (ctx.model.expectShape(op).hasTrait<SmokeTestsTrait>()) {
                 val testCases = mutableListOf<SmokeTestCase>()
                 val smokeTestTrait = ctx.model.expectShape(op).expectTrait<SmokeTestsTrait>()
                 smokeTestTrait.testCases.forEach { testCase ->
-                    testCases.add(testCase)
+                    // Add test case only if neither its name nor tags is included in ignore lists.
+                    val nameIsNotInIgnoreList = !testIdsToIgnore.contains("$serviceName:${testCase.id}")
+                    val tagIsNotInIgnoreList = !testCase.tags.any { "$serviceName:$it" in testTagsToIgnore }
+                    if (nameIsNotInIgnoreList && tagIsNotInIgnoreList) {
+                        testCases.add(testCase)
+                    }
                 }
-                operationShapeIdToTestCases[op] = testCases
+                // By this point, it's possible testCases is empty due to all tests being ignored.
+                // Map to operation shape ID only if it's non-empty.
+                if (testCases.isNotEmpty()) {
+                    operationShapeIdToTestCases[op] = testCases
+                }
             }
         }
         return operationShapeIdToTestCases
@@ -121,9 +140,8 @@ open class SmokeTestGenerator(
     }
 
     private fun renderTestFunction(operationShapeId: ShapeId, testCase: SmokeTestCase, serviceName: String, writer: SwiftWriter) {
-        val testCaseName = testCase.id.toLowerCamelCase()
         writer.openBlock(
-            "static func $testCaseName() async -> Bool {",
+            "static func ${testCase.id.toLowerCamelCase()}() async -> Bool {",
             "}"
         ) {
             val commaSeparatedTags = testCase.tags.joinToString(", ") { "\"$it\"" }
@@ -133,7 +151,7 @@ open class SmokeTestGenerator(
                 renderPrintTestResult(writer, true, serviceName, operationShapeId.name, testCase.expectation.isFailure, true)
             }
             // Print diagnostic line with test name.
-            writer.write("print(\$S)", "# Running test case: [$testCaseName]...")
+            writer.write("print(\$S)", "# Running test case: [${testCase.id}]...")
             // Construct input, client, and run test; output result accordingly.
             renderDoCatchBlock(operationShapeId, testCase, serviceName, writer)
         }
