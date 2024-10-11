@@ -8,6 +8,8 @@ import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.model.expectTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
@@ -19,13 +21,15 @@ open class SmokeTestGenerator(
         val testRunnerName = serviceName + "SmokeTestRunner"
         val operationShapeIdToTestCases = getOperationShapeIdToTestCasesMapping()
         val testCaseNames = operationShapeIdToTestCases.values.flatten().map { it.id.toLowerCamelCase() }
-        ctx.delegator.useFileWriter("SmokeTests/$testRunnerName/$testRunnerName.swift") { writer ->
-            renderPrefixContent(serviceName, writer)
-            addEmptyLine(writer)
-            writer.write("@main")
-            writer.openBlock("struct $testRunnerName {", "}") {
-                renderMainFunction(testCaseNames, serviceName, writer)
-                renderTestFunctions(operationShapeIdToTestCases, serviceName, writer)
+        if (testCaseNames.isNotEmpty()) {
+            ctx.delegator.useFileWriter("SmokeTests/$testRunnerName/$testRunnerName.swift") { writer ->
+                renderPrefixContent(serviceName, writer)
+                addEmptyLine(writer)
+                writer.write("@main")
+                writer.openBlock("struct $testRunnerName {", "}") {
+                    renderMainFunction(testCaseNames, serviceName, writer)
+                    renderTestFunctions(operationShapeIdToTestCases, serviceName, writer)
+                }
             }
         }
     }
@@ -65,9 +69,9 @@ open class SmokeTestGenerator(
     // Render content before main and test functions.
     private fun renderPrefixContent(serviceName: String, writer: SwiftWriter) {
         // Import statements
-        writer.addImport("Foundation")
+        writer.addImport(FoundationTypes.ProcessInfo)
+        writer.addImport(ClientRuntimeTypes.Core.SDKLoggingSystem)
         writer.addImport(serviceName)
-        writer.addImport("ClientRuntime")
         // Render fileprivate variables
         renderCustomFilePrivateVariables(writer)
     }
