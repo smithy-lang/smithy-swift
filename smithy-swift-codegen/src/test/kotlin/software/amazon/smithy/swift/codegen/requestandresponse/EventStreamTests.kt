@@ -42,7 +42,7 @@ extension EventStreamTestClientTypes.TestStream {
                 headers.append(.init(name: ":event-type", value: .string("MessageWithUnion")))
                 headers.append(.init(name: ":content-type", value: .string("application/json")))
                 payload = try SmithyJSON.Writer.write(value.someUnion, rootNodeInfo: "", with: EventStreamTestClientTypes.TestUnion.write(value:to:))
-            case .messagewithheaders:
+            case .messagewithheaders(let value):
                 headers.append(.init(name: ":event-type", value: .string("MessageWithHeaders")))
                 if let headerValue = value.blob {
                     headers.append(.init(name: "blob", value: .byteArray(headerValue)))
