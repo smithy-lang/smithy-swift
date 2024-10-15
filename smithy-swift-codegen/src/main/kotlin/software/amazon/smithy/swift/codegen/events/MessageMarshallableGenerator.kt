@@ -27,7 +27,6 @@ class MessageMarshallableGenerator(
 ) {
     internal fun render(streamShape: UnionShape) {
         val streamSymbol: Symbol = ctx.symbolProvider.toSymbol(streamShape)
-        val rootNamespace = ctx.settings.moduleName
         val filename = ModelFileUtils.filename(ctx.settings, "${streamSymbol.name}+MessageMarshallable")
         val streamMember = Symbol.builder()
             .definitionFile(filename)
@@ -53,17 +52,19 @@ class MessageMarshallableGenerator(
                                 val variant = ctx.model.expectShape(member.target)
 
                                 // Write the enum case for this event type.
-                                // Unbound and payload bound members require access to
+                                // Unbound, header-bound, and payload-bound members require access to
                                 // the event value for serialization, so unwrap value when
-                                // those members exist.  The actual members will be written after
-                                // headers below.
+                                // those members exist.  The actual members will be written below.
                                 val unbound = variant.members().filterNot {
                                     it.hasTrait<EventHeaderTrait>() || it.hasTrait<EventPayloadTrait>()
                                 }
                                 val eventPayloadBinding = variant.members().firstOrNull {
                                     it.hasTrait<EventPayloadTrait>()
                                 }
-                                if (unbound.isNotEmpty() || eventPayloadBinding != null) {
+                                val eventHeaderBindings = variant.members().filter {
+                                    it.hasTrait<EventHeaderTrait>()
+                                }
+                                if (unbound.isNotEmpty() || eventHeaderBindings.isNotEmpty() || eventPayloadBinding != null) {
                                     write("case .\$L(let value):", memberName)
                                 } else {
                                     writer.write("case .\$L:", memberName)
@@ -73,9 +74,6 @@ class MessageMarshallableGenerator(
                                 // Write the event headers to the message.  First write the
                                 // event type, followed by header-bound members.
                                 addStringHeader(":event-type", member.memberName)
-                                val eventHeaderBindings = variant.members().filter {
-                                    it.hasTrait<EventHeaderTrait>()
-                                }
                                 eventHeaderBindings.forEach {
                                     renderSerializeEventHeader(ctx, it, writer)
                                 }
