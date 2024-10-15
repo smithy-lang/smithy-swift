@@ -55,14 +55,14 @@ class MessageMarshallableGenerator(
                                 // Unbound, header-bound, and payload-bound members require access to
                                 // the event value for serialization, so unwrap value when
                                 // those members exist.  The actual members will be written below.
-                                val unbound = variant.members().filterNot {
-                                    it.hasTrait<EventHeaderTrait>() || it.hasTrait<EventPayloadTrait>()
+                                val eventHeaderBindings = variant.members().filter {
+                                    it.hasTrait<EventHeaderTrait>()
                                 }
                                 val eventPayloadBinding = variant.members().firstOrNull {
                                     it.hasTrait<EventPayloadTrait>()
                                 }
-                                val eventHeaderBindings = variant.members().filter {
-                                    it.hasTrait<EventHeaderTrait>()
+                                val unbound = variant.members().filterNot {
+                                    it.hasTrait<EventHeaderTrait>() || it.hasTrait<EventPayloadTrait>()
                                 }
                                 if (unbound.isNotEmpty() || eventHeaderBindings.isNotEmpty() || eventPayloadBinding != null) {
                                     write("case .\$L(let value):", memberName)
