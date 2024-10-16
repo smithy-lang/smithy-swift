@@ -140,7 +140,7 @@ let package = Package(
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime", "SmithyHTTPAPI"]
+            dependencies: ["ClientRuntime", "SmithyHTTPAPI", "SmithyIdentity"]
         ),
         .target(
             name: "SmithyIdentity",
@@ -279,6 +279,10 @@ let package = Package(
         .testTarget(
             name: "SmithyRetriesTests",
             dependencies: ["ClientRuntime", "SmithyRetriesAPI", "SmithyRetries", "SmithyTestUtil"]
+        ),
+        .testTarget(
+            name: "SmithyHTTPAPITests",
+            dependencies: ["SmithyHTTPAPI"]
         ),
     ].compactMap { $0 }
 )

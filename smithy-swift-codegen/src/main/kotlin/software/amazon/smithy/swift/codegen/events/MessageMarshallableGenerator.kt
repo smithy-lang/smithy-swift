@@ -27,7 +27,6 @@ class MessageMarshallableGenerator(
 ) {
     internal fun render(streamShape: UnionShape) {
         val streamSymbol: Symbol = ctx.symbolProvider.toSymbol(streamShape)
-        val rootNamespace = ctx.settings.moduleName
         val filename = ModelFileUtils.filename(ctx.settings, "${streamSymbol.name}+MessageMarshallable")
         val streamMember = Symbol.builder()
             .definitionFile(filename)
@@ -50,10 +49,12 @@ class MessageMarshallableGenerator(
                             write("switch self {")
                             streamShape.eventStreamEvents(ctx.model).forEach { member ->
                                 val memberName = ctx.symbolProvider.toMemberName(member)
-                                write("case .\$L(let value):", memberName)
-                                indent()
-                                addStringHeader(":event-type", member.memberName)
                                 val variant = ctx.model.expectShape(member.target)
+
+                                // Write the enum case for this event type.
+                                // Unbound, header-bound, and payload-bound members require access to
+                                // the event value for serialization, so unwrap value when
+                                // those members exist.  The actual members will be written below.
                                 val eventHeaderBindings = variant.members().filter {
                                     it.hasTrait<EventHeaderTrait>()
                                 }
@@ -63,11 +64,22 @@ class MessageMarshallableGenerator(
                                 val unbound = variant.members().filterNot {
                                     it.hasTrait<EventHeaderTrait>() || it.hasTrait<EventPayloadTrait>()
                                 }
+                                if (unbound.isNotEmpty() || eventHeaderBindings.isNotEmpty() || eventPayloadBinding != null) {
+                                    write("case .\$L(let value):", memberName)
+                                } else {
+                                    write("case .\$L:", memberName)
+                                }
+                                indent()
 
+                                // Write the event headers to the message.  First write the
+                                // event type, followed by header-bound members.
+                                addStringHeader(":event-type", member.memberName)
                                 eventHeaderBindings.forEach {
                                     renderSerializeEventHeader(ctx, it, writer)
                                 }
 
+                                // Write either the payload or the unbound members (there won't be both,
+                                // according to the Smithy spec: https://smithy.io/2.0/spec/streaming.html#eventpayload-trait.)
                                 when {
                                     eventPayloadBinding != null -> renderSerializeEventPayload(ctx, eventPayloadBinding, writer)
                                     unbound.isNotEmpty() -> {
