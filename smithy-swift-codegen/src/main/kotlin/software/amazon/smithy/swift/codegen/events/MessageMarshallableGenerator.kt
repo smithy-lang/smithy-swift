@@ -67,7 +67,7 @@ class MessageMarshallableGenerator(
                                 if (unbound.isNotEmpty() || eventHeaderBindings.isNotEmpty() || eventPayloadBinding != null) {
                                     write("case .\$L(let value):", memberName)
                                 } else {
-                                    writer.write("case .\$L:", memberName)
+                                    write("case .\$L:", memberName)
                                 }
                                 indent()
 
