@@ -72,7 +72,7 @@ open class MemberShapeDecodeGenerator(
             else -> renderMemberExp(member, isPayload)
         }
         val memberName = ctx.symbolProvider.toMemberName(member)
-        if (shapeContainingMembers.isUnionShape) {
+        if (decodingUnion) {
             writer.write("return .\$L(\$L)", memberName, readExp)
         } else if (shapeContainingMembers.isError) {
             writer.write("value.properties.\$L = \$L", memberName, readExp)
@@ -148,7 +148,7 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun readMethodName(baseName: String): String {
-        val extension = "".takeIf { readingRequiredValue } ?: "IfPresent"
+        val extension = "".takeIf { decodingUnion } ?: "IfPresent"
         return writer.format("\$L\$L", baseName, extension)
     }
 
@@ -158,8 +158,8 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun default(memberShape: MemberShape): String {
-        // If reading a required value, then no default is needed.
-        if (readingRequiredValue) { return "" }
+        // If decoding the member of a union, then no default is needed.
+        if (decodingUnion) { return "" }
 
         val targetShape = ctx.model.expectShape(memberShape.target)
         val defaultTrait = memberShape.getTrait<DefaultTrait>() ?: targetShape.getTrait<DefaultTrait>()
@@ -294,5 +294,5 @@ open class MemberShapeDecodeGenerator(
         }
     }
 
-    private var readingRequiredValue: Boolean = shapeContainingMembers.isUnionShape
+    private var decodingUnion: Boolean = shapeContainingMembers.isUnionShape
 }
