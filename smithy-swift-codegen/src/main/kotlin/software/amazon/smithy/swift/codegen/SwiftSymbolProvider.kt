@@ -60,7 +60,6 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
@@ -243,7 +242,7 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
     }
 
     override fun documentShape(shape: DocumentShape): Symbol {
-        return createSymbolBuilder(shape, "Document", "SmithyReadWrite", SwiftDeclaration.ENUM, true)
+        return createSymbolBuilder(shape, "Document", "Smithy", SwiftDeclaration.STRUCT, true)
             .addDependency(SwiftDependency.SMITHY_READ_WRITE)
             .build()
     }
@@ -363,15 +362,16 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
     // Document: default value can be set to null, true, false, string, numbers, an empty list, or an empty map.
     private fun handleDocumentDefaultValue(literal: String, node: Node, builder: Symbol.Builder): Symbol.Builder {
         var formatString = when {
-            node.isObjectNode -> "\$N.object([:])"
-            node.isArrayNode -> "\$N.array([])"
-            node.isBooleanNode -> "\$N.boolean($literal)"
-            node.isStringNode -> "\$N.string(\"$literal\")"
-            node.isNumberNode -> "\$N.number($literal)"
+            node.isObjectNode -> "[:]"
+            node.isArrayNode -> "[]"
+            node.isBooleanNode -> literal
+            node.isStringNode -> "\"$literal\""
+            node.isNumberNode -> literal
             else -> return builder // no-op
         }
         return builder.defaultValueClosure { writer ->
-            writer.format(formatString, SmithyReadWriteTypes.Document)
+            writer.addImport(SwiftDependency.SMITHY_JSON.target)
+            writer.format(formatString)
         }
     }
 

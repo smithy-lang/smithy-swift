@@ -17,7 +17,6 @@ import struct SmithyRetriesAPI.RetryStrategyOptions
 import struct SmithyRetries.DefaultRetryStrategy
 import struct SmithyRetries.ExponentialBackoffStrategy
 
-/// Provides configuration options for a Smithy-based service.
 public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy,
     DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider> {
 
@@ -27,9 +26,9 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
     /// The name of the client this config configures.
     public var clientName: String
 
-    /// The HTTP client to be used for HTTP connections.
+    /// The HTTP client to use for HTTP connections.
     ///
-    /// If none is provided, the AWS CRT HTTP client will be used.
+    /// By default, Swift SDK will set this to `CRTClientEngine` client on Linux platforms, and `URLSessionHttpClient` on Apple platforms.
     public var httpClientEngine: HTTPClient
 
     /// The HTTP client configuration.
@@ -39,7 +38,7 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
 
     /// The idempotency token generator to use.
     ///
-    /// If none is provided. one will be provided that supplies UUIDs.
+    /// Defaults to UUID generator.
     public var idempotencyTokenGenerator: IdempotencyTokenGenerator
 
     /// Configuration for telemetry, including tracing, metrics, and logging.
@@ -52,7 +51,7 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
     /// If none is provided, default retry options will be used.
     public var retryStrategyOptions: RetryStrategyOptions
 
-    /// The log mode to use for client logging.
+    /// The log mode to use for request / response messages.
     ///
     /// If none is provided, `.none` will be used.
     public var clientLogMode: ClientLogMode
@@ -88,7 +87,7 @@ public extension DefaultSDKRuntimeConfiguration {
     /// The default HTTP client for the target platform, configured with the supplied configuration.
     ///
     /// - Parameter httpClientConfiguration: The configuration for the HTTP client.
-    /// - Returns: The `CRTClientEngine` client on Mac & Linux platforms, returns `URLSessionHttpClient` on non-Mac Apple platforms.
+    /// - Returns: The `CRTClientEngine` client on Linux platforms, returns `URLSessionHttpClient` on Apple platforms.
     static func makeClient(
         httpClientConfiguration: HttpClientConfiguration = defaultHttpClientConfiguration
     ) -> HTTPClient {
@@ -107,26 +106,18 @@ public extension DefaultSDKRuntimeConfiguration {
         #endif
     }
 
-    /// The HTTP client configuration to use when none is provided.
-    ///
-    /// Is the CRT HTTP client's configuration.
+    /// The default HTTP client configuration to use.
     static var defaultHttpClientConfiguration: HttpClientConfiguration { HttpClientConfiguration() }
 
-    /// The idempotency token generator to use when none is provided.
-    ///
-    /// Defaults to one that provides UUIDs.
+    /// The default idempotency token generator that returns UUIDs.
     static var defaultIdempotencyTokenGenerator: IdempotencyTokenGenerator { DefaultIdempotencyTokenGenerator() }
 
-    /// The retry strategy options to use when none is provided.
-    ///
-    /// Defaults to options with the defaults defined in `RetryStrategyOptions`.
+    /// The default retry strategy options with the exponential backoff strategy & other defaults defined in `RetryStrategyOptions`.
     static var defaultRetryStrategyOptions: RetryStrategyOptions {
         RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())
     }
 
-    /// The log mode to use when none is provided
-    ///
-    /// Defaults to `.none`.
+    /// The default client log mode is `.none`.
     static var defaultClientLogMode: ClientLogMode { .none }
 
     static var defaultAuthSchemeResolver: AuthSchemeResolver { DefaultAuthSchemeResolver() }

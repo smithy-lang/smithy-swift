@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
-import enum SmithyReadWrite.Document
+import protocol Smithy.SmithyDocument
 import struct Foundation.Date
 import struct Foundation.Data
 @_spi(SmithyReadWrite) import typealias SmithyReadWrite.WritingClosure
@@ -116,7 +116,7 @@ public final class Writer: SmithyWriter {
         try write(value?.base64EncodedString())
     }
 
-    public func write(_ value: Document?) throws {
+    public func write(_ value: SmithyDocument?) throws {
         // No operation.  Smithy document not supported in XML
     }
 

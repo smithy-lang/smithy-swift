@@ -45,7 +45,7 @@ public struct RetryStrategyOptions: Sendable {
 
     /// Creates a new set of retry strategy options
     /// - Parameters:
-    ///   - backoffStrategy: Determines the delay time before retrying.  Defaults to exponential backoff with a max limit.
+    ///   - backoffStrategy: Determines the delay time before retrying. For default behavior, use `ExponentialBackoffStrategy()`.
     ///   - maxRetriesBase: The number of times to retry the initial request.  Defaults to 2.
     ///   - availableCapacity: The number of available tokens in a retry quota.  Defaults to 500.
     ///   - maxCapacity: The max number of tokens in a retry quota.  Defaults to 500.

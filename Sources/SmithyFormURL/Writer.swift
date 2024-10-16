@@ -6,7 +6,7 @@
 //
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
-import enum SmithyReadWrite.Document
+import protocol Smithy.SmithyDocument
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 import struct Foundation.Data
@@ -127,7 +127,7 @@ public extension Writer {
         try write(value?.base64EncodedString())
     }
 
-    func write(_ value: Document?) throws {
+    func write(_ value: SmithyDocument?) throws {
         // No operation.  Smithy document not supported in FormURL
     }
 

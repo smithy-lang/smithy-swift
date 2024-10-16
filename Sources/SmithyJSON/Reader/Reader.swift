@@ -6,7 +6,8 @@
 //
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
-import enum SmithyReadWrite.Document
+import protocol Smithy.SmithyDocument
+import struct Smithy.Document
 import typealias SmithyReadWrite.ReadingClosure
 import enum SmithyReadWrite.ReaderError
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat

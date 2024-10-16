@@ -12,42 +12,44 @@ env:
 jobs:
   apple-ci:
     runs-on: ${{ matrix.runner }}
-    env:
-      DEVELOPER_DIR: /Applications/${{ matrix.xcode }}.app/Contents/Developer
     strategy:
       fail-fast: false
       matrix:
         # This matrix runs tests on iOS sim & Mac, on oldest & newest supported Xcodes
         runner:
           - macos-13
-          - macos-14
+          - macos-15
         xcode:
           - Xcode_15.2
-          - Xcode_16.0
+          - Xcode_16
         destination:
           - 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
-          - 'platform=iOS Simulator,OS=18.0,name=iPhone 15'
+          - 'platform=iOS Simulator,OS=18.0,name=iPhone 16'
           - 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
           - 'platform=tvOS Simulator,OS=18.0,name=Apple TV 4K (3rd generation) (at 1080p)'
-          - 'platform=OS X'
+          - 'platform=macOS'
         exclude:
           # Don't run old macOS with new Xcode
           - runner: macos-13
-            xcode: Xcode_16.0
+            xcode: Xcode_16
           # Don't run new macOS with old Xcode
-          - runner: macos-14
+          - runner: macos-15
             xcode: Xcode_15.2
           # Don't run old iOS/tvOS simulator with new Xcode
           - destination: 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
-            xcode: Xcode_16.0
+            xcode: Xcode_16
           - destination: 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
-            xcode: Xcode_16.0
+            xcode: Xcode_16
           # Don't run new iOS/tvOS simulator with old Xcode
-          - destination: 'platform=iOS Simulator,OS=18.0,name=iPhone 15'
+          - destination: 'platform=iOS Simulator,OS=18.0,name=iPhone 16'
             xcode: Xcode_15.2
           - destination: 'platform=tvOS Simulator,OS=18.0,name=Apple TV 4K (3rd generation) (at 1080p)'
             xcode: Xcode_15.2
     steps:
+      - name: Configure Xcode
+        run: |
+          sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
+          xcode-select -p
       - name: Checkout smithy-swift
         uses: actions/checkout@v4
       - name: Cache Gradle
@@ -89,42 +91,44 @@ jobs:
 
   apple-downstream:
     runs-on: ${{ matrix.runner }}
-    env:
-      DEVELOPER_DIR: /Applications/${{ matrix.xcode }}.app/Contents/Developer
     strategy:
       fail-fast: false
       matrix:
         # This matrix runs tests on iOS sim & Mac, on oldest & newest supported Xcodes
         runner:
           - macos-13
-          - macos-14
+          - macos-15
         xcode:
           - Xcode_15.2
-          - Xcode_16.0
+          - Xcode_16
         destination:
           - 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
-          - 'platform=iOS Simulator,OS=18.0,name=iPhone 15'
+          - 'platform=iOS Simulator,OS=18.0,name=iPhone 16'
           - 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
           - 'platform=tvOS Simulator,OS=18.0,name=Apple TV 4K (3rd generation) (at 1080p)'
-          - 'platform=OS X'
+          - 'platform=macOS'
         exclude:
           # Don't run old macOS with new Xcode
           - runner: macos-13
-            xcode: Xcode_16.0
+            xcode: Xcode_16
           # Don't run new macOS with old Xcode
-          - runner: macos-14
+          - runner: macos-15
             xcode: Xcode_15.2
           # Don't run old iOS/tvOS simulator with new Xcode
           - destination: 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
-            xcode: Xcode_16.0
+            xcode: Xcode_16
           - destination: 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
-            xcode: Xcode_16.0
+            xcode: Xcode_16
           # Don't run new iOS/tvOS simulator with old Xcode
-          - destination: 'platform=iOS Simulator,OS=18.0,name=iPhone 15'
+          - destination: 'platform=iOS Simulator,OS=18.0,name=iPhone 16'
             xcode: Xcode_15.2
           - destination: 'platform=tvOS Simulator,OS=18.0,name=Apple TV 4K (3rd generation) (at 1080p)'
             xcode: Xcode_15.2
     steps:
+      - name: Configure Xcode
+        run: |
+          sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
+          xcode-select -p
       - name: Checkout smithy-swift
         uses: actions/checkout@v4
       - name: Select aws-sdk-swift branch
@@ -173,12 +177,21 @@ jobs:
         run: |
           cd ../aws-sdk-swift
           ./scripts/ci_steps/prepare_protocol_and_unit_tests.sh
-      - name: Build and Run aws-sdk-swift Protocol & Unit Tests
+      - name: Build and Run aws-sdk-swift Unit Tests
         run: |
           cd ../aws-sdk-swift
           set -o pipefail && \
           NSUnbufferedIO=YES xcodebuild \
             -scheme aws-sdk-swift-Package \
+            -destination '${{ matrix.destination }}' \
+            test 2>&1 \
+            | xcbeautify
+      - name: Build and Run aws-sdk-swift Protocol Tests
+        run: |
+          cd ../aws-sdk-swift/codegen
+          set -o pipefail && \
+          NSUnbufferedIO=YES xcodebuild \
+            -scheme aws-sdk-swift-protocol-tests-Package \
             -destination '${{ matrix.destination }}' \
             test 2>&1 \
             | xcbeautify
@@ -191,8 +204,8 @@ jobs:
         swift:
           - 5.9-amazonlinux2
           - 5.9-focal
-          - 5.10-amazonlinux2
-          - 5.10-jammy
+          - 6.0-amazonlinux2
+          - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}
     env:
@@ -245,8 +258,8 @@ jobs:
         swift:
           - 5.9-amazonlinux2
           - 5.9-focal
-          - 5.10-amazonlinux2
-          - 5.10-jammy
+          - 6.0-amazonlinux2
+          - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}
     env:
@@ -307,8 +320,15 @@ jobs:
         run: |
           cd ../aws-sdk-swift
           ./scripts/ci_steps/prepare_protocol_and_unit_tests.sh
-      - name: Build and Run aws-sdk-swift Protocol & Unit Tests
+      - name: Build and Run aws-sdk-swift Unit Tests
         run: |
           cd ../aws-sdk-swift
+          swift test
+      - name: Build and Run aws-sdk-swift Protocol Tests
+        run: |
+          export AWS_REGION=us-west-2
+          export AWS_ACCESS_KEY_ID=test-key-id
+          export AWS_SECRET_ACCESS_KEY=test-secret-access-key
+          cd ../aws-sdk-swift/codegen
           swift test
 

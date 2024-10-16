@@ -53,10 +53,17 @@ let package = Package(
         .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
-    dependencies: [
-        .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.33.0"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
-    ],
+    dependencies: {
+        var dependencies: [Package.Dependency] = [
+            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.36.0"),
+            .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        ]
+        let isDocCEnabled = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil
+        if isDocCEnabled {
+            dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
+        }
+        return dependencies
+    }(),
     targets: [
         .target(
             name: "Smithy",
@@ -136,6 +143,7 @@ let package = Package(
             dependencies: [
                 "ClientRuntime",
                 "SmithyHTTPAPI",
+                "SmithyIdentity",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ]
         ),
@@ -247,7 +255,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyJSONTests",
-            dependencies: ["SmithyJSON", "ClientRuntime"]
+            dependencies: ["SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
         ),
         .testTarget(
             name: "SmithyFormURLTests",
@@ -277,14 +285,9 @@ let package = Package(
             name: "SmithyRetriesTests",
             dependencies: ["ClientRuntime", "SmithyRetriesAPI", "SmithyRetries", "SmithyTestUtil"]
         ),
+        .testTarget(
+            name: "SmithyHTTPAPITests",
+            dependencies: ["SmithyHTTPAPI"]
+        ),
     ].compactMap { $0 }
 )
-
-func addDoccDependency() {
-    guard ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil else { return }
-    package.dependencies += [
-        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0")
-    ]
-}
-
-addDoccDependency()

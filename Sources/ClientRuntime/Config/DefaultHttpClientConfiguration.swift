@@ -12,31 +12,31 @@ import protocol SmithyIdentity.BearerTokenIdentityResolver
 
 public protocol DefaultHttpClientConfiguration: ClientConfiguration {
 
-    /// The HTTP client to be used for the target platform, configured with the supplied configuration.
+    /// The HTTP client to use, configured with the supplied configuration.
     ///
-    /// By default, Swift SDK will set this to `CRTClientEngine` client on Mac & Linux platforms,
-    /// or `URLSessionHttpClient` on non-Mac Apple platforms.
+    /// By default, Swift SDK will set this to `CRTClientEngine` client on Linux platforms,
+    /// and `URLSessionHttpClient` on Apple platforms.
     var httpClientEngine: HTTPClient { get set }
 
     /// Configuration for the HTTP client.
     var httpClientConfiguration: HttpClientConfiguration { get set }
 
-    /// List of auth schemes to use for client calls.
+    /// List of auth schemes to use for requests.
     ///
-    /// Defaults to auth schemes defined on the Smithy service model.
+    /// Defaults to auth schemes defined on the underlying Smithy model of a service.
     var authSchemes: [AuthScheme]? { get set }
 
-    /// The auth scheme resolver to use for resolving auth scheme.
+    /// The auth scheme resolver to use for resolving the auth scheme.
     ///
-    /// Defaults to a auth scheme resolver generated based on Smithy service model.
+    /// Defaults to an auth scheme resolver generated based on the underlying Smithy model of a service.
     var authSchemeResolver: AuthSchemeResolver { get set }
 
-    /// The token identity resolver to be used for bearer token authentication.
+    /// The token identity resolver to use for bearer token authentication.
     ///
-    /// If no resolver is supplied, the SDK will look for token in the `~/.aws/sso/cache` directory.
+    /// Default resolver will look for the token in the `~/.aws/sso/cache` directory.
     var bearerTokenIdentityResolver: any BearerTokenIdentityResolver { get set }
 
-    /// Add an `HttpInterceptorProvider` that will be used to provide interceptors for all HTTP operations.
+    /// Adds a `HttpInterceptorProvider` that will be used to provide interceptors for all HTTP operations.
     ///
     /// - Parameter provider: The `HttpInterceptorProvider` to add.
     func addInterceptorProvider(_ provider: HttpInterceptorProvider)

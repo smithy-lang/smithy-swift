@@ -38,6 +38,7 @@ import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtils
@@ -50,7 +51,6 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.swiftEnumCaseName
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
@@ -72,7 +72,7 @@ open class MemberShapeDecodeGenerator(
             else -> renderMemberExp(member, isPayload)
         }
         val memberName = ctx.symbolProvider.toMemberName(member)
-        if (shapeContainingMembers.isUnionShape) {
+        if (decodingUnion) {
             writer.write("return .\$L(\$L)", memberName, readExp)
         } else if (shapeContainingMembers.isError) {
             writer.write("value.properties.\$L = \$L", memberName, readExp)
@@ -148,7 +148,7 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun readMethodName(baseName: String): String {
-        val extension = "".takeIf { shapeContainingMembers.isUnionShape } ?: "IfPresent"
+        val extension = "".takeIf { decodingUnion } ?: "IfPresent"
         return writer.format("\$L\$L", baseName, extension)
     }
 
@@ -158,13 +158,17 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun default(memberShape: MemberShape): String {
+        // If decoding the member of a union, then no default is needed.
+        if (decodingUnion) { return "" }
+
         val targetShape = ctx.model.expectShape(memberShape.target)
         val defaultTrait = memberShape.getTrait<DefaultTrait>() ?: targetShape.getTrait<DefaultTrait>()
         val requiredTrait = memberShape.getTrait<RequiredTrait>()
         // If member is required but there isn't a default value, use zero-equivalents for error correction
         if (requiredTrait != null && defaultTrait == null) {
             return when (targetShape) {
-                is EnumShape, is IntEnumShape -> " ?? .sdkUnknown(\"\")"
+                is EnumShape -> " ?? .sdkUnknown(\"\")"
+                is IntEnumShape -> " ?? .sdkUnknown(0)"
                 is StringShape -> {
                     // Enum trait is deprecated but many services still use it in their models
                     if (targetShape.hasTrait<EnumTrait>()) {
@@ -252,20 +256,21 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun resolveDocumentDefault(useZeroValue: Boolean, node: Node): String {
+        writer.addImport(SwiftDependency.SMITHY_JSON.target)
         return when {
-            node.isObjectNode -> writer.format(" ?? \$N.object([:])", SmithyReadWriteTypes.Document)
-            node.isArrayNode -> writer.format(" ?? \$N.array([])", SmithyReadWriteTypes.Document)
+            node.isObjectNode -> writer.format(" ?? [:]")
+            node.isArrayNode -> writer.format(" ?? []")
             node.isStringNode -> {
                 val resolvedValue = "".takeIf { useZeroValue } ?: node.expectStringNode().value
-                writer.format(" ?? \$N.string(\"$resolvedValue\")", SmithyReadWriteTypes.Document)
+                writer.format(" ?? \"$resolvedValue\"")
             }
             node.isBooleanNode -> {
                 val resolvedValue = "false".takeIf { useZeroValue } ?: node.expectBooleanNode().value
-                writer.format(" ?? \$N.boolean($resolvedValue)", SmithyReadWriteTypes.Document)
+                writer.format(" ?? $resolvedValue")
             }
             node.isNumberNode -> {
                 val resolvedValue = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
-                writer.format(" ?? \$N.number($resolvedValue)", SmithyReadWriteTypes.Document)
+                writer.format(" ?? $resolvedValue")
             }
             else -> "" // null node type means no default value but explicit
         }
@@ -288,4 +293,6 @@ open class MemberShapeDecodeGenerator(
             )
         }
     }
+
+    private var decodingUnion: Boolean = shapeContainingMembers.isUnionShape
 }
