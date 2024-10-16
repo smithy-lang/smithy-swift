@@ -138,15 +138,7 @@ public struct Headers: Sendable {
     }
 
     public func exists(name: String) -> Bool {
-        guard headers.index(of: name) != nil else {
-            return false
-        }
-
-        guard let value = value(for: name) else {
-            return false
-        }
-
-        return !value.isEmpty
+        headers.index(of: name) != nil
     }
 
     /// The dictionary representation of all headers.

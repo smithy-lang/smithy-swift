@@ -1,13 +1,14 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
 
 import SmithyHTTPAPI
 import XCTest
-import ClientRuntime
 
-class HttpHeadersTests: XCTestCase {
+class HeadersTests: XCTestCase {
 
     var headersAsDictionaryWithArray = [String: [String]]()
     var headersAsDictionary = [String: String]()
@@ -122,5 +123,22 @@ class HttpHeadersTests: XCTestCase {
 
         XCTAssertEqual(headerA, headerB)
         XCTAssertEqual(headerA.hashValue, headerB.hashValue)
+    }
+
+    // MARK: - exists()
+
+    func test_exists_trueIfHeaderExists() {
+        let subject = Headers(["a": "abc"])
+        XCTAssertTrue(subject.exists(name: "a"))
+    }
+
+    func test_exists_falseIfHeaderDoesntExist() {
+        let subject = Headers(["a": "abc"])
+        XCTAssertFalse(subject.exists(name: "b"))
+    }
+
+    func test_exists_trueIfHeaderValueIsEmptyString() {
+        let subject = Headers(["a": ""])
+        XCTAssertTrue(subject.exists(name: "a"))
     }
 }
