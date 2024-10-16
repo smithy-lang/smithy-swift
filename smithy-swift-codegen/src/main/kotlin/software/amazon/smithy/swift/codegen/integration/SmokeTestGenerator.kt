@@ -19,8 +19,8 @@ open class SmokeTestGenerator(
     // Filter out tests by name or tag at codegen time.
     // Each element must have the prefix "<service-name>:" before the test name or tag name.
     // E.g., "ServiceX:ProcessOrderTest" or "ServiceX:Order"
-    open val testIdsToIgnore = setOf<String>()
-    open val testTagsToIgnore = setOf<String>()
+    open val smokeTestIdsToIgnore = setOf<String>()
+    open val smokeTestTagsToIgnore = setOf<String>()
 
     fun generateSmokeTests() {
         val serviceName = getServiceName()
@@ -49,7 +49,7 @@ open class SmokeTestGenerator(
 
     /**
      * Returns map of operation shape IDs to smoke test cases to generate for that operation.
-     * Ignores test cases by name or tag, using `testIdsToIgnore` and `testTagsToIgnore` constants.
+     * Ignores test cases by name or tag, using `smokeTestIdsToIgnore` and `smokeTestTagsToIgnore` constants.
      */
     private fun getOperationShapeIdToTestCasesMapping(serviceName: String): Map<ShapeId, List<SmokeTestCase>> {
         val operationShapeIdToTestCases = mutableMapOf<ShapeId, List<SmokeTestCase>>()
@@ -59,8 +59,8 @@ open class SmokeTestGenerator(
                 val smokeTestTrait = ctx.model.expectShape(op).expectTrait<SmokeTestsTrait>()
                 smokeTestTrait.testCases.forEach { testCase ->
                     // Add test case only if neither its name nor tags is included in ignore lists.
-                    val nameIsNotInIgnoreList = !testIdsToIgnore.contains("$serviceName:${testCase.id}")
-                    val tagIsNotInIgnoreList = !testCase.tags.any { "$serviceName:$it" in testTagsToIgnore }
+                    val nameIsNotInIgnoreList = !smokeTestIdsToIgnore.contains("$serviceName:${testCase.id}")
+                    val tagIsNotInIgnoreList = !testCase.tags.any { "$serviceName:$it" in smokeTestTagsToIgnore }
                     if (nameIsNotInIgnoreList && tagIsNotInIgnoreList) {
                         testCases.add(testCase)
                     }
