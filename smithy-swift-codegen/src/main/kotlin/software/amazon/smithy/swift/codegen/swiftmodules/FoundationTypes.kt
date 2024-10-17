@@ -14,6 +14,7 @@ object FoundationTypes {
     val TimeInterval = builtInSymbol("TimeInterval", SwiftDeclaration.TYPEALIAS)
     val URL = builtInSymbol("URL", SwiftDeclaration.STRUCT)
     val URLRequest = builtInNetworkingSymbol("URLRequest", SwiftDeclaration.STRUCT)
+    val ProcessInfo = builtInSymbol("ProcessInfo", SwiftDeclaration.CLASS)
 }
 
 private fun builtInSymbol(symbol: String, declaration: SwiftDeclaration? = null) = buildSymbol {

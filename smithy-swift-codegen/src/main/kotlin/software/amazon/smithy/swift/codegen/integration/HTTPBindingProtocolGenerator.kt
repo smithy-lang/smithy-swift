@@ -390,6 +390,10 @@ abstract class HTTPBindingProtocolGenerator(
         }
     }
 
+    override fun generateSmokeTests(ctx: ProtocolGenerator.GenerationContext) {
+        return SmokeTestGenerator(ctx).generateSmokeTests()
+    }
+
     override fun initializeMiddleware(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         for (operation in getHttpBindingOperations(ctx)) {
