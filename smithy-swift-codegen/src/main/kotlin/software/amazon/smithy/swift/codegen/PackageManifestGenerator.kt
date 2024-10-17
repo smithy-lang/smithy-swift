@@ -11,7 +11,7 @@ import kotlin.jvm.optionals.getOrNull
 class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
 
     fun writePackageManifest(dependencies: List<SymbolDependency>) {
-        ctx.delegator.useFileWriter("Package.swift") { writer ->
+        ctx.delegator.useFileWriter("Package.swift.txt") { writer ->
             writer.write("// swift-tools-version: \$L", ctx.settings.swiftVersion)
             writer.write("")
             writer.write("import PackageDescription")
