@@ -7,7 +7,6 @@ package software.amazon.smithy.swift.codegen.manifestanddocs
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldStartWith
-import mocks.MockHTTPAWSJson11ProtocolGenerator
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.PackageManifestGenerator
@@ -20,7 +19,7 @@ class PackageManifestGeneratorTests {
 
     @Test
     fun `it starts with a swift-tools-version statement`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
         assertNotNull(packageManifest)
         packageManifest.shouldStartWith("// swift-tools-version: 5.5.0")
     }
@@ -37,7 +36,7 @@ class PackageManifestGeneratorTests {
 
     @Test
     fun `it renders package manifest file with single library in product block`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
             "products: [\n" +
@@ -49,7 +48,7 @@ class PackageManifestGeneratorTests {
     @Test
     fun `it renders package manifest file with target and test target`() {
         println(testContext.manifest.files)
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
         assertNotNull(packageManifest)
         val expected = """
     targets: [
