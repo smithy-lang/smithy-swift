@@ -344,15 +344,16 @@ open class HttpRequestTestBase: XCTestCase {
             let actualValue = actual.values(for: header.name)?
                 .joined(separator: ", ")
                 .components(separatedBy: .whitespaces)
-                .joined()
+                .joined() ?? ""
+
             XCTAssertNotNil(actualValue, "The actual header value for \(header.name) is not present", file: file, line: line)
 
             let expectedValue = header.value
                 .joined(separator: ", ")
                 .components(separatedBy: .whitespaces)
-                .joined()
-            
-            XCTAssert(actualValue == expectedValue, "Actual header '\(header.name)': \(actualValue.map { "'\($0)'" } ?? "nil") Expected header: '\(expectedValue)'", file: file, line: line)
+                .joined() ?? ""
+
+            XCTAssert(actualValue == expectedValue, "Actual header '\(header.name)': '\(actualValue)') Expected header: '\(expectedValue)'", file: file, line: line)
         }
     }
 
@@ -391,7 +392,7 @@ open class HttpRequestTestBase: XCTestCase {
         for requiredHeaderName in expected {
             XCTAssertTrue(actual.exists(name: requiredHeaderName),
                           """
-                          expected required header not found: \(requiredHeaderName):
+                          required header not found: \(requiredHeaderName):
                           \(String(describing: actual.value(for: requiredHeaderName)))
                           """,
                           file: file,
