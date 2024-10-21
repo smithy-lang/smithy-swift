@@ -270,7 +270,7 @@ class AuthSchemeResolverGenerator {
 
         // Utility function for checking if a service relies on endpoint resolver for auth scheme resolution
         fun usesRulesBasedAuthResolver(ctx: ProtocolGenerator.GenerationContext): Boolean {
-            return listOf("s3", "eventbridge", "cloudfront keyvaluestore").contains(ctx.settings.sdkId.lowercase(Locale.US))
+            return listOf("s3", "eventbridge", "cloudfront keyvaluestore", "sesv2").contains(ctx.settings.sdkId.lowercase(Locale.US))
         }
 
         // Utility function for returning sdkId from generation context
