@@ -351,7 +351,7 @@ open class HttpRequestTestBase: XCTestCase {
             let expectedValue = header.value
                 .joined(separator: ", ")
                 .components(separatedBy: .whitespaces)
-                .joined() ?? ""
+                .joined()
 
             XCTAssert(actualValue == expectedValue, "Actual header '\(header.name)': '\(actualValue)') Expected header: '\(expectedValue)'", file: file, line: line)
         }

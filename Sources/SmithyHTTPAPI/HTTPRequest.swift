@@ -101,12 +101,8 @@ public extension HTTPRequest {
         }
         // Set headers
         httpRequest.headers.headers.forEach { header in
-            if header.value.count > 0 {
-                header.value.forEach { value in
-                    urlRequest.addValue(value, forHTTPHeaderField: header.name)
-                }
-            } else {
-                urlRequest.addValue("", forHTTPHeaderField: header.name)
+            header.value.forEach { value in
+                urlRequest.addValue(value, forHTTPHeaderField: header.name)
             }
         }
         return urlRequest
