@@ -141,4 +141,9 @@ class HeadersTests: XCTestCase {
         let subject = Headers(["a": ""])
         XCTAssertTrue(subject.exists(name: "a"))
     }
+
+    func test_exists_trueIfHeaderValueIsEmptyList() {
+        let subject = Headers(["a": []])
+        XCTAssertTrue(subject.exists(name: "a"))
+    }
 }

@@ -334,7 +334,7 @@ open class HttpRequestTestBase: XCTestCase {
         }
 
         expected.headers.forEach { header in
-            XCTAssertTrue(actual.exists(name: header.name), file: file, line: line)
+            XCTAssert(actual.exists(name: header.name), "Header '\(header.name)' does not exist", file: file, line: line)
 
             guard actual.values(for: header.name) != header.value else {
                 XCTAssertEqual(actual.values(for: header.name), header.value, file: file, line: line)
@@ -345,14 +345,14 @@ open class HttpRequestTestBase: XCTestCase {
                 .joined(separator: ", ")
                 .components(separatedBy: .whitespaces)
                 .joined()
-            XCTAssertNotNil(actualValue, file: file, line: line)
+            XCTAssertNotNil(actualValue, "The actual header value for \(header.name) is not present", file: file, line: line)
 
             let expectedValue = header.value
                 .joined(separator: ", ")
                 .components(separatedBy: .whitespaces)
                 .joined()
             
-            XCTAssertEqual(actualValue, expectedValue, file: file, line: line)
+            XCTAssert(actualValue == expectedValue, "Actual header '\(header.name)': \(actualValue.map { "'\($0)'" } ?? "nil") Expected header: '\(expectedValue)'", file: file, line: line)
         }
     }
 
