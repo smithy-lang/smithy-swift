@@ -344,7 +344,7 @@ open class HttpRequestTestBase: XCTestCase {
             let actualValue = actual.values(for: header.name)?
                 .joined(separator: ", ")
                 .components(separatedBy: .whitespaces)
-                .joined() ?? ""
+                .joined()
 
             XCTAssertNotNil(actualValue, "The actual header value for \(header.name) is not present", file: file, line: line)
 
