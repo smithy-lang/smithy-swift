@@ -353,7 +353,7 @@ open class HttpRequestTestBase: XCTestCase {
                 .components(separatedBy: .whitespaces)
                 .joined()
 
-            XCTAssert(actualValue == expectedValue, "Actual header '\(header.name)': '\(actualValue)') Expected header: '\(expectedValue)'", file: file, line: line)
+            XCTAssert(actualValue == expectedValue, "Actual header '\(header.name)': '\(String(describing: actualValue))') Expected header: '\(String(describing: expectedValue))'", file: file, line: line)
         }
     }
 
