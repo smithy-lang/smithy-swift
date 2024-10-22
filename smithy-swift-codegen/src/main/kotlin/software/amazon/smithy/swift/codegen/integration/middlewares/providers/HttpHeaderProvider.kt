@@ -90,6 +90,9 @@ class HttpHeaderProvider(
             if (isBoxed) {
                 writer.openBlock("if let $memberName = value.$memberName {", "}") {
                     if (memberTarget is CollectionShape) {
+                        writer.openBlock("if \$L.isEmpty {", "}", memberName) {
+                            writer.write("items.add(name: \$S, value: \"\")", paramName)
+                        }
                         writer.openBlock("$memberName.forEach { headerValue in ", "}") {
                             renderHeader(memberTarget.member, "headerValue", paramName, true)
                         }
