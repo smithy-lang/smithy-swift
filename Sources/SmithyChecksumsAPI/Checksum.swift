@@ -45,4 +45,5 @@ public protocol Checksum {
 public enum HashResult {
     case data(Data)
     case integer(UInt32)
+    case integer64(UInt64)
 }
