@@ -94,6 +94,9 @@ class DirectedSwiftCodegen(val context: PluginContext) :
 
             integrations.forEach { it.writeAdditionalFiles(context, ctx, writers) }
 
+            LOGGER.info("[${service.id}] Generating smoke tests for service")
+            generateSmokeTests(ctx)
+
             LOGGER.info("Generating package manifest file")
             PackageManifestGenerator(ctx).writePackageManifest(writers.dependencies)
 

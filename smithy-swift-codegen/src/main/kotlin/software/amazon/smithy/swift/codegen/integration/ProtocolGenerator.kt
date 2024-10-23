@@ -128,6 +128,11 @@ interface ProtocolGenerator {
      */
     fun generateProtocolClient(ctx: GenerationContext)
 
+    /**
+     * Generate smoke tests defined on the service model
+     */
+    fun generateSmokeTests(ctx: GenerationContext)
+
     fun initializeMiddleware(ctx: GenerationContext)
 
     fun getProtocolHttpBindingResolver(ctx: GenerationContext, defaultContentType: String): HttpBindingResolver =
