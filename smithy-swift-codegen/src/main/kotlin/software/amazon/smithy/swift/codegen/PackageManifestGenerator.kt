@@ -34,16 +34,20 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                     it.getProperty("url", String::class.java).getOrNull() != null ||
                         it.getProperty("scope", String::class.java).getOrNull() != null
                 }
-                val dependenciesByURL = externalDependencies.distinctBy {
-                    it.getProperty("url", String::class.java).getOrNull()
-                        ?: "${it.getProperty("scope", String::class.java).get()}.${it.packageName}"
-                }
+                val dependenciesByURL = externalDependencies
+                    .distinctBy {
+                        it.getProperty("url", String::class.java).getOrNull()
+                            ?: "${it.getProperty("scope", String::class.java).get()}.${it.packageName}"
+                    }
+                    .sorted()
 
                 writer.openBlock("dependencies: [", "],") {
                     dependenciesByURL.forEach { writePackageDependency(writer, it) }
                 }
 
-                val dependenciesByTarget = externalDependencies.distinctBy { it.expectProperty("target", String::class.java) + it.packageName }
+                val dependenciesByTarget = externalDependencies
+                    .distinctBy { it.expectProperty("target", String::class.java) + it.packageName }
+                    .sorted()
 
                 writer.openBlock("targets: [", "]") {
                     writer.openBlock(".target(", "),") {
