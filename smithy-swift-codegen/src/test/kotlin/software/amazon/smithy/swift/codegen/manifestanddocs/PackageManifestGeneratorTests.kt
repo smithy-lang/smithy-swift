@@ -6,6 +6,7 @@ package software.amazon.smithy.swift.codegen.manifestanddocs
  */
 
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldStartWith
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.PackageManifestGenerator
@@ -17,8 +18,14 @@ class PackageManifestGeneratorTests {
     private val testContext = setupTests("simple-service-with-operation-and-dependency.smithy", "smithy.example#Example")
 
     @Test
-    fun `it renders package manifest file with macOS and iOS platforms block`() {
+    fun `it starts with a swift-tools-version statement`() {
         val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
+        assertNotNull(packageManifest)
+        packageManifest.shouldStartWith("// swift-tools-version: 5.5.0")
+    }
+
+    fun `it renders package manifest file with macOS and iOS platforms block`() {
+        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
         assertNotNull(packageManifest)
         packageManifest.shouldContain(
             "platforms: [\n" +
@@ -48,9 +55,6 @@ class PackageManifestGeneratorTests {
         .target(
             name: "MockSDK",
             dependencies: [
-            ],
-            resources: [
-                .process("Resources")
             ]
         ),
         .testTarget(
@@ -59,12 +63,11 @@ class PackageManifestGeneratorTests {
                 "MockSDK",
                 .product(
                     name: "SmithyTestUtil",
-                    package: "aws-sdk-swift.smithy-swift"
+                    package: "smithy-swift"
                 ),
             ]
         )
-    ]
-"""
+    ]"""
         packageManifest.shouldContain(expected)
     }
 
