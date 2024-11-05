@@ -94,7 +94,6 @@ class SwiftDependency(
         }
     }
 
-
     override fun getDependencies(): List<SymbolDependency> {
         return listOf(toSymbolDependency())
     }
