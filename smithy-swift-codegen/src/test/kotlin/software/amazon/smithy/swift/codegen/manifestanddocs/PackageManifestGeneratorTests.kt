@@ -24,30 +24,32 @@ class PackageManifestGeneratorTests {
         packageManifest.shouldStartWith("// swift-tools-version: 5.5.0")
     }
 
+    @Test
     fun `it renders package manifest file with macOS and iOS platforms block`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
         assertNotNull(packageManifest)
-        packageManifest.shouldContain(
-            "platforms: [\n" +
-                "        .macOS(.v10_15), .iOS(.v13)\n" +
-                "    ]"
-        )
+        val expected = """
+    platforms: [
+        .macOS(.v10_15), .iOS(.v13)
+    ],
+"""
+        packageManifest.shouldContain(expected)
     }
 
     @Test
     fun `it renders package manifest file with single library in product block`() {
         val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
         assertNotNull(packageManifest)
-        packageManifest.shouldContain(
-            "products: [\n" +
-                "        .library(name: \"MockSDK\", targets: [\"MockSDK\"])\n" +
-                "    ]"
-        )
+        val expected = """
+    products: [
+        .library(name: "MockSDK", targets: ["MockSDK"])
+    ],
+"""
+        packageManifest.shouldContain(expected)
     }
 
     @Test
     fun `it renders package manifest file with target and test target`() {
-        println(testContext.manifest.files)
         val packageManifest = testContext.manifest.getFileString("Package.swift.txt").get()
         assertNotNull(packageManifest)
         val expected = """
@@ -67,7 +69,8 @@ class PackageManifestGeneratorTests {
                 ),
             ]
         )
-    ]"""
+    ]
+"""
         packageManifest.shouldContain(expected)
     }
 
