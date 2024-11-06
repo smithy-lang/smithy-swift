@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.swift.codegen.integration.httpResponse
 
+import software.amazon.smithy.aws.traits.protocols.AwsQueryCompatibleTrait
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
@@ -14,6 +15,7 @@ import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftSymbol
@@ -89,11 +91,20 @@ class HTTPResponseBindingErrorGenerator(
                     writer.write("let data = try await httpResponse.data()")
                     writer.write("let responseReader = try \$N.from(data: data)", ctx.service.readerSymbol)
                     val noErrorWrapping = ctx.service.getTrait<RestXmlTrait>()?.isNoErrorWrapping ?: false
-                    writer.write(
-                        "let baseError = try \$N(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L)",
-                        customizations.baseErrorSymbol,
-                        noErrorWrapping
-                    )
+                    if (ctx.service.hasTrait<AwsQueryCompatibleTrait>()) {
+                        writer.write("let errorDetails = httpResponse.headers.value(for: \"x-amzn-query-error\")")
+                        writer.write(
+                            "let baseError = try \$N.makeQueryCompatibleAWSJsonError(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L, errorDetails: errorDetails)",
+                            customizations.baseErrorSymbol,
+                            noErrorWrapping
+                        )
+                    } else {
+                        writer.write(
+                            "let baseError = try \$N(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L)",
+                            customizations.baseErrorSymbol,
+                            noErrorWrapping
+                        )
+                    }
                     writer.write("if let error = baseError.customError() { return error }")
                     if (ctx.service.errors.isNotEmpty() || customizations.serviceErrorCustomRenderer(ctx) != null) {
                         writer.write("if let error = try httpServiceError(baseError: baseError) { return error }")
