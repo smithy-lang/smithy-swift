@@ -190,6 +190,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// before returning.  Do not call this method from the bridge's queue, or a deadlock will occur.
     func close() {
         _streamTask?.cancel()
+        queue.sync { _close() }
     }
 
     private func _close() {
@@ -211,10 +212,12 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     private func _startFeed() {
         guard _streamTask == nil else { return }
         _streamTask = Task {
+//            print("start stream task")
             var readableStreamIsOpen = true
             var bufferCount = 0
 
             while bufferCount > 0 || readableStreamIsOpen {
+//                print("start stream loop")
                 var readableStreamData: Data?
                 if readableStreamIsOpen {
                     let availableBufferSize = self.boundStreamBufferSize - bufferCount
@@ -225,17 +228,24 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                         readableStreamIsOpen = false
                     }
                 }
-                await waitForSpaceAvailable()
                 if let readableStreamData {
+                    await waitForSpaceAvailable()
+//                    print("start writeToBuffer with data \(readableStreamData.count) new bytes")
                     bufferCount = await writeToBufferAndFlush(readableStreamData)
+//                    print("finish writeToBuffer with data (\(bufferCount) bytes remain)")
                 } else {
+//                    print("start writeToBuffer with no data")
                     readableStreamIsOpen = false
+                    bufferCount = await writeToBufferAndFlush(Data())
+//                    print("finish writeToBuffer with no data (\(bufferCount) bytes remain)")
                 }
             }
+//            print("start close stream")
             await withCheckedContinuation { continuation in
                 self.close()
                 continuation.resume()
             }
+//            print("finish close stream")
         }
     }
 
@@ -243,7 +253,9 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
         await withCheckedContinuation { continuation in
             queue.async {
                 self._buffer.append(data)
-                self._writeToOutputStream()
+                if self._buffer.count > 0 {
+                    self._writeToOutputStream()
+                }
                 continuation.resume(returning: self._buffer.count)
             }
         }

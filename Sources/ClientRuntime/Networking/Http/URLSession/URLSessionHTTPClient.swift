@@ -347,11 +347,12 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// If the error is returned prior to the initial response, the request fails with an error.
         /// If the error is returned after the initial response, the error is used to fail the response stream.
         func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+            let httpMethod = task.originalRequest?.httpMethod ?? ""
             let url = task.originalRequest?.url?.absoluteString ?? ""
             if let error {
-                logger.error("URLRequest(\(url)) failed with error: \(error)")
+                logger.error("URLRequest(\(httpMethod) \(url)) failed with error: \(error)")
             } else {
-                logger.info("URLRequest(\(url)) succeeded")
+                logger.info("URLRequest(\(httpMethod) \(url)) succeeded")
             }
 
             // This connection is complete.  No further data will be sent, and none will be received.
@@ -567,8 +568,9 @@ public final class URLSessionHTTPClient: HTTPClient {
                         delegate.storage.set(connection, for: dataTask)
 
                         // Start the HTTP connection and start streaming the request body data, if needed
+                        let httpMethod = urlRequest.httpMethod ?? ""
                         let url = urlRequest.url?.absoluteString ?? ""
-                        logger.info("URLRequest(\(url)) started")
+                        logger.info("URLRequest(\(httpMethod) \(url)) started")
                         logBodyDescription(body)
                         dataTask.resume()
                         streamBridge?.open()
