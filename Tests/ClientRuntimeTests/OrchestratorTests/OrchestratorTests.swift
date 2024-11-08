@@ -15,6 +15,7 @@ import SmithyRetriesAPI
 import SmithyRetries
 @_spi(SmithyReadWrite) import SmithyJSON
 @_spi(SmithyReadWrite) import SmithyReadWrite
+import SmithyStreams
 
 class OrchestratorTests: XCTestCase {
     struct TestInput {
@@ -1314,5 +1315,36 @@ class OrchestratorTests: XCTestCase {
                 return .failure(TestError(value: e.localizedDescription))
             }
         }
+    }
+
+    func test_retry_retriesDataBody() async throws {
+        let input = TestInput(foo: "bar")
+        let trace = Trace()
+        let executeRequest = TraceExecuteRequest(succeedAfter: 2, trace: trace)
+        let orchestrator = traceOrchestrator(trace: trace)
+            .serialize({ (input: TestInput, builder: HTTPRequestBuilder, context) in
+                builder.withBody(.data(Data("\"\(input.foo)\"".utf8)))
+            })
+            .executeRequest(executeRequest)
+        let result = await asyncResult {
+            return try await orchestrator.build().execute(input: input)
+        }
+        XCTAssertEqual(result, .success(TestOutput(bar: "bar")))
+        XCTAssertEqual(trace.trace.count { $0 == "modifyBeforeRetryLoop" }, 1)
+    }
+
+    func test_retry_doesntRetryStreamBody() async throws {
+        let input = TestInput(foo: "bar")
+        let trace = Trace()
+        let orchestrator = traceOrchestrator(trace: trace)
+            .serialize({ (input: TestInput, builder: HTTPRequestBuilder, context) in
+                builder.withBody(.stream(BufferedStream(data: Data("\"\(input.foo)\"".utf8), isClosed: true)))
+            })
+            .executeRequest(TraceExecuteRequest(succeedAfter: 2, trace: trace))
+        let result = await asyncResult {
+            return try await orchestrator.build().execute(input: input)
+        }
+        XCTAssertEqual(result, .failure(TestError(value: "The operation couldn’t be completed. (ClientRuntime.UnknownHTTPServiceError error 1.)")))
+        XCTAssertEqual(trace.trace.count { $0 == "modifyBeforeRetryLoop" }, 1)
     }
 }
