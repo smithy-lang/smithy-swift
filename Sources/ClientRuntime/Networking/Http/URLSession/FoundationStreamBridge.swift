@@ -41,8 +41,10 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     let boundStreamBufferSize: Int
 
     /// A buffer to hold data that has been read from the `ReadableStream` but not yet written to the
-    /// Foundation `OutputStream`.  At most, it will contain `bridgeBufferSize` bytes.
-    private var buffer: Data
+    /// Foundation `OutputStream`.
+    ///
+    /// Access the buffer only from the stream bridge queue.  At most, at any time it will contain `bridgeBufferSize` bytes.
+    private var _buffer: Data
 
     /// The `ReadableStream` that will serve as the input to this bridge.
     /// The bridge will read bytes from this stream and dump them to the Foundation stream
@@ -110,7 +112,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     ) {
         self.bridgeBufferSize = bridgeBufferSize
         self.boundStreamBufferSize = boundStreamBufferSize ?? bridgeBufferSize
-        self.buffer = Data(capacity: bridgeBufferSize)
+        self._buffer = Data(capacity: bridgeBufferSize)
         self.readableStream = readableStream
         self.logger = logger
         self.telemetry = telemetry
@@ -119,7 +121,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     }
 
     deinit {
-        feedTask?.cancel()
+        _streamTask?.cancel()
     }
 
     func replaceStreams(completion: @escaping (InputStream?) -> Void) {
@@ -187,7 +189,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Stream operations are performed on the bridge's queue using a synchronous task, so that the stream has been closed
     /// before returning.  Do not call this method from the bridge's queue, or a deadlock will occur.
     func close() {
-        queue.sync { _close() }
+        _streamTask?.cancel()
     }
 
     private func _close() {
@@ -197,21 +199,22 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
 
     // MARK: - Writing to bridge
 
-    private var feedTask: Task<Void, Never>?
-    private var feedContinuation: CheckedContinuation<Void, Never>?
-    private var needsFeedNow = false
+    private var _streamTask: Task<Void, Never>?
+    private var _spaceAvailableState = SpaceAvailableState.noSpaceAvailable
 
-    private func startFeed() {
-        guard feedTask == nil else { return }
-        feedTask = Task { [weak self] in
-            guard let self else { return }
+    enum SpaceAvailableState {
+        case noSpaceAvailable
+        case hasSpaceAvailable
+        case awaitingSpaceAvailable(CheckedContinuation<Void, Never>)
+    }
 
+    private func _startFeed() {
+        guard _streamTask == nil else { return }
+        _streamTask = Task {
             var readableStreamIsOpen = true
             var bufferCount = 0
-            var rep = 0
 
             while bufferCount > 0 || readableStreamIsOpen {
-                rep += 1
                 var readableStreamData: Data?
                 if readableStreamIsOpen {
                     let availableBufferSize = self.boundStreamBufferSize - bufferCount
@@ -222,7 +225,7 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                         readableStreamIsOpen = false
                     }
                 }
-                await waitToFeed()
+                await waitForSpaceAvailable()
                 if let readableStreamData {
                     bufferCount = await writeToBufferAndFlush(readableStreamData)
                 } else {
@@ -239,32 +242,24 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     private func writeToBufferAndFlush(_ data: Data) async -> Int {
         await withCheckedContinuation { continuation in
             queue.async {
-                self.buffer.append(data)
-                self.writeToOutputStream()
-                continuation.resume(returning: self.buffer.count)
+                self._buffer.append(data)
+                self._writeToOutputStream()
+                continuation.resume(returning: self._buffer.count)
             }
         }
     }
 
-    private func requestFeed() {
-        if let feedContinuation {
-            feedContinuation.resume()
-            self.feedContinuation = nil
-            needsFeedNow = false
-        } else {
-            needsFeedNow = true
-        }
-    }
-
-    private func waitToFeed() async {
+    private func waitForSpaceAvailable() async {
         await withCheckedContinuation { continuation in
             queue.async {
-                if self.needsFeedNow {
-                    self.needsFeedNow = false
+                switch self._spaceAvailableState {
+                case .noSpaceAvailable:
+                    self._spaceAvailableState = .awaitingSpaceAvailable(continuation)
+                case .hasSpaceAvailable:
+                    self._spaceAvailableState = .noSpaceAvailable
                     continuation.resume()
-                } else {
-                    assert(self.feedContinuation == nil)
-                    self.feedContinuation = continuation
+                case .awaitingSpaceAvailable:
+                    fatalError()
                 }
             }
         }
@@ -273,21 +268,20 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     /// Write the buffered data to the Foundation `OutputStream` and write metrics.
     ///
     /// Call this method only from the bridge queue.
-    /// - Returns: The error resulting from the write to the Foundation `OutputStream`, or `nil` if no error occurred.
-    private func writeToOutputStream() {
+    private func _writeToOutputStream() {
         // Write to the output stream.  It may not accept all data, so get the number of bytes
         // it accepted in `writeCount`.
         var writeCount = 0
-        buffer.withUnsafeBytes { bufferPtr in
+        _buffer.withUnsafeBytes { bufferPtr in
             guard let bytePtr = bufferPtr.bindMemory(to: UInt8.self).baseAddress else { return }
-            writeCount = outputStream.write(bytePtr, maxLength: buffer.count)
+            writeCount = outputStream.write(bytePtr, maxLength: _buffer.count)
         }
 
         // `writeCount` will be a positive number if bytes were written.
         // Remove the written bytes from the front of the buffer.
         if writeCount > 0 {
             logger.debug("FoundationStreamBridge: wrote \(writeCount) bytes to request body")
-            buffer.removeFirst(writeCount)
+            _buffer.removeFirst(writeCount)
             // TICK - smithy.client.http.bytes_sent
             var attributes = Attributes()
             attributes.set(
@@ -297,6 +291,18 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
                 value: writeCount,
                 attributes: attributes,
                 context: telemetry.contextManager.current())
+        }
+    }
+
+    private func _updateHasSpaceAvailable() {
+        switch _spaceAvailableState {
+        case .noSpaceAvailable:
+            _spaceAvailableState = .hasSpaceAvailable
+        case .hasSpaceAvailable:
+            break
+        case .awaitingSpaceAvailable(let continuation):
+            _spaceAvailableState = .noSpaceAvailable
+            continuation.resume()
         }
     }
 
@@ -315,14 +321,14 @@ class FoundationStreamBridge: NSObject, StreamDelegate {
     @objc func stream(_ aStream: Foundation.Stream, handle eventCode: Foundation.Stream.Event) {
         switch eventCode {
         case .openCompleted:
-            startFeed()
+            _startFeed()
         case .hasBytesAvailable:
             // not used by OutputStream
             break
         case .hasSpaceAvailable:
             // Inform the write coordinator that there is space available
             // on the output stream so that writing of data may be resumed at the proper time.
-            requestFeed()
+            _updateHasSpaceAvailable()
         case .errorOccurred:
             logger.error("FoundationStreamBridge: .errorOccurred event")
             logger.error("FoundationStreamBridge: Stream error: \(aStream.streamError.debugDescription)")

@@ -9,6 +9,22 @@ import Smithy
 import SmithyEventStreamsAPI
 import SmithyEventStreamsAuthAPI
 import struct Foundation.Data
+import class Foundation.NSRecursiveLock
+
+//private let sernoLock = NSRecursiveLock()
+//private var currentSerno = 0
+//
+//private func nextSerno() -> Int {
+//    sernoLock.lock()
+//    currentSerno += 1
+//    let serno = currentSerno
+//    sernoLock.unlock()
+//    return serno
+//}
+//
+//public protocol HasSerno {
+//    var serno: Int { get }
+//}
 
 /// Stream adapter that encodes input into `Data` objects.
 public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream, @unchecked Sendable {
@@ -19,6 +35,7 @@ public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream, @
     let marshalClosure: MarshalClosure<Event>
     var readAsyncIterator: AsyncIterator?
     let initialRequestMessage: Message?
+//    public let serno = nextSerno()
 
     public required init(
         stream: AsyncThrowingStream<Event, Error>,
@@ -41,6 +58,7 @@ public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream, @
         var messageSigner: MessageSigner
         let marshalClosure: MarshalClosure<Event>
         let initialRequestMessage: Message?
+//        let serno: Int
 
         private var lastMessageSent: Bool = false
         private var streamIterator: AsyncThrowingStream<Event, Error>.Iterator
@@ -52,6 +70,7 @@ public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream, @
             marshalClosure: @escaping MarshalClosure<Event>,
             messageSigner: MessageSigner,
             initialRequestMessage: Message? = nil
+//            serno: Int
         ) {
             self.stream = stream
             self.streamIterator = stream.makeAsyncIterator()
@@ -59,9 +78,39 @@ public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream, @
             self.messageSigner = messageSigner
             self.marshalClosure = marshalClosure
             self.initialRequestMessage = initialRequestMessage
+//            self.serno = serno
         }
 
+//        var nexting = false
+//        let callNoLock = NSRecursiveLock()
+//        var nextCount = 0
+//
+//        private mutating func nextCallNo() -> Int {
+//            callNoLock.lock()
+//            nextCount += 1
+//            let serno = nextCount
+//            callNoLock.unlock()
+//            return serno
+//        }
+
         mutating public func next() async throws -> Data? {
+//            let callNo = nextCallNo()
+//            var doubleCalling = false
+//            if nexting {
+//                print("FSB \(serno)-\(callNo) AsyncIterator double-called")
+//                doubleCalling = true
+//            } else {
+//                print("FSB \(serno)-\(callNo) AsyncIterator called")
+//            }
+//            nexting = true
+//            defer {
+//                if doubleCalling {
+//                    print("FSB \(serno)-\(callNo) AsyncIterator double-call finished")
+//                } else {
+//                    print("FSB \(serno)-\(callNo) AsyncIterator finished")
+//                }
+//                nexting = false
+//            }
             if let initialRequestMessage, !sentInitialRequest {
                 sentInitialRequest = true
                 let signedMessage = try await messageSigner.sign(message: initialRequestMessage)
@@ -100,26 +149,27 @@ public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream, @
             marshalClosure: marshalClosure,
             messageSigner: messageSigner,
             initialRequestMessage: initialRequestMessage
+//            serno: serno
         )
     }
 
     // MARK: Stream
 
     /// Returns the current position in the stream
-    public var position: Data.Index = 0
+    public private(set) var position: Data.Index = 0
 
-    /// Returns nil because the length of async stream is not known
-    public var length: Int?
+    /// Returns `nil` because the length of async stream is not known
+    public var length: Int? { nil }
 
     /// Returns false because the length of async stream is not known
     /// and therefore cannot be empty
-    public var isEmpty: Bool = false
+    public var isEmpty: Bool { false }
 
     /// Returns false because async stream is not seekable
-    public var isSeekable: Bool = false
+    public var isSeekable: Bool { false }
 
     /// Internal buffer to store excess data read from async stream
-    var buffer = Data()
+    private var buffer = Data()
 
     public func read(upToCount count: Int) throws -> Data? {
         fatalError("read(upToCount:) is not supported by AsyncStream backed streams")
@@ -136,6 +186,8 @@ public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream, @
         }
         return data
     }
+
+//    private var reading = false
 
     /// Reads up to `count` bytes from the stream asynchronously
     /// - Parameter count: maximum number of bytes to read
