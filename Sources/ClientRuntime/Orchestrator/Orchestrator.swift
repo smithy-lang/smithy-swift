@@ -265,6 +265,13 @@ public struct Orchestrator<
             // If we can't get errorInfo, we definitely can't retry
             guard let errorInfo = retryErrorInfoProvider(error) else { return }
 
+            // If the body is a nonseekable stream, we also can't retry
+            do {
+                guard try readyBodyForRetry(request: copiedRequest) else { return }
+            } catch {
+                return
+            }
+
             // When refreshing fails it throws, indicating we're done retrying
             do {
                 try await strategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
@@ -274,6 +281,25 @@ public struct Orchestrator<
 
             context.updateRequest(updated: copiedRequest)
             await startAttempt(context: context, strategy: strategy, token: token, attemptCount: attemptCount + 1)
+        }
+    }
+
+    /// Readies the body for retry, and indicates whether the request body may be safely used in a retry.
+    /// - Parameter request: The request to be retried.
+    /// - Returns: `true` if the body of the request is safe to retry, `false` otherwise.  In general, a request body is retriable if it is not a stream, or
+    ///   if the stream is seekable and successfully seeks to the start position / offset zero.
+    private func readyBodyForRetry(request: RequestType) throws -> Bool {
+        switch request.body {
+        case .stream(let stream):
+            guard stream.isSeekable else { return false }
+            do {
+                try stream.seek(toOffset: 0)
+                return true
+            } catch {
+                return false
+            }
+        case .data, .noStream:
+            return true
         }
     }
 
