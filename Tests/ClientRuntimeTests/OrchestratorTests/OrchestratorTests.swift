@@ -181,6 +181,7 @@ class OrchestratorTests: XCTestCase {
         public func execute(request: HTTPRequest, attributes: Context) async throws -> HTTPResponse {
             trace.append("executeRequest")
             if succeedAfter - requestCount <= 0 {
+                requestCount += 1
                 return HTTPResponse(body: request.body, statusCode: .ok)
             } else {
                 requestCount += 1
@@ -236,7 +237,7 @@ class OrchestratorTests: XCTestCase {
                     throw try UnknownHTTPServiceError.makeError(baseError: baseError)
                 }
             })
-            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())))
+            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ImmediateBackoffStrategy())))
             .retryErrorInfoProvider({ e in
                 trace.append("errorInfo")
                 return DefaultRetryErrorInfoProvider.errorInfo(for: e)
@@ -533,7 +534,7 @@ class OrchestratorTests: XCTestCase {
         let initialTokenTrace = Trace()
         let initialToken = await asyncResult {
             return try await self.traceOrchestrator(trace: initialTokenTrace)
-                .retryStrategy(ThrowingRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())))
+                .retryStrategy(ThrowingRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ImmediateBackoffStrategy())))
                 .build()
                 .execute(input: TestInput(foo: ""))
         }
@@ -1320,7 +1321,7 @@ class OrchestratorTests: XCTestCase {
     }
 
     /// Used in retry tests to perform the next retry without waiting, so that tests complete without delay.
-    private struct ImmediateRetryBackoffStrategy: RetryBackoffStrategy {
+    private struct ImmediateBackoffStrategy: RetryBackoffStrategy {
         func computeNextBackoffDelay(attempt: Int) -> TimeInterval { 0.0 }
     }
 
@@ -1329,7 +1330,7 @@ class OrchestratorTests: XCTestCase {
         let trace = Trace()
         let executeRequest = TraceExecuteRequest(succeedAfter: 2, trace: trace)
         let orchestrator = traceOrchestrator(trace: trace)
-            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ImmediateRetryBackoffStrategy())))
+            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ImmediateBackoffStrategy())))
             .serialize({ (input: TestInput, builder: HTTPRequestBuilder, context) in
                 builder.withBody(.data(Data("\"\(input.foo)\"".utf8)))
             })
@@ -1338,15 +1339,15 @@ class OrchestratorTests: XCTestCase {
             return try await orchestrator.build().execute(input: input)
         }
         XCTAssertNoThrow(try result.get())
-        XCTAssertEqual(executeRequest.requestCount, 2)
+        XCTAssertEqual(executeRequest.requestCount, 3)
     }
 
-    func test_retry_doesntRetryStreamBody() async throws {
+    func test_retry_doesntRetryNonSeekableStreamBody() async throws {
         let input = TestInput(foo: "bar")
         let trace = Trace()
         let executeRequest = TraceExecuteRequest(succeedAfter: 2, trace: trace)
         let orchestrator = traceOrchestrator(trace: trace)
-            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ImmediateRetryBackoffStrategy())))
+            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ImmediateBackoffStrategy())))
             .serialize({ (input: TestInput, builder: HTTPRequestBuilder, context) in
                 builder.withBody(.stream(BufferedStream(data: Data("\"\(input.foo)\"".utf8), isClosed: true)))
             })
@@ -1355,6 +1356,23 @@ class OrchestratorTests: XCTestCase {
             return try await orchestrator.build().execute(input: input)
         }
         XCTAssertThrowsError(try result.get())
+        XCTAssertEqual(executeRequest.requestCount, 1)
+    }
+
+    func test_retry_nonSeekableStreamBodySucceeds() async throws {
+        let input = TestInput(foo: "bar")
+        let trace = Trace()
+        let executeRequest = TraceExecuteRequest(succeedAfter: 0, trace: trace)
+        let orchestrator = traceOrchestrator(trace: trace)
+            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ImmediateBackoffStrategy())))
+            .serialize({ (input: TestInput, builder: HTTPRequestBuilder, context) in
+                builder.withBody(.stream(BufferedStream(data: Data("\"\(input.foo)\"".utf8), isClosed: true)))
+            })
+            .executeRequest(executeRequest)
+        let result = await asyncResult {
+            return try await orchestrator.build().execute(input: input)
+        }
+        XCTAssertNoThrow(try result.get())
         XCTAssertEqual(executeRequest.requestCount, 1)
     }
 }
