@@ -122,6 +122,14 @@ final class DefaultRetryErrorInfoProviderTests: XCTestCase {
         XCTAssertEqual(errorInfo, nil)
     }
 
+    // MARK: - NSURLErrorDomain
+
+    func test_errorInfo_returnsRetryAfterNetworkConnectionLostError() {
+        let connectionWasLost = NSError(domain: NSURLErrorDomain, code: -1005)
+        let errorInfo = DefaultRetryErrorInfoProvider.errorInfo(for: connectionWasLost)
+        XCTAssertEqual(errorInfo, .init(errorType: .transient, retryAfterHint: nil, isTimeout: false))
+    }
+
     // MARK: - Retry after hint
 
     func test_errorInfo_returnsRetryAfterDelayWhenRetryAfterHeaderIsSet() {
