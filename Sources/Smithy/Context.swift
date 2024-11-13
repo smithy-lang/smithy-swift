@@ -5,46 +5,61 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Foundation.NSRecursiveLock
+
 public class Context {
-    public var attributes: Attributes
+    private var _attributes: Attributes
+    private var lock = NSRecursiveLock()
 
     public init(attributes: Attributes) {
-        self.attributes = attributes
+        self._attributes = attributes
     }
 
     public func toBuilder() -> ContextBuilder {
-        let builder = ContextBuilder()
-        builder.attributes = self.attributes
-        return builder
+        ContextBuilder(attributes: accessAttributes())
     }
 
     public func getLogger() -> LogAgent? {
-        return attributes.get(key: AttributeKeys.logger)
+        return accessAttributes().get(key: AttributeKeys.logger)
+    }
+
+    @discardableResult private func accessAttributes(accessor: ((inout Attributes) -> Void)? = nil) -> Attributes {
+        lock.lock()
+        defer { lock.unlock() }
+        accessor?(&_attributes)
+        return _attributes
     }
 }
 
 extension Context {
     public func get<T>(key: AttributeKey<T>) -> T? {
-        self.attributes.get(key: key)
+        accessAttributes().get(key: key)
     }
 
     public func contains<T>(key: AttributeKey<T>) -> Bool {
-        self.attributes.contains(key: key)
+        accessAttributes().contains(key: key)
     }
 
     public func set<T>(key: AttributeKey<T>, value: T?) {
-        self.attributes.set(key: key, value: value)
+        accessAttributes { attributes in
+            attributes.set(key: key, value: value)
+        }
     }
 
     public func remove<T>(key: AttributeKey<T>) {
-        self.attributes.remove(key: key)
+        accessAttributes { attributes in
+            attributes.remove(key: key)
+        }
     }
 }
 
 public class ContextBuilder {
-    public init() {}
 
-    public var attributes: Attributes = Attributes()
+    public init(attributes: Attributes = Attributes()) {
+        self.attributes = attributes
+    }
+
+    public var attributes: Attributes
 
     // We follow the convention of returning the builder object
     // itself from any configuration methods, and by adding the

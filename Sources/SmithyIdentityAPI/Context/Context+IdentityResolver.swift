@@ -12,7 +12,7 @@ import class Smithy.ContextBuilder
 
 extension Context {
     public func getIdentityResolvers() -> Attributes? {
-        return attributes.get(key: identityResolversKey)
+        get(key: identityResolversKey)
     }
 }
 

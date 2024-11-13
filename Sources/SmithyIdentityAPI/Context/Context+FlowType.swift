@@ -13,7 +13,7 @@ public let flowTypeKey = AttributeKey<FlowType>(name: "FlowType")
 
 extension Context {
     public func getFlowType() -> FlowType {
-        return attributes.get(key: flowTypeKey) ?? .NORMAL
+        get(key: flowTypeKey) ?? .NORMAL
     }
 }
 
