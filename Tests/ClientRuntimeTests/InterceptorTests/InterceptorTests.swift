@@ -123,7 +123,7 @@ class InterceptorTests: XCTestCase {
         let updatedInput = interceptorContext.getInput()
         XCTAssertEqual(updatedInput.property, "bar")
         XCTAssertEqual(updatedInput.otherProperty, 1)
-        XCTAssertEqual(interceptorContext.getAttributes().attributes.get(key: AttributeKey(name: "foo")), "bar")
+        XCTAssertEqual(interceptorContext.getAttributes().get(key: AttributeKey(name: "foo")), "bar")
         XCTAssertEqual(interceptorContext.getRequest().headers.value(for: "foo"), "bar")
         XCTAssertEqual(interceptorContext.getRequest().headers.value(for: "otherProperty"), "1")
     }
