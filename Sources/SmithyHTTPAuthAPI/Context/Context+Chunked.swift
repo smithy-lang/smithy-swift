@@ -10,8 +10,8 @@ import struct Smithy.AttributeKey
 
 public extension Context {
     var isChunkedEligibleStream: Bool? {
-        get { attributes.get(key: isChunkedEligibleStreamKey) }
-        set { attributes.set(key: isChunkedEligibleStreamKey, value: newValue) }
+        get { get(key: isChunkedEligibleStreamKey) }
+        set { set(key: isChunkedEligibleStreamKey, value: newValue) }
     }
 }
 
