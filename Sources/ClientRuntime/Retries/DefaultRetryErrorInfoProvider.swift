@@ -10,6 +10,8 @@ import struct SmithyRetriesAPI.RetryErrorInfo
 import enum SmithyRetriesAPI.RetryErrorType
 import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 import struct Foundation.TimeInterval
+import class Foundation.NSError
+import var Foundation.NSURLErrorDomain
 
 public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
     /// Returns information used to determine how & if to retry an error.
@@ -33,6 +35,11 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
             return .init(errorType: errorType, retryAfterHint: hint, isTimeout: false)
         } else if let code = (error as? HTTPError)?.httpResponse.statusCode, retryableStatusCodes.contains(code) {
             return .init(errorType: .serverError, retryAfterHint: hint, isTimeout: false)
+        } else if (error as NSError).domain == NSURLErrorDomain, (error as NSError).code == -1005 {
+            // Domain == "NSURLErrorDomain"
+            // NSURLErrorNetworkConnectionLost =         -1005
+            // "The network connection was lost."
+            return .init(errorType: .transient, retryAfterHint: nil, isTimeout: false)
         }
         return nil
     }
