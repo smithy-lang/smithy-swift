@@ -11,26 +11,27 @@ import struct Smithy.Attributes
 import struct Smithy.AttributeKey
 
 public extension Context {
+
     func getAuthSchemes() -> Attributes? {
-        return attributes.get(key: authSchemesKey)
+        get(key: authSchemesKey)
     }
 
     var selectedAuthScheme: SelectedAuthScheme? {
-        get { attributes.get(key: selectedAuthSchemeKey) }
-        set { attributes.set(key: selectedAuthSchemeKey, value: newValue) }
+        get { get(key: selectedAuthSchemeKey) }
+        set { set(key: selectedAuthSchemeKey, value: newValue) }
     }
 
     func setSelectedAuthScheme(_ value: SelectedAuthScheme?) {
-        attributes.set(key: selectedAuthSchemeKey, value: value)
+        set(key: selectedAuthSchemeKey, value: value)
     }
 
     func getAuthSchemeResolver() -> AuthSchemeResolver? {
-        return attributes.get(key: authSchemeResolverKey)
+        get(key: authSchemeResolverKey)
     }
 
     var signingAlgorithm: SigningAlgorithm? {
-        get { attributes.get(key: signingAlgorithmKey) }
-        set { attributes.set(key: signingAlgorithmKey, value: newValue) }
+        get { get(key: signingAlgorithmKey) }
+        set { set(key: signingAlgorithmKey, value: newValue) }
     }
 }
 

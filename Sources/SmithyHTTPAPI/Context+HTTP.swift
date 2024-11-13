@@ -15,32 +15,32 @@ import struct Foundation.TimeInterval
 extension Context {
 
     public var httpResponse: HTTPResponse? {
-        get { attributes.get(key: httpResponseKey) }
-        set { attributes.set(key: httpResponseKey, value: newValue) }
+        get { get(key: httpResponseKey) }
+        set { set(key: httpResponseKey, value: newValue) }
     }
 
     public var expiration: TimeInterval {
-        get { attributes.get(key: expirationKey) ?? 0 }
-        set { attributes.set(key: expirationKey, value: newValue) }
+        get { get(key: expirationKey) ?? 0 }
+        set { set(key: expirationKey, value: newValue) }
     }
 
     public var host: String? {
-        get { attributes.get(key: hostKey) }
-        set { attributes.set(key: hostKey, value: newValue) }
+        get { get(key: hostKey) }
+        set { set(key: hostKey, value: newValue) }
     }
 
     public var hostPrefix: String? {
-        get { attributes.get(key: hostPrefixKey) }
-        set { attributes.set(key: hostPrefixKey, value: newValue) }
+        get { get(key: hostPrefixKey) }
+        set { set(key: hostPrefixKey, value: newValue) }
     }
 
     public var method: HTTPMethodType {
-        get { attributes.get(key: methodKey) ?? .get }
-        set { attributes.set(key: methodKey, value: newValue) }
+        get { get(key: methodKey) ?? .get }
+        set { set(key: methodKey, value: newValue) }
     }
 
     public func getOperation() -> String? {
-        return attributes.get(key: SmithyHTTPAPIKeys.operation)
+        get(key: SmithyHTTPAPIKeys.operation)
     }
 
     /// The partition ID to be used for this context.
@@ -48,40 +48,40 @@ extension Context {
     /// Requests made with the same partition ID will be grouped together for retry throttling purposes.
     /// If no partition ID is provided, requests will be partitioned based on the hostname.
     public var partitionID: String? {
-        get { attributes.get(key: partitionIDKey) }
-        set { attributes.set(key: partitionIDKey, value: newValue) }
+        get { get(key: partitionIDKey) }
+        set { set(key: partitionIDKey, value: newValue) }
     }
 
     public var path: String {
-        get { attributes.get(key: pathKey)! }
-        set { attributes.set(key: pathKey, value: newValue) }
+        get { get(key: pathKey)! }
+        set { set(key: pathKey, value: newValue) }
     }
 
     public func getRegion() -> String? {
-        return attributes.get(key: SmithyHTTPAPIKeys.region)
+        return get(key: SmithyHTTPAPIKeys.region)
     }
 
     public func getServiceName() -> String {
-        return attributes.get(key: SmithyHTTPAPIKeys.serviceName)!
+        return get(key: SmithyHTTPAPIKeys.serviceName)!
     }
 
     public var signingName: String? {
-        get { attributes.get(key: signingNameKey) }
-        set { attributes.set(key: signingNameKey, value: newValue) }
+        get { get(key: signingNameKey) }
+        set { set(key: signingNameKey, value: newValue) }
     }
 
     public var signingRegion: String? {
-        get { attributes.get(key: signingRegionKey) }
-        set { attributes.set(key: signingRegionKey, value: newValue) }
+        get { get(key: signingRegionKey) }
+        set { set(key: signingRegionKey, value: newValue) }
     }
 
     public func hasUnsignedPayloadTrait() -> Bool {
-        return attributes.get(key: SmithyHTTPAPIKeys.hasUnsignedPayloadTrait) ?? false
+        return get(key: SmithyHTTPAPIKeys.hasUnsignedPayloadTrait) ?? false
     }
 
     public var isBidirectionalStreamingEnabled: Bool {
-        get { attributes.get(key: isBidirectionalStreamingEnabledKey) ?? false }
-        set { attributes.set(key: isBidirectionalStreamingEnabledKey, value: newValue) }
+        get { get(key: isBidirectionalStreamingEnabledKey) ?? false }
+        set { set(key: isBidirectionalStreamingEnabledKey, value: newValue) }
     }
 
     /// Returns `true` if the request should use `http2` and only `http2` without falling back to `http1`
