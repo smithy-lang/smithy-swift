@@ -9,7 +9,7 @@ import class Foundation.NSRecursiveLock
 
 public class Context {
     private var _attributes: Attributes
-    private var lock = NSRecursiveLock()
+    private let lock = NSRecursiveLock()
 
     public init(attributes: Attributes) {
         self._attributes = attributes
@@ -23,7 +23,8 @@ public class Context {
         return accessAttributes().get(key: AttributeKeys.logger)
     }
 
-    @discardableResult private func accessAttributes(accessor: ((inout Attributes) -> Void)? = nil) -> Attributes {
+    @discardableResult
+    private func accessAttributes(accessor: ((inout Attributes) -> Void)? = nil) -> Attributes {
         lock.lock()
         defer { lock.unlock() }
         accessor?(&_attributes)
@@ -32,6 +33,7 @@ public class Context {
 }
 
 extension Context {
+
     public func get<T>(key: AttributeKey<T>) -> T? {
         accessAttributes().get(key: key)
     }
