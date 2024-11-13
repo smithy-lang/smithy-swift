@@ -12,8 +12,8 @@ import struct Smithy.AttributeKey
 public extension Context {
 
     var requestSignature: String {
-        get { attributes.get(key: requestSignatureKey) ?? "" }
-        set { attributes.set(key: requestSignatureKey, value: newValue) }
+        get { get(key: requestSignatureKey) ?? "" }
+        set { set(key: requestSignatureKey, value: newValue) }
     }
 }
 
