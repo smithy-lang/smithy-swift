@@ -352,7 +352,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             if let error {
                 logger.error("URLRequest(\(httpMethod) \(url)) failed with error: \(error)")
             } else {
-                logger.info("URLRequest(\(httpMethod) \(url)) succeeded")
+                logger.debug("URLRequest(\(httpMethod) \(url)) succeeded")
             }
 
             // This connection is complete.  No further data will be sent, and none will be received.
@@ -570,7 +570,7 @@ public final class URLSessionHTTPClient: HTTPClient {
                         // Start the HTTP connection and start streaming the request body data, if needed
                         let httpMethod = urlRequest.httpMethod ?? ""
                         let url = urlRequest.url?.absoluteString ?? ""
-                        logger.info("URLRequest(\(httpMethod) \(url)) started")
+                        logger.debug("URLRequest(\(httpMethod) \(url)) started")
                         logBodyDescription(body)
                         dataTask.resume()
                         streamBridge?.open()
@@ -642,12 +642,12 @@ public final class URLSessionHTTPClient: HTTPClient {
             } else {
                 lengthString = "unknown length"
             }
-            logger.debug("  body is InputStream (\(lengthString))")
+            logger.debug("body is InputStream (\(lengthString))")
         case .data(let data):
             if let data {
-                logger.debug("  body is Data (\(data.count) bytes)")
+                logger.debug("body is Data (\(data.count) bytes)")
             } else {
-                logger.debug("  body is empty")
+                logger.debug("body is empty")
             }
         }
     }
