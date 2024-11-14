@@ -22,5 +22,6 @@ public enum SigningPropertyKeys {
     public static let signedBodyHeader = AttributeKey<AWSSignedBodyHeader>(name: "SignedBodyHeader")
     public static let signingAlgorithm = AttributeKey<SigningAlgorithm>(name: "signingAlgorithm")
     public static let unsignedBody = AttributeKey<Bool>(name: "UnsignedBody")
+    public static let requestUnsignedBody = AttributeKey<Bool>(name: "RequestUnsignedBody")
     public static let useDoubleURIEncode = AttributeKey<Bool>(name: "UseDoubleURIEncode")
 }
