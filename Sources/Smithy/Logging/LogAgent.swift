@@ -38,24 +38,26 @@ public enum LogAgentLevel: String, Codable, CaseIterable {
     case fatal
 }
 
+private let currentModule: String = {
+    let filePath = #file
+    let utf8All = filePath.utf8
+    return filePath.utf8.lastIndex(of: UInt8(ascii: "/")).flatMap { lastSlash -> Substring? in
+        utf8All[..<lastSlash].lastIndex(of: UInt8(ascii: "/")).map { secondLastSlash -> Substring in
+            filePath[utf8All.index(after: secondLastSlash) ..< lastSlash]
+        }
+    }.map {
+        String($0)
+    } ?? "n/a"
+}()
+
 public extension LogAgent {
-    internal static func currentModule(filePath: String = #file) -> String {
-        let utf8All = filePath.utf8
-        return filePath.utf8.lastIndex(of: UInt8(ascii: "/")).flatMap { lastSlash -> Substring? in
-            utf8All[..<lastSlash].lastIndex(of: UInt8(ascii: "/")).map { secondLastSlash -> Substring in
-                filePath[utf8All.index(after: secondLastSlash) ..< lastSlash]
-            }
-        }.map {
-            String($0)
-        } ?? "n/a"
-    }
 
     /// Log a message passing with the `.info` log level.
     func info(_ message: String, file: String = #file, function: String = #function, line: UInt = #line) {
         self.log(level: .info,
                  message: message,
                  metadata: nil,
-                 source: Self.currentModule(),
+                 source: currentModule,
                  file: file,
                  function: function,
                  line: line)
@@ -66,7 +68,7 @@ public extension LogAgent {
         self.log(level: .warn,
                  message: message,
                  metadata: nil,
-                 source: Self.currentModule(),
+                 source: currentModule,
                  file: file,
                  function: function,
                  line: line)
@@ -77,7 +79,7 @@ public extension LogAgent {
         self.log(level: .debug,
                  message: message,
                  metadata: nil,
-                 source: Self.currentModule(),
+                 source: currentModule,
                  file: file,
                  function: function,
                  line: line)
@@ -88,7 +90,7 @@ public extension LogAgent {
         self.log(level: .error,
                  message: message,
                  metadata: nil,
-                 source: Self.currentModule(),
+                 source: currentModule,
                  file: file,
                  function: function,
                  line: line)
@@ -99,7 +101,7 @@ public extension LogAgent {
         self.log(level: .trace,
                  message: message,
                  metadata: nil,
-                 source: Self.currentModule(),
+                 source: currentModule,
                  file: file,
                  function: function,
                  line: line)
@@ -110,7 +112,7 @@ public extension LogAgent {
         self.log(level: .fatal,
                  message: message,
                  metadata: nil,
-                 source: Self.currentModule(),
+                 source: currentModule,
                  file: file,
                  function: function,
                  line: line)
