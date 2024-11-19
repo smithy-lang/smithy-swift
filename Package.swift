@@ -227,7 +227,12 @@ let package = Package(
         ),
         .testTarget(
             name: "ClientRuntimeTests",
-            dependencies: ["ClientRuntime", "SmithyTestUtil", "SmithyStreams"],
+            dependencies: [
+                "ClientRuntime",
+                "SmithyTestUtil",
+                "SmithyStreams",
+                .product(name: "Logging", package: "swift-log"),
+            ],
             resources: [ .process("Resources") ]
         ),
         .testTarget(

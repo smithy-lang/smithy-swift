@@ -104,7 +104,7 @@ class FoundationStreamBridgeTests: XCTestCase {
     }
 }
 
-class TestLogger: LogAgent {
+private class TestLogger: LogAgent {
     var name: String
 
     var messages: [(level: LogAgentLevel, message: String)] = []
