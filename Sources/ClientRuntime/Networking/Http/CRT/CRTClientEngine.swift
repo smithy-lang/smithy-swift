@@ -155,7 +155,8 @@ public class CRTClientEngine: HTTPClient {
                 maxConnections: maxConnectionsPerEndpoint,
                 socketOptions: socketOptions,
                 tlsOptions: tlsConnectionOptions,
-                enableStreamManualWindowManagement: false
+                enableStreamManualWindowManagement: false,
+                maxConcurrentStreamsPerConnection: 50
             )
             logger.debug("""
             Creating connection pool for \(String(describing: endpoint.uri.host)) \
