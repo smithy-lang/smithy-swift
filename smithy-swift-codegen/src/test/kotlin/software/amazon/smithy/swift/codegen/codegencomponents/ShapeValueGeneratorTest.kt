@@ -162,13 +162,20 @@ Set<Swift.String>(arrayLiteral:
         val member2 = MemberShape.builder().id("foo.bar#MyStruct\$boolMember").target("smithy.api#Boolean").build()
         val member3 = MemberShape.builder().id("foo.bar#MyStruct\$intMember").target("smithy.api#Integer").build()
 
-        val nestedMember1 = MemberShape.builder().id("foo.bar#Nested\$tsMember").target("smithy.api#Timestamp").build()
+        val nestedMember1 = MemberShape.builder().id("foo.bar#Nested\$epochSecondsMember").target("smithy.api#Timestamp").build()
         val nested = StructureShape.builder()
             .id("foo.bar#Nested")
             .addMember(nestedMember1)
             .build()
 
+        val nestedMember2 = MemberShape.builder().id("foo.bar#Nested2\$dateTimeMember").target("smithy.api#Timestamp").build()
+        val nested2 = StructureShape.builder()
+            .id("foo.bar#Nested2")
+            .addMember(nestedMember2)
+            .build()
+
         val member4 = MemberShape.builder().id("foo.bar#MyStruct\$structMember").target("foo.bar#Nested").build()
+        val member9 = MemberShape.builder().id("foo.bar#MyStruct\$structMember2").target("foo.bar#Nested2").build()
 
         val enumTrait = EnumTrait.builder()
             .addEnum(EnumDefinition.builder().value("fooey").name("FOO").build())
@@ -195,10 +202,12 @@ Set<Swift.String>(arrayLiteral:
             .addMember(member6)
             .addMember(member7)
             .addMember(member8)
+            .addMember(member9)
             .build()
         val model = Model.assembler()
             .addShapes(struct, member1, member2, member3)
             .addShapes(member4, nested, nestedMember1)
+            .addShapes(member9, nested2, nestedMember2)
             .addShapes(member5, enumShape)
             .addShapes(member6, member7, member8)
             .assemble()
@@ -216,7 +225,13 @@ Set<Swift.String>(arrayLiteral:
             .withMember(
                 "structMember",
                 Node.objectNodeBuilder()
-                    .withMember("tsMember", 11223344)
+                    .withMember("epochSecondsMember", 11223344)
+                    .build()
+            )
+            .withMember(
+                "structMember2",
+                Node.objectNodeBuilder()
+                    .withMember("dateTimeMember", "1970-01-01T00:00:00Z")
                     .build()
             )
             .withMember("enumMember", "fooey")
@@ -238,7 +253,10 @@ MyStruct(
     nullMember: nil,
     stringMember: "v1",
     structMember: Nested(
-        tsMember: Date(timeIntervalSince1970: 11223344)
+        epochSecondsMember: Date(timeIntervalSince1970: 11223344)
+    ),
+    structMember2: Nested2(
+        dateTimeMember: SmithyTimestamps.TimestampFormatter(format: .dateTime).date(from: "1970-01-01T00:00:00Z")
     )
 )
         """.trimIndent()
