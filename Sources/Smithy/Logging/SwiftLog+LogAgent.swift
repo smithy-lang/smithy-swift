@@ -22,6 +22,13 @@ public struct SwiftLogger: LogAgent {
         self.logLevel = logLevel
     }
 
+    // This initializer is currently only used in tests, to inject a mock LogHandler.
+    init(label: String, logLevel: LogAgentLevel, factory: (String) -> any LogHandler) {
+        self.label = label
+        self.logLevel = logLevel
+        self.logger = Logger(label: label, factory: factory)
+    }
+
     public var level: LogAgentLevel {
         get {
             return logLevel
