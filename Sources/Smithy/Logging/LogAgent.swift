@@ -23,9 +23,9 @@ public protocol LogAgent {
     ///     - function: The function the log line was emitted from.
     ///     - line: The line the log message was emitted from.
     func log(level: LogAgentLevel,
-             message: String,
-             metadata: [String: String]?,
-             source: String,
+             message: @autoclosure () -> String,
+             metadata: @autoclosure () -> [String: String]?,
+             source: @autoclosure () -> String,
              file: String,
              function: String,
              line: UInt)
