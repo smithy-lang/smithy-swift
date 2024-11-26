@@ -14,9 +14,9 @@ import Foundation
 import XCTest
 @testable import ClientRuntime
 import SmithyTestUtil
-import enum Smithy.LogAgentLevel
 import protocol Smithy.LogAgent
 import class SmithyStreams.BufferedStream
+import Logging
 
 class FoundationStreamBridgeTests: XCTestCase {
 
@@ -107,17 +107,14 @@ class FoundationStreamBridgeTests: XCTestCase {
 private class TestLogger: LogAgent {
     var label: String
 
-    var messages: [(level: LogAgentLevel, message: String)] = []
+    var messages: [(level: Logger.Level, message: String)] = []
 
-    var level: LogAgentLevel
-
-    init(label: String = "Test", messages: [(level: LogAgentLevel, message: String)] = [], level: LogAgentLevel = .info) {
+    init(label: String = "Test", messages: [(level: Logger.Level, message: String)] = [], level: Logger.Level = .info) {
         self.label = label
         self.messages = messages
-        self.level = level
     }
 
-    func log(level: LogAgentLevel = .info, message: @autoclosure () -> String, metadata: @autoclosure () -> [String : String]? = nil, source: @autoclosure () -> String = "ChecksumUnitTests", file: String = #file, function: String = #function, line: UInt = #line) {
+    func log(level: Logger.Level = .info, message: @autoclosure () -> String, metadata: @autoclosure () -> [String : String]? = nil, source: @autoclosure () -> String = "ChecksumUnitTests", file: String = #file, function: String = #function, line: UInt = #line) {
         messages.append((level: level, message: message()))
     }
 }
