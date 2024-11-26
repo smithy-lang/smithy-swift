@@ -228,19 +228,13 @@ jobs:
       fail-fast: false
       matrix:
         swift:
-          - 5.9-amazonlinux2
           - 5.9-focal
-          - 6.0-amazonlinux2
           - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
-      - name: Setup Node 16
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16
       - name: Checkout Sources
         uses: actions/checkout@v3
       - name: Install openssl
@@ -286,9 +280,7 @@ jobs:
       fail-fast: false
       matrix:
         swift:
-          - 5.9-amazonlinux2
           - 5.9-focal
-          - 6.0-amazonlinux2
           - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}
