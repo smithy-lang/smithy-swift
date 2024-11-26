@@ -25,7 +25,7 @@ final class SwiftLoggerTests: XCTestCase {
     }
 
     func test_log_logsWarnLevelMessage() throws {
-        try logsLeveledMessage(logLevel: .warning, loggerBlock: { $0.warn })
+        try logsLeveledMessage(logLevel: .warning, loggerBlock: { $0.warning })
     }
 
     func test_log_logsErrorLevelMessage() throws {
@@ -33,7 +33,7 @@ final class SwiftLoggerTests: XCTestCase {
     }
 
     func test_log_logsFatalLevelMessage() throws {
-        try logsLeveledMessage(logLevel: .critical, loggerBlock: { $0.fatal })
+        try logsLeveledMessage(logLevel: .critical, loggerBlock: { $0.critical })
     }
 
     private func logsLeveledMessage(
