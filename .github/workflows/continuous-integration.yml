@@ -228,9 +228,7 @@ jobs:
       fail-fast: false
       matrix:
         swift:
-          - 5.9-amazonlinux2
           - 5.9-focal
-          - 6.0-amazonlinux2
           - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}
@@ -282,9 +280,7 @@ jobs:
       fail-fast: false
       matrix:
         swift:
-          - 5.9-amazonlinux2
           - 5.9-focal
-          - 6.0-amazonlinux2
           - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}
