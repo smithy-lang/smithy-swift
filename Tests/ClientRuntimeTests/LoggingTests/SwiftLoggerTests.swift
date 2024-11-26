@@ -53,7 +53,7 @@ final class SwiftLoggerTests: XCTestCase {
         // Create a TestLogHandler, then create a SwiftLogger (the test subject)
         // with it.
         var logHandler: TestLogHandler!
-        let subject = SwiftLogger(label: "Test", logLevel: .trace, factory: { label in
+        let subject = SwiftLogger(label: "Test", factory: { label in
             logHandler = TestLogHandler(label: label)
             return logHandler
         })

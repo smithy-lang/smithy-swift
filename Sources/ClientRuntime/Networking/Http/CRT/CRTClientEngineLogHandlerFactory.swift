@@ -9,15 +9,15 @@ import Logging
 
 public struct CRTClientEngineLogHandlerFactory: SDKLogHandlerFactory {
     public var label = "CRTClientEngine"
-    let logLevel: SDKLogLevel
+    let logLevel: Logger.Level
 
     public func construct(label: String) -> LogHandler {
         var handler = StreamLogHandler.standardOutput(label: label)
-        handler.logLevel = logLevel.toLoggerType()
+        handler.logLevel = logLevel
         return handler
     }
 
-    public init(logLevel: SDKLogLevel) {
+    public init(logLevel: Logger.Level) {
         self.logLevel = logLevel
     }
 }
