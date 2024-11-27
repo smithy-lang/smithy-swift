@@ -38,7 +38,7 @@ final class SwiftLoggerTests: XCTestCase {
 
     private func logsLeveledMessage(
         logLevel: Logger.Level,
-        loggerBlock: (SwiftLogger) -> (String, String, String, UInt) -> Void,
+        loggerBlock: (SwiftLogger) -> (@autoclosure() -> String, String, String, UInt) -> Void,
         testFile: StaticString = #filePath,
         testLine: UInt = #line
     ) throws {

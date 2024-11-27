@@ -31,16 +31,15 @@ public protocol LogAgent {
 }
 
 public extension LogAgent {
-    /// Appropriate for messages that contain information normally of use only when
-    /// tracing the execution of a program.
+    /// Use for messages that are typically seen during tracing.
     func trace(
-        _ message: String,
+        _ message: @autoclosure() -> String,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
         self.log(level: .trace,
-                 message: message,
+                 message: message(),
                  metadata: nil,
                  source: currentModule(fileID: file),
                  file: file,
@@ -48,16 +47,15 @@ public extension LogAgent {
                  line: line)
     }
 
-    /// Appropriate for messages that contain information normally of use only when
-    /// debugging a program.
+    /// Use for messages that are typically seen during debugging.
     func debug(
-        _ message: String,
+        _ message: @autoclosure() -> String,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
         self.log(level: .debug,
-                 message: message,
+                 message: message(),
                  metadata: nil,
                  source: currentModule(fileID: file),
                  file: file,
@@ -65,15 +63,15 @@ public extension LogAgent {
                  line: line)
     }
 
-    /// Appropriate for informational messages.
+    /// Use for informational messages.
     func info(
-        _ message: String,
+        _ message: @autoclosure() -> String,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
         self.log(level: .info,
-                 message: message,
+                 message: message(),
                  metadata: nil,
                  source: currentModule(fileID: file),
                  file: file,
@@ -81,16 +79,15 @@ public extension LogAgent {
                  line: line)
     }
 
-    /// Appropriate for conditions that are not error conditions, but that may require
-    /// special handling.
+    /// Use for non-error messages that may need special attention.
     func notice(
-        _ message: String,
+        _ message: @autoclosure() -> String,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
         self.log(level: .notice,
-                 message: message,
+                 message: message(),
                  metadata: nil,
                  source: currentModule(fileID: file),
                  file: file,
@@ -98,16 +95,15 @@ public extension LogAgent {
                  line: line)
     }
 
-    /// Appropriate for messages that are not error conditions, but more severe than
-    /// `.notice`.
+    /// Use for non-error messages that are more severe than `.notice`.
     func warning(
-        _ message: String,
+        _ message: @autoclosure() -> String,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
         self.log(level: .warning,
-                 message: message,
+                 message: message(),
                  metadata: nil,
                  source: currentModule(fileID: file),
                  file: file,
@@ -115,15 +111,15 @@ public extension LogAgent {
                  line: line)
     }
 
-    /// Appropriate for error conditions.
+    /// Use for errors.
     func error(
-        _ message: String,
+        _ message: @autoclosure() -> String,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
         self.log(level: .error,
-                 message: message,
+                 message: message(),
                  metadata: nil,
                  source: currentModule(fileID: file),
                  file: file,
@@ -134,13 +130,13 @@ public extension LogAgent {
     /// Appropriate for critical error conditions that usually require immediate
     /// attention.
     func critical(
-        _ message: String,
+        _ message: @autoclosure() -> String,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
         self.log(level: .critical,
-                 message: message,
+                 message: message(),
                  metadata: nil,
                  source: currentModule(fileID: file),
                  file: file,
