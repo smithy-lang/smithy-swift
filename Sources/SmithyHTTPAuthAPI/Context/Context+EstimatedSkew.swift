@@ -12,13 +12,13 @@ import struct Smithy.AttributeKey
 
 public extension Context {
     var estimatedSkew: TimeInterval? {
-        get { attributes.get(key: estimatedSkewKey) }
-        set { attributes.set(key: estimatedSkewKey, value: newValue) }
+        get { get(key: estimatedSkewKey) }
+        set { set(key: estimatedSkewKey, value: newValue) }
     }
 
     var socketTimeout: TimeInterval? {
-        get { attributes.get(key: socketTimeoutKey) }
-        set { attributes.set(key: socketTimeoutKey, value: newValue) }
+        get { get(key: socketTimeoutKey) }
+        set { set(key: socketTimeoutKey, value: newValue) }
     }
 }
 

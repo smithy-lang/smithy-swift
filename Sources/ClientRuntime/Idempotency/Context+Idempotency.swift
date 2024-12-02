@@ -12,7 +12,7 @@ import class Smithy.ContextBuilder
 extension Context {
 
     public func getIdempotencyTokenGenerator() -> IdempotencyTokenGenerator {
-        return attributes.get(key: idempotencyTokenGeneratorKey)!
+        get(key: idempotencyTokenGeneratorKey)!
     }
 }
 

@@ -198,15 +198,13 @@ public final class URLSessionHTTPClient: HTTPClient {
             guard let tlsOptions = tlsOptions, tlsOptions.useSelfSignedCertificate,
                   let certFile = tlsOptions.certificate,
                   let serverTrust = challenge.protectionSpace.serverTrust else {
-                logger.info(
-                    "Either TLSOptions not set or missing values! Using default trust store."
-                )
+                logger.debug("Either TLSOptions not set or missing values! Using default trust store.")
                 completionHandler(.performDefaultHandling, nil)
                 return
             }
 
             guard let customRoot = Bundle.main.certificate(named: certFile) else {
-                logger.info("Certificate not found! Using default trust store.")
+                logger.debug("Certificate not found! Using default trust store.")
                 completionHandler(.performDefaultHandling, nil)
                 return
             }
@@ -232,9 +230,7 @@ public final class URLSessionHTTPClient: HTTPClient {
             guard let tlsOptions, tlsOptions.useProvidedKeystore,
                   let keystoreName = tlsOptions.pkcs12Path,
                   let keystorePasword = tlsOptions.pkcs12Password else {
-                logger.info(
-                    "Either TLSOptions not set or missing values! Using default keystore."
-                )
+                logger.debug("Either TLSOptions not set or missing values! Using default keystore.")
                 completionHandler(.performDefaultHandling, nil)
                 return
             }
@@ -275,8 +271,11 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// This callback is made as soon as the initial response + headers is complete.
         /// Response body data may continue to stream in after this callback is received.
         func urlSession(
-            _ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse
-        ) async -> URLSession.ResponseDisposition {
+            _ session: URLSession,
+            dataTask: URLSessionDataTask,
+            didReceive response: URLResponse,
+            completionHandler: @escaping (URLSession.ResponseDisposition) -> Void
+        ) {
             logger.debug("urlSession(_:dataTask:didReceive response:) called")
             storage.modify(dataTask) { connection in
                 guard let httpResponse = response as? HTTPURLResponse else {
@@ -295,7 +294,7 @@ public final class URLSessionHTTPClient: HTTPClient {
                 let response = HTTPResponse(headers: headers, body: body, statusCode: statusCode)
                 connection.resume(returning: response)
             }
-            return .allow
+            completionHandler(.allow)
         }
 
         /// Called when the task needs a new `InputStream` to continue streaming the request body.
@@ -348,10 +347,12 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// If the error is returned prior to the initial response, the request fails with an error.
         /// If the error is returned after the initial response, the error is used to fail the response stream.
         func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+            let httpMethod = task.originalRequest?.httpMethod ?? ""
+            let url = task.originalRequest?.url?.absoluteString ?? ""
             if let error {
-                logger.error("urlSession(_:task:didCompleteWithError:) failed. Error: \(error.localizedDescription)")
+                logger.error("URLRequest(\(httpMethod) \(url)) failed with error: \(error)")
             } else {
-                logger.debug("urlSession(_:task:didCompleteWithError:) called. Success")
+                logger.debug("URLRequest(\(httpMethod) \(url)) succeeded")
             }
 
             // This connection is complete.  No further data will be sent, and none will be received.
@@ -557,8 +558,10 @@ public final class URLSessionHTTPClient: HTTPClient {
                         delegate.storage.set(connection, for: dataTask)
 
                         // Start the HTTP connection and start streaming the request body data, if needed
-                        logger.info("start URLRequest(\(urlRequest.url?.absoluteString ?? "")) called")
-                        logger.info("  body is \(streamBridge != nil ? "InputStream" : "Data")")
+                        let httpMethod = urlRequest.httpMethod ?? ""
+                        let url = urlRequest.url?.absoluteString ?? ""
+                        logger.debug("URLRequest(\(httpMethod) \(url)) started")
+                        logBodyDescription(body)
                         dataTask.resume()
                         Task { [streamBridge] in
                             await streamBridge?.open()
@@ -582,7 +585,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     /// Create a `URLRequest` for the Smithy operation to be performed.
     /// - Parameters:
     ///   - request: The SDK-native, signed `HTTPRequest` ready to be transmitted.
-    ///   - httpBodyStream: A Foundation `InputStream` carrying the HTTP body for this request.
+    ///   - body: A `Body` with either a stream bridge or data for this request's body.
     /// - Returns: A `URLRequest` ready to be transmitted by `URLSession` for this operation.
     private func makeURLRequest(from request: HTTPRequest, body: Body) throws -> URLRequest {
         var components = URLComponents()
@@ -592,7 +595,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         components.percentEncodedPath = request.destination.path
         if let queryItems = request.queryItems, !queryItems.isEmpty {
             components.percentEncodedQueryItems = queryItems.map {
-                Foundation.URLQueryItem(name: $0.name, value: $0.value)
+                URLQueryItem(name: $0.name, value: $0.value)
             }
         }
         guard let url = components.url else { throw URLSessionHTTPClientError.incompleteHTTPRequest }
@@ -619,6 +622,25 @@ public final class URLSessionHTTPClient: HTTPClient {
             return nil
         default:
             return request.destination.port.map { Int($0) }
+        }
+    }
+
+    private func logBodyDescription(_ body: Body) {
+        switch body {
+        case .stream(let stream):
+            let lengthString: String
+            if let length = stream.readableStream.length {
+                lengthString = "\(length) bytes"
+            } else {
+                lengthString = "unknown length"
+            }
+            logger.debug("body is InputStream (\(lengthString))")
+        case .data(let data):
+            if let data {
+                logger.debug("body is Data (\(data.count) bytes)")
+            } else {
+                logger.debug("body is empty")
+            }
         }
     }
 

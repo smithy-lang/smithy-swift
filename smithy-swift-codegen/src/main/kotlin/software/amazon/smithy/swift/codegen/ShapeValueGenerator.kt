@@ -22,12 +22,14 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
@@ -243,6 +245,14 @@ class ShapeValueGenerator(
 
         override fun stringNode(node: StringNode) {
             when (currShape) {
+                is TimestampShape -> {
+                    val value = node.expectStringNode().value
+                    writer.writeInline(
+                        "\$N(format: .dateTime).date(from: \$S)",
+                        SmithyTimestampsTypes.TimestampFormatter,
+                        value
+                    )
+                }
                 is DoubleShape, is FloatShape -> {
                     val symbol = generator.symbolProvider.toSymbol(currShape)
                     val value = when (node.value.toString()) {

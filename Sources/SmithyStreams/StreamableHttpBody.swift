@@ -16,6 +16,11 @@ import enum Smithy.StreamError
 /// It acts as a bridge between AWS SDK and CRT.
 public class StreamableHttpBody: IStreamable {
 
+    /// The index of the data being transferred.
+    ///
+    /// When the body is `.data`, `position` is the index of the next byte to be transferred
+    /// (note that the startIndex of `Data` need not be zero if the Data is a "slice" of some other Data.)
+    /// When the body is `.stream`, `position` is the number of bytes from the start of the stream.
     var position: Data.Index
     let body: ByteStream
     let logger: SwiftLogger
@@ -82,10 +87,8 @@ public class StreamableHttpBody: IStreamable {
     public func read(buffer: UnsafeMutableBufferPointer<UInt8>) throws -> Int? {
         switch body {
         case .data(let data):
-            guard let data = data else {
-                return nil
-            }
-            let toRead = min(buffer.count, data.count - position)
+            guard let data = data else { return nil }
+            let toRead = min(buffer.count, data.endIndex - position)
             data.copyBytes(to: buffer, from: position..<position.advanced(by: toRead))
             position = position.advanced(by: toRead)
             logger.debug("read \(toRead) bytes from data")
@@ -94,9 +97,7 @@ public class StreamableHttpBody: IStreamable {
             }
             return toRead
         case .stream(let stream):
-            guard let data = try stream.read(upToCount: buffer.count) else {
-                return nil
-            }
+            guard let data = try stream.read(upToCount: buffer.count) else { return nil }
             data.copyBytes(to: buffer, from: data.startIndex..<data.endIndex)
             position = position.advanced(by: data.count)
             logger.debug("read \(data.count) bytes from stream")

@@ -55,7 +55,7 @@ let package = Package(
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
-            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.37.0"),
+            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.39.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         ]
         let isDocCEnabled = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil
@@ -227,7 +227,12 @@ let package = Package(
         ),
         .testTarget(
             name: "ClientRuntimeTests",
-            dependencies: ["ClientRuntime", "SmithyTestUtil", "SmithyStreams"],
+            dependencies: [
+                "ClientRuntime",
+                "SmithyTestUtil",
+                "SmithyStreams",
+                .product(name: "Logging", package: "swift-log"),
+            ],
             resources: [ .process("Resources") ]
         ),
         .testTarget(
