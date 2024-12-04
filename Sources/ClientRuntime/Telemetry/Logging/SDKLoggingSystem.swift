@@ -17,7 +17,7 @@ public actor SDKLoggingSystem {
     /// Adds custom log handler factory to `this.logHandlerFactories`.
     ///
     /// The added log handler factory will be dedicated log handler for any logger with identical label.
-    public func addLogHandlerFactory(logHandlerFactory: SDKLogHandlerFactory) {
+    public func add(logHandlerFactory: SDKLogHandlerFactory) {
         logHandlerFactories[logHandlerFactory.label] = logHandlerFactory
     }
 
@@ -32,7 +32,7 @@ public actor SDKLoggingSystem {
     ///
     /// - parameters:
     ///     - logLevel: The minimum log level to use for the log handler if no custom log handler factory was found. Default is `.error`.
-    public func initialize(logLevel: Logger.Level = .error) async {
+    public func initialize(defaultLogLevel: SDKLogLevel = .error) async {
         if isInitialized { return } else { isInitialized = true }
         let ptr = logHandlerFactories
         LoggingSystem.bootstrap { label in
@@ -40,7 +40,7 @@ public actor SDKLoggingSystem {
                 return factory.construct(label: label)
             }
             var handler = StreamLogHandler.standardOutput(label: label)
-            handler.logLevel = logLevel
+            handler.logLevel = defaultLogLevel.toLoggerType()
             return handler
         }
     }

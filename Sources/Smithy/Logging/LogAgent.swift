@@ -5,23 +5,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Logging
-
 public protocol LogAgent {
     /// name of the struct or class where the logger was instantiated from
-    var label: String { get }
+    var name: String { get }
 
     /// This method is called when a `LogAgent` must emit a log message.
     ///
     /// - parameters:
-    ///     - level: The `Logger.Level` the message was logged at.
+    ///     - level: The `LogAgentLevel` the message was logged at.
     ///     - message: The message to log.
     ///     - metadata: The metadata associated to this log message as a dictionary
     ///     - source: The source where the log message originated, for example the logging module.
     ///     - file: The file the log message was emitted from.
     ///     - function: The function the log line was emitted from.
     ///     - line: The line the log message was emitted from.
-    func log(level: Logger.Level,
+    func log(level: LogAgentLevel,
              message: @autoclosure () -> String,
              metadata: @autoclosure () -> [String: String]?,
              source: @autoclosure () -> String,
@@ -30,6 +28,7 @@ public protocol LogAgent {
              line: UInt)
 }
 
+/// Convenience wrapper functions that call `self.log()` with corresponding log level.
 public extension LogAgent {
     /// Use for messages that are typically seen during tracing.
     func trace(
@@ -96,13 +95,13 @@ public extension LogAgent {
     }
 
     /// Use for non-error messages that are more severe than `.notice`.
-    func warning(
+    func warn(
         _ message: @autoclosure() -> String,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
-        self.log(level: .warning,
+        self.log(level: .warn,
                  message: message(),
                  metadata: nil,
                  source: currentModule(fileID: file),
@@ -129,13 +128,13 @@ public extension LogAgent {
 
     /// Appropriate for critical error conditions that usually require immediate
     /// attention.
-    func critical(
+    func fatal(
         _ message: @autoclosure() -> String,
         file: String = #fileID,
         function: String = #function,
         line: UInt = #line
     ) {
-        self.log(level: .critical,
+        self.log(level: .fatal,
                  message: message(),
                  metadata: nil,
                  source: currentModule(fileID: file),

@@ -61,10 +61,10 @@ class OrchestratorTests: XCTestCase {
 
     class TraceLogger: LogAgent {
         var trace: Trace = Trace()
-        var label: String = "TestTraceLogger"
-        var level: Logger.Level = .debug
+        var name: String = "TestTraceLogger"
+        var level: LogAgentLevel = .debug
 
-        func log(level: Logger.Level, message: @autoclosure () -> String, metadata: @autoclosure () -> [String : String]?, source: @autoclosure () -> String, file: String, function: String, line: UInt) {
+        func log(level: LogAgentLevel, message: @autoclosure () -> String, metadata: @autoclosure () -> [String : String]?, source: @autoclosure () -> String, file: String, function: String, line: UInt) {
             trace.append(message())
         }
     }
