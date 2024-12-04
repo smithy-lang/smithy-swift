@@ -7,6 +7,7 @@
 
 import Logging
 
+/// Wrapper for Logger.Level; used by SDKLoggingSystem.
 public enum SDKLogLevel: String, Codable, CaseIterable {
     case trace
     case debug

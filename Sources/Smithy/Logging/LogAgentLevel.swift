@@ -7,6 +7,7 @@
 
 import Logging
 
+/// Wrapper for Logger.Level; used by LogAgent and SwiftLogger.
 public enum LogAgentLevel: String, Codable, CaseIterable {
     case trace
     case debug

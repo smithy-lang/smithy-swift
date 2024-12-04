@@ -44,4 +44,8 @@ public actor SDKLoggingSystem {
             return handler
         }
     }
+
+    public func initialize(logLevel: SDKLogLevel) async {
+        await self.initialize(defaultLogLevel: logLevel)
+    }
 }
