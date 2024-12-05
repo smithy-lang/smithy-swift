@@ -1,0 +1,25 @@
+name: Sync Staging Repo
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout smithy-swift
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Add staging repo as remote
+        run: |
+          git remote add staging-repo https://github.com/awslabs/private-smithy-swift-staging.git
+      - name: Set up auth
+        run: |
+          git config --global url."https://${{ secrets.REPO_SYNC_AUTOMATION_USER_TOKEN }}@github.com".insteadOf "https://github.com"
+      - name: Push changes to staging repo
+        run: |
+          git push staging-repo main
