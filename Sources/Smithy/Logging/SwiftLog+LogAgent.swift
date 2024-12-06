@@ -8,27 +8,22 @@
 import Logging
 
 public struct SwiftLogger: LogAgent {
-    public var level: LogAgentLevel
-
     private let logger: Logger
     private let label: String
 
     public init(label: String) {
         self.label = label
         self.logger = Logger(label: label)
-        self.level = LogAgentLevel.info
     }
 
+    @available(*, deprecated, message: "This API is deprecated. Use init(label:) instead.")
     public init(label: String, logLevel: LogAgentLevel) {
-        self.label = label
-        self.logger = Logger(label: label)
-        self.level = logLevel
+        self.init(label: label)
     }
 
     // This initializer is currently only used in tests, to inject a mock LogHandler.
-    init(label: String, logLevel: LogAgentLevel, factory: (String) -> any LogHandler) {
+    init(label: String, factory: (String) -> any LogHandler) {
         self.label = label
-        self.level = logLevel
         self.logger = Logger(label: label, factory: factory)
     }
 
@@ -54,25 +49,5 @@ public struct SwiftLogger: LogAgent {
             function: function as String,
             line: line
         )
-    }
-}
-
-extension LogAgentLevel {
-
-    func toLoggerLevel() -> Logger.Level {
-        switch self {
-        case .trace:
-            return .trace
-        case .debug:
-            return .debug
-        case .info:
-            return .info
-        case .warn:
-            return .warning
-        case .error:
-            return .error
-        case .fatal:
-            return .critical
-        }
     }
 }
