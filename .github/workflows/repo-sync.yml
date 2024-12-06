@@ -12,11 +12,9 @@ jobs:
     steps:
       - name: Checkout smithy-swift
         uses: actions/checkout@v4
-        with:
-          ref: main
-      - name: Add staging repo as remote with token
+      - name: Print working directory
         run: |
-          git remote add staging-repo https://${{ secrets.REPO_SYNC_AUTOMATION_USER_TOKEN }}@github.com/awslabs/private-smithy-swift-staging.git
-      - name: Push changes to staging repo
+          pwd
+      - name: Push main to staging repo
         run: |
-          git push staging-repo main
+          git push https://${{ secrets.REPO_SYNC_AUTOMATION_USER_TOKEN }}@github.com/awslabs/private-smithy-swift-staging.git main
