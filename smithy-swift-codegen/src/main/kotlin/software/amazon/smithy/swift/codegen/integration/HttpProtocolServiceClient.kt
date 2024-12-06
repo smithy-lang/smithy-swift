@@ -122,6 +122,9 @@ open class HttpProtocolServiceClient(
                 .flatMap { it.getProperties(ctx) }
                 .let { overrideConfigProperties(it) }
                 .sortedBy { it.accessModifier }
+                .mapNotNull {
+                    customizedClientConfigProperty(it)
+                }
 
             renderConfigClassVariables(serviceSymbol, properties)
 
@@ -265,8 +268,12 @@ open class HttpProtocolServiceClient(
     ) {
         val commaOrBlank = ",".takeIf { commaSeparated } ?: ""
         properties.forEach { property ->
-            val separator = commaOrBlank.takeIf { property != properties.last() } ?: ""
+            val separator = commaOrBlank.takeIf { property !== properties.last() } ?: ""
             writer.write("\$L\$L", block(property), separator)
         }
+    }
+
+    open fun customizedClientConfigProperty(property: ConfigProperty): ConfigProperty? {
+        return property // default implementation
     }
 }
