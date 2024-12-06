@@ -274,6 +274,6 @@ open class HttpProtocolServiceClient(
     }
 
     open fun customizedClientConfigProperty(property: ConfigProperty): ConfigProperty? {
-        return property  // default implementation
+        return property // default implementation
     }
 }
