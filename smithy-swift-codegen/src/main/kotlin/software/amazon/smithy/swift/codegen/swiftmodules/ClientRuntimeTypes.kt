@@ -63,15 +63,11 @@ object ClientRuntimeTypes {
         val DefaultRetryErrorInfoProvider = runtimeSymbol("DefaultRetryErrorInfoProvider", SwiftDeclaration.ENUM)
         val PaginateToken = runtimeSymbol("PaginateToken", SwiftDeclaration.PROTOCOL)
         val PaginatorSequence = runtimeSymbol("PaginatorSequence", SwiftDeclaration.STRUCT)
-        val AccountIDEndpointMode = runtimeSymbol("AccountIDEndpointMode", SwiftDeclaration.ENUM)
-        val EndpointParamsConstructing = runtimeSymbol("EndpointParamsConstructing", SwiftDeclaration.PROTOCOL)
         val EndpointsRuleEngine = runtimeSymbol("EndpointsRuleEngine", SwiftDeclaration.CLASS)
         val EndpointsRequestContext = runtimeSymbol("EndpointsRequestContext", SwiftDeclaration.CLASS)
         val EndpointsRequestContextProviding = runtimeSymbol("EndpointsRequestContextProviding", SwiftDeclaration.PROTOCOL)
         val EndpointError = runtimeSymbol("EndpointError", SwiftDeclaration.ENUM)
         val PartitionDefinition = runtimeSymbol("partitionJSON", SwiftDeclaration.LET)
-        val EndpointsAuthSchemeResolver = runtimeSymbol("EndpointsAuthSchemeResolver", SwiftDeclaration.PROTOCOL)
-        val DefaultEndpointsAuthSchemeResolver = runtimeSymbol("DefaultEndpointsAuthSchemeResolver", SwiftDeclaration.STRUCT)
         val EndpointsAuthScheme = runtimeSymbol("EndpointsAuthScheme", SwiftDeclaration.ENUM)
         val DefaultEndpointResolver = runtimeSymbol("DefaultEndpointResolver", SwiftDeclaration.STRUCT)
         val StaticEndpointResolver = runtimeSymbol("StaticEndpointResolver", SwiftDeclaration.STRUCT)
@@ -92,7 +88,6 @@ object ClientRuntimeTypes {
         val OrchestratorBuilder = runtimeSymbol("OrchestratorBuilder", SwiftDeclaration.CLASS)
         val InterceptorProvider = runtimeSymbol("InterceptorProvider", SwiftDeclaration.PROTOCOL)
         val HttpInterceptorProvider = runtimeSymbol("HttpInterceptorProvider", SwiftDeclaration.PROTOCOL)
-        val HttpInterceptor = runtimeSymbol("HttpInterceptor", SwiftDeclaration.PROTOCOL)
         val SDKLoggingSystem = runtimeSymbol("SDKLoggingSystem", SwiftDeclaration.CLASS)
     }
 
