@@ -268,7 +268,7 @@ open class HttpProtocolServiceClient(
     ) {
         val commaOrBlank = ",".takeIf { commaSeparated } ?: ""
         properties.forEach { property ->
-            val separator = commaOrBlank.takeIf { property != properties.last() } ?: ""
+            val separator = commaOrBlank.takeIf { property !== properties.last() } ?: ""
             writer.write("\$L\$L", block(property), separator)
         }
     }
