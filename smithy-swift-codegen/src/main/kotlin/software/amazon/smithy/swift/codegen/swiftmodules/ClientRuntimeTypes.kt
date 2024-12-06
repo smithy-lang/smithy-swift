@@ -63,6 +63,8 @@ object ClientRuntimeTypes {
         val DefaultRetryErrorInfoProvider = runtimeSymbol("DefaultRetryErrorInfoProvider", SwiftDeclaration.ENUM)
         val PaginateToken = runtimeSymbol("PaginateToken", SwiftDeclaration.PROTOCOL)
         val PaginatorSequence = runtimeSymbol("PaginatorSequence", SwiftDeclaration.STRUCT)
+        val AccountIDEndpointMode = runtimeSymbol("AccountIDEndpointMode", SwiftDeclaration.ENUM)
+        val EndpointParamsConstructing = runtimeSymbol("EndpointParamsConstructing", SwiftDeclaration.PROTOCOL)
         val EndpointsRuleEngine = runtimeSymbol("EndpointsRuleEngine", SwiftDeclaration.CLASS)
         val EndpointsRequestContext = runtimeSymbol("EndpointsRequestContext", SwiftDeclaration.CLASS)
         val EndpointsRequestContextProviding = runtimeSymbol("EndpointsRequestContextProviding", SwiftDeclaration.PROTOCOL)

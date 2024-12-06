@@ -122,18 +122,26 @@ open class HttpProtocolServiceClient(
                 .flatMap { it.getProperties(ctx) }
                 .let { overrideConfigProperties(it) }
                 .sortedBy { it.accessModifier }
+                .map {
+                    when (it.name) {
+                        "accountIdEndpointMode" -> {
+                            ConfigProperty("accountIdEndpointMode", ClientRuntimeTypes.Core.AccountIDEndpointMode.toOptional())
+                        }
+                        else -> it
+                    }
+                }
 
             renderConfigClassVariables(serviceSymbol, properties)
 
-            renderConfigInitializer(serviceSymbol, properties)
+            renderConfigInitializer(serviceSymbol, configParameterProperties(properties))
 
-            renderSynchronousConfigInitializer(properties)
+            renderSynchronousConfigInitializer(configParameterProperties(properties))
 
-            renderAsynchronousConfigInitializer(properties)
+            renderAsynchronousConfigInitializer(configParameterProperties(properties))
 
-            renderEmptyAsynchronousConfigInitializer(properties)
+            renderEmptyAsynchronousConfigInitializer(configParameterProperties(properties))
 
-            renderCustomConfigInitializer(properties)
+            renderCustomConfigInitializer(configParameterProperties(properties))
 
             renderPartitionID()
 
@@ -268,5 +276,9 @@ open class HttpProtocolServiceClient(
             val separator = commaOrBlank.takeIf { property != properties.last() } ?: ""
             writer.write("\$L\$L", block(property), separator)
         }
+    }
+
+    protected fun configParameterProperties(properties: List<ConfigProperty>): List<ConfigProperty> {
+        return properties.filter { it.name != "accountId" }
     }
 }
