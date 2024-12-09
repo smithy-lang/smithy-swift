@@ -5,7 +5,6 @@ import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object SmithyIdentityTypes {
-    val AWSCredentialIdentity = runtimeSymbol("AWSCredentialIdentity", SwiftDeclaration.STRUCT)
     val AWSCredentialIdentityResolver = runtimeSymbol("AWSCredentialIdentityResolver", SwiftDeclaration.PROTOCOL)
     val BearerTokenIdentityResolver = runtimeSymbol("BearerTokenIdentityResolver", SwiftDeclaration.PROTOCOL)
     val BearerTokenIdentity = runtimeSymbol("BearerTokenIdentity", SwiftDeclaration.STRUCT)
