@@ -215,10 +215,11 @@ class StructureGenerator(
 
         writer.writeAvailableAttribute(model, shape)
         writer.openBlock(
-            "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N {",
+            "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N {",
             ClientRuntimeTypes.Core.ModeledError,
             ClientRuntimeTypes.Http.HttpError,
-            SwiftTypes.Error
+            SwiftTypes.Error,
+            SwiftTypes.Protocols.Sendable,
         )
             .call { generateErrorStructMembers() }
             .write("")
@@ -234,7 +235,7 @@ class StructureGenerator(
     private fun generateErrorStructMembers() {
         if (membersSortedByName.isNotEmpty()) {
             writer.write("")
-            writer.openBlock("public struct Properties {", "}") {
+            writer.openBlock("public struct Properties: \$N {", "}", SwiftTypes.Protocols.Sendable) {
                 membersSortedByName.forEach {
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.writeMemberDocs(model, it)
