@@ -5,8 +5,28 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct Headers: Sendable {
-    public var headers: [Header] = []
+import class Foundation.NSRecursiveLock
+
+public struct Headers: @unchecked Sendable {
+    private let lock = NSRecursiveLock()
+
+    private var _headers: [Header] = []
+    public var headers: [Header] {
+        get { access { $0 } }
+        set { mutate { $0 = newValue } }
+    }
+
+    private mutating func mutate(_ block: (inout [Header]) -> Void) {
+        lock.lock()
+        defer { lock.unlock() }
+        block(&_headers)
+    }
+
+    private func access<T>(_ block: ([Header]) throws -> T) rethrows -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return try block(_headers)
+    }
 
     /// Creates an empty instance.
     public init() {}
@@ -53,11 +73,13 @@ public struct Headers: Sendable {
     /// - Parameters:
     ///   - header:  The `Header` to be added or updated.
     public mutating func add(_ header: Header) {
-        guard let index = headers.index(of: header.name) else {
-            headers.append(header)
-            return
+        mutate { headers in
+            guard let index = headers.index(of: header.name) else {
+                headers.append(header)
+                return
+            }
+            headers[index].value.append(contentsOf: header.value)
         }
-        headers[index].value.append(contentsOf: header.value)
     }
 
     /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header`
@@ -66,11 +88,13 @@ public struct Headers: Sendable {
     /// - Parameters:
     ///   - header:  The `Header` to be added or updated.
     public mutating func update(_ header: Header) {
-        guard let index = headers.index(of: header.name) else {
-            headers.append(header)
-            return
+        mutate { headers in
+            guard let index = headers.index(of: header.name) else {
+                headers.append(header)
+                return
+            }
+            headers.replaceSubrange(index...index, with: [header])
         }
-        headers.replaceSubrange(index...index, with: [header])
     }
 
     /// Case-insensitively updates the value of a `Header` by replacing the values of it or appends a `Header`
@@ -97,17 +121,20 @@ public struct Headers: Sendable {
     ///
     /// - Parameters:
     ///   - headers:  The `Headers` object.
-    public mutating func addAll(headers: Headers) {
-        self.headers.append(contentsOf: headers.headers)
+    public mutating func addAll(headers otherHeaders: Headers) {
+        mutate { headers in
+            headers.append(contentsOf: otherHeaders.headers)
+        }
     }
 
     /// Case-insensitively removes a `Header`, if it exists, from the instance.
     ///
     /// - Parameter name: The name of the `HTTPHeader` to remove.
     public mutating func remove(name: String) {
-        guard let index = headers.index(of: name) else { return }
-
-        headers.remove(at: index)
+        mutate { headers in
+            guard let index = headers.index(of: name) else { return }
+            headers.remove(at: index)
+        }
     }
 
     /// Case-insensitively find a header's values by name.
@@ -116,13 +143,14 @@ public struct Headers: Sendable {
     ///
     /// - Returns: The values of the header, if they exist.
     public func values(for name: String) -> [String]? {
-        guard let indices = headers.indices(of: name), !indices.isEmpty else { return nil }
-        var values = [String]()
-        for index in indices {
-            values.append(contentsOf: headers[index].value)
+        access { headers in
+            guard let indices = headers.indices(of: name), !indices.isEmpty else { return nil }
+            var values = [String]()
+            for index in indices {
+                values.append(contentsOf: headers[index].value)
+            }
+            return values
         }
-
-        return values
     }
 
     /// Case-insensitively find a header's value by name.
@@ -131,29 +159,28 @@ public struct Headers: Sendable {
     ///
     /// - Returns: The value of header as a comma delimited string, if it exists.
     public func value(for name: String) -> String? {
-        guard let values = values(for: name) else {
-            return nil
-        }
+        guard let values = values(for: name) else { return nil }
         return values.joined(separator: ",")
     }
 
     public func exists(name: String) -> Bool {
-        headers.index(of: name) != nil
+        access { $0.index(of: name) != nil }
     }
 
     /// The dictionary representation of all headers.
     ///
     /// This representation does not preserve the current order of the instance.
     public var dictionary: [String: [String]] {
-        let namesAndValues = headers.map { ($0.name, $0.value) }
-
-        return Dictionary(namesAndValues) { (first, last) -> [String] in
-            return first + last
+        access { headers in
+            let namesAndValues = headers.map { ($0.name, $0.value) }
+            return Dictionary(namesAndValues) { (first, last) -> [String] in
+                first + last
+            }
         }
     }
 
     public var isEmpty: Bool {
-        return self.headers.isEmpty
+        access { $0.isEmpty }
     }
 }
 
@@ -164,14 +191,18 @@ extension Headers: Equatable {
     ///   - rhs: The second `Headers` to compare.
     /// - Returns: `true` if the two values are equal irrespective of order, otherwise `false`.
     public static func == (lhs: Headers, rhs: Headers) -> Bool {
-        return lhs.headers.sorted() == rhs.headers.sorted()
+        lhs.access { lhsHeaders in
+            rhs.access { rhsHeaders in
+                lhsHeaders.sorted() == rhsHeaders.sorted()
+            }
+        }
     }
 }
 
 extension Headers: Hashable {
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(headers.sorted())
+        access { hasher.combine($0.sorted()) }
     }
 }
 
