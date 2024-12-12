@@ -1,22 +1,20 @@
-name: Sync Staging Repo
+name: Sync Mirror
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  sync:
+  git-sync:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+      - name: git-sync
+        uses: wei/git-sync@v3
         with:
-          ref: main
-      - name: Add staging repo as remote with token
-        run: |
-          git remote add staging-repo https://${{ secrets.REPO_SYNC_AUTOMATION_USER_TOKEN }}@github.com/awslabs/private-smithy-swift-staging.git
-      - name: Push changes to staging repo
-        run: |
-          git push staging-repo main
+          source_repo: ${{ secrets.GIT_SYNC_SOURCE_REPO }}
+          source_branch: "main"
+          destination_repo: ${{ secrets.GIT_SYNC_DESTINATION_REPO }}
+          destination_branch: "main"
+          destination_ssh_private_key:  ${{ secrets.GIT_SYNC_DESTINATION_SSH_PRIVATE_KEY }}
