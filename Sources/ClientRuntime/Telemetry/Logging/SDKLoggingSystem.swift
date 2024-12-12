@@ -34,9 +34,8 @@ public actor SDKLoggingSystem {
     ///     - logLevel: The minimum log level to use for the log handler if no custom log handler factory was found. Default is `.error`.
     public func initialize(defaultLogLevel: SDKLogLevel = .error) async {
         if isInitialized { return } else { isInitialized = true }
-        let ptr = logHandlerFactories
-        LoggingSystem.bootstrap { label in
-            if let factory = ptr[label] {
+        LoggingSystem.bootstrap { [logHandlerFactories] label in
+            if let factory = logHandlerFactories[label] {
                 return factory.construct(label: label)
             }
             var handler = StreamLogHandler.standardOutput(label: label)
