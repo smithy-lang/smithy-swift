@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+/// Additional logging opt-in for request / response flow. For each selected option other than `.none`, the additional info gets logged at `.debug` level by the `LoggingMiddleware`.
 public enum ClientLogMode {
     case none
     case request
