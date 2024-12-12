@@ -16,25 +16,28 @@ import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 open class SmokeTestGenerator(
     private val ctx: ProtocolGenerator.GenerationContext
 ) {
-    // Filter out tests by name or tag at codegen time.
-    // Each element must have the prefix "<service-name>:" before the test name or tag name.
+    // Filter out tests by test name, tes tag, or service name at codegen time.
+    // Each test name or tag must have the prefix "<service-name>:" before the test name or tag name.
     // E.g., "ServiceX:ProcessOrderTest" or "ServiceX:Order"
     open val smokeTestIdsToIgnore = setOf<String>()
     open val smokeTestTagsToIgnore = setOf<String>()
+    open val servicesToIgnore = setOf<String>()
 
     fun generateSmokeTests() {
         val serviceName = getServiceName()
-        val testRunnerName = serviceName + "SmokeTestRunner"
-        val operationShapeIdToTestCases = getOperationShapeIdToTestCasesMapping(serviceName)
-        val testCaseNames = operationShapeIdToTestCases.values.flatten().map { it.id.toLowerCamelCase() }
-        if (testCaseNames.isNotEmpty()) {
-            ctx.delegator.useFileWriter("SmokeTests/$testRunnerName/$testRunnerName.swift") { writer ->
-                renderPrefixContent(serviceName, writer)
-                addEmptyLine(writer)
-                writer.write("@main")
-                writer.openBlock("struct $testRunnerName {", "}") {
-                    renderMainFunction(testCaseNames, serviceName, writer)
-                    renderTestFunctions(operationShapeIdToTestCases, serviceName, writer)
+        if (!servicesToIgnore.contains(serviceName)) {
+            val testRunnerName = serviceName + "SmokeTestRunner"
+            val operationShapeIdToTestCases = getOperationShapeIdToTestCasesMapping(serviceName)
+            val testCaseNames = operationShapeIdToTestCases.values.flatten().map { it.id.toLowerCamelCase() }
+            if (testCaseNames.isNotEmpty()) {
+                ctx.delegator.useFileWriter("SmokeTests/$testRunnerName/$testRunnerName.swift") { writer ->
+                    renderPrefixContent(serviceName, writer)
+                    addEmptyLine(writer)
+                    writer.write("@main")
+                    writer.openBlock("struct $testRunnerName {", "}") {
+                        renderMainFunction(testCaseNames, serviceName, writer)
+                        renderTestFunctions(operationShapeIdToTestCases, serviceName, writer)
+                    }
                 }
             }
         }
@@ -53,10 +56,10 @@ open class SmokeTestGenerator(
      */
     private fun getOperationShapeIdToTestCasesMapping(serviceName: String): Map<ShapeId, List<SmokeTestCase>> {
         val operationShapeIdToTestCases = mutableMapOf<ShapeId, List<SmokeTestCase>>()
-        ctx.service.allOperations.forEach { op ->
-            if (ctx.model.expectShape(op).hasTrait<SmokeTestsTrait>()) {
+        ctx.model.operationShapes.forEach { op ->
+            if (ctx.model.expectShape(op.id).hasTrait<SmokeTestsTrait>()) {
                 val testCases = mutableListOf<SmokeTestCase>()
-                val smokeTestTrait = ctx.model.expectShape(op).expectTrait<SmokeTestsTrait>()
+                val smokeTestTrait = ctx.model.expectShape(op.id).expectTrait<SmokeTestsTrait>()
                 smokeTestTrait.testCases.forEach { testCase ->
                     // Add test case only if neither its name nor tags is included in ignore lists.
                     val nameIsNotInIgnoreList = !smokeTestIdsToIgnore.contains("$serviceName:${testCase.id}")
@@ -68,7 +71,7 @@ open class SmokeTestGenerator(
                 // By this point, it's possible testCases is empty due to all tests being ignored.
                 // Map to operation shape ID only if it's non-empty.
                 if (testCases.isNotEmpty()) {
-                    operationShapeIdToTestCases[op] = testCases
+                    operationShapeIdToTestCases[op.id] = testCases
                 }
             }
         }
@@ -202,7 +205,7 @@ open class SmokeTestGenerator(
         val clientName = getClientName()
         writer.write("let config = try await $clientName.${clientName}Configuration()")
         // Set any vendor-specific values into config.
-        handleVendorParams(testCase.vendorParams.orElse(null), writer)
+        handleVendorParams(testCase.vendorParams.orElse(ObjectNode.objectNode()), writer)
         // Construct client with the config
         writer.write("let client = $clientName(config: config)")
         // Call the operation with client and input
