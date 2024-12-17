@@ -13,7 +13,6 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareExecutionGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -49,19 +48,23 @@ open class HttpProtocolClientGenerator(
                 ServiceGenerator.renderOperationDefinition(model, serviceShape, symbolProvider, writer, operationsIndex, it)
                 writer.openBlock(" {", "}") {
                     val operationStackName = "operation"
-                    val generator = MiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, httpProtocolCustomizable, operationMiddleware, operationStackName)
-                    generator.render(serviceShape, it) { writer, labelMemberName ->
-                        writer.write(
-                            "throw \$N.unknownError(\"uri component \$L unexpectedly nil\")",
-                            SmithyTypes.ClientError,
-                            labelMemberName,
-                        )
-                    }
-
+                    val generator = makeMiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, httpProtocolCustomizable, operationMiddleware, operationStackName)
+                    generator.render(serviceShape, it)
                     writer.write("return try await op.execute(input: input)")
                 }
                 writer.write("")
             }
         }
+    }
+
+    open fun makeMiddlewareExecutionGenerator(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        httpBindingResolver: HttpBindingResolver,
+        httpProtocolCustomizable: HTTPProtocolCustomizable,
+        operationMiddleware: OperationMiddleware,
+        operationStackName: String
+    ): MiddlewareExecutionGenerator {
+        return MiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, httpProtocolCustomizable, operationMiddleware, operationStackName)
     }
 }

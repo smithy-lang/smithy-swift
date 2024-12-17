@@ -161,9 +161,11 @@ open class HttpProtocolServiceClient(
     private fun renderEmptyAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
         writer.openBlock("public convenience required init() async throws {", "}") {
             writer.openBlock("try await self.init(", ")") {
-                renderProperties(properties, true) {
-                    writer.format("\$L: nil", it.name)
+                properties.forEach { property ->
+                    writer.write("\$L: nil,", property.name)
                 }
+                writer.unwrite(",\n")
+                writer.write("")
             }
         }
         writer.write("")
@@ -193,13 +195,15 @@ open class HttpProtocolServiceClient(
 
     private fun renderConfigInitializer(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
         writer.openBlock("private init(", ") {") {
-            renderProperties(properties, true) {
-                writer.format("_ \$L: \$L", it.name, it.type.renderSwiftType(writer))
+            properties.forEach { property ->
+                writer.write("_ \$L: \$L,", property.name, property.type.renderSwiftType(writer))
             }
+            writer.unwrite(",\n")
+            writer.write("")
         }
         writer.indent {
-            renderProperties(properties, false) {
-                writer.format("self.\$L = \$L", it.name, it.name)
+            properties.forEach { property ->
+                writer.write("self.\$L = \$L", property.name, property.name)
             }
             writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
         }
@@ -209,19 +213,23 @@ open class HttpProtocolServiceClient(
 
     private fun renderSynchronousConfigInitializer(properties: List<ConfigProperty>) {
         writer.openBlock("public convenience init(", ") throws {") {
-            renderProperties(properties, true) {
-                writer.format("\$L: \$N = nil", it.name, it.type.toOptional())
+            properties.forEach { property ->
+                writer.write("\$L: \$N = nil,", property.name, property.type.toOptional())
             }
+            writer.unwrite(",\n")
+            writer.write("")
         }
         writer.indent {
             writer.openBlock("self.init(", ")") {
-                renderProperties(properties, true) {
-                    if (it.default?.isAsync == true) {
-                        it.name
+                properties.forEach { property ->
+                    if (property.default?.isAsync == true) {
+                        writer.write("\$L,", property.name)
                     } else {
-                        it.default?.render(writer, it.name) ?: it.name
+                        writer.write("\$L,", property.default?.render(writer, property.name) ?: property.name)
                     }
                 }
+                writer.unwrite(",\n")
+                writer.write("")
             }
         }
         writer.write("}")
@@ -232,19 +240,23 @@ open class HttpProtocolServiceClient(
         if (properties.none { it.default?.isAsync == true }) return
 
         writer.openBlock("public convenience init(", ") async throws {") {
-            renderProperties(properties, true) {
-                writer.format("\$L: \$L = nil", it.name, it.type.toOptional().renderSwiftType(writer))
+            properties.forEach { property ->
+                writer.write("\$L: \$L = nil,", property.name, property.type.toOptional().renderSwiftType(writer))
             }
+            writer.unwrite(",\n")
+            writer.write("")
         }
         writer.indent {
             writer.openBlock("self.init(", ")") {
-                renderProperties(properties, true) {
-                    if (it.default?.isAsync == true) {
-                        it.default.render(writer)
+                properties.forEach { property ->
+                    if (property.default?.isAsync == true) {
+                        writer.write("\$L,", property.default.render(writer))
                     } else {
-                        it.default?.render(writer, it.name) ?: it.name
+                        writer.write("\$L,", property.default?.render(writer, property.name) ?: property.name)
                     }
                 }
+                writer.unwrite(",\n")
+                writer.write("")
             }
         }
         writer.write("}")
@@ -256,20 +268,6 @@ open class HttpProtocolServiceClient(
             ctx.integrations
                 .flatMap { it.plugins(serviceConfig) }
                 .onEach { it.render(ctx, writer) }
-        }
-    }
-
-    // Renders the passed properties using the passed block to generate text,
-    // optionally comma-separating the lines as they are rendered.
-    protected fun renderProperties(
-        properties: List<ConfigProperty>,
-        commaSeparated: Boolean,
-        block: (ConfigProperty) -> String
-    ) {
-        val commaOrBlank = ",".takeIf { commaSeparated } ?: ""
-        properties.forEach { property ->
-            val separator = commaOrBlank.takeIf { property !== properties.last() } ?: ""
-            writer.write("\$L\$L", block(property), separator)
         }
     }
 
