@@ -380,14 +380,14 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
             if (shape.hasTrait<StreamingTrait>()) {
                 { writer ->
                     writer.format(
-                        "\$N.data(\$N(\"$literal\".utf8))",
+                        "\$N.data(\$N(base64Encoded: \"$literal\"))",
                         SmithyTypes.ByteStream,
                         FoundationTypes.Data
                     )
                 }
             } else {
                 { writer ->
-                    writer.format("\$N(\"$literal\".utf8)", FoundationTypes.Data)
+                    writer.format("\$N(base64Encoded: \"$literal\")", FoundationTypes.Data)
                 }
             }
         )
