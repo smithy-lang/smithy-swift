@@ -1,5 +1,5 @@
-name: 'Setup Repos'
-description: 'A composite action that sets up smithy-swift and aws-sdk-swift to use for the workflow.'
+name: 'Checkout aws-sdk-swift composite action'
+description: 'A composite action that sets up aws-sdk-swift for the workflow.'
 inputs:
   AUTOMATION_USER_SSH_PRIVATE_KEY:
     description: 'SSH private key for the automation user'
