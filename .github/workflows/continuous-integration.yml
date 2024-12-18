@@ -66,31 +66,8 @@ jobs:
           sudo xcodebuild -runFirstLaunch
       - name: Checkout smithy-swift
         uses: actions/checkout@v4
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: 1-${{ runner.os }}-gradle-${{ hashFiles('settings.gradle.kts', 'gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            1-${{ runner.os }}-gradle-${{ hashFiles('settings.gradle.kts', 'gradle/wrapper/gradle-wrapper.properties') }}
-            1-${{ runner.os }}-gradle-
-      - name: Cache Swift
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/Library/Caches/org.swift.swiftpm
-            ~/.cache/org.swift.swiftpm
-          key: 1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
-          restore-keys: |
-            1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
-            1-${{ runner.os }}-${{ matrix.xcode }}-spm-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: corretto
-          java-version: 17
+      - name: Setup common tools
+        uses: ./.github/actions/setup-common-tools-composite-action
       - name: Build & Run smithy-swift Kotlin Unit Tests
         run: ./gradlew build
       - name: Build & Run smithy-swift Swift Unit Tests
@@ -161,71 +138,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: smithy-swift
-      - name: Set up SSH key
-        if: ${{ github.repository != 'smithy-lang/smithy-swift' }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.AUTOMATION_USER_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-      - name: Select staging aws-sdk-swift branch
-        if: ${{ github.repository != 'smithy-lang/smithy-swift' }}
-        run: |
-          cd smithy-swift
-          ORIGINAL_REPO_HEAD_REF="$GITHUB_HEAD_REF" \
-          DEPENDENCY_REPO_URL="git@github.com:${{ secrets.STAGING_PARTNER_REPO }}.git" \
-          ./scripts/ci_steps/select_dependency_branch.sh
-      - name: Checkout staging aws-sdk-swift
-        if: ${{ github.repository != 'smithy-lang/smithy-swift' }}
-        uses: actions/checkout@v3
+      - name: Setup repos
+        uses: ./smithy-swift/.github/actions/setup-repos-composite-action
         with:
-          repository: ${{ secrets.STAGING_PARTNER_REPO }}
-          ref: ${{ env.DEPENDENCY_REPO_SHA }}
-          path: aws-sdk-swift
-          ssh-key: ${{ secrets.AUTOMATION_USER_SSH_PRIVATE_KEY }}
-      - name: Select aws-sdk-swift branch
-        if: ${{ github.repository == 'smithy-lang/smithy-swift' }}
-        run: |
-          cd smithy-swift
-          ORIGINAL_REPO_HEAD_REF="$GITHUB_HEAD_REF" \
-          DEPENDENCY_REPO_URL="https://github.com/awslabs/aws-sdk-swift.git" \
-          ./scripts/ci_steps/select_dependency_branch.sh
-      - name: Checkout aws-sdk-swift
-        if: ${{ github.repository == 'smithy-lang/smithy-swift' }}
-        uses: actions/checkout@v4
-        with:
-          repository: awslabs/aws-sdk-swift
-          ref: ${{ env.DEPENDENCY_REPO_SHA }}
-          path: aws-sdk-swift
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: 1-${{ runner.os }}-gradle-${{ hashFiles('settings.gradle.kts', 'gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            1-${{ runner.os }}-gradle-${{ hashFiles('settings.gradle.kts', 'gradle/wrapper/gradle-wrapper.properties') }}
-            1-${{ runner.os }}-gradle-
-      - name: Cache Swift
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/Library/Caches/org.swift.swiftpm
-            ~/.cache/org.swift.swiftpm
-          key: 1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
-          restore-keys: |
-            1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
-            1-${{ runner.os }}-${{ matrix.xcode }}-spm-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: corretto
-          java-version: 17
+          AUTOMATION_USER_SSH_PRIVATE_KEY: ${{ secrets.AUTOMATION_USER_SSH_PRIVATE_KEY }}
+          STAGING_PARTNER_REPO: ${{ secrets.STAGING_PARTNER_REPO }}
+      - name: Setup common tools
+        uses: ./smithy-swift/.github/actions/setup-common-tools-composite-action
       - name: Tools Versions
-        run: |
-          cd aws-sdk-swift
-          ./scripts/ci_steps/log_tool_versions.sh
+        run: ./aws-sdk-swift/scripts/ci_steps/log_tool_versions.sh
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
         run: |
           cd aws-sdk-swift
@@ -263,8 +184,8 @@ jobs:
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
-      - name: Checkout Sources
-        uses: actions/checkout@v3
+      - name: Checkout smithy-swift
+        uses: actions/checkout@v4
       - name: Install openssl
         run: |
           if [ -x "$(command -v apt)" ]; then
@@ -272,31 +193,8 @@ jobs:
           else
             yum install -y openssl-devel which
           fi
-      - name: Cache Gradle
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: 1-${{ runner.os }}-gradle-${{ hashFiles('settings.gradle.kts', 'gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            1-${{ runner.os }}-gradle-${{ hashFiles('settings.gradle.kts', 'gradle/wrapper/gradle-wrapper.properties') }}
-            1-${{ runner.os }}-gradle-
-      - name: Cache Swift
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/Library/Caches/org.swift.swiftpm
-            ~/.cache/org.swift.swiftpm
-          key: 1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
-          restore-keys: |
-            1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
-            1-${{ runner.os }}-${{ matrix.xcode }}-spm-
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: corretto
-          java-version: 17
+      - name: Setup common tools
+        uses: ./.github/actions/setup-common-tools-composite-action
       - name: Build & Run Kotlin Unit Tests
         run: ./gradlew build
       - name: Build & Run Swift Unit Tests
@@ -316,46 +214,6 @@ jobs:
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
-      - name: Checkout Sources
-        uses: actions/checkout@v3
-        with:
-          path: smithy-swift
-      - name: Set up SSH key
-        if: ${{ github.repository != 'smithy-lang/smithy-swift' }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.AUTOMATION_USER_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-      - name: Select staging aws-sdk-swift branch
-        if: ${{ github.repository != 'smithy-lang/smithy-swift' }}
-        run: |
-          cd smithy-swift
-          ORIGINAL_REPO_HEAD_REF="$GITHUB_HEAD_REF" \
-          DEPENDENCY_REPO_URL="git@github.com:${{ secrets.STAGING_PARTNER_REPO }}.git" \
-          ./scripts/ci_steps/select_dependency_branch.sh
-      - name: Checkout staging aws-sdk-swift
-        if: ${{ github.repository != 'smithy-lang/smithy-swift' }}
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ secrets.STAGING_PARTNER_REPO }}
-          ref: ${{ env.DEPENDENCY_REPO_SHA }}
-          path: aws-sdk-swift
-          ssh-key: ${{ secrets.AUTOMATION_USER_SSH_PRIVATE_KEY }}
-      - name: Select aws-sdk-swift branch
-        if: ${{ github.repository == 'smithy-lang/smithy-swift' }}
-        run: |
-          cd smithy-swift
-          ORIGINAL_REPO_HEAD_REF="$GITHUB_HEAD_REF" \
-          DEPENDENCY_REPO_URL="https://github.com/awslabs/aws-sdk-swift.git" \
-          ./scripts/ci_steps/select_dependency_branch.sh
-      - name: Checkout aws-sdk-swift
-        if: ${{ github.repository == 'smithy-lang/smithy-swift' }}
-        uses: actions/checkout@v4
-        with:
-          repository: awslabs/aws-sdk-swift
-          ref: ${{ env.DEPENDENCY_REPO_SHA }}
-          path: aws-sdk-swift
       - name: Install openssl
         run: |
           if [ -x "$(command -v apt)" ]; then
@@ -363,35 +221,19 @@ jobs:
           else
             yum install -y openssl-devel which
           fi
-      - name: Cache Gradle
-        uses: actions/cache@v3
+      - name: Checkout smithy-swift
+        uses: actions/checkout@v4
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: 1-${{ runner.os }}-gradle-${{ hashFiles('settings.gradle.kts', 'gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            1-${{ runner.os }}-gradle-${{ hashFiles('settings.gradle.kts', 'gradle/wrapper/gradle-wrapper.properties') }}
-            1-${{ runner.os }}-gradle-
-      - name: Cache Swift
-        uses: actions/cache@v3
+          path: smithy-swift
+      - name: Setup repos
+        uses: ./smithy-swift/.github/actions/setup-repos-composite-action
         with:
-          path: |
-            ~/Library/Caches/org.swift.swiftpm
-            ~/.cache/org.swift.swiftpm
-          key: 1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
-          restore-keys: |
-            1-${{ runner.os }}-${{ matrix.xcode }}-spm-${{ hashFiles('Package.swift') }}
-            1-${{ runner.os }}-${{ matrix.xcode }}-spm-
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: corretto
-          java-version: 17
+            AUTOMATION_USER_SSH_PRIVATE_KEY: ${{ secrets.AUTOMATION_USER_SSH_PRIVATE_KEY }}
+            STAGING_PARTNER_REPO: ${{ secrets.STAGING_PARTNER_REPO }}
+      - name: Setup common tools
+        uses: ./smithy-swift/.github/actions/setup-common-tools-composite-action
       - name: Tools Versions
-        run: |
-          cd aws-sdk-swift
-          ./scripts/ci_steps/log_tool_versions.sh
+        run: ./aws-sdk-swift/scripts/ci_steps/log_tool_versions.sh
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
         run: |
           cd aws-sdk-swift
