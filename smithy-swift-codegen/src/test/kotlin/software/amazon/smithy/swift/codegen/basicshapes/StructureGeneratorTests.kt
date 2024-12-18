@@ -262,9 +262,9 @@ public struct RecursiveShapesInputOutputLists: Swift.Sendable {
 
         contents.shouldContain(swiftSettings.copyrightNotice)
         val expectedGeneratedStructure = """
-public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError, Swift.Error {
+public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, ClientRuntime.HTTPError, Swift.Error, Swift.Sendable {
 
-    public struct Properties {
+    public struct Properties: Swift.Sendable {
         /// This is documentation about the member.
         public internal(set) var baz: Swift.Int? = nil
         public internal(set) var message: Swift.String? = nil
