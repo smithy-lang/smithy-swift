@@ -243,14 +243,16 @@ open class MemberShapeDecodeGenerator(
         writer.addImport(FoundationTypes.Data)
         return if (targetShape.hasTrait<StreamingTrait>()) {
             writer.format(
-                " ?? \$N.data(\$N(\"$value\".utf8))",
+                " ?? \$N.data(\$N(base64Encoded: \$S))",
                 SmithyTypes.ByteStream,
-                FoundationTypes.Data
+                FoundationTypes.Data,
+                value,
             )
         } else {
             writer.format(
-                " ?? \$N(\"$value\".utf8)",
-                FoundationTypes.Data
+                " ?? \$N(base64Encoded: \$S)",
+                FoundationTypes.Data,
+                value,
             )
         }
     }
