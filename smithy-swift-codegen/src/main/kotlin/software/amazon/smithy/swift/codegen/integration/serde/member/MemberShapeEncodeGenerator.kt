@@ -161,7 +161,7 @@ object TimestampUtils {
     private fun defaultTimestampFormat(ctx: ProtocolGenerator.GenerationContext): String {
         return when (ctx.service.requestWireProtocol) {
             WireProtocol.XML, WireProtocol.FORM_URL -> TimestampFormatTrait.DATE_TIME
-            WireProtocol.JSON -> TimestampFormatTrait.EPOCH_SECONDS
+            WireProtocol.JSON, WireProtocol.CBOR -> TimestampFormatTrait.EPOCH_SECONDS
         }
     }
 }

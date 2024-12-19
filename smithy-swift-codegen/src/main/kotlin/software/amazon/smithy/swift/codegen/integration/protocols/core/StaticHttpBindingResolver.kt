@@ -24,9 +24,9 @@ import software.amazon.smithy.swift.codegen.model.expectTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 open class StaticHttpBindingResolver(
-    private val context: ProtocolGenerator.GenerationContext,
-    private val httpTrait: HttpTrait,
-    private val defaultContentType: String
+    protected val context: ProtocolGenerator.GenerationContext,
+    protected val httpTrait: HttpTrait,
+    protected val defaultContentType: String
 ) : HttpBindingResolver {
     override fun httpTrait(operationShape: OperationShape): HttpTrait {
         return httpTrait

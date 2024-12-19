@@ -11,13 +11,15 @@ import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
+import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.hasStreamingMember
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.*
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
+import java.util.Base64
 
 /**
  * Generates HTTP protocol unit tests for `httpResponseTest` cases
@@ -60,35 +62,49 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     open fun renderExpectedBody(test: HttpResponseTestCase) {
-        if (test.body.isPresent) {
-            operation.output.ifPresent {
-                if (test.body.get().isNotBlank()) {
-                    val outputShape = model.expectShape(it) as StructureShape
-                    val data = writer.format(
-                        "Data(\"\"\"\n\$L\n\"\"\".utf8)",
-                        test.body.get().replace("\\\"", "\\\\\"")
-                    )
-                    // depending on the shape of the output, we may need to wrap the body in a stream
-                    if (outputShape.hasStreamingMember(model)) {
-                        // wrapping to CachingStream required for test asserts which reads body multiple times
-                        writer.write(
-                            "content: .stream(\$N(data: \$L, isClosed: true))",
-                            SmithyStreamsTypes.Core.BufferedStream,
-                            data
-                        )
-                    } else {
-                        writer.write("content: .data(\$L)", data)
-                    }
-                } else if (test.body.get().isBlank() && bodyHasDefaultValue()) {
-                    // Expected body is blank but not because it's nil, but because it's a default empty blob value
-                    writer.write("content: .data(Data(\"\".utf8))")
-                } else {
-                    // Expected body is blank and underlying member shape does not have default values.
-                    writer.write("content: nil")
-                }
+        if (!test.body.isPresent) {
+            writer.write("content: nil")
+            return
+        }
+
+        val bodyContent = test.body.get()
+        val isCbor = ctx.service.requestWireProtocol == WireProtocol.CBOR
+                || ctx.service.awsProtocol == AWSProtocol.RPCV2_CBOR
+                || ctx.service.responseWireProtocol == WireProtocol.CBOR
+                || test.protocol == Rpcv2CborTrait.ID
+
+        val data: String = if (isCbor) {
+            // Attempt to decode Base64 data once for CBOR
+            try {
+                val decodedBytes = Base64.getDecoder().decode(bodyContent)
+                "Data([${decodedBytes.joinToString(", ") { byte -> "0x%02X".format(byte) }}])"
+            } catch (e: IllegalArgumentException) {
+                // Fallback to Swift Data representation for invalid Base64
+                "Data(\"\"\"\n$bodyContent\n\"\"\".utf8)"
             }
         } else {
-            writer.write("content: nil")
+            // Non-CBOR protocols default
+            "Data(\"\"\"\n$bodyContent\n\"\"\".utf8)"
+        }
+
+        operation.output.ifPresent {
+            val outputShape = model.expectShape(it) as StructureShape
+
+            if (bodyContent.isNotBlank()) {
+                if (outputShape.hasStreamingMember(model)) {
+                    writer.write(
+                        "content: .stream(\$N(data: \$L, isClosed: true))",
+                        SmithyStreamsTypes.Core.BufferedStream,
+                        data
+                    )
+                } else {
+                    writer.write("content: .data($data)")
+                }
+            } else if (bodyContent.isBlank() && bodyHasDefaultValue()) {
+                writer.write("content: .data($data)")
+            } else {
+                writer.write("content: nil")
+            }
         }
     }
 
