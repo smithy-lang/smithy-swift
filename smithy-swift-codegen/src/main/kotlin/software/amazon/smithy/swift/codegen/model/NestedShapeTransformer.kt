@@ -14,6 +14,7 @@ import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 
 object NestedShapeTransformer {
     fun transform(model: Model, service: ServiceShape): Model {
+        return model
         val next = transformInner(model, service)
         if (next == model) {
             throw CodegenException("model $model is equal to $next, loop detected")

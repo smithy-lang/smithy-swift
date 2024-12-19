@@ -60,7 +60,7 @@ class UnionGenerator(
 
     fun render() {
         writer.putContext("union.name", unionSymbol.name)
-        val isNestedType = shape.hasTrait<NestedTrait>()
+        val isNestedType = false
         if (isNestedType) {
             val service = model.expectShape<ServiceShape>(settings.service)
             writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {

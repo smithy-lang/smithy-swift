@@ -101,7 +101,7 @@ class StructureGenerator(
      * ```
      */
     private fun renderNonErrorStructure() {
-        val isNestedType = shape.hasTrait<NestedTrait>()
+        val isNestedType = false
         if (isNestedType) {
             val service = model.expectShape<ServiceShape>(settings.service)
             writer.openBlock("extension ${service.nestedNamespaceType(symbolProvider)} {", "}") {
