@@ -11,6 +11,7 @@ env:
 
 jobs:
   apple-ci:
+    if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -103,6 +104,7 @@ jobs:
             | xcbeautify
 
   apple-downstream:
+    if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -223,14 +225,13 @@ jobs:
             | xcbeautify
 
   linux-ci:
+    if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         swift:
-          - 5.9-amazonlinux2
           - 5.9-focal
-          - 6.0-amazonlinux2
           - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}
@@ -277,14 +278,13 @@ jobs:
         run: swift test
 
   linux-downstream:
+    if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         swift:
-          - 5.9-amazonlinux2
           - 5.9-focal
-          - 6.0-amazonlinux2
           - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}

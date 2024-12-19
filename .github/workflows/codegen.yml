@@ -8,6 +8,7 @@ on:
 
 jobs:
   codegen:
+    if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ${{ matrix.os }}
     name: Java ${{ matrix.java }} ${{ matrix.os }}
     strategy:
