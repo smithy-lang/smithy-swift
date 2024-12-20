@@ -20,14 +20,11 @@ import SmithyReadWrite
 public final class Reader: SmithyReader {
     public typealias NodeInfo = String
 
-    // The CBOR value represented as a CBORType
     public let cborValue: CBORType?
     public let nodeInfo: NodeInfo
     public internal(set) var children: [Reader] = []
     public internal(set) weak var parent: Reader?
     public var hasContent: Bool { cborValue != nil && cborValue != .null }
-
-    // MARK: - Initializer
 
     public init(nodeInfo: NodeInfo, cborValue: CBORType?, parent: Reader? = nil) {
         self.nodeInfo = nodeInfo
@@ -36,12 +33,15 @@ public final class Reader: SmithyReader {
         self.children = Self.children(from: cborValue, parent: self)
     }
 
-    enum ReaderError: Error {
-        case unexpectedType(expected: String, actual: CBORType)
-        case invalidData(description: String)
-        case missingKey
-        case indefiniteBreakNotFound
-        case requiredValueNotPresent
+    public static func from(data: Data) throws -> Reader {
+        let decoder = try CBORDecoder(data: [UInt8](data))
+        let rootValue: CBORType
+        if decoder.hasNext() {
+            rootValue = try decoder.popNext()
+        } else {
+            rootValue = .null
+        }
+        return Reader(nodeInfo: "", cborValue: rootValue, parent: nil)
     }
 
     private static func children(from cborValue: CBORType?, parent: Reader) -> [Reader] {
@@ -49,159 +49,18 @@ public final class Reader: SmithyReader {
         switch cborValue {
         case .map(let map):
             for (key, value) in map {
-                // Ensure key is treated as a child node
-                let valueReader = Reader(nodeInfo: "\(key)", cborValue: value, parent: parent)
-                valueReader.children = Self.children(from: value, parent: valueReader) // Recursively process nested children
-
-                children.append(valueReader)
+                let child = Reader(nodeInfo: key, cborValue: value, parent: parent)
+                children.append(child)
             }
         case .array(let array):
             for (index, value) in array.enumerated() {
                 let child = Reader(nodeInfo: "\(index)", cborValue: value, parent: parent)
-                child.children = Self.children(from: value, parent: child) // Recursively process nested children
                 children.append(child)
             }
         default:
             break
         }
         return children
-    }
-
-    // MARK: - SmithyReader Protocol Methods
-
-    public static func from(data: Data) throws -> Reader {
-        let decoder = try CBORDecoder(data: [UInt8](data))
-        var rootValue: CBORType?
-
-        if decoder.hasNext() {
-            rootValue = try decoder.popNext()
-        } else {
-            rootValue = .null
-        }
-
-        switch rootValue {
-        case .indef_map_start:
-            let map = try decodeIndefiniteMap(decoder)
-            return Reader(nodeInfo: "Indefinite Map", cborValue: .map(map))
-
-        case .indef_array_start:
-            let array = try decodeIndefiniteArray(decoder)
-            return Reader(nodeInfo: "Indefinite Array", cborValue: .array(array))
-
-        case .indef_text_start:
-            let text = try decodeIndefiniteText(decoder)
-            return Reader(nodeInfo: "Indefinite Text", cborValue: .text(text))
-
-        case .indef_bytes_start:
-            let bytes = try decodeIndefiniteBytes(decoder)
-            return Reader(nodeInfo: "Indefinite Bytes", cborValue: .bytes(bytes))
-
-        default:
-            return Reader(nodeInfo: "", cborValue: rootValue)
-        }
-    }
-
-    // can be nested
-    private static func decodeIndefiniteMap(_ decoder: CBORDecoder) throws -> [String: CBORType] {
-        var map: [String: CBORType] = [:]
-        while decoder.hasNext() {
-            let key = try decoder.popNext()
-            if case .indef_break = key { break }
-
-            guard case .text(let keyString) = key else {
-                throw ReaderError.unexpectedType(expected: "text", actual: key)
-            }
-
-            let value = try decoder.popNext()
-            if case .indef_break = value { break }
-
-            // Check if the value is another indefinite structure and decode it.
-            let decodedValue: CBORType
-            switch value {
-            case .indef_map_start:
-                decodedValue = .map(try decodeIndefiniteMap(decoder))
-            case .indef_array_start:
-                decodedValue = .array(try decodeIndefiniteArray(decoder))
-            case .indef_text_start:
-                decodedValue = .text(try decodeIndefiniteText(decoder))
-            case .indef_bytes_start:
-                decodedValue = .bytes(try decodeIndefiniteBytes(decoder))
-            default:
-                decodedValue = value
-            }
-
-            map[keyString] = decodedValue
-        }
-        return map
-    }
-
-    // can be nested
-    private static func decodeIndefiniteArray(_ decoder: CBORDecoder) throws -> [CBORType] {
-        var array: [CBORType] = []
-
-        while decoder.hasNext() {
-            let value = try decoder.popNext()
-            if case .indef_break = value { break }
-
-            let decodedValue: CBORType
-            switch value {
-            case .indef_map_start:
-                decodedValue = .map(try decodeIndefiniteMap(decoder))
-            case .indef_array_start:
-                decodedValue = .array(try decodeIndefiniteArray(decoder))
-            case .indef_text_start:
-                decodedValue = .text(try decodeIndefiniteText(decoder))
-            case .indef_bytes_start:
-                decodedValue = .bytes(try decodeIndefiniteBytes(decoder))
-            default:
-                decodedValue = value
-            }
-
-            array.append(decodedValue)
-        }
-
-        return array
-    }
-
-    private static func decodeIndefiniteText(_ decoder: CBORDecoder) throws -> String {
-        var text = ""
-
-        while decoder.hasNext() {
-            let chunk = try decoder.popNext()
-
-            // Handle the end of the indefinite-length text
-            if case .indef_break = chunk {
-                break
-            }
-
-            // Append text chunks
-            if case .text(let chunkString) = chunk {
-                text += chunkString
-            } else if case .indef_text_start = chunk {
-                // Handle nested indefinite text starts (recursion)
-                text += try decodeIndefiniteText(decoder)
-            } else {
-                // Unexpected type
-                throw ReaderError.unexpectedType(expected: "text or indef_text_start", actual: chunk)
-            }
-        }
-
-        return text
-    }
-
-    // wont be nested
-    private static func decodeIndefiniteBytes(_ decoder: CBORDecoder) throws -> Data {
-        var bytes = Data()
-        while decoder.hasNext() {
-            let chunk = try decoder.popNext()
-            if case .indef_break = chunk { break }
-
-            guard case .bytes(let chunkData) = chunk else {
-                throw ReaderError.unexpectedType(expected: "bytes", actual: chunk)
-            }
-            bytes.append(chunkData)
-        }
-        return bytes
     }
 
     public subscript(nodeInfo: NodeInfo) -> Reader {
