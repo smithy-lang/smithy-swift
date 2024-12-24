@@ -233,11 +233,12 @@ class StructureGenerator(
 
         writer.writeAvailableAttribute(model, shape)
         writer.openBlock(
-            "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N {",
+            "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N, \$N {",
             ClientRuntimeTypes.Core.ModeledError,
             ClientRuntimeTypes.Http.HttpError,
             SwiftTypes.Error,
             SwiftTypes.Protocols.Sendable,
+            SmithyReadWriteTypes.DeserializableShape,
         )
             .call { generateErrorStructMembers() }
             .write("")

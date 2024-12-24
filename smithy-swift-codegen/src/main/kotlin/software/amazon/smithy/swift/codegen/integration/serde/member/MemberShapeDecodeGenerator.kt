@@ -44,7 +44,10 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.json.TimestampUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ReadingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.schema.readMethodName
+import software.amazon.smithy.swift.codegen.integration.serde.schema.schemaVar
 import software.amazon.smithy.swift.codegen.model.expectTrait
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -82,6 +85,15 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun renderStructOrUnionExp(memberShape: MemberShape, isPayload: Boolean): String {
+        if (useSBS) {
+            val target = ctx.model.expectShape(memberShape.target)
+            return writer.format(
+                "try \$L.readStructure\$L(schema: \$L)",
+                reader(memberShape, isPayload),
+                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                memberShape.target.schemaVar(writer),
+            )
+        }
         val readingClosure = readingClosureUtils.readingClosure(memberShape)
         return writer.format(
             "try \$L.\$L(with: \$L)",
@@ -92,6 +104,15 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun renderListExp(memberShape: MemberShape, listShape: ListShape): String {
+        if (useSBS) {
+            val target = ctx.model.expectShape(memberShape.target)
+            return writer.format(
+                "try \$L.readList\$L(schema: \$L)",
+                reader(memberShape, false),
+                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                memberShape.target.schemaVar(writer),
+            )
+        }
         val isSparse = listShape.hasTrait<SparseTrait>()
         val memberReadingClosure = readingClosureUtils.readingClosure(listShape.member, isSparse)
         val memberNodeInfo = nodeInfoUtils.nodeInfo(listShape.member)
@@ -108,6 +129,15 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun renderMapExp(memberShape: MemberShape, mapShape: MapShape): String {
+        if (useSBS) {
+            val target = ctx.model.expectShape(memberShape.target)
+            return writer.format(
+                "try \$L.readMap\$L(schema: \$L)",
+                reader(memberShape, false),
+                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                memberShape.target.schemaVar(writer),
+            )
+        }
         val isSparse = mapShape.hasTrait<SparseTrait>()
         val valueReadingClosure = ReadingClosureUtils(ctx, writer).readingClosure(mapShape.value, isSparse)
         val keyNodeInfo = nodeInfoUtils.nodeInfo(mapShape.key)
@@ -126,6 +156,9 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun renderTimestampExp(memberShape: MemberShape, timestampShape: TimestampShape): String {
+        if (useSBS) {
+            return renderMemberExp(memberShape, isPayload = false)
+        }
         val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
         val swiftTimestampFormatCase = TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, timestampShape)
         return writer.format(
@@ -139,6 +172,16 @@ open class MemberShapeDecodeGenerator(
     }
 
     private fun renderMemberExp(memberShape: MemberShape, isPayload: Boolean): String {
+        if (useSBS) {
+            val target = ctx.model.expectShape(memberShape.target)
+            return writer.format(
+                "try \$L.\$L\$L(schema: \$L)",
+                reader(memberShape, isPayload),
+                target.type.readMethodName,
+                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                memberShape.target.schemaVar(writer),
+            )
+        }
         return writer.format(
             "try \$L.\$L()\$L",
             reader(memberShape, isPayload),
@@ -297,4 +340,6 @@ open class MemberShapeDecodeGenerator(
     }
 
     private var decodingUnion: Boolean = shapeContainingMembers.isUnionShape
+
+    private val useSBS: Boolean = ctx.service.responseWireProtocol == WireProtocol.JSON
 }

@@ -45,7 +45,7 @@ class MessageMarshallableGenerator(
                                 "var headers: [\$N] = [.init(name: \":message-type\", value: .string(\"event\"))]",
                                 SmithyEventStreamsAPITypes.Header
                             )
-                            write("var payload: \$D", FoundationTypes.Data)
+                            write("var payload: \$1T = \$1D", FoundationTypes.Data)
                             write("switch self {")
                             streamShape.eventStreamEvents(ctx.model).forEach { member ->
                                 val memberName = ctx.symbolProvider.toMemberName(member)

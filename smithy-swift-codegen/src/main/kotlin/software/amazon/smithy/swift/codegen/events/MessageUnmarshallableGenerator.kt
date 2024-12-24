@@ -11,6 +11,8 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ReadingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.schema.readMethodName
+import software.amazon.smithy.swift.codegen.integration.serde.schema.schemaVar
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
 import software.amazon.smithy.swift.codegen.model.eventStreamErrors
 import software.amazon.smithy.swift.codegen.model.eventStreamEvents
@@ -18,6 +20,7 @@ import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
@@ -95,8 +98,7 @@ class MessageUnmarshallableGenerator(
                                 writer.write("}")
                             }
                             writer.write("}")
-                            writer.write("let error = try makeError(message, params)")
-                            writer.write("throw error")
+                            writer.write("throw try makeError(message, params)")
                         }
                         writer.write("case .error(let params):")
                         writer.indent {
@@ -205,11 +207,13 @@ class MessageUnmarshallableGenerator(
     }
 
     private fun renderReadToValue(writer: SwiftWriter, memberShape: MemberShape) {
-        val readingClosure = ReadingClosureUtils(ctx, writer).readingClosure(memberShape)
+//        writer.addImport(SmithyReadWriteTypes.ShapeDeserializer)
+        val target = ctx.model.expectShape(memberShape.target)
         writer.write(
-            "let value = try \$N.readFrom(message.payload, with: \$L)",
+            "let value = try \$N.from(data: message.payload).\$LNonNull(schema: \$L)",
             ctx.service.readerSymbol,
-            readingClosure,
+            target.type.readMethodName,
+            target.id.schemaVar(writer),
         )
     }
 }

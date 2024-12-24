@@ -13,14 +13,15 @@ import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
+import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import kotlin.jvm.optionals.getOrNull
 
 class SchemaGenerator(
@@ -29,20 +30,19 @@ class SchemaGenerator(
 ) {
 
     fun renderSchemas(shape: Shape) {
-        writer.writeInline("let \$L = ", schemaVar(writer, shape.id))
+        writer.writeInline("let \$L: \$N<\$N> = ", shape.id.schemaVar(writer), schemaType(shape), swiftSymbolFor(ctx, shape))
         renderSingleSchema(shape)
         writer.unwrite(",\n")
-        writer.write("")
+        writer.write("()")
         writer.write("")
     }
 
-    private fun renderSingleSchema(shape: Shape) {
-        val swiftType = swiftSymbolFor(ctx, shape)
+    private fun renderSingleSchema(shape: Shape, optionalize: Boolean = false) {
         writer.openBlock(
-            "\$N<\$N>(",
-            "),",
+            "{ \$N<\$N>(",
+            ") },",
             schemaType(shape),
-            swiftType,
+            swiftSymbolFor(ctx, shape).optionalIf(optionalize),
         ) {
 //            writer.write("namespace: \$S,", shape.id.namespace)
 //            writer.write("name: \$S,", shape.id.name)
@@ -55,7 +55,7 @@ class SchemaGenerator(
                                 writer.openBlock(".init(", "),") {
                                     writer.writeInline("memberSchema: ")
                                     renderSingleSchema(member)
-                                    writer.write("targetSchema: \$L,", schemaVar(writer, member.target))
+                                    writer.write("targetSchema: { \$L },", member.target.schemaVar(writer))
                                     writeSetterGetter(ctx, writer, shape, member)
                                 }
                             }
@@ -68,8 +68,8 @@ class SchemaGenerator(
                     val member = shape.members().first { it.memberName == "member" }
                     val target = ctx.model.expectShape(member.target)
                     writer.writeInline("memberSchema: ")
-                    renderSingleSchema(member)
-                    writer.write("targetSchema: \$L,", schemaVar(writer, target.id))
+                    renderSingleSchema(member, shape.hasTrait<SparseTrait>())
+                    writer.write("targetSchema: { \$L },", target.id.schemaVar(writer))
                     writeSetterGetter(ctx, writer, shape, member)
                 }
                 ShapeType.MAP -> {
@@ -79,10 +79,10 @@ class SchemaGenerator(
                     val valueTarget = valueMember.let { ctx.model.expectShape(it.target) }
                     writer.writeInline("keyMemberSchema: ")
                     renderSingleSchema(keyMember)
-                    writer.write("keyTargetSchema: \$L,", schemaVar(writer, keyTarget.id))
+                    writer.write("keyTargetSchema: { \$L },", keyTarget.id.schemaVar(writer))
                     writer.writeInline("valueMemberSchema: ")
-                    renderSingleSchema(valueMember)
-                    writer.write("valueTargetSchema: \$L,", schemaVar(writer, valueTarget.id))
+                    renderSingleSchema(valueMember, shape.hasTrait<SparseTrait>())
+                    writer.write("valueTargetSchema: { \$L },", valueTarget.id.schemaVar(writer))
                     writeSetterGetter(ctx, writer, shape, valueMember)
                 }
                 ShapeType.MEMBER -> {
@@ -125,24 +125,30 @@ class SchemaGenerator(
         val service = ctx.model.getShape(ctx.settings.service).get() as ServiceShape
         return when (shape.type) {
             ShapeType.STRUCTURE, ShapeType.UNION -> {
-                if (shape.id.namespace == "smithy.api" && shape.id.name == "Unit") {
-                    return SwiftTypes.Void
-                } else {
+//                if (shape.id.namespace == "smithy.api" && shape.id.name == "Unit") {
+//                    SwiftTypes.Void
+//                } else {
                     val symbol = ctx.symbolProvider.toSymbol(shape)
-                    return symbol.toBuilder().namespace(service.nestedNamespaceType(ctx.symbolProvider).name, ".")
-                        .build()
-                }
+                    if (shape.hasTrait<NestedTrait>()) {
+                        return symbol.toBuilder().namespace(service.nestedNamespaceType(ctx.symbolProvider).name, ".").build()
+                    } else {
+                        return symbol
+                    }
+
+//                }
             }
             ShapeType.LIST, ShapeType.SET -> {
                 val target = shape.members()
                     .first { it.memberName == "member" }
                     ?.let { ctx.model.expectShape(it.target) }
                     ?: run { throw Exception("List / set does not have target") }
-                val innerSymbol = swiftSymbolWithOptionalRecursion(ctx, target, false)
-                if (recurse) {
-                    return innerSymbol
+                val innerSymbol = swiftSymbolWithOptionalRecursion(ctx, target, false).optionalIf(shape.hasTrait<SparseTrait>())
+                return if (recurse) {
+                    innerSymbol
                 } else {
-                    return Symbol.builder().namespace("Swift", ".").name("Array<${innerSymbol}>").build()
+                    Symbol.builder()
+                        .name(writer.format("[  \$N ]", innerSymbol))
+                        .build()
                 }
             }
             ShapeType.MAP -> {
@@ -150,60 +156,49 @@ class SchemaGenerator(
                     .first { it.memberName == "value" }
                     ?.let { ctx.model.expectShape(it.target) }
                     ?: run { throw Exception("Map does not have target") }
-                val innerSymbol = swiftSymbolWithOptionalRecursion(ctx, target, false)
-                if (recurse) {
-                    return innerSymbol
+                val innerSymbol = swiftSymbolWithOptionalRecursion(ctx, target, false).optionalIf(shape.hasTrait<SparseTrait>())
+                return if (recurse) {
+                    innerSymbol
                 } else {
-                    return Symbol.builder().namespace("Swift", ".").name("Dictionary<Swift.String, ${innerSymbol}>").build()
+                    Symbol.builder()
+                        .name(writer.format("[Swift.String: \$N]", innerSymbol))
+                        .build()
                 }
             }
             ShapeType.MEMBER -> {
                 val memberShape = shape as MemberShape
                 val target = ctx.model.expectShape(memberShape.target)
-                return swiftSymbolWithOptionalRecursion(ctx, target, false)
+                swiftSymbolWithOptionalRecursion(ctx, target, false)
             }
             else -> {
-                return ctx.symbolProvider.toSymbol(shape)
+                ctx.symbolProvider.toSymbol(shape)
             }
+        }
+    }
+
+    fun Symbol.optionalIf(isOptional: Boolean): Symbol {
+        if (isOptional) {
+            return this.toOptional()
+        } else {
+            return this
         }
     }
 
     private fun writeSetterGetter(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape) {
         val target = ctx.model.expectShape(member.target)
-        val readMethodName = when (target.type) {
-            ShapeType.BLOB -> "readBlob"
-            ShapeType.BOOLEAN -> "readBoolean"
-            ShapeType.STRING -> "readString"
-            ShapeType.ENUM -> "readEnum"
-            ShapeType.TIMESTAMP -> "readTimestamp"
-            ShapeType.BYTE -> "readByte"
-            ShapeType.SHORT -> "readShort"
-            ShapeType.INTEGER -> "readInteger"
-            ShapeType.INT_ENUM -> "readIntEnum"
-            ShapeType.LONG -> "readLong"
-            ShapeType.FLOAT -> "readFloat"
-            ShapeType.DOCUMENT -> "readDocument"
-            ShapeType.DOUBLE -> "readDouble"
-            ShapeType.BIG_DECIMAL -> "readBigDecimal"
-            ShapeType.BIG_INTEGER -> "readBigInteger"
-            ShapeType.LIST, ShapeType.SET -> "readList"
-            ShapeType.MAP -> "readMap"
-            ShapeType.STRUCTURE, ShapeType.UNION -> "readStruct"
-            ShapeType.MEMBER, ShapeType.SERVICE, ShapeType.RESOURCE, ShapeType.OPERATION, null ->
-                throw Exception("Unsupported member target type: ${target.type}")
-        }
+        val readMethodName = target.type.readMethodName
         when (shape.type) {
             ShapeType.STRUCTURE -> {
-                writer.write("readBlock: { \$\$0.\$L = try \$\$1.\$L(schema: \$L) },", ctx.symbolProvider.toMemberName(member), readMethodName, schemaVar(writer, target.id))
+                writer.write("readBlock: { \$\$0.\$L = try \$\$1.\$L(schema: \$L) },", ctx.symbolProvider.toMemberName(member), readMethodName, target.id.schemaVar(writer))
                 writer.write("writeBlock: { _, _ in }")
             }
             ShapeType.UNION -> {
-                writer.write("readBlock: { \$\$0 = .\$L(try \$\$1.\$LNonNull(schema: \$L)) },", ctx.symbolProvider.toMemberName(member), readMethodName, schemaVar(writer, target.id))
+                writer.write("readBlock: { \$\$0 = .\$L(try \$\$1.\$LNonNull(schema: \$L)) },", ctx.symbolProvider.toMemberName(member), readMethodName, target.id.schemaVar(writer))
                 writer.write("writeBlock: { _, _ in }")
             }
             ShapeType.LIST, ShapeType.SET, ShapeType.MAP -> {
                 val nonNullModifier = "NonNull".takeIf { !shape.hasTrait<SparseTrait>() } ?: ""
-                writer.write("readBlock: { try \$\$0.\$L\$L(schema: \$L) },", readMethodName, nonNullModifier, schemaVar(writer, target.id))
+                writer.write("readBlock: { try \$\$0.\$L\$L(schema: \$L) },", readMethodName, nonNullModifier, target.id.schemaVar(writer))
                 writer.write("writeBlock: { _, _ in }")
             }
             else -> {}
@@ -230,23 +225,6 @@ class SchemaGenerator(
         return shape.getTrait<TimestampFormatTrait>()?.format
     }
 
-    fun schemaVar(writer: SwiftWriter, shapeId: ShapeId): String {
-        return when (Pair(shapeId.namespace, shapeId.name)) {
-            Pair("smithy.api", "Unit") -> writer.format("\$N", SmithyReadWriteTypes.unitSchema)
-            Pair("smithy.api", "Boolean") -> writer.format("\$N", SmithyReadWriteTypes.booleanSchema)
-            Pair("smithy.api", "Integer") -> writer.format("\$N", SmithyReadWriteTypes.integerSchema)
-            Pair("smithy.api", "Float") -> writer.format("\$N", SmithyReadWriteTypes.floatSchema)
-            Pair("smithy.api", "Double") -> writer.format("\$N", SmithyReadWriteTypes.doubleSchema)
-            Pair("smithy.api", "String") -> writer.format("\$N", SmithyReadWriteTypes.stringSchema)
-            Pair("smithy.api", "Document") -> writer.format("\$N", SmithyReadWriteTypes.documentSchema)
-            else -> {
-                val namespacePortion = shapeId.namespace.replace(".", "_")
-                val memberPortion = shapeId.member.getOrNull()?.let { "_member_$it" } ?: ""
-                "${namespacePortion}__${shapeId.name}_schema${memberPortion}"
-            }
-        }
-    }
-
     private val TimestampFormatTrait.Format.swiftEnumCase: String
         get() {
             return when (this) {
@@ -257,3 +235,49 @@ class SchemaGenerator(
             }
         }
 }
+
+fun ShapeId.schemaVar(writer: SwiftWriter): String {
+    return when (Pair(this.namespace, this.name)) {
+//        Pair("smithy.api", "Unit") -> writer.format("\$N", SmithyReadWriteTypes.unitSchema)
+//        Pair("smithy.api", "Boolean") -> writer.format("\$N", SmithyReadWriteTypes.booleanSchema)
+//        Pair("smithy.api", "Byte") -> writer.format("\$N", SmithyReadWriteTypes.byteSchema)
+//        Pair("smithy.api", "Short") -> writer.format("\$N", SmithyReadWriteTypes.shortSchema)
+//        Pair("smithy.api", "Integer") -> writer.format("\$N", SmithyReadWriteTypes.integerSchema)
+//        Pair("smithy.api", "Long") -> writer.format("\$N", SmithyReadWriteTypes.longSchema)
+//        Pair("smithy.api", "Float") -> writer.format("\$N", SmithyReadWriteTypes.floatSchema)
+//        Pair("smithy.api", "Double") -> writer.format("\$N", SmithyReadWriteTypes.doubleSchema)
+//        Pair("smithy.api", "String") -> writer.format("\$N", SmithyReadWriteTypes.stringSchema)
+//        Pair("smithy.api", "Document") -> writer.format("\$N", SmithyReadWriteTypes.documentSchema)
+//        Pair("smithy.api", "Blob") -> writer.format("\$N", SmithyReadWriteTypes.blobSchema)
+//        Pair("smithy.api", "Timestamp") -> writer.format("\$N", SmithyReadWriteTypes.timestampSchema)
+        else -> {
+            val namespacePortion = this.namespace.replace(".", "_")
+            val memberPortion = this.member.getOrNull()?.let { "_member_$it" } ?: ""
+            "${namespacePortion}__${this.name}_schema${memberPortion}"
+        }
+    }
+}
+
+val ShapeType.readMethodName: String
+    get() = when (this) {
+        ShapeType.BLOB -> "readBlob"
+        ShapeType.BOOLEAN -> "readBoolean"
+        ShapeType.STRING -> "readString"
+        ShapeType.ENUM -> "readEnum"
+        ShapeType.TIMESTAMP -> "readTimestamp"
+        ShapeType.BYTE -> "readByte"
+        ShapeType.SHORT -> "readShort"
+        ShapeType.INTEGER -> "readInteger"
+        ShapeType.INT_ENUM -> "readIntEnum"
+        ShapeType.LONG -> "readLong"
+        ShapeType.FLOAT -> "readFloat"
+        ShapeType.DOCUMENT -> "readDocument"
+        ShapeType.DOUBLE -> "readDouble"
+        ShapeType.BIG_DECIMAL -> "readBigDecimal"
+        ShapeType.BIG_INTEGER -> "readBigInteger"
+        ShapeType.LIST, ShapeType.SET -> "readList"
+        ShapeType.MAP -> "readMap"
+        ShapeType.STRUCTURE, ShapeType.UNION -> "readStructure"
+        ShapeType.MEMBER, ShapeType.SERVICE, ShapeType.RESOURCE, ShapeType.OPERATION ->
+            throw Exception("Unsupported member target type: ${this}")
+    }

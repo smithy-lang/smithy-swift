@@ -7,34 +7,25 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import protocol Smithy.SmithyDocument
+import struct Smithy.Document
 import enum SmithyReadWrite.ReaderError
 @_spi(SchemaBasedSerde) import protocol SmithyReadWrite.ShapeDeserializer
 @_spi(SchemaBasedSerde) import protocol SmithyReadWrite.SchemaProtocol
 @_spi(SchemaBasedSerde) import protocol SmithyReadWrite.DeserializableShape
-@_spi(SchemaBasedSerde) import struct SmithyReadWrite.StructureSchema
-@_spi(SchemaBasedSerde) import struct SmithyReadWrite.ListSchema
-@_spi(SchemaBasedSerde) import struct SmithyReadWrite.MapSchema
-@_spi(SchemaBasedSerde) import struct SmithyReadWrite.Member
+@_spi(SchemaBasedSerde) import class SmithyReadWrite.StructureSchema
+@_spi(SchemaBasedSerde) import class SmithyReadWrite.ListSchema
+@_spi(SchemaBasedSerde) import class SmithyReadWrite.MapSchema
+@_spi(SchemaBasedSerde) import class SmithyReadWrite.SimpleSchema
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 
+@_spi(SchemaBasedSerde)
 extension Reader: SmithyReadWrite.ShapeDeserializer {
 
-    public func readStruct<Base: SmithyReadWrite.DeserializableShape>(
+    public func readStructure<Base: SmithyReadWrite.DeserializableShape>(
         schema: SmithyReadWrite.StructureSchema<Base>
     ) throws -> Base? {
-        var value = Base()
-        try schema.members.forEach { member in
-            try fillMember(value: &value, member: member)
-        }
-        return value
-    }
-
-    private func fillMember<T>(value: inout T, member: SmithyReadWrite.Member<T>) throws {
-        guard let resolvedName = member.memberSchema.jsonName ?? member.memberSchema.memberName else {
-            throw ReaderError.invalidSchema("Could not resolve member name")
-        }
-        try member.setter(&value, self[NodeInfo(resolvedName)])
+        // TODO: Implement me
+        return Base()
     }
 
     public func readString(schema: SmithyReadWrite.SchemaProtocol) throws -> String? {
@@ -91,12 +82,12 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         try readIfPresent()
     }
 
-    public func readTimestamp(schema: any SmithyReadWrite.SchemaProtocol) throws -> Date? {
+    public func readTimestamp(schema: SmithyReadWrite.SimpleSchema<Date>) throws -> Date? {
         // TODO: Implement me
         try readTimestampIfPresent(format: schema.timestampFormat ?? .epochSeconds)
     }
 
-    public func readDocument(schema: any SmithyReadWrite.SchemaProtocol) throws -> (any Smithy.SmithyDocument)? {
+    public func readDocument(schema: any SmithyReadWrite.SchemaProtocol) throws -> Document? {
         // TODO: Implement me
         nil
     }

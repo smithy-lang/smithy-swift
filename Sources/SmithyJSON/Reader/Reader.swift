@@ -6,7 +6,6 @@
 //
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
-import protocol Smithy.SmithyDocument
 import struct Smithy.Document
 import typealias SmithyReadWrite.ReadingClosure
 import enum SmithyReadWrite.ReaderError
@@ -152,7 +151,7 @@ public extension Reader {
         }
     }
 
-    func readIfPresent() throws -> (any SmithyDocument)? {
+    func readIfPresent() throws -> Document? {
         guard let jsonObject = self.jsonObject else { return nil }
         return try Document.make(from: jsonObject)
     }

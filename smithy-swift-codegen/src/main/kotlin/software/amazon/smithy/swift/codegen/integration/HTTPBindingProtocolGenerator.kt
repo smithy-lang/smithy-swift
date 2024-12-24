@@ -38,6 +38,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.NeedsReaderTrait
 import software.amazon.smithy.swift.codegen.customtraits.NeedsWriterTrait
+import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.events.MessageMarshallableGenerator
 import software.amazon.smithy.swift.codegen.events.MessageUnmarshallableGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseGenerator
@@ -257,7 +258,7 @@ abstract class HTTPBindingProtocolGenerator(
                             writer.write("")
                             renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer)
                         }
-                        if (shape.hasTrait<NeedsReaderTrait>()) {
+                        if (shape.hasTrait<NeedsReaderTrait>() && (ctx.service.responseWireProtocol != WireProtocol.JSON || !shape.hasTrait<NestedTrait>())) {
                             writer.write("")
                             renderStructDecode(ctx, shape, mapOf(), httpBodyMembers, writer)
                         }
@@ -357,18 +358,18 @@ abstract class HTTPBindingProtocolGenerator(
 //            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
             .toSet()
 
-//        val topLevelErrorMembers = getHttpBindingOperations(ctx)
-//            .flatMap { it.errors }
-//            .flatMap { ctx.model.expectShape(it).members() }
-//            .map { ctx.model.expectShape(it.target) }
+        val topLevelErrorMembers = getHttpBindingOperations(ctx)
+            .flatMap { it.errors }
+            .flatMap { ctx.model.expectShape(it).members() }
+            .map { ctx.model.expectShape(it.target) }
 //            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-//            .toSet()
+            .toSet()
 
-//        val topLevelServiceErrorMembers = ctx.service.errors
-//            .flatMap { ctx.model.expectShape(it).members() }
-//            .map { ctx.model.expectShape(it.target) }
+        val topLevelServiceErrorMembers = ctx.service.errors
+            .flatMap { ctx.model.expectShape(it).members() }
+            .map { ctx.model.expectShape(it.target) }
 //            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-//            .toSet()
+            .toSet()
 
 //        val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
 //            val inputShape = ctx.model.expectShape(it.input.get())
@@ -380,8 +381,8 @@ abstract class HTTPBindingProtocolGenerator(
 
         val allTopLevelMembers =
             topLevelOutputMembers
-//                .union(topLevelErrorMembers)
-//                .union(topLevelServiceErrorMembers)
+                .union(topLevelErrorMembers)
+                .union(topLevelServiceErrorMembers)
 //                .union(topLevelInputMembers)
 
         val nestedTypes = walkNestedShapesRequiringSchema(ctx, allTopLevelMembers)
@@ -436,7 +437,7 @@ abstract class HTTPBindingProtocolGenerator(
                     else -> false
                 }
             }.forEach {
-                if (it.type != ShapeType.MEMBER && it.id.namespace != "smithy.api" && !it.hasTrait<ErrorTrait>()) {
+                if (it.type != ShapeType.MEMBER) {
                     resolved.add(it)
                 }
 //                when (it) {

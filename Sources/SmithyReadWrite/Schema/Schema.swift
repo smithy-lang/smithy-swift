@@ -9,7 +9,7 @@ import Smithy
 @_spi(SmithyTimestamps) import SmithyTimestamps
 
 @_spi(SchemaBasedSerde)
-public protocol SchemaProtocol {
+public protocol SchemaProtocol: AnyObject {
 //    var namespace: String { get }
 //    var name: String { get }
     var type: ShapeType { get }
@@ -24,17 +24,17 @@ public protocol SchemaProtocol {
 //}
 
 @_spi(SchemaBasedSerde)
-public struct StructureSchema<Base>: SchemaProtocol {
+public class StructureSchema<Base>: SchemaProtocol {
 
     public struct Member {
-        public let memberSchema: SchemaProtocol
-        public let targetSchema: SchemaProtocol
+        public let memberSchema: () -> SchemaProtocol
+        public let targetSchema: () -> SchemaProtocol
         public let readBlock: (inout Base, any ShapeDeserializer) throws -> Void
         public let writeBlock: (Base, any SmithyWriter) throws -> Void
 
         public init(
-            memberSchema: SchemaProtocol,
-            targetSchema: SchemaProtocol,
+            memberSchema: @escaping () -> SchemaProtocol,
+            targetSchema: @escaping () -> SchemaProtocol,
             readBlock: @escaping (inout Base, any ShapeDeserializer) throws -> Void,
             writeBlock: @escaping (Base, any SmithyWriter) throws -> Void
         ) {
@@ -75,12 +75,12 @@ public struct StructureSchema<Base>: SchemaProtocol {
 }
 
 @_spi(SchemaBasedSerde)
-public struct ListSchema<Element>: SchemaProtocol {
+public class ListSchema<Element>: SchemaProtocol {
 //    public let namespace: String
 //    public let name: String
     public let type: ShapeType
-    public let memberSchema: SchemaProtocol
-    public let targetSchema: SchemaProtocol
+    public let memberSchema: () -> SchemaProtocol
+    public let targetSchema: () -> SchemaProtocol
     public let readBlock: (any ShapeDeserializer) throws -> Element
     public let writeBlock: (any SmithyWriter, Element) throws -> Void
 
@@ -88,8 +88,8 @@ public struct ListSchema<Element>: SchemaProtocol {
         namespace: String = "",
         name: String = "",
         type: ShapeType,
-        memberSchema: SchemaProtocol,
-        targetSchema: SchemaProtocol,
+        memberSchema: @escaping () -> SchemaProtocol,
+        targetSchema: @escaping () -> SchemaProtocol,
         readBlock: @escaping (any ShapeDeserializer) throws -> Element,
         writeBlock: @escaping (any SmithyWriter, Element) throws -> Void
     ) {
@@ -112,14 +112,14 @@ public struct ListSchema<Element>: SchemaProtocol {
 }
 
 @_spi(SchemaBasedSerde)
-public struct MapSchema<Value>: SchemaProtocol {
+public class MapSchema<Value>: SchemaProtocol {
 //    public let namespace: String
 //    public let name: String
     public let type: ShapeType
-    public let keyMemberSchema: SchemaProtocol
-    public let keyTargetSchema: SchemaProtocol
-    public let valueMemberSchema: SchemaProtocol
-    public let valueTargetSchema: SchemaProtocol
+    public let keyMemberSchema: () -> SchemaProtocol
+    public let keyTargetSchema: () -> SchemaProtocol
+    public let valueMemberSchema: () -> SchemaProtocol
+    public let valueTargetSchema: () -> SchemaProtocol
     public let readBlock: (any ShapeDeserializer) throws -> Value
     public let writeBlock: (any SmithyWriter, Value) throws -> Void
 
@@ -127,10 +127,10 @@ public struct MapSchema<Value>: SchemaProtocol {
         namespace: String = "",
         name: String = "",
         type: ShapeType,
-        keyMemberSchema: SchemaProtocol,
-        keyTargetSchema: SchemaProtocol,
-        valueMemberSchema: SchemaProtocol,
-        valueTargetSchema: SchemaProtocol,
+        keyMemberSchema: @escaping () -> SchemaProtocol,
+        keyTargetSchema: @escaping () -> SchemaProtocol,
+        valueMemberSchema: @escaping () -> SchemaProtocol,
+        valueTargetSchema: @escaping () -> SchemaProtocol,
         readBlock: @escaping (any ShapeDeserializer) throws -> Value,
         writeBlock: @escaping (any SmithyWriter, Value) throws -> Void
     ) {
@@ -155,7 +155,7 @@ public struct MapSchema<Value>: SchemaProtocol {
 }
 
 @_spi(SchemaBasedSerde)
-public struct MemberSchema<Base>: SchemaProtocol {
+public class MemberSchema<Base>: SchemaProtocol {
 //    public let namespace: String
 //    public let name: String
     public let type: ShapeType
@@ -195,7 +195,7 @@ public struct MemberSchema<Base>: SchemaProtocol {
 }
 
 @_spi(SchemaBasedSerde)
-public struct SimpleSchema<Base>: SchemaProtocol {
+public class SimpleSchema<Base>: SchemaProtocol {
 //    public let namespace: String
 //    public let name: String
     public let type: ShapeType

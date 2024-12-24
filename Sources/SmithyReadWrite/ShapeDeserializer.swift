@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol Smithy.SmithyDocument
+import struct Smithy.Document
 import struct Foundation.Data
 import struct Foundation.Date
 
 @_spi(SchemaBasedSerde)
 public protocol ShapeDeserializer {
-    func readStruct<T: DeserializableShape>(schema: StructureSchema<T>) throws -> T?
+    func readStructure<T: DeserializableShape>(schema: StructureSchema<T>) throws -> T?
     func readList<T>(schema: ListSchema<T>) throws -> [T]?
     func readMap<T>(schema: MapSchema<T>) throws -> [String: T]?
     func readBoolean(schema: SchemaProtocol) throws -> Bool?
@@ -25,8 +25,8 @@ public protocol ShapeDeserializer {
     func readBigDecimal(schema: SchemaProtocol) throws -> Float?
     func readString(schema: SchemaProtocol) throws -> String?
     func readBlob(schema: SchemaProtocol) throws -> Data?
-    func readTimestamp(schema: SchemaProtocol) throws -> Date?
-    func readDocument(schema: SchemaProtocol) throws -> SmithyDocument?
+    func readTimestamp(schema: SimpleSchema<Date>) throws -> Date?
+    func readDocument(schema: SchemaProtocol) throws -> Document?
     func readNull(schema: SchemaProtocol) throws -> Bool?
 }
 
@@ -42,13 +42,27 @@ public extension ShapeDeserializer {
         guard let rawValue = try readInteger(schema: schema) else { return nil }
         return T(rawValue: rawValue)
     }
+
+    func readEnumNonNull<T: RawRepresentable>(schema: SchemaProtocol) throws -> T where T.RawValue == String {
+        guard let value: T = try readEnum(schema: schema) else {
+            throw ReaderError.requiredValueNotPresent
+        }
+        return value
+    }
+
+    func readIntEnumNonNull<T: RawRepresentable>(schema: SchemaProtocol) throws -> T where T.RawValue == Int {
+        guard let value: T = try readIntEnum(schema: schema) else {
+            throw ReaderError.requiredValueNotPresent
+        }
+        return value
+    }
 }
 
 @_spi(SchemaBasedSerde)
 public extension ShapeDeserializer {
 
-    func readStructNonNull<T: DeserializableShape>(schema: StructureSchema<T>) throws -> T {
-        guard let value = try readStruct(schema: schema) else {
+    func readStructureNonNull<T: DeserializableShape>(schema: StructureSchema<T>) throws -> T {
+        guard let value = try readStructure(schema: schema) else {
             throw ReaderError.requiredValueNotPresent
         }
         return value
@@ -151,7 +165,7 @@ public extension ShapeDeserializer {
         return value
     }
 
-    func readDocumentNonNull(schema: SimpleSchema<SmithyDocument>) throws -> any SmithyDocument {
+    func readDocumentNonNull(schema: SimpleSchema<Document>) throws -> Document {
         guard let value = try readDocument(schema: schema) else {
             throw ReaderError.requiredValueNotPresent
         }

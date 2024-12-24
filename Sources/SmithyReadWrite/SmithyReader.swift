@@ -8,7 +8,7 @@
 import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
-import protocol Smithy.SmithyDocument
+import struct Smithy.Document
 
 @_spi(SmithyReadWrite)
 public protocol SmithyReader: AnyObject {
@@ -27,7 +27,7 @@ public protocol SmithyReader: AnyObject {
     func readIfPresent() throws -> Double?
     func readIfPresent() throws -> Bool?
     func readIfPresent() throws -> Data?
-    func readIfPresent() throws -> (any SmithyDocument)?
+    func readIfPresent() throws -> Document?
     func readIfPresent<T: RawRepresentable>() throws -> T? where T.RawValue == Int
     func readIfPresent<T: RawRepresentable>() throws -> T? where T.RawValue == String
     func readTimestampIfPresent(format: TimestampFormat) throws -> Date?
@@ -131,8 +131,8 @@ public extension SmithyReader {
         }
     }
 
-    func read() throws -> any SmithyDocument {
-        if let value: any SmithyDocument = try readIfPresent() {
+    func read() throws -> Document {
+        if let value: Document = try readIfPresent() {
             return value
         } else {
             throw ReaderError.requiredValueNotPresent
