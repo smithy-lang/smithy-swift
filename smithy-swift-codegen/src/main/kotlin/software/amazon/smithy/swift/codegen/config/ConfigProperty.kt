@@ -32,6 +32,6 @@ data class ConfigProperty(
     }
 
     fun render(writer: SwiftWriter) {
-        writer.write("${accessModifier.renderedRightPad()}var \$L: \$N", name, type)
+        writer.write("\$Lvar \$L: \$N", accessModifier.renderedRightPad(), name, type)
     }
 }
