@@ -46,33 +46,21 @@ public final class Writer: SmithyWriter {
             // Encode the CBOR value directly if it exists
             encoder.encode(cborValue)
         } else if !children.isEmpty {
-            // Determine if this should be an array or a map
-            let allKeysAreIntegers = children.allSatisfy { Int($0.nodeInfo) != nil }
-
-            if allKeysAreIntegers {
-                // Encode as an indefinite-length array
-                encoder.encode(.indef_array_start)
-                for child in children {
-                    try child.encode(encoder: encoder)
+            // Encode as an indefinite-length map
+            encoder.encode(.indef_map_start)
+            for child in children {
+                guard !(child.cborValue == nil && child.children.isEmpty) else {
+                    continue
                 }
-                encoder.encode(.indef_break)
-            } else {
-                // Encode as an indefinite-length map
-                encoder.encode(.indef_map_start)
-                for child in children {
-                    guard !(child.cborValue == nil && child.children.isEmpty) else {
-                        continue
-                    }
-                    encoder.encode(.text(child.nodeInfo)) // Key for the child
+                encoder.encode(.text(child.nodeInfo)) // Key for the child
 
-                    if let cborValue = child.cborValue {
-                        encoder.encode(cborValue) // Encode the value directly
-                    } else {
-                        try child.encode(encoder: encoder) // Recursively encode nested maps/arrays
-                    }
+                if let cborValue = child.cborValue {
+                    encoder.encode(cborValue) // Encode the value directly
+                } else {
+                    try child.encode(encoder: encoder) // Recursively encode nested maps/arrays
                 }
-                encoder.encode(.indef_break)
             }
+            encoder.encode(.indef_break)
         } else {
             // No value and no children: encode an empty map
             encoder.encode(.indef_map_start)
