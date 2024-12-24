@@ -152,7 +152,7 @@ public extension Reader {
         }
     }
 
-    func readIfPresent() throws -> Document? {
+    func readIfPresent() throws -> (any SmithyDocument)? {
         guard let jsonObject = self.jsonObject else { return nil }
         return try Document.make(from: jsonObject)
     }

@@ -26,6 +26,7 @@ import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.errorShapeName
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
@@ -117,11 +118,15 @@ class StructureGenerator(
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
         val equatableConformance = writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
-        writer.openBlock("public struct \$struct.name:L: \$N$equatableConformance {", SwiftTypes.Protocols.Sendable)
-            .call { generateStructMembers() }
-            .write("")
-            .call { generateInitializerForStructure(false) }
-            .closeBlock("}")
+        writer.openBlock(
+            "public struct \$struct.name:L: \$N, \$N$equatableConformance {", "}",
+            SmithyReadWriteTypes.DeserializableShape,
+            SwiftTypes.Protocols.Sendable,
+        ) {
+            generateStructMembers()
+            writer.write("")
+            generateInitializerForStructure(false)
+        }
     }
 
     private fun generateStructMembers() {
@@ -148,7 +153,7 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
                     val terminator = if (index == membersSortedByName.size - 1) "" else ","
-                    writer.write("\$L: \$D$terminator", memberName, memberSymbol)
+                    writer.write("\$L: \$T = \$D\$L", memberName, memberSymbol, memberSymbol, terminator)
                 }
             }
             writer.openBlock("{", "}") {
@@ -156,6 +161,19 @@ class StructureGenerator(
                 membersSortedByName.forEach {
                     val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.write("self.$path\$L = \$L", memberName, memberName)
+                }
+            }
+            writer.write("")
+            if (error) {
+                writer.write("public init() {}")
+            } else {
+                writer.openBlock("public init() {", "}") {
+                    membersSortedByName.forEach { member ->
+                        val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
+                        if (memberName != null && memberSymbol != null) {
+                            writer.write("self.\$L = \$D", memberName, memberSymbol)
+                        }
+                    }
                 }
             }
         } else {
@@ -242,7 +260,7 @@ class StructureGenerator(
                     writer.writeAvailableAttribute(model, it)
                     val targetShape = model.expectShape(it.target)
                     val boxedOrNot = "@Boxed ".takeIf { targetShape.hasTrait<SwiftBoxTrait>() }
-                    writer.write("\$Lpublic internal(set) var \$L: \$D", boxedOrNot, memberName, memberSymbol)
+                    writer.write("\$Lpublic internal(set) var \$L: \$T = \$D", boxedOrNot, memberName, memberSymbol, memberSymbol)
                 }
             }
             writer.write("")

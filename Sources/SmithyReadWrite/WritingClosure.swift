@@ -103,7 +103,7 @@ public enum WritingClosures {
         try writer.write(value)
     }
 
-    public static func writeDocument<Writer: SmithyWriter>(value: SmithyDocument?, to writer: Writer) throws {
+    public static func writeSmithyDocument<Writer: SmithyWriter>(value: (any SmithyDocument)?, to writer: Writer) throws {
         try writer.write(value)
     }
 }

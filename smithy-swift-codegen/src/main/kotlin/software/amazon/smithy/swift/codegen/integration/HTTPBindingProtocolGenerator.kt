@@ -18,6 +18,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
@@ -57,6 +58,9 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.SignerMiddle
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.schema.SchemaGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionDecodeGenerator
@@ -207,6 +211,28 @@ abstract class HTTPBindingProtocolGenerator(
         }
     }
 
+    override fun generateSchemas(ctx: ProtocolGenerator.GenerationContext) {
+        if (ctx.service.responseWireProtocol != WireProtocol.JSON) { return }
+        val nestedShapes = resolveShapesNeedingSchema(ctx)
+            .filter { !it.isStreaming }
+        for (shape in nestedShapes) {
+            renderSchemas(ctx, shape)
+        }
+    }
+
+    private fun renderSchemas(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
+        val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
+        val symbolName = symbol.name
+        val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+Schema")
+        val encodeSymbol = Symbol.builder()
+            .definitionFile(filename)
+            .name(symbolName)
+            .build()
+        ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
+            SchemaGenerator(ctx, writer).renderSchemas(shape)
+        }
+    }
+
     fun renderCodableExtension(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
@@ -322,6 +348,46 @@ abstract class HTTPBindingProtocolGenerator(
         return nestedTypes
     }
 
+    private fun resolveShapesNeedingSchema(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
+        val topLevelOutputMembers = getHttpBindingOperations(ctx).flatMap {
+            val outputShape = ctx.model.expectShape(it.output.get())
+            outputShape.members()
+        }
+            .map { ctx.model.expectShape(it.target) }
+//            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+            .toSet()
+
+//        val topLevelErrorMembers = getHttpBindingOperations(ctx)
+//            .flatMap { it.errors }
+//            .flatMap { ctx.model.expectShape(it).members() }
+//            .map { ctx.model.expectShape(it.target) }
+//            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+//            .toSet()
+
+//        val topLevelServiceErrorMembers = ctx.service.errors
+//            .flatMap { ctx.model.expectShape(it).members() }
+//            .map { ctx.model.expectShape(it.target) }
+//            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+//            .toSet()
+
+//        val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
+//            val inputShape = ctx.model.expectShape(it.input.get())
+//            inputShape.members()
+//        }
+//            .map { ctx.model.expectShape(it.target) }
+//            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+//            .toSet()
+
+        val allTopLevelMembers =
+            topLevelOutputMembers
+//                .union(topLevelErrorMembers)
+//                .union(topLevelServiceErrorMembers)
+//                .union(topLevelInputMembers)
+
+        val nestedTypes = walkNestedShapesRequiringSchema(ctx, allTopLevelMembers)
+        return nestedTypes
+    }
+
     private fun walkNestedShapesRequiringSerde(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<Shape> {
         val resolved = mutableSetOf<Shape>()
         val walker = Walker(ctx.model)
@@ -345,6 +411,38 @@ abstract class HTTPBindingProtocolGenerator(
                     is UnionShape -> resolved.add(it)
                     is StructureShape -> resolved.add(it)
                 }
+            }
+        }
+        return resolved
+    }
+
+    private fun walkNestedShapesRequiringSchema(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<Shape> {
+        val resolved = mutableSetOf<Shape>()
+        val walker = Walker(ctx.model)
+
+        // walk all the shapes in the set and find all other
+        // structs/unions (or collections thereof) in the graph from that shape
+        shapes.forEach { shape ->
+            walker.iterateShapes(shape) { relationship ->
+                when (relationship.relationshipType) {
+                    RelationshipType.MEMBER_TARGET,
+                    RelationshipType.STRUCTURE_MEMBER,
+                    RelationshipType.LIST_MEMBER,
+                    RelationshipType.SET_MEMBER,
+                    RelationshipType.MAP_KEY,
+                    RelationshipType.MAP_VALUE,
+                    RelationshipType.UNION_MEMBER,
+                        -> true
+                    else -> false
+                }
+            }.forEach {
+                if (it.type != ShapeType.MEMBER && it.id.namespace != "smithy.api" && !it.hasTrait<ErrorTrait>()) {
+                    resolved.add(it)
+                }
+//                when (it) {
+//                    is UnionShape -> resolved.add(it)
+//                    is StructureShape -> resolved.add(it)
+//                }
             }
         }
         return resolved

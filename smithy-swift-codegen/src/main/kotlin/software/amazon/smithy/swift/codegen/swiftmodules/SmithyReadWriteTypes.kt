@@ -26,6 +26,20 @@ object SmithyReadWriteTypes {
     val WritingClosures = runtimeSymbol("WritingClosures", SwiftDeclaration.ENUM)
     val ReadingClosureBox = runtimeSymbol("ReadingClosureBox", SwiftDeclaration.STRUCT)
     val WritingClosureBox = runtimeSymbol("WritingClosureBox", SwiftDeclaration.STRUCT)
+    val StructureSchema = runtimeSymbol("StructureSchema", SwiftDeclaration.STRUCT, listOf("SchemaBasedSerde"))
+    val ListSchema = runtimeSymbol("ListSchema", SwiftDeclaration.STRUCT, listOf("SchemaBasedSerde"))
+    val MapSchema = runtimeSymbol("MapSchema", SwiftDeclaration.STRUCT, listOf("SchemaBasedSerde"))
+    val SimpleSchema = runtimeSymbol("SimpleSchema", SwiftDeclaration.STRUCT, listOf("SchemaBasedSerde"))
+    val MemberSchema = runtimeSymbol("MemberSchema", SwiftDeclaration.STRUCT, listOf("SchemaBasedSerde"))
+    val Member = runtimeSymbol("Member", SwiftDeclaration.STRUCT, listOf("SchemaBasedSerde"))
+    val DeserializableShape = runtimeSymbol("DeserializableShape", SwiftDeclaration.PROTOCOL)
+    val unitSchema = runtimeSymbol("unitSchema", SwiftDeclaration.LET, listOf("SchemaBasedSerde"))
+    val booleanSchema = runtimeSymbol("booleanSchema", SwiftDeclaration.LET, listOf("SchemaBasedSerde"))
+    val integerSchema = runtimeSymbol("integerSchema", SwiftDeclaration.LET, listOf("SchemaBasedSerde"))
+    val floatSchema = runtimeSymbol("floatSchema", SwiftDeclaration.LET, listOf("SchemaBasedSerde"))
+    val doubleSchema = runtimeSymbol("doubleSchema", SwiftDeclaration.LET, listOf("SchemaBasedSerde"))
+    val stringSchema = runtimeSymbol("stringSchema", SwiftDeclaration.LET, listOf("SchemaBasedSerde"))
+    val documentSchema = runtimeSymbol("documentSchema", SwiftDeclaration.LET, listOf("SchemaBasedSerde"))
 }
 
 private fun runtimeSymbol(

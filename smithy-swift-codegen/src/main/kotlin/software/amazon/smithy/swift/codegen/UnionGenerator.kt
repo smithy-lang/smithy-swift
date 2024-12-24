@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.model.eventStreamEvents
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 /**
@@ -78,7 +79,7 @@ class UnionGenerator(
         writer.writeAvailableAttribute(model, shape)
         val indirectOrNot = "indirect ".takeIf { shape.hasTrait<RecursiveUnionTrait>() } ?: ""
         val equatableConformance = writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
-        writer.openBlock("public ${indirectOrNot}enum \$union.name:L: \$N$equatableConformance {", "}", SwiftTypes.Protocols.Sendable) {
+        writer.openBlock("public ${indirectOrNot}enum \$union.name:L: \$N, \$N$equatableConformance {", "}", SwiftTypes.Protocols.Sendable, SmithyReadWriteTypes.DeserializableShape) {
             // event streams (@streaming union) MAY have variants that target errors.
             // These errors if encountered on the stream will be thrown as an exception rather
             // than showing up as one of the possible events the consumer will see on the stream (AsyncThrowingStream<T>).
@@ -92,6 +93,8 @@ class UnionGenerator(
             }
             // add the sdkUnknown case which will always be last
             writer.write("case sdkUnknown(\$N)", SwiftTypes.String)
+            writer.write("")
+            writer.write("public init() { self = .sdkUnknown(\"\") }")
         }
     }
 }
