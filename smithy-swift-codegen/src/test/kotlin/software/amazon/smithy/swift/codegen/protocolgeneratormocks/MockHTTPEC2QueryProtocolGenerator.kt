@@ -48,6 +48,10 @@ class MockHTTPEC2QueryProtocolGenerator : HTTPBindingProtocolGenerator(MockEC2Qu
         // Intentionally empty
     }
 
+    override fun addUserAgentMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+        // Intentionally empty
+    }
+
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext, defaultContentType: String):
         HttpBindingResolver = MockEC2QueryHttpBindingResolver(ctx, defaultContentType)
 
