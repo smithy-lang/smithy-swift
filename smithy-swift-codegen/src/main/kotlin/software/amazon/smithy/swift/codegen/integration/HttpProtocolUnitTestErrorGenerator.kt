@@ -6,11 +6,13 @@ package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseErrorClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.*
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import java.util.*
 
 open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestResponseGenerator(builder) {
@@ -76,7 +78,25 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
 
     override fun renderExpectedBody(test: HttpResponseTestCase) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
-            val data = writer.format("Data(\"\"\"\n\$L\n\"\"\".utf8)", test.body.get().replace("\\\"", "\\\\\""))
+            val isCbor = ctx.service.requestWireProtocol == WireProtocol.CBOR
+                    || ctx.service.awsProtocol == AWSProtocol.RPCV2_CBOR
+                    || ctx.service.responseWireProtocol == WireProtocol.CBOR
+                    || test.protocol == Rpcv2CborTrait.ID
+
+            val bodyContent = test.body.get().replace("\\\"", "\\\\\"")
+            val data: String = if (isCbor) {
+                // Attempt to decode Base64 data once for CBOR
+                try {
+                    val decodedBytes = Base64.getDecoder().decode(bodyContent)
+                    "Data([${decodedBytes.joinToString(", ") { byte -> "0x%02X".format(byte) }}])"
+                } catch (e: IllegalArgumentException) {
+                    // Fallback to Swift Data representation for invalid Base64
+                    "Data(\"\"\"\n$bodyContent\n\"\"\".utf8)"
+                }
+            } else {
+                // Non-CBOR protocols default
+                "Data(\"\"\"\n$bodyContent\n\"\"\".utf8)"
+            }
             writer.write("content: .data(\$L)", data)
         } else {
             writer.write("content: nil")

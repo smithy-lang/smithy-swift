@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import jdk.jfr.ContentType
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex

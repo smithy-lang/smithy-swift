@@ -29,6 +29,10 @@ class MockHTTPRestXMLProtocolGenerator : HTTPBindingProtocolGenerator(MockRestXM
         // Intentionally empty
     }
 
+    override fun addUserAgentMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+        // Intentionally empty
+    }
+
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
         val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()

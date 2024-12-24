@@ -39,7 +39,7 @@ inline fun <reified T : Shape> Model.expectShape(shapeId: ShapeId): T =
 inline fun <reified T : Shape> Model.expectShape(shapeId: String): T =
     this.expectShape(ShapeId.from(shapeId), T::class.java)
 
-internal fun Shape.targetOrSelf(model: Model) = when (this) {
+fun Shape.targetOrSelf(model: Model) = when (this) {
     is MemberShape -> model.expectShape(this.target)
     else -> this
 }
