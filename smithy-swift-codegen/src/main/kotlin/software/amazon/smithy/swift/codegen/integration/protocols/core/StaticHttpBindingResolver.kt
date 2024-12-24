@@ -24,10 +24,12 @@ import software.amazon.smithy.swift.codegen.model.expectTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 
 open class StaticHttpBindingResolver(
-    protected val context: ProtocolGenerator.GenerationContext,
-    protected val httpTrait: HttpTrait,
-    protected val defaultContentType: String
+    private val context: ProtocolGenerator.GenerationContext,
+    private val httpTrait: HttpTrait,
+    private val defaultContentType: String
 ) : HttpBindingResolver {
+    protected fun getContext(): ProtocolGenerator.GenerationContext = context
+
     override fun httpTrait(operationShape: OperationShape): HttpTrait {
         return httpTrait
     }

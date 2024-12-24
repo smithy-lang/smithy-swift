@@ -453,6 +453,7 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     protected abstract fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
+
     protected abstract fun addUserAgentMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
 
     /**
