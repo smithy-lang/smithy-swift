@@ -200,7 +200,7 @@ class SwiftSettings(
 
         return protocol ?: throw UnresolvableProtocolException(
             "The ${service.id} service supports the following unsupported protocols $resolvedProtocols. " +
-                    "The following protocol generators were found on the class path: $supportedProtocolTraits"
+            "The following protocol generators were found on the class path: $supportedProtocolTraits"
         )
     }
 }

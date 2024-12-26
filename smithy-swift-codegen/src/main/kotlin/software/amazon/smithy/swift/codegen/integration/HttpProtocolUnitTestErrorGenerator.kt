@@ -9,10 +9,8 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.SwiftDependency
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.*
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
-import java.util.*
 
 open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestResponseGenerator(builder) {
@@ -78,10 +76,10 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
 
     override fun renderExpectedBody(test: HttpResponseTestCase) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
-            val isCbor = ctx.service.requestWireProtocol == WireProtocol.CBOR
-                    || ctx.service.awsProtocol == AWSProtocol.RPCV2_CBOR
-                    || ctx.service.responseWireProtocol == WireProtocol.CBOR
-                    || test.protocol == Rpcv2CborTrait.ID
+            val isCbor = ctx.service.requestWireProtocol == WireProtocol.CBOR ||
+                ctx.service.awsProtocol == AWSProtocol.RPCV2_CBOR ||
+                ctx.service.responseWireProtocol == WireProtocol.CBOR ||
+                test.protocol == Rpcv2CborTrait.ID
 
             val bodyContent = test.body.get().replace("\\\"", "\\\\\"")
             val data: String = if (isCbor) {
