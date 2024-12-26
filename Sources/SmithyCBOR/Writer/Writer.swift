@@ -18,16 +18,16 @@ import Foundation
 @_spi(SmithyReadWrite)
 public final class Writer: SmithyWriter {
     public typealias NodeInfo = String
-    
+
     let nodeInfo: NodeInfo
     var cborValue: CBORType?
     var children: [Writer] = []
     weak var parent: Writer?
-    
+
     public required init(nodeInfo: NodeInfo) {
         self.nodeInfo = nodeInfo
     }
-    
+
     public required init(nodeInfo: NodeInfo, parent: Writer? = nil) {
         self.nodeInfo = nodeInfo
         self.parent = parent
@@ -77,56 +77,56 @@ public final class Writer: SmithyWriter {
             return newChild
         }
     }
-    
+
     public func write(_ value: Bool?) throws {
         guard let value else { return }
         self.cborValue = .bool(value)
     }
-    
+
     public func write(_ value: String?) throws {
         guard let value else { return }
         self.cborValue = .text(value)
     }
-    
+
     public func write(_ value: Float?) throws {
         guard let value else { return }
         self.cborValue = .double(Double(value))
     }
-    
+
     public func write(_ value: Double?) throws {
         guard let value else { return }
         self.cborValue = .double(value)
     }
-    
+
     public func write(_ value: Int?) throws {
         guard let value else { return }
         self.cborValue = .int(Int64(value))
     }
-    
+
     public func write(_ value: Int8?) throws {
         guard let value else { return }
         self.cborValue = .int(Int64(value))
     }
-    
+
     public func write(_ value: Int16?) throws {
         guard let value else { return }
         self.cborValue = .int(Int64(value))
     }
-    
+
     public func write(_ value: UInt8?) throws {
         guard let value else { return }
         self.cborValue = .uint(UInt64(value))
     }
-    
+
     public func write(_ value: Data?) throws {
         guard let value else { return }
         self.cborValue = .bytes(value)
     }
-    
+
     public func write(_ value: SmithyDocument?) throws {
         // No operation.  Smithy document not supported in CBOR
     }
-    
+
     public func writeTimestamp(_ value: Date?, format: TimestampFormat) throws {
         guard let value else { return }
         switch format {
@@ -137,19 +137,19 @@ public final class Writer: SmithyWriter {
             self.cborValue = .text(string)
         }
     }
-    
+
     public func write<T>(_ value: T?) throws where T: RawRepresentable, T.RawValue == Int {
         if let rawValue = value?.rawValue {
             try write(rawValue)
         }
     }
-    
+
     public func write<T>(_ value: T?) throws where T: RawRepresentable, T.RawValue == String {
         if let rawValue = value?.rawValue {
             try write(rawValue)
         }
     }
-    
+
     public func writeMap<T>(
         _ value: [String: T]?,
         valueWritingClosure: (T, Writer) throws -> Void,
@@ -159,11 +159,11 @@ public final class Writer: SmithyWriter {
     ) throws {
         guard let value else { return }
         var map: [String: CBORType] = [:]
-        
+
         for (key, val) in value {
             let writer = self[key]
             try valueWritingClosure(val, writer)
-            
+
             // If the writer itself doesn't have a cborValue, build it from its children
             if writer.cborValue == nil, !writer.children.isEmpty {
                 var childMap: [String: CBORType] = [:]
@@ -174,17 +174,17 @@ public final class Writer: SmithyWriter {
                 }
                 writer.cborValue = .map(childMap) // Construct the map for the writer
             }
-            
+
             // Add to the parent map
             if let cborValue = writer.cborValue {
                 map[key] = cborValue
             }
         }
-        
+
         // Assign the constructed map to the current writer
         self.cborValue = .map(map)
     }
-    
+
     public func writeList<T>(
         _ value: [T]?,
         memberWritingClosure: (T, Writer) throws -> Void,

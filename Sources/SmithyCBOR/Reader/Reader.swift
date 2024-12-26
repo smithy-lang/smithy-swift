@@ -9,12 +9,12 @@ import AwsCommonRuntimeKit
 import Foundation
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
+@_spi(SmithyReadWrite) import enum SmithyReadWrite.ReaderError
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
 @_spi(Smithy) import struct Smithy.Document
 @_spi(Smithy) import protocol Smithy.SmithyDocument
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
-import SmithyReadWrite
 
 @_spi(SmithyReadWrite)
 public final class Reader: SmithyReader {
@@ -207,7 +207,7 @@ public final class Reader: SmithyReader {
         isFlattened: Bool
     ) throws -> [Member]? {
         guard let cborValue else { return nil }
-        guard case .array(_) = cborValue else { return nil }
+        guard case .array = cborValue else { return nil }
 
         return try children.map { child in
             // Check if the child is an indefinite-length text
