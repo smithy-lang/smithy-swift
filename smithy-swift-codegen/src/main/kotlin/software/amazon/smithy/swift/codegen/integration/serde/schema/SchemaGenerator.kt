@@ -7,6 +7,8 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.DefaultTrait
+import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.JsonNameTrait
 import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.SparseTrait
@@ -129,7 +131,7 @@ class SchemaGenerator(
 //                    SwiftTypes.Void
 //                } else {
                     val symbol = ctx.symbolProvider.toSymbol(shape)
-                    if (shape.hasTrait<NestedTrait>()) {
+                    if (shape.hasTrait<NestedTrait>() && !shape.hasTrait<ErrorTrait>()) {
                         return symbol.toBuilder().namespace(service.nestedNamespaceType(ctx.symbolProvider).name, ".").build()
                     } else {
                         return symbol
@@ -186,10 +188,12 @@ class SchemaGenerator(
 
     private fun writeSetterGetter(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape) {
         val target = ctx.model.expectShape(member.target)
-        val readMethodName = target.type.readMethodName
+        val readMethodName = target.readMethodName
+        val mod = "NonNull".takeIf { member.isRequired || (member.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: ""
         when (shape.type) {
             ShapeType.STRUCTURE -> {
-                writer.write("readBlock: { \$\$0.\$L = try \$\$1.\$L(schema: \$L) },", ctx.symbolProvider.toMemberName(member), readMethodName, target.id.schemaVar(writer))
+                val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
+                writer.write("readBlock: { \$\$0.\$L\$L = try \$\$1.\$L\$L(schema: \$L) },", path, ctx.symbolProvider.toMemberName(member), readMethodName, mod, target.id.schemaVar(writer))
                 writer.write("writeBlock: { _, _ in }")
             }
             ShapeType.UNION -> {
@@ -258,11 +262,11 @@ fun ShapeId.schemaVar(writer: SwiftWriter): String {
     }
 }
 
-val ShapeType.readMethodName: String
-    get() = when (this) {
+val Shape.readMethodName: String
+    get() = when (type) {
         ShapeType.BLOB -> "readBlob"
         ShapeType.BOOLEAN -> "readBoolean"
-        ShapeType.STRING -> "readString"
+        ShapeType.STRING -> "readEnum".takeIf { hasTrait<EnumTrait>() } ?: "readString"
         ShapeType.ENUM -> "readEnum"
         ShapeType.TIMESTAMP -> "readTimestamp"
         ShapeType.BYTE -> "readByte"
@@ -278,6 +282,6 @@ val ShapeType.readMethodName: String
         ShapeType.LIST, ShapeType.SET -> "readList"
         ShapeType.MAP -> "readMap"
         ShapeType.STRUCTURE, ShapeType.UNION -> "readStructure"
-        ShapeType.MEMBER, ShapeType.SERVICE, ShapeType.RESOURCE, ShapeType.OPERATION ->
-            throw Exception("Unsupported member target type: ${this}")
+        ShapeType.MEMBER, ShapeType.SERVICE, ShapeType.RESOURCE, ShapeType.OPERATION, null ->
+            throw Exception("Unsupported member target type: ${type}")
     }

@@ -385,8 +385,8 @@ abstract class HTTPBindingProtocolGenerator(
                 .union(topLevelServiceErrorMembers)
 //                .union(topLevelInputMembers)
 
-        val nestedTypes = walkNestedShapesRequiringSchema(ctx, allTopLevelMembers)
-        return nestedTypes
+        return walkNestedShapesRequiringSchema(ctx, allTopLevelMembers)
+//        return nestedTypes
     }
 
     private fun walkNestedShapesRequiringSerde(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<Shape> {

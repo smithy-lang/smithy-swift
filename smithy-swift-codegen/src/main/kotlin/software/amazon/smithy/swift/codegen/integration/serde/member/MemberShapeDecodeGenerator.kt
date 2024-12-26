@@ -177,7 +177,7 @@ open class MemberShapeDecodeGenerator(
             return writer.format(
                 "try \$L.\$L\$L(schema: \$L)",
                 reader(memberShape, isPayload),
-                target.type.readMethodName,
+                target.readMethodName,
                 "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
                 memberShape.target.schemaVar(writer),
             )

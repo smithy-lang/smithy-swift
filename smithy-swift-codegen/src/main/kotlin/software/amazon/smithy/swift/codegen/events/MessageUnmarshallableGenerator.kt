@@ -11,6 +11,8 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ReadingClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.schema.readMethodName
 import software.amazon.smithy.swift.codegen.integration.serde.schema.schemaVar
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
@@ -206,14 +208,30 @@ class MessageUnmarshallableGenerator(
         }
     }
 
-    private fun renderReadToValue(writer: SwiftWriter, memberShape: MemberShape) {
-//        writer.addImport(SmithyReadWriteTypes.ShapeDeserializer)
+    private fun renderReadToValue(writer: SwiftWriter, member: MemberShape) {
+        if (ctx.service.responseWireProtocol == WireProtocol.JSON) {
+            renderReadWithSchemaToValue(writer, member)
+        } else {
+            renderReadWithSerdeToValue(writer, member)
+        }
+    }
+
+    private fun renderReadWithSchemaToValue(writer: SwiftWriter, memberShape: MemberShape) {
         val target = ctx.model.expectShape(memberShape.target)
         writer.write(
             "let value = try \$N.from(data: message.payload).\$LNonNull(schema: \$L)",
             ctx.service.readerSymbol,
-            target.type.readMethodName,
+            target.readMethodName,
             target.id.schemaVar(writer),
+        )
+    }
+
+    private fun renderReadWithSerdeToValue(writer: SwiftWriter, memberShape: MemberShape) {
+        val readingClosure = ReadingClosureUtils(ctx, writer).readingClosure(memberShape)
+        writer.write(
+            "let value = try \$N.readFrom(message.payload, with: \$L)",
+            ctx.service.readerSymbol,
+            readingClosure,
         )
     }
 }

@@ -147,5 +147,13 @@ fun Parameter.toSymbol(): Symbol {
         }
     }
 
+    if (isRequired && !default.isPresent) {
+        when (type) {
+            ParameterType.STRING -> builder.defaultValue("\"\"")
+            ParameterType.BOOLEAN -> builder.defaultValue("false")
+            ParameterType.STRING_ARRAY -> builder.defaultValue("[]")
+        }
+    }
+
     return builder.build()
 }
