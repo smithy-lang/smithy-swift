@@ -37,7 +37,6 @@ public final class Writer: SmithyWriter {
         let encoder = try CBOREncoder()
         try encode(encoder: encoder)
         let encodedBytes = encoder.getEncoded()
-        print("Encoded CBOR: \(encodedBytes.map { String(format: "0x%02X", $0) }.joined(separator: ", "))")
         return Data(encodedBytes)
     }
 
