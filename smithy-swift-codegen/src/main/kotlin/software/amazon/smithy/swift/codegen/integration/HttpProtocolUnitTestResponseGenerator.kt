@@ -15,7 +15,12 @@ import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.hasStreamingMember
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.*
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseErrorClosureUtils
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
+import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
@@ -68,10 +73,10 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         }
 
         val bodyContent = test.body.get()
-        val isCbor = ctx.service.requestWireProtocol == WireProtocol.CBOR
-                || ctx.service.awsProtocol == AWSProtocol.RPCV2_CBOR
-                || ctx.service.responseWireProtocol == WireProtocol.CBOR
-                || test.protocol == Rpcv2CborTrait.ID
+        val isCbor = ctx.service.requestWireProtocol == WireProtocol.CBOR ||
+            ctx.service.awsProtocol == AWSProtocol.RPCV2_CBOR ||
+            ctx.service.responseWireProtocol == WireProtocol.CBOR ||
+            test.protocol == Rpcv2CborTrait.ID
 
         val data: String = if (isCbor) {
             // Attempt to decode Base64 data once for CBOR
