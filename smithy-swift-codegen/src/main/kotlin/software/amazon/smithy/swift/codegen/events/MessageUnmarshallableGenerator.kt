@@ -219,11 +219,10 @@ class MessageUnmarshallableGenerator(
     private fun renderReadWithSchemaToValue(writer: SwiftWriter, memberShape: MemberShape) {
         val target = ctx.model.expectShape(memberShape.target)
         writer.write(
-            "let value = try \$N.from(data: message.payload).\$L(schema: \$L) ?? \$N.required(nil)",
+            "let value = try \$N.from(data: message.payload).\$LNonNull(schema: \$L)",
             ctx.service.readerSymbol,
             target.readMethodName,
-            target.id.schemaVar(writer),
-            SmithyReadWriteTypes.DefaultValueTransformer,
+            target.schemaVar,
         )
     }
 

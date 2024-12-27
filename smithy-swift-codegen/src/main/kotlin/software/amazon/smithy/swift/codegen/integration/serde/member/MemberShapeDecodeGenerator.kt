@@ -89,11 +89,10 @@ open class MemberShapeDecodeGenerator(
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
-                "try \$L.readStructure(schema: \$L) ?? \$N.\$L(nil)",
+                "try \$L.readStructure\$L(schema: \$L)",
                 reader(memberShape, isPayload),
-                memberShape.target.schemaVar(writer),
-                SmithyReadWriteTypes.DefaultValueTransformer,
-                "required".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "optional",
+                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                target.schemaVar,
             )
         }
         val readingClosure = readingClosureUtils.readingClosure(memberShape)
@@ -109,11 +108,10 @@ open class MemberShapeDecodeGenerator(
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
-                "try \$L.readList(schema: \$L) ?? \$N.\$L(nil)",
+                "try \$L.readList\$L(schema: \$L)",
                 reader(memberShape, false),
-                memberShape.target.schemaVar(writer),
-                SmithyReadWriteTypes.DefaultValueTransformer,
-                "required".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "optional",
+                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                target.schemaVar,
             )
         }
         val isSparse = listShape.hasTrait<SparseTrait>()
@@ -135,11 +133,10 @@ open class MemberShapeDecodeGenerator(
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
-                "try \$L.readMap(schema: \$L) ?? \$N.\$L(nil)",
+                "try \$L.readMap\$L(schema: \$L)",
                 reader(memberShape, false),
-                memberShape.target.schemaVar(writer),
-                SmithyReadWriteTypes.DefaultValueTransformer,
-                "required".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "optional",
+                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                target.schemaVar,
             )
         }
         val isSparse = mapShape.hasTrait<SparseTrait>()
@@ -179,12 +176,11 @@ open class MemberShapeDecodeGenerator(
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
-                "try \$L.\$L(schema: \$L) ?? \$N.\$L(nil)",
+                "try \$L.\$L\$L(schema: \$L)",
                 reader(memberShape, isPayload),
                 target.readMethodName,
-                memberShape.target.schemaVar(writer),
-                SmithyReadWriteTypes.DefaultValueTransformer,
-                "required".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "optional",
+                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                target.schemaVar,
             )
         }
         return writer.format(

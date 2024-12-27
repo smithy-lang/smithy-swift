@@ -48,6 +48,7 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.InputTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.lang.swiftReservedWords
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
@@ -172,6 +173,10 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         addDeclareMemberReferences(builder, shape.allMembers.values)
 
         if (shape.hasTrait<NestedTrait>() && service != null && !shape.hasTrait<ErrorTrait>()) {
+            builder.namespace(service.nestedNamespaceType(this).name, ".")
+        }
+        if (shape.id.toString() == "smithy.api#Unit" && !shape.hasTrait<NestedTrait>() && service != null) {
+            builder.name("EnumUnit")
             builder.namespace(service.nestedNamespaceType(this).name, ".")
         }
         return builder.build()
