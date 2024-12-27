@@ -7,6 +7,7 @@
 
 import Logging
 
+/// Implement this protocol and add an instance of the implementation to `SDKLoggingSystem` to use custom log handlers.
 public protocol SDKLogHandlerFactory {
     var label: String { get }
     func construct(label: String) -> LogHandler
