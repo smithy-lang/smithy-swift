@@ -28,6 +28,7 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toMemberNames
+import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
@@ -160,11 +161,12 @@ class ShapeValueGenerator(
             }
             ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {
-                    writer.writeInline(".stream(\$N(data: ", SmithyStreamsTypes.Core.BufferedStream)
-                    ".data(using: .utf8)!, isClosed: true))"
+                    writer.writeInline(".stream(\$N(data: \$N(", SmithyStreamsTypes.Core.BufferedStream, FoundationTypes.Data)
+                    ".utf8), isClosed: true))"
                 } else {
                     // TODO: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.
-                    ".data(using: .utf8)!"
+                    writer.writeInline("\$N(", FoundationTypes.Data)
+                    ".utf8)"
                 }
             }
             else -> { "" }
