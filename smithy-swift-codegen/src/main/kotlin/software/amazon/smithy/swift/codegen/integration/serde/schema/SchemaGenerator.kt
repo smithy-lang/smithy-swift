@@ -1,11 +1,14 @@
 package software.amazon.smithy.swift.codegen.integration.serde.schema
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.node.NodeType
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
@@ -50,7 +53,7 @@ class SchemaGenerator(
 //            writer.write("name: \$S,", shape.id.name)
             writer.write("type: .\$L,", shape.type)
             when (shape.type) {
-                ShapeType.STRUCTURE -> {
+                ShapeType.STRUCTURE, ShapeType.UNION -> {
                     if (shape.members().isNotEmpty()) {
                         writer.openBlock("members: [", "],") {
                             shape.members().forEach { member ->
@@ -94,14 +97,14 @@ class SchemaGenerator(
                     if (isRequired(shape)) {
                         writer.write("isRequired: true,")
                     }
-                    defaultValue(shape)?.let { writer.write("defaultValue: \$N(value: \$S),", SmithyTypes.StringDocument, it) }
+                    defaultValue(shape)?.let { writer.write("defaultValue: \$L,", it) }
                 }
                 else -> {
                     timestampFormat(shape)?.let {
                         writer.addImport(SmithyTimestampsTypes.TimestampFormat)
                         writer.write("timestampFormat: .\$L", it.swiftEnumCase)
                     }
-                    defaultValue(shape)?.let { writer.write("defaultValue: \$N(value: \$S),", SmithyTypes.StringDocument, it) }
+                    defaultValue(shape)?.let { writer.write("defaultValue: \$L,", it) }
                 }
             }
             writer.unwrite(",\n")
@@ -127,17 +130,12 @@ class SchemaGenerator(
         val service = ctx.model.getShape(ctx.settings.service).get() as ServiceShape
         return when (shape.type) {
             ShapeType.STRUCTURE, ShapeType.UNION -> {
-//                if (shape.id.namespace == "smithy.api" && shape.id.name == "Unit") {
-//                    SwiftTypes.Void
-//                } else {
-                    val symbol = ctx.symbolProvider.toSymbol(shape)
-                    if (shape.hasTrait<NestedTrait>() && !shape.hasTrait<ErrorTrait>()) {
-                        return symbol.toBuilder().namespace(service.nestedNamespaceType(ctx.symbolProvider).name, ".").build()
-                    } else {
-                        return symbol
-                    }
-
-//                }
+                val symbol = ctx.symbolProvider.toSymbol(shape)
+                if (shape.hasTrait<NestedTrait>() && !shape.hasTrait<ErrorTrait>()) {
+                    return symbol.toBuilder().namespace(service.nestedNamespaceType(ctx.symbolProvider).name, ".").build()
+                } else {
+                    return symbol
+                }
             }
             ShapeType.LIST, ShapeType.SET -> {
                 val target = shape.members()
@@ -189,20 +187,38 @@ class SchemaGenerator(
     private fun writeSetterGetter(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape) {
         val target = ctx.model.expectShape(member.target)
         val readMethodName = target.readMethodName
-        val mod = "NonNull".takeIf { member.isRequired || (member.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: ""
+        val memberIsRequired = member.isRequired
+                || (member.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>())
+                || (shape.isMapShape && member.memberName == "key")
+                || (shape.isMapShape && member.memberName == "value" && !shape.hasTrait<SparseTrait>())
+                || (shape.isListShape && !shape.hasTrait<SparseTrait>())
+        val transformMethodName = "required".takeIf { memberIsRequired || shape.isUnionShape } ?: "optional"
         when (shape.type) {
             ShapeType.STRUCTURE -> {
                 val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
-                writer.write("readBlock: { \$\$0.\$L\$L = try \$\$1.\$L\$L(schema: \$L) },", path, ctx.symbolProvider.toMemberName(member), readMethodName, mod, target.id.schemaVar(writer))
+                writer.write(
+                    "readBlock: { \$\$0.\$L\$L = try \$\$1.\$L(schema: \$L) ?? \$N.\$L(\$\$2) },",
+                    path,
+                    ctx.symbolProvider.toMemberName(member),
+                    readMethodName,
+                    target.id.schemaVar(writer),
+                    SmithyReadWriteTypes.DefaultValueTransformer,
+                    transformMethodName,
+                )
                 writer.write("writeBlock: { _, _ in }")
             }
             ShapeType.UNION -> {
-                writer.write("readBlock: { \$\$0 = .\$L(try \$\$1.\$LNonNull(schema: \$L)) },", ctx.symbolProvider.toMemberName(member), readMethodName, target.id.schemaVar(writer))
+                writer.write("readBlock: { \$\$0 = .\$L(try \$\$1.\$L(schema: \$L) ?? \$N.\$L(\$\$2)) },", ctx.symbolProvider.toMemberName(member), readMethodName, target.id.schemaVar(writer),
+                    SmithyReadWriteTypes.DefaultValueTransformer,
+                    transformMethodName,
+                )
                 writer.write("writeBlock: { _, _ in }")
             }
             ShapeType.LIST, ShapeType.SET, ShapeType.MAP -> {
-                val nonNullModifier = "NonNull".takeIf { !shape.hasTrait<SparseTrait>() } ?: ""
-                writer.write("readBlock: { try \$\$0.\$L\$L(schema: \$L) },", readMethodName, nonNullModifier, target.id.schemaVar(writer))
+                writer.write("readBlock: { try \$\$0.\$L(schema: \$L) ?? \$N.\$L(nil) },", readMethodName, target.id.schemaVar(writer),
+                    SmithyReadWriteTypes.DefaultValueTransformer,
+                    transformMethodName,
+                )
                 writer.write("writeBlock: { _, _ in }")
             }
             else -> {}
@@ -222,7 +238,17 @@ class SchemaGenerator(
     }
 
     private fun defaultValue(shape: Shape): String? {
-        return shape.getTrait<DefaultTrait>()?.let { it.toNode().asStringNode().getOrNull()?.toString() }
+        return shape.getTrait<DefaultTrait>()?.let {
+            val node = it.toNode()
+            when (node.type) {
+                NodeType.STRING -> writer.format("\$N(value: \$S)", SmithyTypes.StringDocument, node.toString())
+                NodeType.BOOLEAN -> writer.format("\$N(value: \$L)", SmithyTypes.BooleanDocument, node.toString())
+                NodeType.NUMBER -> writer.format("\$N(value: \$L)", SmithyTypes.DoubleDocument, node.toString())
+                NodeType.ARRAY -> writer.format("\$N(value: [])", SmithyTypes.ListDocument)
+                NodeType.OBJECT -> writer.format("\$N(value: [:])", SmithyTypes.StringMapDocument)
+                NodeType.NULL -> writer.format("\$N()", SmithyTypes.NullDocument)
+            }
+        }
     }
 
     private fun timestampFormat(shape: Shape): TimestampFormatTrait.Format? {

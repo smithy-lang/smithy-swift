@@ -45,6 +45,7 @@ object SmithyReadWriteTypes {
     val documentSchema = runtimeSymbol("documentSchema", SwiftDeclaration.LET, listOf("SchemaBasedSerde"))
     val blobSchema = runtimeSymbol("blobSchema", SwiftDeclaration.LET, listOf("SchemaBasedSerde"))
     val timestampSchema = runtimeSymbol("timestampSchema", SwiftDeclaration.LET, listOf("SchemaBasedSerde"))
+    val DefaultValueTransformer = runtimeSymbol("DefaultValueTransformer", SwiftDeclaration.ENUM, listOf("SchemaBasedSerde"))
 }
 
 private fun runtimeSymbol(

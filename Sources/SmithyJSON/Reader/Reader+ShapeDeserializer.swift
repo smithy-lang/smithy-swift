@@ -8,10 +8,12 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import struct Smithy.Document
+import protocol Smithy.SmithyDocument
 import enum SmithyReadWrite.ReaderError
 @_spi(SchemaBasedSerde) import protocol SmithyReadWrite.ShapeDeserializer
 @_spi(SchemaBasedSerde) import protocol SmithyReadWrite.SchemaProtocol
 @_spi(SchemaBasedSerde) import protocol SmithyReadWrite.DeserializableShape
+@_spi(SchemaBasedSerde) import protocol SmithyReadWrite.MemberSchemaProtocol
 @_spi(SchemaBasedSerde) import class SmithyReadWrite.StructureSchema
 @_spi(SchemaBasedSerde) import class SmithyReadWrite.ListSchema
 @_spi(SchemaBasedSerde) import class SmithyReadWrite.MapSchema
@@ -25,7 +27,36 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         schema: SmithyReadWrite.StructureSchema<Base>
     ) throws -> Base? {
         // TODO: Implement me
-        return Base()
+        guard self.hasContent else { return nil }
+        var value = Base()
+        try schema.members.forEach { member in
+            let resolvedName = try resolvedName(memberSchema: member.memberSchema())
+            guard let resolvedName = member.memberSchema().jsonName ?? member.memberSchema().memberName else {
+                throw ReaderError.requiredValueNotPresent
+            }
+            let resolvedReader = self[NodeInfo(resolvedName)]
+            guard resolvedReader.hasContent else { return }
+            var resolvedDefault = member.targetSchema().defaultValue ?? member.memberSchema().defaultValue
+            if member.memberSchema().isRequired {
+                resolvedDefault = try resolvedDefault ?? member.targetSchema().lastResortDefaultValue
+            }
+            try member.readBlock(&value, resolvedReader, resolvedDefault)
+        }
+        return value
+    }
+
+    private func resolvedName(memberSchema: SmithyReadWrite.MemberSchemaProtocol) throws -> String {
+        if respectsJSONName {
+            guard let resolvedName = memberSchema.jsonName ?? memberSchema.memberName else {
+                throw ReaderError.requiredValueNotPresent
+            }
+            return resolvedName
+        } else {
+            guard let resolvedName = memberSchema.memberName else {
+                throw ReaderError.requiredValueNotPresent
+            }
+            return resolvedName
+        }
     }
 
     public func readString(schema: SmithyReadWrite.SchemaProtocol) throws -> String? {
@@ -33,13 +64,19 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
     }
 
     public func readList<T>(schema: SmithyReadWrite.ListSchema<T>) throws -> [T]? {
-        // TODO: Implement me
-        []
+        guard hasContent, jsonNode == .array else { return nil }
+        return try children.map { reader in
+            try schema.readBlock(reader)
+        }
     }
 
     public func readMap<T>(schema: SmithyReadWrite.MapSchema<T>) throws -> [String : T]? {
         // TODO: Implement me
-        [:]
+        guard hasContent, jsonNode == .object else { return nil }
+        let pairs = try children.map { reader in
+            return (reader.nodeInfo.name, try schema.readBlock(reader))
+        }
+        return Dictionary(uniqueKeysWithValues: pairs)
     }
 
     public func readBoolean(schema: any SmithyReadWrite.SchemaProtocol) throws -> Bool? {
@@ -83,17 +120,14 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
     }
 
     public func readTimestamp(schema: SmithyReadWrite.SimpleSchema<Date>) throws -> Date? {
-        // TODO: Implement me
         try readTimestampIfPresent(format: schema.timestampFormat ?? .epochSeconds)
     }
 
     public func readDocument(schema: any SmithyReadWrite.SchemaProtocol) throws -> Document? {
-        // TODO: Implement me
-        nil
+        try readIfPresent()
     }
 
     public func readNull(schema: any SmithyReadWrite.SchemaProtocol) throws -> Bool? {
-        // TODO: Implement me
-        return false
+        try readNullIfPresent()
     }
 }

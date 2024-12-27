@@ -224,7 +224,7 @@ abstract class HTTPBindingProtocolGenerator(
     private fun renderSchemas(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
-        val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+Schema")
+        val filename = ModelFileUtils.filename(ctx.settings, "${symbol.name}+Schema")
         val encodeSymbol = Symbol.builder()
             .definitionFile(filename)
             .name(symbolName)

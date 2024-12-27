@@ -54,6 +54,7 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.swiftEnumCaseName
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
@@ -88,10 +89,11 @@ open class MemberShapeDecodeGenerator(
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
-                "try \$L.readStructure\$L(schema: \$L)",
+                "try \$L.readStructure(schema: \$L) ?? \$N.\$L(nil)",
                 reader(memberShape, isPayload),
-                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
                 memberShape.target.schemaVar(writer),
+                SmithyReadWriteTypes.DefaultValueTransformer,
+                "required".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "optional",
             )
         }
         val readingClosure = readingClosureUtils.readingClosure(memberShape)
@@ -107,10 +109,11 @@ open class MemberShapeDecodeGenerator(
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
-                "try \$L.readList\$L(schema: \$L)",
+                "try \$L.readList(schema: \$L) ?? \$N.\$L(nil)",
                 reader(memberShape, false),
-                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
                 memberShape.target.schemaVar(writer),
+                SmithyReadWriteTypes.DefaultValueTransformer,
+                "required".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "optional",
             )
         }
         val isSparse = listShape.hasTrait<SparseTrait>()
@@ -132,10 +135,11 @@ open class MemberShapeDecodeGenerator(
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
-                "try \$L.readMap\$L(schema: \$L)",
+                "try \$L.readMap(schema: \$L) ?? \$N.\$L(nil)",
                 reader(memberShape, false),
-                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
                 memberShape.target.schemaVar(writer),
+                SmithyReadWriteTypes.DefaultValueTransformer,
+                "required".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "optional",
             )
         }
         val isSparse = mapShape.hasTrait<SparseTrait>()
@@ -175,11 +179,12 @@ open class MemberShapeDecodeGenerator(
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
-                "try \$L.\$L\$L(schema: \$L)",
+                "try \$L.\$L(schema: \$L) ?? \$N.\$L(nil)",
                 reader(memberShape, isPayload),
                 target.readMethodName,
-                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
                 memberShape.target.schemaVar(writer),
+                SmithyReadWriteTypes.DefaultValueTransformer,
+                "required".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "optional",
             )
         }
         return writer.format(

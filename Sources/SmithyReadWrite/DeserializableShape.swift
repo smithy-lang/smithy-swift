@@ -9,3 +9,8 @@ public protocol DeserializableShape {
 
     init()
 }
+
+public protocol DeserializableEnum {
+
+    init()
+}

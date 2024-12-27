@@ -10,6 +10,7 @@ import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class IntEnumGenerator(
@@ -41,14 +42,19 @@ class IntEnumGenerator(
     private fun renderEnum() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(null, shape)
-        writer.openBlock(
-            "public enum \$enum.name:L: \$N, \$N, \$N, \$N, \$N {",
-            "}",
+        val conformances = writer.format(
+            "\$N, \$N, \$N, \$N, \$N",
             SwiftTypes.Protocols.Sendable,
             SwiftTypes.Protocols.Equatable,
             SwiftTypes.Protocols.RawRepresentable,
             SwiftTypes.Protocols.CaseIterable,
-            SwiftTypes.Protocols.Hashable
+            SwiftTypes.Protocols.Hashable,
+        )
+        writer.openBlock(
+            "public enum \$enum.name:L: \$L {",
+            "}",
+            conformances,
+//            SmithyReadWriteTypes.DeserializableShape,
         ) {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
@@ -65,6 +71,9 @@ class IntEnumGenerator(
 
             // Generate rawValue internal enum
             generateRawValueEnumBlock()
+
+            writer.write("")
+            writer.write("public init() { self = .sdkUnknown(0) }")
         }
     }
 

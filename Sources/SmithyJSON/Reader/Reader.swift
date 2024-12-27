@@ -24,6 +24,7 @@ public final class Reader: SmithyReader {
 
     public let nodeInfo: NodeInfo
     let jsonNode: JSONNode?
+    public var respectsJSONName = false
     public internal(set) var children = [Reader]()
     public internal(set) weak var parent: Reader?
     public var hasContent: Bool { jsonNode != nil && jsonNode != .null }
@@ -38,6 +39,7 @@ public final class Reader: SmithyReader {
     init(nodeInfo: NodeInfo, parent: Reader?) {
         self.nodeInfo = nodeInfo
         self.jsonNode = nil
+        self.respectsJSONName = parent?.respectsJSONName ?? false
         self.parent = parent
     }
 

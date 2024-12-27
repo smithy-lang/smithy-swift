@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Smithy
+import struct Foundation.Data
+import struct Foundation.Date
+@_spi(SmithyDocumentImpl) import Smithy
 @_spi(SmithyTimestamps) import SmithyTimestamps
 
 @_spi(SchemaBasedSerde)
@@ -18,6 +20,44 @@ public protocol SchemaProtocol: AnyObject {
     func write(writer: any SmithyWriter) throws
 }
 
+public extension SchemaProtocol {
+
+    var defaultValue: (any SmithyDocument)? { nil }
+
+    var lastResortDefaultValue: any SmithyDocument {
+        get throws {
+            switch type {
+            case .structure, .union, .map: return StringMapDocument(value: [:])
+            case .string, .enum: return StringDocument(value: "")
+            case .integer, .intEnum: return IntegerDocument(value: 0)
+            case .boolean: return BooleanDocument(value: false)
+            case .blob: return BlobDocument(value: Data())
+            case .timestamp: return TimestampDocument(value: Date(timeIntervalSince1970: 0.0))
+            case .bigDecimal: return BigDecimalDocument(value: 0.0)
+            case .bigInteger: return BigIntegerDocument(value: 0)
+            case .byte: return ByteDocument(value: 0)
+            case .document: return NullDocument()
+            case .list, .set: return ListDocument(value: [])
+            case .short: return ShortDocument(value: 0)
+            case .long: return LongDocument(value: 0)
+            case .float: return FloatDocument(value: 0.0)
+            case .double: return DoubleDocument(value: 0.0)
+            case .member, .service, .resource, .operation:
+                throw ReaderError.invalidSchema("Last resort not defined for type \(type)")
+            }
+        }
+    }
+}
+
+@_spi(SchemaBasedSerde)
+public protocol MemberSchemaProtocol: SchemaProtocol {
+    var memberName: String? { get }
+    var jsonName: String? { get }
+    var xmlName: String? { get }
+    var isRequired: Bool { get }
+    var defaultValue: (any SmithyDocument)? { get }
+}
+
 //extension SchemaProtocol {
 //
 //    public var id: String { ["\(namespace)#\(name)", memberName].compactMap { $0 }.joined(separator: "$") }
@@ -27,15 +67,15 @@ public protocol SchemaProtocol: AnyObject {
 public class StructureSchema<Base>: SchemaProtocol {
 
     public struct Member {
-        public let memberSchema: () -> SchemaProtocol
+        public let memberSchema: () -> MemberSchemaProtocol
         public let targetSchema: () -> SchemaProtocol
-        public let readBlock: (inout Base, any ShapeDeserializer) throws -> Void
+        public let readBlock: (inout Base, any ShapeDeserializer, (any SmithyDocument)?) throws -> Void
         public let writeBlock: (Base, any SmithyWriter) throws -> Void
 
         public init(
-            memberSchema: @escaping () -> SchemaProtocol,
+            memberSchema: @escaping () -> MemberSchemaProtocol,
             targetSchema: @escaping () -> SchemaProtocol,
-            readBlock: @escaping (inout Base, any ShapeDeserializer) throws -> Void,
+            readBlock: @escaping (inout Base, any ShapeDeserializer, (any SmithyDocument)?) throws -> Void,
             writeBlock: @escaping (Base, any SmithyWriter) throws -> Void
         ) {
             self.memberSchema = memberSchema
@@ -47,7 +87,7 @@ public class StructureSchema<Base>: SchemaProtocol {
 
 //    public let namespace: String
 //    public let name: String
-    public let type: ShapeType
+    public var type: ShapeType
     public let members: [Member]
     public let memberName: String?
 
@@ -155,7 +195,7 @@ public class MapSchema<Value>: SchemaProtocol {
 }
 
 @_spi(SchemaBasedSerde)
-public class MemberSchema<Base>: SchemaProtocol {
+public class MemberSchema<Base>: MemberSchemaProtocol {
 //    public let namespace: String
 //    public let name: String
     public let type: ShapeType
