@@ -76,6 +76,13 @@ class NodeInfoUtils(
                     return member.memberName
                 }
             }
+            WireProtocol.CBOR -> {
+                if (forRootNode) {
+                    return "\"\""
+                } else {
+                    return member.memberName
+                }
+            }
         }
     }
 

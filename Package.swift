@@ -50,12 +50,13 @@ let package = Package(
         .library(name: "SmithyStreams", targets: ["SmithyStreams"]),
         .library(name: "SmithyChecksumsAPI", targets: ["SmithyChecksumsAPI"]),
         .library(name: "SmithyChecksums", targets: ["SmithyChecksums"]),
+        .library(name: "SmithyCBOR", targets: ["SmithyCBOR"]),
         .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
-            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.40.0"),
+            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.42.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         ]
         let isDocCEnabled = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil
@@ -92,6 +93,7 @@ let package = Package(
                 "SmithyStreams",
                 "SmithyChecksumsAPI",
                 "SmithyChecksums",
+                "SmithyCBOR",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ],
             resources: [
@@ -140,7 +142,7 @@ let package = Package(
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime", "SmithyHTTPAPI", "SmithyIdentity"]
+            dependencies: ["ClientRuntime", "SmithyHTTPAPI", "SmithyIdentity", "SmithyCBOR"]
         ),
         .target(
             name: "SmithyIdentity",
@@ -219,6 +221,14 @@ let package = Package(
                 "SmithyChecksumsAPI",
                 "SmithyStreams",
                 "SmithyHTTPClient",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .target(
+            name: "SmithyCBOR",
+            dependencies: [
+                "SmithyReadWrite",
+                "SmithyTimestamps",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
             ]
         ),

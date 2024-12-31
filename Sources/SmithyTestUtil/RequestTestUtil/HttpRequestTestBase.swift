@@ -20,6 +20,7 @@ public enum HTTPBodyContentType {
     case xml
     case json
     case formURL
+    case cbor
 }
 
 open class HttpRequestTestBase: XCTestCase {
@@ -303,6 +304,8 @@ open class HttpRequestTestBase: XCTestCase {
                 XCTAssertJSONDataEqual(actual, expected, message(), file: file, line: line)
             case .formURL:
                 XCTAssertFormURLDataEqual(actual, expected, message(), file: file, line: line)
+            case .cbor:
+                XCTAssertCBORDataEqual(actual, expected, message(), file: file, line: line)
             }
         } else if expected != nil && actual == nil {
             XCTFail("actual data in ByteStream is nil but expected is not", file: file, line: line)

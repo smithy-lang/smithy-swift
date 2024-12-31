@@ -75,3 +75,7 @@ public extension SmithyWriter {
         return try writingClosure(value, self)
     }
 }
+
+public enum WriterError: Error {
+    case invalidType(String)
+}

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AwsCommonRuntimeKit
 import XCTest
 
 public func XCTAssertJSONDataEqual(
@@ -29,6 +30,24 @@ public func XCTAssertJSONDataEqual(
         XCTFail("Failed to evaluate JSON with error: \(error)", file: file, line: line)
     }
 }
+
+public func XCTAssertCBORDataEqual(
+    _ expression1: @autoclosure () throws -> Data,
+    _ expression2: @autoclosure () throws -> Data,
+    _ message: @autoclosure () -> String = "",
+    file: StaticString = #filePath,
+    line: UInt = #line
+) {
+    do {
+        let data1 = try expression1()
+        let data2 = try expression2()
+
+        XCTAssertTrue(try CBORComparator.cborData(data1, isEqualTo: data2), message(), file: file, line: line)
+    } catch {
+        XCTFail("Failed to evaluate CBOR with error: \(error)", file: file, line: line)
+    }
+}
+
 
 public func XCTAssertXMLDataEqual(
     _ expression1: @autoclosure () throws -> Data,
