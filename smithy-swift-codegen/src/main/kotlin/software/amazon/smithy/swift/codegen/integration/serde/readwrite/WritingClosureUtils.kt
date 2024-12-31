@@ -69,19 +69,11 @@ class WritingClosureUtils(
                 )
             }
             shape is TimestampShape -> {
-                val resolvedFormat = if (ctx.service.requestWireProtocol == WireProtocol.CBOR) {
-                    // Force EPOCH_SECONDS if CBOR
-                    ".epochSeconds"
-                } else {
-                    // Default logic
-                    TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape)
-                }
-
                 writer.format(
                     "\$N(format: \$N\$L)",
                     SmithyReadWriteTypes.timestampWritingClosure,
                     SmithyTimestampsTypes.TimestampFormat,
-                    resolvedFormat,
+                    TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape),
                 )
             }
             shape is EnumShape || shape is IntEnumShape || shape.hasTrait<EnumTrait>() -> {
