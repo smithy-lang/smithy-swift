@@ -71,7 +71,7 @@ class WritingClosureUtils(
             shape is TimestampShape -> {
                 val resolvedFormat = if (ctx.service.requestWireProtocol == WireProtocol.CBOR) {
                     // Force EPOCH_SECONDS if CBOR
-                    TimestampFormatTrait.Format.EPOCH_SECONDS
+                    SmithyTimestampsTypes.TimestampFormat.EPOCH_SECONDS
                 } else {
                     // Default logic
                     TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape)
