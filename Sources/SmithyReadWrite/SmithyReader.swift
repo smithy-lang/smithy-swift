@@ -208,5 +208,5 @@ public extension SmithyReader {
 
 public enum ReaderError: Error {
     case requiredValueNotPresent
-    case invalidBase64
+    case invalidType(String)
 }

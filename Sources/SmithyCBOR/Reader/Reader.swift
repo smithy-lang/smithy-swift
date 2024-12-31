@@ -149,8 +149,8 @@ public final class Reader: SmithyReader {
     }
 
     public func readIfPresent() throws -> Document? {
-        guard let cborValue else { return nil }
-        return Document(cborValue as! SmithyDocument)
+        // No operation.  Smithy document not supported in CBOR
+        return nil
     }
 
     public func readIfPresent<T>() throws -> T? where T: RawRepresentable, T.RawValue == Int {
@@ -218,8 +218,12 @@ public final class Reader: SmithyReader {
                         combinedText += chunk
                     }
                 }
-                // Return the combined text
-                return combinedText as! Member
+                // Safely return the combined text
+                if let result = combinedText as? Member {
+                    return result
+                } else {
+                    throw ReaderError.invalidType("Expected Member type, but got \(type(of: combinedText))")
+                }
             } else {
                 // Handle regular values
                 return try memberReadingClosure(child)
