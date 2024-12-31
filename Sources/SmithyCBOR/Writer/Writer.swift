@@ -10,6 +10,7 @@ import Foundation
 
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
+@_spi(SmithyReadWrite) import enum SmithyReadWrite.WriterError
 @_spi(Smithy) import struct Smithy.Document
 @_spi(Smithy) import protocol Smithy.SmithyDocument
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
@@ -131,9 +132,8 @@ public final class Writer: SmithyWriter {
         switch format {
         case .epochSeconds:
             self.cborValue = .date(value)
-        case .dateTime, .httpDate:
-            let string = TimestampFormatter(format: format).string(from: value)
-            self.cborValue = .text(string)
+        default:
+            throw WriterError.invalidType("Only .epochSeconds timestamp format is supported!")
         }
     }
 
