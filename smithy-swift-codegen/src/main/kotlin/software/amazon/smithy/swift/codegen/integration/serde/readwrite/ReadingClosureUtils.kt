@@ -63,7 +63,7 @@ class ReadingClosureUtils(
             shape is TimestampShape -> {
                 val resolvedFormat = if (ctx.service.responseWireProtocol == WireProtocol.CBOR) {
                     // Force EPOCH_SECONDS if CBOR
-                    SmithyTimestampsTypes.TimestampFormat.EPOCH_SECONDS
+                    ".epochSeconds"
                 } else {
                     // Default logic
                     TimestampUtils.timestampFormat(ctx, memberTimestampFormatTrait, shape)
