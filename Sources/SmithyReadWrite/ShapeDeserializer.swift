@@ -22,7 +22,7 @@ public protocol ShapeDeserializer: SmithyReader {
     func readLong(schema: Schema<Int>) throws -> Int?
     func readFloat(schema: Schema<Float>) throws -> Float?
     func readDouble(schema: Schema<Double>) throws -> Double?
-    func readBigInteger(schema: Schema<Int>) throws -> Int?
+    func readBigInteger(schema: Schema<Int64>) throws -> Int64?
     func readBigDecimal(schema: Schema<Double>) throws -> Double?
     func readString(schema: Schema<String>) throws -> String?
     func readBlob(schema: Schema<Data>) throws -> Data?
@@ -35,34 +35,6 @@ public protocol ShapeDeserializer: SmithyReader {
 
 @_spi(SchemaBasedSerde)
 public extension ShapeDeserializer {
-
-    func readEnum<T: RawRepresentable>(schema: Schema<T>) throws -> T? where T.RawValue == String {
-        guard hasContent else { return nil }
-        guard let rawValue: String = try readIfPresent() else { throw ReaderError.requiredValueNotPresent }
-        for memberContainer in schema.members {
-            guard let resolvedEnumValue = try memberContainer.member.memberSchema.enumValue?.asString() ?? memberContainer.member.memberSchema.memberName else {
-                throw ReaderError.requiredValueNotPresent
-            }
-            if rawValue == resolvedEnumValue {
-                return T(rawValue: rawValue)
-            }
-        }
-        return T(rawValue: "")
-    }
-
-    func readIntEnum<T: RawRepresentable>(schema: Schema<T>) throws -> T? where T.RawValue == Int {
-        guard hasContent else { return nil }
-        guard let rawValue: Int = try readIfPresent() else { throw ReaderError.requiredValueNotPresent }
-        for memberContainer in schema.members {
-            guard let resolvedEnumValue = try memberContainer.member.memberSchema.enumValue?.asInteger() else {
-                throw ReaderError.requiredValueNotPresent
-            }
-            if rawValue == resolvedEnumValue {
-                return T(rawValue: rawValue)
-            }
-        }
-        return T(rawValue: Int.min)
-    }
 
     func readEnumNonNull<T: RawRepresentable>(schema: Schema<T>) throws -> T where T.RawValue == String {
         guard let value: T = try readEnum(schema: schema) else {
@@ -96,7 +68,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readList(schema: schema) ?? []
     }
 
     func readMapNonNull<T>(schema: Schema<[String: T]>) throws -> [String: T] {
@@ -104,7 +75,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readMap(schema: schema) ?? [:]
     }
 
     func readBooleanNonNull(schema: Schema<Bool>) throws -> Bool {
@@ -112,7 +82,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readBoolean(schema: schema) ?? false
     }
 
     func readByteNonNull(schema: Schema<Int8>) throws -> Int8 {
@@ -120,7 +89,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readByte(schema: schema) ?? 0
     }
 
     func readShortNonNull(schema: Schema<Int16>) throws -> Int16 {
@@ -128,7 +96,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readShort(schema: schema) ?? 0
     }
 
     func readIntegerNonNull(schema: Schema<Int>) throws -> Int {
@@ -136,7 +103,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readInteger(schema: schema) ?? 0
     }
 
     func readLongNonNull(schema: Schema<Int>) throws -> Int {
@@ -144,7 +110,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readLong(schema: schema) ?? 0
     }
 
     func readFloatNonNull(schema: Schema<Float>) throws -> Float {
@@ -152,7 +117,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readFloat(schema: schema) ?? 0.0
     }
 
     func readDoubleNonNull(schema: Schema<Double>) throws -> Double {
@@ -160,15 +124,13 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readDouble(schema: schema) ?? 0.0
     }
 
-    func readBigIntegerNonNull(schema: Schema<Int>) throws -> Int {
+    func readBigIntegerNonNull(schema: Schema<Int64>) throws -> Int64 {
         guard let value = try readBigInteger(schema: schema) else {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readBigInteger(schema: schema) ?? 0
     }
 
     func readBigDecimalNonNull(schema: Schema<Double>) throws -> Double {
@@ -176,7 +138,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readBigDecimal(schema: schema) ?? 0.0
     }
 
     func readStringNonNull(schema: Schema<String>) throws -> String {
@@ -184,7 +145,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readString(schema: schema) ?? ""
     }
 
     func readBlobNonNull(schema: Schema<Data>) throws -> Data {
@@ -192,7 +152,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readBlob(schema: schema) ?? Data()
     }
 
     func readTimestampNonNull(schema: Schema<Date>) throws -> Date {
@@ -200,7 +159,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readTimestamp(schema: schema) ?? Date(timeIntervalSince1970: 0.0)
     }
 
     func readDocumentNonNull(schema: Schema<Document>) throws -> Document {
@@ -208,7 +166,6 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readDocument(schema: schema) ?? Document(NullDocument())
     }
 
     func readNullNonNull(schema: SchemaProtocol) throws -> Bool {
@@ -216,6 +173,5 @@ public extension ShapeDeserializer {
             throw ReaderError.requiredValueNotPresent
         }
         return value
-//        return try readNull(schema: schema) ?? false
     }
 }

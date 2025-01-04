@@ -92,7 +92,7 @@ open class MemberShapeDecodeGenerator(
                 "try \$L.readStructure\$L(schema: \$L)",
                 reader(memberShape, isPayload),
                 "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
-                target.schemaVar,
+                memberShape.schemaVar,
             )
         }
         val readingClosure = readingClosureUtils.readingClosure(memberShape)
@@ -111,7 +111,7 @@ open class MemberShapeDecodeGenerator(
                 "try \$L.readList\$L(schema: \$L)",
                 reader(memberShape, false),
                 "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
-                target.schemaVar,
+                memberShape.schemaVar,
             )
         }
         val isSparse = listShape.hasTrait<SparseTrait>()
@@ -136,7 +136,7 @@ open class MemberShapeDecodeGenerator(
                 "try \$L.readMap\$L(schema: \$L)",
                 reader(memberShape, false),
                 "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
-                target.schemaVar,
+                memberShape.schemaVar,
             )
         }
         val isSparse = mapShape.hasTrait<SparseTrait>()
@@ -180,7 +180,7 @@ open class MemberShapeDecodeGenerator(
                 reader(memberShape, isPayload),
                 target.readMethodName,
                 "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
-                target.schemaVar,
+                memberShape.schemaVar,
             )
         }
         return writer.format(
@@ -198,7 +198,7 @@ open class MemberShapeDecodeGenerator(
 
     private fun reader(memberShape: MemberShape, isPayload: Boolean): String {
         val nodeInfo = nodeInfoUtils.nodeInfo(memberShape)
-        return "reader".takeIf { isPayload } ?: writer.format("reader[\$L]", nodeInfo)
+        return "reader".takeIf { isPayload || useSBS } ?: writer.format("reader[\$L]", nodeInfo)
     }
 
     private fun default(memberShape: MemberShape): String {

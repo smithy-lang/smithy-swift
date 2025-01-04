@@ -11,6 +11,7 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.JsonNameTrait
 import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.SparseTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -27,19 +28,38 @@ class SchemaGenerator(
 ) {
 
     fun renderSchema(shape: Shape) {
-        writer.writeInline("let \$L: \$N<\$N> = ", shape.schemaVar, SmithyReadWriteTypes.Schema, ctx.symbolProvider.toSymbol(shape))
         writer.openBlock(
-            "{ \$N<\$N>(",
-            ") },",
+            "var \$L: \$N<\$N> {",
+            "}",
+            shape.schemaVar,
+            SmithyReadWriteTypes.Schema,
+            ctx.symbolProvider.toSymbol(shape),
+        ) {
+            renderSchemaStruct(shape)
+        }
+    }
+
+    private fun renderSchemaStruct(shape: Shape) {
+        writer.openBlock(
+            "\$N<\$N>(",
+            ")",
             SmithyReadWriteTypes.Schema,
             ctx.symbolProvider.toSymbol(shape),
         ) {
             writer.write("type: .\$L,", shape.type)
             if (shape.members().isNotEmpty()) {
                 writer.openBlock("members: [", "],") {
-                    shape.members().forEach { member ->
+                    shape.members()
+                        .filter { !ctx.model.expectShape(it.target).hasTrait<StreamingTrait>() }
+                        .forEach { member ->
                         writer.openBlock(".init(member:", "),") {
-                            writer.openBlock("\$N<\$N>.Member<\$N>(", ")", SmithyReadWriteTypes.Schema, ctx.symbolProvider.toSymbol(shape), ctx.symbolProvider.toSymbol(shape)) {
+                            writer.openBlock(
+                                "\$N<\$N>.Member<\$N>(",
+                                ")",
+                                SmithyReadWriteTypes.Schema,
+                                ctx.symbolProvider.toSymbol(shape),
+                                ctx.symbolProvider.toSymbol(ctx.model.expectShape(member.target)),
+                            ) {
                                 writer.write("memberSchema: \$L,", member.schemaVar)
                                 writeSetterGetter(writer, shape, member)
                                 writer.unwrite(",\n")
@@ -51,8 +71,9 @@ class SchemaGenerator(
                     writer.write("")
                 }
             }
-            targetSchema(shape)?.let { writer.write("targetSchema: { \$L },", it.schemaVar) }
+            targetShape(shape)?.let { writer.write("targetSchema: { \$L },", it.schemaVar) }
             shape.id.member.getOrNull()?.let { writer.write("memberName: \$S,", it) }
+            memberShape(shape)?.let { writer.write("containerType: \$L,", ctx.model.expectShape(it.container).type) }
             jsonName(shape)?.let { writer.write("jsonName: \$S,", it) }
             enumValue(shape)?.let { node ->
                 when (node.type) {
@@ -72,9 +93,6 @@ class SchemaGenerator(
             writer.unwrite(",\n")
             writer.write("")
         }
-        writer.unwrite(",\n")
-        writer.write("()")
-        writer.write("")
     }
 
     private fun writeSetterGetter(writer: SwiftWriter, shape: Shape, member: MemberShape) {
@@ -82,10 +100,10 @@ class SchemaGenerator(
         val readMethodName = target.readMethodName
         val memberIsRequired = member.isRequired
                 || (member.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>())
-                || (shape.isMapShape && member.memberName == "key")
                 || (shape.isMapShape && member.memberName == "value" && !shape.hasTrait<SparseTrait>())
                 || (shape.isListShape && !shape.hasTrait<SparseTrait>())
-        val readMethodExtension = "NonNull".takeIf { memberIsRequired || shape.isUnionShape } ?: ""
+                || shape.isUnionShape
+        val readMethodExtension = "NonNull".takeIf { memberIsRequired } ?: ""
         when (shape.type) {
             ShapeType.STRUCTURE -> {
                 val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
@@ -100,10 +118,10 @@ class SchemaGenerator(
             }
             ShapeType.UNION -> {
                 writer.write(
-                    "readBlock: { try \$\$0 = .\$L(\$\$1.\$LNonNull(schema: \$L)) },",
-                    ctx.symbolProvider.toMemberName(member),
+                    "readBlock: { value, reader in try reader.\$L(schema: \$L).map { unwrapped in value = .\$L(unwrapped) } },",
                     readMethodName,
                     member.schemaVar,
+                    ctx.symbolProvider.toMemberName(member),
                 )
             }
             ShapeType.SET, ShapeType.LIST -> {
@@ -127,8 +145,12 @@ class SchemaGenerator(
         }
     }
 
-    private fun targetSchema(shape: Shape): Shape? {
-        return shape.asMemberShape().getOrNull()?.let { ctx.model.expectShape(it.target) }
+    private fun targetShape(shape: Shape): Shape? {
+        return memberShape(shape)?.let { ctx.model.expectShape(it.target) }
+    }
+
+    private fun memberShape(shape: Shape): MemberShape? {
+        return shape.asMemberShape().getOrNull()
     }
 
     private fun enumValue(shape: Shape): Node? {

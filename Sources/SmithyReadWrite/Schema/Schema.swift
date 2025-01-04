@@ -13,15 +13,11 @@ import struct Foundation.Date
 @_spi(SchemaBasedSerde)
 public protocol SchemaProtocol: AnyObject {
     var type: ShapeType { get }
-    var targetSchema: () -> SchemaProtocol? { get }
     var defaultValue: (any SmithyDocument)? { get }
     var jsonName: String? { get }
     var enumValue: (any SmithyDocument)? { get }
     var memberName: String? { get }
     var isRequired: Bool { get }
-
-    func read(reader: any ShapeDeserializer) throws
-    func write(writer: any SmithyWriter) throws
 }
 
 public extension SchemaProtocol {
@@ -60,35 +56,37 @@ public protocol MemberProtocol<Base> {
 }
 
 @_spi(SchemaBasedSerde)
-public class Schema<Base>: SchemaProtocol {
+public struct MemberContainer<Base> {
+    public let member: any MemberProtocol<Base>
 
-    public struct MemberContainer {
-        public let member: any MemberProtocol<Base>
-
-        public init(member: any MemberProtocol<Base>) {
-            self.member = member
-        }
-
-        public func performRead(base: inout Base, reader: any ShapeDeserializer) throws {
-            try member.performRead(base: &base, reader: reader)
-        }
-
-        public func performWrite(base: Base, writer: any SmithyWriter) throws {
-            try member.performWrite(base: base, writer: writer)
-        }
+    public init(member: any MemberProtocol<Base>) {
+        self.member = member
     }
 
+    public func performRead(base: inout Base, reader: any ShapeDeserializer) throws {
+        try member.performRead(base: &base, reader: reader)
+    }
+
+    public func performWrite(base: Base, writer: any SmithyWriter) throws {
+        try member.performWrite(base: base, writer: writer)
+    }
+}
+
+@_spi(SchemaBasedSerde)
+public class Schema<Base>: SchemaProtocol {
+
     public struct Member<Target>: MemberProtocol {
-        public let memberSchema: any SchemaProtocol
+        public var memberSchema: any SchemaProtocol { memberSchemaSpecific }
+        public let memberSchemaSpecific: Schema<Target>
         let readBlock: (inout Base, any ShapeDeserializer) throws -> Void
         let writeBlock: (Base, any SmithyWriter) throws -> Void
 
         public init(
-            memberSchema: any SchemaProtocol,
+            memberSchema: Schema<Target>,
             readBlock: @escaping (inout Base, any ShapeDeserializer) throws -> Void = { _, _ in },
             writeBlock: @escaping (Base, any SmithyWriter) throws -> Void = { _, _ in }
         ) {
-            self.memberSchema = memberSchema
+            self.memberSchemaSpecific = memberSchema
             self.readBlock = readBlock
             self.writeBlock = writeBlock
         }
@@ -103,45 +101,37 @@ public class Schema<Base>: SchemaProtocol {
     }
 
     public let type: ShapeType
-    public let members: [MemberContainer]
-    public let targetSchemaSpecific: () -> Schema<Base>?
+    public let members: [MemberContainer<Base>]
+    public let targetSchema: () -> Schema<Base>?
     public let memberName: String?
+    public let containerType: ShapeType?
     public let jsonName: String?
     public let enumValue: (any SmithyDocument)?
     public let timestampFormat: SmithyTimestamps.TimestampFormat?
     public let isRequired: Bool
     public let defaultValue: (any Smithy.SmithyDocument)?
 
-
-    public var targetSchema: () -> (any SchemaProtocol)? { targetSchemaSpecific }
-
     public init(
         type: ShapeType,
-        members: [MemberContainer] = [],
+        members: [MemberContainer<Base>] = [],
         targetSchema: @escaping () -> Schema<Base>? = { nil },
         memberName: String? = nil,
+        containerType: ShapeType? = nil,
         jsonName: String? = nil,
         enumValue: (any SmithyDocument)? = nil,
         timestampFormat: SmithyTimestamps.TimestampFormat? = nil,
         isRequired: Bool = false,
-        defaultValue: (any Smithy.SmithyDocument)? = nil
+        defaultValue: (any SmithyDocument)? = nil
     ) {
         self.type = type
         self.members = members
-        self.targetSchemaSpecific = targetSchema
+        self.targetSchema = targetSchema
         self.memberName = memberName
+        self.containerType = containerType
         self.jsonName = jsonName
         self.enumValue = enumValue
         self.timestampFormat = timestampFormat
         self.isRequired = isRequired
         self.defaultValue = defaultValue
-    }
-
-    public func read(reader: any ShapeDeserializer) throws {
-        // TODO: implement
-    }
-
-    public func write(writer: any SmithyWriter) throws {
-        // TODO: implement
     }
 }

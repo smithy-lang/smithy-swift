@@ -83,6 +83,7 @@ import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
+import kotlin.jvm.optionals.getOrNull
 
 private val Shape.isStreaming: Boolean
     get() = hasTrait<StreamingTrait>() && isUnionShape
@@ -218,7 +219,10 @@ abstract class HTTPBindingProtocolGenerator(
     override fun generateSchemas(ctx: ProtocolGenerator.GenerationContext) {
         if (ctx.service.responseWireProtocol != WireProtocol.JSON) { return }
         val nestedShapes = resolveShapesNeedingSchema(ctx)
-            .filter { !it.isStreaming }
+            .filter { !it.hasTrait<StreamingTrait>() }
+            .filter { !(it.asMemberShape().getOrNull()?.let {
+                ctx.model.expectShape(it.target).hasTrait<StreamingTrait>() } ?: false)
+            }
         for (shape in nestedShapes) {
             renderSchemas(ctx, shape)
         }
@@ -355,22 +359,17 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     private fun resolveShapesNeedingSchema(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        val topLevelOutputMembers = getHttpBindingOperations(ctx).flatMap {
-            val outputShape = ctx.model.expectShape(it.output.get())
-            outputShape.members()
-        }
-            .map { ctx.model.expectShape(it.target) }
+        val topLevelOutputMembers = getHttpBindingOperations(ctx)
+            .map { ctx.model.expectShape(it.output.get()) }
             .toSet()
 
         val topLevelErrorMembers = getHttpBindingOperations(ctx)
             .flatMap { it.errors }
-            .flatMap { ctx.model.expectShape(it).members() }
-            .map { ctx.model.expectShape(it.target) }
+            .map { ctx.model.expectShape(it) }
             .toSet()
 
         val topLevelServiceErrorMembers = ctx.service.errors
-            .flatMap { ctx.model.expectShape(it).members() }
-            .map { ctx.model.expectShape(it.target) }
+            .map { ctx.model.expectShape(it) }
             .toSet()
 
 //        val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
