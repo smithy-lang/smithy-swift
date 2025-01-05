@@ -26,7 +26,6 @@ import software.amazon.smithy.swift.codegen.model.nestedNamespaceType
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.errorShapeName
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
@@ -119,8 +118,7 @@ class StructureGenerator(
         writer.writeAvailableAttribute(model, shape)
         val equatableConformance = writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
         writer.openBlock(
-            "public struct \$struct.name:L: \$N, \$N$equatableConformance {", "}",
-            SmithyReadWriteTypes.DeserializableShape,
+            "public struct \$struct.name:L: \$N$equatableConformance {", "}",
             SwiftTypes.Protocols.Sendable,
         ) {
             generateStructMembers()
@@ -140,7 +138,7 @@ class StructureGenerator(
                 indirectOrNot = "@Indirect "
             }
             writer.writeAvailableAttribute(model, it)
-            writer.write("\$Lpublic var \$L: \$T = \$D", indirectOrNot, memberName, memberSymbol, memberSymbol)
+            writer.write("\$Lpublic var \$L: \$T", indirectOrNot, memberName, memberSymbol)
         }
     }
 
@@ -163,9 +161,9 @@ class StructureGenerator(
                     writer.write("self.$path\$L = \$L", memberName, memberName)
                 }
             }
-            writer.write("")
+        } else {
+            writer.write("public init() { }")
         }
-        writer.write("public init() {}")
     }
 
     /**
@@ -220,12 +218,11 @@ class StructureGenerator(
 
         writer.writeAvailableAttribute(model, shape)
         writer.openBlock(
-            "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N, \$N {",
+            "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N {",
             ClientRuntimeTypes.Core.ModeledError,
             ClientRuntimeTypes.Http.HttpError,
             SwiftTypes.Error,
             SwiftTypes.Protocols.Sendable,
-            SmithyReadWriteTypes.DeserializableShape,
         )
             .call { generateErrorStructMembers() }
             .write("")

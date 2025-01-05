@@ -11,7 +11,7 @@ import struct Foundation.Date
 
 @_spi(SmithyReadWrite)
 public var unitSchema: Schema<Unit> {
-    Schema<Unit>(id: "smithy.api#Unit", type: .structure)
+    Schema<Unit>(id: "smithy.api#Unit", type: .structure, factory: { Unit() })
 }
 
 @_spi(SmithyReadWrite)

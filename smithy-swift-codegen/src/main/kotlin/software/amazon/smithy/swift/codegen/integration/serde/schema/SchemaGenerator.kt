@@ -42,14 +42,20 @@ class SchemaGenerator(
     }
 
     private fun renderSchemaStruct(shape: Shape) {
+        val shapeSymbol = ctx.symbolProvider.toSymbol(shape)
         writer.openBlock(
             "\$N<\$N>(",
             ")",
             SmithyReadWriteTypes.Schema,
-            ctx.symbolProvider.toSymbol(shape),
+            shapeSymbol,
         ) {
             writer.write("id: \$S,", shape.id.toString())
             writer.write("type: .\$L,", shape.type)
+            if (shape.type == ShapeType.STRUCTURE) {
+                writer.write("factory: { .init() },")
+            } else if (shape.type == ShapeType.UNION) {
+                writer.write("factory: { .sdkUnknown(\"\") },")
+            }
             if (shape.members().isNotEmpty()) {
                 writer.openBlock("members: [", "],") {
                     shape.members()
@@ -61,7 +67,7 @@ class SchemaGenerator(
                                     "\$N<\$N>.Member<\$N>(",
                                     ")",
                                     SmithyReadWriteTypes.Schema,
-                                    ctx.symbolProvider.toSymbol(shape),
+                                    shapeSymbol,
                                     ctx.symbolProvider.toSymbol(ctx.model.expectShape(member.target)),
                                 ) {
                                     writer.write("memberSchema: { \$L },", member.schemaVar(writer))

@@ -12,7 +12,7 @@ import struct Foundation.Date
 
 @_spi(SmithyReadWrite)
 public protocol ShapeDeserializer: SmithyReader {
-    func readStructure<T: DeserializableShape>(schema: Schema<T>) throws -> T?
+    func readStructure<T>(schema: Schema<T>) throws -> T?
     func readList<T>(schema: Schema<[T]>) throws -> [T]?
     func readMap<T>(schema: Schema<[String: T]>) throws -> [String: T]?
     func readBoolean(schema: Schema<Bool>) throws -> Bool?
@@ -54,9 +54,12 @@ public extension ShapeDeserializer {
 @_spi(SmithyReadWrite)
 public extension ShapeDeserializer {
 
-    func readStructureNonNull<T: DeserializableShape>(schema: Schema<T>) throws -> T {
+    func readStructureNonNull<T>(schema: Schema<T>) throws -> T {
         guard let value = try readStructure(schema: schema) else {
-            if schema.isRequired { return T() }
+            guard let factory = schema.factory else {
+                throw SmithyReadWrite.ReaderError.invalidSchema("Missing factory for structure or union: \(schema.id)")
+            }
+            if schema.isRequired { return factory() }
             throw ReaderError.requiredValueNotPresent
         }
         return value

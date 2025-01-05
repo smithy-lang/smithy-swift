@@ -105,6 +105,7 @@ public struct Schema<Base>: SchemaProtocol {
 
     public let id: String
     public let type: ShapeType
+    public let factory: (() -> Base)?
     public let members: [MemberContainer<Base>]
     public let targetSchema: () -> Schema<Base>?
     public let memberName: String?
@@ -120,6 +121,7 @@ public struct Schema<Base>: SchemaProtocol {
     public init(
         id: String,
         type: ShapeType,
+        factory: (() -> Base)? = nil,
         members: [MemberContainer<Base>] = [],
         targetSchema: @escaping () -> Schema<Base>? = { nil },
         memberName: String? = nil,
@@ -134,6 +136,7 @@ public struct Schema<Base>: SchemaProtocol {
     ) {
         self.id = id
         self.type = type
+        self.factory = factory
         self.members = members
         self.targetSchema = targetSchema
         self.memberName = memberName

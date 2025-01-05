@@ -53,7 +53,6 @@ class IntEnumGenerator(
             "public enum \$enum.name:L: \$L {",
             "}",
             conformances,
-//            SmithyReadWriteTypes.DeserializableShape,
         ) {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
@@ -70,9 +69,6 @@ class IntEnumGenerator(
 
             // Generate rawValue internal enum
             generateRawValueEnumBlock()
-
-            writer.write("")
-            writer.write("public init() { self = .sdkUnknown(0) }")
         }
     }
 

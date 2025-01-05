@@ -13,22 +13,22 @@ import protocol Smithy.SmithyDocument
 import enum SmithyReadWrite.ReaderError
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.ShapeDeserializer
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SchemaProtocol
-@_spi(SmithyReadWrite) import protocol SmithyReadWrite.DeserializableShape
 @_spi(SmithyReadWrite) import struct SmithyReadWrite.Schema
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 
 @_spi(SmithyReadWrite)
 extension Reader: SmithyReadWrite.ShapeDeserializer {
 
-    public func readStructure<Target: SmithyReadWrite.DeserializableShape>(
-        schema: SmithyReadWrite.Schema<Target>
-    ) throws -> Target? {
+    public func readStructure<Target>(schema: SmithyReadWrite.Schema<Target>) throws -> Target? {
         let resolvedReader = try resolvedReader(schema: schema)
-        guard resolvedReader.hasContent, resolvedReader.jsonNode == .object else {
-            return resolvedDefault(schema: schema) != nil ? Target() : nil
-        }
-        var value = Target()
         let structureSchema = resolvedTargetSchema(schema: schema)
+        guard let factory = structureSchema.factory else {
+            throw SmithyReadWrite.ReaderError.invalidSchema("Missing factory for structure or union: \(structureSchema.id)")
+        }
+        guard resolvedReader.hasContent, resolvedReader.jsonNode == .object else {
+            return resolvedDefault(schema: schema) != nil ? factory() : nil
+        }
+        var value = factory()
         try structureSchema.members.forEach { memberContainer in
             try memberContainer.performRead(base: &value, key: "", reader: resolvedReader)
         }
@@ -198,11 +198,11 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
     public func readTimestamp(schema: SmithyReadWrite.Schema<Date>) throws -> Date? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent else {
-            guard let defaultValue = try resolvedDefault(schema: schema) else { return nil }
+            guard let defaultValue = resolvedDefault(schema: schema) else { return nil }
             switch defaultValue.type {
             case .float:
                 let interval = try TimeInterval(defaultValue.asFloat())
-                return try Date(timeIntervalSince1970: interval)
+                return Date(timeIntervalSince1970: interval)
             case .double:
                 return try Date(timeIntervalSince1970: defaultValue.asDouble())
             case .timestamp:
