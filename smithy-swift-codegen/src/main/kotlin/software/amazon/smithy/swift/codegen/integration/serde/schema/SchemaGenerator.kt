@@ -8,6 +8,7 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.EnumValueTrait
 import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.JsonNameTrait
 import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.SparseTrait
@@ -15,6 +16,7 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
@@ -50,6 +52,7 @@ class SchemaGenerator(
             if (shape.members().isNotEmpty()) {
                 writer.openBlock("members: [", "],") {
                     shape.members()
+                        .filter { it.isInHttpBody() }
                         .filter { !ctx.model.expectShape(it.target).hasTrait<StreamingTrait>() }
                         .forEach { member ->
                         writer.openBlock(".init(member:", "),") {
@@ -73,8 +76,9 @@ class SchemaGenerator(
             }
             targetShape(shape)?.let { writer.write("targetSchema: { \$L },", it.schemaVar) }
             shape.id.member.getOrNull()?.let { writer.write("memberName: \$S,", it) }
-            memberShape(shape)?.let { writer.write("containerType: \$L,", ctx.model.expectShape(it.container).type) }
+            memberShape(shape)?.let { writer.write("containerType: .\$L,", ctx.model.expectShape(it.container).type) }
             jsonName(shape)?.let { writer.write("jsonName: \$S,", it) }
+            if (shape.hasTrait<HttpPayloadTrait>()) { writer.write("httpPayload: true,") }
             enumValue(shape)?.let { node ->
                 when (node.type) {
                     NodeType.STRING -> writer.write("enumValue: \$N(value: \$S)", SmithyTypes.StringDocument, node)
@@ -85,6 +89,9 @@ class SchemaGenerator(
             timestampFormat(shape)?.let {
                 writer.addImport(SmithyTimestampsTypes.TimestampFormat)
                 writer.write("timestampFormat: .\$L,", it.swiftEnumCase)
+            }
+            if (shape.hasTrait<SparseTrait>()) {
+                writer.write("isSparse: true,")
             }
             if (isRequired(shape)) {
                 writer.write("isRequired: true,")
@@ -128,7 +135,7 @@ class SchemaGenerator(
                 writer.write("readBlock: { try \$\$0.append(\$\$1.\$L\$L(schema: \$L)) },",
                     readMethodName,
                     readMethodExtension,
-                    target.schemaVar,
+                    member.schemaVar,
                 )
             }
             ShapeType.MAP -> {
@@ -137,7 +144,7 @@ class SchemaGenerator(
                         "readBlock: { try \$\$0[\"value\"] = \$\$1.\$L\$L(schema: \$L) },",
                         readMethodName,
                         readMethodExtension,
-                        target.schemaVar,
+                        member.schemaVar,
                     )
                 }
             }

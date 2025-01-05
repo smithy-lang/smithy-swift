@@ -131,7 +131,7 @@ class StructureGenerator(
 
     private fun generateStructMembers() {
         membersSortedByName.forEach {
-            var (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
+            val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
             val indirect = it.hasTrait<SwiftBoxTrait>()
             var indirectOrNot = ""
@@ -140,7 +140,7 @@ class StructureGenerator(
                 indirectOrNot = "@Indirect "
             }
             writer.writeAvailableAttribute(model, it)
-            writer.write("\$Lpublic var \$L: \$T", indirectOrNot, memberName, memberSymbol)
+            writer.write("\$Lpublic var \$L: \$T = \$D", indirectOrNot, memberName, memberSymbol, memberSymbol)
         }
     }
 
@@ -164,21 +164,8 @@ class StructureGenerator(
                 }
             }
             writer.write("")
-            if (error) {
-                writer.write("public init() {}")
-            } else {
-                writer.openBlock("public init() {", "}") {
-                    membersSortedByName.forEach { member ->
-                        val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
-                        if (memberName != null && memberSymbol != null) {
-                            writer.write("self.\$L = \$D", memberName, memberSymbol)
-                        }
-                    }
-                }
-            }
-        } else {
-            writer.write("public init() { }")
         }
+        writer.write("public init() {}")
     }
 
     /**

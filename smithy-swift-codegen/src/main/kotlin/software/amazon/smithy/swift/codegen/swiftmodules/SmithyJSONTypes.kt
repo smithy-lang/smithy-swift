@@ -22,5 +22,5 @@ private fun runtimeSymbol(
     declaration,
     SwiftDependency.SMITHY_JSON,
     additionalImports,
-    listOf("SmithyReadWrite", "SchemaBasedSerde"),
+    listOf("SmithyReadWrite"),
 )

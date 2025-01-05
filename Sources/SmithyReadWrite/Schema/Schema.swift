@@ -10,13 +10,15 @@ import struct Foundation.Date
 @_spi(SmithyDocumentImpl) import Smithy
 @_spi(SmithyTimestamps) import SmithyTimestamps
 
-@_spi(SchemaBasedSerde)
-public protocol SchemaProtocol: AnyObject {
+@_spi(SmithyReadWrite)
+public protocol SchemaProtocol {
     var type: ShapeType { get }
     var defaultValue: (any SmithyDocument)? { get }
     var jsonName: String? { get }
+    var httpPayload: Bool { get }
     var enumValue: (any SmithyDocument)? { get }
     var memberName: String? { get }
+    var containerType: ShapeType? { get }
     var isRequired: Bool { get }
 }
 
@@ -47,7 +49,7 @@ public extension SchemaProtocol {
     }
 }
 
-@_spi(SchemaBasedSerde)
+@_spi(SmithyReadWrite)
 public protocol MemberProtocol<Base> {
     associatedtype Base
     var memberSchema: SchemaProtocol { get }
@@ -55,7 +57,7 @@ public protocol MemberProtocol<Base> {
     func performWrite(base: Base, writer: any SmithyWriter) throws
 }
 
-@_spi(SchemaBasedSerde)
+@_spi(SmithyReadWrite)
 public struct MemberContainer<Base> {
     public let member: any MemberProtocol<Base>
 
@@ -72,8 +74,8 @@ public struct MemberContainer<Base> {
     }
 }
 
-@_spi(SchemaBasedSerde)
-public class Schema<Base>: SchemaProtocol {
+@_spi(SmithyReadWrite)
+public struct Schema<Base>: SchemaProtocol {
 
     public struct Member<Target>: MemberProtocol {
         public var memberSchema: any SchemaProtocol { memberSchemaSpecific }
@@ -106,8 +108,10 @@ public class Schema<Base>: SchemaProtocol {
     public let memberName: String?
     public let containerType: ShapeType?
     public let jsonName: String?
+    public let httpPayload: Bool
     public let enumValue: (any SmithyDocument)?
     public let timestampFormat: SmithyTimestamps.TimestampFormat?
+    public let isSparse: Bool
     public let isRequired: Bool
     public let defaultValue: (any Smithy.SmithyDocument)?
 
@@ -118,8 +122,10 @@ public class Schema<Base>: SchemaProtocol {
         memberName: String? = nil,
         containerType: ShapeType? = nil,
         jsonName: String? = nil,
+        httpPayload: Bool = false,
         enumValue: (any SmithyDocument)? = nil,
         timestampFormat: SmithyTimestamps.TimestampFormat? = nil,
+        isSparse: Bool = false,
         isRequired: Bool = false,
         defaultValue: (any SmithyDocument)? = nil
     ) {
@@ -129,8 +135,10 @@ public class Schema<Base>: SchemaProtocol {
         self.memberName = memberName
         self.containerType = containerType
         self.jsonName = jsonName
+        self.httpPayload = httpPayload
         self.enumValue = enumValue
         self.timestampFormat = timestampFormat
+        self.isSparse = isSparse
         self.isRequired = isRequired
         self.defaultValue = defaultValue
     }

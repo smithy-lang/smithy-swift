@@ -7,16 +7,17 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
+import struct Foundation.TimeInterval
 import struct Smithy.Document
 import protocol Smithy.SmithyDocument
 import enum SmithyReadWrite.ReaderError
-@_spi(SchemaBasedSerde) import protocol SmithyReadWrite.ShapeDeserializer
-@_spi(SchemaBasedSerde) import protocol SmithyReadWrite.SchemaProtocol
-@_spi(SchemaBasedSerde) import protocol SmithyReadWrite.DeserializableShape
-@_spi(SchemaBasedSerde) import class SmithyReadWrite.Schema
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.ShapeDeserializer
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SchemaProtocol
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.DeserializableShape
+@_spi(SmithyReadWrite) import struct SmithyReadWrite.Schema
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 
-@_spi(SchemaBasedSerde)
+@_spi(SmithyReadWrite)
 extension Reader: SmithyReadWrite.ShapeDeserializer {
 
     public func readStructure<Target: SmithyReadWrite.DeserializableShape>(
@@ -39,11 +40,13 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         guard resolvedReader.hasContent, resolvedReader.jsonNode == .array else {
             return resolvedDefault(schema: schema) != nil ? [] : nil
         }
-        guard let memberContainer = resolvedTargetSchema(schema: schema).members.first(where: { $0.member.memberSchema.memberName == "member" }) else {
+        let listSchema = resolvedTargetSchema(schema: schema)
+        guard let memberContainer = listSchema.members.first(where: { $0.member.memberSchema.memberName == "member" }) else {
             throw ReaderError.requiredValueNotPresent
         }
         var value = [T]()
         for child in resolvedReader.children {
+            child.respectsJSONName = respectsJSONName
             try memberContainer.performRead(base: &value, reader: child)
         }
         return value
@@ -54,14 +57,17 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         guard resolvedReader.hasContent, resolvedReader.jsonNode == .object else {
             return resolvedDefault(schema: schema) != nil ? [:] : nil
         }
-        guard let valueContainer = resolvedTargetSchema(schema: schema).members.first(where: { $0.member.memberSchema.memberName == "value" }) else {
+        let mapSchema = resolvedTargetSchema(schema: schema)
+        guard let valueContainer = mapSchema.members.first(where: { $0.member.memberSchema.memberName == "value" }) else {
             throw ReaderError.requiredValueNotPresent
         }
         var value = [String: T]()
-        try resolvedReader.children.forEach { reader in
+        for child in resolvedReader.children {
+            child.respectsJSONName = respectsJSONName
+            if !mapSchema.isSparse && child.jsonNode == .null { continue }
             var temp = [String: T]()
-            try valueContainer.performRead(base: &temp, reader: reader)
-            value[reader.nodeInfo.name] = temp["value"]
+            try valueContainer.performRead(base: &temp, reader: child)
+            value[child.nodeInfo.name] = temp["value"]
         }
         return value
     }
@@ -193,7 +199,18 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
     public func readTimestamp(schema: SmithyReadWrite.Schema<Date>) throws -> Date? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent else {
-            return try resolvedDefault(schema: schema)?.asTimestamp()
+            guard let defaultValue = try resolvedDefault(schema: schema) else { return nil }
+            switch defaultValue.type {
+            case .float:
+                let interval = try TimeInterval(defaultValue.asFloat())
+                return try Date(timeIntervalSince1970: interval)
+            case .double:
+                return try Date(timeIntervalSince1970: defaultValue.asDouble())
+            case .timestamp:
+                return try defaultValue.asTimestamp()
+            default:
+                throw SmithyReadWrite.ReaderError.invalidSchema("Unsupported timestamp default type: \(defaultValue.type)")
+            }
         }
         let memberSchema = schema.type == .member ? schema : nil
         let timestampSchema = schema.targetSchema() ?? schema
@@ -218,7 +235,11 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
     }
 
     private func resolvedReader(schema: any SchemaProtocol) throws -> Reader {
-        if schema.type == .member {
+        if schema.httpPayload {
+            return self
+        } else if schema.containerType == .map || schema.containerType == .list || schema.containerType == .set {
+            return self
+        } else if schema.type == .member {
             let resolvedName = try resolvedName(memberSchema: schema)
             return self[NodeInfo(resolvedName)]
         } else {

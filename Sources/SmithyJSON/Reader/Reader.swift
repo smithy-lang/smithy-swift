@@ -32,6 +32,7 @@ public final class Reader: SmithyReader {
     init(nodeInfo: NodeInfo, jsonObject: Any?, parent: Reader? = nil) throws {
         self.nodeInfo = nodeInfo
         self.jsonNode = try Self.jsonNode(for: jsonObject)
+        self.respectsJSONName = parent?.respectsJSONName ?? false
         self.parent = parent
         self.children = try Self.children(from: jsonObject, parent: self)
     }
@@ -76,6 +77,7 @@ public extension Reader {
 
     subscript(nodeInfo: NodeInfo) -> Reader {
         if let match = children.first(where: { nodeInfo.name == $0.nodeInfo.name }) {
+            match.respectsJSONName = respectsJSONName
             return match
         } else {
             // The queried node doesn't exist.  Return one that has nil content.
