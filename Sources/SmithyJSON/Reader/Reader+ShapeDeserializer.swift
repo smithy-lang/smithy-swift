@@ -30,7 +30,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         var value = Target()
         let structureSchema = resolvedTargetSchema(schema: schema)
         try structureSchema.members.forEach { memberContainer in
-            try memberContainer.performRead(base: &value, reader: resolvedReader)
+            try memberContainer.performRead(base: &value, key: "", reader: resolvedReader)
         }
         return value
     }
@@ -41,13 +41,13 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
             return resolvedDefault(schema: schema) != nil ? [] : nil
         }
         let listSchema = resolvedTargetSchema(schema: schema)
-        guard let memberContainer = listSchema.members.first(where: { $0.member.memberSchema.memberName == "member" }) else {
+        guard let memberContainer = listSchema.members.first(where: { $0.member.memberSchema().memberName == "member" }) else {
             throw ReaderError.requiredValueNotPresent
         }
         var value = [T]()
         for child in resolvedReader.children {
             child.respectsJSONName = respectsJSONName
-            try memberContainer.performRead(base: &value, reader: child)
+            try memberContainer.performRead(base: &value, key: "", reader: child)
         }
         return value
     }
@@ -58,16 +58,14 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
             return resolvedDefault(schema: schema) != nil ? [:] : nil
         }
         let mapSchema = resolvedTargetSchema(schema: schema)
-        guard let valueContainer = mapSchema.members.first(where: { $0.member.memberSchema.memberName == "value" }) else {
+        guard let valueContainer = mapSchema.members.first(where: { $0.member.memberSchema().memberName == "value" }) else {
             throw ReaderError.requiredValueNotPresent
         }
         var value = [String: T]()
         for child in resolvedReader.children {
             child.respectsJSONName = respectsJSONName
             if !mapSchema.isSparse && child.jsonNode == .null { continue }
-            var temp = [String: T]()
-            try valueContainer.performRead(base: &temp, reader: child)
-            value[child.nodeInfo.name] = temp["value"]
+            try valueContainer.performRead(base: &value, key: child.nodeInfo.name, reader: child)
         }
         return value
     }
@@ -77,16 +75,17 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         guard resolvedReader.hasContent, case .string = resolvedReader.jsonNode else {
             return try resolvedDefault(schema: schema).map { T(rawValue: try $0.asString())! }
         }
+        let enumSchema = resolvedTargetSchema(schema: schema)
         guard let rawValue: String = try resolvedReader.readIfPresent() else { return nil }
-        for memberContainer in resolvedTargetSchema(schema: schema).members {
-            guard let resolvedEnumValue = try memberContainer.member.memberSchema.enumValue?.asString() ?? memberContainer.member.memberSchema.memberName else {
+        for memberContainer in enumSchema.members {
+            guard let resolvedEnumValue = try memberContainer.member.memberSchema().enumValue?.asString() ?? memberContainer.member.memberSchema().memberName else {
                 throw ReaderError.requiredValueNotPresent
             }
             if rawValue == resolvedEnumValue {
                 return T(rawValue: rawValue)
             }
         }
-        return T(rawValue: "")
+        return T(rawValue: rawValue)
     }
 
     public func readIntEnum<T: RawRepresentable>(schema: Schema<T>) throws -> T? where T.RawValue == Int {
@@ -96,14 +95,14 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         }
         guard let rawValue: Int = try resolvedReader.readIfPresent() else { return nil }
         for memberContainer in resolvedTargetSchema(schema: schema).members {
-            guard let resolvedEnumValue = try memberContainer.member.memberSchema.enumValue?.asInteger() else {
+            guard let resolvedEnumValue = try memberContainer.member.memberSchema().enumValue?.asInteger() else {
                 throw ReaderError.requiredValueNotPresent
             }
             if rawValue == resolvedEnumValue {
                 return T(rawValue: rawValue)
             }
         }
-        return T(rawValue: Int.min)
+        return T(rawValue: rawValue)
     }
 
     public func readString(schema: Schema<String>) throws -> String? {

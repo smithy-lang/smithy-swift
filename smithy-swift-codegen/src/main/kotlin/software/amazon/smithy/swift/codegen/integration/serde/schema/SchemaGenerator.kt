@@ -33,7 +33,7 @@ class SchemaGenerator(
         writer.openBlock(
             "var \$L: \$N<\$N> {",
             "}",
-            shape.schemaVar,
+            shape.schemaVar(writer),
             SmithyReadWriteTypes.Schema,
             ctx.symbolProvider.toSymbol(shape),
         ) {
@@ -48,6 +48,7 @@ class SchemaGenerator(
             SmithyReadWriteTypes.Schema,
             ctx.symbolProvider.toSymbol(shape),
         ) {
+            writer.write("id: \$S,", shape.id.toString())
             writer.write("type: .\$L,", shape.type)
             if (shape.members().isNotEmpty()) {
                 writer.openBlock("members: [", "],") {
@@ -55,26 +56,26 @@ class SchemaGenerator(
                         .filter { it.isInHttpBody() }
                         .filter { !ctx.model.expectShape(it.target).hasTrait<StreamingTrait>() }
                         .forEach { member ->
-                        writer.openBlock(".init(member:", "),") {
-                            writer.openBlock(
-                                "\$N<\$N>.Member<\$N>(",
-                                ")",
-                                SmithyReadWriteTypes.Schema,
-                                ctx.symbolProvider.toSymbol(shape),
-                                ctx.symbolProvider.toSymbol(ctx.model.expectShape(member.target)),
-                            ) {
-                                writer.write("memberSchema: \$L,", member.schemaVar)
-                                writeSetterGetter(writer, shape, member)
-                                writer.unwrite(",\n")
-                                writer.write("")
+                            writer.openBlock(".init(member:", "),") {
+                                writer.openBlock(
+                                    "\$N<\$N>.Member<\$N>(",
+                                    ")",
+                                    SmithyReadWriteTypes.Schema,
+                                    ctx.symbolProvider.toSymbol(shape),
+                                    ctx.symbolProvider.toSymbol(ctx.model.expectShape(member.target)),
+                                ) {
+                                    writer.write("memberSchema: { \$L },", member.schemaVar(writer))
+                                    writeSetterGetter(writer, shape, member)
+                                    writer.unwrite(",\n")
+                                    writer.write("")
+                                }
                             }
                         }
-                    }
                     writer.unwrite(",\n")
                     writer.write("")
                 }
             }
-            targetShape(shape)?.let { writer.write("targetSchema: { \$L },", it.schemaVar) }
+            targetShape(shape)?.let { writer.write("targetSchema: { \$L },", it.schemaVar(writer)) }
             shape.id.member.getOrNull()?.let { writer.write("memberName: \$S,", it) }
             memberShape(shape)?.let { writer.write("containerType: .\$L,", ctx.model.expectShape(it.container).type) }
             jsonName(shape)?.let { writer.write("jsonName: \$S,", it) }
@@ -105,46 +106,56 @@ class SchemaGenerator(
     private fun writeSetterGetter(writer: SwiftWriter, shape: Shape, member: MemberShape) {
         val target = ctx.model.expectShape(member.target)
         val readMethodName = target.readMethodName
-        val memberIsRequired = member.isRequired
-                || (member.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>())
-                || (shape.isMapShape && member.memberName == "value" && !shape.hasTrait<SparseTrait>())
-                || (shape.isListShape && !shape.hasTrait<SparseTrait>())
-                || shape.isUnionShape
+        val memberIsRequired = member.isRequired ||
+            (member.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) ||
+            (shape.isMapShape && member.memberName == "value" && !shape.hasTrait<SparseTrait>()) ||
+            (shape.isListShape && !shape.hasTrait<SparseTrait>()) ||
+            shape.isUnionShape
         val readMethodExtension = "NonNull".takeIf { memberIsRequired } ?: ""
         when (shape.type) {
             ShapeType.STRUCTURE -> {
                 val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
                 writer.write(
-                    "readBlock: { \$\$0.\$L\$L = try \$\$1.\$L\$L(schema: \$L) },",
+                    "readBlock: { value, _, reader in value.\$L\$L = try reader.\$L\$L(schema: \$L) },",
                     path,
                     ctx.symbolProvider.toMemberName(member),
                     readMethodName,
                     readMethodExtension,
-                    member.schemaVar,
+                    member.schemaVar(writer),
                 )
             }
             ShapeType.UNION -> {
-                writer.write(
-                    "readBlock: { value, reader in try reader.\$L(schema: \$L).map { unwrapped in value = .\$L(unwrapped) } },",
-                    readMethodName,
-                    member.schemaVar,
-                    ctx.symbolProvider.toMemberName(member),
-                )
+                if (member.target.toString() != "smithy.api#Unit") {
+                    writer.write(
+                        "readBlock: { value, _, reader in try reader.\$L(schema: \$L).map { value = .\$L(\$\$0) } },",
+                        readMethodName,
+                        member.schemaVar(writer),
+                        ctx.symbolProvider.toMemberName(member),
+                    )
+                } else {
+                    writer.write(
+                        "readBlock: { value, _, reader in try reader.\$L(schema: \$L).map { _ in value = .\$L } },",
+                        readMethodName,
+                        member.schemaVar(writer),
+                        ctx.symbolProvider.toMemberName(member),
+                    )
+                }
             }
             ShapeType.SET, ShapeType.LIST -> {
-                writer.write("readBlock: { try \$\$0.append(\$\$1.\$L\$L(schema: \$L)) },",
+                writer.write(
+                    "readBlock: { value, _, reader in try value.append(reader.\$L\$L(schema: \$L)) },",
                     readMethodName,
                     readMethodExtension,
-                    member.schemaVar,
+                    member.schemaVar(writer),
                 )
             }
             ShapeType.MAP -> {
                 if (member.memberName != "key") {
                     writer.write(
-                        "readBlock: { try \$\$0[\"value\"] = \$\$1.\$L\$L(schema: \$L) },",
+                        "readBlock: { value, key, reader in try value[key] = reader.\$L\$L(schema: \$L) },",
                         readMethodName,
                         readMethodExtension,
-                        member.schemaVar,
+                        member.schemaVar(writer),
                     )
                 }
             }

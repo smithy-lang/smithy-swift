@@ -12,6 +12,7 @@ import struct Foundation.Date
 
 @_spi(SmithyReadWrite)
 public protocol SchemaProtocol {
+    var id: String { get }
     var type: ShapeType { get }
     var defaultValue: (any SmithyDocument)? { get }
     var jsonName: String? { get }
@@ -52,8 +53,8 @@ public extension SchemaProtocol {
 @_spi(SmithyReadWrite)
 public protocol MemberProtocol<Base> {
     associatedtype Base
-    var memberSchema: SchemaProtocol { get }
-    func performRead(base: inout Base, reader: any ShapeDeserializer) throws
+    var memberSchema: () -> (any SchemaProtocol) { get }
+    func performRead(base: inout Base, key: String, reader: any ShapeDeserializer) throws
     func performWrite(base: Base, writer: any SmithyWriter) throws
 }
 
@@ -65,8 +66,8 @@ public struct MemberContainer<Base> {
         self.member = member
     }
 
-    public func performRead(base: inout Base, reader: any ShapeDeserializer) throws {
-        try member.performRead(base: &base, reader: reader)
+    public func performRead(base: inout Base, key: String, reader: any ShapeDeserializer) throws {
+        try member.performRead(base: &base, key: key, reader: reader)
     }
 
     public func performWrite(base: Base, writer: any SmithyWriter) throws {
@@ -78,14 +79,14 @@ public struct MemberContainer<Base> {
 public struct Schema<Base>: SchemaProtocol {
 
     public struct Member<Target>: MemberProtocol {
-        public var memberSchema: any SchemaProtocol { memberSchemaSpecific }
-        public let memberSchemaSpecific: Schema<Target>
-        let readBlock: (inout Base, any ShapeDeserializer) throws -> Void
+        public var memberSchema: () -> (any SchemaProtocol) { { memberSchemaSpecific() } }
+        public let memberSchemaSpecific: () -> Schema<Target>
+        let readBlock: (inout Base, String, any ShapeDeserializer) throws -> Void
         let writeBlock: (Base, any SmithyWriter) throws -> Void
 
         public init(
-            memberSchema: Schema<Target>,
-            readBlock: @escaping (inout Base, any ShapeDeserializer) throws -> Void = { _, _ in },
+            memberSchema: @escaping () -> Schema<Target>,
+            readBlock: @escaping (inout Base, String, any ShapeDeserializer) throws -> Void = { _, _, _ in },
             writeBlock: @escaping (Base, any SmithyWriter) throws -> Void = { _, _ in }
         ) {
             self.memberSchemaSpecific = memberSchema
@@ -93,8 +94,8 @@ public struct Schema<Base>: SchemaProtocol {
             self.writeBlock = writeBlock
         }
 
-        public func performRead(base: inout Base, reader: any ShapeDeserializer) throws {
-            try readBlock(&base, reader)
+        public func performRead(base: inout Base, key: String, reader: any ShapeDeserializer) throws {
+            try readBlock(&base, key, reader)
         }
 
         public func performWrite(base: Base, writer: any SmithyWriter) throws {
@@ -102,6 +103,7 @@ public struct Schema<Base>: SchemaProtocol {
         }
     }
 
+    public let id: String
     public let type: ShapeType
     public let members: [MemberContainer<Base>]
     public let targetSchema: () -> Schema<Base>?
@@ -116,6 +118,7 @@ public struct Schema<Base>: SchemaProtocol {
     public let defaultValue: (any Smithy.SmithyDocument)?
 
     public init(
+        id: String,
         type: ShapeType,
         members: [MemberContainer<Base>] = [],
         targetSchema: @escaping () -> Schema<Base>? = { nil },
@@ -129,6 +132,7 @@ public struct Schema<Base>: SchemaProtocol {
         isRequired: Bool = false,
         defaultValue: (any SmithyDocument)? = nil
     ) {
+        self.id = id
         self.type = type
         self.members = members
         self.targetSchema = targetSchema

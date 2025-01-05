@@ -54,7 +54,6 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isError
 import software.amazon.smithy.swift.codegen.swiftEnumCaseName
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
@@ -76,8 +75,10 @@ open class MemberShapeDecodeGenerator(
             else -> renderMemberExp(member, isPayload)
         }
         val memberName = ctx.symbolProvider.toMemberName(member)
-        if (decodingUnion) {
+        if (decodingUnion && member.target.toString() != "smithy.api#Unit") {
             writer.write("return .\$L(\$L)", memberName, readExp)
+        } else if (decodingUnion) {
+            writer.write("return .\$L", memberName)
         } else if (shapeContainingMembers.isError) {
             writer.write("value.properties.\$L = \$L", memberName, readExp)
         } else {
@@ -92,7 +93,7 @@ open class MemberShapeDecodeGenerator(
                 "try \$L.readStructure\$L(schema: \$L)",
                 reader(memberShape, isPayload),
                 "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
-                memberShape.schemaVar,
+                memberShape.schemaVar(writer),
             )
         }
         val readingClosure = readingClosureUtils.readingClosure(memberShape)
@@ -111,7 +112,7 @@ open class MemberShapeDecodeGenerator(
                 "try \$L.readList\$L(schema: \$L)",
                 reader(memberShape, false),
                 "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
-                memberShape.schemaVar,
+                memberShape.schemaVar(writer),
             )
         }
         val isSparse = listShape.hasTrait<SparseTrait>()
@@ -136,7 +137,7 @@ open class MemberShapeDecodeGenerator(
                 "try \$L.readMap\$L(schema: \$L)",
                 reader(memberShape, false),
                 "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
-                memberShape.schemaVar,
+                memberShape.schemaVar(writer),
             )
         }
         val isSparse = mapShape.hasTrait<SparseTrait>()
@@ -180,7 +181,7 @@ open class MemberShapeDecodeGenerator(
                 reader(memberShape, isPayload),
                 target.readMethodName,
                 "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
-                memberShape.schemaVar,
+                memberShape.schemaVar(writer),
             )
         }
         return writer.format(

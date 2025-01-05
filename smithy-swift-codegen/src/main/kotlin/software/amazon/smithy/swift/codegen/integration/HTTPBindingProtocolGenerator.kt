@@ -18,13 +18,11 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.EnumValueTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
@@ -36,7 +34,6 @@ import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.RequiresLengthTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.NeedsReaderTrait
 import software.amazon.smithy.swift.codegen.customtraits.NeedsWriterTrait
@@ -73,7 +70,6 @@ import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.findStreamingMember
 import software.amazon.smithy.swift.codegen.model.hasEventStreamMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.model.isEnum
 import software.amazon.smithy.swift.codegen.model.isInputEventStream
 import software.amazon.smithy.swift.codegen.model.isOutputEventStream
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
@@ -220,8 +216,12 @@ abstract class HTTPBindingProtocolGenerator(
         if (ctx.service.responseWireProtocol != WireProtocol.JSON) { return }
         val nestedShapes = resolveShapesNeedingSchema(ctx)
             .filter { !it.hasTrait<StreamingTrait>() }
-            .filter { !(it.asMemberShape().getOrNull()?.let {
-                ctx.model.expectShape(it.target).hasTrait<StreamingTrait>() } ?: false)
+            .filter {
+                !(
+                    it.asMemberShape().getOrNull()?.let {
+                        ctx.model.expectShape(it.target).hasTrait<StreamingTrait>()
+                    } ?: false
+                    )
             }
         for (shape in nestedShapes) {
             renderSchemas(ctx, shape)
@@ -358,36 +358,6 @@ abstract class HTTPBindingProtocolGenerator(
         return nestedTypes
     }
 
-    private fun resolveShapesNeedingSchema(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        val topLevelOutputMembers = getHttpBindingOperations(ctx)
-            .map { ctx.model.expectShape(it.output.get()) }
-            .toSet()
-
-        val topLevelErrorMembers = getHttpBindingOperations(ctx)
-            .flatMap { it.errors }
-            .map { ctx.model.expectShape(it) }
-            .toSet()
-
-        val topLevelServiceErrorMembers = ctx.service.errors
-            .map { ctx.model.expectShape(it) }
-            .toSet()
-
-//        val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
-//            val inputShape = ctx.model.expectShape(it.input.get())
-//            inputShape.members()
-//        }
-//            .map { ctx.model.expectShape(it.target) }
-//            .toSet()
-
-        val allTopLevelMembers =
-            topLevelOutputMembers
-                .union(topLevelErrorMembers)
-                .union(topLevelServiceErrorMembers)
-//                .union(topLevelInputMembers)
-
-        return walkNestedShapesRequiringSchema(ctx, allTopLevelMembers)
-    }
-
     private fun walkNestedShapesRequiringSerde(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<Shape> {
         val resolved = mutableSetOf<Shape>()
         val walker = Walker(ctx.model)
@@ -416,6 +386,38 @@ abstract class HTTPBindingProtocolGenerator(
         return resolved
     }
 
+    private fun resolveShapesNeedingSchema(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
+        val topLevelOutputMembers = getHttpBindingOperations(ctx)
+            .map { ctx.model.expectShape(it.output.get()) }
+            .toSet()
+
+        val topLevelErrorMembers = getHttpBindingOperations(ctx)
+            .flatMap { it.errors }
+            .map { ctx.model.expectShape(it) }
+            .toSet()
+
+        val topLevelServiceErrorMembers = ctx.service.errors
+            .map { ctx.model.expectShape(it) }
+            .toSet()
+
+        // Input members excluded from schema generation until schema-based deser is implemented
+
+//        val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
+//            val inputShape = ctx.model.expectShape(it.input.get())
+//            inputShape.members()
+//        }
+//            .map { ctx.model.expectShape(it.target) }
+//            .toSet()
+
+        val allTopLevelMembers =
+            topLevelOutputMembers
+                .union(topLevelErrorMembers)
+                .union(topLevelServiceErrorMembers)
+//                .union(topLevelInputMembers)
+
+        return walkNestedShapesRequiringSchema(ctx, allTopLevelMembers)
+    }
+
     private fun walkNestedShapesRequiringSchema(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<Shape> {
         val resolved = mutableSetOf<Shape>()
         val walker = Walker(ctx.model)
@@ -434,10 +436,14 @@ abstract class HTTPBindingProtocolGenerator(
                     RelationshipType.UNION_MEMBER,
                     RelationshipType.ENUM_MEMBER,
                     RelationshipType.INT_ENUM_MEMBER,
-                        -> true
+                    -> true
                     else -> false
                 }
-            }.forEach { resolved.add(it) }
+            }.forEach {
+                // Don't generate schemas for Smithy built-in / "prelude" shapes.
+                // Those are included in runtime.
+                if (it.id.namespace != "smithy.api") { resolved.add(it) }
+            }
         }
         return resolved
     }

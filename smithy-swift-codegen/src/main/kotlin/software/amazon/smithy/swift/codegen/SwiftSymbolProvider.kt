@@ -48,7 +48,6 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.InputTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.lang.swiftReservedWords
 import software.amazon.smithy.swift.codegen.model.SymbolProperty
@@ -175,9 +174,16 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         if (shape.hasTrait<NestedTrait>() && service != null && !shape.hasTrait<ErrorTrait>()) {
             builder.namespace(service.nestedNamespaceType(this).name, ".")
         }
-        if (shape.id.toString() == "smithy.api#Unit" && !shape.hasTrait<NestedTrait>() && service != null) {
-            builder.name("EnumUnit")
-            builder.namespace(service.nestedNamespaceType(this).name, ".")
+        if (shape.id.namespace == "smithy.api") {
+            when (shape.id.name) {
+                "Unit" -> {
+                    builder.addDependency(SwiftDependency.SMITHY_READ_WRITE)
+                    builder.namespace(SwiftDependency.SMITHY_READ_WRITE.target, ".")
+                    builder.name("Unit")
+                    builder.putProperty("spiNames", listOf("SmithyReadWrite"))
+                }
+                else -> throw Exception("Unhandled prelude type converted to Symbol")
+            }
         }
         return builder.build()
     }

@@ -4,4 +4,3 @@ software.amazon.smithy.swift.codegen.ServiceNamespaceIntegration
 software.amazon.smithy.swift.codegen.DefaultClientConfigurationIntegration
 software.amazon.smithy.swift.codegen.integration.ExtractTelemetryLoggerConfig
 software.amazon.smithy.swift.codegen.swiftintegrations.TestEquatableConformanceIntegration
-software.amazon.smithy.swift.codegen.swiftintegrations.SmithyEnumUnitIntegration
