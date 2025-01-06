@@ -23,7 +23,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         let resolvedReader = try resolvedReader(schema: schema)
         let structureSchema = resolvedTargetSchema(schema: schema)
         guard let factory = structureSchema.factory else {
-            throw SmithyReadWrite.ReaderError.invalidSchema("Missing factory for structure or union: \(structureSchema.id)")
+            throw ReaderError.invalidSchema("Missing factory for structure or union: \(structureSchema.id)")
         }
         guard resolvedReader.hasContent, resolvedReader.jsonNode == .object else {
             return resolvedDefault(schema: schema) != nil ? factory() : nil
@@ -41,7 +41,9 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
             return resolvedDefault(schema: schema) != nil ? [] : nil
         }
         let listSchema = resolvedTargetSchema(schema: schema)
-        guard let memberContainer = listSchema.members.first(where: { $0.member.memberSchema().memberName == "member" }) else {
+        guard let memberContainer = listSchema.members.first(
+            where: { $0.member.memberSchema().memberName == "member" }
+        ) else {
             throw ReaderError.requiredValueNotPresent
         }
         var value = [T]()
@@ -52,13 +54,15 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return value
     }
 
-    public func readMap<T>(schema: Schema<[String: T]>) throws -> [String : T]? {
+    public func readMap<T>(schema: Schema<[String: T]>) throws -> [String: T]? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, resolvedReader.jsonNode == .object else {
             return resolvedDefault(schema: schema) != nil ? [:] : nil
         }
         let mapSchema = resolvedTargetSchema(schema: schema)
-        guard let valueContainer = mapSchema.members.first(where: { $0.member.memberSchema().memberName == "value" }) else {
+        guard let valueContainer = mapSchema.members.first(
+            where: { $0.member.memberSchema().memberName == "value" }
+        ) else {
             throw ReaderError.requiredValueNotPresent
         }
         var value = [String: T]()
@@ -78,7 +82,9 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         let enumSchema = resolvedTargetSchema(schema: schema)
         guard let rawValue: String = try resolvedReader.readIfPresent() else { return nil }
         for memberContainer in enumSchema.members {
-            guard let resolvedEnumValue = try memberContainer.member.memberSchema().enumValue?.asString() ?? memberContainer.member.memberSchema().memberName else {
+            guard let resolvedEnumValue =
+                try memberContainer.member.memberSchema().enumValue?.asString() ??
+                    memberContainer.member.memberSchema().memberName else {
                 throw ReaderError.requiredValueNotPresent
             }
             if rawValue == resolvedEnumValue {
@@ -208,7 +214,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
             case .timestamp:
                 return try defaultValue.asTimestamp()
             default:
-                throw SmithyReadWrite.ReaderError.invalidSchema("Unsupported timestamp default type: \(defaultValue.type)")
+                throw ReaderError.invalidSchema("Unsupported timestamp default type: \(defaultValue.type)")
             }
         }
         let memberSchema = schema.type == .member ? schema : nil

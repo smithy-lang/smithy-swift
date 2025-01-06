@@ -98,12 +98,6 @@ object ClientRuntimeTypes {
         val InterceptorProviders = runtimeSymbol("[ClientRuntime.InterceptorProvider]", null, listOf(InterceptorProvider))
         val HttpInterceptorProviders = runtimeSymbol("[ClientRuntime.HttpInterceptorProvider]", null, listOf(HttpInterceptorProvider))
     }
-
-    object Model {
-        val StructureMember = runtimeSymbol("StructureMember", SwiftDeclaration.STRUCT)
-        val UnionMember = runtimeSymbol("UnionMember", SwiftDeclaration.STRUCT)
-        val EnumMember = runtimeSymbol("EnumMember", SwiftDeclaration.STRUCT)
-    }
 }
 
 private fun runtimeSymbol(

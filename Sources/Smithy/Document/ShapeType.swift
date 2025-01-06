@@ -43,7 +43,8 @@ public enum ShapeType {
 
     public var category: Category {
         switch self {
-        case .blob, .boolean, .string, .timestamp, .byte, .short, .integer, .long, .float, .document, .double, .bigDecimal, .bigInteger, .enum, .intEnum:
+        case .blob, .boolean, .string, .timestamp, .byte, .short, .integer, .long,
+             .float, .document, .double, .bigDecimal, .bigInteger, .enum, .intEnum:
             return .simple
         case .list, .set, .map, .structure, .union:
             return .aggregate

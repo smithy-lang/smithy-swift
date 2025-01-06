@@ -245,6 +245,7 @@ abstract class HTTPBindingProtocolGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
     ) {
+        if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) { return }
         val shapeUsesSchemaBasedRead = ctx.service.responseWireProtocol == WireProtocol.JSON && shape.hasTrait<NestedTrait>()
         if (shapeUsesSchemaBasedRead && !shape.hasTrait<NeedsWriterTrait>()) { return }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
