@@ -23,7 +23,6 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
@@ -76,6 +75,7 @@ import software.amazon.smithy.swift.codegen.model.targetOrSelf
 import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
+import software.amazon.smithy.swift.codegen.utils.SchemaFileUtils
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
@@ -231,7 +231,7 @@ abstract class HTTPBindingProtocolGenerator(
     private fun renderSchemas(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
-        val filename = ModelFileUtils.filename(ctx.settings, "${shape.id.name}+Schema")
+        val filename = SchemaFileUtils.filename(ctx.settings, "${shape.id.name}+Schema")
         val encodeSymbol = Symbol.builder()
             .definitionFile(filename)
             .name(symbolName)
@@ -247,7 +247,6 @@ abstract class HTTPBindingProtocolGenerator(
     ) {
         val shapeUsesSchemaBasedRead = ctx.service.responseWireProtocol == WireProtocol.JSON && shape.hasTrait<NestedTrait>()
         if (shapeUsesSchemaBasedRead && !shape.hasTrait<NeedsWriterTrait>()) { return }
-        if (ctx.service.responseWireProtocol == WireProtocol.JSON && !shape.hasTrait<NeedsWriterTrait>()) { return }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
         val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+ReadWrite")
@@ -262,7 +261,6 @@ abstract class HTTPBindingProtocolGenerator(
                     is StructureShape -> {
                         // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
                         val httpBodyMembers = members.filter { it.isInHttpBody() }
-                        val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
                         if (shape.hasTrait<NeedsWriterTrait>()) {
                             writer.write("")
                             renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer)
@@ -277,7 +275,7 @@ abstract class HTTPBindingProtocolGenerator(
                             writer.write("")
                             UnionEncodeGenerator(ctx, shape, members, writer).render()
                         }
-                        if (shape.hasTrait<NeedsReaderTrait>()) {
+                        if (shape.hasTrait<NeedsReaderTrait>() && !shapeUsesSchemaBasedRead) {
                             writer.write("")
                             UnionDecodeGenerator(ctx, shape, members, writer).render()
                         }
@@ -400,7 +398,7 @@ abstract class HTTPBindingProtocolGenerator(
             .map { ctx.model.expectShape(it) }
             .toSet()
 
-        // Input members excluded from schema generation until schema-based deser is implemented
+        // Input members excluded from schema generation until schema-based deserialization is implemented
 
 //        val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
 //            val inputShape = ctx.model.expectShape(it.input.get())

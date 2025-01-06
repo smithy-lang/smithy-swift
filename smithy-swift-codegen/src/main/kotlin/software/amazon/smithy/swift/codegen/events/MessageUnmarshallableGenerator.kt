@@ -99,7 +99,8 @@ class MessageUnmarshallableGenerator(
                                 writer.write("}")
                             }
                             writer.write("}")
-                            writer.write("throw try makeError(message, params)")
+                            writer.write("let error = try makeError(message, params)")
+                            writer.write("throw error")
                         }
                         writer.write("case .error(let params):")
                         writer.indent {
