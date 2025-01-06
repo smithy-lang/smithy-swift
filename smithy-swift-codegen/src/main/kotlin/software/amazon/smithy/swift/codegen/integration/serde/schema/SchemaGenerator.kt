@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.isEnum
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
@@ -56,7 +57,7 @@ class SchemaGenerator(
             } else if (shape.type == ShapeType.UNION) {
                 writer.write("factory: { .sdkUnknown(\"\") },")
             }
-            if (shape.members().isNotEmpty()) {
+            if (shape.members().isNotEmpty() && !shape.isEnum && !shape.isIntEnumShape) {
                 writer.openBlock("members: [", "],") {
                     shape.members()
                         .filter { it.isInHttpBody() }

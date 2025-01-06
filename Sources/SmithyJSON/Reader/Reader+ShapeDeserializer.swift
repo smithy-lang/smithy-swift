@@ -81,16 +81,6 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         }
         let enumSchema = resolvedTargetSchema(schema: schema)
         guard let rawValue: String = try resolvedReader.readIfPresent() else { return nil }
-        for memberContainer in enumSchema.members {
-            guard let resolvedEnumValue =
-                try memberContainer.member.memberSchema().enumValue?.asString() ??
-                    memberContainer.member.memberSchema().memberName else {
-                throw ReaderError.requiredValueNotPresent
-            }
-            if rawValue == resolvedEnumValue {
-                return T(rawValue: rawValue)
-            }
-        }
         return T(rawValue: rawValue)
     }
 
@@ -100,14 +90,6 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
             return try resolvedDefault(schema: schema).map { T(rawValue: try $0.asInteger())! }
         }
         guard let rawValue: Int = try resolvedReader.readIfPresent() else { return nil }
-        for memberContainer in resolvedTargetSchema(schema: schema).members {
-            guard let resolvedEnumValue = try memberContainer.member.memberSchema().enumValue?.asInteger() else {
-                throw ReaderError.requiredValueNotPresent
-            }
-            if rawValue == resolvedEnumValue {
-                return T(rawValue: rawValue)
-            }
-        }
         return T(rawValue: rawValue)
     }
 

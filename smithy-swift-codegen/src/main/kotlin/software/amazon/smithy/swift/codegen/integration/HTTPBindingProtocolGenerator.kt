@@ -69,6 +69,7 @@ import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.findStreamingMember
 import software.amazon.smithy.swift.codegen.model.hasEventStreamMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.isEnum
 import software.amazon.smithy.swift.codegen.model.isInputEventStream
 import software.amazon.smithy.swift.codegen.model.isOutputEventStream
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
@@ -433,8 +434,6 @@ abstract class HTTPBindingProtocolGenerator(
                     RelationshipType.MAP_KEY,
                     RelationshipType.MAP_VALUE,
                     RelationshipType.UNION_MEMBER,
-                    RelationshipType.ENUM_MEMBER,
-                    RelationshipType.INT_ENUM_MEMBER,
                     -> true
                     else -> false
                 }
