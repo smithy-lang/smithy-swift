@@ -24,6 +24,7 @@ class ServiceGenerator() {
          * Renders the definition of operation, followed by no CR
          */
         fun renderOperationDefinition(
+            serviceName: String,
             model: Model,
             service: ServiceShape,
             symbolProvider: SymbolProvider,
@@ -42,7 +43,7 @@ class ServiceGenerator() {
             val outputShape = opIndex.getOutput(op).get()
             val outputShapeName = symbolProvider.toSymbol(outputShape).name
 
-            renderOperationDoc(model, service, op, writer)
+            renderOperationDoc(serviceName, model, service, op, writer)
 
             val accessSpecifier = if (insideProtocol) "" else "public "
 
@@ -58,8 +59,14 @@ class ServiceGenerator() {
         /**
          * Helper method for generating in-line documentation for operation
          */
-        private fun renderOperationDoc(model: Model, service: ServiceShape, op: OperationShape, writer: SwiftWriter) {
-            writer.writeDocs("Performs the \\`${op.id.name}\\` operation on the \\`${service.id.name}\\` service.")
+        private fun renderOperationDoc(
+            serviceName: String,
+            model: Model,
+            service: ServiceShape,
+            op: OperationShape,
+            writer: SwiftWriter
+        ) {
+            writer.writeDocs("Performs the \\`${op.id.name}\\` operation on the \\`${serviceName}\\` service.")
             writer.writeDocs("")
             writer.writeShapeDocs(op)
             writer.writeAvailableAttribute(model, op)
