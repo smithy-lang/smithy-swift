@@ -7,17 +7,17 @@
 
 import Logging
 
-/// Wrapper for Logger.Level; used by SDKLoggingSystem.
-public enum SDKLogLevel: String, Codable, CaseIterable {
+/// Wrapper for Logger.Level; used by LogAgent and SwiftLogger.
+public enum LogAgentLevel: String, Codable, CaseIterable {
     case trace
     case debug
     case info
     case notice
-    case warning
+    case warn
     case error
-    case critical
+    case fatal
 
-    public func toLoggerType() -> Logger.Level {
+    func toLoggerLevel() -> Logger.Level {
         switch self {
         case .trace:
             return .trace
@@ -27,11 +27,11 @@ public enum SDKLogLevel: String, Codable, CaseIterable {
             return .info
         case .notice:
             return .notice
-        case .warning:
+        case .warn:
             return .warning
         case .error:
             return .error
-        case .critical:
+        case .fatal:
             return .critical
         }
     }
