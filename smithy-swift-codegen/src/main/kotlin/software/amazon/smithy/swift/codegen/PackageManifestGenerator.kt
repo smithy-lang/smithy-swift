@@ -30,24 +30,26 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                     writer.write(".library(name: \$S, targets: [\$S])", ctx.settings.moduleName, ctx.settings.moduleName)
                 }
 
-                val externalDependencies = dependencies.filter {
-                    it.getProperty("url", String::class.java).getOrNull() != null ||
-                        it.getProperty("scope", String::class.java).getOrNull() != null
-                }
+                val externalDependencies = dependencies
+                    .filter {
+                        it.getProperty("url", String::class.java).getOrNull() != null ||
+                            it.getProperty("scope", String::class.java).getOrNull() != null
+                    }
+
                 val dependenciesByURL = externalDependencies
                     .distinctBy {
                         it.getProperty("url", String::class.java).getOrNull()
                             ?: "${it.getProperty("scope", String::class.java).get()}.${it.packageName}"
                     }
-                    .sorted()
+                    .sortedBy { it.targetName() }
 
                 writer.openBlock("dependencies: [", "],") {
                     dependenciesByURL.forEach { writePackageDependency(writer, it) }
                 }
 
                 val dependenciesByTarget = externalDependencies
-                    .distinctBy { it.expectProperty("target", String::class.java) + it.packageName }
-                    .sorted()
+                    .distinctBy { it.targetName() + it.packageName }
+                    .sortedBy { it.targetName() }
 
                 writer.openBlock("targets: [", "]") {
                     writer.openBlock(".target(", "),") {
@@ -84,11 +86,15 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
 
     private fun writeTargetDependency(writer: SwiftWriter, dependency: SymbolDependency) {
         writer.openBlock(".product(", "),") {
-            val target = dependency.expectProperty("target", String::class.java)
+            val target = dependency.targetName()
             writer.write("name: \$S,", target)
             val scope = dependency.getProperty("scope", String::class.java).getOrNull()
             val packageName = scope?.let { "$it.${dependency.packageName}" } ?: dependency.packageName
             writer.write("package: \$S", packageName)
         }
     }
+}
+
+private fun SymbolDependency.targetName(): String {
+    return expectProperty("target", String::class.java)
 }
