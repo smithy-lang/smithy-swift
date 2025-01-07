@@ -48,7 +48,6 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         }
         var value = [T]()
         for child in resolvedReader.children {
-            child.respectsJSONName = respectsJSONName
             try memberContainer.performRead(base: &value, key: "", reader: child)
         }
         return value
@@ -67,7 +66,6 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         }
         var value = [String: T]()
         for child in resolvedReader.children {
-            child.respectsJSONName = respectsJSONName
             if !mapSchema.isSparse && child.jsonNode == .null { continue }
             try valueContainer.performRead(base: &value, key: child.nodeInfo.name, reader: child)
         }
@@ -79,7 +77,6 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         guard resolvedReader.hasContent, case .string = resolvedReader.jsonNode else {
             return try resolvedDefault(schema: schema).map { T(rawValue: try $0.asString())! }
         }
-        let enumSchema = resolvedTargetSchema(schema: schema)
         guard let rawValue: String = try resolvedReader.readIfPresent() else { return nil }
         return T(rawValue: rawValue)
     }
