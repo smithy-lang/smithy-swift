@@ -28,7 +28,8 @@ open class StaticHttpBindingResolver(
     private val httpTrait: HttpTrait,
     private val defaultContentType: String
 ) : HttpBindingResolver {
-    protected fun getServiceName(): String = context.service.id.name
+    protected val serviceName: String
+        get() = context.service.id.name
 
     override fun httpTrait(operationShape: OperationShape): HttpTrait {
         return httpTrait

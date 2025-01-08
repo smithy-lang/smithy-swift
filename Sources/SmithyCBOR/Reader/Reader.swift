@@ -208,34 +208,15 @@ public final class Reader: SmithyReader {
     ) throws -> [Member]? {
         guard let cborValue else { return nil }
         guard case .array = cborValue else { return nil }
-
         return try children.map { child in
-            // Check if the child is an indefinite-length text
-            if case .indef_text_start = child.cborValue {
-                var combinedText = ""
-                for grandChild in child.children {
-                    if let chunk = try grandChild.readIfPresent() as String? {
-                        combinedText += chunk
-                    }
-                }
-                // Safely return the combined text
-                if let result = combinedText as? Member {
-                    return result
-                } else {
-                    throw ReaderError.invalidType("Expected Member type, but got \(type(of: combinedText))")
-                }
-            } else {
-                // Handle regular values
-                return try memberReadingClosure(child)
-            }
+            return try memberReadingClosure(child)
         }
     }
 
     public func readNullIfPresent() throws -> Bool? {
-        if cborValue == .null {
-            return true
-        } else {
+        guard let value = cborValue else {
             return nil
         }
+        return value == .null
     }
 }
