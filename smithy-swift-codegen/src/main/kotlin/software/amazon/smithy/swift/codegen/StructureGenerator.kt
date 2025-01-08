@@ -151,7 +151,7 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
                     val terminator = if (index == membersSortedByName.size - 1) "" else ","
-                    writer.write("\$L: \$T = \$D\$L", memberName, memberSymbol, memberSymbol, terminator)
+                    writer.write("\$L: \$D\$L", memberName, memberSymbol, terminator)
                 }
             }
             writer.openBlock("{", "}") {
@@ -245,7 +245,7 @@ class StructureGenerator(
                     writer.writeAvailableAttribute(model, it)
                     val targetShape = model.expectShape(it.target)
                     val boxedOrNot = "@Boxed ".takeIf { targetShape.hasTrait<SwiftBoxTrait>() }
-                    writer.write("\$Lpublic internal(set) var \$L: \$T = \$D", boxedOrNot, memberName, memberSymbol, memberSymbol)
+                    writer.write("\$Lpublic internal(set) var \$L: \$D", boxedOrNot, memberName, memberSymbol)
                 }
             }
             writer.write("")

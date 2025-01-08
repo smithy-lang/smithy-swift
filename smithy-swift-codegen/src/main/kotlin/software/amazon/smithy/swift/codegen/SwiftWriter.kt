@@ -193,7 +193,7 @@ class SwiftWriter(
 
                     if (shouldSetDefault) {
                         getDefaultValue(type)?.let {
-                            formatted = "$it"
+                            formatted += " = $it"
                         }
                     }
 
