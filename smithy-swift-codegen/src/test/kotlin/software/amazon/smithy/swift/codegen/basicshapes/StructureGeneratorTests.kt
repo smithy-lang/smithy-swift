@@ -55,8 +55,7 @@ public struct MyStruct: Swift.Sendable {
         bar: Swift.Int = 0,
         baz: Swift.Int? = nil,
         foo: Swift.String? = nil
-    )
-    {
+    ) {
         self.bar = bar
         self.baz = baz
         self.foo = foo
@@ -110,8 +109,7 @@ public struct PrimitiveTypesInput: Swift.Sendable {
         primitiveShortVal: Swift.Int16 = 0,
         shortVal: Swift.Int16? = nil,
         str: Swift.String? = nil
-    )
-    {
+    ) {
         self.booleanVal = booleanVal
         self.byteVal = byteVal
         self.doubleVal = doubleVal
@@ -154,8 +152,7 @@ public struct RecursiveShapesInputOutputNested1: Swift.Sendable {
     public init(
         foo: Swift.String? = nil,
         nested: RecursiveShapesInputOutputNested2? = nil
-    )
-    {
+    ) {
         self.foo = foo
         self.nested = nested
     }
@@ -168,8 +165,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Sendable {
     public init(
         bar: Swift.String? = nil,
         recursiveMember: RecursiveShapesInputOutputNested1? = nil
-    )
-    {
+    ) {
         self.bar = bar
         self.recursiveMember = recursiveMember
     }
@@ -181,8 +177,7 @@ public struct RecursiveShapesInputOutput: Swift.Sendable {
 
     public init(
         nested: RecursiveShapesInputOutputNested1? = nil
-    )
-    {
+    ) {
         self.nested = nested
     }
 }
@@ -211,8 +206,7 @@ public struct RecursiveShapesInputOutputNestedList1: Swift.Sendable {
     public init(
         foo: Swift.String? = nil,
         recursiveList: [RecursiveShapesInputOutputNested2]? = nil
-    )
-    {
+    ) {
         self.foo = foo
         self.recursiveList = recursiveList
     }
@@ -225,8 +219,7 @@ public struct RecursiveShapesInputOutputNested2: Swift.Sendable {
     public init(
         bar: Swift.String? = nil,
         recursiveMember: RecursiveShapesInputOutputNested1? = nil
-    )
-    {
+    ) {
         self.bar = bar
         self.recursiveMember = recursiveMember
     }
@@ -238,8 +231,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Sendable {
 
     public init(
         nested: RecursiveShapesInputOutputNested1? = nil
-    )
-    {
+    ) {
         self.nested = nested
     }
 }
@@ -282,8 +274,7 @@ public struct MyError: ClientRuntime.ModeledError, ClientRuntime.ServiceError, C
     public init(
         baz: Swift.Int? = nil,
         message: Swift.String? = nil
-    )
-    {
+    ) {
         self.properties.baz = baz
         self.properties.message = message
     }
@@ -333,8 +324,7 @@ public struct JsonListsInput: Swift.Sendable {
         stringList: [Swift.String]? = nil,
         stringSet: Swift.Set<Swift.String>? = nil,
         timestampList: [Foundation.Date]? = nil
-    )
-    {
+    ) {
         self.booleanList = booleanList
         self.integerList = integerList
         self.nestedStringList = nestedStringList
@@ -382,8 +372,7 @@ public struct JsonMapsInput: Swift.Sendable {
         sparseNumberMap: [Swift.String: Swift.Int?]? = nil,
         sparseStringMap: [Swift.String: Swift.String?]? = nil,
         sparseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct?]? = nil
-    )
-    {
+    ) {
         self.denseBooleanMap = denseBooleanMap
         self.denseNumberMap = denseNumberMap
         self.denseStringMap = denseStringMap
@@ -420,8 +409,7 @@ public struct JsonMapsOutput: Swift.Sendable {
         sparseNumberMap: [Swift.String: Swift.Int?]? = nil,
         sparseStringMap: [Swift.String: Swift.String?]? = nil,
         sparseStructMap: [Swift.String: ExampleClientTypes.GreetingStruct?]? = nil
-    )
-    {
+    ) {
         self.denseBooleanMap = denseBooleanMap
         self.denseNumberMap = denseNumberMap
         self.denseStringMap = denseStringMap

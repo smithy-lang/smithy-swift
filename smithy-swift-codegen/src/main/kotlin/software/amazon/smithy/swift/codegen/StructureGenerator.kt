@@ -146,7 +146,8 @@ class StructureGenerator(
         val hasMembers = membersSortedByName.isNotEmpty()
 
         if (hasMembers) {
-            writer.openBlock("public init(", ")") {
+            writer.write("public init(")
+            writer.indent {
                 for ((index, member) in membersSortedByName.withIndex()) {
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
@@ -154,13 +155,15 @@ class StructureGenerator(
                     writer.write("\$L: \$D\$L", memberName, memberSymbol, terminator)
                 }
             }
-            writer.openBlock("{", "}") {
+            writer.write(") {")
+            writer.indent {
                 val path = "properties.".takeIf { error } ?: ""
                 membersSortedByName.forEach {
                     val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.write("self.$path\$L = \$L", memberName, memberName)
                 }
             }
+            writer.write("}")
         } else {
             writer.write("public init() { }")
         }
