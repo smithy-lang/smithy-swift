@@ -26,8 +26,7 @@ public struct ListOfMapsOperationInput: Swift.Sendable {
 
     public init(
         targetMaps: [[Swift.String: [Swift.String]]]? = nil
-    )
-    {
+    ) {
         self.targetMaps = targetMaps
     }
 }

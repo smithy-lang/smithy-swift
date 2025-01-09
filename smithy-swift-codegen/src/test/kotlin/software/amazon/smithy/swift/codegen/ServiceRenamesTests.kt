@@ -27,8 +27,7 @@ public struct MyTestOperationInput: Swift.Sendable {
 
     public init(
         bar: ExampleClientTypes.RenamedGreeting? = nil
-    )
-    {
+    ) {
         self.bar = bar
     }
 }
@@ -54,8 +53,7 @@ public struct MyTestOperationOutput: Swift.Sendable {
 
     public init(
         baz: ExampleClientTypes.GreetingStruct? = nil
-    )
-    {
+    ) {
         self.baz = baz
     }
 }
@@ -83,8 +81,7 @@ extension ExampleClientTypes {
 
         public init(
             hi: Swift.String? = nil
-        )
-        {
+        ) {
             self.hi = hi
         }
     }
@@ -113,8 +110,7 @@ extension ExampleClientTypes {
 
         public init(
             salutation: Swift.String? = nil
-        )
-        {
+        ) {
             self.salutation = salutation
         }
     }
