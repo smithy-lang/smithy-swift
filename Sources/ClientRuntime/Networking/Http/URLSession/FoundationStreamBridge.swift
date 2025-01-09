@@ -30,7 +30,7 @@ import protocol Foundation.StreamDelegate
 /// `InputStream` is exposed as a property, and may be used to stream the data to other components.
 ///
 /// Used to permit SDK streaming request bodies to be used with `URLSession`-based HTTP requests.
-class FoundationStreamBridge: NSObject, StreamDelegate {
+class FoundationStreamBridge: NSObject, StreamDelegate, @unchecked Sendable {
 
     /// The max number of bytes to buffer between the `ReadableStream` and the Foundation `OutputStream`
     /// at any given time.

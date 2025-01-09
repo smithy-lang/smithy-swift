@@ -57,8 +57,7 @@ public struct RecursiveShapesInput: Swift.Sendable {
 
     public init(
         nested: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
-    )
-    {
+    ) {
         self.nested = nested
     }
 }
@@ -74,8 +73,7 @@ public struct RecursiveShapesOutput: Swift.Sendable {
 
     public init(
         nested: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
-    )
-    {
+    ) {
         self.nested = nested
     }
 }
@@ -95,8 +93,7 @@ extension ExampleClientTypes {
         public init(
             foo: Swift.String? = nil,
             nested: ExampleClientTypes.RecursiveShapesInputOutputNested2? = nil
-        )
-        {
+        ) {
             self.foo = foo
             self.nested = nested
         }
@@ -116,8 +113,7 @@ extension ExampleClientTypes {
         public init(
             bar: Swift.String? = nil,
             recursiveMember: ExampleClientTypes.RecursiveShapesInputOutputNested1? = nil
-        )
-        {
+        ) {
             self.bar = bar
             self.recursiveMember = recursiveMember
         }
