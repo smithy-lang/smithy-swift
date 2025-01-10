@@ -17,6 +17,7 @@ import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTestUtilTypes
+import java.util.Base64
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
@@ -58,14 +59,35 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         if (test.body.isPresent && test.body.get().isNotBlank()) {
             operation.input.ifPresent {
                 val inputShape = model.expectShape(it) as StructureShape
-                val data = writer.format(
-                    "Data(\"\"\"\n\$L\n\"\"\".utf8)",
-                    test.body.get().replace("\\\"", "\\\\\""),
-                )
-                // depending on the shape of the input, wrap the expected body in a stream or not
+                val data = if (ctx.service.requestWireProtocol == WireProtocol.CBOR) {
+                    // Attempt to decode the Base64 data
+                    try {
+                        val decodedBytes = Base64.getDecoder().decode(test.body.get())
+                        // Format decoded bytes into a Swift Data array representation
+                        "Data([${decodedBytes.joinToString(", ") { byte -> "0x%02X".format(byte) }}])"
+                    } catch (e: IllegalArgumentException) {
+                        // Fallback to original string if decoding fails
+                        writer.format(
+                            "Data(\"\"\"\n\$L\n\"\"\".utf8)",
+                            test.body.get().replace("\\\"", "\\\\\"")
+                        )
+                    }
+                } else {
+                    // Default case for non-CBOR protocols
+                    writer.format(
+                        "Data(\"\"\"\n\$L\n\"\"\".utf8)",
+                        test.body.get().replace("\\\"", "\\\\\"")
+                    )
+                }
+
+                // Depending on the shape of the input, wrap the expected body in a stream or not
                 if (inputShape.hasStreamingMember(model)) {
-                    // wrapping to CachingStream required for test asserts which reads body multiple times
-                    writer.write("body: .stream(\$N(data: \$L, isClosed: true)),", SmithyStreamsTypes.Core.BufferedStream, data)
+                    // Wrapping to CachingStream required for test asserts which reads body multiple times
+                    writer.write(
+                        "body: .stream(\$N(data: \$L, isClosed: true)),",
+                        SmithyStreamsTypes.Core.BufferedStream,
+                        data
+                    )
                 } else {
                     writer.write("body: .data(\$L),", data)
                 }
@@ -133,6 +155,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     WireProtocol.XML -> ".xml"
                     WireProtocol.JSON -> ".json"
                     WireProtocol.FORM_URL -> ".formURL"
+                    WireProtocol.CBOR -> ".cbor"
                 }
                 writer.write("try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: \$L)", contentType)
             }

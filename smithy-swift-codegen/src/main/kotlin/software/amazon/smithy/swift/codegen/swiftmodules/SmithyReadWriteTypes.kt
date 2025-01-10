@@ -14,6 +14,7 @@ object SmithyReadWriteTypes {
     val SmithyReader = runtimeSymbol("SmithyReader", SwiftDeclaration.PROTOCOL)
     val SmithyWriter = runtimeSymbol("SmithyWriter", SwiftDeclaration.PROTOCOL)
     val ReaderError = runtimeSymbol("ReaderError", SwiftDeclaration.ENUM, emptyList())
+    val WriterError = runtimeSymbol("WriterError", SwiftDeclaration.ENUM, emptyList())
     val mapWritingClosure = runtimeSymbol("mapWritingClosure", SwiftDeclaration.FUNC)
     val listWritingClosure = runtimeSymbol("listWritingClosure", SwiftDeclaration.FUNC)
     val timestampWritingClosure = runtimeSymbol("timestampWritingClosure", SwiftDeclaration.FUNC)
