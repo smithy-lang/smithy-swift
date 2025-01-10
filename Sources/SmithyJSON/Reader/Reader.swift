@@ -16,6 +16,7 @@ import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.NSNull
 import class Foundation.NSNumber
+import class Foundation.NSDecimalNumber
 import func CoreFoundation.CFGetTypeID
 import func CoreFoundation.CFBooleanGetTypeID
 
@@ -126,7 +127,12 @@ public extension Reader {
 
     func readIfPresent() throws -> Double? {
         switch jsonNode {
-        case .number(let number): return number.doubleValue
+        case .number(let number):
+            if let decimalNumber = number as? NSDecimalNumber {
+                return Double("\(decimalNumber.decimalValue)")
+            } else {
+                return number.doubleValue
+            }
         case .string(let string):
             switch string {
             case "NaN": return .nan
