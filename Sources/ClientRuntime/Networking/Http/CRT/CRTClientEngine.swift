@@ -449,6 +449,7 @@ public class CRTClientEngine: HTTPClient {
                         }
                     } catch {
                         logger.error("Failed to acquire stream: \(error.localizedDescription)")
+                        logger.info("(Logging) ERROR BEING RESUMED in executeHTTP2Request: \(error)")
                         // Allow the error to propagate to the higher-level retry mechanism
                         wrappedContinuation.safeResume(error: error)
                         return
@@ -457,6 +458,7 @@ public class CRTClientEngine: HTTPClient {
             }
         } catch {
             // Surface any errors to the caller
+            logger.info("(Logging) ERROR BEING THROWN in executeHTTP2Request: \(error)")
             throw error
         }
     }
