@@ -206,6 +206,7 @@ public class CRTClientEngine: HTTPClient {
 
             // START - smithy.client.http.connections.acquire_duration
             let acquireConnectionStart = Date().timeIntervalSinceReferenceDate
+            logger.info("TEST LOGGER WORKS BEFORE ACQUIRE CONNECTION")
             let connection = try await connectionMgr.acquireConnection()
             let acquireConnectionEnd = Date().timeIntervalSinceReferenceDate
             telemetry.connectionsAcquireDuration.record(
@@ -416,6 +417,7 @@ public class CRTClientEngine: HTTPClient {
                 Task { [logger] in
                     do {
                         let acquireConnectionStart = Date().timeIntervalSinceReferenceDate
+                        logger.info("TEST LOGGER WORKS BEFORE ACQUIRE STREAM")
                         let stream = try await connectionMgr.acquireStream(requestOptions: requestOptions)
                         let acquireConnectionEnd = Date().timeIntervalSinceReferenceDate
 
