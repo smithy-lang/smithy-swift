@@ -58,6 +58,6 @@ class SyntheticClone private constructor(builder: Builder) : AbstractTrait(ID, b
     }
 
     init {
-        archetype = builder.archetype
+        archetype = requireNotNull(builder.archetype) { "Original ShapeId is required for SyntheticClone trait" }
     }
 }

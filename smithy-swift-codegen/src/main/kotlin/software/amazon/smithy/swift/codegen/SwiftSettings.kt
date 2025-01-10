@@ -5,6 +5,12 @@
 
 package software.amazon.smithy.swift.codegen
 
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
+import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
+import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
+import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
@@ -13,6 +19,7 @@ import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import java.util.logging.Logger
 import kotlin.streams.toList
 
@@ -28,6 +35,17 @@ private const val GIT_REPO = "gitRepo"
 private const val SWIFT_VERSION = "swiftVersion"
 private const val MERGE_MODELS = "mergeModels"
 private const val COPYRIGHT_NOTICE = "copyrightNotice"
+
+// Prioritized list of protocols supported for code generation
+private val DEFAULT_PROTOCOL_RESOLUTION_PRIORITY = setOf<ShapeId>(
+    Rpcv2CborTrait.ID,
+    AwsJson1_0Trait.ID,
+    AwsJson1_1Trait.ID,
+    RestJson1Trait.ID,
+    RestXmlTrait.ID,
+    AwsQueryTrait.ID,
+    Ec2QueryTrait.ID,
+)
 
 class SwiftSettings(
     val service: ShapeId,
@@ -161,16 +179,25 @@ class SwiftSettings(
      * @param serviceIndex Service index containing the support
      * @param service Service to get the protocols from if "protocols" is not set.
      * @param supportedProtocolTraits The set of protocol traits supported by the generator.
+     * @param configuredProtocolPriority Optional configured protocol priority list, used to override the default priority.
      * @return Returns the resolved protocol name.
      * @throws UnresolvableProtocolException if no protocol could be resolved.
      */
     fun resolveServiceProtocol(
         serviceIndex: ServiceIndex,
         service: ServiceShape,
-        supportedProtocolTraits: Set<ShapeId>
+        supportedProtocolTraits: Set<ShapeId>,
+        configuredProtocolPriority: Set<ShapeId>? = null
     ): ShapeId {
         val resolvedProtocols: Set<ShapeId> = serviceIndex.getProtocols(service).keys
-        val protocol = resolvedProtocols.firstOrNull(supportedProtocolTraits::contains)
+
+        // Use the configured protocol priority if provided; otherwise, fall back to the default priority
+        val protocolResolutionPriority = configuredProtocolPriority ?: DEFAULT_PROTOCOL_RESOLUTION_PRIORITY
+
+        // Find the highest-priority protocol that is both supported and resolved
+        val protocol = protocolResolutionPriority
+            .firstOrNull { it in resolvedProtocols && it in supportedProtocolTraits }
+
         return protocol ?: throw UnresolvableProtocolException(
             "The ${service.id} service supports the following unsupported protocols $resolvedProtocols. " +
                 "The following protocol generators were found on the class path: $supportedProtocolTraits"
