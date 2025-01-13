@@ -14,6 +14,7 @@ import struct Smithy.Attributes
 import SmithyHTTPAPI
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryErrorInfo
+import struct Smithy.SwiftLogger
 
 /// Orchestrates operation execution
 ///
@@ -256,12 +257,16 @@ public struct Orchestrator<
     ) async {
         let copiedRequest = context.getRequest().toBuilder().build()
 
+        let logger = SwiftLogger("startAttemptLogger")
+        logger.info("STARTING ATTEMPT")
         await attempt(context: context, attemptCount: attemptCount)
+        logger.info("ENDING ATTEMPT")
 
         do {
             _ = try context.getOutput()
             await strategy.recordSuccess(token: token)
         } catch let error {
+            logger.info("ERROR CAUGHT HERE BEFORE RETRY ERROR INFO")
             // If we can't get errorInfo, we definitely can't retry
             guard let errorInfo = retryErrorInfoProvider(error) else { return }
 
@@ -388,10 +393,13 @@ public struct Orchestrator<
                 try await interceptors.modifyBeforeTransmit(context: context)
                 try await interceptors.readBeforeTransmit(context: context)
 
+                let logger = SwiftLogger("attemptLogger")
+                logger.info("ABOUT TO EXECUTE")
                 let response = try await executeRequest.execute(
                     request: context.getRequest(),
                     attributes: context.getAttributes()
                 )
+                logger.info("EXECUTION COMPLETE")
                 context.updateResponse(updated: response)
 
                 try await interceptors.readAfterTransmit(context: context)
@@ -410,6 +418,7 @@ public struct Orchestrator<
 
                 try await interceptors.readAfterDeserialization(context: context)
             } catch let error {
+                logger.info("ERROR WAS CAUGHT IN ATTEMPT \(error)")
                 context.setResult(result: .failure(error))
             }
 

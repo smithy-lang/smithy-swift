@@ -8,6 +8,7 @@
 import class Smithy.Context
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
+import struct Smithy.SwiftLogger
 
 /// Default implementation for all interceptor context types.
 ///
@@ -81,6 +82,8 @@ extension DefaultInterceptorContext: AfterDeserialization {
         case .success(let output):
             return output
         case .failure(let error):
+            let logger = SwiftLogger("GetOutputLogger")
+            logger.info("ABOUT TO THROW AN ERROR \(error)")
             throw error
         }
     }
