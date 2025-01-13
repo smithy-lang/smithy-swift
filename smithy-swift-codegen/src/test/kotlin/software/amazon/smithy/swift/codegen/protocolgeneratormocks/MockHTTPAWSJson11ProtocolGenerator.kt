@@ -71,6 +71,10 @@ class MockHTTPAWSJson11ProtocolGenerator() : HTTPBindingProtocolGenerator(MockAW
         // Intentionally empty
     }
 
+    override fun addUserAgentMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+        // Intentionally empty
+    }
+
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext, defaultContentType: String):
         HttpBindingResolver = MockJsonHttpBindingResolver(ctx, defaultContentType)
 }

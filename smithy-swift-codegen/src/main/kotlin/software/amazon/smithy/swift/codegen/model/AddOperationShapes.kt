@@ -12,6 +12,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.swift.codegen.SyntheticClone
 import java.util.logging.Logger
@@ -80,6 +81,7 @@ class AddOperationShapes {
                         opShapeId.name + suffix
                     )
                 )
+                .addTrait(SyntheticClone.builder().archetype(UnitTypeTrait.UNIT).build())
                 .build()
         }
 

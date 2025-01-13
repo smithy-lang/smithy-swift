@@ -46,8 +46,7 @@ public struct EnumInputInput: Swift.Sendable {
     public init(
         enumHeader: ExampleClientTypes.MyEnum? = nil,
         nestedWithEnum: ExampleClientTypes.NestedEnum? = nil
-    )
-    {
+    ) {
         self.enumHeader = enumHeader
         self.nestedWithEnum = nestedWithEnum
     }
