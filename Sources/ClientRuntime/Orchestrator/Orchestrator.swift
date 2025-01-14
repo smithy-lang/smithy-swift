@@ -418,6 +418,7 @@ public struct Orchestrator<
 
                 try await interceptors.readAfterDeserialization(context: context)
             } catch let error {
+                let logger = SwiftLogger(label: "caught attemptLogger")
                 logger.info("ERROR WAS CAUGHT IN ATTEMPT \(error)")
                 context.setResult(result: .failure(error))
             }
