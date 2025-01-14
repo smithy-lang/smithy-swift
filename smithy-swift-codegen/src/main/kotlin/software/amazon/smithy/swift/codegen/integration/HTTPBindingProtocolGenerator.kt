@@ -510,16 +510,12 @@ abstract class HTTPBindingProtocolGenerator(
             operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
             operationMiddleware.appendMiddleware(operation, SignerMiddleware(ctx.model, ctx.symbolProvider))
             addProtocolSpecificMiddleware(ctx, operation)
-            /*
-             * Auth scheme middleware must be appended to codegen operation stack AFTER protocol specific middleware is appended.
-             * This is because endpoint middleware must be generated into client operation stack first with position: .before,
-             * AFTER which auth scheme must be generated into client operation stack with position: .before, which ensures
-             * auth scheme middleware is executed FIRST before endpoint middleware is executed, as SRA flow defines.
-             */
             operationMiddleware.appendMiddleware(operation, AuthSchemeMiddleware(ctx.model, ctx.symbolProvider))
             for (integration in ctx.integrations) {
                 integration.customizeMiddleware(ctx, operation, operationMiddleware)
             }
+            // must be last to support adding business metrics
+            addUserAgentMiddleware(ctx, operation)
         }
     }
 
@@ -552,6 +548,8 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     protected abstract fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
+
+    protected abstract fun addUserAgentMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
 
     /**
      * Get the operations with HTTP Bindings.

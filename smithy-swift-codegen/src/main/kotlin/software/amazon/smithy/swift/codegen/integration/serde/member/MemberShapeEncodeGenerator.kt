@@ -165,6 +165,12 @@ abstract class MemberShapeEncodeGenerator(
 object TimestampUtils {
 
     fun timestampFormat(ctx: ProtocolGenerator.GenerationContext, memberTimestampFormatTrait: TimestampFormatTrait?, timestampShape: TimestampShape): String {
+        // CBOR wire protocol ignores TimestampFormatTrait
+        if (ctx.service.requestWireProtocol == WireProtocol.CBOR) {
+            return ".epochSeconds"
+        }
+
+        // Resolve TimestampFormatTrait normally
         val timestampFormat = memberTimestampFormatTrait?.value ?: timestampShape.getTrait<TimestampFormatTrait>()?.value ?: defaultTimestampFormat(ctx)
         return when (timestampFormat) {
             TimestampFormatTrait.EPOCH_SECONDS -> ".epochSeconds"
@@ -176,7 +182,7 @@ object TimestampUtils {
     private fun defaultTimestampFormat(ctx: ProtocolGenerator.GenerationContext): String {
         return when (ctx.service.requestWireProtocol) {
             WireProtocol.XML, WireProtocol.FORM_URL -> TimestampFormatTrait.DATE_TIME
-            WireProtocol.JSON -> TimestampFormatTrait.EPOCH_SECONDS
+            WireProtocol.JSON, WireProtocol.CBOR -> TimestampFormatTrait.EPOCH_SECONDS
         }
     }
 }
