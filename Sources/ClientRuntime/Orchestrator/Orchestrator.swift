@@ -257,7 +257,7 @@ public struct Orchestrator<
     ) async {
         let copiedRequest = context.getRequest().toBuilder().build()
 
-        let logger = SwiftLogger("startAttemptLogger")
+        let logger = SwiftLogger(label: "startAttemptLogger")
         logger.info("STARTING ATTEMPT")
         await attempt(context: context, attemptCount: attemptCount)
         logger.info("ENDING ATTEMPT")
@@ -393,7 +393,7 @@ public struct Orchestrator<
                 try await interceptors.modifyBeforeTransmit(context: context)
                 try await interceptors.readBeforeTransmit(context: context)
 
-                let logger = SwiftLogger("attemptLogger")
+                let logger = SwiftLogger(label: "attemptLogger")
                 logger.info("ABOUT TO EXECUTE")
                 let response = try await executeRequest.execute(
                     request: context.getRequest(),

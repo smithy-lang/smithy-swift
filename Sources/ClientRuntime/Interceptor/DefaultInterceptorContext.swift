@@ -82,7 +82,7 @@ extension DefaultInterceptorContext: AfterDeserialization {
         case .success(let output):
             return output
         case .failure(let error):
-            let logger = SwiftLogger("GetOutputLogger")
+            let logger = SwiftLogger(label: "GetOutputLogger")
             logger.info("ABOUT TO THROW AN ERROR \(error)")
             throw error
         }
