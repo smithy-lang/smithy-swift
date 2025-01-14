@@ -267,6 +267,7 @@ public struct Orchestrator<
             await strategy.recordSuccess(token: token)
         } catch let error {
             logger.info("ERROR CAUGHT HERE BEFORE RETRY ERROR INFO \(error)")
+            logger.info("RETRY PROVIDER: \(retryErrorInfoProvider)")
             // If we can't get errorInfo, we definitely can't retry
             guard let errorInfo = retryErrorInfoProvider(error) else { return }
 
