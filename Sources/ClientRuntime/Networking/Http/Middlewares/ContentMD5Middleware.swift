@@ -15,8 +15,24 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput> {
     public init() {}
 
     private func addHeaders(builder: HTTPRequestBuilder, attributes: Context) async throws {
-        // Skip MD5 hash if using checksums
-        if builder.headers.exists(name: "x-amz-sdk-checksum-algorithm") {
+        // Initialize logger
+        guard let logger = attributes.getLogger() else {
+            throw ClientError.unknownError("No logger found!")
+        }
+
+        // Skip MD5 hash if using flexible checksum
+        if builder.headers.headers.contains(where: {
+            $0.name.lowercased().starts(with: "x-amz-checksum-")
+        }) {
+            logger.debug("Flexible checksum configured. Skipping MD5 checksum calculation.")
+            return
+        }
+
+        // Skip MD5 hash if it was provided in input by the user
+        if builder.headers.headers.contains(where: {
+            $0.name.lowercased() == "content-md5"
+        }) {
+            logger.debug("MD5 checksum hash provided in the input. Skipping MD5 checksum calculation.")
             return
         }
 
@@ -42,15 +58,9 @@ public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput> {
                 let hashResult = try md5Hasher.digest().toBase64String()
                 builder.updateHeader(name: "Content-MD5", value: hashResult)
             } catch {
-                guard let logger = attributes.getLogger() else {
-                    return
-                }
                 logger.error("Could not compute Content-MD5 of stream due to error \(error)")
             }
         default:
-            guard let logger = attributes.getLogger() else {
-                return
-            }
             logger.error("Unhandled case for Content-MD5")
         }
     }
