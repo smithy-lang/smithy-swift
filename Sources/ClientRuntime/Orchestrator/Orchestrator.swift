@@ -277,6 +277,7 @@ public struct Orchestrator<
             do {
                 guard try readyBodyForRetry(request: copiedRequest) else { return }
             } catch {
+                logger.info("Body is a nonseekable stream, can't retry")
                 return
             }
 
@@ -284,9 +285,11 @@ public struct Orchestrator<
             do {
                 try await strategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
             } catch {
+                logger.info("[retries] refresh failed")
                 return
             }
 
+            logger.info("RETRYING, starting attempt for real")
             context.updateRequest(updated: copiedRequest)
             await startAttempt(context: context, strategy: strategy, token: token, attemptCount: attemptCount + 1)
         }
