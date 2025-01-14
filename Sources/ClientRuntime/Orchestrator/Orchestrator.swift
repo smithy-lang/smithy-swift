@@ -266,9 +266,11 @@ public struct Orchestrator<
             _ = try context.getOutput()
             await strategy.recordSuccess(token: token)
         } catch let error {
-            logger.info("ERROR CAUGHT HERE BEFORE RETRY ERROR INFO")
+            logger.info("ERROR CAUGHT HERE BEFORE RETRY ERROR INFO \(error)")
             // If we can't get errorInfo, we definitely can't retry
             guard let errorInfo = retryErrorInfoProvider(error) else { return }
+
+            logger.info("ERROR INFO: \(errorInfo)")
 
             // If the body is a nonseekable stream, we also can't retry
             do {
