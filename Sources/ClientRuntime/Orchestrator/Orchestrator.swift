@@ -263,6 +263,7 @@ public struct Orchestrator<
         logger.info("ENDING ATTEMPT")
 
         do {
+            logger.info("ABOUT TO CALL getOutput() from START ATTEMPT")
             _ = try context.getOutput()
             await strategy.recordSuccess(token: token)
         } catch let error {
@@ -302,8 +303,11 @@ public struct Orchestrator<
     /// - Returns: `true` if the body of the request is safe to retry, `false` otherwise.  In general, a request body is retriable if it is not a stream, or
     ///   if the stream is seekable and successfully seeks to the start position / offset zero.
     private func readyBodyForRetry(request: RequestType) throws -> Bool {
+        let logger = SwiftLogger("readyBodyForRetryLogger")
+        logger.info("ReadyBodyForRetry CALLED \(request.body)")
         switch request.body {
         case .stream(let stream):
+            logger.info("SEEKABLE? \(stream.isSeekable)")
             guard stream.isSeekable else { return false }
             do {
                 try stream.seek(toOffset: 0)
@@ -457,9 +461,12 @@ public struct Orchestrator<
         } catch let error {
             context.setResult(result: .failure(error))
         }
+        let logger = SwiftLogger(label: "StartCompletionLogger")
+
 
         // The last error that occurred, if any, is thrown
         do {
+            logger.info("ABOUT TO CALL getOutput() from START COMPLETION")
             return try context.getOutput()
         } catch {
             // TICK - smithy.client.call.errors
@@ -467,6 +474,7 @@ public struct Orchestrator<
                 value: 1,
                 attributes: telemetry.metricsAttributes,
                 context: telemetry.contextManager.current())
+            logger.info("ERROR WAS CAUGHT IN START COMPLETION \(error)")
             throw error
         }
     }
