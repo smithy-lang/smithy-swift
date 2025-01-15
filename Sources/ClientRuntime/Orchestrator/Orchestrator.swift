@@ -303,7 +303,7 @@ public struct Orchestrator<
     /// - Returns: `true` if the body of the request is safe to retry, `false` otherwise.  In general, a request body is retriable if it is not a stream, or
     ///   if the stream is seekable and successfully seeks to the start position / offset zero.
     private func readyBodyForRetry(request: RequestType) throws -> Bool {
-        let logger = SwiftLogger("readyBodyForRetryLogger")
+        let logger = SwiftLogger(label: "readyBodyForRetryLogger")
         logger.info("ReadyBodyForRetry CALLED \(request.body)")
         switch request.body {
         case .stream(let stream):
