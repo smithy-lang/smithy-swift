@@ -290,6 +290,8 @@ public struct Orchestrator<
             }
 
             logger.info("RETRYING, starting attempt for real")
+            // clear previous error result
+            context.setResult(result: nil)
             context.updateRequest(updated: copiedRequest)
             await startAttempt(context: context, strategy: strategy, token: token, attemptCount: attemptCount + 1)
         }

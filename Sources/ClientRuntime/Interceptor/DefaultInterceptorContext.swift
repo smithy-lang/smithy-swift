@@ -39,7 +39,7 @@ public class DefaultInterceptorContext<
         return self.attributes
     }
 
-    internal func setResult(result: Result<OutputType, Error>) {
+    internal func setResult(result: Result<OutputType, Error>?) {
         self.result = result
     }
 }
