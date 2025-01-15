@@ -122,9 +122,6 @@ open class HttpProtocolServiceClient(
                 .flatMap { it.getProperties(ctx) }
                 .let { overrideConfigProperties(it) }
                 .sortedBy { it.accessModifier }
-                .mapNotNull {
-                    customizedClientConfigProperty(it)
-                }
 
             renderConfigClassVariables(serviceSymbol, properties)
 
@@ -269,9 +266,5 @@ open class HttpProtocolServiceClient(
                 .flatMap { it.plugins(serviceConfig) }
                 .onEach { it.render(ctx, writer) }
         }
-    }
-
-    open fun customizedClientConfigProperty(property: ConfigProperty): ConfigProperty? {
-        return property // default implementation
     }
 }

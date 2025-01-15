@@ -112,20 +112,9 @@ open class MiddlewareExecutionGenerator(
         }
 
         // Add context values for config fields
-        val configProperties = ctx.integrations
-            .flatMap { it.clientConfigurations(ctx) }
-            .flatMap { it.getProperties(ctx) }
-        configProperties.forEach {
-            renderConfigPropertyToContext(it)
-        }
-
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
         writer.write("  .build()")
-    }
-
-    open fun renderConfigPropertyToContext(configProperty: ConfigProperty) {
-        // No action by default.  Overridden in subclasses
     }
 
     private fun resolveHttpMethod(op: OperationShape): String {
