@@ -16,7 +16,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 typealias HttpMethodCallback = (OperationShape) -> String
-open class MiddlewareExecutionGenerator(
+class MiddlewareExecutionGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
     private val httpBindingResolver: HttpBindingResolver,
