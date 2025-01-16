@@ -282,6 +282,7 @@ public struct Orchestrator<
             } else {
                 skipReadyBodyCheck = false
             }
+            logger.info("SKIP BODY CHECK: \(skipReadyBodyCheck)")
 
             if !skipReadyBodyCheck {
                 // If the body is a nonseekable stream, we also can't retry
