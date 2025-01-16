@@ -59,6 +59,7 @@ public class CRTClientEngine: HTTPClient {
         private let telemetry: HttpTelemetry
         private var connectionPools: [ConnectionPoolID: HTTPClientConnectionManager] = [:]
         private var http2ConnectionPools: [ConnectionPoolID: HTTP2StreamManager] = [:]
+        private var invalidHTTP2Connections: [HTTP2StreamManager] = []
         private let sharedDefaultIO = SDKDefaultIO.shared
         private let connectTimeoutMs: UInt32?
         private let crtTLSOptions: CRTClientTLSOptions?
@@ -167,7 +168,8 @@ public class CRTClientEngine: HTTPClient {
 
         func invalidateHTTP2StreamManager(endpoint: Endpoint) throws {
             let poolID = ConnectionPoolID(endpoint: endpoint)
-            guard http2ConnectionPools[poolID] != nil else { return }
+            guard let invalidStreamManager = http2ConnectionPools[poolID] else { return }
+            invalidHTTP2Connections.append(invalidStreamManager)
             http2ConnectionPools[poolID] = try createHTTP2ConnectionPool(endpoint: endpoint)
         }
     }
