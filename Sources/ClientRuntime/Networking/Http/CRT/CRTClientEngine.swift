@@ -164,6 +164,12 @@ public class CRTClientEngine: HTTPClient {
 
             return try HTTP2StreamManager(options: options)
         }
+
+        func invalidateHTTP2StreamManager(endpoint: Endpoint) throws {
+            let poolID = ConnectionPoolID(endpoint: endpoint)
+            guard http2ConnectionPools[poolID] != nil else { return }
+            http2ConnectionPools[poolID] = try createHTTP2ConnectionPool(endpoint: endpoint)
+        }
     }
 
     public typealias StreamContinuation = CheckedContinuation<HTTPResponse, Error>
@@ -417,7 +423,14 @@ public class CRTClientEngine: HTTPClient {
                     do {
                         // START - smithy.client.http.connections.acquire_duration
                         let acquireConnectionStart = Date().timeIntervalSinceReferenceDate
-                        stream = try await connectionMgr.acquireStream(requestOptions: requestOptions)
+                        do {
+                            stream = try await connectionMgr.acquireStream(requestOptions: requestOptions)
+                        } catch CommonRunTimeError.crtError(let crtError) {
+                            if crtError.code == 2087 {
+                                try await serialExecutor.invalidateHTTP2StreamManager(endpoint: request.endpoint)
+                            }
+                            throw CommonRunTimeError.crtError(crtError)
+                        }
                         acquireConnectionEnd = Date().timeIntervalSinceReferenceDate
                         telemetry.connectionsAcquireDuration.record(
                             value: acquireConnectionEnd - acquireConnectionStart,
