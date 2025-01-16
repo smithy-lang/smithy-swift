@@ -15,7 +15,7 @@ import SmithyHTTPAPI
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryErrorInfo
 import struct Smithy.SwiftLogger
-import AwsCommonRuntimeKit
+import enum AwsCommonRuntimeKit.CommonRunTimeError
 
 /// Orchestrates operation execution
 ///
@@ -276,7 +276,12 @@ public struct Orchestrator<
             logger.info("ERROR INFO: \(errorInfo)")
 
             // Check if error is CRTError with code 2087
-            let skipReadyBodyCheck = (error as? AwsCommonRuntimeKit.CRTError)?.code == 2087
+            let skipReadyBodyCheck: Bool
+            if case CommonRunTimeError.crtError(let crtError) = error, crtError.code == 2087 {
+                skipReadyBodyCheck = true
+            } else {
+                skipReadyBodyCheck = false
+            }
 
             if !skipReadyBodyCheck {
                 // If the body is a nonseekable stream, we also can't retry
