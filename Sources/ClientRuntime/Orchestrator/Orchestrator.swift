@@ -276,7 +276,7 @@ public struct Orchestrator<
             logger.info("ERROR INFO: \(errorInfo)")
 
             // Check if error is CRTError with code 2087
-            let skipReadyBodyCheck = (error as? CommonRunTimeError.crtError)?.code == 2087
+            let skipReadyBodyCheck = (error as? AwsCommonRuntimeKit.CRTError)?.code == 2087
 
             if !skipReadyBodyCheck {
                 // If the body is a nonseekable stream, we also can't retry
