@@ -274,12 +274,19 @@ public struct Orchestrator<
 
             logger.info("ERROR INFO: \(errorInfo)")
 
-            // If the body is a nonseekable stream, we also can't retry
-            do {
-                guard try readyBodyForRetry(request: copiedRequest) else { return }
-            } catch {
-                logger.info("Body is a nonseekable stream, can't retry")
-                return
+            // Check if error is CRTError with code 2087
+            let skipReadyBodyCheck = (error as? CRTError)?.code == 2087
+
+            if !skipReadyBodyCheck {
+                // If the body is a nonseekable stream, we also can't retry
+                do {
+                    guard try readyBodyForRetry(request: copiedRequest) else { return }
+                } catch {
+                    logger.info("Body is a nonseekable stream, can't retry")
+                    return
+                }
+            } else {
+                logger.info("SKIPPING READY BODY FOR RETRY")
             }
 
             // When refreshing fails it throws, indicating we're done retrying
