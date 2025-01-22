@@ -419,7 +419,7 @@ public class CRTClientEngine: HTTPClient {
                         let acquireConnectionStart = Date().timeIntervalSinceReferenceDate
                         logger.info("TEST LOGGER WORKS BEFORE ACQUIRE STREAM")
                         // Retry logic for acquiring the stream
-                        let stream = try await retryWithBackoff(maxRetries: 3, initialDelay: 0.5) {
+                        let stream = try await retryWithBackoff(maxRetries: 3, initialDelay: 2) {
                             try await connectionMgr.acquireStream(requestOptions: requestOptions)
                         }
                         let acquireConnectionEnd = Date().timeIntervalSinceReferenceDate
@@ -484,6 +484,8 @@ public class CRTClientEngine: HTTPClient {
                 if attempt >= maxRetries - 1 {
                     throw error // Exhaust retries
                 }
+                let logger = SwiftLogger(label: "RetryAcquireStreamLogger")
+                logger.info("RETRYING ACQUIRE STREAM DUE TO \(error)")
                 await Task.sleep(UInt64(delay * 1_000_000_000)) // Delay before retry
                 delay *= 2 // Exponential backoff
                 attempt += 1
