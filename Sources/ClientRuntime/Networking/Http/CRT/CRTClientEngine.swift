@@ -418,7 +418,10 @@ public class CRTClientEngine: HTTPClient {
                     do {
                         let acquireConnectionStart = Date().timeIntervalSinceReferenceDate
                         logger.info("TEST LOGGER WORKS BEFORE ACQUIRE STREAM")
-                        let stream = try await connectionMgr.acquireStream(requestOptions: requestOptions)
+                        // Retry logic for acquiring the stream
+                        let stream = try await retryWithBackoff(maxRetries: 3, initialDelay: 0.5) {
+                            try await connectionMgr.acquireStream(requestOptions: requestOptions)
+                        }
                         let acquireConnectionEnd = Date().timeIntervalSinceReferenceDate
 
                         // Telemetry
@@ -463,6 +466,30 @@ public class CRTClientEngine: HTTPClient {
             logger.info("(Logging) ERROR BEING THROWN in executeHTTP2Request: \(error)")
             throw error
         }
+    }
+
+    // Helper function for retry logic
+    private func retryWithBackoff<T>(
+        maxRetries: Int,
+        initialDelay: TimeInterval,
+        task: @escaping () async throws -> T
+    ) async throws -> T {
+        var attempt = 0
+        var delay = initialDelay
+
+        while attempt < maxRetries {
+            do {
+                return try await task()
+            } catch {
+                if attempt >= maxRetries - 1 {
+                    throw error // Exhaust retries
+                }
+                await Task.sleep(UInt64(delay * 1_000_000_000)) // Delay before retry
+                delay *= 2 // Exponential backoff
+                attempt += 1
+            }
+        }
+        throw NSError(domain: "RetryError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Max retries reached"])
     }
 
     /// Creates a `HTTPRequestOptions` object that can be used to make a HTTP request
