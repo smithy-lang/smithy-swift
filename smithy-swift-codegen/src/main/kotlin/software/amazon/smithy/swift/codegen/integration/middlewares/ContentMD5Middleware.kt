@@ -38,8 +38,18 @@ class ContentMD5Middleware(
 
 /**
  * Check if MD5 checksum is required
- * The Md5 middleware will only be installed if the operation requires a checksum and the user has not opted-in to flexible checksums.
+ * The Md5 middleware will only be generated if the operation is marked with @httpChecksumRequired trait or if
+ *   only the requestChecksumRequired property of the httpChecksum is set.
+ *  https://smithy.io/2.0/aws/aws-core.html#behavior-with-httpchecksumrequired
+ *
+ *  ContentMD5Middleware will skip checksum calculation if flexible checksum was calculated for request already,
+ *    determined by presence of a header with "x-amz-checksum-" prefix.
  */
-private fun OperationShape.isMD5ChecksumRequired(): Boolean =
-    // the checksum requirement can be modeled in either HttpChecksumTrait's `requestChecksumRequired` or the HttpChecksumRequired trait
-    getTrait<HttpChecksumTrait>()?.isRequestChecksumRequired == true || hasTrait<HttpChecksumRequiredTrait>()
+private fun OperationShape.isMD5ChecksumRequired(): Boolean {
+    val httpChecksumTrait = getTrait<HttpChecksumTrait>()
+    val onlyRequestChecksumRequiredIsSetInHttpChecksumTrait = httpChecksumTrait?.isRequestChecksumRequired == true &&
+        httpChecksumTrait.requestAlgorithmMember?.isEmpty == true &&
+        httpChecksumTrait.requestValidationModeMember?.isEmpty == true &&
+        httpChecksumTrait.responseAlgorithms?.isEmpty() == true
+    return onlyRequestChecksumRequiredIsSetInHttpChecksumTrait || hasTrait<HttpChecksumRequiredTrait>()
+}
