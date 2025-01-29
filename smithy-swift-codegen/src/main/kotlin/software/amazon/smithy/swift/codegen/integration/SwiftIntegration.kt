@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.config.ClientConfiguration
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
+import software.amazon.smithy.swift.codegen.protocols.rpcv2cbor.RpcV2CborProtocolGenerator
 
 /**
  * Kotlin SPI for customizing Swift code generation, registering
@@ -121,7 +122,9 @@ interface SwiftIntegration : SmithyIntegration<SwiftSettings, SwiftWriter, Gener
      * Get the list of protocol generators to register
      */
     val protocolGenerators: List<ProtocolGenerator>
-        get() = listOf()
+        get() = listOf(
+            RpcV2CborProtocolGenerator()
+        )
 
     /**
      * Allows integration to specify [SectionWriterBinding]s to
