@@ -61,8 +61,10 @@ class RpcV2CborProtocolGenerator(
 
     override val shouldRenderEncodableConformance = true
 
-    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext, defaultContentType: String):
-            HttpBindingResolver = RPCV2CBORHttpBindingResolver(ctx, defaultContentType)
+    override fun getProtocolHttpBindingResolver(
+        ctx: ProtocolGenerator.GenerationContext,
+        defaultContentType: String
+    ): HttpBindingResolver = RPCV2CBORHttpBindingResolver(ctx, defaultContentType)
 
     override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
         val operationEndpointResolverMiddleware = OperationEndpointResolverMiddleware(ctx, myRpcCborCustoms.endpointMiddlewareSymbol)

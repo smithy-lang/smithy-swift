@@ -4,7 +4,10 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.*
+import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolServiceClient
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.ServiceConfig
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class RpcV2CborCustomizations : DefaultHTTPProtocolCustomizations() {
@@ -28,9 +31,7 @@ class RpcV2CborCustomizations : DefaultHTTPProtocolCustomizations() {
 
     override val endpointMiddlewareSymbol: Symbol = ClientRuntimeTypes.Core.EndpointResolverMiddleware
 
-
     override val unknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
-
 
     // Required by RPCv2 CBOR
     override val baseErrorSymbol: Symbol = ClientRuntimeTypes.RpcV2Cbor.RpcV2CborError
