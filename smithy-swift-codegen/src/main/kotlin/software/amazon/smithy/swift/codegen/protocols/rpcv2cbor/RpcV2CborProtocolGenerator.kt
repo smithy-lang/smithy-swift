@@ -10,8 +10,21 @@ import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
 import software.amazon.smithy.swift.codegen.EndpointTestGenerator
 import software.amazon.smithy.swift.codegen.SyntheticClone
-import software.amazon.smithy.swift.codegen.integration.*
-import software.amazon.smithy.swift.codegen.integration.middlewares.*
+import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
+import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolClientGeneratorFactory
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
+import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
+import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.SmithyHttpProtocolClientGeneratorFactory
+import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.MutateHeadersMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.OperationEndpointResolverMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputBodyMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -20,19 +33,15 @@ import software.amazon.smithy.swift.codegen.testModuleName
 
 class RpcV2CborProtocolGenerator(
     rpcCborCustomizations: DefaultHTTPProtocolCustomizations = RpcV2CborCustomizations(),
-    private val userAgentMiddlewareFactory: ((
-        ProtocolGenerator.GenerationContext
-    ) -> MiddlewareRenderable)? = null
+    private val userAgentMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null
 ) : HTTPBindingProtocolGenerator(rpcCborCustomizations) {
     override val defaultContentType = "application/cbor"
     override val protocol: ShapeId = Rpcv2CborTrait.ID
-
     val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
     val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
     val errorTestBuilder = HttpProtocolUnitTestErrorGenerator.Builder()
     open val protocolTestsToIgnore: Set<String> = setOf()
     open val protocolTestTagsToIgnore: Set<String> = setOf()
-
     private val myRpcCborCustoms = rpcCborCustomizations
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {
@@ -53,7 +62,7 @@ class RpcV2CborProtocolGenerator(
     override val shouldRenderEncodableConformance = true
 
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext, defaultContentType: String):
-        HttpBindingResolver = RPCV2CBORHttpBindingResolver(ctx, defaultContentType)
+            HttpBindingResolver = RPCV2CBORHttpBindingResolver(ctx, defaultContentType)
 
     override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
         val operationEndpointResolverMiddleware = OperationEndpointResolverMiddleware(ctx, myRpcCborCustoms.endpointMiddlewareSymbol)

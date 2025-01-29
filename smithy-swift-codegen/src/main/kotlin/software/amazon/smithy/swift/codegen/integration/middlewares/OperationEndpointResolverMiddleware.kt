@@ -158,8 +158,8 @@ class OperationEndpointResolverMiddleware(
                     param.default.isPresent -> {
                         return "$name ?? ${param.defaultValueLiteral}"
                     } else -> {
-                    return name
-                }
+                        return name
+                    }
                 }
             }
             clientContextParam != null -> {

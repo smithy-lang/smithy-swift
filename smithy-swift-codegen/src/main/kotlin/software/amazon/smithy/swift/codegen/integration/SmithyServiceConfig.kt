@@ -21,12 +21,10 @@ class SmithyServiceConfig(writer: SwiftWriter, val ctx: ProtocolGenerator.Genera
 
     override fun serviceSpecificConfigProperties(): List<ConfigField> {
         var configs = mutableListOf<ConfigField>()
-
         // service specific EndpointResolver
         configs.add(ConfigField(ENDPOINT_RESOLVER, EndpointTypes.EndpointResolver, "\$N", "Endpoint resolver"))
         // service specific AuthSchemeResolver
         configs.add(ConfigField(AUTH_SCHEME_RESOLVER, buildSymbol { this.name = serviceName.clientName() + "AuthSchemeResolver" }, "\$N"))
-
         val clientContextParams = ctx.service.getTrait<ClientContextParamsTrait>()
         clientContextParams?.parameters?.forEach {
             configs.add(ConfigField(it.key.toLowerCamelCase(), it.value.type.toSwiftType(), "\$T"))
