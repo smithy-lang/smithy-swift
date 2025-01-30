@@ -35,7 +35,7 @@ import software.amazon.smithy.swift.codegen.waiters.JMESVariable
  * Generates EndpointResolverMiddleware interception code.
  * Including creation of EndpointParams instance and pass it as middleware param along with EndpointResolver
  */
-class OperationEndpointResolverMiddleware(
+open class OperationEndpointResolverMiddleware(
     val ctx: ProtocolGenerator.GenerationContext,
     val endpointResolverMiddlewareSymbol: Symbol,
 ) : MiddlewareRenderable {
@@ -47,7 +47,10 @@ class OperationEndpointResolverMiddleware(
 
         // Write code that saves endpoint params to middleware context for use in auth scheme middleware when using rules-based auth scheme resolvers
         if (AuthSchemeResolverGenerator.usesRulesBasedAuthResolver(ctx)) {
-            writer.write("context.set(key: \$N<EndpointParams>(name: \"EndpointParams\"), value: endpointParams)", SmithyTypes.AttributeKey)
+            writer.write(
+                "context.set(key: \$N<EndpointParams>(name: \"EndpointParams\"), value: endpointParamsBlock(context))",
+                SmithyTypes.AttributeKey
+            )
         }
 
         super.renderSpecific(ctx, writer, op, operationStackName, "applyEndpoint")
@@ -60,14 +63,13 @@ class OperationEndpointResolverMiddleware(
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
         writer.write(
-            "\$N<\$N, EndpointParams>(endpointResolverBlock: { [config] in try config.endpointResolver.resolve(params: \$\$0) }, endpointParams: endpointParams)",
+            "\$N<\$N, EndpointParams>(paramsBlock: endpointParamsBlock, resolverBlock: { [config] in try config.endpointResolver.resolve(params: \$\$0) })",
             endpointResolverMiddlewareSymbol,
             output
         )
     }
 
     private fun renderEndpointParams(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape) {
-        val outputError = MiddlewareShapeUtils.outputErrorSymbol(op)
         val params = mutableListOf<String>()
         ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet?.let { node ->
             val ruleSet = EndpointRuleSet.fromNode(node)
@@ -91,7 +93,6 @@ class OperationEndpointResolverMiddleware(
                         operationContextParams[param.name.toString()],
                         clientContextParams[param.name.toString()],
                         writer,
-                        outputError
                     )
                     value?.let {
                         params.add("$memberName: $it")
@@ -99,7 +100,9 @@ class OperationEndpointResolverMiddleware(
                 }
         }
 
-        writer.write("let endpointParams = EndpointParams(${params.joinToString(separator = ", ")})")
+        writer.openBlock("let endpointParamsBlock = { [config] (context: \$N) in", "}", SmithyTypes.Context) {
+            writer.write("EndpointParams(\$L)", params.joinToString(", "))
+        }
     }
 
     /**
@@ -120,14 +123,13 @@ class OperationEndpointResolverMiddleware(
         operationContextParam: OperationContextParamDefinition?,
         clientContextParam: ClientContextParamDefinition?,
         writer: SwiftWriter,
-        outputError: Symbol
     ): String? {
         return when {
             staticContextParam != null -> {
                 swiftParam(param.type, staticContextParam.value)
             }
             contextParam != null -> {
-                return "input.${contextParam.memberName.toLowerCamelCase()}"
+                "input.${contextParam.memberName.toLowerCamelCase()}"
             }
             operationContextParam != null -> {
                 // Use smithy to parse the text JMESPath expression into a syntax tree to be visited.
@@ -156,54 +158,55 @@ class OperationEndpointResolverMiddleware(
                 // Handle default logic
                 when {
                     param.default.isPresent -> {
-                        return "$name ?? ${param.defaultValueLiteral}"
+                        "$name ?? ${param.defaultValueLiteral}"
                     } else -> {
-                        return name
+                        name
                     }
                 }
             }
             clientContextParam != null -> {
-                when {
-                    param.default.isPresent -> {
-                        "config.${param.name.toString().toLowerCamelCase()} ?? ${param.defaultValueLiteral}"
-                    }
-                    else -> {
-                        return "config.${param.name.toString().toLowerCamelCase()}"
-                    }
-                }
+                handleClientContextParam(param, writer)
             }
             param.isBuiltIn -> {
-                return when {
-                    param.isRequired -> {
-                        when {
-                            param.default.isPresent -> {
-                                "config.${getBuiltInName(param)} ?? ${param.defaultValueLiteral}"
-                            }
-                            else -> {
-                                // if the parameter is required, we must unwrap the optional value
-                                writer.openBlock("guard let ${getBuiltInName(param)} = config.${getBuiltInName(param)} else {", "}") {
-                                    writer.write("throw \$N.unknownError(\"Missing required parameter: \$L\")", SmithyTypes.ClientError, param.name.toString())
-                                }
-                                param.name.toString().toLowerCamelCase()
-                            }
-                        }
-                    }
-                    param.default.isPresent -> {
-                        "config.${getBuiltInName(param)} ?? ${param.defaultValueLiteral}"
-                    }
-                    else -> {
-                        "config.${getBuiltInName(param)}"
-                    }
-                }
+                handleBuiltInParam(param, writer)
             }
             else -> {
                 // we can't resolve this param, skip it
-                return null
+                null
             }
         }
     }
 
-    private fun getBuiltInName(param: Parameter): String {
+    open fun handleClientContextParam(param: Parameter, writer: SwiftWriter): String {
+        // if a default is present, use `?? default`, otherwise just return `config.myParam`
+        return if (param.default.isPresent) {
+            "config.${param.name.toString().toLowerCamelCase()} ?? ${param.defaultValueLiteral}"
+        } else {
+            "config.${param.name.toString().toLowerCamelCase()}"
+        }
+    }
+
+    open fun handleBuiltInParam(param: Parameter, writer: SwiftWriter): String {
+        // required but no default
+        return if (param.isRequired && !param.default.isPresent) {
+            // case: required but no default => guard / unwrap
+            writer.openBlock("guard let ${getBuiltInName(param)} = config.${getBuiltInName(param)} else {", "}") {
+                writer.write("throw \$N.unknownError(\"Missing required parameter: \$L\")",
+                    SmithyTypes.ClientError,
+                    param.name.toString()
+                )
+            }
+            param.name.toString().toLowerCamelCase()
+        } else if (param.default.isPresent) {
+            // has a default => use ?? default
+            "config.${getBuiltInName(param)} ?? ${param.defaultValueLiteral}"
+        } else {
+            // not required, no default => just use config
+            "config.${getBuiltInName(param)}"
+        }
+    }
+
+    open fun getBuiltInName(param: Parameter): String {
         return param.builtIn.get().split("::").last().toLowerCamelCase()
     }
 
@@ -213,7 +216,7 @@ class OperationEndpointResolverMiddleware(
     private val doubleShape = DoubleShape.builder().id("smithy.swift.synthetic#LiteralDouble").build()
 }
 
-private val Parameter.defaultValueLiteral: String
+val Parameter.defaultValueLiteral: String
     get() = swiftParam(type, default.get().toNode())
 
 private fun swiftParam(parameterType: ParameterType, node: Node): String {

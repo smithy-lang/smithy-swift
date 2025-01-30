@@ -1,5 +1,6 @@
 package software.amazon.smithy.swift.codegen.protocols.rpcv2cbor
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -33,6 +34,7 @@ import software.amazon.smithy.swift.codegen.testModuleName
 
 class RpcV2CborProtocolGenerator(
     rpcCborCustomizations: DefaultHTTPProtocolCustomizations = RpcV2CborCustomizations(),
+    private val operationEndpointResolverMiddlewareFactory: ((ProtocolGenerator.GenerationContext, Symbol) -> MiddlewareRenderable)? = null,
     private val userAgentMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null
 ) : HTTPBindingProtocolGenerator(rpcCborCustomizations) {
     override val defaultContentType = "application/cbor"
@@ -67,7 +69,10 @@ class RpcV2CborProtocolGenerator(
     ): HttpBindingResolver = RPCV2CBORHttpBindingResolver(ctx, defaultContentType)
 
     override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
-        val operationEndpointResolverMiddleware = OperationEndpointResolverMiddleware(ctx, myRpcCborCustoms.endpointMiddlewareSymbol)
+        val operationEndpointResolverMiddleware =
+            (operationEndpointResolverMiddlewareFactory ?: { _, endpointMiddlewareSymbol ->
+                OperationEndpointResolverMiddleware(ctx, endpointMiddlewareSymbol)
+            })(ctx, myRpcCborCustoms.endpointMiddlewareSymbol)
 
         operationMiddleware.appendMiddleware(
             operation,
