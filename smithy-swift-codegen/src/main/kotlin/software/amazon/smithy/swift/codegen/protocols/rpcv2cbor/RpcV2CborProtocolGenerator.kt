@@ -70,8 +70,8 @@ class RpcV2CborProtocolGenerator(
 
     override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
         val operationEndpointResolverMiddleware = (
-                operationEndpointResolverMiddlewareFactory ?: { _, endpointMiddlewareSymbol -> OperationEndpointResolverMiddleware(ctx, endpointMiddlewareSymbol) }
-        )(ctx, myRpcCborCustoms.endpointMiddlewareSymbol)
+            operationEndpointResolverMiddlewareFactory ?: { _, endpointMiddlewareSymbol -> OperationEndpointResolverMiddleware(ctx, endpointMiddlewareSymbol) }
+            )(ctx, myRpcCborCustoms.endpointMiddlewareSymbol)
 
         operationMiddleware.appendMiddleware(
             operation,
