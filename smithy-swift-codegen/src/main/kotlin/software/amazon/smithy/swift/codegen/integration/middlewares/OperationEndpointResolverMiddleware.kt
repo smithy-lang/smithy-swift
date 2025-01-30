@@ -26,7 +26,6 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.getTrait
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.waiters.JMESPathVisitor
@@ -199,7 +198,8 @@ open class OperationEndpointResolverMiddleware(
         return if (param.isRequired && !param.default.isPresent) {
             // case: required but no default => guard / unwrap
             writer.openBlock("guard let ${getBuiltInName(param)} = config.${getBuiltInName(param)} else {", "}") {
-                writer.write("throw \$N.unknownError(\"Missing required parameter: \$L\")",
+                writer.write(
+                    "throw \$N.unknownError(\"Missing required parameter: \$L\")",
                     SmithyTypes.ClientError,
                     param.name.toString()
                 )

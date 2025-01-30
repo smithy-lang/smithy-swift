@@ -69,10 +69,9 @@ class RpcV2CborProtocolGenerator(
     ): HttpBindingResolver = RPCV2CBORHttpBindingResolver(ctx, defaultContentType)
 
     override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
-        val operationEndpointResolverMiddleware =
-            (operationEndpointResolverMiddlewareFactory ?: { _, endpointMiddlewareSymbol ->
-                OperationEndpointResolverMiddleware(ctx, endpointMiddlewareSymbol)
-            })(ctx, myRpcCborCustoms.endpointMiddlewareSymbol)
+        val operationEndpointResolverMiddleware = (
+                operationEndpointResolverMiddlewareFactory ?: { _, endpointMiddlewareSymbol -> OperationEndpointResolverMiddleware(ctx, endpointMiddlewareSymbol) }
+        )(ctx, myRpcCborCustoms.endpointMiddlewareSymbol)
 
         operationMiddleware.appendMiddleware(
             operation,
