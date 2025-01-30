@@ -26,6 +26,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.waiters.JMESPathVisitor
@@ -187,6 +188,13 @@ open class OperationEndpointResolverMiddleware(
     }
 
     open fun handleBuiltInParam(param: Parameter, writer: SwiftWriter): String {
+        if (getBuiltInName(param) == "endpoint") {
+            // If you want the base to do absolutely nothing, just return a placeholder or throw.
+            // We'll rely on the subclass to do the special logic.
+            // throw IllegalStateException("Base class does not handle 'endpoint'")
+            return "config.endpoint"
+        }
+
         // required but no default
         return if (param.isRequired && !param.default.isPresent) {
             // case: required but no default => guard / unwrap

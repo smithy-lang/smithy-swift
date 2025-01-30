@@ -122,9 +122,7 @@ interface SwiftIntegration : SmithyIntegration<SwiftSettings, SwiftWriter, Gener
      * Get the list of protocol generators to register
      */
     val protocolGenerators: List<ProtocolGenerator>
-        get() = listOf(
-            RpcV2CborProtocolGenerator()
-        )
+        get() = listOf()
 
     /**
      * Allows integration to specify [SectionWriterBinding]s to
