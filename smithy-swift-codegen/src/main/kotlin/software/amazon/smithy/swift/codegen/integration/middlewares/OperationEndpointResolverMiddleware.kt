@@ -187,10 +187,8 @@ open class OperationEndpointResolverMiddleware(
     }
 
     open fun handleBuiltInParam(param: Parameter, writer: SwiftWriter): String {
+        // default behavior for handling endpoint if not overriden
         if (getBuiltInName(param) == "endpoint") {
-            // If you want the base to do absolutely nothing, just return a placeholder or throw.
-            // We'll rely on the subclass to do the special logic.
-            // throw IllegalStateException("Base class does not handle 'endpoint'")
             return "config.endpoint"
         }
 
