@@ -212,7 +212,7 @@ open class OperationEndpointResolverMiddleware(
         }
     }
 
-    open fun getBuiltInName(param: Parameter): String {
+    fun getBuiltInName(param: Parameter): String {
         return param.builtIn.get().split("::").last().toLowerCamelCase()
     }
 
