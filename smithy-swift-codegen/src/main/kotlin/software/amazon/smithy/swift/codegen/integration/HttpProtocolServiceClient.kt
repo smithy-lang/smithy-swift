@@ -136,14 +136,6 @@ open class HttpProtocolServiceClient(
             renderCustomConfigInitializer(properties)
 
             renderPartitionID()
-
-            clientConfigs
-                .flatMap { it.getMethods(ctx) }
-                .sortedBy { it.accessModifier }
-                .forEach {
-                    it.render(writer)
-                    writer.write("")
-                }
         }
         writer.write("")
     }
