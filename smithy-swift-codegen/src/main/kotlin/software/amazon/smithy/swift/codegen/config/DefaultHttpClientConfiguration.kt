@@ -54,14 +54,4 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
             { it.format("\$N(token: \$N(token: \"\"))", SmithyIdentityTypes.StaticBearerTokenIdentityResolver, SmithyIdentityTypes.BearerTokenIdentity) }
         )
     )
-
-    override fun getMethods(ctx: ProtocolGenerator.GenerationContext): Set<Function> = setOf(
-        Function(
-            name = "addInterceptorProvider",
-            renderBody = { writer -> writer.write("self.httpInterceptorProviders.append(provider)") },
-            parameters = listOf(
-                FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.HttpInterceptorProvider)
-            ),
-        )
-    )
 }

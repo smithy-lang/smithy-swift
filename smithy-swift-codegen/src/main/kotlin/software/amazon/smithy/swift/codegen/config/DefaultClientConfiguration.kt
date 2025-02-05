@@ -47,14 +47,4 @@ class DefaultClientConfiguration : ClientConfiguration {
             accessModifier = AccessModifier.PublicPrivateSet
         )
     )
-
-    override fun getMethods(ctx: ProtocolGenerator.GenerationContext): Set<Function> = setOf(
-        Function(
-            name = "addInterceptorProvider",
-            renderBody = { writer -> writer.write("self.interceptorProviders.append(provider)") },
-            parameters = listOf(
-                FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.InterceptorProvider)
-            ),
-        )
-    )
 }

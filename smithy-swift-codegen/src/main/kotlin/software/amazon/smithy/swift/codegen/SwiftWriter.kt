@@ -106,6 +106,8 @@ class SwiftWriter(
 
     fun addImport(symbol: Symbol) {
         symbol.references.forEach { addImport(it.symbol) }
+        val additionalImports = symbol.getProperty("additionalImports").getOrElse { emptyList<Symbol>() } as List<Symbol>
+        additionalImports.forEach { addImport(it) }
         if (symbol.isBuiltIn || symbol.isServiceNestedNamespace || symbol.namespace.isEmpty()) return
         val spiNames = symbol.getProperty("spiNames").getOrElse { emptyList<String>() } as List<String>
         val decl = symbol.getProperty("decl").getOrNull()?.toString()
@@ -127,8 +129,6 @@ class SwiftWriter(
             addImport(symbol.namespace, internalSPINames = spiNames)
         }
         symbol.dependencies.forEach { addDependency(it) }
-        val additionalImports = symbol.getProperty("additionalImports").getOrElse { emptyList<Symbol>() } as List<Symbol>
-        additionalImports.forEach { addImport(it) }
     }
 
     fun addImport(
