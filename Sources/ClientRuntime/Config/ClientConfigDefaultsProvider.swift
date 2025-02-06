@@ -39,8 +39,7 @@ open class ClientConfigDefaultsProvider {
     }
 
     /// Returns default retry strategy options.
-    public static func retryStrategyOptions(
-        _ retryMode: String? = nil,
+    public static func defaultRetryStrategyOptions(
         _ maxAttempts: Int? = nil
     ) throws -> RetryStrategyOptions {
         // Provide some simple fallback for non-AWS usage, e.g. a standard exponential backoff.
