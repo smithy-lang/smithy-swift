@@ -38,8 +38,11 @@ open class ClientConfigDefaultsProvider {
         return RuntimeConfigType.defaultClientLogMode
     }
 
-    /// Returns default retry strategy options *without* referencing AWS-specific config.
-    open class func retryStrategyOptions(maxAttempts: Int? = nil) -> RetryStrategyOptions {
+    /// Returns default retry strategy options.
+    open static func retryStrategyOptions(
+        _ retryMode: String? = nil,
+        _ maxAttempts: Int? = nil
+    ) -> RetryStrategyOptions {
         // Provide some simple fallback for non-AWS usage, e.g. a standard exponential backoff.
         let attempts = maxAttempts ?? 3
         return RetryStrategyOptions(
