@@ -10,6 +10,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.Trait
 
 class NestedTrait : Trait {
+    @Suppress("ktlint:standard:property-naming")
     val ID = ShapeId.from("software.amazon.smithy.swift.codegen.synthetic#nested")
 
     override fun toNode(): Node = Node.objectNode()

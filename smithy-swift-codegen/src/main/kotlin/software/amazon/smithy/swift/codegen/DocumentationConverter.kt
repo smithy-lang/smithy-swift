@@ -62,8 +62,13 @@ class DocumentationConverter {
         var needsBracketsForLink: Boolean = false,
         var shouldStripPrefixWhitespace: Boolean = false,
     ) : NodeVisitor {
+        @Suppress("ktlint:standard:property-naming")
         private val TEXT_BLOCK_NODES = SetUtils.of("br", "p", "h1", "h2", "h3", "h4", "h5", "h6")
+
+        @Suppress("ktlint:standard:property-naming")
         private val LIST_BLOCK_NODES = SetUtils.of("ul", "ol")
+
+        @Suppress("ktlint:standard:property-naming")
         private val CODE_BLOCK_NODES = SetUtils.of("pre", "code")
 
         override fun head(

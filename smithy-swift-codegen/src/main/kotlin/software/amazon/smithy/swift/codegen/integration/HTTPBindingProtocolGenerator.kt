@@ -133,6 +133,7 @@ fun formatHeaderOrQueryValue(
 abstract class HTTPBindingProtocolGenerator(
     override val customizations: HTTPProtocolCustomizable,
 ) : ProtocolGenerator {
+    @Suppress("ktlint:standard:property-naming")
     private val LOGGER = Logger.getLogger(javaClass.name)
     private val idempotencyTokenValue = "idempotencyTokenGenerator.generateToken()"
 

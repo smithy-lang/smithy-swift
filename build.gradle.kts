@@ -23,8 +23,7 @@ dependencies {
 }
 
 val lintPaths = listOf(
-    "smithy-swift-codegen/src/main/**/*.kt",
-    "smithy-swift-codegen-test-utils/src/**/*.kt"
+    "smithy-swift-codegen/**/*.kt",
 )
 
 tasks.register<JavaExec>("ktlint") {

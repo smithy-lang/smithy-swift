@@ -31,6 +31,7 @@ import java.util.logging.Logger
 class DirectedSwiftCodegen(
     val context: PluginContext,
 ) : DirectedCodegen<GenerationContext, SwiftSettings, SwiftIntegration> {
+    @Suppress("ktlint:standard:property-naming")
     private val LOGGER = Logger.getLogger(javaClass.name)
 
     override fun createSymbolProvider(directive: CreateSymbolProviderDirective<SwiftSettings>): SymbolProvider =

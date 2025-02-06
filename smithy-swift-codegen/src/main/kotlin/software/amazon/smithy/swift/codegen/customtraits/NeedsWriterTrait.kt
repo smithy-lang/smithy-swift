@@ -10,6 +10,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.Trait
 
 class NeedsWriterTrait : Trait {
+    @Suppress("ktlint:standard:property-naming")
     val ID = ShapeId.from("software.amazon.smithy.swift.codegen.synthetic#NeedsWriter")
 
     override fun toNode(): Node = Node.objectNode()

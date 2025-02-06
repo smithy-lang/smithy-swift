@@ -14,11 +14,11 @@ import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPRestJ
 import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class HttpResponseBindingIgnoreQuery {
-
     @Test
     fun `001 Output httpResponseBinding ignores query trait & decodes field`() {
         val context = setupTests("http-query-payload.smithy", "aws.protocoltests.restjson#RestJson")
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/IgnoreQueryParamsInResponseOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "Sources/RestJson/models/IgnoreQueryParamsInResponseOutput+HttpResponseBinding.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension IgnoreQueryParamsInResponseOutput {
@@ -36,7 +36,10 @@ extension IgnoreQueryParamsInResponseOutput {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
         val context =
             TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestJsonProtocolGenerator()) { model ->
                 model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol")

@@ -32,6 +32,7 @@ class HttpProtocolTestGenerator(
     private val testsToIgnore: Set<String> = setOf(),
     private val tagsToIgnore: Set<String> = setOf(),
 ) {
+    @Suppress("ktlint:standard:property-naming")
     private val LOGGER = Logger.getLogger(javaClass.name)
 
     /**

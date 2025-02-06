@@ -35,8 +35,12 @@ public struct TestMiddleware {
     }
 }
 
-class MockMiddleware(private val writer: SwiftWriter, symbol: Symbol) : Middleware(writer, symbol) {
+class MockMiddleware(
+    private val writer: SwiftWriter,
+    symbol: Symbol,
+) : Middleware(writer, symbol) {
     override val properties = mutableMapOf("test" to SwiftTypes.String)
+
     override fun generateInit() {
         writer.write("public init() {}")
     }

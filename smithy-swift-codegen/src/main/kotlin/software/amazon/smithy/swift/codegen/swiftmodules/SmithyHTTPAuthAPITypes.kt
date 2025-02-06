@@ -10,6 +10,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
  *
  * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
  */
+@Suppress("ktlint:standard:property-naming")
 object SmithyHTTPAuthAPITypes {
     val AuthOption = runtimeSymbol("AuthOption", SwiftDeclaration.STRUCT)
     val AuthScheme = runtimeSymbol("AuthScheme", SwiftDeclaration.PROTOCOL)

@@ -24,19 +24,20 @@ import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolC
 
 class MockJsonHttpBindingResolver(
     private val context: ProtocolGenerator.GenerationContext,
-    private val defaultContentType: String
+    private val defaultContentType: String,
 ) : StaticHttpBindingResolver(context, awsJsonHttpTrait, defaultContentType) {
-
     companion object {
-        private val awsJsonHttpTrait: HttpTrait = HttpTrait
-            .builder()
-            .code(200)
-            .method("POST")
-            .uri(UriPattern.parse("/"))
-            .build()
+        private val awsJsonHttpTrait: HttpTrait =
+            HttpTrait
+                .builder()
+                .code(200)
+                .method("POST")
+                .uri(UriPattern.parse("/"))
+                .build()
     }
 }
-class MockAWSJson11Customizations() : DefaultHTTPProtocolCustomizations() {
+
+class MockAWSJson11Customizations : DefaultHTTPProtocolCustomizations() {
     override fun renderEventStreamAttributes(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
@@ -47,9 +48,10 @@ class MockAWSJson11Customizations() : DefaultHTTPProtocolCustomizations() {
     }
 }
 
-class MockHTTPAWSJson11ProtocolGenerator() : HTTPBindingProtocolGenerator(MockAWSJson11Customizations()) {
+class MockHTTPAWSJson11ProtocolGenerator : HTTPBindingProtocolGenerator(MockAWSJson11Customizations()) {
     override val defaultContentType: String = "application/json"
     override val protocol: ShapeId = AwsJson1_1Trait.ID
+
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
         val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
@@ -67,14 +69,22 @@ class MockHTTPAWSJson11ProtocolGenerator() : HTTPBindingProtocolGenerator(MockAW
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val shouldRenderEncodableConformance = false
 
-    override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+    override fun addProtocolSpecificMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    ) {
         // Intentionally empty
     }
 
-    override fun addUserAgentMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+    override fun addUserAgentMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    ) {
         // Intentionally empty
     }
 
-    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext, defaultContentType: String):
-        HttpBindingResolver = MockJsonHttpBindingResolver(ctx, defaultContentType)
+    override fun getProtocolHttpBindingResolver(
+        ctx: ProtocolGenerator.GenerationContext,
+        defaultContentType: String,
+    ): HttpBindingResolver = MockJsonHttpBindingResolver(ctx, defaultContentType)
 }
