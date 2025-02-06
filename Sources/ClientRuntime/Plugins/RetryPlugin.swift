@@ -15,9 +15,7 @@ public class RetryPlugin<Config: DefaultClientConfiguration>: Plugin {
         self.retryStrategyOptions = retryStrategyOptions
     }
 
-    public func configureClient(clientConfiguration: Config) -> Config {
-        var copy = clientConfiguration
-        copy.retryStrategyOptions = self.retryStrategyOptions
-        return copy
+    public func configureClient(clientConfiguration: inout Config) {
+        clientConfiguration.retryStrategyOptions = self.retryStrategyOptions
     }
 }

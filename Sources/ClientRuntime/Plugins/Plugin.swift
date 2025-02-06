@@ -8,5 +8,5 @@
 public protocol Plugin<Config> {
     associatedtype Config: ClientConfiguration
 
-    func configureClient(clientConfiguration: Config) async throws -> Config
+    func configureClient(clientConfiguration: inout Config) async throws
 }

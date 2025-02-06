@@ -108,7 +108,7 @@ open class HttpProtocolServiceClient(
                 .joinToString(" & ")
 
         writer.openBlock(
-            "public class \$LConfiguration: \$L {", "}",
+            "public struct \$LConfiguration: \$L {", "}",
             serviceConfig.clientName.toUpperCamelCase(),
             clientConfigurationProtocols
         ) {
@@ -151,7 +151,7 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderEmptyAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
-        writer.openBlock("public convenience required init() async throws {", "}") {
+        writer.openBlock("public init() async throws {", "}") {
             writer.openBlock("try await self.init(", ")") {
                 properties.forEach { property ->
                     writer.write("\$L: nil,", property.name)
@@ -204,7 +204,7 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderSynchronousConfigInitializer(properties: List<ConfigProperty>) {
-        writer.openBlock("public convenience init(", ") throws {") {
+        writer.openBlock("public init(", ") throws {") {
             properties.forEach { property ->
                 writer.write("\$L: \$N = nil,", property.name, property.type.toOptional())
             }
@@ -231,7 +231,7 @@ open class HttpProtocolServiceClient(
     private fun renderAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
         if (properties.none { it.default?.isAsync == true }) return
 
-        writer.openBlock("public convenience init(", ") async throws {") {
+        writer.openBlock("public init(", ") async throws {") {
             properties.forEach { property ->
                 writer.write("\$L: \$L = nil,", property.name, property.type.toOptional().renderSwiftType(writer))
             }

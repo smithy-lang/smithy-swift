@@ -27,10 +27,8 @@ public class TelemetryPlugin<Config: DefaultClientConfiguration>: Plugin {
         )
     }
 
-    public func configureClient(clientConfiguration: Config) -> Config {
-        var copy = clientConfiguration
-        copy.telemetryProvider = self.telemetryProvider
-        return copy
+    public func configureClient(clientConfiguration: inout Config) {
+        clientConfiguration.telemetryProvider = self.telemetryProvider
     }
 }
 

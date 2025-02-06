@@ -10,8 +10,8 @@ public class ClientBuilder<ClientType: Client> {
     private struct PluginContainer: Plugin {
         let plugin: any Plugin<ClientType.Config>
 
-        func configureClient(clientConfiguration: ClientType.Config) async throws -> ClientType.Config {
-            try await plugin.configureClient(clientConfiguration: clientConfiguration)
+        func configureClient(clientConfiguration: inout ClientType.Config) async throws {
+            try await plugin.configureClient(clientConfiguration: &clientConfiguration)
         }
     }
 
@@ -32,7 +32,7 @@ public class ClientBuilder<ClientType: Client> {
     private func resolve() async throws -> ClientType.Config {
         var config = try await ClientType.Config()
         for plugin in plugins {
-            config = try await plugin.configureClient(clientConfiguration: config)
+            try await plugin.configureClient(clientConfiguration: &config)
         }
         return config
     }

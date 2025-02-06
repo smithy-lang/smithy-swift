@@ -4,7 +4,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
+
 public protocol Client {
     associatedtype Config: ClientConfiguration
+
     init(config: Config)
 }

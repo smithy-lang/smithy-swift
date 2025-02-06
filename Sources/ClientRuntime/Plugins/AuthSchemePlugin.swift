@@ -21,14 +21,12 @@ public class AuthSchemePlugin<Config: DefaultHttpClientConfiguration>: Plugin {
         self.authSchemes = authSchemes
     }
 
-    public func configureClient(clientConfiguration: Config) -> Config {
-        var copy = clientConfiguration
-        if self.authSchemes != nil {
-            copy.authSchemes = self.authSchemes!
+    public func configureClient(clientConfiguration: inout Config) {
+        if let authSchemes {
+            clientConfiguration.authSchemes = authSchemes
         }
-        if self.authSchemeResolver != nil {
-            copy.authSchemeResolver = self.authSchemeResolver!
+        if let authSchemeResolver {
+            clientConfiguration.authSchemeResolver = authSchemeResolver
         }
-        return copy
     }
 }
