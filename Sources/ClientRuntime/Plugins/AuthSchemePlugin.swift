@@ -7,7 +7,7 @@
 
 import SmithyHTTPAuthAPI
 
-public class AuthSchemePlugin: Plugin {
+public class AuthSchemePlugin<Config: DefaultHttpClientConfiguration>: Plugin {
 
     private var authSchemes: [AuthScheme]?
 
@@ -21,14 +21,14 @@ public class AuthSchemePlugin: Plugin {
         self.authSchemes = authSchemes
     }
 
-    public func configureClient(clientConfiguration: ClientConfiguration) {
-        if var config = clientConfiguration as? DefaultHttpClientConfiguration {
-            if self.authSchemes != nil {
-                config.authSchemes = self.authSchemes!
-            }
-            if self.authSchemeResolver != nil {
-                config.authSchemeResolver = self.authSchemeResolver!
-            }
+    public func configureClient(clientConfiguration: Config) -> Config {
+        var copy = clientConfiguration
+        if self.authSchemes != nil {
+            copy.authSchemes = self.authSchemes!
         }
+        if self.authSchemeResolver != nil {
+            copy.authSchemeResolver = self.authSchemeResolver!
+        }
+        return copy
     }
 }

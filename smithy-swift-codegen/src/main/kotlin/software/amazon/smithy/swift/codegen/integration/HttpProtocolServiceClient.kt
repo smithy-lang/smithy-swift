@@ -75,30 +75,25 @@ open class HttpProtocolServiceClient(
                 ClientRuntimeTypes.Core.ClientBuilder,
                 serviceSymbol.name,
             ) {
-                writer.openBlock(
-                    "return \$N<\$L>(defaultPlugins: [",
-                    "])",
+                writer.write(
+                    "return \$N<\$L>()",
                     ClientRuntimeTypes.Core.ClientBuilder,
                     serviceSymbol.name,
-                ) {
-                    val defaultPlugins: MutableList<Plugin> = mutableListOf(DefaultClientPlugin())
+                )
+                writer.indent()
+                val defaultPlugins: MutableList<Plugin> = mutableListOf(DefaultClientPlugin())
 
-                    ctx.integrations
-                        .flatMap { it.plugins(serviceConfig) }
-                        .filter { it.isDefault }
-                        .onEach { defaultPlugins.add(it) }
+                ctx.integrations
+                    .flatMap { it.plugins(serviceConfig) }
+                    .filter { it.isDefault }
+                    .onEach { defaultPlugins.add(it) }
 
-                    val pluginsIterator = defaultPlugins.iterator()
+                val pluginsIterator = defaultPlugins.iterator()
 
-                    while (pluginsIterator.hasNext()) {
-                        pluginsIterator.next().customInitialization(writer)
-                        if (pluginsIterator.hasNext()) {
-                            writer.write(",")
-                        }
-                    }
-
-                    writer.unwrite(",\n").write("")
+                while (pluginsIterator.hasNext()) {
+                    writer.write(".withPlugin(\$L)", pluginsIterator.next().customInitialization(writer))
                 }
+                writer.dedent()
             }
         }
         writer.write("")

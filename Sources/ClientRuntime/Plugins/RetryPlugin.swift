@@ -7,7 +7,7 @@
 
 import struct SmithyRetriesAPI.RetryStrategyOptions
 
-public class RetryPlugin: Plugin {
+public class RetryPlugin<Config: DefaultClientConfiguration>: Plugin {
 
     private var retryStrategyOptions: RetryStrategyOptions
 
@@ -15,9 +15,9 @@ public class RetryPlugin: Plugin {
         self.retryStrategyOptions = retryStrategyOptions
     }
 
-    public func configureClient(clientConfiguration: ClientConfiguration) {
-        if var config = clientConfiguration as? DefaultClientConfiguration {
-            config.retryStrategyOptions = self.retryStrategyOptions
-        }
+    public func configureClient(clientConfiguration: Config) -> Config {
+        var copy = clientConfiguration
+        copy.retryStrategyOptions = self.retryStrategyOptions
+        return copy
     }
 }

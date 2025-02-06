@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public protocol Plugin {
-    func configureClient(clientConfiguration: ClientConfiguration) async throws
+public protocol Plugin<Config> {
+    associatedtype Config: ClientConfiguration
+
+    func configureClient(clientConfiguration: Config) async throws -> Config
 }
