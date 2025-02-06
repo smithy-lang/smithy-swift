@@ -17,7 +17,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResp
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolClientGeneratorFactory
 
-class MockRestXMLHTTPProtocolCustomizations() : DefaultHTTPProtocolCustomizations()
+class MockRestXMLHTTPProtocolCustomizations : DefaultHTTPProtocolCustomizations()
 
 class MockHTTPRestXMLProtocolGenerator : HTTPBindingProtocolGenerator(MockRestXMLHTTPProtocolCustomizations()) {
     override val defaultContentType: String = "application/xml"
@@ -25,11 +25,17 @@ class MockHTTPRestXMLProtocolGenerator : HTTPBindingProtocolGenerator(MockRestXM
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val shouldRenderEncodableConformance = false
 
-    override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+    override fun addProtocolSpecificMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    ) {
         // Intentionally empty
     }
 
-    override fun addUserAgentMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+    override fun addUserAgentMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    ) {
         // Intentionally empty
     }
 

@@ -17,7 +17,11 @@ fun String.removeSurroundingBackticks() = removeSurrounding("`", "`")
  * Uses either name or value attributes of EnumDefinition in that order and formats
  * them to camelCase after removing chars except alphanumeric, space and underscore.
  */
-fun swiftEnumCaseName(name: String?, value: String, shouldBeEscaped: Boolean = true): String {
+fun swiftEnumCaseName(
+    name: String?,
+    value: String,
+    shouldBeEscaped: Boolean = true,
+): String {
     val resolvedName = name ?: value
     var enumCaseName = CaseUtils.toCamelCase(resolvedName.replace(Regex("[^a-zA-Z0-9_ -]"), ""))
     if (!SwiftSymbolProvider.isValidSwiftIdentifier(enumCaseName)) {
@@ -31,6 +35,4 @@ fun swiftEnumCaseName(name: String?, value: String, shouldBeEscaped: Boolean = t
     return enumCaseName
 }
 
-fun supportsStreamingAndIsRPC(protocolID: ShapeId): Boolean {
-    return arrayOf(AwsJson1_0Trait.ID, AwsJson1_1Trait.ID).contains(protocolID)
-}
+fun supportsStreamingAndIsRPC(protocolID: ShapeId): Boolean = arrayOf(AwsJson1_0Trait.ID, AwsJson1_1Trait.ID).contains(protocolID)

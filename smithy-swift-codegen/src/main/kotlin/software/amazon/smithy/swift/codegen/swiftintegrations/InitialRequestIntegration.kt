@@ -21,7 +21,10 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITy
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
 class InitialRequestIntegration : SwiftIntegration {
-    override fun enabledForService(model: Model, settings: SwiftSettings): Boolean {
+    override fun enabledForService(
+        model: Model,
+        settings: SwiftSettings,
+    ): Boolean {
         val service = settings.getService(model)
         return service.hasTrait<AwsJson1_0Trait>() || service.hasTrait<AwsJson1_1Trait>()
     }
@@ -29,17 +32,19 @@ class InitialRequestIntegration : SwiftIntegration {
     override fun writeAdditionalFiles(
         ctx: SwiftCodegenContext,
         protocolGenerationContext: ProtocolGenerator.GenerationContext,
-        delegator: SwiftDelegator
+        delegator: SwiftDelegator,
     ) {
         val contentType: String = ctx.protocolGenerator?.defaultContentType ?: "application/json"
         val resolvedInputShapes = getOperationInputShapesWithStreamingUnionMember(protocolGenerationContext)
         resolvedInputShapes.forEach {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(it)
             val filename = ModelFileUtils.filename(ctx.settings, "${symbol.name}+MakeInitialRequestMessage")
-            val inputStruct = Symbol.builder()
-                .definitionFile(filename)
-                .name(symbol.name)
-                .build()
+            val inputStruct =
+                Symbol
+                    .builder()
+                    .definitionFile(filename)
+                    .name(symbol.name)
+                    .build()
             protocolGenerationContext.delegator.useShapeWriter(inputStruct) { writer ->
                 writer.apply {
                     openBlock("extension \$N {", "}", symbol) {
@@ -48,7 +53,8 @@ class InitialRequestIntegration : SwiftIntegration {
                             "}",
                             SmithyEventStreamsAPITypes.Message,
                         ) {
-                            val nodeInfoUtils = NodeInfoUtils(protocolGenerationContext, writer, protocolGenerationContext.service.requestWireProtocol)
+                            val nodeInfoUtils =
+                                NodeInfoUtils(protocolGenerationContext, writer, protocolGenerationContext.service.requestWireProtocol)
                             val rootNodeInfo = nodeInfoUtils.nodeInfo(it, true)
                             val valueWritingClosure = WritingClosureUtils(protocolGenerationContext, writer).writingClosure(it)
                             writer.write("let writer = \$N(nodeInfo: \$L)", protocolGenerationContext.service.writerSymbol, rootNodeInfo)
@@ -61,7 +67,7 @@ class InitialRequestIntegration : SwiftIntegration {
                             ) {
                                 openBlock(
                                     "headers: [",
-                                    "],"
+                                    "],",
                                 ) {
                                     write(
                                         "\$N(name: \":message-type\", value: .string(\"event\")),",
@@ -73,7 +79,8 @@ class InitialRequestIntegration : SwiftIntegration {
                                     )
                                     write(
                                         "\$N(name: \":content-type\", value: .string(\$S))",
-                                        SmithyEventStreamsAPITypes.Header, contentType,
+                                        SmithyEventStreamsAPITypes.Header,
+                                        contentType,
                                     )
                                 }
                                 write("payload: initialRequestPayload")
@@ -86,9 +93,7 @@ class InitialRequestIntegration : SwiftIntegration {
         }
     }
 
-    private fun getOperationInputShapesWithStreamingUnionMember(
-        ctx: ProtocolGenerator.GenerationContext
-    ): List<StructureShape> {
+    private fun getOperationInputShapesWithStreamingUnionMember(ctx: ProtocolGenerator.GenerationContext): List<StructureShape> {
         var inputShapesWithStreamingUnion = ArrayList<StructureShape>()
         val eventStreamIndex = EventStreamIndex.of(ctx.model)
         TopDownIndex.of(ctx.model).getContainedOperations(ctx.service).forEach {

@@ -16,19 +16,19 @@ data class ConfigProperty(
     val default: DefaultProvider? = null,
     val accessModifier: AccessModifier = AccessModifier.Public,
 ) {
-
     constructor(
         name: String,
         type: Symbol,
         default: (SwiftWriter) -> String,
         isThrowable: Boolean = false,
         isAsync: Boolean = false,
-        accessModifier: AccessModifier = AccessModifier.Public
+        accessModifier: AccessModifier = AccessModifier.Public,
     ) : this(name, type, DefaultProvider(default, isThrowable, isAsync), accessModifier)
 
     init {
-        if (!type.isOptional() && default == null)
+        if (!type.isOptional() && default == null) {
             throw RuntimeException("Non-optional client config property must have a default value")
+        }
     }
 
     fun render(writer: SwiftWriter) {

@@ -30,16 +30,23 @@ import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
  * https://smithy.io/2.0/spec/behavior-traits.html#smithy-api-paginated-trait for details.
  */
 class PaginatorGenerator : SwiftIntegration {
-    override fun enabledForService(model: Model, settings: SwiftSettings): Boolean =
-        model.operationShapes.any { it.hasTrait<PaginatedTrait>() }
+    override fun enabledForService(
+        model: Model,
+        settings: SwiftSettings,
+    ): Boolean = model.operationShapes.any { it.hasTrait<PaginatedTrait>() }
 
-    override fun writeAdditionalFiles(ctx: SwiftCodegenContext, protoCtx: ProtocolGenerator.GenerationContext, delegator: SwiftDelegator) {
+    override fun writeAdditionalFiles(
+        ctx: SwiftCodegenContext,
+        protoCtx: ProtocolGenerator.GenerationContext,
+        delegator: SwiftDelegator,
+    ) {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
         val paginatedIndex = PaginatedIndex.of(ctx.model)
 
-        val paginatedOperations = service.allOperations
-            .map { ctx.model.expectShape<OperationShape>(it) }
-            .filter { operationShape -> operationShape.hasTrait(PaginatedTrait.ID) }
+        val paginatedOperations =
+            service.allOperations
+                .map { ctx.model.expectShape<OperationShape>(it) }
+                .filter { operationShape -> operationShape.hasTrait(PaginatedTrait.ID) }
 
         // Skip generating Paginators.swift if service has no paginated operations
         if (paginatedOperations.isEmpty()) {
@@ -48,8 +55,9 @@ class PaginatorGenerator : SwiftIntegration {
 
         delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Paginators.swift") { writer ->
             paginatedOperations.forEach { paginatedOperation ->
-                val paginationInfo = paginatedIndex.getPaginationInfo(service, paginatedOperation).orElse(null)
-                    ?: throw CodegenException("Unexpectedly unable to get PaginationInfo from $service $paginatedOperation")
+                val paginationInfo =
+                    paginatedIndex.getPaginationInfo(service, paginatedOperation).orElse(null)
+                        ?: throw CodegenException("Unexpectedly unable to get PaginationInfo from $service $paginatedOperation")
                 val paginationItemInfo = getItemDescriptorOrNull(paginationInfo, ctx)
                 renderPaginatorForOperation(writer, ctx, service, paginatedOperation, paginationInfo, paginationItemInfo)
             }
@@ -110,23 +118,25 @@ class PaginatorGenerator : SwiftIntegration {
     ) {
         val outputShape = paginationInfo.output
 
-        val nextMarkerLiteral = paginationInfo.outputTokenMemberPath.joinToString(separator = "?.") {
-            it.toLowerCamelCase()
-        }
+        val nextMarkerLiteral =
+            paginationInfo.outputTokenMemberPath.joinToString(separator = "?.") {
+                it.toLowerCamelCase()
+            }
         val markerLiteral = paginationInfo.inputTokenMember.toLowerCamelCase()
         val markerLiteralShape = model.expectShape(paginationInfo.inputTokenMember.target)
         val markerLiteralSymbol = symbolProvider.toSymbol(markerLiteralShape)
         writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
-            val docBody = """
-            Paginate over `[${outputSymbol.name}]` results.
-            
-            When this operation is called, an `AsyncSequence` is created. AsyncSequences are lazy so no service
-            calls are made until the sequence is iterated over. This also means there is no guarantee that the request is valid
-            until then. If there are errors in your request, you will see the failures only after you start iterating.
-            - Parameters: 
-                - input: A `[${inputSymbol.name}]` to start pagination
-            - Returns: An `AsyncSequence` that can iterate over `${outputSymbol.name}`
-            """.trimIndent()
+            val docBody =
+                """
+                Paginate over `[${outputSymbol.name}]` results.
+                
+                When this operation is called, an `AsyncSequence` is created. AsyncSequences are lazy so no service
+                calls are made until the sequence is iterated over. This also means there is no guarantee that the request is valid
+                until then. If there are errors in your request, you will see the failures only after you start iterating.
+                - Parameters: 
+                    - input: A `[${inputSymbol.name}]` to start pagination
+                - Returns: An `AsyncSequence` that can iterate over `${outputSymbol.name}`
+                """.trimIndent()
             writer.writeSingleLineDocs {
                 this.write(docBody)
             }
@@ -139,10 +149,11 @@ class PaginatorGenerator : SwiftIntegration {
                 inputSymbol,
                 outputSymbol,
             ) {
-                val isTruncatedFlag = outputShape
-                    .members()
-                    .firstOrNull { it.hasTrait(PaginationTruncationMember.ID) }
-                    ?.defaultName()
+                val isTruncatedFlag =
+                    outputShape
+                        .members()
+                        .firstOrNull { it.hasTrait(PaginationTruncationMember.ID) }
+                        ?.defaultName()
 
                 val isTruncatedPart = if (isTruncatedFlag != null) ", isTruncatedKey: \\.$isTruncatedFlag" else ""
                 writer.write(
@@ -159,10 +170,12 @@ class PaginatorGenerator : SwiftIntegration {
 
         writer.openBlock("extension \$N: \$N {", "}", inputSymbol, ClientRuntimeTypes.Core.PaginateToken) {
             writer.openBlock("public func usingPaginationToken(_ token: \$N) -> \$N {", "}", markerLiteralSymbol, inputSymbol) {
-                writer.writeInline("return ")
+                writer
+                    .writeInline("return ")
                     .call {
                         val inputShape = model.expectShape(operationShape.input.get())
-                        writer.writeInline("\$N(", inputSymbol)
+                        writer
+                            .writeInline("\$N(", inputSymbol)
                             .indent()
                             .call {
                                 val sortedMembers = inputShape.members().sortedBy { it.toLowerCamelCase() }
@@ -176,8 +189,7 @@ class PaginatorGenerator : SwiftIntegration {
                                         writer.writeInline(",")
                                     }
                                 }
-                            }
-                            .dedent()
+                            }.dedent()
                             .writeInline("\n)")
                     }
             }
@@ -196,12 +208,18 @@ class PaginatorGenerator : SwiftIntegration {
         writer.write("")
         val itemSymbolShape = itemDesc.itemSymbol.getProperty("shape").orElse(null) as? Shape
 
-        writer.openBlock("extension PaginatorSequence where OperationStackInput == \$N, OperationStackOutput == \$N {", "}", inputSymbol, outputSymbol) {
-            val docBody = """
-        This paginator transforms the `AsyncSequence` returned by `${operationShape.toLowerCamelCase()}Paginated`
-        to access the nested member `${itemDesc.collectionLiteral}`
-        - Returns: `${itemDesc.collectionLiteral}`
-            """.trimIndent()
+        writer.openBlock(
+            "extension PaginatorSequence where OperationStackInput == \$N, OperationStackOutput == \$N {",
+            "}",
+            inputSymbol,
+            outputSymbol,
+        ) {
+            val docBody =
+                """
+                This paginator transforms the `AsyncSequence` returned by `${operationShape.toLowerCamelCase()}Paginated`
+                to access the nested member `${itemDesc.collectionLiteral}`
+                - Returns: `${itemDesc.collectionLiteral}`
+                """.trimIndent()
             writer.writeSingleLineDocs {
                 this.write(docBody)
             }
@@ -210,7 +228,10 @@ class PaginatorGenerator : SwiftIntegration {
                     writer.write("return try await self.asyncCompactMap { item in item.\$L }", itemDesc.itemPathLiteral)
                 } else if (itemSymbolShape?.isMapShape == true) {
                     val suffix = if (itemDesc.itemSymbol.isBoxed()) "?" else ""
-                    writer.write("return try await self.asyncCompactMap { item in item.\$L$suffix.map { (\$\$0, \$\$1) } }", itemDesc.itemPathLiteral)
+                    writer.write(
+                        "return try await self.asyncCompactMap { item in item.\$L$suffix.map { (\$\$0, \$\$1) } }",
+                        itemDesc.itemPathLiteral,
+                    )
                 } else {
                     error("Unexpected shape type $itemSymbolShape")
                 }
@@ -232,21 +253,25 @@ private data class ItemDescriptor(
 /**
  * Return an [ItemDescriptor] if model supplies, otherwise null
  */
-private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: SwiftCodegenContext): ItemDescriptor? {
+private fun getItemDescriptorOrNull(
+    paginationInfo: PaginationInfo,
+    ctx: SwiftCodegenContext,
+): ItemDescriptor? {
     val itemMemberId = paginationInfo.itemsMemberPath?.lastOrNull()?.target ?: return null
     val itemLiteral = paginationInfo.itemsMemberPath!!.last()!!.toLowerCamelCase()
     val itemPathLiteral = paginationInfo.itemsMemberPath.joinToString(separator = "?.") { it.toLowerCamelCase() }
     val itemMember = ctx.model.expectShape(itemMemberId)
-    val collectionLiteral = when (itemMember) {
-        is MapShape -> {
-            val entryType = ctx.symbolProvider.toSymbol(itemMember).expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String
-            "[$entryType]"
+    val collectionLiteral =
+        when (itemMember) {
+            is MapShape -> {
+                val entryType = ctx.symbolProvider.toSymbol(itemMember).expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String
+                "[$entryType]"
+            }
+            is CollectionShape -> {
+                ctx.symbolProvider.toSymbol(itemMember).fullName
+            }
+            else -> error("Unexpected shape type ${itemMember.type}")
         }
-        is CollectionShape -> {
-            ctx.symbolProvider.toSymbol(itemMember).fullName
-        }
-        else -> error("Unexpected shape type ${itemMember.type}")
-    }
 
     return ItemDescriptor(
         collectionLiteral,

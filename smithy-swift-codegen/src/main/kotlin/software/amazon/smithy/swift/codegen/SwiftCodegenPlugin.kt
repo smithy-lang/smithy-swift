@@ -27,11 +27,9 @@ import java.util.logging.Logger
  * Plugin to trigger Swift code generation.
  */
 class SwiftCodegenPlugin : SmithyBuildPlugin {
-
     private var resolvedModel: Model? = null
 
     companion object {
-
         private val LOGGER = Logger.getLogger(SwiftCodegenPlugin::class.java.getName())
 
         /**
@@ -42,9 +40,16 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
          * @param sdkId name to use to represent client type. e.g. an sdkId of "foo" would produce a client type "FooClient".
          * @return Returns the created provider
          */
-        fun createSymbolProvider(model: Model, swiftSettings: SwiftSettings): SymbolProvider = SwiftSymbolProvider(model, swiftSettings)
+        fun createSymbolProvider(
+            model: Model,
+            swiftSettings: SwiftSettings,
+        ): SymbolProvider = SwiftSymbolProvider(model, swiftSettings)
 
-        fun preprocessModel(model: Model, settings: SwiftSettings, integrations: List<SwiftIntegration>): Model {
+        fun preprocessModel(
+            model: Model,
+            settings: SwiftSettings,
+            integrations: List<SwiftIntegration>,
+        ): Model {
             var resolvedModel = model
 
             for (integration in integrations) {
@@ -62,14 +67,17 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
             return resolvedModel
         }
 
-        fun getEnabledIntegrations(model: Model, settings: SwiftSettings): List<SwiftIntegration> {
-            return ServiceLoader.load(SwiftIntegration::class.java, CodegenDirector::class.java.getClassLoader())
+        fun getEnabledIntegrations(
+            model: Model,
+            settings: SwiftSettings,
+        ): List<SwiftIntegration> =
+            ServiceLoader
+                .load(SwiftIntegration::class.java, CodegenDirector::class.java.getClassLoader())
                 .also { integration -> LOGGER.info("Loaded SwiftIntegration: ${integration.javaClass.name}") }
                 .filter { integration -> integration.enabledForService(model, settings) }
                 .also { integration -> LOGGER.info("Enabled SwiftIntegration: ${integration.javaClass.name}") }
                 .sortedBy(SwiftIntegration::order)
                 .toList()
-        }
     }
 
     override fun getName(): String = "swift-codegen"
@@ -104,7 +112,5 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
         this.resolvedModel = resolvedModel
     }
 
-    fun getResolvedModel(): Model? {
-        return resolvedModel
-    }
+    fun getResolvedModel(): Model? = resolvedModel
 }

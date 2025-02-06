@@ -8,7 +8,8 @@ object EndpointTypes {
     val EndpointParams = symbol("EndpointParams")
     val DefaultEndpointResolver = symbol("DefaultEndpointResolver")
 
-    private fun symbol(name: String): Symbol = buildSymbol {
-        this.name = name
-    }
+    private fun symbol(name: String): Symbol =
+        buildSymbol {
+            this.name = name
+        }
 }

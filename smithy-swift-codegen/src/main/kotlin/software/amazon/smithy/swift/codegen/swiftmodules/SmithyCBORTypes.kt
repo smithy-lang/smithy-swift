@@ -17,10 +17,11 @@ private fun runtimeSymbol(
     name: String,
     declaration: SwiftDeclaration,
     additionalImports: List<Symbol> = emptyList(),
-): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SMITHY_CBOR,
-    additionalImports,
-    listOf("SmithyReadWrite"),
-)
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SMITHY_CBOR,
+        additionalImports,
+        listOf("SmithyReadWrite"),
+    )

@@ -17,7 +17,7 @@ class IntEnumGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
     private val shape: IntEnumShape,
-    private val settings: SwiftSettings
+    private val settings: SwiftSettings,
 ) {
     private var allCasesBuilder: MutableList<String> = mutableListOf()
     private var rawValuesBuilder: MutableList<String> = mutableListOf()
@@ -48,7 +48,7 @@ class IntEnumGenerator(
             SwiftTypes.Protocols.Equatable,
             SwiftTypes.Protocols.RawRepresentable,
             SwiftTypes.Protocols.CaseIterable,
-            SwiftTypes.Protocols.Hashable
+            SwiftTypes.Protocols.Hashable,
         ) {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
@@ -117,21 +117,17 @@ class IntEnumGenerator(
         }
     }
 
-    fun IntEnumShape.getCaseMembers(): List<MemberShape> {
-        return members().filter {
+    fun IntEnumShape.getCaseMembers(): List<MemberShape> =
+        members().filter {
             it.hasTrait<EnumValueTrait>()
         }
-    }
 
-    fun MemberShape.swiftEnumCaseName(shouldBeEscaped: Boolean = true): String {
-        return swiftEnumCaseName(
+    fun MemberShape.swiftEnumCaseName(shouldBeEscaped: Boolean = true): String =
+        swiftEnumCaseName(
             memberName,
             "${swiftEnumCaseValue()}",
-            shouldBeEscaped
+            shouldBeEscaped,
         )
-    }
 
-    fun MemberShape.swiftEnumCaseValue(): Int {
-        return expectTrait<EnumValueTrait>(EnumValueTrait::class.java).expectIntValue()
-    }
+    fun MemberShape.swiftEnumCaseValue(): Int = expectTrait<EnumValueTrait>(EnumValueTrait::class.java).expectIntValue()
 }

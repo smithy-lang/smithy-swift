@@ -13,25 +13,25 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.model.buildSymbol
 
 class SymbolBuilderTest {
-
     @Test
     fun `it builds symbols`() {
-        val x = buildSymbol {
-            name = "Foo"
-            dependencies += SwiftDependency.CLIENT_RUNTIME
-            reference {
-                name = "MyRef"
+        val x =
+            buildSymbol {
+                name = "Foo"
+                dependencies += SwiftDependency.CLIENT_RUNTIME
+                reference {
+                    name = "MyRef"
+                }
+                namespace = "com.mypkg"
+                definitionFile = "Foo.swift"
+                declarationFile = "Foo.swift"
+                defaultValue = "fooey"
+                properties {
+                    set("key", "value")
+                    set("key2", "value2")
+                    remove("key2")
+                }
             }
-            namespace = "com.mypkg"
-            definitionFile = "Foo.swift"
-            declarationFile = "Foo.swift"
-            defaultValue = "fooey"
-            properties {
-                set("key", "value")
-                set("key2", "value2")
-                remove("key2")
-            }
-        }
 
         assertEquals("Foo", x.name)
         assertEquals("com.mypkg", x.namespace)

@@ -185,6 +185,7 @@ extension XmlMapsXmlNamespaceInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `012 encode flattened map xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-namespace.smithy", "aws.protocoltests.restxml#RestXml")
@@ -216,6 +217,7 @@ extension XmlMapsNestedXmlNamespaceInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `014 encode nested flattened map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
@@ -231,6 +233,7 @@ extension XmlMapsFlattenedNestedXmlNamespaceInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `015 encode map containing list`() {
         val context = setupTests("Isolated/Restxml/xml-maps-contain-list.smithy", "aws.protocoltests.restxml#RestXml")
@@ -246,6 +249,7 @@ extension XmlMapsContainListInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `016 encode flattened map containing list`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-contain-list.smithy", "aws.protocoltests.restxml#RestXml")
@@ -261,6 +265,7 @@ extension XmlMapsFlattenedContainListInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `017 encode map containing timestamp`() {
         val context = setupTests("Isolated/Restxml/xml-maps-timestamp.smithy", "aws.protocoltests.restxml#RestXml")

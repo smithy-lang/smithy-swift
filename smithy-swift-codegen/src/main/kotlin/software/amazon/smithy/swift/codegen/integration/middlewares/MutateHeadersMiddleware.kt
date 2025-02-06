@@ -17,7 +17,7 @@ class MutateHeadersMiddleware(
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
         val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
@@ -25,7 +25,7 @@ class MutateHeadersMiddleware(
             "\$N<\$N, \$N>(${middlewareParamsString()})",
             ClientRuntimeTypes.Middleware.MutateHeadersMiddleware,
             inputSymbol,
-            outputSymbol
+            outputSymbol,
         )
     }
 

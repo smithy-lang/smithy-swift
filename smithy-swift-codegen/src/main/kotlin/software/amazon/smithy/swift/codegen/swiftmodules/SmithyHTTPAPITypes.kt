@@ -21,10 +21,14 @@ object SmithyHTTPAPITypes {
     val HTTPStatusCode = runtimeSymbol("HTTPStatusCode", SwiftDeclaration.ENUM)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SMITHY_HTTP_API,
-    emptyList(),
-    emptyList(),
-)
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration? = null,
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SMITHY_HTTP_API,
+        emptyList(),
+        emptyList(),
+    )

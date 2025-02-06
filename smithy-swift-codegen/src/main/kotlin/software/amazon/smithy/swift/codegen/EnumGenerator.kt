@@ -109,9 +109,8 @@ class EnumGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
     private val shape: Shape,
-    private val settings: SwiftSettings
+    private val settings: SwiftSettings,
 ) {
-
     init {
         assert(shape.getTrait(EnumTrait::class.java).isPresent)
     }
@@ -149,7 +148,7 @@ class EnumGenerator(
             SwiftTypes.Protocols.Equatable,
             SwiftTypes.Protocols.RawRepresentable,
             SwiftTypes.Protocols.CaseIterable,
-            SwiftTypes.Protocols.Hashable
+            SwiftTypes.Protocols.Hashable,
         ) {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
@@ -223,7 +222,6 @@ class EnumGenerator(
      * Uses either name or value attributes of EnumDefinition in that order and formats
      * them to camelCase after removing chars except alphanumeric, space and underscore.
      */
-    fun EnumDefinition.swiftEnumCaseName(shouldBeEscaped: Boolean = true): String {
-        return swiftEnumCaseName(name.orElse(null), value, shouldBeEscaped)
-    }
+    fun EnumDefinition.swiftEnumCaseName(shouldBeEscaped: Boolean = true): String =
+        swiftEnumCaseName(name.orElse(null), value, shouldBeEscaped)
 }

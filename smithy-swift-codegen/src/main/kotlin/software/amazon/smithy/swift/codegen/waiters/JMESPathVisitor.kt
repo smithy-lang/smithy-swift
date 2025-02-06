@@ -55,9 +55,8 @@ class JMESPathVisitor(
     val currentExpression: JMESVariable,
     val model: Model,
     val symbolProvider: SymbolProvider,
-    val tempVars: MutableSet<String> = mutableSetOf() // Storage for variable names already used in this scope / expression.
+    val tempVars: MutableSet<String> = mutableSetOf(), // Storage for variable names already used in this scope / expression.
 ) : ExpressionVisitor<JMESVariable> {
-
     // A few methods are provided here for generating unique yet still somewhat
     // descriptive variable names when needed.
 
@@ -66,13 +65,16 @@ class JMESPathVisitor(
     // If not yet used, preferredName will be returned as the new variable name.  If preferredName
     // is not available, preferredname2, preferredname3, etc. will be used.
     // The chosen name is inserted into tempVars so it is not reused in a future call to this method.
-    private fun uniqueTempVarName(preferredName: String): String =
-        suffixSequence.map { "$preferredName$it" }.first(tempVars::add)
+    private fun uniqueTempVarName(preferredName: String): String = suffixSequence.map { "$preferredName$it" }.first(tempVars::add)
 
     // Creates a temporary var with the type & optionality of the passed var, but with a name
     // based on the passed var but guaranteed to be unique.
     // The new temp var is set to the result of the passed expression.
-    private fun addTempVar(variable: JMESVariable, content: String, vararg args: Any): JMESVariable {
+    private fun addTempVar(
+        variable: JMESVariable,
+        content: String,
+        vararg args: Any,
+    ): JMESVariable {
         val tempVar = JMESVariable(uniqueTempVarName(variable.name), variable.isOptional, variable.shape)
         writer.writeInline("let \$L = ", tempVar.name)
         writer.write(content, *args)
@@ -82,11 +84,16 @@ class JMESPathVisitor(
     // Some JMESPath expressions may have their own valid JMESPath expressions
     // within them, i.e. to map or filter.  This method is called to render
     // those expressions.
-    private fun childBlock(forExpression: JmespathExpression, currentExpression: JMESVariable): JMESVariable =
-        forExpression.accept(JMESPathVisitor(writer, currentExpression, model, symbolProvider))
+    private fun childBlock(
+        forExpression: JmespathExpression,
+        currentExpression: JMESVariable,
+    ): JMESVariable = forExpression.accept(JMESPathVisitor(writer, currentExpression, model, symbolProvider))
 
     // Maps the expression result in leftName into a new collection using the right expression.
-    private fun mappingBlock(right: JmespathExpression, left: JMESVariable): JMESVariable {
+    private fun mappingBlock(
+        right: JmespathExpression,
+        left: JMESVariable,
+    ): JMESVariable {
         when (right) {
             is CurrentExpression -> return left // Nothing to map
         }
@@ -101,24 +108,29 @@ class JMESPathVisitor(
                 }
                 val optionalityMark = "?".takeIf { left.isOptional } ?: ""
                 writer.openBlock(
-                    "let \$L: [\$L]\$L = \$L\$L.compactMap { original in", "}",
+                    "let \$L: [\$L]\$L = \$L\$L.compactMap { original in",
+                    "}",
                     outerName,
                     transformedVar!!.baseSwiftSymbol(symbolProvider),
                     optionalityMark,
                     left.name,
-                    optionalityMark
+                    optionalityMark,
                 ) {
                     bufferWriter.playback()
                     writer.write("return \$L", transformedVar!!.name)
                 }
-                val returnMember = MemberShape.builder()
-                    .id("smithy.swift.synthetic#mappedCollection\$member")
-                    .target(transformedVar!!.shape)
-                    .build()
-                val returnType = ListShape.builder()
-                    .id("smithy.swift.synthetic#mappedCollection")
-                    .member(returnMember)
-                    .build()
+                val returnMember =
+                    MemberShape
+                        .builder()
+                        .id("smithy.swift.synthetic#mappedCollection\$member")
+                        .target(transformedVar!!.shape)
+                        .build()
+                val returnType =
+                    ListShape
+                        .builder()
+                        .id("smithy.swift.synthetic#mappedCollection")
+                        .member(returnMember)
+                        .build()
                 return JMESVariable(outerName, left.isOptional, returnType)
             }
             else -> throw Exception("Mapping a non-collection shape: ${left.shape}")
@@ -127,7 +139,10 @@ class JMESPathVisitor(
 
     // Accesses a field on the parent variable & returns a variable containing the
     // resulting expression.
-    private fun subfield(expression: FieldExpression, parentVar: JMESVariable): JMESVariable {
+    private fun subfield(
+        expression: FieldExpression,
+        parentVar: JMESVariable,
+    ): JMESVariable {
         when (parentVar.shape) {
             is StructureShape -> {
                 val parentMembers = parentVar.shape.members()
@@ -152,23 +167,31 @@ class JMESPathVisitor(
         }
     }
 
-    private fun projection(expression: ProjectionExpression, parentVar: JMESVariable): JMESVariable {
-        val left = when (val left = expression.left) {
-            is FieldExpression -> subfield(left, parentVar)
-            is Subexpression -> subexpression(left, parentVar)
-            is ProjectionExpression -> projection(left, parentVar)
-            else -> left.accept(this)
-        }
+    private fun projection(
+        expression: ProjectionExpression,
+        parentVar: JMESVariable,
+    ): JMESVariable {
+        val left =
+            when (val left = expression.left) {
+                is FieldExpression -> subfield(left, parentVar)
+                is Subexpression -> subexpression(left, parentVar)
+                is ProjectionExpression -> projection(left, parentVar)
+                else -> left.accept(this)
+            }
         requireNotNull(left.shape) { "projection is operating on nothing" }
         return mappingBlock(expression.right, left)
     }
 
-    private fun subexpression(expression: Subexpression, parentVar: JMESVariable): JMESVariable {
-        val left = when (val left = expression.left) {
-            is FieldExpression -> subfield(left, parentVar)
-            is Subexpression -> subexpression(left, parentVar)
-            else -> throw Exception("Subexpression type $left is unsupported")
-        }
+    private fun subexpression(
+        expression: Subexpression,
+        parentVar: JMESVariable,
+    ): JMESVariable {
+        val left =
+            when (val left = expression.left) {
+                is FieldExpression -> subfield(left, parentVar)
+                is Subexpression -> subexpression(left, parentVar)
+                else -> throw Exception("Subexpression type $left is unsupported")
+            }
         return processRightSubexpression(expression.right, left)
     }
 
@@ -206,21 +229,17 @@ class JMESPathVisitor(
             SmithyWaitersAPITypes.JMESUtils,
             left.name,
             comparator,
-            right.name
+            right.name,
         )
     }
 
-    override fun visitCurrentNode(expression: CurrentExpression): JMESVariable {
+    override fun visitCurrentNode(expression: CurrentExpression): JMESVariable =
         throw Exception("Unexpected current expression outside of flatten expression: $expression")
-    }
 
-    override fun visitExpressionType(expression: ExpressionTypeExpression): JMESVariable {
+    override fun visitExpressionType(expression: ExpressionTypeExpression): JMESVariable =
         throw Exception("ExpressionTypeExpression is unsupported")
-    }
 
-    override fun visitField(expression: FieldExpression): JMESVariable {
-        return subfield(expression, currentExpression)
-    }
+    override fun visitField(expression: FieldExpression): JMESVariable = subfield(expression, currentExpression)
 
     // Filters a collection to only those elements which pass a test provided in a JMESPath child expression.
     override fun visitFilterProjection(expression: FilterProjectionExpression): JMESVariable {
@@ -243,7 +262,7 @@ class JMESPathVisitor(
                     filteredName,
                     unfiltered.swiftSymbolWithOptionality(symbolProvider),
                     unfiltered.name,
-                    optionalityMark
+                    optionalityMark,
                 ) {
                     bufferWriter.playback()
                 }
@@ -304,7 +323,7 @@ class JMESPathVisitor(
                         "\$L.flatMap { \$L\$L.contains($$0) } ?? false",
                         searchVariable.name,
                         subjectVariable.name,
-                        subjectOptionalityMark
+                        subjectOptionalityMark,
                     )
                 } else {
                     val subjectNilCoalescence = " ?? false".takeIf { subjectVariable.isOptional } ?: ""
@@ -314,7 +333,7 @@ class JMESPathVisitor(
                         subjectVariable.name,
                         subjectOptionalityMark,
                         searchVariable.name,
-                        subjectNilCoalescence
+                        subjectNilCoalescence,
                     )
                 }
             }
@@ -335,7 +354,7 @@ class JMESPathVisitor(
                             "Double(\$L\$L.count\$L)",
                             subject.name,
                             optionalityMark,
-                            nilCoalescense
+                            nilCoalescense,
                         )
                     }
                     else -> throw Exception("length function called on unsupported type: ${currentExpression.shape}")
@@ -350,14 +369,18 @@ class JMESPathVisitor(
 
                 return when (subject.shape) {
                     is MapShape -> {
-                        val memberShape = MemberShape.builder()
-                            .id("smithy.swift.synthetic#KeyList\$member")
-                            .target(stringShape)
-                            .build()
-                        val keyListShape = ListShape.builder()
-                            .id("smithy.swift.synthetic#KeyList")
-                            .member(memberShape)
-                            .build()
+                        val memberShape =
+                            MemberShape
+                                .builder()
+                                .id("smithy.swift.synthetic#KeyList\$member")
+                                .target(stringShape)
+                                .build()
+                        val keyListShape =
+                            ListShape
+                                .builder()
+                                .id("smithy.swift.synthetic#KeyList")
+                                .member(memberShape)
+                                .build()
                         val keysVar = JMESVariable("keys", false, keyListShape)
                         val optionalityMark = "?".takeIf { subject.isOptional } ?: ""
                         // example output:
@@ -366,7 +389,7 @@ class JMESPathVisitor(
                             keysVar,
                             "\$L\$L.keys.map { String($$0) }",
                             subject.name,
-                            optionalityMark
+                            optionalityMark,
                         )
                     }
                     else -> throw Exception("length function called on unsupported type: ${currentExpression.shape}")
@@ -376,43 +399,47 @@ class JMESPathVisitor(
         }
     }
 
-    override fun visitIndex(expression: IndexExpression): JMESVariable {
-        throw Exception("IndexExpression is unsupported")
-    }
+    override fun visitIndex(expression: IndexExpression): JMESVariable = throw Exception("IndexExpression is unsupported")
 
     // Renders a literal of any supported type.
     override fun visitLiteral(expression: LiteralExpression): JMESVariable {
         when (expression.type) {
             RuntimeType.STRING -> return addTempVar(JMESVariable("string", false, stringShape), "\$S", expression.expectStringValue())
-            RuntimeType.NUMBER -> return addTempVar(JMESVariable("number", false, doubleShape), "Double(\$L)", expression.expectNumberValue())
+            RuntimeType.NUMBER -> return addTempVar(
+                JMESVariable("number", false, doubleShape),
+                "Double(\$L)",
+                expression.expectNumberValue(),
+            )
             RuntimeType.BOOLEAN -> return addTempVar(JMESVariable("bool", false, boolShape), "\$L", expression.expectBooleanValue())
             RuntimeType.NULL -> return JMESVariable("nil", true, boolShape)
             else -> throw Exception("Expression type $expression is unsupported")
         }
     }
 
-    override fun visitMultiSelectHash(expression: MultiSelectHashExpression): JMESVariable {
+    override fun visitMultiSelectHash(expression: MultiSelectHashExpression): JMESVariable =
         throw Exception("MultiSelectHashExpression is unsupported")
-    }
 
     // Render a JMESPath multi-select to an array.
     // All expressions must result in the same type or a Swift compile error will occur.
     override fun visitMultiSelectList(expression: MultiSelectListExpression): JMESVariable {
         val listName = uniqueTempVarName("multiSelect")
         var innerShape = currentExpression.shape
-        val multiSelectVars = expression.expressions.map { inner ->
-            val result = inner.accept(this)
-            innerShape = result.shape
-            return result
-        }
+        val multiSelectVars =
+            expression.expressions.map { inner ->
+                val result = inner.accept(this)
+                innerShape = result.shape
+                return result
+            }
         writer.openBlock("let \$L = [", "]", listName) {
             writer.write(multiSelectVars.joinToString { ",\n" })
         }
         val memberShape = MemberShape.builder().id("smithy.swift.synthetic#MultiSelectListElement").build()
-        val multiSelectListShape = ListShape.builder()
-            .id("smithy.swift.synthetic#MultiSelectList")
-            .member(memberShape)
-            .build()
+        val multiSelectListShape =
+            ListShape
+                .builder()
+                .id("smithy.swift.synthetic#MultiSelectList")
+                .member(memberShape)
+                .build()
         return JMESVariable(listName, false, multiSelectListShape)
     }
 
@@ -430,10 +457,12 @@ class JMESPathVisitor(
         return when (original.shape) {
             is MapShape -> {
                 val valueShape = model.expectShape(original.shape.value.target)
-                val projectionShape = ListShape.builder()
-                    .id("smithy.swift.synthetic#ObjectProjection")
-                    .member(valueShape.toShapeId())
-                    .build()
+                val projectionShape =
+                    ListShape
+                        .builder()
+                        .id("smithy.swift.synthetic#ObjectProjection")
+                        .member(valueShape.toShapeId())
+                        .build()
                 var projectionVar = JMESVariable("projection", original.isOptional, projectionShape)
                 if (original.isOptional) {
                     projectionVar = addTempVar(projectionVar, "\$L.map { Array($$0.values) }", original.name)
@@ -446,9 +475,7 @@ class JMESPathVisitor(
         }
     }
 
-    override fun visitOr(expression: OrExpression): JMESVariable {
-        throw Exception("OrExpression is unsupported")
-    }
+    override fun visitOr(expression: OrExpression): JMESVariable = throw Exception("OrExpression is unsupported")
 
     // Maps a collection into a collection of a different type.
     override fun visitProjection(expression: ProjectionExpression): JMESVariable {
@@ -456,9 +483,7 @@ class JMESPathVisitor(
         return mappingBlock(expression.right!!, leftName)
     }
 
-    override fun visitSlice(expression: SliceExpression): JMESVariable {
-        throw Exception("SliceExpression is unsupported")
-    }
+    override fun visitSlice(expression: SliceExpression): JMESVariable = throw Exception("SliceExpression is unsupported")
 
     // Returns a subexpression derived from a parent expression.
     override fun visitSubexpression(expression: Subexpression): JMESVariable {
@@ -466,13 +491,15 @@ class JMESPathVisitor(
         return processRightSubexpression(expression.right, leftVar)
     }
 
-    private fun processRightSubexpression(expression: JmespathExpression, parentVar: JMESVariable): JMESVariable {
-        return when (expression) {
+    private fun processRightSubexpression(
+        expression: JmespathExpression,
+        parentVar: JMESVariable,
+    ): JMESVariable =
+        when (expression) {
             is FieldExpression -> subfield(expression, parentVar)
             is ProjectionExpression -> projection(expression, parentVar)
             else -> throw Exception("Subexpression type $expression is unsupported")
         }
-    }
 
     // Below are Smithy shapes to be used with JMESPath literals.
 

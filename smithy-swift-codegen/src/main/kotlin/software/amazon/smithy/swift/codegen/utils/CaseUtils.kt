@@ -16,8 +16,10 @@ fun String.splitOnWordBoundaries(): List<String> {
     result = result.replace(Regex("_"), " _ ")
 
     // if a number has a standalone v in front of it, separate it out
-    result = result.replace(Regex("([^a-z]{2,})v([0-9]+)"), "$1 v$2 ") // TESTv4 -> "TEST v4 "
-        .replace(Regex("([^A-Z]{2,})V([0-9]+)"), "$1 V$2 ") // TestV4 -> "Test V4 "
+    result =
+        result
+            .replace(Regex("([^a-z]{2,})v([0-9]+)"), "$1 v$2 ") // TESTv4 -> "TEST v4 "
+            .replace(Regex("([^A-Z]{2,})V([0-9]+)"), "$1 V$2 ") // TestV4 -> "Test V4 "
 
     // add a space between camelCased words
     result = result.split(Regex("(?<=[a-z])(?=[A-Z]([a-zA-Z]|[0-9]))")).joinToString(separator = " ") // AcmSuccess -> // "Acm Success"
@@ -29,8 +31,10 @@ fun String.splitOnWordBoundaries(): List<String> {
     result = result.replace(Regex("([0-9])([a-zA-Z])"), "$1 $2") // "s3ec2" -> "s3 ec2"
 
     // remove extra spaces - multiple consecutive ones or those and the beginning/end of words
-    result = result.replace(Regex("\\s+"), " ") // "Foo  Bar" -> "Foo Bar"
-        .trim() // " Foo " -> "Foo"
+    result =
+        result
+            .replace(Regex("\\s+"), " ") // "Foo  Bar" -> "Foo Bar"
+            .trim() // " Foo " -> "Foo"
 
     return result.split(" ")
 }

@@ -20,14 +20,14 @@ import software.amazon.smithy.model.traits.HttpTrait
 data class HttpBindingDescriptor(
     val member: MemberShape,
     val location: HttpBinding.Location,
-    val locationName: String
+    val locationName: String,
 ) {
     constructor(httpBinding: HttpBinding) : this(httpBinding.member, httpBinding.location, httpBinding.locationName)
+
     val memberName: String = member.memberName
 }
 
 interface HttpBindingResolver {
-
     fun httpTrait(operationShape: OperationShape): HttpTrait
 
     fun responseBindings(shape: Shape): List<HttpBindingDescriptor>
@@ -41,24 +41,25 @@ class HttpTraitResolver(
     private val generationContext: ProtocolGenerator.GenerationContext,
     private val defaultContentType: String,
     private val bindingIndex: HttpBindingIndex = HttpBindingIndex.of(generationContext.model),
-    private val topDownIndex: TopDownIndex = TopDownIndex.of(generationContext.model)
+    private val topDownIndex: TopDownIndex = TopDownIndex.of(generationContext.model),
 ) : HttpBindingResolver {
-
     override fun httpTrait(operationShape: OperationShape): HttpTrait = operationShape.expectTrait(HttpTrait::class.java)
 
-    override fun responseBindings(shape: Shape): List<HttpBindingDescriptor> {
-        return when (shape) {
+    override fun responseBindings(shape: Shape): List<HttpBindingDescriptor> =
+        when (shape) {
             is OperationShape,
-            is StructureShape -> bindingIndex.getResponseBindings(shape.toShapeId()).values.map { HttpBindingDescriptor(it) }
+            is StructureShape,
+            -> bindingIndex.getResponseBindings(shape.toShapeId()).values.map { HttpBindingDescriptor(it) }
             else -> error { "Unimplemented resolving bindings for ${shape.javaClass.canonicalName}" }
         }
-    }
 
-    override fun requestBindings(operationShape: OperationShape): List<HttpBindingDescriptor> {
-        return bindingIndex.getRequestBindings(operationShape).values.map { HttpBindingDescriptor(it) }
-    }
+    override fun requestBindings(operationShape: OperationShape): List<HttpBindingDescriptor> =
+        bindingIndex.getRequestBindings(operationShape).values.map {
+            HttpBindingDescriptor(it)
+        }
 
-    override fun determineRequestContentType(operationShape: OperationShape): String = bindingIndex
-        .determineRequestContentType(operationShape, defaultContentType)
-        .orElse(defaultContentType)
+    override fun determineRequestContentType(operationShape: OperationShape): String =
+        bindingIndex
+            .determineRequestContentType(operationShape, defaultContentType)
+            .orElse(defaultContentType)
 }

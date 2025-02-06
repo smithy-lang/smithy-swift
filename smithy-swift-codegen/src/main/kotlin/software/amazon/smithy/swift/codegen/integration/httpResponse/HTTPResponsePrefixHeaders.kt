@@ -19,7 +19,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 class HTTPResponsePrefixHeaders(
     val ctx: ProtocolGenerator.GenerationContext,
     val responseBindings: List<HttpBindingDescriptor>,
-    val writer: SwiftWriter
+    val writer: SwiftWriter,
 ) {
     fun render() {
         val binding = responseBindings.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
@@ -29,8 +29,9 @@ class HTTPResponsePrefixHeaders(
     }
 
     private fun renderBinding(binding: HttpBindingDescriptor) {
-        val targetShape = ctx.model.expectShape(binding.member.target) as? MapShape
-            ?: throw CodegenException("prefixHeader bindings can only be attached to Map shapes")
+        val targetShape =
+            ctx.model.expectShape(binding.member.target) as? MapShape
+                ?: throw CodegenException("prefixHeader bindings can only be attached to Map shapes")
 
         val targetValueShape = ctx.model.expectShape(targetShape.value.target)
         val targetValueSymbol = ctx.symbolProvider.toSymbol(targetValueShape)
@@ -41,16 +42,18 @@ class HTTPResponsePrefixHeaders(
         val filter = if (prefix.isNotEmpty()) ".filter({ $0.starts(with: \"$prefix\") })" else ""
 
         writer.write("let $keyCollName = httpResponse.headers.dictionary.keys\$L", filter)
-        writer.openBlock("if (!$keyCollName.isEmpty) {")
+        writer
+            .openBlock("if (!$keyCollName.isEmpty) {")
             .write("var mapMember = [\$N: ${targetValueSymbol.name}]()", SwiftTypes.String)
             .openBlock("for headerKey in $keyCollName {")
             .call {
-                val mapMemberValue = when (targetValueShape) {
-                    is StringShape -> "httpResponse.headers.dictionary[headerKey]?[0]"
-                    is ListShape -> "httpResponse.headers.dictionary[headerKey]"
-                    is SetShape -> "Set(httpResponse.headers.dictionary[headerKey])"
-                    else -> throw CodegenException("invalid httpPrefixHeaders usage on ${binding.member}")
-                }
+                val mapMemberValue =
+                    when (targetValueShape) {
+                        is StringShape -> "httpResponse.headers.dictionary[headerKey]?[0]"
+                        is ListShape -> "httpResponse.headers.dictionary[headerKey]"
+                        is SetShape -> "Set(httpResponse.headers.dictionary[headerKey])"
+                        else -> throw CodegenException("invalid httpPrefixHeaders usage on ${binding.member}")
+                    }
                 writer.write("let mapMemberValue = $mapMemberValue")
                 if (prefix.isNotEmpty()) {
                     writer.write("let mapMemberKey = headerKey.removePrefix(\$S)", prefix)
@@ -58,8 +61,7 @@ class HTTPResponsePrefixHeaders(
                 } else {
                     writer.write("mapMember[headerKey] = mapMemberValue")
                 }
-            }
-            .closeBlock("}")
+            }.closeBlock("}")
             .write("value.\$L = mapMember", memberName)
             .closeBlock("} else {")
         writer.indent()

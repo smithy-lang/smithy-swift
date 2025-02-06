@@ -19,7 +19,12 @@ class ContentMD5Middleware(
 ) : MiddlewareRenderable {
     override val name = "ContentMD5Middleware"
 
-    override fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
+    override fun render(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape,
+        operationStackName: String,
+    ) {
         if (op.isMD5ChecksumRequired()) {
             super.render(ctx, writer, op, operationStackName)
         }
@@ -28,7 +33,7 @@ class ContentMD5Middleware(
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
@@ -47,9 +52,10 @@ class ContentMD5Middleware(
  */
 private fun OperationShape.isMD5ChecksumRequired(): Boolean {
     val httpChecksumTrait = getTrait<HttpChecksumTrait>()
-    val onlyRequestChecksumRequiredIsSetInHttpChecksumTrait = httpChecksumTrait?.isRequestChecksumRequired == true &&
-        httpChecksumTrait.requestAlgorithmMember?.isEmpty == true &&
-        httpChecksumTrait.requestValidationModeMember?.isEmpty == true &&
-        httpChecksumTrait.responseAlgorithms?.isEmpty() == true
+    val onlyRequestChecksumRequiredIsSetInHttpChecksumTrait =
+        httpChecksumTrait?.isRequestChecksumRequired == true &&
+            httpChecksumTrait.requestAlgorithmMember?.isEmpty == true &&
+            httpChecksumTrait.requestValidationModeMember?.isEmpty == true &&
+            httpChecksumTrait.responseAlgorithms?.isEmpty() == true
     return onlyRequestChecksumRequiredIsSetInHttpChecksumTrait || hasTrait<HttpChecksumRequiredTrait>()
 }

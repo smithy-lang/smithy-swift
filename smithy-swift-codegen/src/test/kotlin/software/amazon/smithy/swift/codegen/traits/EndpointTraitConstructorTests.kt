@@ -14,7 +14,8 @@ import software.amazon.smithy.swift.codegen.newTestContext
 class EndpointTraitConstructorTests {
     @Test
     fun `it constructs endpoint prefix with label`() {
-        val model = """
+        val model =
+            """
             namespace com.test
             use aws.protocols#awsJson1_1
             @awsJson1_1
@@ -41,7 +42,11 @@ class EndpointTraitConstructorTests {
         val ctx = model.newTestContext("com.test#Example")
 
         ctx.generationCtx.service.operations.forEach {
-            val operation = ctx.generationCtx.model.expectShape(it).asOperationShape().get()
+            val operation =
+                ctx.generationCtx.model
+                    .expectShape(it)
+                    .asOperationShape()
+                    .get()
             val inputShape = ctx.generationCtx.model.expectShape(operation.input.get())
             val endpointTrait = operation.getTrait(EndpointTrait::class.java).get()
             val endpointPrefix = EndpointTraitConstructor(endpointTrait, inputShape).construct()

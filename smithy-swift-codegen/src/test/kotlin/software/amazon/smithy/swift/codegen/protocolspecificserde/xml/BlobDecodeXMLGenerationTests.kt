@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.getFileContents
 
 class BlobDecodeXMLGenerationTests {
-
     @Test
     fun `decode blob`() {
         val context = setupTests("Isolated/Restxml/xml-blobs.smithy", "aws.protocoltests.restxml#RestXml")

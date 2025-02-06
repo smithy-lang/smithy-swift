@@ -32,37 +32,29 @@ data class GenerationContext(
     override val fileManifest: FileManifest,
     override val protocolGenerator: ProtocolGenerator? = null,
     override val integrations: List<SwiftIntegration> = listOf(),
-    private val writerDelegator: SwiftDelegator = SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations)
+    private val writerDelegator: SwiftDelegator = SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations),
 ) : SwiftCodegenContext {
-    override fun model(): Model {
-        return model
-    }
+    override fun model(): Model = model
 
-    override fun settings(): SwiftSettings {
-        return settings
-    }
+    override fun settings(): SwiftSettings = settings
 
-    override fun symbolProvider(): SymbolProvider {
-        return symbolProvider
-    }
+    override fun symbolProvider(): SymbolProvider = symbolProvider
 
-    override fun fileManifest(): FileManifest {
-        return fileManifest
-    }
+    override fun fileManifest(): FileManifest = fileManifest
 
-    override fun writerDelegator(): SwiftDelegator {
-        return writerDelegator
-    }
+    override fun writerDelegator(): SwiftDelegator = writerDelegator
 
-    override fun integrations(): MutableList<SwiftIntegration> {
-        return integrations.toMutableList()
-    }
+    override fun integrations(): MutableList<SwiftIntegration> = integrations.toMutableList()
 }
 
-fun SwiftCodegenContext.toProtocolGenerationContext(serviceShape: ServiceShape, swiftDelegator: SwiftDelegator): ProtocolGenerator.GenerationContext? {
-    val protocol = protocolGenerator?.let { it.protocol } ?: run {
-        return null
-    }
+fun SwiftCodegenContext.toProtocolGenerationContext(
+    serviceShape: ServiceShape,
+    swiftDelegator: SwiftDelegator,
+): ProtocolGenerator.GenerationContext? {
+    val protocol =
+        protocolGenerator?.let { it.protocol } ?: run {
+            return null
+        }
     return ProtocolGenerator.GenerationContext(
         settings,
         model,
@@ -70,6 +62,6 @@ fun SwiftCodegenContext.toProtocolGenerationContext(serviceShape: ServiceShape, 
         symbolProvider,
         integrations,
         protocol,
-        swiftDelegator
+        swiftDelegator,
     )
 }
