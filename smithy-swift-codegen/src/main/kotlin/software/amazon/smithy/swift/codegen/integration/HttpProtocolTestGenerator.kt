@@ -50,10 +50,12 @@ class HttpProtocolTestGenerator(
 
     private fun renderRequestTests(operation: OperationShape): Int {
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
-        val tempTestCases = operation.getTrait(HttpRequestTestsTrait::class.java)
-            .orElse(null)
-            ?.getTestCasesFor(AppliesTo.CLIENT)
-            .orEmpty()
+        val tempTestCases =
+            operation
+                .getTrait(HttpRequestTestsTrait::class.java)
+                .orElse(null)
+                ?.getTestCasesFor(AppliesTo.CLIENT)
+                .orEmpty()
         val requestTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempTestCases))
         if (requestTestCases.isNotEmpty()) {
             val testClassName = "${operation.toUpperCamelCase()}RequestTest"
@@ -83,10 +85,12 @@ class HttpProtocolTestGenerator(
 
     private fun renderResponseTests(operation: OperationShape): Int {
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
-        val tempResponseTests = operation.getTrait(HttpResponseTestsTrait::class.java)
-            .orElse(null)
-            ?.getTestCasesFor(AppliesTo.CLIENT)
-            .orEmpty()
+        val tempResponseTests =
+            operation
+                .getTrait(HttpResponseTestsTrait::class.java)
+                .orElse(null)
+                ?.getTestCasesFor(AppliesTo.CLIENT)
+                .orEmpty()
         val responseTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempResponseTests))
         if (responseTestCases.isNotEmpty()) {
             val testClassName = "${operation.id.name.capitalize()}ResponseTest"
@@ -119,10 +123,12 @@ class HttpProtocolTestGenerator(
         val operationIndex: OperationIndex = OperationIndex.of(ctx.model)
         var numTestCases = 0
         for (error in operationIndex.getErrors(operation).filterNot(::serverOnly)) {
-            val tempTestCases = error.getTrait(HttpResponseTestsTrait::class.java)
-                .orElse(null)
-                ?.getTestCasesFor(AppliesTo.CLIENT)
-                .orEmpty()
+            val tempTestCases =
+                error
+                    .getTrait(HttpResponseTestsTrait::class.java)
+                    .orElse(null)
+                    ?.getTestCasesFor(AppliesTo.CLIENT)
+                    .orEmpty()
             val testCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempTestCases))
             numTestCases += testCases.count()
             if (testCases.isNotEmpty()) {
@@ -156,9 +162,10 @@ class HttpProtocolTestGenerator(
         return numTestCases
     }
 
-    private fun <T : HttpMessageTestCase> filterProtocolTestCases(testCases: List<T>): List<T> = testCases.filter {
-        it.protocol == ctx.protocol && it.id !in testsToIgnore
-    }
+    private fun <T : HttpMessageTestCase> filterProtocolTestCases(testCases: List<T>): List<T> =
+        testCases.filter {
+            it.protocol == ctx.protocol && it.id !in testsToIgnore
+        }
 
     private fun <T : HttpMessageTestCase> filterProtocolTestCasesByTags(testCases: List<T>): List<T> =
         testCases.filter { testCase ->

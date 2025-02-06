@@ -35,13 +35,13 @@ class WaiterAcceptorGenerator(
     val waitedOperation: OperationShape,
     val acceptor: Acceptor,
 ) {
-
     fun render() {
         writer.openBlock(
-            ".init(state: .\$L, matcher: { (input: \$L, result: Swift.Result<\$L, Swift.Error>) -> Bool in", "}),",
+            ".init(state: .\$L, matcher: { (input: \$L, result: Swift.Result<\$L, Swift.Error>) -> Bool in",
+            "}),",
             acceptor.state,
             inputTypeName,
-            outputTypeName
+            outputTypeName,
         ) {
             val matcher = acceptor.matcher
             // There are 4 possible types of acceptor.  Render each separately below.
@@ -66,7 +66,10 @@ class WaiterAcceptorGenerator(
         }
     }
 
-    private fun renderInputOutputBlockContents(includeInput: Boolean, pathMatcher: PathMatcher) {
+    private fun renderInputOutputBlockContents(
+        includeInput: Boolean,
+        pathMatcher: PathMatcher,
+    ) {
         writer.write("// JMESPath expression: \"${pathMatcher.path}\"")
         writer.write("// JMESPath comparator: \"${pathMatcher.comparator}\"")
         writer.write("// JMESPath expected value: \"${pathMatcher.expected}\"")
@@ -81,7 +84,7 @@ class WaiterAcceptorGenerator(
                 "let inputOutput = \$N<\$L, \$L>.Acceptor.InputOutput(input: input, output: unwrappedOutput)",
                 SmithyWaitersAPITypes.WaiterConfiguration,
                 inputTypeName,
-                outputTypeName
+                outputTypeName,
             )
             startingVar = JMESVariable("inputOutput", false, inputOutputShape)
         } else {
@@ -93,9 +96,11 @@ class WaiterAcceptorGenerator(
         val expression = JmespathExpression.parse(pathMatcher.path)
 
         // Create a model & symbol provider with the JMESPath synthetic types included in it
-        val model = ctx.model.toBuilder()
-            .addShapes(listOf(inputOutputShape, boolShape, stringShape, doubleShape))
-            .build()
+        val model =
+            ctx.model
+                .toBuilder()
+                .addShapes(listOf(inputOutputShape, boolShape, stringShape, doubleShape))
+                .build()
         val symbolProvider = SwiftSymbolProvider(model, ctx.settings)
 
         // Create a visitor & send it through the AST.  actual will hold the name of the variable
@@ -146,19 +151,23 @@ class WaiterAcceptorGenerator(
 
     val inputOutputShape: Shape
         get() {
-            val inputMember = MemberShape.builder()
-                .id("smithy.swift.synthetic#InputOutput\$input")
-                .target(waitedOperation.inputShape)
-                .build()
-            val outputMember = MemberShape.builder()
-                .id("smithy.swift.synthetic#InputOutput\$output")
-                .target(waitedOperation.outputShape)
-                .build()
-            return StructureShape.builder()
+            val inputMember =
+                MemberShape
+                    .builder()
+                    .id("smithy.swift.synthetic#InputOutput\$input")
+                    .target(waitedOperation.inputShape)
+                    .build()
+            val outputMember =
+                MemberShape
+                    .builder()
+                    .id("smithy.swift.synthetic#InputOutput\$output")
+                    .target(waitedOperation.outputShape)
+                    .build()
+            return StructureShape
+                .builder()
                 .id("smithy.swift.synthetic#InputOutput")
                 .members(
-                    mutableListOf(inputMember, outputMember)
-                )
-                .build()
+                    mutableListOf(inputMember, outputMember),
+                ).build()
         }
 }

@@ -19,8 +19,9 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTestUtilTypes
 import java.util.Base64
 
-open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
-    HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
+open class HttpProtocolUnitTestRequestGenerator protected constructor(
+    builder: Builder,
+) : HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
     override val baseTestClassName = "HttpRequestTestBase"
 
     override fun renderTestBody(test: HttpRequestTestCase) {
@@ -35,16 +36,18 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         val hostValue = if (test.host.isPresent && test.host.get() != "") test.host.get() else "example.com"
 
         // Normalize the URI
-        val normalizedUri = when {
-            test.uri == "/" -> "/"
-            test.uri.isEmpty() -> ""
-            else -> {
-                val trimmedUri = test.uri.removeSuffix("/")
-                if (!trimmedUri.startsWith('/')) "/$trimmedUri" else trimmedUri
+        val normalizedUri =
+            when {
+                test.uri == "/" -> "/"
+                test.uri.isEmpty() -> ""
+                else -> {
+                    val trimmedUri = test.uri.removeSuffix("/")
+                    if (!trimmedUri.startsWith('/')) "/$trimmedUri" else trimmedUri
+                }
             }
-        }
 
-        writer.openBlock("let expected = buildExpectedHttpRequest(")
+        writer
+            .openBlock("let expected = buildExpectedHttpRequest(")
             .write("method: .${test.method.lowercase()},")
             .write("path: \$S,", normalizedUri)
             .call { renderExpectedHeaders(test) }
@@ -59,26 +62,27 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         if (test.body.isPresent && test.body.get().isNotBlank()) {
             operation.input.ifPresent {
                 val inputShape = model.expectShape(it) as StructureShape
-                val data = if (ctx.service.requestWireProtocol == WireProtocol.CBOR) {
-                    // Attempt to decode the Base64 data
-                    try {
-                        val decodedBytes = Base64.getDecoder().decode(test.body.get())
-                        // Format decoded bytes into a Swift Data array representation
-                        "Data([${decodedBytes.joinToString(", ") { byte -> "0x%02X".format(byte) }}])"
-                    } catch (e: IllegalArgumentException) {
-                        // Fallback to original string if decoding fails
+                val data =
+                    if (ctx.service.requestWireProtocol == WireProtocol.CBOR) {
+                        // Attempt to decode the Base64 data
+                        try {
+                            val decodedBytes = Base64.getDecoder().decode(test.body.get())
+                            // Format decoded bytes into a Swift Data array representation
+                            "Data([${decodedBytes.joinToString(", ") { byte -> "0x%02X".format(byte) }}])"
+                        } catch (e: IllegalArgumentException) {
+                            // Fallback to original string if decoding fails
+                            writer.format(
+                                "Data(\"\"\"\n\$L\n\"\"\".utf8)",
+                                test.body.get().replace("\\\"", "\\\\\""),
+                            )
+                        }
+                    } else {
+                        // Default case for non-CBOR protocols
                         writer.format(
                             "Data(\"\"\"\n\$L\n\"\"\".utf8)",
-                            test.body.get().replace("\\\"", "\\\\\"")
+                            test.body.get().replace("\\\"", "\\\\\""),
                         )
                     }
-                } else {
-                    // Default case for non-CBOR protocols
-                    writer.format(
-                        "Data(\"\"\"\n\$L\n\"\"\".utf8)",
-                        test.body.get().replace("\\\"", "\\\\\"")
-                    )
-                }
 
                 // Depending on the shape of the input, wrap the expected body in a stream or not
                 if (inputShape.hasStreamingMember(model)) {
@@ -86,7 +90,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     writer.write(
                         "body: .stream(\$N(data: \$L, isClosed: true)),",
                         SmithyStreamsTypes.Core.BufferedStream,
-                        data
+                        data,
                     )
                 } else {
                     writer.write("body: .data(\$L),", data)
@@ -124,11 +128,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         operation.input.ifPresent {
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
-            writer.writeInline("\nlet input = ")
+            writer
+                .writeInline("\nlet input = ")
                 .call {
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
-                }
-                .write("")
+                }.write("")
             writer.addImport(SwiftDependency.SMITHY.target)
             writer.write(
                 """
@@ -151,13 +155,17 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             ) {
                 writer.write("XCTAssertNotNil(actualHttpBody, \"The actual ByteStream is nil\")")
                 writer.write("XCTAssertNotNil(expectedHttpBody, \"The expected ByteStream is nil\")")
-                val contentType = when (ctx.service.requestWireProtocol) {
-                    WireProtocol.XML -> ".xml"
-                    WireProtocol.JSON -> ".json"
-                    WireProtocol.FORM_URL -> ".formURL"
-                    WireProtocol.CBOR -> ".cbor"
-                }
-                writer.write("try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: \$L)", contentType)
+                val contentType =
+                    when (ctx.service.requestWireProtocol) {
+                        WireProtocol.XML -> ".xml"
+                        WireProtocol.JSON -> ".json"
+                        WireProtocol.FORM_URL -> ".formURL"
+                        WireProtocol.CBOR -> ".cbor"
+                    }
+                writer.write(
+                    "try await self.genericAssertEqualHttpBodyData(expected: expectedHttpBody!, actual: actualHttpBody!, contentType: \$L)",
+                    contentType,
+                )
             }
         } else {
             writer.write(
@@ -169,38 +177,38 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     private fun renderExpectedQueryParams(test: HttpRequestTestCase) {
         if (test.queryParams.isNotEmpty()) {
             val queryParams = test.queryParams
-            writer.openBlock("queryParams: [")
+            writer
+                .openBlock("queryParams: [")
                 .call {
                     queryParams.forEachIndexed { idx, value ->
                         val suffix = if (idx < queryParams.size - 1) "," else ""
                         writer.write("\$S$suffix", value)
                     }
-                }
-                .closeBlock("],")
+                }.closeBlock("],")
         }
 
         if (test.forbidQueryParams.isNotEmpty()) {
             val queryParams = test.forbidQueryParams
-            writer.openBlock("forbiddenQueryParams: [")
+            writer
+                .openBlock("forbiddenQueryParams: [")
                 .call {
                     queryParams.forEachIndexed { idx, value ->
                         val suffix = if (idx < queryParams.size - 1) "," else ""
                         writer.write("\$S$suffix", value)
                     }
-                }
-                .closeBlock("],")
+                }.closeBlock("],")
         }
 
         if (test.requireQueryParams.isNotEmpty()) {
             val queryParams = test.requireQueryParams
-            writer.openBlock("requiredQueryParams: [")
+            writer
+                .openBlock("requiredQueryParams: [")
                 .call {
                     queryParams.forEachIndexed { idx, value ->
                         val suffix = if (idx < queryParams.size - 1) "," else ""
                         writer.write("\$S$suffix", value)
                     }
-                }
-                .closeBlock("],")
+                }.closeBlock("],")
         }
     }
 
@@ -210,17 +218,24 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writeHeaders("requiredHeaders", test.requireHeaders)
     }
 
-    private fun writeHeaders(name: String, headers: Map<String, String>) {
+    private fun writeHeaders(
+        name: String,
+        headers: Map<String, String>,
+    ) {
         if (headers.isEmpty()) return
         writer.openBlock("\$L: [", "],", name) {
-            val contents = headers.entries.joinToString(",\n") {
-                writer.format("\$S: \$S", it.key, it.value)
-            }
+            val contents =
+                headers.entries.joinToString(",\n") {
+                    writer.format("\$S: \$S", it.key, it.value)
+                }
             writer.write(contents)
         }
     }
 
-    private fun writeHeaders(name: String, headers: List<String>) {
+    private fun writeHeaders(
+        name: String,
+        headers: List<String>,
+    ) {
         if (headers.isEmpty()) return
         writer.openBlock("\$L: [", "],", name) {
             val contents = headers.joinToString(",\n") { writer.format("\$S", it) }
@@ -229,8 +244,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     }
 
     class Builder : HttpProtocolUnitTestGenerator.Builder<HttpRequestTestCase>() {
-        override fun build(): HttpProtocolUnitTestGenerator<HttpRequestTestCase> {
-            return HttpProtocolUnitTestRequestGenerator(this)
-        }
+        override fun build(): HttpProtocolUnitTestGenerator<HttpRequestTestCase> = HttpProtocolUnitTestRequestGenerator(this)
     }
 }

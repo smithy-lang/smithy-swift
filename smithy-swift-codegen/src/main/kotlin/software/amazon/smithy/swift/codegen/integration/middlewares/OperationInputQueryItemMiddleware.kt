@@ -13,7 +13,6 @@ class OperationInputQueryItemMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
 ) : MiddlewareRenderable {
-
     override val name = "OperationInputQueryItemMiddleware"
 
     override fun render(
@@ -30,7 +29,7 @@ class OperationInputQueryItemMiddleware(
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(symbolProvider, model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op).name
@@ -39,7 +38,7 @@ class OperationInputQueryItemMiddleware(
             ClientRuntimeTypes.Middleware.QueryItemMiddleware,
             inputShapeName,
             outputShapeName,
-            inputShapeName
+            inputShapeName,
         )
     }
 }

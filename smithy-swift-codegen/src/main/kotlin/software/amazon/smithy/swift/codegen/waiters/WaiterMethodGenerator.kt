@@ -19,7 +19,7 @@ class WaiterMethodGenerator(
     val ctx: SwiftCodegenContext,
     val service: ServiceShape,
     val waitedOperation: OperationShape,
-    val waiterName: String
+    val waiterName: String,
 ) {
     fun render() {
         val inputTypeName = waitedOperation.inputShape.name
@@ -27,7 +27,8 @@ class WaiterMethodGenerator(
         val waitedOperationName = waitedOperation.toLowerCamelCase()
         val waiterFunctionName = "waitUntil${waiterName.toUpperCamelCase()}"
         val configMethodName = "${waiterName.toLowerCamelCase()}WaiterConfig"
-        val docBody = """
+        val docBody =
+            """
             Initiates waiting for the $waiterName event on the $waitedOperationName operation.
             The operation will be tried and (if necessary) retried until the wait succeeds, fails, or times out.
             Returns a `WaiterOutcome` asynchronously on waiter success, throws an error asynchronously on
@@ -39,7 +40,7 @@ class WaiterMethodGenerator(
             - Throws: `WaiterFailureError` if the waiter fails due to matching an `Acceptor` with state `failure`
             or there is an error not handled by any `Acceptor.`
             `WaiterTimeoutError` if the waiter times out.
-        """.trimIndent()
+            """.trimIndent()
         writer.writeSingleLineDocs {
             this.write(docBody)
         }
@@ -56,7 +57,7 @@ class WaiterMethodGenerator(
                 "let waiter = \$N(config: try Self.\$L(), operation: self.\$L(input:))",
                 SmithyWaitersAPITypes.Waiter,
                 configMethodName,
-                waitedOperationName
+                waitedOperationName,
             )
             writer.write("return try await waiter.waitUntil(options: options, input: input)")
         }

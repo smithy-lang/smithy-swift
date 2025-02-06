@@ -1,0 +1,5 @@
+[*.{kt,kts}]
+# The rule below complains for property names that don't start with lowercase letter.
+# But there are instances in codebase where we use all-cap name to convey that it's immutable.
+# It's been disabled to quiet it.
+ktlint_standard_property-naming = disabled

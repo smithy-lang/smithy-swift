@@ -24,18 +24,19 @@ class CustomDebugStringConvertibleGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
     private val shape: StructureShape,
-    private val model: Model
+    private val model: Model,
 ) {
     companion object {
         const val REDACT_STRING = "CONTENT_REDACTED"
 
-        fun Shape.isSensitive(model: Model): Boolean = when {
-            this is MemberShape -> model.expectShape(target).isSensitive(model)
-            hasTrait<SensitiveTrait>() -> true
-            this is ListShape -> member.isSensitive(model)
-            this is MapShape -> key.isSensitive(model) || value.isSensitive(model)
-            else -> false
-        }
+        fun Shape.isSensitive(model: Model): Boolean =
+            when {
+                this is MemberShape -> model.expectShape(target).isSensitive(model)
+                hasTrait<SensitiveTrait>() -> true
+                this is ListShape -> member.isSensitive(model)
+                this is MapShape -> key.isSensitive(model) || value.isSensitive(model)
+                else -> false
+            }
     }
 
     private val structSymbol: Symbol by lazy {
@@ -77,7 +78,7 @@ class CustomDebugStringConvertibleGenerator(
     private fun renderMemberDescription(
         writer: SwiftWriter,
         member: MemberShape,
-        isRedacted: Boolean
+        isRedacted: Boolean,
     ) {
         val memberNames = symbolProvider.toMemberNames(member)
         val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
@@ -90,17 +91,34 @@ class CustomDebugStringConvertibleGenerator(
         writer.writeInline("${memberNames.second}: $description")
     }
 
-    private fun renderComma(writer: SwiftWriter, shouldWriteComma: Boolean) {
+    private fun renderComma(
+        writer: SwiftWriter,
+        shouldWriteComma: Boolean,
+    ) {
         if (shouldWriteComma) {
             writer.writeInline(", ")
         }
     }
 
-    private fun getStringForLoggingMapShape(member: MapShape, path: String, memberNames: Pair<String, String>): String {
+    private fun getStringForLoggingMapShape(
+        member: MapShape,
+        path: String,
+        memberNames: Pair<String, String>,
+    ): String {
         if (member.hasTrait<SensitiveTrait>()) return "\\\"$REDACT_STRING\\\""
         if (member.key.isSensitive(model) && member.value.isSensitive(model)) return "\\\"$REDACT_STRING\\\""
-        if (member.key.isSensitive(model)) return "[keys: \\\"$REDACT_STRING\\\", values: \\(${SwiftTypes.String}(describing: $path${memberNames.first}?.values))]"
-        if (member.value.isSensitive(model)) return "[keys: \\(${SwiftTypes.String}(describing: $path${memberNames.first}?.keys)), values: \\\"$REDACT_STRING\\\"]"
+        if (member.key.isSensitive(
+                model,
+            )
+        ) {
+            return "[keys: \\\"$REDACT_STRING\\\", values: \\(${SwiftTypes.String}(describing: $path${memberNames.first}?.values))]"
+        }
+        if (member.value.isSensitive(
+                model,
+            )
+        ) {
+            return "[keys: \\(${SwiftTypes.String}(describing: $path${memberNames.first}?.keys)), values: \\\"$REDACT_STRING\\\"]"
+        }
         return "\\(${SwiftTypes.String}(describing: $path${memberNames.first}))"
     }
 }

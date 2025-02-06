@@ -6,6 +6,7 @@ import software.amazon.smithy.model.traits.Trait
 
 class RecursiveUnionTrait : Trait {
     val ID = ShapeId.from("software.amazon.smithy.swift.codegen.swift.synthetic#RecursiveUnion")
+
     override fun toNode(): Node = Node.objectNode()
 
     override fun toShapeId(): ShapeId = ID

@@ -14,7 +14,7 @@ import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
 open class SmokeTestGenerator(
-    private val ctx: ProtocolGenerator.GenerationContext
+    private val ctx: ProtocolGenerator.GenerationContext,
 ) {
     // Filter out tests by test name, tes tag, or service name at codegen time.
     // Each test name or tag must have the prefix "<service-name>:" before the test name or tag name.
@@ -46,9 +46,7 @@ open class SmokeTestGenerator(
     /**
      * Override this method for vendor-specific & customized service names.
      */
-    open fun getServiceName(): String {
-        return ctx.settings.sdkId.toUpperCamelCase()
-    }
+    open fun getServiceName(): String = ctx.settings.sdkId.toUpperCamelCase()
 
     /**
      * Returns map of operation shape IDs to smoke test cases to generate for that operation.
@@ -89,7 +87,10 @@ open class SmokeTestGenerator(
     }
 
     // Render content before main and test functions.
-    private fun renderPrefixContent(serviceName: String, writer: SwiftWriter) {
+    private fun renderPrefixContent(
+        serviceName: String,
+        writer: SwiftWriter,
+    ) {
         // Import statements
         writer.addImport(FoundationTypes.ProcessInfo)
         writer.addImport(ClientRuntimeTypes.Core.SDKLoggingSystem)
@@ -98,7 +99,11 @@ open class SmokeTestGenerator(
         renderCustomFilePrivateVariables(writer)
     }
 
-    private fun renderMainFunction(testCaseNames: List<String>, serviceName: String, writer: SwiftWriter) {
+    private fun renderMainFunction(
+        testCaseNames: List<String>,
+        serviceName: String,
+        writer: SwiftWriter,
+    ) {
         writer.openBlock("static func main() async {", "}") {
             // Silence trivial non-test logs
             writer.write("await SDKLoggingSystem().initialize(logLevel: .error)")
@@ -132,7 +137,11 @@ open class SmokeTestGenerator(
         writer.write("}")
     }
 
-    private fun renderTestFunctions(operationShapeIdToTestCases: Map<ShapeId, List<SmokeTestCase>>, serviceName: String, writer: SwiftWriter) {
+    private fun renderTestFunctions(
+        operationShapeIdToTestCases: Map<ShapeId, List<SmokeTestCase>>,
+        serviceName: String,
+        writer: SwiftWriter,
+    ) {
         operationShapeIdToTestCases.forEach { mapping ->
             val operationShapeId = mapping.key
             mapping.value.forEach { testCase ->
@@ -142,10 +151,15 @@ open class SmokeTestGenerator(
         }
     }
 
-    private fun renderTestFunction(operationShapeId: ShapeId, testCase: SmokeTestCase, serviceName: String, writer: SwiftWriter) {
+    private fun renderTestFunction(
+        operationShapeId: ShapeId,
+        testCase: SmokeTestCase,
+        serviceName: String,
+        writer: SwiftWriter,
+    ) {
         writer.openBlock(
             "static func ${testCase.id.toLowerCamelCase()}() async -> Bool {",
-            "}"
+            "}",
         ) {
             val commaSeparatedTags = testCase.tags.joinToString(", ") { "\"$it\"" }
             writer.write("let tagsFromTrait: [String] = [$commaSeparatedTags]")
@@ -167,7 +181,7 @@ open class SmokeTestGenerator(
         operationName: String,
         errorExpected: Boolean,
         isSkipped: Boolean = false,
-        printCaughtError: Boolean = false
+        printCaughtError: Boolean = false,
     ) {
         val result = if (isSuccess) "ok" else "not ok"
         val error = if (errorExpected) "error expected from service" else "no error expected from service"
@@ -179,27 +193,43 @@ open class SmokeTestGenerator(
         writer.write("return $isSuccess")
     }
 
-    private fun renderDoCatchBlock(operationShapeId: ShapeId, testCase: SmokeTestCase, serviceName: String, writer: SwiftWriter) {
+    private fun renderDoCatchBlock(
+        operationShapeId: ShapeId,
+        testCase: SmokeTestCase,
+        serviceName: String,
+        writer: SwiftWriter,
+    ) {
         val operationName = operationShapeId.name
         val errorExpected = testCase.expectation.isFailure
-        val specificErrorExpected = errorExpected && testCase.expectation.failure.get().errorId.isPresent
+        val specificErrorExpected =
+            errorExpected &&
+                testCase.expectation.failure
+                    .get()
+                    .errorId.isPresent
 
         writer.write("do {")
         writer.indent()
         // Construct input struct with params from trait.
-        val inputShape = ctx.model.expectShape(ctx.model.expectShape(operationShapeId).asOperationShape().get().inputShape)
+        val inputShape =
+            ctx.model.expectShape(
+                ctx.model
+                    .expectShape(operationShapeId)
+                    .asOperationShape()
+                    .get()
+                    .inputShape,
+            )
         if (testCase.params?.get()?.size() == 0) {
             writer.write("let input = ${inputShape.id.name}()")
         } else {
-            writer.writeInline("let input = ")
+            writer
+                .writeInline("let input = ")
                 .call {
                     ShapeValueGenerator(ctx.model, ctx.symbolProvider).writeShapeValueInline(
                         writer,
                         inputShape,
-                        testCase.params.orElse(ObjectNode.builder().build())
+                        testCase.params.orElse(ObjectNode.builder().build()),
                     )
-                }
-                .write("")
+                }.write("")
         }
         // Create empty config
         val clientName = getClientName()
@@ -222,7 +252,12 @@ open class SmokeTestGenerator(
 
         // Catch specific error only if it is expected
         if (specificErrorExpected) {
-            val expectedErrorName = testCase.expectation.failure.get().errorId.get().name
+            val expectedErrorName =
+                testCase.expectation.failure
+                    .get()
+                    .errorId
+                    .get()
+                    .name
             renderSpecificErrorCatchBlock(expectedErrorName, operationName, serviceName, writer)
         }
 
@@ -243,20 +278,26 @@ open class SmokeTestGenerator(
         writer.write("}")
     }
 
-    open fun getClientName(): String {
-        return ctx.settings.sdkId.toUpperCamelCase() + "Client"
-    }
+    open fun getClientName(): String = ctx.settings.sdkId.toUpperCamelCase() + "Client"
 
     /**
      * Default behavior is no-op; override this method for vendor-specific behavior.
      * Implementation should set config fields using values from vendorParams or custom fileprivate variables.
      */
-    open fun handleVendorParams(vendorParams: ObjectNode, writer: SwiftWriter) {
+    open fun handleVendorParams(
+        vendorParams: ObjectNode,
+        writer: SwiftWriter,
+    ) {
         // Pseudo-code example:
         //      writer.write("config.value1 = ${value1-extracted-from-vendorParams}")
     }
 
-    private fun renderSpecificErrorCatchBlock(expectedErrorName: String, operationName: String, serviceName: String, writer: SwiftWriter) {
+    private fun renderSpecificErrorCatchBlock(
+        expectedErrorName: String,
+        operationName: String,
+        serviceName: String,
+        writer: SwiftWriter,
+    ) {
         writer.write("} catch let error as $expectedErrorName {")
         writer.indent()
         // Since a specific error was expected and caught by this point, print success and return true

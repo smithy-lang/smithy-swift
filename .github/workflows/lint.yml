@@ -20,7 +20,7 @@ jobs:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/realm/swiftlint:0.54.0
+      image: ghcr.io/realm/swiftlint:0.58.2
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2

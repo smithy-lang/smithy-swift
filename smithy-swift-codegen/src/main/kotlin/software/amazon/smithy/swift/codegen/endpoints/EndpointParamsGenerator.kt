@@ -37,7 +37,10 @@ class EndpointParamsGenerator(
         }
     }
 
-    private fun renderParams(writer: SwiftWriter, endpointRuleSet: EndpointRuleSet?) {
+    private fun renderParams(
+        writer: SwiftWriter,
+        endpointRuleSet: EndpointRuleSet?,
+    ) {
         writer.openBlock("public struct EndpointParams {", "}") {
             endpointRuleSet?.parameters?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
                 renderMembers(writer, sortedParameters)
@@ -51,7 +54,10 @@ class EndpointParamsGenerator(
         }
     }
 
-    private fun renderInit(writer: SwiftWriter, parameters: List<Parameter>) {
+    private fun renderInit(
+        writer: SwiftWriter,
+        parameters: List<Parameter>,
+    ) {
         writer.openBlock("public init(", ")") {
             for ((index, param) in parameters.withIndex()) {
                 val memberName = param.name.toString().toLowerCamelCase()
@@ -69,7 +75,10 @@ class EndpointParamsGenerator(
         }
     }
 
-    private fun renderMembers(writer: SwiftWriter, parameters: List<Parameter>) {
+    private fun renderMembers(
+        writer: SwiftWriter,
+        parameters: List<Parameter>,
+    ) {
         parameters.forEach { param ->
             val memberName = param.name.toString().toLowerCamelCase()
             val memberSymbol = param.toSymbol()
@@ -94,7 +103,10 @@ class EndpointParamsGenerator(
         }
     }
 
-    private fun renderContextExtension(writer: SwiftWriter, endpointRuleSet: EndpointRuleSet?) {
+    private fun renderContextExtension(
+        writer: SwiftWriter,
+        endpointRuleSet: EndpointRuleSet?,
+    ) {
         writer.openBlock(
             "extension EndpointParams: \$N {",
             "}",
@@ -123,11 +135,12 @@ class EndpointParamsGenerator(
 }
 
 fun Parameter.toSymbol(): Symbol {
-    val swiftType = when (type) {
-        ParameterType.STRING -> SwiftTypes.String
-        ParameterType.BOOLEAN -> SwiftTypes.Bool
-        ParameterType.STRING_ARRAY -> SwiftTypes.StringArray
-    }
+    val swiftType =
+        when (type) {
+            ParameterType.STRING -> SwiftTypes.String
+            ParameterType.BOOLEAN -> SwiftTypes.Bool
+            ParameterType.STRING_ARRAY -> SwiftTypes.StringArray
+        }
     var builder = Symbol.builder().name(swiftType.fullName)
     if (!isRequired) {
         builder = builder.boxed()
@@ -137,10 +150,12 @@ fun Parameter.toSymbol(): Symbol {
         if (type.equals(ParameterType.STRING)) {
             builder.defaultValue("\"$defaultValue\"")
         } else if (type.equals(ParameterType.STRING_ARRAY)) {
-            val elementsWrappedWithEscapedQuotes = defaultValue.toString()
-                .removeSurrounding("[", "]")
-                .split(", ")
-                .joinToString(", ", "[", "]") { "\"$it\"" }
+            val elementsWrappedWithEscapedQuotes =
+                defaultValue
+                    .toString()
+                    .removeSurrounding("[", "]")
+                    .split(", ")
+                    .joinToString(", ", "[", "]") { "\"$it\"" }
             builder.defaultValue(elementsWrappedWithEscapedQuotes)
         } else {
             builder.defaultValue(defaultValue.toString())

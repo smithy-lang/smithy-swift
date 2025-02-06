@@ -19,11 +19,11 @@ val ktlint by configurations.creating
 val ktlintVersion: String by project
 
 dependencies {
-    ktlint("com.pinterest:ktlint:$ktlintVersion")
+    ktlint("com.pinterest.ktlint:ktlint-cli:$ktlintVersion")
 }
 
 val lintPaths = listOf(
-    "smithy-swift-codegen/src/**/*.kt",
+    "smithy-swift-codegen/src/main/**/*.kt",
     "smithy-swift-codegen-test-utils/src/**/*.kt"
 )
 

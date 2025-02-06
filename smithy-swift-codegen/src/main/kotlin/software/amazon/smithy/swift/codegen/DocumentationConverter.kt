@@ -22,23 +22,32 @@ import software.amazon.smithy.utils.StringUtils
 // https://github.com/aws/smithy-go/blob/main/codegen/smithy-go-codegen/src/main/java/software/amazon/smithy/go/codegen/DocumentationConverter.java
 class DocumentationConverter {
     companion object {
-        val MARKDOWN_PARSER = Parser.builder()
-            .enabledBlockTypes(
-                SetUtils.of(
-                    Heading::class.java,
-                    HtmlBlock::class.java,
-                    ThematicBreak::class.java,
-                    FencedCodeBlock::class.java,
-                    BlockQuote::class.java,
-                    ListBlock::class.java
-                )
-            ).build()
-        val SWIFTDOC_ALLOWLIST = Safelist()
-            .addTags("code", "pre", "ul", "ol", "li", "a", "br", "h1", "h2", "h3", "h4", "h5", "h6")
-            .addAttributes("a", "href")
-            .addProtocols("a", "href", "http", "https", "mailto")
+        val MARKDOWN_PARSER =
+            Parser
+                .builder()
+                .enabledBlockTypes(
+                    SetUtils.of(
+                        Heading::class.java,
+                        HtmlBlock::class.java,
+                        ThematicBreak::class.java,
+                        FencedCodeBlock::class.java,
+                        BlockQuote::class.java,
+                        ListBlock::class.java,
+                    ),
+                ).build()
+        val SWIFTDOC_ALLOWLIST =
+            Safelist()
+                .addTags("code", "pre", "ul", "ol", "li", "a", "br", "h1", "h2", "h3", "h4", "h5", "h6")
+                .addAttributes("a", "href")
+                .addProtocols("a", "href", "http", "https", "mailto")
+
         fun convert(docs: String): String {
-            val htmlDocs = HtmlRenderer.builder().escapeHtml(false).build().render(MARKDOWN_PARSER.parse(docs))
+            val htmlDocs =
+                HtmlRenderer
+                    .builder()
+                    .escapeHtml(false)
+                    .build()
+                    .render(MARKDOWN_PARSER.parse(docs))
             val cleanedHtmlDocs = Jsoup.clean(htmlDocs, SWIFTDOC_ALLOWLIST)
             val formatter = FormattingVisitor()
             val body: Node = Jsoup.parse(cleanedHtmlDocs).body()
@@ -57,7 +66,10 @@ class DocumentationConverter {
         private val LIST_BLOCK_NODES = SetUtils.of("ul", "ol")
         private val CODE_BLOCK_NODES = SetUtils.of("pre", "code")
 
-        override fun head(node: Node, depth: Int) {
+        override fun head(
+            node: Node,
+            depth: Int,
+        ) {
             val name = node.nodeName()
             if (isTopLevelCodeBlock(node, depth)) {
                 writer.indent()
@@ -87,6 +99,7 @@ class DocumentationConverter {
             shouldStripPrefixWhitespace = true
             writer.write("")
         }
+
         private fun writeText(node: TextNode) {
             if (node.isBlank) {
                 return
@@ -115,7 +128,10 @@ class DocumentationConverter {
             writer.setNewline("").write("").setNewline("\n")
         }
 
-        private fun isTopLevelCodeBlock(node: Node, depth: Int): Boolean {
+        private fun isTopLevelCodeBlock(
+            node: Node,
+            depth: Int,
+        ): Boolean {
             // The node must be a code block node
             if (!CODE_BLOCK_NODES.contains(node.nodeName())) {
                 return false
@@ -176,18 +192,23 @@ class DocumentationConverter {
         private fun isBlockNode(node: Node): Boolean {
             val name = node.nodeName()
             return (
-                TEXT_BLOCK_NODES.contains(name) || LIST_BLOCK_NODES.contains(name) ||
+                TEXT_BLOCK_NODES.contains(name) ||
+                    LIST_BLOCK_NODES.contains(name) ||
                     CODE_BLOCK_NODES.contains(name)
-                )
+            )
         }
 
-        override fun tail(node: Node, depth: Int) {
+        override fun tail(
+            node: Node,
+            depth: Int,
+        ) {
             val name = node.nodeName()
             if (isTopLevelCodeBlock(node, depth)) {
                 writer.dedent()
             }
 
-            if (TEXT_BLOCK_NODES.contains(name) || isTopLevelCodeBlock(node, depth) ||
+            if (TEXT_BLOCK_NODES.contains(name) ||
+                isTopLevelCodeBlock(node, depth) ||
                 LIST_BLOCK_NODES.contains(name)
             ) {
                 writeNewline()

@@ -11,6 +11,7 @@ import software.amazon.smithy.model.traits.Trait
 
 class SwiftBoxTrait : Trait {
     val ID = ShapeId.from("software.amazon.smithy.swift.codegen.swift.synthetic#box")
+
     override fun toNode(): Node = Node.objectNode()
 
     override fun toShapeId(): ShapeId = ID

@@ -11,6 +11,7 @@ import software.amazon.smithy.model.traits.Trait
 
 class NeedsReaderTrait : Trait {
     val ID = ShapeId.from("software.amazon.smithy.swift.codegen.synthetic#NeedsReader")
+
     override fun toNode(): Node = Node.objectNode()
 
     override fun toShapeId(): ShapeId = ID
