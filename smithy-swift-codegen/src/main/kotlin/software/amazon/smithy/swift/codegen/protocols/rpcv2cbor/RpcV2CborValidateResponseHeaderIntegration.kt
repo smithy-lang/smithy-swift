@@ -14,9 +14,13 @@ import software.amazon.smithy.swift.codegen.model.shapes
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class CborValidateResponseHeaderIntegration : SwiftIntegration {
-    override fun enabledForService(model: Model, settings: SwiftSettings): Boolean = model
-        .shapes<ServiceShape>()
-        .any { it.hasTrait(Rpcv2CborTrait::class.java) }
+    override fun enabledForService(
+        model: Model,
+        settings: SwiftSettings,
+    ): Boolean =
+        model
+            .shapes<ServiceShape>()
+            .any { it.hasTrait(Rpcv2CborTrait::class.java) }
 }
 
 class CborValidateResponseHeaderMiddleware : MiddlewareRenderable {
@@ -25,7 +29,7 @@ class CborValidateResponseHeaderMiddleware : MiddlewareRenderable {
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val inputShapeName = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op).name
         val outputShapeName = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op).name

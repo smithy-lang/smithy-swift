@@ -59,6 +59,7 @@ extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2 {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `encode recursive nested shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive-nested.smithy", "aws.protocoltests.restxml#RestXml")

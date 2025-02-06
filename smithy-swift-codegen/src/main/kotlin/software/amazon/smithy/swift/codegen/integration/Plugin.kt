@@ -12,6 +12,9 @@ interface Plugin {
         return writer.format("\$N()", className)
     }
 
-    fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {
+    fun render(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+    ) {
     }
 }

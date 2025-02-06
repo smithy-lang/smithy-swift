@@ -40,7 +40,10 @@ class EndpointResolverGenerator(
         }
     }
 
-    private fun renderResolver(writer: SwiftWriter, endpointRuleSet: EndpointRuleSet?) {
+    private fun renderResolver(
+        writer: SwiftWriter,
+        endpointRuleSet: EndpointRuleSet?,
+    ) {
         writer.write(
             "typealias DefaultEndpointResolver = \$N<EndpointParams>",
             ClientRuntimeTypes.Core.DefaultEndpointResolver,

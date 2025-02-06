@@ -18,7 +18,7 @@ import software.amazon.smithy.utils.CodeSection
 open class HttpProtocolServiceClient(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    private val serviceConfig: ServiceConfig
+    private val serviceConfig: ServiceConfig,
 ) {
     private val serviceName: String = ctx.settings.sdkId
 
@@ -48,7 +48,7 @@ open class HttpProtocolServiceClient(
         writer.openBlock("public required init(config: \$L) {", "}", serviceConfig.typeName) {
             writer.write(
                 "client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)",
-                ClientRuntimeTypes.Http.SdkHttpClient
+                ClientRuntimeTypes.Http.SdkHttpClient,
             )
             writer.write("self.config = config")
         }
@@ -108,15 +108,17 @@ open class HttpProtocolServiceClient(
                 .joinToString(" & ")
 
         writer.openBlock(
-            "public struct \$LConfiguration: \$L {", "}",
+            "public struct \$LConfiguration: \$L {",
+            "}",
             serviceConfig.clientName.toUpperCamelCase(),
-            clientConfigurationProtocols
+            clientConfigurationProtocols,
         ) {
             val clientConfigs = ctx.integrations.flatMap { it.clientConfigurations(ctx) }
-            val properties: List<ConfigProperty> = clientConfigs
-                .flatMap { it.getProperties(ctx) }
-                .let { overrideConfigProperties(it) }
-                .sortedBy { it.accessModifier }
+            val properties: List<ConfigProperty> =
+                clientConfigs
+                    .flatMap { it.getProperties(ctx) }
+                    .let { overrideConfigProperties(it) }
+                    .sortedBy { it.accessModifier }
 
             renderConfigClassVariables(serviceSymbol, properties)
 
@@ -146,9 +148,7 @@ open class HttpProtocolServiceClient(
     open fun renderCustomConfigInitializer(properties: List<ConfigProperty>) {
     }
 
-    open fun overrideConfigProperties(properties: List<ConfigProperty>): List<ConfigProperty> {
-        return properties
-    }
+    open fun overrideConfigProperties(properties: List<ConfigProperty>): List<ConfigProperty> = properties
 
     private fun renderEmptyAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
         writer.openBlock("public init() async throws {", "}") {
@@ -170,12 +170,17 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
 
-    data class ConfigClassVariablesCustomization(val serviceSymbol: Symbol) : CodeSection
+    data class ConfigClassVariablesCustomization(
+        val serviceSymbol: Symbol,
+    ) : CodeSection
 
     /**
      * Declare class variables in client configuration class
      */
-    private fun renderConfigClassVariables(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
+    private fun renderConfigClassVariables(
+        serviceSymbol: Symbol,
+        properties: List<ConfigProperty>,
+    ) {
         properties.forEach {
             it.render(writer)
         }
@@ -183,9 +188,14 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
 
-    data class ConfigInitializerCustomization(val serviceSymbol: Symbol) : CodeSection
+    data class ConfigInitializerCustomization(
+        val serviceSymbol: Symbol,
+    ) : CodeSection
 
-    private fun renderConfigInitializer(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
+    private fun renderConfigInitializer(
+        serviceSymbol: Symbol,
+        properties: List<ConfigProperty>,
+    ) {
         writer.openBlock("private init(", ") {") {
             properties.forEach { property ->
                 writer.write("_ \$L: \$L,", property.name, property.type.renderSwiftType(writer))

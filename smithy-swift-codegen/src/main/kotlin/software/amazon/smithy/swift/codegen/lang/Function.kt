@@ -22,7 +22,6 @@ data class Function(
     val isThrowing: Boolean = false,
     val isMutating: Boolean = false,
 ) {
-
     /**
      * Render this function using the given writer.
      */

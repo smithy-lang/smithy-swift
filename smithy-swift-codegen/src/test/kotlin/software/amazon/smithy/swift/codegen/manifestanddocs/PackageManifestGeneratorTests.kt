@@ -74,7 +74,10 @@ class PackageManifestGeneratorTests {
         packageManifest.shouldContain(expected)
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
         val context =
             TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPAWSJson11ProtocolGenerator()) { model ->
                 model.defaultSettings(serviceShapeId, "MockSDK", "2019-12-16", "MockSDKID")

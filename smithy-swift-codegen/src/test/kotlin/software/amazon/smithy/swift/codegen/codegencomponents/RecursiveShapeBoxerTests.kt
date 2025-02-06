@@ -19,7 +19,6 @@ import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 internal class RecursiveShapeBoxerTests {
     @Test
     fun `leave non-recursive models unchanged`() {
-
         val model = javaClass.classLoader.getResource("simple-service-with-operation-and-dependency.smithy").asSmithy()
         val transformed = RecursiveShapeBoxer.transform(model)
         transformed.shapes().toList().forEach {
@@ -48,8 +47,10 @@ internal class RecursiveShapeBoxerTests {
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
 
-        val recursiveShapesInput = manifest
-            .getFileString("Sources/example/models/RecursiveShapesInput.swift").get()
+        val recursiveShapesInput =
+            manifest
+                .getFileString("Sources/example/models/RecursiveShapesInput.swift")
+                .get()
         Assertions.assertNotNull(recursiveShapesInput)
         val expected = """
 public struct RecursiveShapesInput: Swift.Sendable {
@@ -64,8 +65,10 @@ public struct RecursiveShapesInput: Swift.Sendable {
 """
         recursiveShapesInput.shouldContain(expected)
 
-        val recursiveShapesOutput = manifest
-            .getFileString("Sources/example/models/RecursiveShapesOutput.swift").get()
+        val recursiveShapesOutput =
+            manifest
+                .getFileString("Sources/example/models/RecursiveShapesOutput.swift")
+                .get()
         Assertions.assertNotNull(recursiveShapesOutput)
         val expected2 = """
 public struct RecursiveShapesOutput: Swift.Sendable {
@@ -80,8 +83,10 @@ public struct RecursiveShapesOutput: Swift.Sendable {
 """
         recursiveShapesOutput.shouldContain(expected2)
 
-        val recursiveShapesInputOutputNested1 = manifest
-            .getFileString("Sources/example/models/RecursiveShapesInputOutputNested1.swift").get()
+        val recursiveShapesInputOutputNested1 =
+            manifest
+                .getFileString("Sources/example/models/RecursiveShapesInputOutputNested1.swift")
+                .get()
         Assertions.assertNotNull(recursiveShapesInputOutputNested1)
         val expected3 = """
 extension ExampleClientTypes {
@@ -102,8 +107,10 @@ extension ExampleClientTypes {
 """
         recursiveShapesInputOutputNested1.shouldContain(expected3)
 
-        val recursiveShapesInputOutputNested2 = manifest
-            .getFileString("Sources/example/models/RecursiveShapesInputOutputNested2.swift").get()
+        val recursiveShapesInputOutputNested2 =
+            manifest
+                .getFileString("Sources/example/models/RecursiveShapesInputOutputNested2.swift")
+                .get()
         Assertions.assertNotNull(recursiveShapesInputOutputNested2)
         val expected4 = """
     public struct RecursiveShapesInputOutputNested2: Swift.Sendable {

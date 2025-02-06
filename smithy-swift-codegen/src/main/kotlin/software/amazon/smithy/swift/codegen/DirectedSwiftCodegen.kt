@@ -28,13 +28,14 @@ import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import java.util.logging.Logger
 
-class DirectedSwiftCodegen(val context: PluginContext) :
-    DirectedCodegen<GenerationContext, SwiftSettings, SwiftIntegration> {
+class DirectedSwiftCodegen(
+    val context: PluginContext,
+) : DirectedCodegen<GenerationContext, SwiftSettings, SwiftIntegration> {
+    @Suppress("ktlint:standard:property-naming")
     private val LOGGER = Logger.getLogger(javaClass.name)
 
-    override fun createSymbolProvider(directive: CreateSymbolProviderDirective<SwiftSettings>): SymbolProvider {
-        return SwiftSymbolProvider(directive.model(), directive.settings())
-    }
+    override fun createSymbolProvider(directive: CreateSymbolProviderDirective<SwiftSettings>): SymbolProvider =
+        SwiftSymbolProvider(directive.model(), directive.settings())
 
     override fun createContext(directive: CreateContextDirective<SwiftSettings, SwiftIntegration>): GenerationContext {
         val model = directive.model()
@@ -56,7 +57,7 @@ class DirectedSwiftCodegen(val context: PluginContext) :
             directive.settings(),
             directive.fileManifest(),
             protocolGenerator,
-            directive.integrations()
+            directive.integrations(),
         )
     }
 
@@ -172,14 +173,16 @@ class DirectedSwiftCodegen(val context: PluginContext) :
         val settings = directive.settings()
         val symbolProvider = directive.symbolProvider()
         val writers = context.writerDelegator()
-        writers.useShapeWriter(shape) { writer: SwiftWriter -> IntEnumGenerator(model, symbolProvider, writer, shape.asIntEnumShape().get(), settings).render() }
+        writers.useShapeWriter(
+            shape,
+        ) { writer: SwiftWriter -> IntEnumGenerator(model, symbolProvider, writer, shape.asIntEnumShape().get(), settings).render() }
     }
 
     private fun resolveProtocolGenerator(
         integrations: List<SwiftIntegration>,
         model: Model,
         service: ServiceShape,
-        settings: SwiftSettings
+        settings: SwiftSettings,
     ): ProtocolGenerator? {
         val generators = integrations.flatMap { it.protocolGenerators }.associateBy { it.protocol }
         val serviceIndex = ServiceIndex.of(model)

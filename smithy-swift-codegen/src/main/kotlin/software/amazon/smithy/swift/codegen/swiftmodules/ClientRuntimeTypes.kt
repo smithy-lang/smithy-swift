@@ -107,10 +107,11 @@ private fun runtimeSymbol(
     declaration: SwiftDeclaration?,
     additionalImports: List<Symbol> = emptyList(),
     spiName: List<String> = emptyList(),
-): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.CLIENT_RUNTIME.takeIf { additionalImports.isEmpty() },
-    additionalImports,
-    spiName,
-)
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.CLIENT_RUNTIME.takeIf { additionalImports.isEmpty() },
+        additionalImports,
+        spiName,
+    )

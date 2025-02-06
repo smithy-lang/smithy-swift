@@ -17,15 +17,17 @@ import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 class EventStreamsInitialResponseTests {
     @Test
     fun `should attempt to decode response if initial-response members are present in RPC (awsJson) smithy model`() {
-        val context = setupInitialMessageTests(
-            "event-stream-initial-request-response.smithy",
-            "com.test#Example",
-            MockHTTPAWSJson11ProtocolGenerator()
-        )
-        val contents = getFileContents(
-            context.manifest,
-            "Sources/InitialMessageEventStreams/models/TestStreamOperationWithInitialRequestResponseOutput+HttpResponseBinding.swift"
-        )
+        val context =
+            setupInitialMessageTests(
+                "event-stream-initial-request-response.smithy",
+                "com.test#Example",
+                MockHTTPAWSJson11ProtocolGenerator(),
+            )
+        val contents =
+            getFileContents(
+                context.manifest,
+                "Sources/InitialMessageEventStreams/models/TestStreamOperationWithInitialRequestResponseOutput+HttpResponseBinding.swift",
+            )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension TestStreamOperationWithInitialRequestResponseOutput {
@@ -55,11 +57,12 @@ extension TestStreamOperationWithInitialRequestResponseOutput {
     private fun setupInitialMessageTests(
         smithyFile: String,
         serviceShapeId: String,
-        protocolGenerator: HTTPBindingProtocolGenerator
+        protocolGenerator: HTTPBindingProtocolGenerator,
     ): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, protocolGenerator) { model ->
-            model.defaultSettings(serviceShapeId, "InitialMessageEventStreams", "123", "InitialMessageEventStreams")
-        }
+        val context =
+            TestContext.initContextFrom(smithyFile, serviceShapeId, protocolGenerator) { model ->
+                model.defaultSettings(serviceShapeId, "InitialMessageEventStreams", "123", "InitialMessageEventStreams")
+            }
         context.generator.initializeMiddleware(context.generationCtx)
         context.generator.generateSerializers(context.generationCtx)
         context.generator.generateProtocolClient(context.generationCtx)

@@ -44,7 +44,9 @@ class CustomDebugStringConvertibleGeneratorTests {
         val context = setupTests("custom-debug-string-convertible-generator-test.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce("mapWithSensitiveTargetedByKey: [keys: \\\"CONTENT_REDACTED\\\", values: \\(Swift.String(describing: mapWithSensitiveTargetedByKey?.values))]")
+        contents.shouldContainOnlyOnce(
+            "mapWithSensitiveTargetedByKey: [keys: \\\"CONTENT_REDACTED\\\", values: \\(Swift.String(describing: mapWithSensitiveTargetedByKey?.values))]",
+        )
     }
 
     @Test
@@ -52,7 +54,9 @@ class CustomDebugStringConvertibleGeneratorTests {
         val context = setupTests("custom-debug-string-convertible-generator-test.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce("mapWithSensitiveTargetedByValue: [keys: \\(Swift.String(describing: mapWithSensitiveTargetedByValue?.keys)), values: \\\"CONTENT_REDACTED\\\"]")
+        contents.shouldContainOnlyOnce(
+            "mapWithSensitiveTargetedByValue: [keys: \\(Swift.String(describing: mapWithSensitiveTargetedByValue?.keys)), values: \\\"CONTENT_REDACTED\\\"]",
+        )
     }
 
     @Test
@@ -63,14 +67,18 @@ class CustomDebugStringConvertibleGeneratorTests {
         contents.shouldContainOnlyOnce("mapWithSensitiveTargetedByBoth: \\\"CONTENT_REDACTED\\\"")
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(
-            listOf(smithyFile),
-            serviceShapeId,
-            MockHTTPRestJsonProtocolGenerator(),
-            { model -> model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol") },
-            listOf(DefaultClientConfigurationIntegration())
-        )
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
+        val context =
+            TestContext.initContextFrom(
+                listOf(smithyFile),
+                serviceShapeId,
+                MockHTTPRestJsonProtocolGenerator(),
+                { model -> model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol") },
+                listOf(DefaultClientConfigurationIntegration()),
+            )
 
         context.generator.initializeMiddleware(context.generationCtx)
         context.generator.generateProtocolClient(context.generationCtx)

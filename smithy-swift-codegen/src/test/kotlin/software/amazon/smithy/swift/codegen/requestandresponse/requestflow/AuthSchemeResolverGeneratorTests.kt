@@ -99,11 +99,14 @@ public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
         return ExampleAuthSchemeResolverParameters(operation: opName, region: opRegion)
     }
 }
-"""
+""",
         )
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
         val context =
             TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestJsonProtocolGenerator()) { model ->
                 model.defaultSettings(serviceShapeId, "Example", "2023-11-02", "Example")

@@ -19,15 +19,13 @@ abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
     override fun serviceClient(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        serviceConfig: ServiceConfig
-    ): HttpProtocolServiceClient {
-        return HttpProtocolServiceClient(ctx, writer, serviceConfig)
-    }
+        serviceConfig: ServiceConfig,
+    ): HttpProtocolServiceClient = HttpProtocolServiceClient(ctx, writer, serviceConfig)
 
     override fun renderEventStreamAttributes(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         // Default implementation is no-op
     }

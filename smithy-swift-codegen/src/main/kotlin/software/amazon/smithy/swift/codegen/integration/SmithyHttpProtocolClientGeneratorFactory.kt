@@ -11,9 +11,17 @@ class SmithyHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFact
         serviceName: String,
         defaultContentType: String,
         httpProtocolCustomizable: HTTPProtocolCustomizable,
-        operationMiddleware: OperationMiddleware
+        operationMiddleware: OperationMiddleware,
     ): HttpProtocolClientGenerator {
         val config = SmithyServiceConfig(writer, ctx)
-        return HttpProtocolClientGenerator(ctx, writer, config, httpBindingResolver, defaultContentType, httpProtocolCustomizable, operationMiddleware)
+        return HttpProtocolClientGenerator(
+            ctx,
+            writer,
+            config,
+            httpBindingResolver,
+            defaultContentType,
+            httpProtocolCustomizable,
+            operationMiddleware,
+        )
     }
 }
