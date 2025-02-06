@@ -58,7 +58,7 @@ class DefaultClientConfiguration : ClientConfiguration {
                     listOf(
                         FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.InterceptorProvider),
                     ),
-            ),
-            isMutating = true,
+                isMutating = true,
+                ),
         )
 }
