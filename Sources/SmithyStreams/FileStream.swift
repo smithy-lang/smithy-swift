@@ -41,7 +41,7 @@ public final class FileStream: Stream, @unchecked Sendable {
     /// Initializes a new `FileStream` instance.
     public init(fileHandle: FileHandle) {
         self.fileHandle = fileHandle
-        self.position = fileHandle.availableData.startIndex
+        self.position = Int(fileHandle.offsetInFile)
     }
 
     /// Reads up to `count` bytes from the stream.
