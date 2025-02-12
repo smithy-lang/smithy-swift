@@ -13,6 +13,7 @@ import struct Foundation.TimeInterval
 import struct Foundation.TimeZone
 import struct Foundation.UUID
 import class Smithy.Context
+import struct Smithy.AttributeKey
 import protocol Smithy.ResponseMessageDeserializer
 
 @_spi(SmithyReadWrite)
@@ -20,13 +21,16 @@ public struct DeserializeMiddleware<OperationStackOutput> {
     public var id: String = "Deserialize"
     let wireResponseClosure: WireResponseOutputClosure<HTTPResponse, OperationStackOutput>
     let wireResponseErrorClosure: WireResponseErrorClosure<HTTPResponse>
+    let operationName: String
 
     public init(
         _ wireResponseClosure: @escaping WireResponseOutputClosure<HTTPResponse, OperationStackOutput>,
-        _ wireResponseErrorClosure: @escaping WireResponseErrorClosure<HTTPResponse>
+        _ wireResponseErrorClosure: @escaping WireResponseErrorClosure<HTTPResponse>,
+        _ operationName: String = "Unsupported"
     ) {
         self.wireResponseClosure = wireResponseClosure
         self.wireResponseErrorClosure = wireResponseErrorClosure
+        self.operationName = operationName
     }
 }
 
@@ -35,6 +39,7 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
         response: HTTPResponse,
         attributes: Context
     ) async throws -> OperationStackOutput {
+        attributes.set(key: AttributeKey(name: "OperationName"), value: operationName)
         if let responseDateString = response.headers.value(for: "Date") {
             let estimatedSkew = getEstimatedSkew(now: Date(), responseDateString: responseDateString)
             attributes.estimatedSkew = estimatedSkew
@@ -45,9 +50,17 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
             response.body = contextBody
         }
 
+        let deserializationStart = Date().timeIntervalSince1970
+
         let copiedResponse = response
         if (200..<300).contains(response.statusCode.rawValue) {
-            return try await wireResponseClosure(copiedResponse)
+            let deserializedResponse = try await wireResponseClosure(copiedResponse)
+
+            let deserializationEnd = Date().timeIntervalSince1970
+            let deserializationElapsedMs = (deserializationEnd - deserializationStart) * 1000.0  // in milliseconds
+            DeserializationMetrics.shared.record(time: deserializationElapsedMs, for: operationName)
+
+            return deserializedResponse
         } else {
             // if the response is a stream, we need to cache the stream so that it can be read again
             // error deserialization reads the stream multiple times to first deserialize the protocol error
