@@ -11,10 +11,14 @@ object SmithyIdentityTypes {
     val StaticBearerTokenIdentityResolver = runtimeSymbol("StaticBearerTokenIdentityResolver", SwiftDeclaration.STRUCT)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SMITHY_IDENTITY,
-    emptyList(),
-    emptyList(),
-)
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration? = null,
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SMITHY_IDENTITY,
+        emptyList(),
+        emptyList(),
+    )

@@ -19,8 +19,9 @@ import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import java.util.Base64
 
-open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Builder) :
-    HttpProtocolUnitTestResponseGenerator(builder) {
+open class HttpProtocolUnitTestErrorGenerator protected constructor(
+    builder: Builder,
+) : HttpProtocolUnitTestResponseGenerator(builder) {
     val error: Shape = builder.error ?: throw CodegenException("builder did not set an error shape")
     override val outputShape: Shape? = error
 
@@ -56,7 +57,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
     private fun renderCompareActualAndExpectedErrors(
         test: HttpResponseTestCase,
         errorShape: Shape,
-        operationErrorType: String
+        operationErrorType: String,
     ) {
         val operationErrorVariableName = operationErrorType.replaceFirstChar { it.lowercase() }
         val errorType = symbolProvider.toSymbol(errorShape).name
@@ -71,7 +72,10 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         writer.write("}")
     }
 
-    override fun renderAssertions(test: HttpResponseTestCase, outputShape: Shape) {
+    override fun renderAssertions(
+        test: HttpResponseTestCase,
+        outputShape: Shape,
+    ) {
         writer.addImport(SwiftDependency.SMITHY_HTTP_API.target)
         writer.write(
             "XCTAssertEqual(actual.httpResponse.statusCode, \$N(rawValue: \$L))",
@@ -83,25 +87,27 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
 
     override fun renderExpectedBody(test: HttpResponseTestCase) {
         if (test.body.isPresent && test.body.get().isNotBlank()) {
-            val isCbor = ctx.service.requestWireProtocol == WireProtocol.CBOR ||
-                ctx.service.awsProtocol == AWSProtocol.RPCV2_CBOR ||
-                ctx.service.responseWireProtocol == WireProtocol.CBOR ||
-                test.protocol == Rpcv2CborTrait.ID
+            val isCbor =
+                ctx.service.requestWireProtocol == WireProtocol.CBOR ||
+                    ctx.service.awsProtocol == AWSProtocol.RPCV2_CBOR ||
+                    ctx.service.responseWireProtocol == WireProtocol.CBOR ||
+                    test.protocol == Rpcv2CborTrait.ID
 
             val bodyContent = test.body.get().replace("\\\"", "\\\\\"")
-            val data: String = if (isCbor) {
-                // Attempt to decode Base64 data once for CBOR
-                try {
-                    val decodedBytes = Base64.getDecoder().decode(bodyContent)
-                    "Data([${decodedBytes.joinToString(", ") { byte -> "0x%02X".format(byte) }}])"
-                } catch (e: IllegalArgumentException) {
-                    // Fallback to Swift Data representation for invalid Base64
+            val data: String =
+                if (isCbor) {
+                    // Attempt to decode Base64 data once for CBOR
+                    try {
+                        val decodedBytes = Base64.getDecoder().decode(bodyContent)
+                        "Data([${decodedBytes.joinToString(", ") { byte -> "0x%02X".format(byte) }}])"
+                    } catch (e: IllegalArgumentException) {
+                        // Fallback to Swift Data representation for invalid Base64
+                        "Data(\"\"\"\n$bodyContent\n\"\"\".utf8)"
+                    }
+                } else {
+                    // Non-CBOR protocols default
                     "Data(\"\"\"\n$bodyContent\n\"\"\".utf8)"
                 }
-            } else {
-                // Non-CBOR protocols default
-                "Data(\"\"\"\n$bodyContent\n\"\"\".utf8)"
-            }
             writer.write("content: .data(\$L)", data)
         } else {
             writer.write("content: nil")
@@ -116,8 +122,6 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
          */
         fun error(shape: Shape) = apply { error = shape }
 
-        override fun build(): HttpProtocolUnitTestGenerator<HttpResponseTestCase> {
-            return HttpProtocolUnitTestErrorGenerator(this)
-        }
+        override fun build(): HttpProtocolUnitTestGenerator<HttpResponseTestCase> = HttpProtocolUnitTestErrorGenerator(this)
     }
 }

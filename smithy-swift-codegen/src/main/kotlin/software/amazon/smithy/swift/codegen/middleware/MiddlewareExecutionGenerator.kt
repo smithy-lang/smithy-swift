@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 typealias HttpMethodCallback = (OperationShape) -> String
+
 class MiddlewareExecutionGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
@@ -23,7 +24,7 @@ class MiddlewareExecutionGenerator(
     private val httpProtocolCustomizable: HTTPProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware,
     private val operationStackName: String,
-    private val httpMethodCallback: HttpMethodCallback? = null
+    private val httpMethodCallback: HttpMethodCallback? = null,
 ) {
     private val symbolProvider = ctx.symbolProvider
 
@@ -78,11 +79,14 @@ class MiddlewareExecutionGenerator(
             rpcService,
             ClientRuntimeTypes.Middleware.OrchestratorMetricsAttributesKeys,
             rpcMethod,
-            ClientRuntimeTypes.Middleware.OrchestratorTelemetry
+            ClientRuntimeTypes.Middleware.OrchestratorTelemetry,
         )
     }
 
-    private fun renderContextAttributes(op: OperationShape, flowType: ContextAttributeCodegenFlowType) {
+    private fun renderContextAttributes(
+        op: OperationShape,
+        flowType: ContextAttributeCodegenFlowType,
+    ) {
         val httpMethod = resolveHttpMethod(op)
 
         // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
@@ -116,16 +120,19 @@ class MiddlewareExecutionGenerator(
         writer.write("  .build()")
     }
 
-    private fun resolveHttpMethod(op: OperationShape): String {
-        return httpMethodCallback?.let {
+    private fun resolveHttpMethod(op: OperationShape): String =
+        httpMethodCallback?.let {
             it(op)
         } ?: run {
             val httpTrait = httpBindingResolver.httpTrait(op)
             httpTrait.method.toLowerCase()
         }
-    }
 
-    private fun renderMiddlewares(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, operationStackName: String) {
+    private fun renderMiddlewares(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        operationStackName: String,
+    ) {
         operationMiddleware.renderMiddleware(ctx, writer, op, operationStackName)
     }
 
@@ -140,7 +147,9 @@ class MiddlewareExecutionGenerator(
      */
     companion object {
         enum class ContextAttributeCodegenFlowType {
-            NORMAL, PRESIGN_REQUEST, PRESIGN_URL
+            NORMAL,
+            PRESIGN_REQUEST,
+            PRESIGN_URL,
         }
     }
 }

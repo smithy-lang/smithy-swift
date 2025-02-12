@@ -24,19 +24,25 @@ class HttpUrlPathProvider(
     val inputSymbol: Symbol,
     private val httpTrait: HttpTrait,
     private val pathBindings: List<HttpBindingDescriptor>,
-    private val writer: SwiftWriter
+    private val writer: SwiftWriter,
 ) {
     companion object {
-        fun renderUrlPathMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, httpBindingResolver: HttpBindingResolver) {
+        fun renderUrlPathMiddleware(
+            ctx: ProtocolGenerator.GenerationContext,
+            op: OperationShape,
+            httpBindingResolver: HttpBindingResolver,
+        ) {
             val httpTrait = httpBindingResolver.httpTrait(op)
             val requestBindings = httpBindingResolver.requestBindings(op)
             val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
             val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
             val filename = ModelFileUtils.filename(ctx.settings, "${inputSymbol.name}+UrlPathProvider")
-            val urlPathMiddlewareSymbol = Symbol.builder()
-                .definitionFile(filename)
-                .name(inputSymbol.name)
-                .build()
+            val urlPathMiddlewareSymbol =
+                Symbol
+                    .builder()
+                    .definitionFile(filename)
+                    .name(inputSymbol.name)
+                    .build()
             ctx.delegator.useShapeWriter(urlPathMiddlewareSymbol) { writer ->
                 val urlPathMiddleware = HttpUrlPathProvider(ctx, inputSymbol, httpTrait, pathBindings, writer)
                 urlPathMiddleware.renderProvider(writer)
@@ -63,41 +69,48 @@ class HttpUrlPathProvider(
         httpTrait.uri.segments.forEach {
             if (it.isLabel) {
                 // spec dictates member name and label name MUST be the same
-                val binding = pathBindings.find { binding ->
-                    binding.memberName == it.content
-                } ?: throw CodegenException("failed to find corresponding member for httpLabel `${it.content}")
+                val binding =
+                    pathBindings.find { binding ->
+                        binding.memberName == it.content
+                    } ?: throw CodegenException("failed to find corresponding member for httpLabel `${it.content}")
 
                 // shape must be string, number, boolean, or timestamp
                 val targetShape = ctx.model.expectShape(binding.member.target)
-                val labelMemberName = ctx.symbolProvider.toMemberNames(binding.member).first.decapitalize()
-                val formattedLabel: String = when (targetShape.type) {
-                    ShapeType.TIMESTAMP -> {
-                        val bindingIndex = HttpBindingIndex.of(ctx.model)
-                        val timestampFormat = bindingIndex.determineTimestampFormat(
-                            binding.member,
-                            HttpBinding.Location.LABEL,
-                            TimestampFormatTrait.Format.DATE_TIME
-                        )
-                        ProtocolGenerator.getFormattedDateString(
-                            writer,
-                            timestampFormat,
-                            labelMemberName,
-                            urlEncode = true
-                        )
+                val labelMemberName =
+                    ctx.symbolProvider
+                        .toMemberNames(binding.member)
+                        .first
+                        .decapitalize()
+                val formattedLabel: String =
+                    when (targetShape.type) {
+                        ShapeType.TIMESTAMP -> {
+                            val bindingIndex = HttpBindingIndex.of(ctx.model)
+                            val timestampFormat =
+                                bindingIndex.determineTimestampFormat(
+                                    binding.member,
+                                    HttpBinding.Location.LABEL,
+                                    TimestampFormatTrait.Format.DATE_TIME,
+                                )
+                            ProtocolGenerator.getFormattedDateString(
+                                writer,
+                                timestampFormat,
+                                labelMemberName,
+                                urlEncode = true,
+                            )
+                        }
+                        ShapeType.STRING -> {
+                            val percentEncoded = urlEncoding(it.isGreedyLabel)
+                            val enumRawValueSuffix =
+                                targetShape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
+                            "$labelMemberName$enumRawValueSuffix$percentEncoded"
+                        }
+                        ShapeType.FLOAT, ShapeType.DOUBLE -> "$labelMemberName.encoded()"
+                        ShapeType.ENUM -> {
+                            val percentEncoded = urlEncoding(it.isGreedyLabel)
+                            "$labelMemberName.rawValue$percentEncoded"
+                        }
+                        else -> labelMemberName
                     }
-                    ShapeType.STRING -> {
-                        val percentEncoded = urlEncoding(it.isGreedyLabel)
-                        val enumRawValueSuffix =
-                            targetShape.getTrait(EnumTrait::class.java).map { ".rawValue" }.orElse("")
-                        "$labelMemberName$enumRawValueSuffix$percentEncoded"
-                    }
-                    ShapeType.FLOAT, ShapeType.DOUBLE -> "$labelMemberName.encoded()"
-                    ShapeType.ENUM -> {
-                        val percentEncoded = urlEncoding(it.isGreedyLabel)
-                        "$labelMemberName.rawValue$percentEncoded"
-                    }
-                    else -> labelMemberName
-                }
 
                 // use member symbol to determine if we need to box the value
                 // similar to how struct is generated

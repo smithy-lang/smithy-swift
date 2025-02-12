@@ -56,7 +56,8 @@ extension XmlTimestampsNestedOutput {
     @Test
     fun `003 decode nested timestamps HttpDate`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedHTTPDateOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedHTTPDateOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlTimestampsNestedHTTPDateOutput {
 
@@ -73,10 +74,12 @@ extension XmlTimestampsNestedHTTPDateOutput {
 
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `004 decode nested timestamps xmlName`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedXmlNameOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedXmlNameOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlTimestampsNestedXmlNameOutput {
 

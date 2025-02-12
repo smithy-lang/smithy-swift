@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.getFileContents
 
 class MapDecodeXMLGenerationTests {
-
     @Test
     fun `001 decode wrapped map`() {
         val context = setupTests("Isolated/Restxml/xml-maps.smithy", "aws.protocoltests.restxml#RestXml")
@@ -190,10 +189,12 @@ extension XmlMapsXmlNameNestedOutput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `011 decode flattened nested map with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedNestedXmlNameOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedNestedXmlNameOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsFlattenedNestedXmlNameOutput {
 
@@ -233,7 +234,8 @@ extension XmlMapsXmlNamespaceOutput {
     @Test
     fun `012 decode flattened map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedXmlNamespaceOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedXmlNamespaceOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsFlattenedXmlNamespaceOutput {
 
@@ -273,7 +275,8 @@ extension XmlMapsNestedXmlNamespaceOutput {
     @Test
     fun `014 decode nested flattened map with xmlnamespace`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-nested-namespace.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedNestedXmlNamespaceOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedNestedXmlNamespaceOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsFlattenedNestedXmlNamespaceOutput {
 
@@ -289,6 +292,7 @@ extension XmlMapsFlattenedNestedXmlNamespaceOutput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `015 decode map containing list`() {
         val context = setupTests("Isolated/Restxml/xml-maps-contain-list.smithy", "aws.protocoltests.restxml#RestXml")
@@ -308,10 +312,12 @@ extension XmlMapsContainListOutput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `016 decode flattened map containing list`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-contain-list.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedContainListOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedContainListOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsFlattenedContainListOutput {
 
@@ -351,7 +357,8 @@ extension XmlMapsTimestampsOutput {
     @Test
     fun `018 decode flattened map containing timestamp`() {
         val context = setupTests("Isolated/Restxml/xml-maps-flattened-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedTimestampsOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "Sources/RestXml/models/XmlMapsFlattenedTimestampsOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlMapsFlattenedTimestampsOutput {
 
@@ -367,6 +374,7 @@ extension XmlMapsFlattenedTimestampsOutput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `019 two maps that may conflict with KeyValue`() {
         val context = setupTests("Isolated/Restxml/xml-maps-2x.smithy", "aws.protocoltests.restxml#RestXml")

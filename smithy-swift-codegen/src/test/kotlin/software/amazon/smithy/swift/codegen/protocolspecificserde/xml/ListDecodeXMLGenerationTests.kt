@@ -97,7 +97,8 @@ extension XmlEmptyFlattenedListsOutput {
     @Test
     fun `005 decode nestednested flattened list serialization`() {
         val context = setupTests("Isolated/Restxml/xml-lists-nestednested-flattened.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlNestedNestedFlattenedListOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "Sources/RestXml/models/XmlNestedNestedFlattenedListOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlNestedNestedFlattenedListOutput {
 
@@ -137,7 +138,8 @@ extension XmlListContainMapOutput {
     @Test
     fun `013 decode flattened list containing map`() {
         val context = setupTests("Isolated/Restxml/xml-lists-flattened-contain-map.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlListFlattenedContainMapOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "Sources/RestXml/models/XmlListFlattenedContainMapOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlListFlattenedContainMapOutput {
 

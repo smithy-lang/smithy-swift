@@ -37,67 +37,82 @@ import java.net.URL
 /**
  * Load and initialize a model from a String (from smithy-rs)
  */
-private const val SmithyVersion = "1.0"
+private const val SMITHY_VERSION = "1.0"
+
 fun String.asSmithyModel(sourceLocation: String? = null): Model {
-    val processed = letIf(!this.startsWith("\$version")) { "\$version: ${SmithyVersion.doubleQuote()}\n$it" }
-    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble().unwrap()
+    val processed = letIf(!this.startsWith("\$version")) { "\$version: ${SMITHY_VERSION.doubleQuote()}\n$it" }
+    return Model
+        .assembler()
+        .discoverModels()
+        .addUnparsedModel(sourceLocation ?: "test.smithy", processed)
+        .assemble()
+        .unwrap()
 }
 
 fun String.doubleQuote(): String = "\"${this.slashEscape('\\').slashEscape('"')}\""
-fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$char""")
-fun <T> T.letIf(cond: Boolean, f: (T) -> T): T {
-    return if (cond) {
-        f(this)
-    } else this
-}
 
-fun createSymbolProvider(): SymbolProvider? {
-    return SymbolProvider { shape: Shape ->
-        Symbol.builder()
+fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$char""")
+
+fun <T> T.letIf(
+    cond: Boolean,
+    f: (T) -> T,
+): T =
+    if (cond) {
+        f(this)
+    } else {
+        this
+    }
+
+fun createSymbolProvider(): SymbolProvider? =
+    SymbolProvider { shape: Shape ->
+        Symbol
+            .builder()
             .name(shape.id.name)
             .namespace(shape.id.namespace, "/")
             .definitionFile(shape.id.name + ".txt")
             .build()
     }
-}
 
 /**
  * Load and initialize a model from a Java resource URL
  */
 fun URL.asSmithy(): Model =
-    Model.assembler()
+    Model
+        .assembler()
         .addImport(this)
         .discoverModels()
         .assemble()
         .unwrap()
 
-fun createModelFromShapes(vararg shapes: Shape): Model {
-    return Model.assembler()
+fun createModelFromShapes(vararg shapes: Shape): Model =
+    Model
+        .assembler()
         .addShapes(*shapes)
         .assemble()
         .unwrap()
-}
 
 fun buildPluginContext(
     model: Model,
     manifest: FileManifest,
     serviceShapeId: String,
     moduleName: String,
-    moduleVersion: String
-): PluginContext {
-    return PluginContext.builder()
+    moduleVersion: String,
+): PluginContext =
+    PluginContext
+        .builder()
         .model(model)
         .fileManifest(manifest)
         .settings(getSettingsNode(serviceShapeId, moduleName, moduleVersion))
         .build()
-}
 
-fun buildMockPluginContext(model: Model, manifest: FileManifest, serviceShapeId: String = "com.test#Example"): PluginContext {
-    return buildPluginContext(model, manifest, serviceShapeId, "example", "0.0.1")
-}
+fun buildMockPluginContext(
+    model: Model,
+    manifest: FileManifest,
+    serviceShapeId: String = "com.test#Example",
+): PluginContext = buildPluginContext(model, manifest, serviceShapeId, "example", "0.0.1")
 
-fun createModelWithStructureWithoutErrorTrait(): Model {
-    return """
+fun createModelWithStructureWithoutErrorTrait(): Model =
+    """
         namespace smithy.example
         /// This is documentation about the shape.
         structure MyStruct {
@@ -107,7 +122,6 @@ fun createModelWithStructureWithoutErrorTrait(): Model {
           baz: Integer,
         }
     """.asSmithyModel()
-}
 
 /**
  * This function produces a smithy model like:
@@ -128,38 +142,61 @@ recursiveMember: RecursiveShapesInputOutputNested1,
 fun createStructureContainingNestedRecursiveShape(): List<StructureShape> {
     val shapes = mutableListOf<StructureShape>()
     val memberFoo =
-        MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$foo").target("smithy.api#String")
+        MemberShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested1\$foo")
+            .target("smithy.api#String")
             .build()
-    var memberNested = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested1\$nested")
-        .target("smithy.example#RecursiveShapesInputOutputNested2").build()
+    var memberNested =
+        MemberShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested1\$nested")
+            .target("smithy.example#RecursiveShapesInputOutputNested2")
+            .build()
     memberNested = memberNested.toBuilder().addTrait(SwiftBoxTrait()).build()
 
-    val recursiveShapeNested1 = StructureShape.builder()
-        .id("smithy.example#RecursiveShapesInputOutputNested1")
-        .addMember(memberFoo)
-        .addMember(memberNested)
-        .build()
+    val recursiveShapeNested1 =
+        StructureShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested1")
+            .addMember(memberFoo)
+            .addMember(memberNested)
+            .build()
     val memberRecursiveMember =
-        MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$recursiveMember")
-            .target("smithy.example#RecursiveShapesInputOutputNested1").build()
+        MemberShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested2\$recursiveMember")
+            .target("smithy.example#RecursiveShapesInputOutputNested1")
+            .build()
     val memberBar =
-        MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$bar").target("smithy.api#String")
+        MemberShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested2\$bar")
+            .target("smithy.api#String")
             .build()
 
-    val recursiveShapeNested2 = StructureShape.builder()
-        .id("smithy.example#RecursiveShapesInputOutputNested2")
-        .addMember(memberRecursiveMember)
-        .addMember(memberBar)
-        .build()
+    val recursiveShapeNested2 =
+        StructureShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested2")
+            .addMember(memberRecursiveMember)
+            .addMember(memberBar)
+            .build()
 
-    val member1 = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutput\$nested")
-        .target("smithy.example#RecursiveShapesInputOutputNested1").build()
+    val member1 =
+        MemberShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutput\$nested")
+            .target("smithy.example#RecursiveShapesInputOutputNested1")
+            .build()
 
-    val topLevelShape = StructureShape.builder()
-        .id("smithy.example#RecursiveShapesInputOutput")
-        .addMember(member1)
-        .addTrait(DocumentationTrait("This *is* documentation about the shape."))
-        .build()
+    val topLevelShape =
+        StructureShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutput")
+            .addMember(member1)
+            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
+            .build()
     shapes.add(recursiveShapeNested1)
     shapes.add(recursiveShapeNested2)
     shapes.add(topLevelShape)
@@ -190,43 +227,73 @@ fun createStructureContainingNestedRecursiveShapeList(): List<StructureShape> {
     val shapes = mutableListOf<StructureShape>()
 
     val memberRecursiveMember =
-        MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$recursiveMember")
-            .target("smithy.example#RecursiveShapesInputOutputNested1").build()
+        MemberShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested2\$recursiveMember")
+            .target("smithy.example#RecursiveShapesInputOutputNested1")
+            .build()
     val memberBar =
-        MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNested2\$bar").target("smithy.api#String")
+        MemberShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested2\$bar")
+            .target("smithy.api#String")
             .build()
 
-    val recursiveShapeNested2 = StructureShape.builder()
-        .id("smithy.example#RecursiveShapesInputOutputNested2")
-        .addMember(memberRecursiveMember)
-        .addMember(memberBar)
-        .build()
+    val recursiveShapeNested2 =
+        StructureShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNested2")
+            .addMember(memberRecursiveMember)
+            .addMember(memberBar)
+            .build()
 
-    val memberRecursiveList = MemberShape.builder().id("smithy.example#RecursiveList\$member")
-        .target("smithy.example#RecursiveShapesInputOutputNested1").build()
+    val memberRecursiveList =
+        MemberShape
+            .builder()
+            .id("smithy.example#RecursiveList\$member")
+            .target("smithy.example#RecursiveShapesInputOutputNested1")
+            .build()
 
-    val listShape = ListShape.builder()
-        .id("smithy.example#RecursiveList")
-        .addMember(memberRecursiveList)
+    val listShape =
+        ListShape
+            .builder()
+            .id("smithy.example#RecursiveList")
+            .addMember(memberRecursiveList)
 
-    val memberFoo = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNestedList1\$foo")
-        .target("smithy.api#String").build()
-    val memberNested = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputNestedList1\$recursiveList")
-        .target("smithy.example#RecursiveList").build()
-    val recursiveShapeNested1 = StructureShape.builder()
-        .id("smithy.example#RecursiveShapesInputOutputNestedList1")
-        .addMember(memberFoo)
-        .addMember(memberNested)
-        .build()
+    val memberFoo =
+        MemberShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNestedList1\$foo")
+            .target("smithy.api#String")
+            .build()
+    val memberNested =
+        MemberShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNestedList1\$recursiveList")
+            .target("smithy.example#RecursiveList")
+            .build()
+    val recursiveShapeNested1 =
+        StructureShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputNestedList1")
+            .addMember(memberFoo)
+            .addMember(memberNested)
+            .build()
 
-    val member1 = MemberShape.builder().id("smithy.example#RecursiveShapesInputOutputLists\$nested")
-        .target("smithy.example#RecursiveShapesInputOutputNested1").build()
+    val member1 =
+        MemberShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputLists\$nested")
+            .target("smithy.example#RecursiveShapesInputOutputNested1")
+            .build()
 
-    val topLevelShape = StructureShape.builder()
-        .id("smithy.example#RecursiveShapesInputOutputLists")
-        .addMember(member1)
-        .addTrait(DocumentationTrait("This *is* documentation about the shape."))
-        .build()
+    val topLevelShape =
+        StructureShape
+            .builder()
+            .id("smithy.example#RecursiveShapesInputOutputLists")
+            .addMember(member1)
+            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
+            .build()
     shapes.add(recursiveShapeNested1)
     shapes.add(recursiveShapeNested2)
     shapes.add(topLevelShape)
@@ -234,15 +301,22 @@ fun createStructureContainingNestedRecursiveShapeList(): List<StructureShape> {
 }
 
 fun createStructureWithOptionalErrorMessage(): StructureShape {
-    val member1 = MemberShape.builder().id("smithy.example#MyError\$message")
-        .target("smithy.api#String")
-        .build()
-    val member2 = MemberShape.builder().id("smithy.example#MyError\$baz")
-        .target("smithy.api#Integer")
-        .addTrait(DocumentationTrait("This *is* documentation about the member."))
-        .build()
+    val member1 =
+        MemberShape
+            .builder()
+            .id("smithy.example#MyError\$message")
+            .target("smithy.api#String")
+            .build()
+    val member2 =
+        MemberShape
+            .builder()
+            .id("smithy.example#MyError\$baz")
+            .target("smithy.api#Integer")
+            .addTrait(DocumentationTrait("This *is* documentation about the member."))
+            .build()
 
-    return StructureShape.builder()
+    return StructureShape
+        .builder()
         .id("smithy.example#MyError")
         .addMember(member1)
         .addMember(member2)
@@ -256,33 +330,32 @@ fun createStructureWithOptionalErrorMessage(): StructureShape {
 class TestContext(
     val generationCtx: ProtocolGenerator.GenerationContext,
     val manifest: MockManifest,
-    val generator: ProtocolGenerator
+    val generator: ProtocolGenerator,
 ) {
     companion object {
         fun initContextFrom(
             smithyFile: String,
             serviceShapeId: String,
             httpBindingProtocolGenerator: HTTPBindingProtocolGenerator? = null,
-            swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null
-        ): TestContext {
-            return initContextFrom(listOf(smithyFile), serviceShapeId, httpBindingProtocolGenerator, swiftSettingCallback)
-        }
+            swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null,
+        ): TestContext = initContextFrom(listOf(smithyFile), serviceShapeId, httpBindingProtocolGenerator, swiftSettingCallback)
+
         fun initContextFrom(
             smithyFiles: List<String>,
             serviceShapeId: String,
             httpBindingProtocolGenerator: HTTPBindingProtocolGenerator? = null,
             swiftSettingCallback: ((model: Model) -> SwiftSettings)? = null,
-            integrations: List<SwiftIntegration> = emptyList()
+            integrations: List<SwiftIntegration> = emptyList(),
         ): TestContext {
-
             var modelAssembler = Model.assembler()
             for (smithyFile in smithyFiles) {
                 modelAssembler.addImport(javaClass.classLoader.getResource(smithyFile))
             }
-            var model = modelAssembler
-                .discoverModels()
-                .assemble()
-                .unwrap()
+            var model =
+                modelAssembler
+                    .discoverModels()
+                    .assemble()
+                    .unwrap()
 
             val manifest = MockManifest()
             val swiftSettings = if (swiftSettingCallback == null) model.defaultSettings() else swiftSettingCallback(model)
@@ -301,37 +374,40 @@ class TestContext(
 }
 
 // Convenience function to retrieve a shape from a [TestContext]
-fun TestContext.expectShape(shapeId: String): Shape =
-    this.generationCtx.model.expectShape(ShapeId.from(shapeId))
+fun TestContext.expectShape(shapeId: String): Shape = this.generationCtx.model.expectShape(ShapeId.from(shapeId))
 
 fun Model.newTestContext(
     serviceShapeId: String = "com.test#Example",
     settings: SwiftSettings = this.defaultSettings(),
-    generator: ProtocolGenerator = MockHTTPRestJsonProtocolGenerator()
-): TestContext {
-    return newTestContext(MockManifest(), serviceShapeId, settings, generator)
-}
+    generator: ProtocolGenerator = MockHTTPRestJsonProtocolGenerator(),
+): TestContext = newTestContext(MockManifest(), serviceShapeId, settings, generator)
 
 fun Model.newTestContext(
     manifest: MockManifest,
     serviceShapeId: String,
     settings: SwiftSettings,
     generator: ProtocolGenerator,
-    integrations: List<SwiftIntegration> = emptyList()
+    integrations: List<SwiftIntegration> = emptyList(),
 ): TestContext {
     val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(this, settings)
-    val service = this.getShape(ShapeId.from(serviceShapeId)).get().asServiceShape().get()
+    val service =
+        this
+            .getShape(ShapeId.from(serviceShapeId))
+            .get()
+            .asServiceShape()
+            .get()
     val delegator = SwiftDelegator(settings, this, manifest, provider)
 
-    val ctx = ProtocolGenerator.GenerationContext(
-        settings,
-        this,
-        service,
-        provider,
-        integrations,
-        generator.protocol,
-        delegator
-    )
+    val ctx =
+        ProtocolGenerator.GenerationContext(
+            settings,
+            this,
+            service,
+            provider,
+            integrations,
+            generator.protocol,
+            delegator,
+        )
     return TestContext(ctx, manifest, generator)
 }
 
@@ -339,9 +415,10 @@ fun getSettingsNode(
     serviceShapeId: String = "com.test#Example",
     moduleName: String = "example",
     moduleVersion: String = "1.0.0",
-    sdkId: String = "Example"
-): ObjectNode {
-    return Node.objectNodeBuilder()
+    sdkId: String = "Example",
+): ObjectNode =
+    Node
+        .objectNodeBuilder()
         .withMember("service", Node.from(serviceShapeId))
         .withMember("module", Node.from(moduleName))
         .withMember("moduleVersion", Node.from(moduleVersion))
@@ -351,30 +428,34 @@ fun getSettingsNode(
         .withMember("gitRepo", Node.from("https://github.com/aws-amplify/amplify-codegen.git"))
         .withMember("swiftVersion", Node.from("5.5.0"))
         .build()
-}
 
 fun Model.defaultSettings(
     serviceShapeId: String = "com.test#Example",
     moduleName: String = "example",
     moduleVersion: String = "1.0.0",
-    sdkId: String = "Example"
+    sdkId: String = "Example",
 ): SwiftSettings =
     SwiftSettings.from(
         this,
-        getSettingsNode(serviceShapeId, moduleName, moduleVersion, sdkId)
+        getSettingsNode(serviceShapeId, moduleName, moduleVersion, sdkId),
     )
 
-fun getModelFileContents(namespace: String, filename: String, manifest: MockManifest): String {
-    return getFileContents(manifest, "$namespace/models/$filename")
-}
+fun getModelFileContents(
+    namespace: String,
+    filename: String,
+    manifest: MockManifest,
+): String = getFileContents(manifest, "$namespace/models/$filename")
 
-fun getTestFileContents(namespace: String, filename: String, manifest: MockManifest): String {
-    return getFileContents(manifest, "${namespace}Tests/$filename")
-}
+fun getTestFileContents(
+    namespace: String,
+    filename: String,
+    manifest: MockManifest,
+): String = getFileContents(manifest, "${namespace}Tests/$filename")
 
-fun getFileContents(manifest: MockManifest, fileName: String): String {
-    return manifest.expectFileString(fileName)
-}
+fun getFileContents(
+    manifest: MockManifest,
+    fileName: String,
+): String = manifest.expectFileString(fileName)
 
 fun listFilesFromManifest(manifest: MockManifest): String {
     var listFiles = StringBuilder()

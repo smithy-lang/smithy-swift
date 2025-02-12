@@ -24,14 +24,23 @@ interface MiddlewareRenderable {
      *
      * @see renderSpecific
      */
-    fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
+    fun render(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape,
+        operationStackName: String,
+    ) {
         renderSpecific(ctx, writer, op, operationStackName, "interceptors.add")
     }
 
     /**
      * Utility method for rendering the initializer for the middleware.
      */
-    fun renderMiddlewareInit(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape) {}
+    fun renderMiddlewareInit(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape,
+    ) {}
 
     /**
      * Renders a specific method call on the orchestrator. `renderMiddlewareInit` is called to generate the middleware.
@@ -48,7 +57,7 @@ interface MiddlewareRenderable {
         writer.write(
             "builder.\$L(\$C)",
             orchestratorMethodName,
-            Runnable { renderMiddlewareInit(ctx, writer, op) }
+            Runnable { renderMiddlewareInit(ctx, writer, op) },
         )
     }
 }

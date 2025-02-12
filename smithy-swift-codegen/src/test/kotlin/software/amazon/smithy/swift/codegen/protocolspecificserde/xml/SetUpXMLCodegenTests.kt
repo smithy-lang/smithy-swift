@@ -9,10 +9,14 @@ import software.amazon.smithy.swift.codegen.TestContext
 import software.amazon.smithy.swift.codegen.defaultSettings
 import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPRestXMLProtocolGenerator
 
-fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-    val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestXMLProtocolGenerator()) { model ->
-        model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
-    }
+fun setupTests(
+    smithyFile: String,
+    serviceShapeId: String,
+): TestContext {
+    val context =
+        TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestXMLProtocolGenerator()) { model ->
+            model.defaultSettings(serviceShapeId, "RestXml", "2019-12-16", "Rest Xml Protocol")
+        }
     context.generator.initializeMiddleware(context.generationCtx)
     context.generator.generateSerializers(context.generationCtx)
     context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)

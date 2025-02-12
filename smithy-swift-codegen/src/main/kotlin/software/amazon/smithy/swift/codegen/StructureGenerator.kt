@@ -36,9 +36,8 @@ class StructureGenerator(
     private val writer: SwiftWriter,
     private val shape: StructureShape,
     private val settings: SwiftSettings,
-    private val serviceErrorProtocolSymbol: Symbol? = null
+    private val serviceErrorProtocolSymbol: Symbol? = null,
 ) {
-
     private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { it.toLowerCamelCase() }
     private var memberShapeDataContainer: MutableMap<MemberShape, Pair<String, Symbol>> = mutableMapOf()
 
@@ -116,8 +115,10 @@ class StructureGenerator(
         writer.write("")
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        val equatableConformance = writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
-        writer.openBlock("public struct \$struct.name:L: \$N$equatableConformance {", SwiftTypes.Protocols.Sendable)
+        val equatableConformance =
+            writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
+        writer
+            .openBlock("public struct \$struct.name:L: \$N$equatableConformance {", SwiftTypes.Protocols.Sendable)
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure(false) }
@@ -217,14 +218,14 @@ class StructureGenerator(
         }
 
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock(
-            "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N {",
-            ClientRuntimeTypes.Core.ModeledError,
-            ClientRuntimeTypes.Http.HttpError,
-            SwiftTypes.Error,
-            SwiftTypes.Protocols.Sendable,
-        )
-            .call { generateErrorStructMembers() }
+        writer
+            .openBlock(
+                "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N {",
+                ClientRuntimeTypes.Core.ModeledError,
+                ClientRuntimeTypes.Http.HttpError,
+                SwiftTypes.Error,
+                SwiftTypes.Protocols.Sendable,
+            ).call { generateErrorStructMembers() }
             .write("")
             .call { generateInitializerForStructure(true) }
             .closeBlock("}")

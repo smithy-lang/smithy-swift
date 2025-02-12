@@ -82,13 +82,14 @@ private val Shape.isStreaming: Boolean
 /**
  * Checks to see if shape is in the body of the http request
  */
-// TODO fix the edge case: a shape which is an operational input (i.e. has members bound to HTTP semantics) could be re-used elsewhere not as an operation input which means everything is in the body
 fun Shape.isInHttpBody(): Boolean {
-    val hasNoHttpTraitsOutsideOfPayload = !this.hasTrait(HttpLabelTrait::class.java) &&
-        !this.hasTrait(HttpHeaderTrait::class.java) &&
-        !this.hasTrait(HttpPrefixHeadersTrait::class.java) &&
-        !this.hasTrait(HttpQueryTrait::class.java) &&
-        !this.hasTrait(HttpQueryParamsTrait::class.java)
+    // TODO fix the edge case: a shape which is an operational input (i.e. has members bound to HTTP semantics) could be re-used elsewhere not as an operation input which means everything is in the body
+    val hasNoHttpTraitsOutsideOfPayload =
+        !this.hasTrait(HttpLabelTrait::class.java) &&
+            !this.hasTrait(HttpHeaderTrait::class.java) &&
+            !this.hasTrait(HttpPrefixHeadersTrait::class.java) &&
+            !this.hasTrait(HttpQueryTrait::class.java) &&
+            !this.hasTrait(HttpQueryParamsTrait::class.java)
     return this.hasTrait(HttpPayloadTrait::class.java) || hasNoHttpTraitsOutsideOfPayload
 }
 
@@ -103,8 +104,8 @@ fun formatHeaderOrQueryValue(
     location: HttpBinding.Location,
     bindingIndex: HttpBindingIndex,
     defaultTimestampFormat: TimestampFormatTrait.Format,
-): Pair<String, Boolean> {
-    return when (val shape = ctx.model.expectShape(memberShape.target)) {
+): Pair<String, Boolean> =
+    when (val shape = ctx.model.expectShape(memberShape.target)) {
         is TimestampShape -> {
             val timestampFormat = bindingIndex.determineTimestampFormat(memberShape, location, defaultTimestampFormat)
             Pair(ProtocolGenerator.getFormattedDateString(writer, timestampFormat, memberName), false)
@@ -125,7 +126,6 @@ fun formatHeaderOrQueryValue(
         is IntEnumShape -> Pair("$memberName.rawValue", false)
         else -> Pair(memberName, false)
     }
-}
 
 /**
  * Abstract implementation useful for all HTTP protocols
@@ -133,6 +133,7 @@ fun formatHeaderOrQueryValue(
 abstract class HTTPBindingProtocolGenerator(
     override val customizations: HTTPProtocolCustomizable,
 ) : ProtocolGenerator {
+    @Suppress("ktlint:standard:property-naming")
     private val LOGGER = Logger.getLogger(javaClass.name)
     private val idempotencyTokenValue = "idempotencyTokenGenerator.generateToken()"
 
@@ -164,19 +165,24 @@ abstract class HTTPBindingProtocolGenerator(
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
             val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+Write")
-            val encodeSymbol = Symbol.builder()
-                .definitionFile(filename)
-                .name(symbolName)
-                .build()
-            var httpBodyMembers = shape.members()
-                .filter { it.isInHttpBody() }
-                .toList()
+            val encodeSymbol =
+                Symbol
+                    .builder()
+                    .definitionFile(filename)
+                    .name(symbolName)
+                    .build()
+            var httpBodyMembers =
+                shape
+                    .members()
+                    .filter { it.isInHttpBody() }
+                    .toList()
             if (supportsStreamingAndIsRPC(ctx.protocol)) {
                 // For RPC protocols that support event streaming, we need to send initial request
                 // with streaming member excluded during encoding the input struct.
-                httpBodyMembers = httpBodyMembers.filter {
-                    !it.targetOrSelf(ctx.model).isStreaming
-                }
+                httpBodyMembers =
+                    httpBodyMembers.filter {
+                        !it.targetOrSelf(ctx.model).isStreaming
+                    }
             }
             if (httpBodyMembers.isNotEmpty() || shouldRenderEncodableConformance) {
                 ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
@@ -200,8 +206,9 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateCodableConformanceForNestedTypes(ctx: ProtocolGenerator.GenerationContext) {
-        val nestedShapes = resolveShapesNeedingCodableConformance(ctx)
-            .filter { !it.isStreaming }
+        val nestedShapes =
+            resolveShapesNeedingCodableConformance(ctx)
+                .filter { !it.isStreaming }
         for (shape in nestedShapes) {
             renderCodableExtension(ctx, shape)
         }
@@ -211,14 +218,18 @@ abstract class HTTPBindingProtocolGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
     ) {
-        if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) { return }
+        if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) {
+            return
+        }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
         val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+ReadWrite")
-        val encodeSymbol = Symbol.builder()
-            .definitionFile(filename)
-            .name(symbolName)
-            .build()
+        val encodeSymbol =
+            Symbol
+                .builder()
+                .definitionFile(filename)
+                .name(symbolName)
+                .build()
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             writer.openBlock("extension \$N {", "}", symbol) {
                 val members = shape.members().toList()
@@ -256,61 +267,72 @@ abstract class HTTPBindingProtocolGenerator(
         val operations = getHttpBindingOperations(ctx)
         for (operation in operations) {
             val inputType = ctx.model.expectShape(operation.input.get())
-            var metadata = mapOf<ShapeMetadata, Any>(
-                Pair(ShapeMetadata.OPERATION_SHAPE, operation),
-                Pair(ShapeMetadata.SERVICE_VERSION, ctx.service.version),
-            )
+            var metadata =
+                mapOf<ShapeMetadata, Any>(
+                    Pair(ShapeMetadata.OPERATION_SHAPE, operation),
+                    Pair(ShapeMetadata.SERVICE_VERSION, ctx.service.version),
+                )
             shapesInfo.put(inputType, metadata)
         }
         return shapesInfo
     }
 
     fun resolveErrorShapes(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        val operationErrorShapes = getHttpBindingOperations(ctx)
-            .flatMap { it.errors }
-            .map { ctx.model.expectShape(it) }
-            .toSet()
+        val operationErrorShapes =
+            getHttpBindingOperations(ctx)
+                .flatMap { it.errors }
+                .map { ctx.model.expectShape(it) }
+                .toSet()
 
-        val serviceErrorShapes = ctx.service.errors.map {
-            ctx.model.expectShape(it)
-        }.toSet()
+        val serviceErrorShapes =
+            ctx.service.errors
+                .map {
+                    ctx.model.expectShape(it)
+                }.toSet()
 
-        return operationErrorShapes.filter { shape ->
-            shape.members().any { it.isInHttpBody() }
-        }.toMutableSet() + serviceErrorShapes.filter { shape ->
-            shape.members().any { it.isInHttpBody() }
-        }.toMutableSet()
+        return operationErrorShapes
+            .filter { shape ->
+                shape.members().any { it.isInHttpBody() }
+            }.toMutableSet() +
+            serviceErrorShapes
+                .filter { shape ->
+                    shape.members().any { it.isInHttpBody() }
+                }.toMutableSet()
     }
 
     private fun resolveShapesNeedingCodableConformance(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        val topLevelOutputMembers = getHttpBindingOperations(ctx).flatMap {
-            val outputShape = ctx.model.expectShape(it.output.get())
-            outputShape.members()
-        }
-            .map { ctx.model.expectShape(it.target) }
-            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-            .toSet()
+        val topLevelOutputMembers =
+            getHttpBindingOperations(ctx)
+                .flatMap {
+                    val outputShape = ctx.model.expectShape(it.output.get())
+                    outputShape.members()
+                }.map { ctx.model.expectShape(it.target) }
+                .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+                .toSet()
 
-        val topLevelErrorMembers = getHttpBindingOperations(ctx)
-            .flatMap { it.errors }
-            .flatMap { ctx.model.expectShape(it).members() }
-            .map { ctx.model.expectShape(it.target) }
-            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-            .toSet()
+        val topLevelErrorMembers =
+            getHttpBindingOperations(ctx)
+                .flatMap { it.errors }
+                .flatMap { ctx.model.expectShape(it).members() }
+                .map { ctx.model.expectShape(it.target) }
+                .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+                .toSet()
 
-        val topLevelServiceErrorMembers = ctx.service.errors
-            .flatMap { ctx.model.expectShape(it).members() }
-            .map { ctx.model.expectShape(it.target) }
-            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-            .toSet()
+        val topLevelServiceErrorMembers =
+            ctx.service.errors
+                .flatMap { ctx.model.expectShape(it).members() }
+                .map { ctx.model.expectShape(it.target) }
+                .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+                .toSet()
 
-        val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
-            val inputShape = ctx.model.expectShape(it.input.get())
-            inputShape.members()
-        }
-            .map { ctx.model.expectShape(it.target) }
-            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-            .toSet()
+        val topLevelInputMembers =
+            getHttpBindingOperations(ctx)
+                .flatMap {
+                    val inputShape = ctx.model.expectShape(it.input.get())
+                    inputShape.members()
+                }.map { ctx.model.expectShape(it.target) }
+                .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+                .toSet()
 
         val allTopLevelMembers =
             topLevelOutputMembers
@@ -322,30 +344,34 @@ abstract class HTTPBindingProtocolGenerator(
         return nestedTypes
     }
 
-    private fun walkNestedShapesRequiringSerde(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<Shape> {
+    private fun walkNestedShapesRequiringSerde(
+        ctx: ProtocolGenerator.GenerationContext,
+        shapes: Set<Shape>,
+    ): Set<Shape> {
         val resolved = mutableSetOf<Shape>()
         val walker = Walker(ctx.model)
 
         // walk all the shapes in the set and find all other
         // structs/unions (or collections thereof) in the graph from that shape
         shapes.forEach { shape ->
-            walker.iterateShapes(shape) { relationship ->
-                when (relationship.relationshipType) {
-                    RelationshipType.MEMBER_TARGET,
-                    RelationshipType.STRUCTURE_MEMBER,
-                    RelationshipType.LIST_MEMBER,
-                    RelationshipType.SET_MEMBER,
-                    RelationshipType.MAP_VALUE,
-                    RelationshipType.UNION_MEMBER,
-                    -> true
-                    else -> false
+            walker
+                .iterateShapes(shape) { relationship ->
+                    when (relationship.relationshipType) {
+                        RelationshipType.MEMBER_TARGET,
+                        RelationshipType.STRUCTURE_MEMBER,
+                        RelationshipType.LIST_MEMBER,
+                        RelationshipType.SET_MEMBER,
+                        RelationshipType.MAP_VALUE,
+                        RelationshipType.UNION_MEMBER,
+                        -> true
+                        else -> false
+                    }
+                }.forEach {
+                    when (it) {
+                        is UnionShape -> resolved.add(it)
+                        is StructureShape -> resolved.add(it)
+                    }
                 }
-            }.forEach {
-                when (it) {
-                    is UnionShape -> resolved.add(it)
-                    is StructureShape -> resolved.add(it)
-                }
-            }
         }
         return resolved
     }
@@ -354,7 +380,10 @@ abstract class HTTPBindingProtocolGenerator(
     // Returns true if the operation:
     // - has a streaming member with @httpPayload trait
     // - target is a blob shape with @requiresLength trait
-    private fun hasRequiresLengthTrait(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean {
+    private fun hasRequiresLengthTrait(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+    ): Boolean {
         if (op.input.isPresent) {
             val inputShape = ctx.model.expectShape(op.input.get())
             val streamingMember = inputShape.findStreamingMember(ctx.model)
@@ -377,22 +406,21 @@ abstract class HTTPBindingProtocolGenerator(
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
         ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
             val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
-            val clientGenerator = httpProtocolClientGeneratorFactory.createHttpProtocolClientGenerator(
-                ctx,
-                getProtocolHttpBindingResolver(ctx, defaultContentType),
-                writer,
-                serviceSymbol.name,
-                defaultContentType,
-                customizations,
-                operationMiddleware,
-            )
+            val clientGenerator =
+                httpProtocolClientGeneratorFactory.createHttpProtocolClientGenerator(
+                    ctx,
+                    getProtocolHttpBindingResolver(ctx, defaultContentType),
+                    writer,
+                    serviceSymbol.name,
+                    defaultContentType,
+                    customizations,
+                    operationMiddleware,
+                )
             clientGenerator.render()
         }
     }
 
-    override fun generateSmokeTests(ctx: ProtocolGenerator.GenerationContext) {
-        return SmokeTestGenerator(ctx).generateSmokeTests()
-    }
+    override fun generateSmokeTests(ctx: ProtocolGenerator.GenerationContext) = SmokeTestGenerator(ctx).generateSmokeTests()
 
     override fun initializeMiddleware(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
@@ -407,9 +435,20 @@ abstract class HTTPBindingProtocolGenerator(
             operationMiddleware.appendMiddleware(operation, OperationInputUrlHostMiddleware(ctx.model, ctx.symbolProvider, operation))
             operationMiddleware.appendMiddleware(operation, OperationInputHeadersMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, OperationInputQueryItemMiddleware(ctx.model, ctx.symbolProvider))
-            operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)))
+            operationMiddleware.appendMiddleware(
+                operation,
+                ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)),
+            )
             operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider))
-            operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, shouldRenderEncodableConformance, hasRequiresLengthTrait(ctx, operation), hasUnsignedPayloadTrait(operation)))
+            operationMiddleware.appendMiddleware(
+                operation,
+                ContentLengthMiddleware(
+                    ctx.model,
+                    shouldRenderEncodableConformance,
+                    hasRequiresLengthTrait(ctx, operation),
+                    hasUnsignedPayloadTrait(operation),
+                ),
+            )
             operationMiddleware.appendMiddleware(operation, DeserializeMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
@@ -452,9 +491,15 @@ abstract class HTTPBindingProtocolGenerator(
         StructDecodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
     }
 
-    protected abstract fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
+    protected abstract fun addProtocolSpecificMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    )
 
-    protected abstract fun addUserAgentMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape)
+    protected abstract fun addUserAgentMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    )
 
     /**
      * Get the operations with HTTP Bindings.
@@ -524,5 +569,7 @@ abstract class HTTPBindingProtocolGenerator(
     }
 }
 
-class DefaultServiceConfig(writer: SwiftWriter, serviceName: String) :
-    ServiceConfig(writer, serviceName, serviceName)
+class DefaultServiceConfig(
+    writer: SwiftWriter,
+    serviceName: String,
+) : ServiceConfig(writer, serviceName, serviceName)

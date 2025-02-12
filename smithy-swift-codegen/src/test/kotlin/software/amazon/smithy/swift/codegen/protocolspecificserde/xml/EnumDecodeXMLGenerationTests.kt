@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.getFileContents
 
 class EnumDecodeXMLGenerationTests {
-
     @Test
     fun `decode enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")

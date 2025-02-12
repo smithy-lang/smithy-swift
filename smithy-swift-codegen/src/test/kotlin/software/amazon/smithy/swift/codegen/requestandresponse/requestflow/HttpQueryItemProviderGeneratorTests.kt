@@ -90,7 +90,7 @@ extension SmokeTestInput {
         val context = setupTests("http-query-params-stringmap.smithy", "com.test#Example")
         Assertions.assertEquals(
             Optional.empty<String>(),
-            context.manifest.getFileString("Sources/example/models/AllQueryStringTypesInput+BodyMiddleware.swift")
+            context.manifest.getFileString("Sources/example/models/AllQueryStringTypesInput+BodyMiddleware.swift"),
         )
     }
 
@@ -229,7 +229,10 @@ extension RequiredHttpFieldsInput {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId)
         context.generator.generateSerializers(context.generationCtx)
         context.generator.generateProtocolClient(context.generationCtx)
