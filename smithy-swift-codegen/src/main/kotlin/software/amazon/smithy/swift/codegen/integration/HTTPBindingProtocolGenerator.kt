@@ -24,7 +24,6 @@ import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
-import software.amazon.smithy.model.traits.HostLabelTrait
 import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
@@ -84,8 +83,7 @@ val Shape.isEventStreaming: Boolean
  */
 fun Shape.isInHttpBody(): Boolean {
     val hasNoHttpTraitsOutsideOfPayload =
-        !this.hasTrait(HostLabelTrait::class.java) &&
-            !this.hasTrait(HttpLabelTrait::class.java) &&
+        !this.hasTrait(HttpLabelTrait::class.java) &&
             !this.hasTrait(HttpHeaderTrait::class.java) &&
             !this.hasTrait(HttpPrefixHeadersTrait::class.java) &&
             !this.hasTrait(HttpQueryTrait::class.java) &&

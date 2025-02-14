@@ -5,7 +5,6 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.traits.HostLabelTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
@@ -98,9 +97,6 @@ class RpcV2CborProtocolGenerator(
     ): List<MemberShape> =
         shape
             .members()
-            // The only place an input member can be bound to in RPCV2CBOR other than the body
-            // is the host prefix, using the host label trait.
-            .filter { !it.hasTrait<HostLabelTrait>() }
             .toList()
 
     /**
