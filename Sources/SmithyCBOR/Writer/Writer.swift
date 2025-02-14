@@ -158,29 +158,14 @@ public final class Writer: SmithyWriter {
     ) throws {
         guard let value else { return }
         var map: [String: CBORType] = [:]
-
         for (key, val) in value {
             let writer = self[key]
             try valueWritingClosure(val, writer)
 
-            // If the writer itself doesn't have a cborValue, build it from its children
-            if writer.cborValue == nil, !writer.children.isEmpty {
-                var childMap: [String: CBORType] = [:]
-                for child in writer.children {
-                    if let childCborValue = child.cborValue {
-                        childMap[child.nodeInfo] = childCborValue
-                    }
-                }
-                writer.cborValue = .map(childMap) // Construct the map for the writer
-            }
-
-            // Add to the parent map
-            if let cborValue = writer.cborValue {
+            if let cborValue = extractCBORValue(from: writer) {
                 map[key] = cborValue
             }
         }
-
-        // Assign the constructed map to the current writer
         self.cborValue = .map(map)
     }
 
@@ -191,34 +176,41 @@ public final class Writer: SmithyWriter {
         isFlattened: Bool
     ) throws {
         guard let value else { return }
-
         var array: [CBORType] = []
-
         for val in value {
             // Create a child writer for each list element
             let childWriter = Writer(nodeInfo: memberNodeInfo, parent: self)
             try memberWritingClosure(val, childWriter)
-
-            // If the child writer has a cborValue, add it to the array
-            if let cborValue = childWriter.cborValue {
+            if let cborValue = extractCBORValue(from: childWriter) {
                 array.append(cborValue)
-            } else if !childWriter.children.isEmpty {
-                // If no cborValue but has children, create a map from its children
-                var childMap: [String: CBORType] = [:]
-                for child in childWriter.children {
-                    if let childCborValue = child.cborValue {
-                        childMap[child.nodeInfo] = childCborValue
-                    }
-                }
-                array.append(.map(childMap)) // Append the constructed map
             }
         }
-
-        // Assign the array to the current writer's cborValue
         self.cborValue = .array(array)
     }
 
     public func writeNull() throws {
         self.cborValue = .null
+    }
+
+    private func extractCBORValue(from writer: Writer) -> CBORType? {
+        // If the writer has a value, return it immediately
+        if let value = writer.cborValue {
+            return value
+        }
+        // Otherwise, if it has children, recursively check each child
+        if !writer.children.isEmpty {
+            var childMap: [String: CBORType] = [:]
+            for child in writer.children {
+                if let childValue = extractCBORValue(from: child) {
+                    childMap[child.nodeInfo] = childValue
+                }
+            }
+            // Return a map if any children provided a value
+            if !childMap.isEmpty {
+                return .map(childMap)
+            }
+        }
+        // No value found at any level
+        return nil
     }
 }
