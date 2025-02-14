@@ -1,7 +1,9 @@
 package software.amazon.smithy.swift.codegen.protocols.rpcv2cbor
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.UnitTypeTrait
@@ -88,6 +90,14 @@ class RpcV2CborProtocolGenerator(
             operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, true, false, false))
         }
     }
+
+    override fun httpBodyMembers(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+    ): List<MemberShape> =
+        shape
+            .members()
+            .toList()
 
     /**
      * @return whether the operation input does _not_ target the unit shape ([UnitTypeTrait.UNIT])

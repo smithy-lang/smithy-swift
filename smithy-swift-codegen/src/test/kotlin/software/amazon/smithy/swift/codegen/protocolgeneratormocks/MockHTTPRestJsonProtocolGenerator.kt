@@ -6,7 +6,9 @@ package software.amazon.smithy.swift.codegen.protocolgeneratormocks
  */
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
@@ -15,6 +17,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErro
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolClientGeneratorFactory
 
 class MockRestJsonHTTPProtocolCustomizations : DefaultHTTPProtocolCustomizations()
@@ -53,4 +56,13 @@ class MockHTTPRestJsonProtocolGenerator : HTTPBindingProtocolGenerator(MockRestJ
             getProtocolHttpBindingResolver(ctx, defaultContentType),
         ).generateProtocolTests()
     }
+
+    override fun httpBodyMembers(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+    ): List<MemberShape> =
+        shape
+            .members()
+            .filter { it.isInHttpBody() }
+            .toList()
 }

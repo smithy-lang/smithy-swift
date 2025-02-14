@@ -7,7 +7,9 @@ package software.amazon.smithy.swift.codegen.protocolgeneratormocks
 
 import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
 import software.amazon.smithy.model.pattern.UriPattern
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
@@ -77,4 +79,12 @@ class MockHTTPEC2QueryProtocolGenerator : HTTPBindingProtocolGenerator(MockEC2Qu
             getProtocolHttpBindingResolver(ctx, defaultContentType),
         ).generateProtocolTests()
     }
+
+    override fun httpBodyMembers(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+    ): List<MemberShape> =
+        shape
+            .members()
+            .toList()
 }
