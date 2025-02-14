@@ -11,7 +11,6 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.traits.HostLabelTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
@@ -22,7 +21,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequ
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolClientGeneratorFactory
 
 class MockEC2QueryHTTPProtocolCustomizations : DefaultHTTPProtocolCustomizations()
@@ -88,8 +86,5 @@ class MockHTTPEC2QueryProtocolGenerator : HTTPBindingProtocolGenerator(MockEC2Qu
     ): List<MemberShape> =
         shape
             .members()
-            // The only place an input member can be bound to in EC2Query other than the body
-            // is the host prefix, using the host label trait.
-            .filter { !it.hasTrait<HostLabelTrait>() }
             .toList()
 }
