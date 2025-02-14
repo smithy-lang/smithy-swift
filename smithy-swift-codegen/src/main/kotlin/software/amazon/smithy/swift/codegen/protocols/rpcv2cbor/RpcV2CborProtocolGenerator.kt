@@ -1,8 +1,11 @@
 package software.amazon.smithy.swift.codegen.protocols.rpcv2cbor
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.traits.HostLabelTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
@@ -88,6 +91,17 @@ class RpcV2CborProtocolGenerator(
             operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, true, false, false))
         }
     }
+
+    override fun httpBodyMembers(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+    ): List<MemberShape> =
+        shape
+            .members()
+            // The only place an input member can be bound to in RPCV2CBOR other than the body
+            // is the host prefix, using the host label trait.
+            .filter { !it.hasTrait<HostLabelTrait>() }
+            .toList()
 
     /**
      * @return whether the operation input does _not_ target the unit shape ([UnitTypeTrait.UNIT])
