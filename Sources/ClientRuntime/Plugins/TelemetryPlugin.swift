@@ -5,7 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public class TelemetryPlugin: Plugin {
+public class TelemetryPlugin<Config: DefaultClientConfiguration>: Plugin {
+
     private let telemetryProvider: TelemetryProvider
 
     public init(telemetryProvider: TelemetryProvider) {
@@ -26,10 +27,8 @@ public class TelemetryPlugin: Plugin {
         )
     }
 
-    public func configureClient(clientConfiguration: ClientConfiguration) {
-        if var config = clientConfiguration as? DefaultClientConfiguration {
-            config.telemetryProvider = self.telemetryProvider
-        }
+    public func configureClient(clientConfiguration: inout Config) {
+        clientConfiguration.telemetryProvider = self.telemetryProvider
     }
 }
 

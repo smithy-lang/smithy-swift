@@ -8,10 +8,8 @@
 import protocol SmithyHTTPAPI.HTTPClient
 import struct SmithyRetries.DefaultRetryStrategy
 
-public class DefaultHttpClientPlugin: Plugin {
-
+public class DefaultHttpClientPlugin<Config: DefaultHttpClientConfiguration>: Plugin {
     var httpClientConfiguration: HttpClientConfiguration
-
     var httpClient: HTTPClient
 
     public init(httpClient: HTTPClient, httpClientConfiguration: HttpClientConfiguration) {
@@ -27,10 +25,8 @@ public class DefaultHttpClientPlugin: Plugin {
         )
     }
 
-    public func configureClient(clientConfiguration: ClientConfiguration) {
-        if var config = clientConfiguration as? DefaultHttpClientConfiguration {
-            config.httpClientConfiguration = self.httpClientConfiguration
-            config.httpClientEngine = self.httpClient
-        }
+    public func configureClient(clientConfiguration: inout Config) {
+        clientConfiguration.httpClientConfiguration = self.httpClientConfiguration
+        clientConfiguration.httpClientEngine = self.httpClient
     }
 }

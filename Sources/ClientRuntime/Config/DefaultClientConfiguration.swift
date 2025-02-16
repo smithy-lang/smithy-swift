@@ -34,7 +34,7 @@ public protocol DefaultClientConfiguration: ClientConfiguration {
     /// Adds an `InterceptorProvider` that will be used to provide interceptors for all operations.
     ///
     /// - Parameter provider: The `InterceptorProvider` to add.
-    func addInterceptorProvider(_ provider: InterceptorProvider)
+    mutating func addInterceptorProvider(_ provider: InterceptorProvider)
 
     /// TODO(plugins): Add Checksum, etc.
 }
