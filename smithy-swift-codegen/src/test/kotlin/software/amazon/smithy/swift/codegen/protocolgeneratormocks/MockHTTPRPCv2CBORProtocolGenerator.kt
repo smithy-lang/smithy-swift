@@ -5,7 +5,9 @@ package software.amazon.smithy.swift.codegen.protocolgeneratormocks
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
@@ -53,4 +55,12 @@ class MockHTTPRPCv2CBORProtocolGenerator : HTTPBindingProtocolGenerator(MockRPCv
             getProtocolHttpBindingResolver(ctx, defaultContentType),
         ).generateProtocolTests()
     }
+
+    override fun httpBodyMembers(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+    ): List<MemberShape> =
+        shape
+            .members()
+            .toList()
 }
