@@ -68,7 +68,6 @@ import software.amazon.smithy.swift.codegen.model.hasEventStreamMember
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isInputEventStream
 import software.amazon.smithy.swift.codegen.model.isOutputEventStream
-import software.amazon.smithy.swift.codegen.model.targetOrSelf
 import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
@@ -76,14 +75,13 @@ import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
 
-private val Shape.isStreaming: Boolean
+val Shape.isEventStreaming: Boolean
     get() = hasTrait<StreamingTrait>() && isUnionShape
 
 /**
  * Checks to see if shape is in the body of the http request
  */
 fun Shape.isInHttpBody(): Boolean {
-    // TODO fix the edge case: a shape which is an operational input (i.e. has members bound to HTTP semantics) could be re-used elsewhere not as an operation input which means everything is in the body
     val hasNoHttpTraitsOutsideOfPayload =
         !this.hasTrait(HttpLabelTrait::class.java) &&
             !this.hasTrait(HttpHeaderTrait::class.java) &&
@@ -171,19 +169,7 @@ abstract class HTTPBindingProtocolGenerator(
                     .definitionFile(filename)
                     .name(symbolName)
                     .build()
-            var httpBodyMembers =
-                shape
-                    .members()
-                    .filter { it.isInHttpBody() }
-                    .toList()
-            if (supportsStreamingAndIsRPC(ctx.protocol)) {
-                // For RPC protocols that support event streaming, we need to send initial request
-                // with streaming member excluded during encoding the input struct.
-                httpBodyMembers =
-                    httpBodyMembers.filter {
-                        !it.targetOrSelf(ctx.model).isStreaming
-                    }
-            }
+            val httpBodyMembers = httpBodyMembers(ctx, shape)
             if (httpBodyMembers.isNotEmpty() || shouldRenderEncodableConformance) {
                 ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                     writer.openBlock(
@@ -208,7 +194,7 @@ abstract class HTTPBindingProtocolGenerator(
     override fun generateCodableConformanceForNestedTypes(ctx: ProtocolGenerator.GenerationContext) {
         val nestedShapes =
             resolveShapesNeedingCodableConformance(ctx)
-                .filter { !it.isStreaming }
+                .filter { !it.isEventStreaming }
         for (shape in nestedShapes) {
             renderCodableExtension(ctx, shape)
         }
@@ -567,6 +553,11 @@ abstract class HTTPBindingProtocolGenerator(
             messageUnmarshallableGenerator.render(streamingMember)
         }
     }
+
+    abstract fun httpBodyMembers(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+    ): List<MemberShape>
 }
 
 class DefaultServiceConfig(
