@@ -11,7 +11,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class SignerMiddleware(
     val model: Model,
-    val symbolProvider: SymbolProvider
+    val symbolProvider: SymbolProvider,
 ) : MiddlewareRenderable {
     override val name = "SignerMiddleware"
 
@@ -19,7 +19,7 @@ class SignerMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         op: OperationShape,
-        operationStackName: String
+        operationStackName: String,
     ) {
         super.renderSpecific(ctx, writer, op, operationStackName, "applySigner")
     }
@@ -27,7 +27,7 @@ class SignerMiddleware(
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         writer.write("\$N<\$N>()", ClientRuntimeTypes.Middleware.SignerMiddleware, output)

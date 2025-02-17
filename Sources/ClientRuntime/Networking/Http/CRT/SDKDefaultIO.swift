@@ -16,15 +16,11 @@ public final class SDKDefaultIO: @unchecked Sendable {
     /// Provide singleton access since we want to share and re-use the instance properties
     public static let shared = SDKDefaultIO()
 
-    /// The setter for changing log level of SDKDefaultIO logger.
-    /// If any log level other than the default log level of `.none` is desired,
-    /// this setter needs to be called as the first thing in the program.
+    /// The public setter for setting log level of CRT logger.
+    ///
+    /// If any log level other than the default log level of `.none` is desired, this setter **MUST** be called before accessing the `SDKDefaultIO.shared` static field.
     public static func setLogLevel(level: LogLevel) {
-        do {
-            try Logger.initialize(target: .standardOutput, level: level)
-        } catch {
-            failOnLogger()
-        }
+        SDKDefaultIO.setupLogger(level: level)
     }
 
     private init() {

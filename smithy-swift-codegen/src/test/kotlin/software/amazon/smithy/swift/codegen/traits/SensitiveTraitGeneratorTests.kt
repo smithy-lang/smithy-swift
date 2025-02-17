@@ -16,8 +16,10 @@ class SensitiveTraitGeneratorTests {
     @Test
     fun `SensitiveTraitInRequestInput+CustomDebugStringConvertible`() {
         val manifest = setupTest()
-        var extensionWithSensitiveTrait = manifest
-            .getFileString("Sources/example/models/SensitiveTraitInRequestInput+CustomDebugStringConvertible.swift").get()
+        var extensionWithSensitiveTrait =
+            manifest
+                .getFileString("Sources/example/models/SensitiveTraitInRequestInput+CustomDebugStringConvertible.swift")
+                .get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension SensitiveTraitInRequestInput: Swift.CustomDebugStringConvertible {
@@ -31,8 +33,10 @@ extension SensitiveTraitInRequestInput: Swift.CustomDebugStringConvertible {
     @Test
     fun `SensitiveTraitInRequestOutput+CustomDebugStringConvertible`() {
         val manifest = setupTest()
-        var extensionWithSensitiveTrait = manifest
-            .getFileString("Sources/example/models/SensitiveTraitInRequestOutput+CustomDebugStringConvertible.swift").get()
+        var extensionWithSensitiveTrait =
+            manifest
+                .getFileString("Sources/example/models/SensitiveTraitInRequestOutput+CustomDebugStringConvertible.swift")
+                .get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension SensitiveTraitInRequestOutput: Swift.CustomDebugStringConvertible {
@@ -47,8 +51,10 @@ extension SensitiveTraitInRequestOutput: Swift.CustomDebugStringConvertible {
     @Test
     fun `AllSensitiveMemberStruct+CustomDebugStringConvertible`() {
         val manifest = setupTest()
-        var extensionWithSensitiveTrait = manifest
-            .getFileString("Sources/example/models/SensitiveTraitTestRequestOutput+CustomDebugStringConvertible.swift").get()
+        var extensionWithSensitiveTrait =
+            manifest
+                .getFileString("Sources/example/models/SensitiveTraitTestRequestOutput+CustomDebugStringConvertible.swift")
+                .get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension SensitiveTraitTestRequestOutput: Swift.CustomDebugStringConvertible {

@@ -29,14 +29,17 @@ abstract class MemberShapeEncodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
 ) {
-
     abstract fun render()
 
     private val writingClosureUtils = WritingClosureUtils(ctx, writer)
 
     private val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol)
 
-    fun writeMember(memberShape: MemberShape, unionMember: Boolean, errorMember: Boolean) {
+    fun writeMember(
+        memberShape: MemberShape,
+        unionMember: Boolean,
+        errorMember: Boolean,
+    ) {
         val prefix1 = "value.".takeIf { !unionMember } ?: ""
         val prefix2 = "properties.".takeIf { errorMember } ?: ""
         val prefix = prefix1 + prefix2
@@ -61,7 +64,10 @@ abstract class MemberShapeEncodeGenerator(
         }
     }
 
-    private fun writeStructureOrUnionMember(memberShape: MemberShape, prefix: String) {
+    private fun writeStructureOrUnionMember(
+        memberShape: MemberShape,
+        prefix: String,
+    ) {
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val propertyKey = nodeInfoUtils.nodeInfo(memberShape)
         val writingClosure = writingClosureUtils.writingClosure(memberShape)
@@ -70,11 +76,15 @@ abstract class MemberShapeEncodeGenerator(
             propertyKey,
             prefix,
             memberName,
-            writingClosure
+            writingClosure,
         )
     }
 
-    private fun writeTimestampMember(memberShape: MemberShape, timestampShape: TimestampShape, prefix: String) {
+    private fun writeTimestampMember(
+        memberShape: MemberShape,
+        timestampShape: TimestampShape,
+        prefix: String,
+    ) {
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val timestampKey = nodeInfoUtils.nodeInfo(memberShape)
         val memberTimestampFormatTrait = memberShape.getTrait<TimestampFormatTrait>()
@@ -89,18 +99,26 @@ abstract class MemberShapeEncodeGenerator(
         )
     }
 
-    private fun writePropertyMember(memberShape: MemberShape, prefix: String) {
+    private fun writePropertyMember(
+        memberShape: MemberShape,
+        prefix: String,
+    ) {
         val propertyNodeInfo = nodeInfoUtils.nodeInfo(memberShape)
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         writer.write(
             "try writer[\$L].write(\$L\$L)",
             propertyNodeInfo,
             prefix,
-            memberName
+            memberName,
         )
     }
 
-    private fun writeListMember(member: MemberShape, listShape: ListShape, prefix: String, isSparse: Boolean) {
+    private fun writeListMember(
+        member: MemberShape,
+        listShape: ListShape,
+        prefix: String,
+        isSparse: Boolean,
+    ) {
         val memberName = ctx.symbolProvider.toMemberName(member)
         val listMemberWriter = writingClosureUtils.writingClosure(listShape.member, isSparse)
         val listKey = nodeInfoUtils.nodeInfo(member)
@@ -119,7 +137,7 @@ abstract class MemberShapeEncodeGenerator(
             memberName,
             listMemberWriter,
             memberNodeInfo,
-            isFlattened
+            isFlattened,
         )
         if (ctx.service.awsProtocol == AWSProtocol.EC2_QUERY) {
             writer.dedent()
@@ -127,7 +145,12 @@ abstract class MemberShapeEncodeGenerator(
         }
     }
 
-    private fun writeMapMember(member: MemberShape, mapShape: MapShape, prefix: String, isSparse: Boolean) {
+    private fun writeMapMember(
+        member: MemberShape,
+        mapShape: MapShape,
+        prefix: String,
+        isSparse: Boolean,
+    ) {
         val memberName = ctx.symbolProvider.toMemberName(member)
         val mapKey = nodeInfoUtils.nodeInfo(member)
         val keyNodeInfo = nodeInfoUtils.nodeInfo(mapShape.key)
@@ -142,15 +165,25 @@ abstract class MemberShapeEncodeGenerator(
             valueWriter,
             keyNodeInfo,
             valueNodeInfo,
-            isFlattened
+            isFlattened,
         )
     }
 }
 
 object TimestampUtils {
+    fun timestampFormat(
+        ctx: ProtocolGenerator.GenerationContext,
+        memberTimestampFormatTrait: TimestampFormatTrait?,
+        timestampShape: TimestampShape,
+    ): String {
+        // CBOR wire protocol ignores TimestampFormatTrait
+        if (ctx.service.requestWireProtocol == WireProtocol.CBOR) {
+            return ".epochSeconds"
+        }
 
-    fun timestampFormat(ctx: ProtocolGenerator.GenerationContext, memberTimestampFormatTrait: TimestampFormatTrait?, timestampShape: TimestampShape): String {
-        val timestampFormat = memberTimestampFormatTrait?.value ?: timestampShape.getTrait<TimestampFormatTrait>()?.value ?: defaultTimestampFormat(ctx)
+        // Resolve TimestampFormatTrait normally
+        val timestampFormat =
+            memberTimestampFormatTrait?.value ?: timestampShape.getTrait<TimestampFormatTrait>()?.value ?: defaultTimestampFormat(ctx)
         return when (timestampFormat) {
             TimestampFormatTrait.EPOCH_SECONDS -> ".epochSeconds"
             TimestampFormatTrait.HTTP_DATE -> ".httpDate"
@@ -158,10 +191,9 @@ object TimestampUtils {
         }
     }
 
-    private fun defaultTimestampFormat(ctx: ProtocolGenerator.GenerationContext): String {
-        return when (ctx.service.requestWireProtocol) {
+    private fun defaultTimestampFormat(ctx: ProtocolGenerator.GenerationContext): String =
+        when (ctx.service.requestWireProtocol) {
             WireProtocol.XML, WireProtocol.FORM_URL -> TimestampFormatTrait.DATE_TIME
-            WireProtocol.JSON -> TimestampFormatTrait.EPOCH_SECONDS
+            WireProtocol.JSON, WireProtocol.CBOR -> TimestampFormatTrait.EPOCH_SECONDS
         }
-    }
 }

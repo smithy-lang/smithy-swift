@@ -5,27 +5,33 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 
 open class OperationMiddlewareGenerator(
-    mutableHashMap: MutableMap<OperationShape, MutableList<MiddlewareRenderable>> = mutableMapOf()
+    mutableHashMap: MutableMap<OperationShape, MutableList<MiddlewareRenderable>> = mutableMapOf(),
 ) : OperationMiddleware {
-
     private var middlewareMap: MutableMap<OperationShape, MutableList<MiddlewareRenderable>> = mutableHashMap
 
-    override fun appendMiddleware(operation: OperationShape, renderableMiddleware: MiddlewareRenderable) {
+    override fun appendMiddleware(
+        operation: OperationShape,
+        renderableMiddleware: MiddlewareRenderable,
+    ) {
         middlewareMap.getOrPut(operation) { mutableListOf() }.add(renderableMiddleware)
     }
 
-    override fun prependMiddleware(operation: OperationShape, renderableMiddleware: MiddlewareRenderable) {
+    override fun prependMiddleware(
+        operation: OperationShape,
+        renderableMiddleware: MiddlewareRenderable,
+    ) {
         middlewareMap.getOrPut(operation) { mutableListOf() }.add(0, renderableMiddleware)
     }
 
-    override fun removeMiddleware(operation: OperationShape, middlewareName: String) {
+    override fun removeMiddleware(
+        operation: OperationShape,
+        middlewareName: String,
+    ) {
         val opMiddleware = middlewareMap.getOrPut(operation) { mutableListOf() }
         opMiddleware.removeIf { it.name == middlewareName }
     }
 
-    override fun middlewares(operation: OperationShape): List<MiddlewareRenderable> {
-        return middlewareMap.getOrPut(operation) { mutableListOf() }
-    }
+    override fun middlewares(operation: OperationShape): List<MiddlewareRenderable> = middlewareMap.getOrPut(operation) { mutableListOf() }
 
     override fun clone(): OperationMiddleware {
         val copy: MutableMap<OperationShape, MutableList<MiddlewareRenderable>> = mutableMapOf()

@@ -12,6 +12,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.swift.codegen.SyntheticClone
 import java.util.logging.Logger
@@ -20,10 +21,10 @@ import java.util.logging.Logger
  * Ensures that each operation has a unique input and output shape.
  */
 class AddOperationShapes {
-
     companion object {
         private val LOGGER = Logger.getLogger(javaClass.name)
         private const val SYNTHETIC_NAMESPACE = "smithy.swift.synthetic"
+
         /**
          * Processes the given model and returns a new model ensuring service operation has an unique input and output
          * synthesized shape.
@@ -32,30 +33,36 @@ class AddOperationShapes {
          * @param serviceShapeId the service shape
          * @return a model with unique operation input and output shapes
          */
-        fun execute(model: Model, serviceShape: ServiceShape, moduleName: String): Model {
+        fun execute(
+            model: Model,
+            serviceShape: ServiceShape,
+            moduleName: String,
+        ): Model {
             val topDownIndex: TopDownIndex = TopDownIndex.of(model)
             val operations = topDownIndex.getContainedOperations(serviceShape)
             val modelBuilder: Model.Builder = model.toBuilder()
             for (operation in operations) {
                 val operationId = operation.id
                 LOGGER.info("building unique input/output shapes for $operationId")
-                val inputShape = operation.input
-                    .map { shapeId ->
-                        cloneOperationShape(
-                            operationId, (model.expectShape(shapeId) as StructureShape),
-                            "Input"
-                        )
-                    }
-                    .orElseGet { emptyOperationStructure(operationId, "Input", moduleName) }
+                val inputShape =
+                    operation.input
+                        .map { shapeId ->
+                            cloneOperationShape(
+                                operationId,
+                                (model.expectShape(shapeId) as StructureShape),
+                                "Input",
+                            )
+                        }.orElseGet { emptyOperationStructure(operationId, "Input", moduleName) }
 
-                val outputShape = operation.output
-                    .map { shapeId ->
-                        cloneOperationShape(
-                            operationId, (model.expectShape(shapeId) as StructureShape),
-                            "Output"
-                        )
-                    }
-                    .orElseGet { emptyOperationStructure(operationId, "Output", moduleName) }
+                val outputShape =
+                    operation.output
+                        .map { shapeId ->
+                            cloneOperationShape(
+                                operationId,
+                                (model.expectShape(shapeId) as StructureShape),
+                                "Output",
+                            )
+                        }.orElseGet { emptyOperationStructure(operationId, "Output", moduleName) }
 
                 // Add new input/output to model
                 modelBuilder.addShape(inputShape)
@@ -63,49 +70,58 @@ class AddOperationShapes {
 
                 // Update operation model with the input/output shape ids
                 modelBuilder.addShape(
-                    operation.toBuilder()
+                    operation
+                        .toBuilder()
                         .input(inputShape.toShapeId())
                         .output(outputShape.toShapeId())
-                        .build()
+                        .build(),
                 )
             }
             return modelBuilder.build()
         }
 
-        private fun emptyOperationStructure(opShapeId: ShapeId, suffix: String, moduleName: String): StructureShape {
-            return StructureShape.builder()
+        private fun emptyOperationStructure(
+            opShapeId: ShapeId,
+            suffix: String,
+            moduleName: String,
+        ): StructureShape =
+            StructureShape
+                .builder()
                 .id(
                     ShapeId.fromParts(
                         moduleName,
-                        opShapeId.name + suffix
-                    )
-                )
+                        opShapeId.name + suffix,
+                    ),
+                ).addTrait(SyntheticClone.builder().archetype(UnitTypeTrait.UNIT).build())
                 .build()
-        }
 
         private fun cloneOperationShape(
             operationShapeId: ShapeId,
             structureShape: StructureShape,
-            suffix: String
-        ): StructureShape {
-            return cloneShape(structureShape, operationShapeId.name + suffix) as StructureShape
-        }
+            suffix: String,
+        ): StructureShape = cloneShape(structureShape, operationShapeId.name + suffix) as StructureShape
 
-        private fun cloneShape(shape: Shape, cloneShapeName: String): Shape {
-
+        private fun cloneShape(
+            shape: Shape,
+            cloneShapeName: String,
+        ): Shape {
             val cloneShapeId = ShapeId.fromParts(SYNTHETIC_NAMESPACE, cloneShapeName)
 
             var builder: AbstractShapeBuilder<*, *> = Shape.shapeToBuilder(shape)
-            builder = builder.id(cloneShapeId).addTrait(
-                SyntheticClone.builder()
-                    .archetype(shape.id).build()
-            )
+            builder =
+                builder.id(cloneShapeId).addTrait(
+                    SyntheticClone
+                        .builder()
+                        .archetype(shape.id)
+                        .build(),
+                )
 
             shape.members().forEach { memberShape ->
                 builder.addMember(
-                    memberShape.toBuilder()
+                    memberShape
+                        .toBuilder()
                         .id(cloneShapeId.withMember(memberShape.memberName))
-                        .build()
+                        .build(),
                 )
             }
 

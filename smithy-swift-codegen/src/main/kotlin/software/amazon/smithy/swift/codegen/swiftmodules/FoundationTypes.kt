@@ -17,7 +17,10 @@ object FoundationTypes {
     val ProcessInfo = builtInSymbol("ProcessInfo", SwiftDeclaration.CLASS)
 }
 
-private fun builtInSymbol(symbol: String, declaration: SwiftDeclaration? = null) = buildSymbol {
+private fun builtInSymbol(
+    symbol: String,
+    declaration: SwiftDeclaration? = null,
+) = buildSymbol {
     name = symbol
     declaration?.let { this.setProperty("decl", it.keyword) }
     namespace = "Foundation"
@@ -27,7 +30,10 @@ private fun builtInSymbol(symbol: String, declaration: SwiftDeclaration? = null)
 // are rendered without any namespace.
 //
 // Note that URL, URLComponents, and URLQueryItem are part of Foundation on both platforms.
-private fun builtInNetworkingSymbol(symbol: String, declaration: SwiftDeclaration? = null) = buildSymbol {
+private fun builtInNetworkingSymbol(
+    symbol: String,
+    declaration: SwiftDeclaration? = null,
+) = buildSymbol {
     name = symbol
     declaration?.let { this.setProperty("decl", it.keyword) }
 }

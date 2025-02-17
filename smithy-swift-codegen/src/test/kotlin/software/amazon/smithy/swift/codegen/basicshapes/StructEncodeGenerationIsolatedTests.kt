@@ -46,8 +46,7 @@ public struct EnumInputInput: Swift.Sendable {
     public init(
         enumHeader: ExampleClientTypes.MyEnum? = nil,
         nestedWithEnum: ExampleClientTypes.NestedEnum? = nil
-    )
-    {
+    ) {
         self.enumHeader = enumHeader
         self.nestedWithEnum = nestedWithEnum
     }
@@ -55,6 +54,7 @@ public struct EnumInputInput: Swift.Sendable {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `it can handle nested string lists`() {
         val context = setupTests("Isolated/NestedStringList.smithy", "com.test#Example")
@@ -76,7 +76,10 @@ extension JsonListsInput {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
         val context = TestContext.initContextFrom(smithyFile, serviceShapeId)
         context.generator.generateProtocolClient(context.generationCtx)
         context.generator.generateSerializers(context.generationCtx)

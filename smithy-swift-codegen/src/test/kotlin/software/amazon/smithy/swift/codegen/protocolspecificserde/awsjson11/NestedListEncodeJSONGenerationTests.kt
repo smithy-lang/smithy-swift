@@ -14,7 +14,6 @@ import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJs
 import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class NestedListEncodeJSONGenerationTests {
-
     @Test
     fun `list of maps of lists`() {
         val context = setupTests("Isolated/json11/lists-of-maps-of-lists.smithy", "aws.protocoltests.json#JsonProtocol")
@@ -26,8 +25,7 @@ public struct ListOfMapsOperationInput: Swift.Sendable {
 
     public init(
         targetMaps: [[Swift.String: [Swift.String]]]? = nil
-    )
-    {
+    ) {
         self.targetMaps = targetMaps
     }
 }
@@ -51,10 +49,15 @@ extension ListOfMapsOperationInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPAWSJson11ProtocolGenerator()) { model ->
-            model.defaultSettings(serviceShapeId, "Example", "2014-11-06", "aws json 11")
-        }
+
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
+        val context =
+            TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPAWSJson11ProtocolGenerator()) { model ->
+                model.defaultSettings(serviceShapeId, "Example", "2014-11-06", "aws json 11")
+            }
         context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)
         context.generator.generateSerializers(context.generationCtx)
         context.generationCtx.delegator.flushWriters()

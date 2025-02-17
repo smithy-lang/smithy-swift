@@ -20,7 +20,6 @@ import software.amazon.smithy.swift.codegen.buildMockPluginContext
 class SwiftDelegatorTests {
     @Test
     fun `it renders files into namespace`() {
-
         val model = javaClass.classLoader.getResource("simple-service-with-operation.smithy").asSmithy()
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
@@ -47,7 +46,7 @@ class SwiftDelegatorTests {
         delegator.flushWriters()
         assertEquals(
             settings.copyrightNotice + "\n\nHello!\n",
-            manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
+            manifest.getFileString("Sources/example/models/GetFooInput.swift").get(),
         )
     }
 
@@ -66,7 +65,7 @@ class SwiftDelegatorTests {
         delegator.flushWriters()
         assertEquals(
             settings.copyrightNotice + "\n\nHello!\n\nGoodbye!\n",
-            manifest.getFileString("Sources/example/models/GetFooInput.swift").get()
+            manifest.getFileString("Sources/example/models/GetFooInput.swift").get(),
         )
     }
 }

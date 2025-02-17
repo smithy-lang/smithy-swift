@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestW
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.isError
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyCBORTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyFormURLTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyJSONTypes
 
@@ -27,19 +28,19 @@ class StructEncodeGenerator(
     private val shapeContainingMembers: Shape,
     private val members: List<MemberShape>,
     private val metadata: Map<ShapeMetadata, Any>,
-    private val writer: SwiftWriter
+    private val writer: SwiftWriter,
 ) : MemberShapeEncodeGenerator(ctx, writer) {
-
     override fun render() {
         val structSymbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
-            "static func write(value: \$N?, to writer: \$N) throws {", "}",
+            "static func write(value: \$N?, to writer: \$N) throws {",
+            "}",
             structSymbol,
             ctx.service.writerSymbol,
         ) {
             writer.write(
                 "guard \$L else { return }",
-                "value != nil".takeIf { members.isEmpty() } ?: "let value"
+                "value != nil".takeIf { members.isEmpty() } ?: "let value",
             )
             if (members.isEmpty()) {
                 writer.write("_ = writer[\"\"]  // create an empty structure")
@@ -66,15 +67,19 @@ class StructEncodeGenerator(
 }
 
 val ServiceShape.writerSymbol: Symbol
-    get() = when (requestWireProtocol) {
-        WireProtocol.XML -> SmithyXMLTypes.Writer
-        WireProtocol.JSON -> SmithyJSONTypes.Writer
-        WireProtocol.FORM_URL -> SmithyFormURLTypes.Writer
-    }
+    get() =
+        when (requestWireProtocol) {
+            WireProtocol.XML -> SmithyXMLTypes.Writer
+            WireProtocol.JSON -> SmithyJSONTypes.Writer
+            WireProtocol.CBOR -> SmithyCBORTypes.Writer
+            WireProtocol.FORM_URL -> SmithyFormURLTypes.Writer
+        }
 
 val ServiceShape.readerSymbol: Symbol
-    get() = when (responseWireProtocol) {
-        WireProtocol.XML -> SmithyXMLTypes.Reader
-        WireProtocol.JSON -> SmithyJSONTypes.Reader
-        WireProtocol.FORM_URL -> throw Exception("Reading from Form URL data not supported")
-    }
+    get() =
+        when (responseWireProtocol) {
+            WireProtocol.XML -> SmithyXMLTypes.Reader
+            WireProtocol.JSON -> SmithyJSONTypes.Reader
+            WireProtocol.CBOR -> SmithyCBORTypes.Reader
+            WireProtocol.FORM_URL -> throw Exception("Reading from Form URL data not supported")
+        }

@@ -67,7 +67,8 @@ extension SimpleScalarPropertiesOutput {
     @Test
     fun `nestednested wrapped list deserialization`() {
         val context = setupTests("Isolated/Restxml/xml-lists-nestednested-wrapped.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlNestedNestedWrappedListOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "Sources/RestXml/models/XmlNestedNestedWrappedListOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlNestedNestedWrappedListOutput {
 

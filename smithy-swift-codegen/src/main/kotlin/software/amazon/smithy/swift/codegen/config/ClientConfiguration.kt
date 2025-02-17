@@ -31,12 +31,13 @@ interface ClientConfiguration {
         fun runtimeSymbol(
             name: String,
             dependency: Dependency?,
-        ): Symbol = buildSymbol {
-            this.name = name
-            dependency?.also {
-                this.namespace = it.target
-                dependency(dependency)
+        ): Symbol =
+            buildSymbol {
+                this.name = name
+                dependency?.also {
+                    this.namespace = it.target
+                    dependency(dependency)
+                }
             }
-        }
     }
 }
