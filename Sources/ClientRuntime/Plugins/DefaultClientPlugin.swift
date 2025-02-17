@@ -7,23 +7,17 @@
 
 import struct SmithyRetries.DefaultRetryStrategy
 
-public class DefaultClientPlugin: Plugin {
-    public init() {}
-    public func configureClient(clientConfiguration: ClientConfiguration) {
-        if var config = clientConfiguration as? DefaultClientConfiguration {
-            config.retryStrategyOptions =
-                DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
-                    .defaultRetryStrategyOptions
-        }
+public class DefaultClientPlugin<Config: DefaultClientConfiguration & DefaultHttpClientConfiguration>: Plugin {
+    typealias DefaultRuntimeConfig = DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
 
-        if var config = clientConfiguration as? DefaultHttpClientConfiguration {
-            let httpClientConfiguration =
-                DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
-                    .defaultHttpClientConfiguration
-            config.httpClientConfiguration = httpClientConfiguration
-            config.httpClientEngine =
-                DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
-                    .makeClient(httpClientConfiguration: httpClientConfiguration)
-        }
+    public init() {}
+
+    public func configureClient(clientConfiguration: inout Config) async throws {
+        clientConfiguration.retryStrategyOptions = DefaultRuntimeConfig.defaultRetryStrategyOptions
+        let httpClientConfiguration = DefaultRuntimeConfig .defaultHttpClientConfiguration
+        clientConfiguration.httpClientConfiguration = httpClientConfiguration
+        clientConfiguration.httpClientEngine = DefaultRuntimeConfig.makeClient(
+            httpClientConfiguration: httpClientConfiguration
+        )
     }
 }
