@@ -100,6 +100,7 @@ let package = Package(
                 .product(name: "OpenTelemetryApi", package: "opentelemetry-swift"),
                 .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift"),
                 .product(name: "OpenTelemetryProtocolExporterHTTP", package: "opentelemetry-swift"),
+                .product(name: "OpenTelemetryConcurrency", package: "opentelemetry-swift"),
             ],
             resources: [
                 .copy("PrivacyInfo.xcprivacy")
