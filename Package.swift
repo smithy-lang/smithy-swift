@@ -97,10 +97,22 @@ let package = Package(
                 "SmithyCBOR",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 .product(name: "InMemoryExporter", package: "opentelemetry-swift"),
-                .product(name: "OpenTelemetryApi", package: "opentelemetry-swift"),
-                .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift"),
-                .product(name: "OpenTelemetryProtocolExporterHTTP", package: "opentelemetry-swift"),
-                .product(name: "OpenTelemetryConcurrency", package: "opentelemetry-swift"),
+                // Only include these on macOS, iOS, tvOS, and watchOS (visionOS and Linux are excluded)
+                .product(
+                    name: "OpenTelemetryApi",
+                    package: "opentelemetry-swift",
+                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS])
+                ),
+                .product(
+                    name: "OpenTelemetrySdk",
+                    package: "opentelemetry-swift",
+                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS])
+                ),
+                .product(
+                    name: "OpenTelemetryProtocolExporterHTTP",
+                    package: "opentelemetry-swift",
+                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS])
+                ),
             ],
             resources: [
                 .copy("PrivacyInfo.xcprivacy")
