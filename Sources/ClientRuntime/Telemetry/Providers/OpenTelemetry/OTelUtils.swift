@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if !(os(Linux) || os(visionOS))
 import OpenTelemetryApi
 
 import Smithy
@@ -25,3 +26,4 @@ extension Attributes {
         return otelKeys
     }
 }
+#endif

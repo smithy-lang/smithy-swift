@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if !(os(Linux) || os(visionOS))
 import OpenTelemetryApi
 import OpenTelemetrySdk
 import Smithy
@@ -37,3 +38,4 @@ public enum OpenTelemetrySwift {
         }
     }
 }
+#endif

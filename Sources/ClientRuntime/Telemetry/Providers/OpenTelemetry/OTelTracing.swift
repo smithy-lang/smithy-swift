@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#if !(os(Linux) || os(visionOS))
 @preconcurrency import OpenTelemetryApi
 @preconcurrency import OpenTelemetrySdk
 import Smithy
@@ -116,3 +117,4 @@ extension TraceSpanStatus {
         }
     }
 }
+#endif
