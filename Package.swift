@@ -23,7 +23,7 @@ let libXML2TargetOrNil: Target? = nil
 let package = Package(
     name: "smithy-swift",
     platforms: [
-        .macOS(.v10_15),
+        .macOS(.v12),
         .iOS(.v13),
         .tvOS(.v13),
         .watchOS(.v6)
@@ -58,6 +58,7 @@ let package = Package(
         var dependencies: [Package.Dependency] = [
             .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.45.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+            .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.13.0"),
         ]
         let isDocCEnabled = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil
         if isDocCEnabled {
@@ -95,6 +96,23 @@ let package = Package(
                 "SmithyChecksums",
                 "SmithyCBOR",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+                .product(name: "InMemoryExporter", package: "opentelemetry-swift"),
+                // Only include these on macOS, iOS, tvOS, and watchOS (visionOS and Linux are excluded)
+                .product(
+                    name: "OpenTelemetryApi",
+                    package: "opentelemetry-swift",
+                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS])
+                ),
+                .product(
+                    name: "OpenTelemetrySdk",
+                    package: "opentelemetry-swift",
+                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS])
+                ),
+                .product(
+                    name: "OpenTelemetryProtocolExporterHTTP",
+                    package: "opentelemetry-swift",
+                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS])
+                ),
             ],
             resources: [
                 .copy("PrivacyInfo.xcprivacy")
