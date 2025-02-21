@@ -22,7 +22,8 @@ public struct StaticAWSCredentialIdentityResolver: AWSCredentialIdentityResolved
         self.crtAWSCredentialIdentityResolver = try AwsCommonRuntimeKit.CredentialsProvider(source: .static(
             accessKey: credentials.accessKey,
             secret: credentials.secret,
-            sessionToken: credentials.sessionToken
-        ), accountId: credentials.accountID)
+            sessionToken: credentials.sessionToken,
+            accountId: credentials.accountID
+        ))
     }
 }
