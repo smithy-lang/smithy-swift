@@ -18,11 +18,16 @@ import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class IdempotencyTokenMiddleware(
     val model: Model,
-    val symbolProvider: SymbolProvider
+    val symbolProvider: SymbolProvider,
 ) : MiddlewareRenderable {
     override val name = "IdempotencyTokenMiddleware"
 
-    override fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
+    override fun render(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape,
+        operationStackName: String,
+    ) {
         val inputShape = model.expectShape(op.input.get())
         val idempotentMember = inputShape.members().firstOrNull { it.hasTrait<IdempotencyTokenTrait>() }
         idempotentMember?.let {
@@ -33,7 +38,7 @@ class IdempotencyTokenMiddleware(
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val inputShape = model.expectShape(op.input.get())
         val idempotentMember = inputShape.members().firstOrNull { it.hasTrait<IdempotencyTokenTrait>() }

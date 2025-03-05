@@ -36,10 +36,15 @@ class HttpQueryItemProvider(
     private val queryLiterals: Map<String, String>,
     private val queryBindings: List<HttpBindingDescriptor>,
     private val defaultTimestampFormat: TimestampFormatTrait.Format,
-    private val writer: SwiftWriter
+    private val writer: SwiftWriter,
 ) {
     companion object {
-        fun renderQueryMiddleware(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, httpBindingResolver: HttpBindingResolver, defaultTimestampFormat: TimestampFormatTrait.Format) {
+        fun renderQueryMiddleware(
+            ctx: ProtocolGenerator.GenerationContext,
+            op: OperationShape,
+            httpBindingResolver: HttpBindingResolver,
+            defaultTimestampFormat: TimestampFormatTrait.Format,
+        ) {
             if (MiddlewareShapeUtils.hasQueryItems(ctx.model, op)) {
                 val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
                 val httpTrait = httpBindingResolver.httpTrait(op)
@@ -48,19 +53,22 @@ class HttpQueryItemProvider(
                     requestBindings.filter { it.location == HttpBinding.Location.QUERY || it.location == HttpBinding.Location.QUERY_PARAMS }
                 val queryLiterals = httpTrait.uri.queryLiterals
                 val filename = ModelFileUtils.filename(ctx.settings, "${inputSymbol.name}+QueryItemProvider")
-                val headerMiddlewareSymbol = Symbol.builder()
-                    .definitionFile(filename)
-                    .name(inputSymbol.name)
-                    .build()
+                val headerMiddlewareSymbol =
+                    Symbol
+                        .builder()
+                        .definitionFile(filename)
+                        .name(inputSymbol.name)
+                        .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-                    val queryItemMiddleware = HttpQueryItemProvider(
-                        ctx,
-                        inputSymbol,
-                        queryLiterals,
-                        queryBindings,
-                        defaultTimestampFormat,
-                        writer
-                    )
+                    val queryItemMiddleware =
+                        HttpQueryItemProvider(
+                            ctx,
+                            inputSymbol,
+                            queryLiterals,
+                            queryBindings,
+                            defaultTimestampFormat,
+                            writer,
+                        )
                     queryItemMiddleware.renderProvider(writer)
                 }
             }
@@ -116,7 +124,10 @@ class HttpQueryItemProvider(
         }
     }
 
-    private fun renderHttpQueryParamMap(memberTarget: MapShape, memberName: String) {
+    private fun renderHttpQueryParamMap(
+        memberTarget: MapShape,
+        memberName: String,
+    ) {
         writer.openBlock("if let $memberName = value.$memberName {", "}") {
             val currentQueryItemsNames = "currentQueryItemNames"
             writer.write("let $currentQueryItemsNames = items.map({\$L.name})", "\$0")
@@ -127,13 +138,19 @@ class HttpQueryItemProvider(
                     writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
                         val suffix = if (memberTarget.hasTrait<SparseTrait>()) "?" else ""
                         writer.openBlock("value0$suffix.forEach { value1 in", "}") {
-                            writer.write("let queryItem = \$N(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())", SmithyTypes.URIQueryItem)
+                            writer.write(
+                                "let queryItem = \$N(name: key0.urlPercentEncoding(), value: value1.urlPercentEncoding())",
+                                SmithyTypes.URIQueryItem,
+                            )
                             writer.write("items.append(queryItem)")
                         }
                     }
                 } else {
                     writer.openBlock("if !$currentQueryItemsNames.contains(key0) {", "}") {
-                        writer.write("let queryItem = \$N(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())", SmithyTypes.URIQueryItem)
+                        writer.write(
+                            "let queryItem = \$N(name: key0.urlPercentEncoding(), value: value0.urlPercentEncoding())",
+                            SmithyTypes.URIQueryItem,
+                        )
                         writer.write("items.append(queryItem)")
                     }
                 }
@@ -141,13 +158,20 @@ class HttpQueryItemProvider(
         }
     }
 
-    fun renderHttpQuery(queryBinding: HttpBindingDescriptor, memberName: String, memberTarget: Shape, paramName: String, bindingIndex: HttpBindingIndex, isBoxed: Boolean) {
+    fun renderHttpQuery(
+        queryBinding: HttpBindingDescriptor,
+        memberName: String,
+        memberTarget: Shape,
+        paramName: String,
+        bindingIndex: HttpBindingIndex,
+        isBoxed: Boolean,
+    ) {
         if (isBoxed) {
             if (queryBinding.member.isRequired()) {
                 writer.openBlock("guard let \$L = value.\$L else {", "}", memberName, memberName) {
                     writer.write(
                         "let message = \"Creating a URL Query Item failed. \$L is required and must not be nil.\"",
-                        memberName
+                        memberName,
                     )
                     writer.write("throw \$N.unknownError(message)", SmithyTypes.ClientError)
                 }
@@ -174,16 +198,23 @@ class HttpQueryItemProvider(
         }
     }
 
-    private fun renderQueryItem(member: MemberShape, bindingIndex: HttpBindingIndex, originalMemberName: String, paramName: String, unwrapped: Boolean) {
-        var (memberName, requiresDoCatch) = formatHeaderOrQueryValue(
-            ctx,
-            writer,
-            originalMemberName,
-            member,
-            HttpBinding.Location.QUERY,
-            bindingIndex,
-            defaultTimestampFormat
-        )
+    private fun renderQueryItem(
+        member: MemberShape,
+        bindingIndex: HttpBindingIndex,
+        originalMemberName: String,
+        paramName: String,
+        unwrapped: Boolean,
+    ) {
+        var (memberName, requiresDoCatch) =
+            formatHeaderOrQueryValue(
+                ctx,
+                writer,
+                originalMemberName,
+                member,
+                HttpBinding.Location.QUERY,
+                bindingIndex,
+                defaultTimestampFormat,
+            )
         if (requiresDoCatch) {
             renderDoCatch(memberName, paramName)
         } else {
@@ -227,32 +258,44 @@ class HttpQueryItemProvider(
         memberTarget: CollectionShape,
         bindingIndex: HttpBindingIndex,
         memberName: String,
-        paramName: String
+        paramName: String,
     ) {
-        var (queryItemValue, requiresDoCatch) = formatHeaderOrQueryValue(
-            ctx,
-            writer,
-            "queryItemValue",
-            memberTarget.member,
-            HttpBinding.Location.QUERY,
-            bindingIndex,
-            defaultTimestampFormat
-        )
+        var (queryItemValue, requiresDoCatch) =
+            formatHeaderOrQueryValue(
+                ctx,
+                writer,
+                "queryItemValue",
+                memberTarget.member,
+                HttpBinding.Location.QUERY,
+                bindingIndex,
+                defaultTimestampFormat,
+            )
 
         writer.openBlock("$memberName.forEach { queryItemValue in ", "}") {
             if (requiresDoCatch) {
                 renderDoCatch(queryItemValue, paramName)
             } else {
-                writer.write("let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValue).urlPercentEncoding())", SmithyTypes.URIQueryItem, SwiftTypes.String)
+                writer.write(
+                    "let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValue).urlPercentEncoding())",
+                    SmithyTypes.URIQueryItem,
+                    SwiftTypes.String,
+                )
                 writer.write("items.append(queryItem)")
             }
         }
     }
 
-    private fun renderDoCatch(queryItemValueWithExtension: String, paramName: String) {
+    private fun renderDoCatch(
+        queryItemValueWithExtension: String,
+        paramName: String,
+    ) {
         writer.openBlock("do {", "} catch let err {") {
             writer.write("let base64EncodedValue = $queryItemValueWithExtension")
-            writer.write("let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValueWithExtension).urlPercentEncoding())", SmithyTypes.URIQueryItem, SwiftTypes.String)
+            writer.write(
+                "let queryItem = \$N(name: \"$paramName\".urlPercentEncoding(), value: \$N($queryItemValueWithExtension).urlPercentEncoding())",
+                SmithyTypes.URIQueryItem,
+                SwiftTypes.String,
+            )
             writer.write("items.append(queryItem)")
         }
         writer.write("}")

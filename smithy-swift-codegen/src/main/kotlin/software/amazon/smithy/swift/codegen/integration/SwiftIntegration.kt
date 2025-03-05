@@ -56,10 +56,8 @@ interface SwiftIntegration : SmithyIntegration<SwiftSettings, SwiftWriter, Gener
     fun decorateSymbolProvider(
         settings: SwiftSettings,
         model: Model,
-        symbolProvider: SymbolProvider
-    ): SymbolProvider {
-        return symbolProvider
-    }
+        symbolProvider: SymbolProvider,
+    ): SymbolProvider = symbolProvider
 
     /**
      * Called each time a writer is used that defines a shape.
@@ -96,7 +94,7 @@ interface SwiftIntegration : SmithyIntegration<SwiftSettings, SwiftWriter, Gener
         model: Model,
         symbolProvider: SymbolProvider,
         writer: SwiftWriter,
-        definedShape: Shape
+        definedShape: Shape,
     ) {
         // pass
     }
@@ -112,7 +110,7 @@ interface SwiftIntegration : SmithyIntegration<SwiftSettings, SwiftWriter, Gener
     fun customizeMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
         operationShape: OperationShape,
-        operationMiddleware: OperationMiddleware
+        operationMiddleware: OperationMiddleware,
     ) {
         // pass
     }
@@ -138,7 +136,10 @@ interface SwiftIntegration : SmithyIntegration<SwiftSettings, SwiftWriter, Gener
      * @param service The service under codegen
      * @return true if the Integration should be applied to the current codegen context, false otherwise.
      */
-    fun enabledForService(model: Model, settings: SwiftSettings): Boolean = true
+    fun enabledForService(
+        model: Model,
+        settings: SwiftSettings,
+    ): Boolean = true
 
     /**
      * Write additional files defined by this integration
@@ -148,7 +149,7 @@ interface SwiftIntegration : SmithyIntegration<SwiftSettings, SwiftWriter, Gener
     fun writeAdditionalFiles(
         ctx: SwiftCodegenContext,
         protocolGenerationContext: ProtocolGenerator.GenerationContext,
-        delegator: SwiftDelegator
+        delegator: SwiftDelegator,
     ) {
         // pass
     }
@@ -156,9 +157,7 @@ interface SwiftIntegration : SmithyIntegration<SwiftSettings, SwiftWriter, Gener
     /**
      * Overrides a serviceErrorProtocolSymbol for a service
      */
-    fun serviceErrorProtocolSymbol(): Symbol? {
-        return null
-    }
+    fun serviceErrorProtocolSymbol(): Symbol? = null
 
     /**
      * Returns a list of default Plugins for configuring client configuration's default properties

@@ -12,7 +12,6 @@ import software.amazon.smithy.swift.codegen.SwiftImportContainer
 class SwiftImportContainerTest {
     @Test
     fun `it renders imports`() {
-
         val decls = SwiftImportContainer()
 
         decls.addImport("Foundation")

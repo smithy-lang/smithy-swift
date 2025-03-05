@@ -51,9 +51,8 @@ class UnionGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
     private val shape: UnionShape,
-    private val settings: SwiftSettings
+    private val settings: SwiftSettings,
 ) {
-
     val unionSymbol: Symbol by lazy {
         symbolProvider.toSymbol(shape)
     }
@@ -77,7 +76,8 @@ class UnionGenerator(
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
         val indirectOrNot = "indirect ".takeIf { shape.hasTrait<RecursiveUnionTrait>() } ?: ""
-        val equatableConformance = writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
+        val equatableConformance =
+            writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
         writer.openBlock("public ${indirectOrNot}enum \$union.name:L: \$N$equatableConformance {", "}", SwiftTypes.Protocols.Sendable) {
             // event streams (@streaming union) MAY have variants that target errors.
             // These errors if encountered on the stream will be thrown as an exception rather

@@ -9,7 +9,11 @@ import java.io.File
 
 class Resources {
     companion object {
-        fun computeAbsolutePath(relativePath: String, suffixToBeRemoved: String, environmentVariableOverride: String): String {
+        fun computeAbsolutePath(
+            relativePath: String,
+            suffixToBeRemoved: String,
+            environmentVariableOverride: String,
+        ): String {
             if (environmentVariableOverride != null) {
                 val userDirPathOverride = System.getenv(environmentVariableOverride)
                 if (!userDirPathOverride.isNullOrEmpty()) {

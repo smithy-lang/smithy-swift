@@ -33,16 +33,15 @@ import software.amazon.smithy.utils.StringUtils
 inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).toList()
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-inline fun <reified T : Shape> Model.expectShape(shapeId: ShapeId): T =
-    expectShape(shapeId, T::class.java)
+inline fun <reified T : Shape> Model.expectShape(shapeId: ShapeId): T = expectShape(shapeId, T::class.java)
 
-inline fun <reified T : Shape> Model.expectShape(shapeId: String): T =
-    this.expectShape(ShapeId.from(shapeId), T::class.java)
+inline fun <reified T : Shape> Model.expectShape(shapeId: String): T = this.expectShape(ShapeId.from(shapeId), T::class.java)
 
-fun Shape.targetOrSelf(model: Model) = when (this) {
-    is MemberShape -> model.expectShape(this.target)
-    else -> this
-}
+fun Shape.targetOrSelf(model: Model) =
+    when (this) {
+        is MemberShape -> model.expectShape(this.target)
+        else -> this
+    }
 
 inline fun <reified T : Trait> Shape.hasTrait(): Boolean = hasTrait(T::class.java)
 
@@ -87,19 +86,19 @@ val Shape.isNumberShape: Boolean
 val Shape.isStreaming: Boolean
     get() = hasTrait<StreamingTrait>()
 
-fun Shape.toUpperCamelCase(): String {
-    return this.id.name.toUpperCamelCase()
-}
+fun Shape.toUpperCamelCase(): String = this.id.name.toUpperCamelCase()
 
-fun Shape.defaultName(serviceShape: ServiceShape? = null): String {
-    return serviceShape?.let {
+fun Shape.defaultName(serviceShape: ServiceShape? = null): String =
+    serviceShape?.let {
         StringUtils.capitalize(id.getName(it))
     } ?: run {
         StringUtils.capitalize(this.id.name)
     }
-}
+
 fun MemberShape.defaultName(): String = memberName.toLowerCamelCase()
+
 fun MemberShape.toLowerCamelCase(): String = this.memberName.toLowerCamelCase()
+
 fun Shape.toLowerCamelCase(): String = this.id.name.toLowerCamelCase()
 
 fun MemberShape.defaultValue(symbolProvider: SymbolProvider): String? {
@@ -107,7 +106,10 @@ fun MemberShape.defaultValue(symbolProvider: SymbolProvider): String? {
     return targetSymbol.defaultValue()
 }
 
-fun MemberShape.needsDefaultValueCheck(model: Model, symbolProvider: SymbolProvider): Boolean {
+fun MemberShape.needsDefaultValueCheck(
+    model: Model,
+    symbolProvider: SymbolProvider,
+): Boolean {
     if (this.isRequired()) {
         return false
     }
@@ -120,9 +122,7 @@ fun MemberShape.needsDefaultValueCheck(model: Model, symbolProvider: SymbolProvi
     return isPrimitiveShape && isNotBoxed && defaultValueNotNull
 }
 
-fun MemberShape.isRequired(): Boolean {
-    return (this.hasTrait<RequiredTrait>())
-}
+fun MemberShape.isRequired(): Boolean = (this.hasTrait<RequiredTrait>())
 
 fun ServiceShape.nestedNamespaceType(symbolProvider: SymbolProvider): Symbol {
     val serviceSymbol = symbolProvider.toSymbol(this)
@@ -132,43 +132,37 @@ fun ServiceShape.nestedNamespaceType(symbolProvider: SymbolProvider): Symbol {
         .build()
 }
 
-fun Model.getNestedShapes(serviceShape: ServiceShape): Set<Shape> {
-    return Selector
+fun Model.getNestedShapes(serviceShape: ServiceShape): Set<Shape> =
+    Selector
         .parse("service [id=${serviceShape.id}] ~> :is(structure, union, string [trait|enum]) :not(<-[input, output, error]-)")
         .select(this)
-}
 
-fun Model.getNestedErrors(serviceShape: ServiceShape): Set<StructureShape> {
-    return Selector
+fun Model.getNestedErrors(serviceShape: ServiceShape): Set<StructureShape> =
+    Selector
         .parse("service[id=${serviceShape.id}] ~> structure[trait|error]")
         .select(this)
         .map { it as StructureShape }
         .toSet()
-}
 
-fun Model.getNestedShapes(memberShape: MemberShape): Set<Shape> {
-    return Selector
+fun Model.getNestedShapes(memberShape: MemberShape): Set<Shape> =
+    Selector
         .parse("member [id='${memberShape.id}'] ~> *")
         .select(this)
-}
 
-fun Model.getNestedShapes(structureShape: StructureShape): Set<Shape> {
-    return Selector
+fun Model.getNestedShapes(structureShape: StructureShape): Set<Shape> =
+    Selector
         .parse("structure[id='${structureShape.id}'] ~> *")
         .select(this)
-}
 
-fun Model.getOperations(serviceShape: ServiceShape): Set<OperationShape> {
-    return Selector
+fun Model.getOperations(serviceShape: ServiceShape): Set<OperationShape> =
+    Selector
         .parse("service[id='${serviceShape.id}'] ~> :is(operation)")
         .select(this) as Set<OperationShape>
-}
 
-fun Model.getErrorShapes(serviceShape: ServiceShape): Set<StructureShape> {
-    return Selector
+fun Model.getErrorShapes(serviceShape: ServiceShape): Set<StructureShape> =
+    Selector
         .parse("service[id=${serviceShape.id}] ~> :is(structure[trait|error])")
         .select(this) as Set<StructureShape>
-}
 
 /**
  * Test if an operation input is an event stream

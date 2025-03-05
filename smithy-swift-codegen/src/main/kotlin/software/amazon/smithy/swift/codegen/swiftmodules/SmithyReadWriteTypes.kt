@@ -32,11 +32,12 @@ object SmithyReadWriteTypes {
 private fun runtimeSymbol(
     name: String,
     declaration: SwiftDeclaration,
-    spiName: List<String> = listOf("SmithyReadWrite")
-): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SMITHY_READ_WRITE,
-    emptyList(),
-    spiName,
-)
+    spiName: List<String> = listOf("SmithyReadWrite"),
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SMITHY_READ_WRITE,
+        emptyList(),
+        spiName,
+    )

@@ -18,43 +18,46 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 class DefaultClientConfiguration : ClientConfiguration {
     override val swiftProtocolName: Symbol = ClientRuntimeTypes.Core.DefaultClientConfiguration
 
-    override fun getProperties(ctx: ProtocolGenerator.GenerationContext): Set<ConfigProperty> = setOf(
-        ConfigProperty(
-            "telemetryProvider",
-            ClientRuntimeTypes.Core.TelemetryProvider,
-            { it.format("\$N.provider", ClientRuntimeTypes.Core.DefaultTelemetry) },
-        ),
-        ConfigProperty(
-            "retryStrategyOptions",
-            SmithyRetriesAPITypes.RetryStrategyOptions,
-            { it.format("\$N.defaultRetryStrategyOptions", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
-        ),
-        ConfigProperty(
-            "clientLogMode",
-            ClientRuntimeTypes.Core.ClientLogMode,
-            { it.format("\$N.defaultClientLogMode", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
-        ),
-        ConfigProperty("endpoint", SwiftTypes.String.toOptional()),
-        ConfigProperty(
-            "idempotencyTokenGenerator",
-            ClientRuntimeTypes.Core.IdempotencyTokenGenerator,
-            { it.format("\$N.defaultIdempotencyTokenGenerator", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
-        ),
-        ConfigProperty(
-            "interceptorProviders",
-            ClientRuntimeTypes.Composite.InterceptorProviders,
-            { "[]" },
-            accessModifier = AccessModifier.PublicPrivateSet
-        )
-    )
-
-    override fun getMethods(ctx: ProtocolGenerator.GenerationContext): Set<Function> = setOf(
-        Function(
-            name = "addInterceptorProvider",
-            renderBody = { writer -> writer.write("self.interceptorProviders.append(provider)") },
-            parameters = listOf(
-                FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.InterceptorProvider)
+    override fun getProperties(ctx: ProtocolGenerator.GenerationContext): Set<ConfigProperty> =
+        setOf(
+            ConfigProperty(
+                "telemetryProvider",
+                ClientRuntimeTypes.Core.TelemetryProvider,
+                { it.format("\$N.provider", ClientRuntimeTypes.Core.DefaultTelemetry) },
+            ),
+            ConfigProperty(
+                "retryStrategyOptions",
+                SmithyRetriesAPITypes.RetryStrategyOptions,
+                { it.format("\$N.defaultRetryStrategyOptions", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
+            ),
+            ConfigProperty(
+                "clientLogMode",
+                ClientRuntimeTypes.Core.ClientLogMode,
+                { it.format("\$N.defaultClientLogMode", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
+            ),
+            ConfigProperty("endpoint", SwiftTypes.String.toOptional()),
+            ConfigProperty(
+                "idempotencyTokenGenerator",
+                ClientRuntimeTypes.Core.IdempotencyTokenGenerator,
+                { it.format("\$N.defaultIdempotencyTokenGenerator", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
+            ),
+            ConfigProperty(
+                "interceptorProviders",
+                ClientRuntimeTypes.Composite.InterceptorProviders,
+                { "[]" },
+                accessModifier = AccessModifier.PublicPrivateSet,
             ),
         )
-    )
+
+    override fun getMethods(ctx: ProtocolGenerator.GenerationContext): Set<Function> =
+        setOf(
+            Function(
+                name = "addInterceptorProvider",
+                renderBody = { writer -> writer.write("self.interceptorProviders.append(provider)") },
+                parameters =
+                    listOf(
+                        FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.InterceptorProvider),
+                    ),
+            ),
+        )
 }

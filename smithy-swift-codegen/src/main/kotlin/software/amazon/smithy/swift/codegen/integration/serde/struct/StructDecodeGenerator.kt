@@ -23,20 +23,21 @@ open class StructDecodeGenerator(
     private val metadata: Map<ShapeMetadata, Any>,
     private val writer: SwiftWriter,
 ) : MemberShapeDecodeGenerator(ctx, writer, shapeContainingMembers) {
-
     fun render() {
         val symbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
-            "static func read(from reader: \$N) throws -> \$N {", "}",
+            "static func read(from reader: \$N) throws -> \$N {",
+            "}",
             ctx.service.readerSymbol,
             symbol,
         ) {
             // S3:SelectObjectContent's event stream output contains EndEvent, which has empty payload.
             // The additional condition here allows returning new instance of a struct even if value isn't found in reader
             //   as long as the struct has no properties.
-            val additionalCondition = "|| Mirror(reflecting: self).children.isEmpty ".takeIf {
-                ctx.settings.sdkId == "S3" && members.isEmpty()
-            } ?: ""
+            val additionalCondition =
+                "|| Mirror(reflecting: self).children.isEmpty ".takeIf {
+                    ctx.settings.sdkId == "S3" && members.isEmpty()
+                } ?: ""
             writer.write(
                 "guard reader.hasContent \$Lelse { throw \$N.requiredValueNotPresent }",
                 additionalCondition,

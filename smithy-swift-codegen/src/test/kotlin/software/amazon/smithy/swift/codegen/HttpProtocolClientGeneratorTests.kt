@@ -173,6 +173,7 @@ extension RestJsonProtocolClient {
 """
         contents.shouldContainOnlyOnce(expectedFragment)
     }
+
     @Test
     fun `it renders operation implementations in extension`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
@@ -180,6 +181,7 @@ extension RestJsonProtocolClient {
         contents.shouldSyntacticSanityCheck()
         contents.shouldContain("extension RestJsonProtocolClient {")
     }
+
     @Test
     fun `it renders an operation body`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
@@ -242,7 +244,9 @@ extension RestJsonProtocolClient {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce("builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(requiresLength: false, unsignedPayload: true))")
+        contents.shouldContainOnlyOnce(
+            "builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(requiresLength: false, unsignedPayload: true))",
+        )
     }
 
     @Test
@@ -250,7 +254,9 @@ extension RestJsonProtocolClient {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce("builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(requiresLength: true, unsignedPayload: false))")
+        contents.shouldContainOnlyOnce(
+            "builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(requiresLength: true, unsignedPayload: false))",
+        )
     }
 
     @Test
@@ -258,17 +264,23 @@ extension RestJsonProtocolClient {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce("builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(requiresLength: true, unsignedPayload: true))")
+        contents.shouldContainOnlyOnce(
+            "builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(requiresLength: true, unsignedPayload: true))",
+        )
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(
-            listOf(smithyFile),
-            serviceShapeId,
-            MockHTTPRestJsonProtocolGenerator(),
-            { model -> model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol") },
-            listOf(DefaultClientConfigurationIntegration())
-        )
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
+        val context =
+            TestContext.initContextFrom(
+                listOf(smithyFile),
+                serviceShapeId,
+                MockHTTPRestJsonProtocolGenerator(),
+                { model -> model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol") },
+                listOf(DefaultClientConfigurationIntegration()),
+            )
 
         context.generator.initializeMiddleware(context.generationCtx)
         context.generator.generateProtocolClient(context.generationCtx)

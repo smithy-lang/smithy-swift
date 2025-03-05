@@ -156,6 +156,7 @@ extension XmlTimestampsNestedFlattenedInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `011 encode flattened empty list`() {
         val context = setupTests("Isolated/Restxml/xml-lists-emptyFlattened.smithy", "aws.protocoltests.restxml#RestXml")
@@ -206,6 +207,7 @@ extension XmlListContainMapInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
     @Test
     fun `013 encode flattened list containing map`() {
         val context = setupTests("Isolated/Restxml/xml-lists-flattened-contain-map.smithy", "aws.protocoltests.restxml#RestXml")

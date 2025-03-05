@@ -5,7 +5,9 @@ package software.amazon.smithy.swift.codegen.protocolgeneratormocks
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
@@ -17,7 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResp
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolClientGeneratorFactory
 
-class MockRPCv2CBORProtocolCustomizations() : DefaultHTTPProtocolCustomizations()
+class MockRPCv2CBORProtocolCustomizations : DefaultHTTPProtocolCustomizations()
 
 class MockHTTPRPCv2CBORProtocolGenerator : HTTPBindingProtocolGenerator(MockRPCv2CBORProtocolCustomizations()) {
     override val defaultContentType: String = "application/cbor"
@@ -25,11 +27,17 @@ class MockHTTPRPCv2CBORProtocolGenerator : HTTPBindingProtocolGenerator(MockRPCv
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val shouldRenderEncodableConformance = false
 
-    override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+    override fun addProtocolSpecificMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    ) {
         // Intentionally empty
     }
 
-    override fun addUserAgentMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+    override fun addUserAgentMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    ) {
         // Intentionally empty
     }
 
@@ -47,4 +55,12 @@ class MockHTTPRPCv2CBORProtocolGenerator : HTTPBindingProtocolGenerator(MockRPCv
             getProtocolHttpBindingResolver(ctx, defaultContentType),
         ).generateProtocolTests()
     }
+
+    override fun httpBodyMembers(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+    ): List<MemberShape> =
+        shape
+            .members()
+            .toList()
 }

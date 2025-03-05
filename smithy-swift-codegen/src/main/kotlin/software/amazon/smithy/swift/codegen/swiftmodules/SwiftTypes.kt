@@ -35,10 +35,14 @@ object SwiftTypes {
     }
 }
 
-private fun builtInSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SWIFT,
-    emptyList(),
-    emptyList(),
-)
+private fun builtInSymbol(
+    name: String,
+    declaration: SwiftDeclaration? = null,
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SWIFT,
+        emptyList(),
+        emptyList(),
+    )
