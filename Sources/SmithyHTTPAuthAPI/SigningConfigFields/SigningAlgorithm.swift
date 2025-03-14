@@ -12,4 +12,6 @@ public enum SigningAlgorithm: String {
     case sigv4
     ///  Signature Version 4 Asymmetric
     case sigv4a
+    /// Signature Version 4 for S3 Express
+    case sigv4s3express = "sigv4-s3express"
 }
