@@ -158,6 +158,7 @@ extension RestJsonProtocolClient {
         contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
         let context = Smithy.ContextBuilder()
+                      .withClientConfig(value: config)
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getStatus")
@@ -190,6 +191,7 @@ extension RestJsonProtocolClient {
         val expected = """
     public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutput {
         let context = Smithy.ContextBuilder()
+                      .withClientConfig(value: config)
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "allocateWidget")
