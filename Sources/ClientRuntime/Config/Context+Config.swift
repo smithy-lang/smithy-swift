@@ -25,4 +25,5 @@ public extension ContextBuilder {
     }
 }
 
-private let clientConfigKey: AttributeKey<DefaultClientConfiguration> = AttributeKey<DefaultClientConfiguration>(name: "SmithySwiftClientConfig")
+private let clientConfigKey: AttributeKey<DefaultClientConfiguration> =
+    AttributeKey<DefaultClientConfiguration>(name: "SmithySwiftClientConfig")
