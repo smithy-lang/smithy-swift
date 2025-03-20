@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public protocol LogAgent {
+public protocol LogAgent: Sendable {
     /// name of the struct or class where the logger was instantiated from
     var name: String { get }
 

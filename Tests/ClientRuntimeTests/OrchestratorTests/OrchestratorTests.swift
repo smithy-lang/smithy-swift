@@ -58,7 +58,7 @@ class OrchestratorTests: XCTestCase {
         }
     }
 
-    class TraceLogger: LogAgent {
+    class TraceLogger: LogAgent, @unchecked Sendable {
         var trace: Trace = Trace()
         var name: String = "TestTraceLogger"
         var level: LogAgentLevel = .debug
