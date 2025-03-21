@@ -9,6 +9,7 @@
 public enum EndpointsAuthScheme: Equatable {
     case sigV4(SigV4Parameters)
     case sigV4A(SigV4AParameters)
+    case sigV4S3Express(SigV4Parameters)
     case none
 
     /// The name of the auth scheme
@@ -16,6 +17,7 @@ public enum EndpointsAuthScheme: Equatable {
         switch self {
         case .sigV4: return "sigv4"
         case .sigV4A: return "sigv4a"
+        case .sigV4S3Express: return "sigv4-s3express"
         case .none: return "none"
         }
     }
@@ -33,6 +35,8 @@ extension EndpointsAuthScheme {
             self = .sigV4(try SigV4Parameters(from: dictionary))
         case "sigv4a":
             self = .sigV4A(try SigV4AParameters(from: dictionary))
+        case "sigv4-s3express":
+            self = .sigV4S3Express(try SigV4Parameters(from: dictionary))
         case "none":
             self = .none
         default:
@@ -108,7 +112,7 @@ public struct DefaultEndpointsAuthSchemeResolver: EndpointsAuthSchemeResolver {
     /// Supported auth schemes by the SDK
     let supportedAuthSchemes: Set<String>
 
-    public init(supportedAuthSchemes: Set<String> = ["sigv4", "sigv4a", "none"]) {
+    public init(supportedAuthSchemes: Set<String> = ["sigv4", "sigv4a", "sigv4-s3express", "none"]) {
         self.supportedAuthSchemes = supportedAuthSchemes
     }
 
