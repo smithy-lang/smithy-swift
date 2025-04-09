@@ -74,7 +74,14 @@ public class CRTClientEngine: HTTPClient {
             self.socketTimeout = config.socketTimeout
         }
 
-        init(windowSize: Int, maxConnectionsPerEndpoint: Int, telemetry: HttpTelemetry, connectTimeoutMs: UInt32? = nil, crtTLSOptions: CRTClientTLSOptions? = nil, socketTimeout: UInt32? = nil) {
+        init(
+            windowSize: Int,
+            maxConnectionsPerEndpoint: Int,
+            telemetry: HttpTelemetry,
+            connectTimeoutMs: UInt32? = nil,
+            crtTLSOptions: CRTClientTLSOptions? = nil,
+            socketTimeout: UInt32? = nil
+        ) {
             self.windowSize = windowSize
             self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
             self.telemetry = telemetry
@@ -240,9 +247,17 @@ public class CRTClientEngine: HTTPClient {
 
         switch connection.httpVersion {
         case .version_1_1:
-            return try await handleHTTP1Request(connection: connection, request: request, telemetryContext: telemetryContext)
+            return try await handleHTTP1Request(
+                connection: connection,
+                request: request,
+                telemetryContext: telemetryContext
+            )
         case .version_2:
-            return try await handleHTTP2Request(connection: connection, request: request, telemetryContext: telemetryContext)
+            return try await handleHTTP2Request(
+                connection: connection,
+                request: request,
+                telemetryContext: telemetryContext
+            )
         case .unknown:
             fatalError("Unknown HTTP version")
         }
@@ -415,7 +430,11 @@ public class CRTClientEngine: HTTPClient {
         }
     }
 
-    private func handleHTTP2Request(connection: HTTPClientConnection, request: HTTPRequest, telemetryContext: TelemetryContext) async throws -> HTTPResponse {
+    private func handleHTTP2Request(
+        connection: HTTPClientConnection,
+        request: HTTPRequest,
+        telemetryContext: TelemetryContext
+    ) async throws -> HTTPResponse {
         self.logger.debug("Using HTTP/2 connection")
         let crtRequest = try request.toHttp2Request()
         return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
@@ -461,10 +480,14 @@ public class CRTClientEngine: HTTPClient {
             throw StreamError.notSupported("HTTP1Stream should be used with an HTTP/1.1 connection!")
         }
         guard case .stream(let bodyStream) = request.body, bodyStream.isEligibleForChunkedStreaming else {
-            throw ByteStreamError.invalidStreamTypeForChunkedBody("The stream is not eligible for chunked streaming or is not a stream type!")
+            throw ByteStreamError.invalidStreamTypeForChunkedBody(
+                "The stream is not eligible for chunked streaming or is not a stream type!"
+            )
         }
         guard let chunkedStream = bodyStream as? ChunkedStream else {
-            throw ByteStreamError.streamDoesNotConformToChunkedStream("Stream does not conform to ChunkedStream! Type is \\(bodyStream).")
+            throw ByteStreamError.streamDoesNotConformToChunkedStream(
+                "Stream does not conform to ChunkedStream! Type is \\(bodyStream)."
+            )
         }
 
         var hasMoreChunks = true
@@ -476,14 +499,28 @@ public class CRTClientEngine: HTTPClient {
                 let finalChunk = try await chunkedStream.chunkedReader.getFinalChunk()
                 try await http1Stream.writeChunk(chunk: finalChunk, endOfStream: true)
                 var bytesSentAttributes = Attributes()
-                bytesSentAttributes.set(key: HttpMetricsAttributesKeys.serverAddress, value: CRTClientEngine.makeServerAddress(request: request))
-                telemetry.bytesSent.add(value: finalChunk.count, attributes: bytesSentAttributes, context: telemetry.contextManager.current())
+                bytesSentAttributes.set(
+                    key: HttpMetricsAttributesKeys.serverAddress,
+                    value: CRTClientEngine.makeServerAddress(request: request)
+                )
+                telemetry.bytesSent.add(
+                    value: finalChunk.count,
+                    attributes: bytesSentAttributes,
+                    context: telemetry.contextManager.current()
+                )
                 break
             } else {
                 try await http1Stream.writeChunk(chunk: currentChunk, endOfStream: false)
                 var bytesSentAttributes = Attributes()
-                bytesSentAttributes.set(key: HttpMetricsAttributesKeys.serverAddress, value: CRTClientEngine.makeServerAddress(request: request))
-                telemetry.bytesSent.add(value: currentChunk.count, attributes: bytesSentAttributes, context: telemetry.contextManager.current())
+                bytesSentAttributes.set(
+                    key: HttpMetricsAttributesKeys.serverAddress,
+                    value: CRTClientEngine.makeServerAddress(request: request)
+                )
+                telemetry.bytesSent.add(
+                    value: currentChunk.count,
+                    attributes: bytesSentAttributes,
+                    context: telemetry.contextManager.current()
+                )
             }
         }
     }
