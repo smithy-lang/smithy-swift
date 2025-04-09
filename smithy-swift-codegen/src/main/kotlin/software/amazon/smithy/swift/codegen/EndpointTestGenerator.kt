@@ -99,10 +99,10 @@ class EndpointTestGenerator(
                     testCase.expect.endpoint.ifPresent { endpoint ->
                         writer.write("let actual = try resolver.resolve(params: endpointParams)").write("")
 
-                        // [String: AnyHashable] can't be constructed from a dictionary literal
+                        // [String: EndpointPropertyValue] can't be constructed from a dictionary literal
                         // first create a string JSON string literal
-                        // then convert to [String: AnyHashable] using JSONSerialization.jsonObject(with:)
-                        writer.openBlock("let properties: [String: AnyHashable] = ", "") {
+                        // then convert to [String: EndpointPropertyValue] using JSONSerialization.jsonObject(with:)
+                        writer.openBlock("let properties: [String: \$N] = ", "", SmithyHTTPAPITypes.EndpointPropertyValue) {
                             generateProperties(writer, endpoint.properties)
                         }
 
@@ -156,7 +156,7 @@ class EndpointTestGenerator(
         writer: SwiftWriter,
         value: Value,
         delimeter: String,
-        castToAnyHashable: Boolean,
+        castToEndpointPropertyValue: Boolean,
     ) {
         when (value) {
             is StringValue -> {
@@ -176,11 +176,11 @@ class EndpointTestGenerator(
             }
 
             is ArrayValue -> {
-                val castStmt = if (castToAnyHashable) " as [AnyHashable]$delimeter" else delimeter
+                val castStmt = if (castToEndpointPropertyValue) " as [EndpointPropertyValue]$delimeter" else delimeter
                 writer.openBlock("[", "]$castStmt") {
                     value.values.forEachIndexed { idx, item ->
                         writer.call {
-                            generateValue(writer, item, if (idx < value.values.count() - 1) "," else "", castToAnyHashable)
+                            generateValue(writer, item, if (idx < value.values.count() - 1) "," else "", castToEndpointPropertyValue)
                         }
                     }
                 }
@@ -190,11 +190,11 @@ class EndpointTestGenerator(
                 if (value.value.isEmpty()) {
                     writer.writeInline("[:]")
                 } else {
-                    writer.openBlock("[", "] as [String: AnyHashable]$delimeter") {
+                    writer.openBlock("[", "] as [String: EndpointPropertyValue]$delimeter") {
                         value.value.map { it.key to it.value }.forEachIndexed { idx, (first, second) ->
                             writer.writeInline("\$S: ", first.name)
                             writer.call {
-                                generateValue(writer, second, if (idx < value.value.count() - 1) "," else "", castToAnyHashable)
+                                generateValue(writer, second, if (idx < value.value.count() - 1) "," else "", castToEndpointPropertyValue)
                             }
                         }
                     }

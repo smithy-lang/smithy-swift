@@ -60,9 +60,10 @@ public protocol WriteableStream: AnyObject, Sendable {
 public protocol Stream: ReadableStream, WriteableStream {
 }
 
-public enum StreamError: Error {
+public enum StreamError: Error, Sendable {
     case invalidOffset(String)
     case notSupported(String)
+    case connectionReleased(String)
 }
 
 extension Stream {

@@ -274,3 +274,5 @@ extension HTTPRequestBuilder {
         return String(signatureSequence)
     }
 }
+
+extension HTTPRequest: @unchecked Sendable {}

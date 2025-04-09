@@ -74,6 +74,16 @@ public class CRTClientEngine: HTTPClient {
             self.socketTimeout = config.socketTimeout
         }
 
+        init(windowSize: Int, maxConnectionsPerEndpoint: Int, telemetry: HttpTelemetry, connectTimeoutMs: UInt32? = nil, crtTLSOptions: CRTClientTLSOptions? = nil, socketTimeout: UInt32? = nil) {
+            self.windowSize = windowSize
+            self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
+            self.telemetry = telemetry
+            self.logger = self.telemetry.loggerProvider.getLogger(name: "SerialExecutor")
+            self.connectTimeoutMs = connectTimeoutMs
+            self.crtTLSOptions = crtTLSOptions
+            self.socketTimeout = socketTimeout
+        }
+
         func getOrCreateConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
             let poolID = ConnectionPoolID(endpoint: endpoint)
             guard let connectionPool = connectionPools[poolID] else {
@@ -182,203 +192,61 @@ public class CRTClientEngine: HTTPClient {
         self.windowSize = config.windowSize
         self.telemetry = config.telemetry
         self.logger = self.telemetry.loggerProvider.getLogger(name: "CRTClientEngine")
-        self.serialExecutor = SerialExecutor(config: config)
+
+        self.serialExecutor = SerialExecutor(
+            windowSize: config.windowSize,
+            maxConnectionsPerEndpoint: config.maxConnectionsPerEndpoint,
+            telemetry: config.telemetry,
+            connectTimeoutMs: config.connectTimeoutMs,
+            crtTLSOptions: config.crtTlsOptions,
+            socketTimeout: config.socketTimeout
+        )
     }
 
-    // swiftlint:disable function_body_length
     public func send(request: HTTPRequest) async throws -> HTTPResponse {
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
             scope: telemetry.tracerScope,
-            attributes: telemetry.tracerAttributes)
-        do {
-            // START - smithy.client.http.requests.queued_duration
-            let queuedStart = Date().timeIntervalSinceReferenceDate
-            let span = tracer.createSpan(
-                name: telemetry.spanName,
-                initialAttributes: telemetry.spanAttributes,
-                spanKind: SpanKind.internal,
-                parentContext: telemetryContext)
-            defer {
-                span.end()
-            }
-            let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
+            attributes: telemetry.tracerAttributes
+        )
+        let queuedStart = Date().timeIntervalSinceReferenceDate
+        let span = tracer.createSpan(
+            name: telemetry.spanName,
+            initialAttributes: telemetry.spanAttributes,
+            spanKind: .internal,
+            parentContext: telemetryContext
+        )
+        defer {
+            span.end()
+        }
 
-            // START - smithy.client.http.connections.acquire_duration
-            let acquireConnectionStart = Date().timeIntervalSinceReferenceDate
-            let connection = try await connectionMgr.acquireConnection()
-            let acquireConnectionEnd = Date().timeIntervalSinceReferenceDate
-            telemetry.connectionsAcquireDuration.record(
-                value: acquireConnectionEnd - acquireConnectionStart,
-                attributes: Attributes(),
-                context: telemetryContext)
-            // END - smithy.client.http.connections.acquire_duration
-            let queuedEnd = acquireConnectionEnd
-            telemetry.requestsQueuedDuration.record(
-                value: queuedEnd - queuedStart,
-                attributes: Attributes(),
-                context: telemetryContext)
-            // END - smithy.client.http.requests.queued_duration
+        let connectionMgr = try await serialExecutor.getOrCreateConnectionPool(endpoint: request.endpoint)
+        let acquireConnectionStart = Date().timeIntervalSinceReferenceDate
+        let connection = try await connectionMgr.acquireConnection()
+        let acquireConnectionEnd = Date().timeIntervalSinceReferenceDate
 
-            let connectionsLimit = serialExecutor.maxConnectionsPerEndpoint
-            let connectionMgrMetrics = connectionMgr.fetchMetrics()
-            telemetry.updateHTTPMetricsUsage { httpMetricsUsage in
-                // TICK - smithy.client.http.connections.limit
-                httpMetricsUsage.connectionsLimit = connectionsLimit
+        telemetry.connectionsAcquireDuration.record(
+            value: acquireConnectionEnd - acquireConnectionStart,
+            attributes: Attributes(),
+            context: telemetryContext
+        )
+        telemetry.requestsQueuedDuration.record(
+            value: acquireConnectionEnd - queuedStart,
+            attributes: Attributes(),
+            context: telemetryContext
+        )
 
-                // TICK - smithy.client.http.connections.usage
-                httpMetricsUsage.idleConnections = connectionMgrMetrics.availableConcurrency
-                httpMetricsUsage.acquiredConnections = connectionMgrMetrics.leasedConcurrency
+        updateHTTPMetrics(connectionMgr.fetchMetrics())
 
-                // TICK - smithy.client.http.requests.usage
-                httpMetricsUsage.inflightRequests = connectionMgrMetrics.leasedConcurrency
-                httpMetricsUsage.queuedRequests = connectionMgrMetrics.pendingConcurrencyAcquires
-            }
-
-            do {
-                // DURATION - smithy.client.http.connections.uptime
-                let connectionUptimeStart = acquireConnectionEnd
-                defer {
-                    telemetry.connectionsUptime.record(
-                        value: Date().timeIntervalSinceReferenceDate - connectionUptimeStart,
-                        attributes: Attributes(),
-                        context: telemetryContext)
-                }
-                // swiftlint:disable:next line_length
-                self.logger.debug("Connection was acquired to: \(String(describing: request.destination.url?.absoluteString))")
-                switch connection.httpVersion {
-                case .version_1_1:
-                    self.logger.debug("Using HTTP/1.1 connection")
-                    let crtRequest = try request.toHttpRequest()
-                    return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
-                        let wrappedContinuation = ContinuationWrapper(continuation)
-                        let requestOptions = makeHttpRequestStreamOptions(
-                            request: crtRequest,
-                            continuation: wrappedContinuation,
-                            serverAddress: CRTClientEngine.makeServerAddress(request: request)
-                        )
-                        do {
-                            let stream = try connection.makeRequest(requestOptions: requestOptions)
-                            try stream.activate()
-                            if request.isChunked {
-                                Task {
-                                    do {
-                                        guard let http1Stream = stream as? HTTP1Stream else {
-                                            throw StreamError.notSupported(
-                                                "HTTP1Stream should be used with an HTTP/1.1 connection!"
-                                            )
-                                        }
-                                        let body = request.body
-                                        // swiftlint:disable line_length
-                                        guard case .stream(let stream) = body, stream.isEligibleForChunkedStreaming else {
-                                            throw ByteStreamError.invalidStreamTypeForChunkedBody(
-                                                "The stream is not eligible for chunked streaming or is not a stream type!"
-                                            )
-                                        }
-                                        // swiftlint:enable line_length
-
-                                        guard let chunkedStream = stream as? ChunkedStream else {
-                                            throw ByteStreamError.streamDoesNotConformToChunkedStream(
-                                                "Stream does not conform to ChunkedStream! Type is \(stream)."
-                                            )
-                                        }
-
-                                        var hasMoreChunks = true
-                                        var currentChunkBodyIsEmpty = false
-                                        while hasMoreChunks {
-                                            // Process the first chunk and determine if there are more to send
-                                            hasMoreChunks = try await chunkedStream.chunkedReader.processNextChunk()
-                                            currentChunkBodyIsEmpty = chunkedStream
-                                                .chunkedReader
-                                                .getCurrentChunkBody()
-                                                .isEmpty
-
-                                            if !hasMoreChunks || currentChunkBodyIsEmpty {
-                                                // Send the final chunk
-                                                let finalChunk = try await chunkedStream.chunkedReader.getFinalChunk()
-                                                // TICK - smithy.client.http.bytes_sent
-                                                try await http1Stream.writeChunk(chunk: finalChunk, endOfStream: true)
-                                                var bytesSentAttributes = Attributes()
-                                                bytesSentAttributes.set(
-                                                    key: HttpMetricsAttributesKeys.serverAddress,
-                                                    value: CRTClientEngine.makeServerAddress(request: request))
-                                                telemetry.bytesSent.add(
-                                                    value: finalChunk.count,
-                                                    attributes: bytesSentAttributes,
-                                                    context: telemetry.contextManager.current())
-                                                hasMoreChunks = false
-                                            } else {
-                                                let currentChunk = chunkedStream.chunkedReader.getCurrentChunk()
-                                                // TICK - smithy.client.http.bytes_sent
-                                                try await http1Stream.writeChunk(
-                                                    chunk: currentChunk,
-                                                    endOfStream: false
-                                                )
-                                                var bytesSentAttributes = Attributes()
-                                                bytesSentAttributes.set(
-                                                    key: HttpMetricsAttributesKeys.serverAddress,
-                                                    value: CRTClientEngine.makeServerAddress(request: request))
-                                                telemetry.bytesSent.add(
-                                                    value: currentChunk.count,
-                                                    attributes: bytesSentAttributes,
-                                                    context: telemetry.contextManager.current())
-                                            }
-                                        }
-                                    } catch {
-                                        logger.error(error.localizedDescription)
-                                        wrappedContinuation.safeResume(error: error)
-                                    }
-                                }
-                            }
-                        } catch {
-                            logger.error(error.localizedDescription)
-                            wrappedContinuation.safeResume(error: error)
-                        }
-                    }
-                case .version_2:
-                    self.logger.debug("Using HTTP/2 connection")
-                    let crtRequest = try request.toHttp2Request()
-                    return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
-                        let wrappedContinuation = ContinuationWrapper(continuation)
-                        let requestOptions = makeHttpRequestStreamOptions(
-                            request: crtRequest,
-                            continuation: wrappedContinuation,
-                            http2ManualDataWrites: true,
-                            serverAddress: CRTClientEngine.makeServerAddress(request: request)
-                        )
-                        let stream: HTTP2Stream
-                        do {
-                            // swiftlint:disable:next force_cast
-                            stream = try connection.makeRequest(requestOptions: requestOptions) as! HTTP2Stream
-                            try stream.activate()
-                        } catch {
-                            logger.error(error.localizedDescription)
-                            wrappedContinuation.safeResume(error: error)
-                            return
-                        }
-
-                        // At this point, continuation is resumed when the initial headers are received
-                        // it is now safe to write the body
-                        // writing is done in a separate task to avoid blocking the continuation
-                        Task { [logger] in
-                            do {
-                                // TICK - smithy.client.http.bytes_sent
-                                try await stream.write(
-                                    body: request.body,
-                                    telemetry: telemetry,
-                                    serverAddress: CRTClientEngine.makeServerAddress(request: request))
-                            } catch {
-                                logger.error(error.localizedDescription)
-                            }
-                        }
-                    }
-                case .unknown:
-                    fatalError("Unknown HTTP version")
-                }
-            }
+        switch connection.httpVersion {
+        case .version_1_1:
+            return try await handleHTTP1Request(connection: connection, request: request, telemetryContext: telemetryContext)
+        case .version_2:
+            return try await handleHTTP2Request(connection: connection, request: request, telemetryContext: telemetryContext)
+        case .unknown:
+            fatalError("Unknown HTTP version")
         }
     }
-    // swiftlint:enable function_body_length
 
     // Forces an Http2 request that uses CRT's `HTTP2StreamManager`.
     // This may be removed or improved as part of SRA work and CRT adapting to SRA for HTTP.
@@ -411,7 +279,10 @@ public class CRTClientEngine: HTTPClient {
                     http2ManualDataWrites: true,
                     serverAddress: CRTClientEngine.makeServerAddress(request: request)
                 )
-                Task { [logger] in
+                let telemetry = self.telemetry
+                let logger = self.logger
+                let serialExecutor = self.serialExecutor
+                Task { @Sendable in
                     let stream: HTTP2Stream
                     var acquireConnectionEnd: TimeInterval
                     do {
@@ -432,7 +303,7 @@ public class CRTClientEngine: HTTPClient {
                         // END - smithy.client.http.requests.queued_duration
                     } catch {
                         logger.error(error.localizedDescription)
-                        wrappedContinuation.safeResume(error: error)
+                        await wrappedContinuation.safeResume(error: error)
                         return
                     }
 
@@ -477,6 +348,146 @@ public class CRTClientEngine: HTTPClient {
         }
     }
 
+    private func updateHTTPMetrics(_ metrics: HTTPClientConnectionManagerMetrics) {
+        let connectionsLimit = serialExecutor.maxConnectionsPerEndpoint
+        telemetry.updateHTTPMetricsUsage { httpMetricsUsage in
+            httpMetricsUsage.connectionsLimit = connectionsLimit
+            httpMetricsUsage.idleConnections = metrics.availableConcurrency
+            httpMetricsUsage.acquiredConnections = metrics.leasedConcurrency
+            httpMetricsUsage.inflightRequests = metrics.leasedConcurrency
+            httpMetricsUsage.queuedRequests = metrics.pendingConcurrencyAcquires
+        }
+    }
+
+    private func handleHTTP1Request(
+        connection: HTTPClientConnection,
+        request: HTTPRequest,
+        telemetryContext: TelemetryContext
+    ) async throws -> HTTPResponse {
+        logger.debug("Using HTTP/1.1 connection")
+        let crtRequest = try request.toHttpRequest()
+        let serverAddress = Self.makeServerAddress(request: request)
+
+        return try await withCheckedThrowingContinuation { [weak self] continuation in
+            guard let self = self else {
+                continuation.resume(throwing: StreamError.connectionReleased("Engine released"))
+                return
+            }
+
+            let wrappedContinuation = ContinuationWrapper(continuation)
+
+            do {
+                let requestOptions = self.makeHttpRequestStreamOptions(
+                    request: crtRequest,
+                    continuation: wrappedContinuation,
+                    serverAddress: serverAddress
+                )
+
+                let stream = try connection.makeRequest(requestOptions: requestOptions)
+                try stream.activate()
+
+                if request.isChunked {
+                    let logger = self.logger
+                    let telemetry = self.telemetry
+
+                    Task { @Sendable in
+                        do {
+
+                            try await ClientRuntime.sendChunkedBody(
+                                using: stream,
+                                request: request,
+                                logger: logger,
+                                telemetry: telemetry,
+                                serverAddress: serverAddress
+                            )
+                        } catch {
+                            logger.error("Chunked streaming error: \(error.localizedDescription)")
+                            await wrappedContinuation.safeResume(error: error)
+                        }
+                    }
+                }
+            } catch {
+                self.logger.error("Request setup error: \(error.localizedDescription)")
+                Task {
+                    await wrappedContinuation.safeResume(error: error)
+                }
+            }
+        }
+    }
+
+    private func handleHTTP2Request(connection: HTTPClientConnection, request: HTTPRequest, telemetryContext: TelemetryContext) async throws -> HTTPResponse {
+        self.logger.debug("Using HTTP/2 connection")
+        let crtRequest = try request.toHttp2Request()
+        return try await withCheckedThrowingContinuation { (continuation: StreamContinuation) in
+            let wrappedContinuation = ContinuationWrapper(continuation)
+            let requestOptions = self.makeHttpRequestStreamOptions(
+                request: crtRequest,
+                continuation: wrappedContinuation,
+                http2ManualDataWrites: true,
+                serverAddress: CRTClientEngine.makeServerAddress(request: request)
+            )
+            do {
+                guard let stream = try connection.makeRequest(requestOptions: requestOptions) as? HTTP2Stream else {
+                    throw StreamError.notSupported("HTTP2Stream expected for HTTP/2 connection!")
+                }
+                try stream.activate()
+
+                let telemetry = self.telemetry
+                let logger = self.logger
+
+                Task { @Sendable in
+                    do {
+                        try await stream.write(
+                            body: request.body,
+                            telemetry: telemetry,
+                            serverAddress: CRTClientEngine.makeServerAddress(request: request)
+                        )
+                    } catch {
+                        logger.error(error.localizedDescription)
+                    }
+                }
+            } catch {
+                self.logger.error(error.localizedDescription)
+                Task {
+                    await wrappedContinuation.safeResume(error: error)
+                }
+                return
+            }
+        }
+    }
+
+    private func sendChunkedBody(using stream: Any, request: HTTPRequest) async throws {
+        guard let http1Stream = stream as? HTTP1Stream else {
+            throw StreamError.notSupported("HTTP1Stream should be used with an HTTP/1.1 connection!")
+        }
+        guard case .stream(let bodyStream) = request.body, bodyStream.isEligibleForChunkedStreaming else {
+            throw ByteStreamError.invalidStreamTypeForChunkedBody("The stream is not eligible for chunked streaming or is not a stream type!")
+        }
+        guard let chunkedStream = bodyStream as? ChunkedStream else {
+            throw ByteStreamError.streamDoesNotConformToChunkedStream("Stream does not conform to ChunkedStream! Type is \\(bodyStream).")
+        }
+
+        var hasMoreChunks = true
+        while hasMoreChunks {
+            hasMoreChunks = try await chunkedStream.chunkedReader.processNextChunk()
+            let currentChunk = chunkedStream.chunkedReader.getCurrentChunk()
+            let currentChunkBodyIsEmpty = chunkedStream.chunkedReader.getCurrentChunkBody().isEmpty
+            if !hasMoreChunks || currentChunkBodyIsEmpty {
+                let finalChunk = try await chunkedStream.chunkedReader.getFinalChunk()
+                try await http1Stream.writeChunk(chunk: finalChunk, endOfStream: true)
+                var bytesSentAttributes = Attributes()
+                bytesSentAttributes.set(key: HttpMetricsAttributesKeys.serverAddress, value: CRTClientEngine.makeServerAddress(request: request))
+                telemetry.bytesSent.add(value: finalChunk.count, attributes: bytesSentAttributes, context: telemetry.contextManager.current())
+                break
+            } else {
+                try await http1Stream.writeChunk(chunk: currentChunk, endOfStream: false)
+                var bytesSentAttributes = Attributes()
+                bytesSentAttributes.set(key: HttpMetricsAttributesKeys.serverAddress, value: CRTClientEngine.makeServerAddress(request: request))
+                telemetry.bytesSent.add(value: currentChunk.count, attributes: bytesSentAttributes, context: telemetry.contextManager.current())
+            }
+        }
+    }
+
     /// Creates a `HTTPRequestOptions` object that can be used to make a HTTP request
     /// - Parameters:
     ///   - request: The `HTTPRequestBase` object that contains the request information
@@ -516,7 +527,9 @@ public class CRTClientEngine: HTTPClient {
             // resume the continuation as soon as we have all the initial headers
             // this allows callers to start reading the response as it comes in
             // instead of waiting for the entire response to be received
-            continuation.safeResume(response: response)
+            Task {
+                await continuation.safeResume(response: response)
+            }
         } onIncomingBody: { bodyChunk in
             self.logger.debug("Body chunk received")
             do {
@@ -538,7 +551,9 @@ public class CRTClientEngine: HTTPClient {
                 response.statusCode = makeStatusCode(statusCode)
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
-                continuation.safeResume(error: error)
+                Task {
+                    await continuation.safeResume(error: error)
+                }
             }
 
             // closing the stream is required to signal to the caller that the response is complete
@@ -561,7 +576,7 @@ public class CRTClientEngine: HTTPClient {
         }
     }
 
-    class ContinuationWrapper {
+    actor ContinuationWrapper {
         private var continuation: StreamContinuation?
 
         public init(_ continuation: StreamContinuation) {
@@ -570,12 +585,67 @@ public class CRTClientEngine: HTTPClient {
 
         public func safeResume(response: HTTPResponse) {
             continuation?.resume(returning: response)
-            self.continuation = nil
+            continuation = nil
         }
 
         public func safeResume(error: Error) {
             continuation?.resume(throwing: error)
-            self.continuation = nil
+            continuation = nil
+        }
+    }
+}
+
+private func sendChunkedBody(
+    using stream: HTTPStream,
+    request: HTTPRequest,
+    logger: LogAgent,
+    telemetry: HttpTelemetry,
+    serverAddress: String
+) async throws {
+    guard let http1Stream = stream as? HTTP1Stream else {
+        throw StreamError.notSupported("HTTP1Stream should be used with an HTTP/1.1 connection!")
+    }
+
+    let body = request.body
+    guard case .stream(let stream) = body, stream.isEligibleForChunkedStreaming else {
+        throw ByteStreamError.invalidStreamTypeForChunkedBody(
+            "The stream is not eligible for chunked streaming or is not a stream type!"
+        )
+    }
+
+    guard let chunkedStream = stream as? ChunkedStream else {
+        throw ByteStreamError.streamDoesNotConformToChunkedStream(
+            "Stream does not conform to ChunkedStream! Type is \(stream)."
+        )
+    }
+
+    var hasMoreChunks = true
+    while hasMoreChunks {
+        hasMoreChunks = try await chunkedStream.chunkedReader.processNextChunk()
+        let currentChunkBodyIsEmpty = chunkedStream.chunkedReader.getCurrentChunkBody().isEmpty
+
+        if !hasMoreChunks || currentChunkBodyIsEmpty {
+            let finalChunk = try await chunkedStream.chunkedReader.getFinalChunk()
+            try await http1Stream.writeChunk(chunk: finalChunk, endOfStream: true)
+
+            var bytesSentAttributes = Attributes()
+            bytesSentAttributes.set(key: HttpMetricsAttributesKeys.serverAddress, value: serverAddress)
+            telemetry.bytesSent.add(
+                value: finalChunk.count,
+                attributes: bytesSentAttributes,
+                context: telemetry.contextManager.current()
+            )
+        } else {
+            let currentChunk = chunkedStream.chunkedReader.getCurrentChunk()
+            try await http1Stream.writeChunk(chunk: currentChunk, endOfStream: false)
+
+            var bytesSentAttributes = Attributes()
+            bytesSentAttributes.set(key: HttpMetricsAttributesKeys.serverAddress, value: serverAddress)
+            telemetry.bytesSent.add(
+                value: currentChunk.count,
+                attributes: bytesSentAttributes,
+                context: telemetry.contextManager.current()
+            )
         }
     }
 }

@@ -9,7 +9,7 @@ import class Smithy.Context
 import protocol SmithyIdentityAPI.IdentityResolver
 import struct Smithy.Attributes
 
-public protocol AuthScheme {
+public protocol AuthScheme: Sendable {
     var schemeID: String { get }
     var signer: Signer { get }
 
