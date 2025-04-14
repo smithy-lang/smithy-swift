@@ -77,9 +77,7 @@ jobs:
           NSUnbufferedIO=YES xcodebuild \
             -scheme smithy-swift-Package \
             -destination '${{ matrix.destination }}' \
-            test 2>&1 \
-            | xcbeautify
-
+            test 2>&1
   apple-downstream:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ${{ matrix.runner }}
