@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct SigningFlags {
+public struct SigningFlags: Sendable {
     public let useDoubleURIEncode: Bool
     public let shouldNormalizeURIPath: Bool
     public let omitSessionToken: Bool

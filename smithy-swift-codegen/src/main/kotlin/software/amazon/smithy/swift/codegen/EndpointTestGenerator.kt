@@ -75,8 +75,7 @@ class EndpointTestGenerator(
                                 generateValue(
                                     writer,
                                     value,
-                                    if (idx < applicableParams.count() - 1) "," else "",
-                                    false,
+                                    if (idx < applicableParams.count() - 1) "," else ""
                                 )
                             }
                         }
@@ -142,7 +141,7 @@ class EndpointTestGenerator(
                     val value = Value.fromNode(second)
                     writer.writeInline("\$S: ", first)
                     writer.call {
-                        generateValue(writer, value, if (idx < properties.values.count() - 1) "," else "", true)
+                        generateValue(writer, value, if (idx < properties.values.count() - 1) "," else "")
                     }
                 }
             }
@@ -156,7 +155,6 @@ class EndpointTestGenerator(
         writer: SwiftWriter,
         value: Value,
         delimeter: String,
-        castToEndpointPropertyValue: Boolean,
     ) {
         when (value) {
             is StringValue -> {
@@ -176,11 +174,10 @@ class EndpointTestGenerator(
             }
 
             is ArrayValue -> {
-                val castStmt = if (castToEndpointPropertyValue) " as [EndpointPropertyValue]$delimeter" else delimeter
-                writer.openBlock("[", "]$castStmt") {
+                writer.openBlock("[", "]$delimeter") {
                     value.values.forEachIndexed { idx, item ->
                         writer.call {
-                            generateValue(writer, item, if (idx < value.values.count() - 1) "," else "", castToEndpointPropertyValue)
+                            generateValue(writer, item, if (idx < value.values.count() - 1) "," else "")
                         }
                     }
                 }
@@ -190,11 +187,11 @@ class EndpointTestGenerator(
                 if (value.value.isEmpty()) {
                     writer.writeInline("[:]")
                 } else {
-                    writer.openBlock("[", "] as [String: EndpointPropertyValue]$delimeter") {
+                    writer.openBlock("[", "]$delimeter") {
                         value.value.map { it.key to it.value }.forEachIndexed { idx, (first, second) ->
                             writer.writeInline("\$S: ", first.name)
                             writer.call {
-                                generateValue(writer, second, if (idx < value.value.count() - 1) "," else "", castToEndpointPropertyValue)
+                                generateValue(writer, second, if (idx < value.value.count() - 1) "," else "")
                             }
                         }
                     }
