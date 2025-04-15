@@ -11,6 +11,8 @@
 
 ## Getting Started
 
+- random README update
+
 - Check out [high-level overview of Smithy](https://smithy.io/2.0/index.html)
 - Try out Smithy by following [the quick start guide](https://smithy.io/2.0/quickstart.html)
 - Apply the Smithy Swift codegen plugin to your Gradle project to generate Swift code
