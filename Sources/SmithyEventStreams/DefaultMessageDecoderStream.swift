@@ -11,7 +11,7 @@ import SmithyEventStreamsAuthAPI
 import struct Foundation.Data
 
 /// Stream adapter that decodes input data into `EventStream.Message` objects.
-public struct DefaultMessageDecoderStream<Event>: MessageDecoderStream, Sendable {
+public struct DefaultMessageDecoderStream<Event: Sendable>: MessageDecoderStream, Sendable {
     public typealias Element = Event
 
     let stream: ReadableStream
