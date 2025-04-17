@@ -408,7 +408,7 @@ public class CRTClientEngine: HTTPClient {
                     Task { @Sendable in
                         do {
 
-                            try await ClientRuntime.sendChunkedBody(
+                            try await CRTClientEngine.sendChunkedBody(
                                 using: stream,
                                 request: request,
                                 logger: logger,
@@ -475,18 +475,27 @@ public class CRTClientEngine: HTTPClient {
         }
     }
 
-    private func sendChunkedBody(using stream: Any, request: HTTPRequest) async throws {
+    private static func sendChunkedBody(
+        using stream: HTTPStream,
+        request: HTTPRequest,
+        logger: LogAgent,
+        telemetry: HttpTelemetry,
+        serverAddress: String
+    ) async throws {
         guard let http1Stream = stream as? HTTP1Stream else {
             throw StreamError.notSupported("HTTP1Stream should be used with an HTTP/1.1 connection!")
         }
-        guard case .stream(let bodyStream) = request.body, bodyStream.isEligibleForChunkedStreaming else {
+
+        let body = request.body
+        guard case .stream(let stream) = body, stream.isEligibleForChunkedStreaming else {
             throw ByteStreamError.invalidStreamTypeForChunkedBody(
                 "The stream is not eligible for chunked streaming or is not a stream type!"
             )
         }
-        guard let chunkedStream = bodyStream as? ChunkedStream else {
+
+        guard let chunkedStream = stream as? ChunkedStream else {
             throw ByteStreamError.streamDoesNotConformToChunkedStream(
-                "Stream does not conform to ChunkedStream! Type is \\(bodyStream)."
+                "Stream does not conform to ChunkedStream! Type is \(stream)."
             )
         }
 
@@ -495,13 +504,15 @@ public class CRTClientEngine: HTTPClient {
             hasMoreChunks = try await chunkedStream.chunkedReader.processNextChunk()
             let currentChunk = chunkedStream.chunkedReader.getCurrentChunk()
             let currentChunkBodyIsEmpty = chunkedStream.chunkedReader.getCurrentChunkBody().isEmpty
+
             if !hasMoreChunks || currentChunkBodyIsEmpty {
                 let finalChunk = try await chunkedStream.chunkedReader.getFinalChunk()
                 try await http1Stream.writeChunk(chunk: finalChunk, endOfStream: true)
+
                 var bytesSentAttributes = Attributes()
                 bytesSentAttributes.set(
                     key: HttpMetricsAttributesKeys.serverAddress,
-                    value: CRTClientEngine.makeServerAddress(request: request)
+                    value: serverAddress
                 )
                 telemetry.bytesSent.add(
                     value: finalChunk.count,
@@ -511,10 +522,11 @@ public class CRTClientEngine: HTTPClient {
                 break
             } else {
                 try await http1Stream.writeChunk(chunk: currentChunk, endOfStream: false)
+
                 var bytesSentAttributes = Attributes()
                 bytesSentAttributes.set(
                     key: HttpMetricsAttributesKeys.serverAddress,
-                    value: CRTClientEngine.makeServerAddress(request: request)
+                    value: serverAddress
                 )
                 telemetry.bytesSent.add(
                     value: currentChunk.count,
@@ -623,61 +635,6 @@ public class CRTClientEngine: HTTPClient {
         public func safeResume(error: Error) {
             continuation?.resume(throwing: error)
             continuation = nil
-        }
-    }
-}
-
-private func sendChunkedBody(
-    using stream: HTTPStream,
-    request: HTTPRequest,
-    logger: LogAgent,
-    telemetry: HttpTelemetry,
-    serverAddress: String
-) async throws {
-    guard let http1Stream = stream as? HTTP1Stream else {
-        throw StreamError.notSupported("HTTP1Stream should be used with an HTTP/1.1 connection!")
-    }
-
-    let body = request.body
-    guard case .stream(let stream) = body, stream.isEligibleForChunkedStreaming else {
-        throw ByteStreamError.invalidStreamTypeForChunkedBody(
-            "The stream is not eligible for chunked streaming or is not a stream type!"
-        )
-    }
-
-    guard let chunkedStream = stream as? ChunkedStream else {
-        throw ByteStreamError.streamDoesNotConformToChunkedStream(
-            "Stream does not conform to ChunkedStream! Type is \(stream)."
-        )
-    }
-
-    var hasMoreChunks = true
-    while hasMoreChunks {
-        hasMoreChunks = try await chunkedStream.chunkedReader.processNextChunk()
-        let currentChunkBodyIsEmpty = chunkedStream.chunkedReader.getCurrentChunkBody().isEmpty
-
-        if !hasMoreChunks || currentChunkBodyIsEmpty {
-            let finalChunk = try await chunkedStream.chunkedReader.getFinalChunk()
-            try await http1Stream.writeChunk(chunk: finalChunk, endOfStream: true)
-
-            var bytesSentAttributes = Attributes()
-            bytesSentAttributes.set(key: HttpMetricsAttributesKeys.serverAddress, value: serverAddress)
-            telemetry.bytesSent.add(
-                value: finalChunk.count,
-                attributes: bytesSentAttributes,
-                context: telemetry.contextManager.current()
-            )
-        } else {
-            let currentChunk = chunkedStream.chunkedReader.getCurrentChunk()
-            try await http1Stream.writeChunk(chunk: currentChunk, endOfStream: false)
-
-            var bytesSentAttributes = Attributes()
-            bytesSentAttributes.set(key: HttpMetricsAttributesKeys.serverAddress, value: serverAddress)
-            telemetry.bytesSent.add(
-                value: currentChunk.count,
-                attributes: bytesSentAttributes,
-                context: telemetry.contextManager.current()
-            )
         }
     }
 }
