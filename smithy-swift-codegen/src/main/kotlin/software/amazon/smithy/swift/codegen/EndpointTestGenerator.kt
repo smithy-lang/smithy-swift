@@ -75,7 +75,7 @@ class EndpointTestGenerator(
                                 generateValue(
                                     writer,
                                     value,
-                                    if (idx < applicableParams.count() - 1) "," else ""
+                                    if (idx < applicableParams.count() - 1) "," else "",
                                 )
                             }
                         }
