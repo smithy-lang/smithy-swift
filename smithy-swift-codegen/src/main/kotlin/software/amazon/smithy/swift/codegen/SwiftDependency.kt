@@ -55,8 +55,8 @@ class SwiftDependency(
         val CRT =
             SwiftDependency(
                 "AwsCommonRuntimeKit",
-                null,
-                "0.31.0",
+                "swift6-support",
+                "",
                 "https://github.com/awslabs/aws-crt-swift",
                 "",
                 "aws-crt-swift",

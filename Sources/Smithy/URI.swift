@@ -7,7 +7,7 @@ import Foundation
 
 /// A representation of the RFC 3986 Uniform Resource Identifier
 /// Note: URIBuilder returns an URI instance with all components percent encoded
-public struct URI: Hashable {
+public struct URI: Hashable, Sendable {
     public let scheme: URIScheme
     public let path: String
     public let host: String

@@ -9,7 +9,7 @@ import protocol SmithyIdentityAPI.Identity
 import struct Smithy.Attributes
 import struct Smithy.AttributeKey
 
-public struct SelectedAuthScheme {
+public struct SelectedAuthScheme: Sendable {
     public let schemeID: String
     public let identity: Identity?
     public let signingProperties: Attributes?
@@ -24,7 +24,7 @@ public struct SelectedAuthScheme {
 }
 
 extension SelectedAuthScheme {
-    public func getCopyWithUpdatedSigningProperty<T>(key: AttributeKey<T>, value: T) -> SelectedAuthScheme {
+    public func getCopyWithUpdatedSigningProperty<T: Sendable>(key: AttributeKey<T>, value: T) -> SelectedAuthScheme {
         var updatedSigningProperties = self.signingProperties
         updatedSigningProperties?.set(key: key, value: value)
         return SelectedAuthScheme(

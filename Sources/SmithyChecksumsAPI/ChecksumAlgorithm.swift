@@ -6,7 +6,7 @@
 //
 
 /// The list of checksum algorithms contained by this enum may expand in future.
-public enum ChecksumAlgorithm {
+public enum ChecksumAlgorithm: Sendable {
     case crc32, crc32c, crc64nvme, sha1, sha256, md5
 
     public func toString() -> String {

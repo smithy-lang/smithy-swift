@@ -5,4 +5,4 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public typealias UnmarshalClosure<T> = (Message) throws -> T
+public typealias UnmarshalClosure<T> = @Sendable (Message) throws -> T

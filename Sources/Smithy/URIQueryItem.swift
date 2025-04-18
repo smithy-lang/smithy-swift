@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct URIQueryItem: Hashable {
+public struct URIQueryItem: Hashable, Sendable {
     public var name: String
     public var value: String?
 

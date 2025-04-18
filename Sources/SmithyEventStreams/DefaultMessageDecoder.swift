@@ -16,7 +16,7 @@ import struct Foundation.Data
 /// AWS implementation of `MessageDecoder` for decoding event stream messages
 /// Note: This is class because struct does not allow using `self` in closure
 ///      and we need to use `self` to access `messageBuffer` per CRT API.
-public class DefaultMessageDecoder: MessageDecoder {
+public class DefaultMessageDecoder: MessageDecoder, @unchecked Sendable {
     private var decoder: EventStreamMessageDecoder?
     private var messageBuffer: [Message] = []
     private var error: Error?

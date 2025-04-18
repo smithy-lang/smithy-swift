@@ -8,7 +8,7 @@
 import struct Smithy.Attributes
 
 // Base protocol for all identity provider types
-public protocol IdentityResolver {
+public protocol IdentityResolver: Sendable {
     associatedtype IdentityT: Identity
 
     func getIdentity(identityProperties: Attributes?) async throws -> IdentityT

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public enum HTTPMethodType: String {
+public enum HTTPMethodType: String, Sendable {
     case connect = "CONNECT"
     case delete = "DELETE"
     case get = "GET"

@@ -74,7 +74,7 @@ final class SwiftLoggerTests: XCTestCase {
 }
 
 
-private class TestLogHandler: LogHandler {
+private class TestLogHandler: LogHandler, @unchecked Sendable {
     let label: String
     var invocations = [TestLogInvocation]()
 

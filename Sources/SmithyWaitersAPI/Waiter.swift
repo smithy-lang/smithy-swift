@@ -11,7 +11,7 @@ import Foundation
 /// the desired state will never be reached.
 /// Intended to be a generic type for use when waiting on any Smithy `operation`.
 /// May be reused for multiple waits, including concurrent operations.
-public class Waiter<Input, Output> {
+public class Waiter<Input, Output: Sendable> {
 
     /// The configuration this waiter was created with.
     public let config: WaiterConfiguration<Input, Output>

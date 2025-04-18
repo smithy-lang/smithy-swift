@@ -30,7 +30,7 @@ import struct Foundation.TimeInterval
 import struct Foundation.URL
 import SmithyHTTPClient
 
-public class SigV4Signer: SmithyHTTPAuthAPI.Signer {
+public class SigV4Signer: SmithyHTTPAuthAPI.Signer, @unchecked Sendable {
     public init() {}
 
     public func signRequest<IdentityT>(

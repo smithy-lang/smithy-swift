@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public enum URIScheme: String, CaseIterable {
+public enum URIScheme: String, CaseIterable, Sendable {
     case http
     case https
 

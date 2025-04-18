@@ -97,7 +97,7 @@ extension ContextBuilder {
     // @discardableResult attribute we won't get warnings if we
     // don't end up doing any chaining.
     @discardableResult
-    public func with<T>(key: AttributeKey<T>, value: T) -> Self {
+    public func with<T: Sendable>(key: AttributeKey<T>, value: T) -> Self {
         self.attributes.set(key: key, value: value)
         return self
     }

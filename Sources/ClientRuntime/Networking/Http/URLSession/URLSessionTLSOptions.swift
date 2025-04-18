@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct URLSessionTLSOptions: TLSConfiguration {
+public struct URLSessionTLSOptions: TLSConfiguration, Sendable {
 
     /// Filename of the turst certificate file in main bundle (.cer)
     public var certificate: String?

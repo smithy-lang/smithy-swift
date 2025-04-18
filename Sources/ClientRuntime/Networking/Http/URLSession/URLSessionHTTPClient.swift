@@ -310,7 +310,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         func urlSession(
             _ session: URLSession,
             task: URLSessionTask,
-            needNewBodyStream completionHandler: @escaping (InputStream?) -> Void
+            needNewBodyStream completionHandler: @escaping @Sendable (InputStream?) -> Void
         ) {
             storage.modify(task) { connection in
                 guard let streamBridge = connection.streamBridge else { completionHandler(nil); return }
@@ -362,6 +362,11 @@ public final class URLSessionHTTPClient: HTTPClient {
             //  - The stream bridge is closed.
             // This ensures that resources are freed and stream readers/writers are continued.
             storage.modify(task) { connection in
+                let streamBridge = connection.streamBridge
+                let shouldRemove = { [self] in
+                    storage.remove(task)
+                }
+
                 if let error = connection.error ?? error {
                     if connection.hasBeenResumed {
                         connection.responseStream.closeWithError(error)
@@ -376,12 +381,9 @@ public final class URLSessionHTTPClient: HTTPClient {
                     connection.responseStream.close()
                 }
 
-                // Close the stream bridge so that its resources are deallocated
                 Task {
-                    await connection.streamBridge?.close()
-
-                    // Task is complete & no longer needed.  Remove it from storage.
-                    storage.remove(task)
+                    await streamBridge?.close()
+                    shouldRemove()
                 }
             }
         }
