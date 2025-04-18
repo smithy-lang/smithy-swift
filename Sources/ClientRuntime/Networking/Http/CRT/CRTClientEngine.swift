@@ -318,7 +318,7 @@ public class CRTClientEngine: HTTPClient {
                         // END - smithy.client.http.requests.queued_duration
                     } catch {
                         logger.error(error.localizedDescription)
-                        await wrappedContinuation.safeResume(error: error)
+                        wrappedContinuation.resume(throwing: error)
                         return
                     }
 
@@ -417,15 +417,13 @@ public class CRTClientEngine: HTTPClient {
                             )
                         } catch {
                             logger.error("Chunked streaming error: \(error.localizedDescription)")
-                            await wrappedContinuation.safeResume(error: error)
+                            wrappedContinuation.resume(throwing: error)
                         }
                     }
                 }
             } catch {
                 self.logger.error("Request setup error: \(error.localizedDescription)")
-                Task {
-                    await wrappedContinuation.safeResume(error: error)
-                }
+                wrappedContinuation.resume(throwing: error)
             }
         }
     }
@@ -467,9 +465,7 @@ public class CRTClientEngine: HTTPClient {
                 }
             } catch {
                 self.logger.error(error.localizedDescription)
-                Task {
-                    await wrappedContinuation.safeResume(error: error)
-                }
+                wrappedContinuation.resume(throwing: error)
                 return
             }
         }
@@ -550,7 +546,7 @@ public class CRTClientEngine: HTTPClient {
     /// - Returns: A `HTTPRequestOptions` object that can be used to make a HTTP request
     private func makeHttpRequestStreamOptions(
         request: HTTPRequestBase,
-        continuation: ContinuationWrapper,
+        continuation: ContinuationWrapper<HTTPResponse>,
         http2ManualDataWrites: Bool = false,
         serverAddress: String
     ) -> HTTPRequestOptions {
@@ -576,9 +572,7 @@ public class CRTClientEngine: HTTPClient {
             // resume the continuation as soon as we have all the initial headers
             // this allows callers to start reading the response as it comes in
             // instead of waiting for the entire response to be received
-            Task {
-                await continuation.safeResume(response: response)
-            }
+            continuation.resume(returning: response)
         } onIncomingBody: { bodyChunk in
             self.logger.debug("Body chunk received")
             do {
@@ -620,21 +614,30 @@ public class CRTClientEngine: HTTPClient {
         }
     }
 
-    actor ContinuationWrapper {
-        private var continuation: StreamContinuation?
+    final class ContinuationWrapper<Response: Sendable>: @unchecked Sendable {
 
-        public init(_ continuation: StreamContinuation) {
-            self.continuation = continuation
+        private var continuation: CheckedContinuation<Response, Error>?
+        private let lock = NSLock()
+
+        init(_ cont: CheckedContinuation<Response, Error>) {
+            self.continuation = cont
         }
 
-        public func safeResume(response: HTTPResponse) {
-            continuation?.resume(returning: response)
-            continuation = nil
+        func resume(returning value: Response) {
+            take()?.resume(returning: value)
         }
 
-        public func safeResume(error: Error) {
-            continuation?.resume(throwing: error)
-            continuation = nil
+        func resume(throwing error: Error) {
+            take()?.resume(throwing: error)
+        }
+
+        /// Fetch the continuation exactly once. Returns the current value under
+        /// a lock, then sets it to `nil` so later callers get nothing.
+        private func take() -> CheckedContinuation<Response, Error>? {
+            lock.lock()
+            defer { lock.unlock() }
+            defer { continuation = nil }
+            return continuation
         }
     }
 }
