@@ -74,23 +74,6 @@ public class CRTClientEngine: HTTPClient {
             self.socketTimeout = config.socketTimeout
         }
 
-        init(
-            windowSize: Int,
-            maxConnectionsPerEndpoint: Int,
-            telemetry: HttpTelemetry,
-            connectTimeoutMs: UInt32? = nil,
-            crtTLSOptions: CRTClientTLSOptions? = nil,
-            socketTimeout: UInt32? = nil
-        ) {
-            self.windowSize = windowSize
-            self.maxConnectionsPerEndpoint = maxConnectionsPerEndpoint
-            self.telemetry = telemetry
-            self.logger = self.telemetry.loggerProvider.getLogger(name: "SerialExecutor")
-            self.connectTimeoutMs = connectTimeoutMs
-            self.crtTLSOptions = crtTLSOptions
-            self.socketTimeout = socketTimeout
-        }
-
         func getOrCreateConnectionPool(endpoint: Endpoint) throws -> HTTPClientConnectionManager {
             let poolID = ConnectionPoolID(endpoint: endpoint)
             guard let connectionPool = connectionPools[poolID] else {
@@ -199,15 +182,7 @@ public class CRTClientEngine: HTTPClient {
         self.windowSize = config.windowSize
         self.telemetry = config.telemetry
         self.logger = self.telemetry.loggerProvider.getLogger(name: "CRTClientEngine")
-
-        self.serialExecutor = SerialExecutor(
-            windowSize: config.windowSize,
-            maxConnectionsPerEndpoint: config.maxConnectionsPerEndpoint,
-            telemetry: config.telemetry,
-            connectTimeoutMs: config.connectTimeoutMs,
-            crtTLSOptions: config.crtTlsOptions,
-            socketTimeout: config.socketTimeout
-        )
+        self.serialExecutor = SerialExecutor(config: config)
     }
 
     public func send(request: HTTPRequest) async throws -> HTTPResponse {
