@@ -589,6 +589,7 @@ public class CRTClientEngine: HTTPClient {
         }
     }
 
+    // Guaranteed to be safe in concurrent environments due to use of locks
     final class ContinuationWrapper<Response: Sendable>: @unchecked Sendable {
 
         private var continuation: CheckedContinuation<Response, Error>?

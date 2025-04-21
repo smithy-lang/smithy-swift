@@ -7,7 +7,7 @@
 
 import class Foundation.NSRecursiveLock
 
-public class Context {
+public final class Context: @unchecked Sendable {
     private var _attributes: Attributes
     private let lock = NSRecursiveLock()
 
