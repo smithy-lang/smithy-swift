@@ -11,9 +11,9 @@ public struct URI: Hashable {
     public let scheme: URIScheme
     public let path: String
     public let host: String
-    public let port: Int16?
-    public var defaultPort: Int16 {
-        Int16(scheme.port)
+    public let port: UInt16?
+    public var defaultPort: UInt16 {
+        UInt16(scheme.port)
     }
     public let queryItems: [URIQueryItem]
     public let username: String?
@@ -29,7 +29,7 @@ public struct URI: Hashable {
     fileprivate init(scheme: URIScheme,
                      path: String,
                      host: String,
-                     port: Int16?,
+                     port: UInt16?,
                      queryItems: [URIQueryItem],
                      username: String? = nil,
                      password: String? = nil,
@@ -122,7 +122,7 @@ public final class URIBuilder {
     }
 
     @discardableResult
-    public func withPort(_ value: Int16?) -> URIBuilder {
+    public func withPort(_ value: UInt16?) -> URIBuilder {
         self.urlComponents.port = value.map { Int($0) }
         return self
     }
@@ -209,7 +209,7 @@ public final class URIBuilder {
         return URI(scheme: URIScheme(rawValue: self.urlComponents.scheme!)!,
                    path: self.urlComponents.percentEncodedPath,
                    host: self.urlComponents.percentEncodedHost!,
-                   port: self.urlComponents.port.map { Int16($0) },
+                   port: self.urlComponents.port.map { UInt16($0) },
                    queryItems: self.urlComponents.percentEncodedQueryItems?.map {
                         URIQueryItem(name: $0.name, value: $0.value)
                    } ?? [],
