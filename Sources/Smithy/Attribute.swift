@@ -13,6 +13,10 @@ public struct AttributeKey<ValueType>: Sendable {
         self.name = name
     }
 
+    public func getName() -> String {
+        return self.name
+    }
+
     func toString() -> String {
         return "AttributeKey: \(name)"
     }
@@ -31,6 +35,10 @@ public struct Attributes {
 
     public func contains<T>(key: AttributeKey<T>) -> Bool {
         get(key: key) != nil
+    }
+
+    public func getKeys() -> [String] {
+        return Array(self.attributes.keys)
     }
 
     public mutating func set<T>(key: AttributeKey<T>, value: T?) {

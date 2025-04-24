@@ -30,7 +30,7 @@ class PackageManifestGeneratorTests {
         assertNotNull(packageManifest)
         val expected = """
     platforms: [
-        .macOS(.v10_15), .iOS(.v13)
+        .macOS(.v12), .iOS(.v13)
     ],
 """
         packageManifest.shouldContain(expected)
