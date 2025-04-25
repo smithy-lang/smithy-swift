@@ -43,7 +43,7 @@ public class CRTClientEngine: HTTPClient {
         private struct ConnectionPoolID: Hashable {
             private let protocolType: URIScheme?
             private let host: String
-            private let port: Int16
+            private let port: UInt16
 
             init(endpoint: Endpoint) {
                 self.protocolType = endpoint.uri.scheme
