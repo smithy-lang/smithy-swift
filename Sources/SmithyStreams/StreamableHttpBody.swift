@@ -111,6 +111,10 @@ public class StreamableHttpBody: IStreamable {
     }
 
     public func isEndOfStream() -> Bool {
-        return false
+        do {
+            return try self.position >= self.length()
+        } catch {
+            return false
+        }
     }
 }
