@@ -109,4 +109,8 @@ public class StreamableHttpBody: IStreamable {
             return nil
         }
     }
+
+    public func isEndOfStream() -> Bool {
+        return false
+    }
 }
