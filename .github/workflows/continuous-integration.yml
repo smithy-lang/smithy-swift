@@ -21,6 +21,7 @@ jobs:
           - macos-14
           - macos-15
         xcode:
+          - Xcode_15.2
           - Xcode_16.1
         destination:
           - 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
@@ -31,6 +32,12 @@ jobs:
           - 'platform=visionOS Simulator,OS=2.1,name=Apple Vision Pro'
           - 'platform=macOS'
         exclude:
+          # Don't run old macOS with new Xcode
+          - runner: macos-14
+            xcode: Xcode_16.1
+          # Don't run new macOS with old Xcode
+          - runner: macos-15
+            xcode: Xcode_15.2
           # Don't run old simulators with new Xcode
           - destination: 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
             xcode: Xcode_16.1
@@ -38,6 +45,13 @@ jobs:
             xcode: Xcode_16.1
           - destination: 'platform=visionOS Simulator,OS=1.0,name=Apple Vision Pro'
             xcode: Xcode_16.1
+          # Don't run new simulators with old Xcode
+          - destination: 'platform=tvOS Simulator,OS=18.1,name=Apple TV 4K (3rd generation) (at 1080p)'
+            xcode: Xcode_15.2
+          - destination: 'platform=iOS Simulator,OS=18.1,name=iPhone 16'
+            xcode: Xcode_15.2
+          - destination: 'platform=visionOS Simulator,OS=2.1,name=Apple Vision Pro'
+            xcode: Xcode_15.2
     steps:
       - name: Configure Xcode
         run: |
@@ -63,7 +77,9 @@ jobs:
           NSUnbufferedIO=YES xcodebuild \
             -scheme smithy-swift-Package \
             -destination '${{ matrix.destination }}' \
-            test 2>&1
+            test 2>&1 \
+            | xcbeautify
+
   apple-downstream:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ${{ matrix.runner }}
@@ -75,6 +91,7 @@ jobs:
           - macos-14
           - macos-15
         xcode:
+          - Xcode_15.2
           - Xcode_16.1
         destination:
           - 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
@@ -85,6 +102,12 @@ jobs:
           - 'platform=visionOS Simulator,OS=2.1,name=Apple Vision Pro'
           - 'platform=macOS'
         exclude:
+          # Don't run old macOS with new Xcode
+          - runner: macos-14
+            xcode: Xcode_16.1
+          # Don't run new macOS with old Xcode
+          - runner: macos-15
+            xcode: Xcode_15.2
           # Don't run old simulators with new Xcode
           - destination: 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
             xcode: Xcode_16.1
@@ -92,6 +115,13 @@ jobs:
             xcode: Xcode_16.1
           - destination: 'platform=visionOS Simulator,OS=1.0,name=Apple Vision Pro'
             xcode: Xcode_16.1
+          # Don't run new simulators with old Xcode
+          - destination: 'platform=tvOS Simulator,OS=18.1,name=Apple TV 4K (3rd generation) (at 1080p)'
+            xcode: Xcode_15.2
+          - destination: 'platform=iOS Simulator,OS=18.1,name=iPhone 16'
+            xcode: Xcode_15.2
+          - destination: 'platform=visionOS Simulator,OS=2.1,name=Apple Vision Pro'
+            xcode: Xcode_15.2
     steps:
       - name: Configure Xcode
         run: |
@@ -150,6 +180,7 @@ jobs:
           - ubuntu-24.04
           - ubuntu-24.04-arm
         swift:
+          - 5.9-focal
           - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}
@@ -182,6 +213,7 @@ jobs:
           - ubuntu-24.04
           - ubuntu-24.04-arm
         swift:
+          - 5.9-focal
           - 6.0-jammy
     container:
       image: swift:${{ matrix.swift }}
