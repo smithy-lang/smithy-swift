@@ -140,3 +140,24 @@ public final class FileStream: Stream, @unchecked Sendable {
         close()
     }
 }
+
+fileprivate extension FileHandle {
+    func length() throws -> UInt64 {
+        let length: UInt64
+        let savedPos: UInt64
+        if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
+            savedPos = try offset()
+            try seekToEnd()
+            length = try offset()
+        } else {
+            savedPos = offsetInFile
+            seekToEndOfFile()
+            length = offsetInFile
+        }
+        guard length != savedPos else {
+            return length
+        }
+        try self.seek(toOffset: savedPos)
+        return length
+    }
+}
