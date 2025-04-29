@@ -56,7 +56,7 @@ class SwiftDependency(
             SwiftDependency(
                 "AwsCommonRuntimeKit",
                 null,
-                "0.58.2",
+                "0.52.1",
                 "https://github.com/awslabs/aws-crt-swift",
                 "",
                 "aws-crt-swift",
