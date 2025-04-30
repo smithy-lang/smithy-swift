@@ -15,7 +15,7 @@ public struct Endpoint: Hashable {
     public var queryItems: [URIQueryItem] { uri.queryItems }
     public var path: String { uri.path }
     public var host: String { uri.host }
-    public var port: Int16? { uri.port }
+    public var port: UInt16? { uri.port }
     public var url: URL? { uri.url }
     private let properties: [String: AnyHashable]
 
@@ -54,7 +54,7 @@ public struct Endpoint: Hashable {
 
     public init(host: String,
                 path: String = "/",
-                port: Int16 = 443,
+                port: UInt16 = 443,
                 queryItems: [URIQueryItem]? = nil,
                 headers: Headers = Headers(),
                 protocolType: URIScheme? = .https) {
