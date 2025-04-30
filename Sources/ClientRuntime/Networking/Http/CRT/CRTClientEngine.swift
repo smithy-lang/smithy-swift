@@ -611,9 +611,9 @@ public class CRTClientEngine: HTTPClient {
         /// a lock, then sets it to `nil` so later callers get nothing.
         private func take() -> CheckedContinuation<Response, Error>? {
             lock.lock()
-            defer { lock.unlock() }
-            defer { continuation = nil }
-            return continuation
+            defer { continuation = nil; lock.unlock() }
+            let pendingContinuation = continuation
+            return pendingContinuation
         }
     }
 }
