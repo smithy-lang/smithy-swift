@@ -219,7 +219,7 @@ open class MemberShapeDecodeGenerator(
             }
             // Provide a default value dependent on the type.
             return when (targetShape) {
-                is EnumShape -> " ?? .${enumDefaultValue(targetShape, it.expectStringNode().value)}"
+                is EnumShape -> " ?? ${enumDefaultValue(writer, targetShape, it.expectStringNode().value)}"
                 is IntEnumShape -> intEnumDefaultValue(it)
                 is StringShape -> " ?? \"${it.expectStringNode().value}\""
                 is ByteShape -> " ?? ${it.expectNumberNode().value}"
@@ -250,14 +250,18 @@ open class MemberShapeDecodeGenerator(
     // > enum: can be set to any valid string _value_ of the enum.
     // So, find the member with the default value, then render it as a Swift enum case.
     private fun enumDefaultValue(
+        writer: SwiftWriter,
         enumShape: EnumShape,
         value: String,
     ): String {
-        val matchingMember =
-            enumShape.members().first { member ->
-                value == member.expectTrait<EnumValueTrait>().expectStringValue()
-            }
-        return swiftEnumCaseName(matchingMember.memberName, value)
+        val matchingMember = enumShape.members().first { member ->
+            value == member.expectTrait<EnumValueTrait>().expectStringValue()
+        }
+        return writer.format(
+            "\$N.\$L",
+            ctx.symbolProvider.toSymbol(enumShape),
+            swiftEnumCaseName(matchingMember.memberName, value),
+        )
     }
 
     private fun intEnumDefaultValue(node: Node): String =
