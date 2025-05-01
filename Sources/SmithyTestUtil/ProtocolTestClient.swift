@@ -22,7 +22,7 @@ extension ProtocolTestClient: HTTPClient {
     }
 }
 
-public class ProtocolTestIdempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator {
+public class ProtocolTestIdempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator, @unchecked Sendable {
     public init() {}
 
     public func generateToken() -> String {

@@ -7,6 +7,7 @@
 
 import struct SmithyHTTPAPI.Endpoint
 import struct SmithyHTTPAPI.Headers
+import enum SmithyHTTPAPI.EndpointPropertyValue
 
 public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding> {
 
@@ -32,6 +33,6 @@ public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding> 
 
         let headers = crtResolvedEndpoint.getHeaders() ?? [:]
         let properties = crtResolvedEndpoint.getProperties() ?? [:]
-        return try Endpoint(urlString: url, headers: Headers(headers), properties: properties)
+        return try Endpoint(urlString: url, headers: Headers(headers), endpointProperties: properties)
     }
 }

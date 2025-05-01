@@ -17,7 +17,7 @@ import struct Foundation.TimeInterval
 import struct SmithyHTTPAuthAPI.SigningFlags
 import struct SmithyIdentity.AWSCredentialIdentity
 
-public struct AWSSigningConfig {
+public struct AWSSigningConfig: Sendable {
     public let credentials: AWSCredentialIdentity?
     public let awsCredentialIdentityResolver: (any AWSCredentialIdentityResolver)?
     public let expiration: TimeInterval
@@ -27,7 +27,7 @@ public struct AWSSigningConfig {
     public let date: Date
     public let service: String
     public let region: String
-    public let shouldSignHeader: ((String) -> Bool)?
+    public let shouldSignHeader: (@Sendable (String) -> Bool)?
     public let signatureType: AWSSignatureType
     public let signingAlgorithm: SigningAlgorithm
 
@@ -41,7 +41,7 @@ public struct AWSSigningConfig {
         date: Date,
         service: String,
         region: String,
-        shouldSignHeader: ((String) -> Bool)? = nil,
+        shouldSignHeader: (@Sendable (String) -> Bool)? = nil,
         signatureType: AWSSignatureType,
         signingAlgorithm: SigningAlgorithm
     ) {

@@ -8,7 +8,7 @@
 import SmithyEventStreamsAPI
 
 /// Protocol for signing messages.
-public protocol MessageSigner {
+public protocol MessageSigner: Sendable {
     /// Signs a message.
     /// - Parameter message: The message to sign.
     /// - Returns: The signed message.

@@ -10,7 +10,7 @@ import struct SmithyEventStreamsAPI.Message
 import struct Foundation.Data
 
 /// Protocol for signing messages.
-public protocol MessageDataSigner {
+public protocol MessageDataSigner: Sendable {
 
     /// Signs a message.
     /// - Parameters:
@@ -25,7 +25,7 @@ public protocol MessageDataSigner {
     ) async throws -> SigningResult<Message>
 }
 
-public struct SigningResult<T> {
+public struct SigningResult<T: Sendable>: Sendable {
     public let output: T
     public let signature: String
 

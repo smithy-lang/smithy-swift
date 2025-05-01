@@ -7,8 +7,9 @@
 
 import Foundation
 import Smithy
+import enum AwsCommonRuntimeKit.EndpointProperty
 
-public struct Endpoint: Hashable {
+public struct Endpoint: Sendable, Equatable {
     public let uri: URI
     public let headers: Headers
     public var protocolType: URIScheme? { uri.scheme }
@@ -17,11 +18,11 @@ public struct Endpoint: Hashable {
     public var host: String { uri.host }
     public var port: UInt16? { uri.port }
     public var url: URL? { uri.url }
-    private let properties: [String: AnyHashable]
+    private let properties: [String: EndpointPropertyValue]
 
     public init(urlString: String,
                 headers: Headers = Headers(),
-                properties: [String: AnyHashable] = [:]) throws {
+                properties: [String: EndpointPropertyValue] = [:]) throws {
         guard let url = URLComponents(string: urlString)?.url else {
             throw ClientError.unknownError("invalid url \(urlString)")
         }
@@ -31,7 +32,7 @@ public struct Endpoint: Hashable {
 
     public init(url: URL,
                 headers: Headers = Headers(),
-                properties: [String: AnyHashable] = [:]) throws {
+                properties: [String: EndpointPropertyValue] = [:]) throws {
 
         guard let host = url.host else {
             throw ClientError.unknownError("invalid host \(String(describing: url.host))")
@@ -72,10 +73,23 @@ public struct Endpoint: Hashable {
 
     public init(uri: URI,
                 headers: Headers = Headers(),
-                properties: [String: AnyHashable] = [:]) {
+                properties: [String: EndpointPropertyValue] = [:]) {
         self.uri = uri
         self.headers = headers
         self.properties = properties
+    }
+}
+
+extension Endpoint {
+    public init(urlString: String,
+                headers: Headers = Headers(),
+                endpointProperties: [String: EndpointProperty]) throws {
+        guard let url = URLComponents(string: urlString)?.url else {
+            throw ClientError.unknownError("invalid url \(urlString)")
+        }
+
+        let properties = endpointProperties.mapValues(EndpointPropertyValue.init)
+        try self.init(url: url, headers: headers, properties: properties)
     }
 }
 
@@ -84,12 +98,19 @@ extension Endpoint {
     /// Returns list of auth schemes
     /// This is an internal API and subject to change without notice
     /// - Returns: list of auth schemes if present
-    public func authSchemes() -> [[String: Any]]? {
-        guard let schemes = properties[AuthSchemeKeys.authSchemes] as? [[String: Any]] else {
+    public func authSchemes() -> [[String: EndpointPropertyValue]]? {
+        guard let value = properties[AuthSchemeKeys.authSchemes],
+              case let .array(schemeArray) = value else {
             return nil
         }
 
-        return schemes
+        return schemeArray.compactMap { scheme in
+            guard case let .dictionary(dict) = scheme else {
+                return nil
+            }
+
+            return dict
+        }
     }
 }
 
