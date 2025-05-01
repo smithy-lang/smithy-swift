@@ -26,7 +26,7 @@ import struct Foundation.URLRequest
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
 // developer must ensure HTTPRequest’s internal state remains thread-safe
-public final class HTTPRequest: RequestMessage, @unchecked Sendable {
+public final class HTTPRequest: RequestMessage {
     public var body: ByteStream
     public let destination: URI
     public var headers: Headers
