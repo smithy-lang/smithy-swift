@@ -10,7 +10,7 @@ import protocol Smithy.Stream
 import enum Smithy.ByteStream
 import class Foundation.NSRecursiveLock
 
-public final class HTTPResponse: ResponseMessage {
+public final class HTTPResponse: ResponseMessage, @unchecked Sendable {
     private var lock = NSRecursiveLock()
 
     private var _headers: Headers
