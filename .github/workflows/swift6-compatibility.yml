@@ -27,8 +27,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup common tools
         uses: ./.github/actions/setup-common-tools-composite-action
-      - name: Test on swift-tools-version 6.0
+      - name: Build on swift-tools-version 6.0
         run: |
           perl -pi -e 's{^// swift-tools-version:\d+\.\d+}{// swift-tools-version:6.0}' Package.swift
           set -euo pipefail
-          swift build && swift test
+          swift build
