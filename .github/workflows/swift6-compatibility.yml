@@ -1,0 +1,33 @@
+name: Swift6 Compatibility
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  AWS_SWIFT_SDK_USE_LOCAL_DEPS: 1
+
+jobs:
+  swift6-compatibility:
+    if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - macos-15
+        xcode:
+          - Xcode_16.1
+        destination:
+          - 'platform=macOS'
+    steps:
+      - name: Checkout smithy-swift
+        uses: actions/checkout@v4
+      - name: Setup common tools
+        uses: ./.github/actions/setup-common-tools-composite-action
+      - name: Test on swift-tools-version 6.0
+        run: |
+          perl -pi -e 's{^// swift-tools-version:\d+\.\d+}{// swift-tools-version:6.0}' Package.swift
+          swift build && swift test
