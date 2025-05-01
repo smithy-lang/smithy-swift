@@ -38,3 +38,9 @@ jobs:
         run: |
           git diff
           test -z "$(git diff)"
+
+      - name: Test on swift-tools-version 6.0
+        run: |
+          perl -pi -e 's{^// swift-tools-version:\d+\.\d+}{// swift-tools-version:6.0}' Package.swift
+          swift build && swift test
+          git restore Package.swift
