@@ -254,9 +254,10 @@ open class MemberShapeDecodeGenerator(
         enumShape: EnumShape,
         value: String,
     ): String {
-        val matchingMember = enumShape.members().first { member ->
-            value == member.expectTrait<EnumValueTrait>().expectStringValue()
-        }
+        val matchingMember =
+            enumShape.members().first { member ->
+                value == member.expectTrait<EnumValueTrait>().expectStringValue()
+            }
         return writer.format(
             "\$N.\$L",
             ctx.symbolProvider.toSymbol(enumShape),
