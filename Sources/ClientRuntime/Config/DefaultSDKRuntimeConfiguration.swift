@@ -131,7 +131,7 @@ public class DefaultAuthSchemeResolverParameters: AuthSchemeResolverParameters {
     }
 }
 
-public class DefaultAuthSchemeResolver: AuthSchemeResolver {
+public final class DefaultAuthSchemeResolver: AuthSchemeResolver, Sendable {
     public func resolveAuthScheme(params: AuthSchemeResolverParameters) throws -> [AuthOption] {
         return []
     }

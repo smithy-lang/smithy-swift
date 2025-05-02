@@ -7,7 +7,7 @@
 
 import class Smithy.Context
 
-public protocol AuthSchemeResolver {
+public protocol AuthSchemeResolver: Sendable {
     func resolveAuthScheme(params: AuthSchemeResolverParameters) throws -> [AuthOption]
     func constructParameters(context: Context) throws -> AuthSchemeResolverParameters
 }

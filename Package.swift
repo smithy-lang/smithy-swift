@@ -56,7 +56,7 @@ let package = Package(
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
-            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.48.0"),
+            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.52.1"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         ]
         let isDocCEnabled = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil
@@ -157,7 +157,10 @@ let package = Package(
         ),
         .target(
             name: "SmithyHTTPAPI",
-            dependencies: ["Smithy"]
+            dependencies: [
+                "Smithy",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
         ),
         .target(
             name: "SmithyHTTPClient",

@@ -7,7 +7,7 @@
 
 import class Foundation.NSRecursiveLock
 
-public class Context {
+public final class Context: @unchecked Sendable {
     private var _attributes: Attributes
     private let lock = NSRecursiveLock()
 
@@ -34,15 +34,15 @@ public class Context {
 
 extension Context {
 
-    public func get<T>(key: AttributeKey<T>) -> T? {
+    public func get<T: Sendable>(key: AttributeKey<T>) -> T? {
         accessAttributes().get(key: key)
     }
 
-    public func contains<T>(key: AttributeKey<T>) -> Bool {
+    public func contains<T: Sendable>(key: AttributeKey<T>) -> Bool {
         accessAttributes().contains(key: key)
     }
 
-    public func set<T>(key: AttributeKey<T>, value: T?) {
+    public func set<T: Sendable>(key: AttributeKey<T>, value: T?) {
         accessAttributes { attributes in
             attributes.set(key: key, value: value)
         }
@@ -68,7 +68,7 @@ public class ContextBuilder {
     // @discardableResult attribute we won't get warnings if we
     // don't end up doing any chaining.
     @discardableResult
-    public func with<T>(key: AttributeKey<T>, value: T) -> Self {
+    public func with<T: Sendable>(key: AttributeKey<T>, value: T) -> Self {
         self.attributes.set(key: key, value: value)
         return self
     }

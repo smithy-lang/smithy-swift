@@ -15,32 +15,30 @@ import XCTest
 // This set of tests is intended to verify that Doubles and Floats can be read accurately from JSON.
 
 final class FloatingPointTests: XCTestCase {
-
-    static var originalFloats = [Float]()
-    static var floatData = Data()
-    static var originalDoubles = [Double]()
-    static var doubleData = Data()
+    var originalFloats = [Float]()
+    var floatData = Data()
+    var originalDoubles = [Double]()
+    var doubleData = Data()
 
     // Renders 250 floats & doubles to JSON arrays.  Numbers are random so they will
     // likely use all available decimal places.
-    static override func setUp() {
+    override func setUp() {
+        super.setUp()
         originalFloats = (1..<250).map { _ in Float.random(in: 0.0...1.0) }
         originalDoubles = (1..<250).map { _ in Double.random(in: 0.0...1.0) }
         floatData = try! JSONEncoder().encode(originalFloats)
         doubleData = try! JSONEncoder().encode(originalDoubles)
     }
 
-    // Read the floats from JSON using JSONReader, and compare the values to the original.
     func test_floatRead() throws {
-        let reader = try Reader.from(data: Self.floatData)
+        let reader = try Reader.from(data: floatData)
         let floats = try reader.readList(memberReadingClosure: ReadingClosures.readFloat(from:), memberNodeInfo: "", isFlattened: false)
-        XCTAssert(floats == Self.originalFloats)
+        XCTAssert(floats == originalFloats)
     }
 
-    // Read the doubles from JSON using JSONReader, and compare the values to the original.
     func test_doubleRead() throws {
-        let reader = try Reader.from(data: Self.doubleData)
+        let reader = try Reader.from(data: doubleData)
         let doubles = try reader.readList(memberReadingClosure: ReadingClosures.readDouble(from:), memberNodeInfo: "", isFlattened: false)
-        XCTAssert(doubles == Self.originalDoubles)
+        XCTAssert(doubles == originalDoubles)
     }
 }
