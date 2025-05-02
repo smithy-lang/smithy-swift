@@ -26,7 +26,6 @@ import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPRestJ
 import kotlin.io.path.Path
 
 class WaiterIntegrationTests {
-
     @Test
     fun `generator not enabled for service without waiters`() {
         val context = setupTests("waiters-none.smithy", "com.test#TestHasNoWaiters")
@@ -53,44 +52,37 @@ class WaiterIntegrationTests {
         filePaths.shouldNotContain(Path("Sources/Test/Waiters.swift"))
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
         val context =
             TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestJsonProtocolGenerator()) { model ->
                 model.defaultSettings(serviceShapeId, "Test", "2019-12-16", "Test")
             }
         context.generator.generateProtocolClient(context.generationCtx)
-        val codegenContext = object : SwiftCodegenContext {
-            override val model: Model = context.generationCtx.model
-            override val symbolProvider: SymbolProvider = context.generationCtx.symbolProvider
-            override val settings: SwiftSettings = context.generationCtx.settings
-            override val fileManifest: FileManifest = context.manifest
-            override val protocolGenerator: ProtocolGenerator? = context.generator
-            override val integrations: List<SwiftIntegration> = context.generationCtx.integrations
+        val codegenContext =
+            object : SwiftCodegenContext {
+                override val model: Model = context.generationCtx.model
+                override val symbolProvider: SymbolProvider = context.generationCtx.symbolProvider
+                override val settings: SwiftSettings = context.generationCtx.settings
+                override val fileManifest: FileManifest = context.manifest
+                override val protocolGenerator: ProtocolGenerator? = context.generator
+                override val integrations: List<SwiftIntegration> = context.generationCtx.integrations
 
-            override fun model(): Model {
-                return model
-            }
+                override fun model(): Model = model
 
-            override fun settings(): SwiftSettings {
-                return settings
-            }
+                override fun settings(): SwiftSettings = settings
 
-            override fun symbolProvider(): SymbolProvider {
-                return symbolProvider
-            }
+                override fun symbolProvider(): SymbolProvider = symbolProvider
 
-            override fun fileManifest(): FileManifest {
-                return fileManifest
-            }
+                override fun fileManifest(): FileManifest = fileManifest
 
-            override fun writerDelegator(): WriterDelegator<SwiftWriter> {
-                return SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations)
-            }
+                override fun writerDelegator(): WriterDelegator<SwiftWriter> =
+                    SwiftDelegator(settings, model, fileManifest, symbolProvider, integrations)
 
-            override fun integrations(): MutableList<SwiftIntegration> {
-                return integrations.toMutableList()
+                override fun integrations(): MutableList<SwiftIntegration> = integrations.toMutableList()
             }
-        }
         val unit = WaiterIntegration()
         if (unit.enabledForService(codegenContext.model, codegenContext.settings)) {
             unit.writeAdditionalFiles(codegenContext, context.generationCtx, context.generationCtx.delegator)

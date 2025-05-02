@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 class HttpHeaderProviderGeneratorTests {
     private var model = javaClass.classLoader.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
     var newTestContext: TestContext
+
     init {
         newTestContext = newTestContext()
         newTestContext.generator.generateSerializers(newTestContext.generationCtx)
@@ -70,11 +71,12 @@ extension EnumInputInput {
 
     @Test
     fun `it builds header with idempotency token value`() {
-        val contents = getModelFileContents(
-            "Sources/example",
-            "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+HeaderProvider.swift",
-            newTestContext.manifest
-        )
+        val contents =
+            getModelFileContents(
+                "Sources/example",
+                "IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput+HeaderProvider.swift",
+                newTestContext.manifest,
+            )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension IdempotencyTokenWithoutHttpPayloadTraitOnTokenInput {

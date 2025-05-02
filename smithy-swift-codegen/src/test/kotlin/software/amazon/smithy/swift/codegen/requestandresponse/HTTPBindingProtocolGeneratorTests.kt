@@ -37,23 +37,35 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
     ): HttpProtocolClientGenerator {
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
         val config = getConfigClass(writer, serviceSymbol.name)
-        return HttpProtocolClientGenerator(ctx, writer, config, httpBindingResolver, defaultContentType, httpProtocolCustomizable, operationMiddleware)
+        return HttpProtocolClientGenerator(
+            ctx,
+            writer,
+            config,
+            httpBindingResolver,
+            defaultContentType,
+            httpProtocolCustomizable,
+            operationMiddleware,
+        )
     }
 
-    private fun getConfigClass(writer: SwiftWriter, serviceName: String): ServiceConfig {
-        return DefaultServiceConfig(writer, serviceName)
-    }
+    private fun getConfigClass(
+        writer: SwiftWriter,
+        serviceName: String,
+    ): ServiceConfig = DefaultServiceConfig(writer, serviceName)
 }
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class HTTPBindingProtocolGeneratorTests {
     private var model = javaClass.classLoader.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
         return model.newTestContext()
     }
+
     val newTestContext = newTestContext()
+
     init {
         newTestContext.generator.generateSerializers(newTestContext.generationCtx)
         newTestContext.generator.generateProtocolClient(newTestContext.generationCtx)
@@ -108,7 +120,8 @@ extension HttpResponseCodeOutput {
 
     @Test
     fun `decode the document type in HttpResponseBinding`() {
-        val contents = getModelFileContents("Sources/example", "InlineDocumentAsPayloadOutput+HttpResponseBinding.swift", newTestContext.manifest)
+        val contents =
+            getModelFileContents("Sources/example", "InlineDocumentAsPayloadOutput+HttpResponseBinding.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension InlineDocumentAsPayloadOutput {

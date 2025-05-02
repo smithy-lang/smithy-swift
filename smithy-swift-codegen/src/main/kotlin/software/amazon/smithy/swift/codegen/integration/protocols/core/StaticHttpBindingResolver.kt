@@ -26,34 +26,37 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 open class StaticHttpBindingResolver(
     private val context: ProtocolGenerator.GenerationContext,
     private val httpTrait: HttpTrait,
-    private val defaultContentType: String
+    private val defaultContentType: String,
 ) : HttpBindingResolver {
-    override fun httpTrait(operationShape: OperationShape): HttpTrait {
-        return httpTrait
-    }
+    protected fun getServiceName(): String = context.service.id.name
+
+    override fun httpTrait(operationShape: OperationShape): HttpTrait = httpTrait
 
     override fun requestBindings(operationShape: OperationShape): List<HttpBindingDescriptor> {
         if (!operationShape.input.isPresent) {
             return emptyList()
         }
         val input = context.model.expectShape(operationShape.input.get())
-        return input.members().map { member ->
-            HttpBindingDescriptor(member, HttpBinding.Location.DOCUMENT, "")
-        }.toList()
+        return input
+            .members()
+            .map { member ->
+                HttpBindingDescriptor(member, HttpBinding.Location.DOCUMENT, "")
+            }.toList()
     }
 
     override fun determineRequestContentType(operationShape: OperationShape): String = defaultContentType
 
-    override fun responseBindings(shape: Shape): List<HttpBindingDescriptor> = when (shape) {
-        is OperationShape ->
-            shape
-                .output
-                .map { context.model.expectShape(it).members() }
-                .orElseGet { emptyList() }
-                .map { member -> HttpBindingDescriptor(member, HttpBinding.Location.DOCUMENT, "") }
-        is StructureShape -> shape.members().map { member -> member.toHttpBindingDescriptor() }.toList()
-        else -> error("unimplemented shape type for http response bindings: $shape")
-    }
+    override fun responseBindings(shape: Shape): List<HttpBindingDescriptor> =
+        when (shape) {
+            is OperationShape ->
+                shape
+                    .output
+                    .map { context.model.expectShape(it).members() }
+                    .orElseGet { emptyList() }
+                    .map { member -> HttpBindingDescriptor(member, HttpBinding.Location.DOCUMENT, "") }
+            is StructureShape -> shape.members().map { member -> member.toHttpBindingDescriptor() }.toList()
+            else -> error("unimplemented shape type for http response bindings: $shape")
+        }
 }
 
 // Create a [HttpBindingDescriptor] based on traits on [MemberShape]
@@ -65,7 +68,12 @@ private fun MemberShape.toHttpBindingDescriptor(): HttpBindingDescriptor =
         hasTrait<HttpPayloadTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.PAYLOAD, "")
         hasTrait<HttpQueryTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.QUERY, expectTrait<HttpQueryTrait>().value)
         hasTrait<HttpResponseCodeTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.RESPONSE_CODE, "")
-        hasTrait<HttpPrefixHeadersTrait>() -> HttpBindingDescriptor(this, HttpBinding.Location.PREFIX_HEADERS, expectTrait<HttpPrefixHeadersTrait>().value)
+        hasTrait<HttpPrefixHeadersTrait>() ->
+            HttpBindingDescriptor(
+                this,
+                HttpBinding.Location.PREFIX_HEADERS,
+                expectTrait<HttpPrefixHeadersTrait>().value,
+            )
         // By default, all structure members that are not bound as part of the HTTP message are
         // serialized in a protocol-specific document sent in the body of the message
         else -> HttpBindingDescriptor(this, HttpBinding.Location.DOCUMENT, "")

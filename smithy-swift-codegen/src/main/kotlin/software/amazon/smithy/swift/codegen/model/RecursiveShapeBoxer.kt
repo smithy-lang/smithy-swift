@@ -51,15 +51,17 @@ object RecursiveShapeBoxer {
         // (External to this function) Go back to 1.
         val index = TopologicalIndex(model)
         val recursiveShapes = index.recursiveShapes
-        val loops = recursiveShapes.map {
-            // Get all the shapes in the closure (represented as Paths
-            shapeId ->
-            index.getRecursiveClosure(shapeId)
-        }.flatMap {
-            // flatten the connections into shapes
-            loops ->
-            loops.map { it.shapes }
-        }
+        val loops =
+            recursiveShapes
+                .map {
+                    // Get all the shapes in the closure (represented as Paths
+                    shapeId ->
+                    index.getRecursiveClosure(shapeId)
+                }.flatMap {
+                    // flatten the connections into shapes
+                    loops ->
+                    loops.map { it.shapes }
+                }
         val loopToFix = loops.firstOrNull { !containsIndirection(it) }
 
         return loopToFix?.let { loop: List<Shape> ->
@@ -68,7 +70,12 @@ object RecursiveShapeBoxer {
             val shapeToBox = loop.filterIsInstance<MemberShape>().minByOrNull { it.id }
             ModelTransformer.create().mapShapes(model) { shape ->
                 if (shape == shapeToBox) {
-                    shape.asMemberShape().get().toBuilder().addTrait(SwiftBoxTrait()).build()
+                    shape
+                        .asMemberShape()
+                        .get()
+                        .toBuilder()
+                        .addTrait(SwiftBoxTrait())
+                        .build()
                 } else {
                     shape
                 }
@@ -80,15 +87,15 @@ object RecursiveShapeBoxer {
      * Check if a List<Shape> contains a shape which will use a pointer when represented in Swift, avoiding the
      * need to add more Boxes
      */
-    private fun containsIndirection(loop: List<Shape>): Boolean {
-        return loop.find {
+    private fun containsIndirection(loop: List<Shape>): Boolean =
+        loop.find {
             when (it) {
                 is ListShape,
                 is MapShape,
                 is UnionShape,
-                is SetShape -> true
+                is SetShape,
+                -> true
                 else -> it.hasTrait(SwiftBoxTrait::class.java)
             }
         } != null
-    }
 }

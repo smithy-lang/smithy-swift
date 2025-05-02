@@ -9,17 +9,17 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthTypes
 
 open class AuthUtils(
-    private val ctx: ProtocolGenerator.GenerationContext
+    private val ctx: ProtocolGenerator.GenerationContext,
 ) {
-    val authSchemesDefaultProvider = DefaultProvider(
-        { getModeledAuthSchemesSupportedBySDK(ctx, it) },
-        isThrowable = false,
-        isAsync = false
-    )
+    val authSchemesDefaultProvider =
+        DefaultProvider(
+            { getModeledAuthSchemesSupportedBySDK(ctx, it) },
+            isThrowable = false,
+            isAsync = false,
+        )
 
-    fun isSupportedAuthScheme(authSchemeID: ShapeId): Boolean {
-        return ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service).contains(authSchemeID)
-    }
+    fun isSupportedAuthScheme(authSchemeID: ShapeId): Boolean =
+        ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service).contains(authSchemeID)
 
     fun getModeledAuthSchemesSupportedBySDK(
         ctx: ProtocolGenerator.GenerationContext,
@@ -35,7 +35,10 @@ open class AuthUtils(
         return addAdditionalSchemes(writer, authSchemeList).joinToString(prefix = "[", postfix = "]")
     }
 
-    open fun addAdditionalSchemes(writer: SwiftWriter, authSchemeList: MutableList<String>): List<String> {
+    open fun addAdditionalSchemes(
+        writer: SwiftWriter,
+        authSchemeList: MutableList<String>,
+    ): List<String> {
         // Override to add any additional auth schemes supported
         return authSchemeList
     }

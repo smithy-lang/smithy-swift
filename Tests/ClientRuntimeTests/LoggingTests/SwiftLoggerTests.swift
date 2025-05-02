@@ -38,7 +38,7 @@ final class SwiftLoggerTests: XCTestCase {
 
     private func logsLeveledMessage(
         logLevel: Logger.Level,
-        loggerBlock: (SwiftLogger) -> (String, String, String, UInt) -> Void,
+        loggerBlock: (SwiftLogger) -> (@autoclosure() -> String, String, String, UInt) -> Void,
         testFile: StaticString = #filePath,
         testLine: UInt = #line
     ) throws {
@@ -53,7 +53,7 @@ final class SwiftLoggerTests: XCTestCase {
         // Create a TestLogHandler, then create a SwiftLogger (the test subject)
         // with it.
         var logHandler: TestLogHandler!
-        let subject = SwiftLogger(label: "Test", logLevel: .trace, factory: { label in
+        let subject = SwiftLogger(label: "Test", factory: { label in
             logHandler = TestLogHandler(label: label)
             return logHandler
         })
@@ -74,7 +74,7 @@ final class SwiftLoggerTests: XCTestCase {
 }
 
 
-private class TestLogHandler: LogHandler {
+private class TestLogHandler: LogHandler, @unchecked Sendable {
     let label: String
     var invocations = [TestLogInvocation]()
 

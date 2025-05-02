@@ -5,12 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public protocol LogAgent {
+public protocol LogAgent: Sendable {
     /// name of the struct or class where the logger was instantiated from
     var name: String { get }
-
-    /// Get or set the configured log level.
-    var level: LogAgentLevel { get set }
 
     /// This method is called when a `LogAgent` must emit a log message.
     ///
@@ -23,73 +20,25 @@ public protocol LogAgent {
     ///     - function: The function the log line was emitted from.
     ///     - line: The line the log message was emitted from.
     func log(level: LogAgentLevel,
-             message: String,
-             metadata: [String: String]?,
-             source: String,
+             message: @autoclosure () -> String,
+             metadata: @autoclosure () -> [String: String]?,
+             source: @autoclosure () -> String,
              file: String,
              function: String,
              line: UInt)
 }
 
-public enum LogAgentLevel: String, Codable, CaseIterable {
-    case trace
-    case debug
-    case info
-    case warn
-    case error
-    case fatal
-}
-
+/// Convenience wrapper functions that call `self.log()` with corresponding log level.
 public extension LogAgent {
-
-    /// Log a message passing with the `.info` log level.
-    func info(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
-        self.log(level: .info,
-                 message: message,
-                 metadata: nil,
-                 source: currentModule(fileID: file),
-                 file: file,
-                 function: function,
-                 line: line)
-    }
-
-    /// Log a message passing with the `LogLevel.warn` log level.
-    func warn(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
-        self.log(level: .warn,
-                 message: message,
-                 metadata: nil,
-                 source: currentModule(fileID: file),
-                 file: file,
-                 function: function,
-                 line: line)
-    }
-
-    /// Log a message passing with the `.debug` log level.
-    func debug(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
-        self.log(level: .debug,
-                 message: message,
-                 metadata: nil,
-                 source: currentModule(fileID: file),
-                 file: file,
-                 function: function,
-                 line: line)
-    }
-
-    /// Log a message passing with the `.error` log level.
-    func error(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
-        self.log(level: .error,
-                 message: message,
-                 metadata: nil,
-                 source: currentModule(fileID: file),
-                 file: file,
-                 function: function,
-                 line: line)
-    }
-
-    /// Log a message passing with the `.trace` log level.
-    func trace(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
+    /// Use for messages that are typically seen during tracing.
+    func trace(
+        _ message: @autoclosure() -> String,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) {
         self.log(level: .trace,
-                 message: message,
+                 message: message(),
                  metadata: nil,
                  source: currentModule(fileID: file),
                  file: file,
@@ -97,10 +46,96 @@ public extension LogAgent {
                  line: line)
     }
 
-    /// Log a message passing with the `.fatal` log level.
-    func fatal(_ message: String, file: String = #fileID, function: String = #function, line: UInt = #line) {
+    /// Use for messages that are typically seen during debugging.
+    func debug(
+        _ message: @autoclosure() -> String,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) {
+        self.log(level: .debug,
+                 message: message(),
+                 metadata: nil,
+                 source: currentModule(fileID: file),
+                 file: file,
+                 function: function,
+                 line: line)
+    }
+
+    /// Use for informational messages.
+    func info(
+        _ message: @autoclosure() -> String,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) {
+        self.log(level: .info,
+                 message: message(),
+                 metadata: nil,
+                 source: currentModule(fileID: file),
+                 file: file,
+                 function: function,
+                 line: line)
+    }
+
+    /// Use for non-error messages that may need special attention.
+    func notice(
+        _ message: @autoclosure() -> String,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) {
+        self.log(level: .notice,
+                 message: message(),
+                 metadata: nil,
+                 source: currentModule(fileID: file),
+                 file: file,
+                 function: function,
+                 line: line)
+    }
+
+    /// Use for non-error messages that are more severe than `.notice`.
+    func warn(
+        _ message: @autoclosure() -> String,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) {
+        self.log(level: .warn,
+                 message: message(),
+                 metadata: nil,
+                 source: currentModule(fileID: file),
+                 file: file,
+                 function: function,
+                 line: line)
+    }
+
+    /// Use for errors.
+    func error(
+        _ message: @autoclosure() -> String,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) {
+        self.log(level: .error,
+                 message: message(),
+                 metadata: nil,
+                 source: currentModule(fileID: file),
+                 file: file,
+                 function: function,
+                 line: line)
+    }
+
+    /// Appropriate for critical error conditions that usually require immediate
+    /// attention.
+    func fatal(
+        _ message: @autoclosure() -> String,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) {
         self.log(level: .fatal,
-                 message: message,
+                 message: message(),
                  metadata: nil,
                  source: currentModule(fileID: file),
                  file: file,

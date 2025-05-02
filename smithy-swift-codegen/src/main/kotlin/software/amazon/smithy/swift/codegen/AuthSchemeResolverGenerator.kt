@@ -43,13 +43,13 @@ class AuthSchemeResolverGenerator {
     private fun renderServiceSpecificAuthResolverParamsStruct(
         serviceIndex: ServiceIndex,
         ctx: ProtocolGenerator.GenerationContext,
-        writer: SwiftWriter
+        writer: SwiftWriter,
     ) {
         writer.apply {
             openBlock(
                 "public struct ${getSdkId(ctx)}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$N {",
                 "}",
-                SmithyHTTPAuthAPITypes.AuthSchemeResolverParams
+                SmithyHTTPAuthAPITypes.AuthSchemeResolverParams,
             ) {
                 write("public let operation: \$N", SwiftTypes.String)
 
@@ -71,7 +71,10 @@ class AuthSchemeResolverGenerator {
         }
     }
 
-    private fun renderEndpointParamFields(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {
+    private fun renderEndpointParamFields(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+    ) {
         writer.apply {
             val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
             val ruleSet = if (ruleSetNode != null) EndpointRuleSet.fromNode(ruleSetNode) else null
@@ -87,12 +90,15 @@ class AuthSchemeResolverGenerator {
         }
     }
 
-    private fun renderServiceSpecificAuthResolverProtocol(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter) {
+    private fun renderServiceSpecificAuthResolverProtocol(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+    ) {
         writer.apply {
             openBlock(
                 "public protocol ${getServiceSpecificAuthSchemeResolverName(ctx)}: \$N {",
                 "}",
-                SmithyHTTPAuthAPITypes.AuthSchemeResolver
+                SmithyHTTPAuthAPITypes.AuthSchemeResolver,
             ) {
                 // This is just a parent protocol that all auth scheme resolvers of a given service must conform to.
                 write("// Intentionally empty.")
@@ -105,7 +111,7 @@ class AuthSchemeResolverGenerator {
     private fun renderServiceSpecificDefaultResolver(
         serviceIndex: ServiceIndex,
         ctx: ProtocolGenerator.GenerationContext,
-        writer: SwiftWriter
+        writer: SwiftWriter,
     ) {
         val sdkId = getSdkId(ctx)
 
@@ -113,8 +119,11 @@ class AuthSchemeResolverGenerator {
         //   and is used as fallback only if endpoint resolver returns no valid auth scheme(s).
         val usesRulesBasedResolver = usesRulesBasedAuthResolver(ctx)
         val defaultResolverName =
-            if (usesRulesBasedResolver) "InternalModeled$sdkId$AUTH_SCHEME_RESOLVER"
-            else "Default$sdkId$AUTH_SCHEME_RESOLVER"
+            if (usesRulesBasedResolver) {
+                "InternalModeled$sdkId$AUTH_SCHEME_RESOLVER"
+            } else {
+                "Default$sdkId$AUTH_SCHEME_RESOLVER"
+            }
 
         // Model-based auth scheme resolver should be private internal impl detail if service uses rules-based resolver.
         val accessModifier = if (usesRulesBasedResolver) "private" else "public"
@@ -126,7 +135,7 @@ class AuthSchemeResolverGenerator {
                 "}",
                 accessModifier,
                 defaultResolverName,
-                serviceSpecificAuthResolverProtocol
+                serviceSpecificAuthResolverProtocol,
             ) {
                 write("")
                 renderResolveAuthSchemeMethod(serviceIndex, ctx, writer)
@@ -134,7 +143,7 @@ class AuthSchemeResolverGenerator {
                 renderConstructParametersMethod(
                     serviceIndex.getEffectiveAuthSchemes(ctx.service).contains(SigV4Trait.ID),
                     ctx,
-                    writer
+                    writer,
                 )
             }
         }
@@ -143,7 +152,7 @@ class AuthSchemeResolverGenerator {
     private fun renderResolveAuthSchemeMethod(
         serviceIndex: ServiceIndex,
         ctx: ProtocolGenerator.GenerationContext,
-        writer: SwiftWriter
+        writer: SwiftWriter,
     ) {
         val sdkId = getSdkId(ctx)
         val serviceParamsName = sdkId + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
@@ -159,7 +168,10 @@ class AuthSchemeResolverGenerator {
                 write("var validAuthOptions = [\$N]()", SmithyHTTPAuthAPITypes.AuthOption)
                 // Cast params to service specific params object
                 openBlock("guard let serviceParams = params as? \$L else {", "}", serviceParamsName) {
-                    write("throw \$N.authError(\"Service specific auth scheme parameters type must be passed to auth scheme resolver.\")", SmithyTypes.ClientError)
+                    write(
+                        "throw \$N.authError(\"Service specific auth scheme parameters type must be passed to auth scheme resolver.\")",
+                        SmithyTypes.ClientError,
+                    )
                 }
                 // Render switch block
                 renderSwitchBlock(serviceIndex, ctx, writer)
@@ -172,7 +184,7 @@ class AuthSchemeResolverGenerator {
     private fun renderSwitchBlock(
         serviceIndex: ServiceIndex,
         ctx: ProtocolGenerator.GenerationContext,
-        writer: SwiftWriter
+        writer: SwiftWriter,
     ) {
         writer.apply {
             // Switch block for iterating over operation name cases
@@ -187,11 +199,12 @@ class AuthSchemeResolverGenerator {
                         opShape.hasTrait(UnsignedPayloadTrait::class.java)
                     ) {
                         val opName = it.name.toLowerCamelCase()
-                        val validSchemesForOp = serviceIndex.getEffectiveAuthSchemes(
-                            ctx.service,
-                            it,
-                            ServiceIndex.AuthSchemeMode.NO_AUTH_AWARE
-                        )
+                        val validSchemesForOp =
+                            serviceIndex.getEffectiveAuthSchemes(
+                                ctx.service,
+                                it,
+                                ServiceIndex.AuthSchemeMode.NO_AUTH_AWARE,
+                            )
                         write("case \"$opName\":")
                         renderSwitchCase(validSchemesForOp, writer)
                     }
@@ -205,7 +218,10 @@ class AuthSchemeResolverGenerator {
         }
     }
 
-    private fun renderSwitchCase(schemes: Map<ShapeId, Trait>, writer: SwiftWriter) {
+    private fun renderSwitchCase(
+        schemes: Map<ShapeId, Trait>,
+        writer: SwiftWriter,
+    ) {
         writer.apply {
             indent()
             schemes.forEach {
@@ -223,10 +239,16 @@ class AuthSchemeResolverGenerator {
         }
     }
 
-    private fun renderSigV4AuthOption(scheme: Map.Entry<ShapeId, Trait>, writer: SwiftWriter) {
+    private fun renderSigV4AuthOption(
+        scheme: Map.Entry<ShapeId, Trait>,
+        writer: SwiftWriter,
+    ) {
         writer.apply {
             write("var sigV4Option = \$N(schemeID: \$S)", SmithyHTTPAuthAPITypes.AuthOption, scheme.key)
-            write("sigV4Option.signingProperties.set(key: \$N.signingName, value: \"${(scheme.value as SigV4Trait).name}\")", SmithyHTTPAuthAPITypes.SigningPropertyKeys)
+            write(
+                "sigV4Option.signingProperties.set(key: \$N.signingName, value: \"${(scheme.value as SigV4Trait).name}\")",
+                SmithyHTTPAuthAPITypes.SigningPropertyKeys,
+            )
             openBlock("guard let region = serviceParams.region else {", "}") {
                 write("throw \$N.authError(\"Missing region in auth scheme parameters for SigV4 auth scheme.\")", SmithyTypes.ClientError)
             }
@@ -238,20 +260,23 @@ class AuthSchemeResolverGenerator {
     private fun renderConstructParametersMethod(
         hasSigV4: Boolean,
         ctx: ProtocolGenerator.GenerationContext,
-        writer: SwiftWriter
+        writer: SwiftWriter,
     ) {
         writer.apply {
             openBlock(
                 "public func constructParameters(context: \$N) throws -> \$N {",
                 "}",
                 SmithyTypes.Context,
-                SmithyHTTPAuthAPITypes.AuthSchemeResolverParams
+                SmithyHTTPAuthAPITypes.AuthSchemeResolverParams,
             ) {
                 if (usesRulesBasedAuthResolver(ctx)) {
                     write("return try Default${getSdkId(ctx) + AUTH_SCHEME_RESOLVER}().constructParameters(context: context)")
                 } else {
                     openBlock("guard let opName = context.getOperation() else {", "}") {
-                        write("throw \$N.dataNotFound(\"Operation name not configured in middleware context for auth scheme resolver params construction.\")", SmithyTypes.ClientError)
+                        write(
+                            "throw \$N.dataNotFound(\"Operation name not configured in middleware context for auth scheme resolver params construction.\")",
+                            SmithyTypes.ClientError,
+                        )
                     }
                     val paramType = getSdkId(ctx) + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
                     if (hasSigV4) {
@@ -269,31 +294,35 @@ class AuthSchemeResolverGenerator {
         private val AUTH_SCHEME_RESOLVER = "AuthSchemeResolver"
 
         // Utility function for checking if a service relies on endpoint resolver for auth scheme resolution
-        fun usesRulesBasedAuthResolver(ctx: ProtocolGenerator.GenerationContext): Boolean {
-            return listOf("s3", "eventbridge", "cloudfront keyvaluestore", "sesv2").contains(ctx.settings.sdkId.lowercase(Locale.US))
-        }
+        fun usesRulesBasedAuthResolver(ctx: ProtocolGenerator.GenerationContext): Boolean =
+            listOf("s3", "eventbridge", "cloudfront keyvaluestore", "sesv2").contains(ctx.settings.sdkId.lowercase(Locale.US))
 
         // Utility function for returning sdkId from generation context
-        fun getSdkId(ctx: ProtocolGenerator.GenerationContext): String {
-            return if (ctx.service.hasTrait(ServiceTrait::class.java))
-                ctx.service.getTrait(ServiceTrait::class.java).get().sdkId.clientName()
-            else ctx.settings.sdkId.clientName()
-        }
+        fun getSdkId(ctx: ProtocolGenerator.GenerationContext): String =
+            if (ctx.service.hasTrait(ServiceTrait::class.java)) {
+                ctx.service
+                    .getTrait(ServiceTrait::class.java)
+                    .get()
+                    .sdkId
+                    .clientName()
+            } else {
+                ctx.settings.sdkId.clientName()
+            }
 
-        fun getServiceSpecificAuthSchemeResolverName(ctx: ProtocolGenerator.GenerationContext): Symbol {
-            return buildSymbol {
+        fun getServiceSpecificAuthSchemeResolverName(ctx: ProtocolGenerator.GenerationContext): Symbol =
+            buildSymbol {
                 name = "${getSdkId(ctx)}$AUTH_SCHEME_RESOLVER"
             }
-        }
     }
 }
 
 fun Parameter.toSymbol(): Symbol {
-    val swiftType = when (type) {
-        ParameterType.STRING -> SwiftTypes.String
-        ParameterType.BOOLEAN -> SwiftTypes.Bool
-        ParameterType.STRING_ARRAY -> SwiftTypes.StringArray
-    }
+    val swiftType =
+        when (type) {
+            ParameterType.STRING -> SwiftTypes.String
+            ParameterType.BOOLEAN -> SwiftTypes.Bool
+            ParameterType.STRING_ARRAY -> SwiftTypes.StringArray
+        }
     var builder = Symbol.builder().name(swiftType.fullName)
     if (!isRequired) {
         builder = builder.boxed()

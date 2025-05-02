@@ -68,8 +68,6 @@ object ClientRuntimeTypes {
         val EndpointsRequestContextProviding = runtimeSymbol("EndpointsRequestContextProviding", SwiftDeclaration.PROTOCOL)
         val EndpointError = runtimeSymbol("EndpointError", SwiftDeclaration.ENUM)
         val PartitionDefinition = runtimeSymbol("partitionJSON", SwiftDeclaration.LET)
-        val EndpointsAuthSchemeResolver = runtimeSymbol("EndpointsAuthSchemeResolver", SwiftDeclaration.PROTOCOL)
-        val DefaultEndpointsAuthSchemeResolver = runtimeSymbol("DefaultEndpointsAuthSchemeResolver", SwiftDeclaration.STRUCT)
         val EndpointsAuthScheme = runtimeSymbol("EndpointsAuthScheme", SwiftDeclaration.ENUM)
         val DefaultEndpointResolver = runtimeSymbol("DefaultEndpointResolver", SwiftDeclaration.STRUCT)
         val StaticEndpointResolver = runtimeSymbol("StaticEndpointResolver", SwiftDeclaration.STRUCT)
@@ -90,13 +88,17 @@ object ClientRuntimeTypes {
         val OrchestratorBuilder = runtimeSymbol("OrchestratorBuilder", SwiftDeclaration.CLASS)
         val InterceptorProvider = runtimeSymbol("InterceptorProvider", SwiftDeclaration.PROTOCOL)
         val HttpInterceptorProvider = runtimeSymbol("HttpInterceptorProvider", SwiftDeclaration.PROTOCOL)
-        val HttpInterceptor = runtimeSymbol("HttpInterceptor", SwiftDeclaration.PROTOCOL)
         val SDKLoggingSystem = runtimeSymbol("SDKLoggingSystem", SwiftDeclaration.CLASS)
     }
 
     object Composite {
         val InterceptorProviders = runtimeSymbol("[ClientRuntime.InterceptorProvider]", null, listOf(InterceptorProvider))
         val HttpInterceptorProviders = runtimeSymbol("[ClientRuntime.HttpInterceptorProvider]", null, listOf(HttpInterceptorProvider))
+    }
+
+    object RpcV2Cbor {
+        val RpcV2CborError = runtimeSymbol("RpcV2CborError", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
+        val CborValidateResponseHeaderMiddleware = runtimeSymbol("CborValidateResponseHeaderMiddleware", SwiftDeclaration.STRUCT)
     }
 }
 
@@ -105,10 +107,11 @@ private fun runtimeSymbol(
     declaration: SwiftDeclaration?,
     additionalImports: List<Symbol> = emptyList(),
     spiName: List<String> = emptyList(),
-): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.CLIENT_RUNTIME.takeIf { additionalImports.isEmpty() },
-    additionalImports,
-    spiName,
-)
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.CLIENT_RUNTIME.takeIf { additionalImports.isEmpty() },
+        additionalImports,
+        spiName,
+    )

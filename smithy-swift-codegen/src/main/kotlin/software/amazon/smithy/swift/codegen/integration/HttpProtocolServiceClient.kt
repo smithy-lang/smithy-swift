@@ -18,7 +18,7 @@ import software.amazon.smithy.utils.CodeSection
 open class HttpProtocolServiceClient(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    private val serviceConfig: ServiceConfig
+    private val serviceConfig: ServiceConfig,
 ) {
     private val serviceName: String = ctx.settings.sdkId
 
@@ -48,7 +48,7 @@ open class HttpProtocolServiceClient(
         writer.openBlock("public required init(config: \$L) {", "}", serviceConfig.typeName) {
             writer.write(
                 "client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)",
-                ClientRuntimeTypes.Http.SdkHttpClient
+                ClientRuntimeTypes.Http.SdkHttpClient,
             )
             writer.write("self.config = config")
         }
@@ -64,13 +64,23 @@ open class HttpProtocolServiceClient(
     }
 
     fun renderClientExtension(serviceSymbol: Symbol) {
-        writer.openBlock("extension ${serviceSymbol.name} {", "}") {
+        writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
+            writer.write("")
             renderClientConfig(serviceSymbol)
             writer.write("")
 
-            writer.openBlock("public static func builder() -> \$N<\$L> {", "}", ClientRuntimeTypes.Core.ClientBuilder, serviceSymbol.name) {
-                writer.openBlock("return \$N<\$L>(defaultPlugins: [", "])", ClientRuntimeTypes.Core.ClientBuilder, serviceSymbol.name) {
-
+            writer.openBlock(
+                "public static func builder() -> \$N<\$L> {",
+                "}",
+                ClientRuntimeTypes.Core.ClientBuilder,
+                serviceSymbol.name,
+            ) {
+                writer.openBlock(
+                    "return \$N<\$L>(defaultPlugins: [",
+                    "])",
+                    ClientRuntimeTypes.Core.ClientBuilder,
+                    serviceSymbol.name,
+                ) {
                     val defaultPlugins: MutableList<Plugin> = mutableListOf(DefaultClientPlugin())
 
                     ctx.integrations
@@ -103,15 +113,17 @@ open class HttpProtocolServiceClient(
                 .joinToString(" & ")
 
         writer.openBlock(
-            "public class \$LConfiguration: \$L {", "}",
+            "public class \$LConfiguration: \$L {",
+            "}",
             serviceConfig.clientName.toUpperCamelCase(),
-            clientConfigurationProtocols
+            clientConfigurationProtocols,
         ) {
             val clientConfigs = ctx.integrations.flatMap { it.clientConfigurations(ctx) }
-            val properties: List<ConfigProperty> = clientConfigs
-                .flatMap { it.getProperties(ctx) }
-                .let { overrideConfigProperties(it) }
-                .sortedBy { it.accessModifier }
+            val properties: List<ConfigProperty> =
+                clientConfigs
+                    .flatMap { it.getProperties(ctx) }
+                    .let { overrideConfigProperties(it) }
+                    .sortedBy { it.accessModifier }
 
             renderConfigClassVariables(serviceSymbol, properties)
 
@@ -141,13 +153,17 @@ open class HttpProtocolServiceClient(
     open fun renderCustomConfigInitializer(properties: List<ConfigProperty>) {
     }
 
-    open fun overrideConfigProperties(properties: List<ConfigProperty>): List<ConfigProperty> {
-        return properties
-    }
+    open fun overrideConfigProperties(properties: List<ConfigProperty>): List<ConfigProperty> = properties
 
     private fun renderEmptyAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
         writer.openBlock("public convenience required init() async throws {", "}") {
-            writer.write("try await self.init(\$L)", properties.joinToString(", ") { "${it.name}: nil" })
+            writer.openBlock("try await self.init(", ")") {
+                properties.forEach { property ->
+                    writer.write("\$L: nil,", property.name)
+                }
+                writer.unwrite(",\n")
+                writer.write("")
+            }
         }
         writer.write("")
     }
@@ -156,80 +172,104 @@ open class HttpProtocolServiceClient(
         writer.openBlock("public var partitionID: String? {", "}") {
             writer.write("return \"\"")
         }
+        writer.write("")
     }
 
-    data class ConfigClassVariablesCustomization(val serviceSymbol: Symbol) : CodeSection
+    data class ConfigClassVariablesCustomization(
+        val serviceSymbol: Symbol,
+    ) : CodeSection
 
     /**
      * Declare class variables in client configuration class
      */
-    private fun renderConfigClassVariables(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
+    private fun renderConfigClassVariables(
+        serviceSymbol: Symbol,
+        properties: List<ConfigProperty>,
+    ) {
         properties.forEach {
             it.render(writer)
-            writer.write("")
         }
         writer.injectSection(ConfigClassVariablesCustomization(serviceSymbol))
         writer.write("")
     }
 
-    data class ConfigInitializerCustomization(val serviceSymbol: Symbol) : CodeSection
+    data class ConfigInitializerCustomization(
+        val serviceSymbol: Symbol,
+    ) : CodeSection
 
-    private fun renderConfigInitializer(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
-        writer.openBlock(
-            "private init(\$L) {", "}",
-            properties.joinToString(", ") { "_ ${it.name}: ${it.type.renderSwiftType(writer)}" }
-        ) {
-            properties.forEach {
-                writer.write("self.\$L = \$L", it.name, it.name)
+    private fun renderConfigInitializer(
+        serviceSymbol: Symbol,
+        properties: List<ConfigProperty>,
+    ) {
+        writer.openBlock("private init(", ") {") {
+            properties.forEach { property ->
+                writer.write("_ \$L: \$L,", property.name, property.type.renderSwiftType(writer))
+            }
+            writer.unwrite(",\n")
+            writer.write("")
+        }
+        writer.indent {
+            properties.forEach { property ->
+                writer.write("self.\$L = \$L", property.name, property.name)
             }
             writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
         }
+        writer.write("}")
         writer.write("")
     }
 
     private fun renderSynchronousConfigInitializer(properties: List<ConfigProperty>) {
-        val propertyString = properties.joinToString(", ") {
-            writer.format("\$L: \$N = nil", it.name, it.type.toOptional())
+        writer.openBlock("public convenience init(", ") throws {") {
+            properties.forEach { property ->
+                writer.write("\$L: \$N = nil,", property.name, property.type.toOptional())
+            }
+            writer.unwrite(",\n")
+            writer.write("")
         }
-        writer.openBlock(
-            "public convenience init(\$L) throws {",
-            "}",
-            propertyString,
-        ) {
-            writer.write(
-                "self.init(\$L)",
-                properties.joinToString(", ") {
-                    if (it.default?.isAsync == true) {
-                        it.name
+        writer.indent {
+            writer.openBlock("self.init(", ")") {
+                properties.forEach { property ->
+                    if (property.default?.isAsync == true) {
+                        writer.write("\$L,", property.name)
                     } else {
-                        it.default?.render(writer, it.name) ?: it.name
+                        writer.write("\$L,", property.default?.render(writer, property.name) ?: property.name)
                     }
                 }
-            )
+                writer.unwrite(",\n")
+                writer.write("")
+            }
         }
+        writer.write("}")
         writer.write("")
     }
 
     private fun renderAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
         if (properties.none { it.default?.isAsync == true }) return
 
-        writer.openBlock(
-            "public convenience init(\$L) async throws {", "}",
-            properties.joinToString(", ") { "${it.name}: ${it.type.toOptional().renderSwiftType(writer)} = nil" }
-        ) {
-            writer.write(
-                "self.init(\$L)",
-                properties.joinToString(", ") {
-                    if (it.default?.isAsync == true) {
-                        it.default.render(writer)
+        writer.openBlock("public convenience init(", ") async throws {") {
+            properties.forEach { property ->
+                writer.write("\$L: \$L = nil,", property.name, property.type.toOptional().renderSwiftType(writer))
+            }
+            writer.unwrite(",\n")
+            writer.write("")
+        }
+        writer.indent {
+            writer.openBlock("self.init(", ")") {
+                properties.forEach { property ->
+                    if (property.default?.isAsync == true) {
+                        writer.write("\$L,", property.default.render(writer))
                     } else {
-                        it.default?.render(writer, it.name) ?: it.name
+                        writer.write("\$L,", property.default?.render(writer, property.name) ?: property.name)
                     }
                 }
-            )
+                writer.unwrite(",\n")
+                writer.write("")
+            }
         }
+        writer.write("}")
         writer.write("")
     }
+
     private fun renderServiceSpecificPlugins() {
         ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Plugins.swift") { writer ->
             ctx.integrations

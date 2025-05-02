@@ -97,10 +97,11 @@ public extension DefaultSDKRuntimeConfiguration {
         let connectTimeoutMs = httpClientConfiguration.connectTimeout.map { UInt32($0 * 1000) }
         let socketTimeout = UInt32(httpClientConfiguration.socketTimeout)
         let config = CRTClientEngineConfig(
+            maxConnectionsPerEndpoint: httpClientConfiguration.maxConnections,
             telemetry: httpClientConfiguration.telemetry ?? CRTClientEngine.noOpCrtClientEngineTelemetry,
-          connectTimeoutMs: connectTimeoutMs,
-          crtTlsOptions: httpClientConfiguration.tlsConfiguration as? CRTClientTLSOptions,
-          socketTimeout: socketTimeout
+            connectTimeoutMs: connectTimeoutMs,
+            crtTlsOptions: httpClientConfiguration.tlsConfiguration as? CRTClientTLSOptions,
+            socketTimeout: socketTimeout
         )
         return CRTClientEngine(config: config)
         #endif
@@ -130,7 +131,7 @@ public class DefaultAuthSchemeResolverParameters: AuthSchemeResolverParameters {
     }
 }
 
-public class DefaultAuthSchemeResolver: AuthSchemeResolver {
+public final class DefaultAuthSchemeResolver: AuthSchemeResolver, Sendable {
     public func resolveAuthScheme(params: AuthSchemeResolverParameters) throws -> [AuthOption] {
         return []
     }

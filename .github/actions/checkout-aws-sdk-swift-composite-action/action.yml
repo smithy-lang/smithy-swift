@@ -1,0 +1,51 @@
+name: 'Checkout aws-sdk-swift composite action'
+description: 'A composite action that sets up aws-sdk-swift for the workflow.'
+inputs:
+  AUTOMATION_USER_SSH_PRIVATE_KEY:
+    description: 'SSH private key for the automation user'
+    required: true
+  STAGING_PARTNER_REPO:
+    description: 'The staging partner repository'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up SSH key
+      if: ${{ github.repository != 'smithy-lang/smithy-swift' }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ inputs.AUTOMATION_USER_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+      shell: bash
+    - name: Select staging aws-sdk-swift branch
+      if: ${{ github.repository != 'smithy-lang/smithy-swift' }}
+      run: |
+        cd smithy-swift
+        ORIGINAL_REPO_HEAD_REF="$GITHUB_HEAD_REF" \
+        DEPENDENCY_REPO_URL="git@github.com:${{ inputs.STAGING_PARTNER_REPO }}.git" \
+        ./scripts/ci_steps/select_dependency_branch.sh
+      shell: bash
+    - name: Checkout staging aws-sdk-swift
+      if: ${{ github.repository != 'smithy-lang/smithy-swift' }}
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.STAGING_PARTNER_REPO }}
+        ref: ${{ env.DEPENDENCY_REPO_SHA }}
+        path: aws-sdk-swift
+        ssh-key: ${{ inputs.AUTOMATION_USER_SSH_PRIVATE_KEY }}
+    - name: Select aws-sdk-swift branch
+      if: ${{ github.repository == 'smithy-lang/smithy-swift' }}
+      run: |
+        cd smithy-swift
+        ORIGINAL_REPO_HEAD_REF="$GITHUB_HEAD_REF" \
+        DEPENDENCY_REPO_URL="https://github.com/awslabs/aws-sdk-swift.git" \
+        ./scripts/ci_steps/select_dependency_branch.sh
+      shell: bash
+    - name: Checkout aws-sdk-swift
+      if: ${{ github.repository == 'smithy-lang/smithy-swift' }}
+      uses: actions/checkout@v4
+      with:
+        repository: awslabs/aws-sdk-swift
+        ref: ${{ env.DEPENDENCY_REPO_SHA }}
+        path: aws-sdk-swift

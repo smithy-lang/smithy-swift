@@ -9,9 +9,12 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.EndpointTrait
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
-class EndpointTraitConstructor(private val endpointTrait: EndpointTrait, private val inputShape: Shape) {
-    fun construct(): String {
-        return endpointTrait.hostPrefix.segments.joinToString(separator = "") { segment ->
+class EndpointTraitConstructor(
+    private val endpointTrait: EndpointTrait,
+    private val inputShape: Shape,
+) {
+    fun construct(): String =
+        endpointTrait.hostPrefix.segments.joinToString(separator = "") { segment ->
             if (segment.isLabel) {
                 // hostLabel can only target string shapes
                 // see: https://smithy.io/2.0/spec/endpoint-traits.html#hostlabel-trait
@@ -21,5 +24,4 @@ class EndpointTraitConstructor(private val endpointTrait: EndpointTrait, private
                 segment.content
             }
         }
-    }
 }

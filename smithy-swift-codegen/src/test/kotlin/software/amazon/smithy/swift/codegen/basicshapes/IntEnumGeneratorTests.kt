@@ -14,15 +14,16 @@ import software.amazon.smithy.swift.codegen.asSmithy
 import software.amazon.smithy.swift.codegen.buildMockPluginContext
 
 class IntEnumGeneratorTests {
-
     @Test
     fun `generates int enum`() {
         val model = javaClass.classLoader.getResource("int-enum-shape-test.smithy").asSmithy()
         val manifest = MockManifest()
         val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
         SwiftCodegenPlugin().execute(context)
-        val enumShape = manifest
-            .getFileString("Sources/example/models/Abcs.swift").get()
+        val enumShape =
+            manifest
+                .getFileString("Sources/example/models/Abcs.swift")
+                .get()
         Assertions.assertNotNull(enumShape)
         var expectedGeneratedEnum = """
 public enum Abcs: Swift.Sendable, Swift.Equatable, Swift.RawRepresentable, Swift.CaseIterable, Swift.Hashable {

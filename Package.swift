@@ -50,12 +50,13 @@ let package = Package(
         .library(name: "SmithyStreams", targets: ["SmithyStreams"]),
         .library(name: "SmithyChecksumsAPI", targets: ["SmithyChecksumsAPI"]),
         .library(name: "SmithyChecksums", targets: ["SmithyChecksums"]),
+        .library(name: "SmithyCBOR", targets: ["SmithyCBOR"]),
         .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
-            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.37.0"),
+            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.52.1"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         ]
         let isDocCEnabled = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil
@@ -92,6 +93,7 @@ let package = Package(
                 "SmithyStreams",
                 "SmithyChecksumsAPI",
                 "SmithyChecksums",
+                "SmithyCBOR",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ],
             resources: [
@@ -140,7 +142,7 @@ let package = Package(
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime", "SmithyHTTPAPI", "SmithyIdentity"]
+            dependencies: ["ClientRuntime", "SmithyHTTPAPI", "SmithyIdentity", "SmithyCBOR"]
         ),
         .target(
             name: "SmithyIdentity",
@@ -155,7 +157,10 @@ let package = Package(
         ),
         .target(
             name: "SmithyHTTPAPI",
-            dependencies: ["Smithy"]
+            dependencies: [
+                "Smithy",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
         ),
         .target(
             name: "SmithyHTTPClient",
@@ -223,6 +228,14 @@ let package = Package(
             ]
         ),
         .target(
+            name: "SmithyCBOR",
+            dependencies: [
+                "SmithyReadWrite",
+                "SmithyTimestamps",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
+            ]
+        ),
+        .target(
             name: "SmithyWaitersAPI"
         ),
         .testTarget(
@@ -234,6 +247,10 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ],
             resources: [ .process("Resources") ]
+        ),
+        .testTarget(
+            name: "SmithyCBORTests",
+            dependencies: ["SmithyCBOR", "ClientRuntime", "SmithyTestUtil"]
         ),
         .testTarget(
             name: "SmithyHTTPClientTests",

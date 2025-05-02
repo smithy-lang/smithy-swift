@@ -16,48 +16,52 @@ class SwiftDependency(
     override var packageName: String,
     private val distributionMethod: DistributionMethod,
 ) : Dependency {
-
     enum class DistributionMethod {
-        SPR, GIT
+        SPR,
+        GIT,
     }
 
     companion object {
-        val NONE = SwiftDependency(
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            DistributionMethod.GIT,
-        )
-        val SWIFT = SwiftDependency(
-            "Swift",
-            "",
-            "",
-            "",
-            "",
-            "",
-            SwiftDependency.DistributionMethod.GIT,
-        )
-        val XCTest = SwiftDependency(
-            "XCTest",
-            null,
-            "",
-            "",
-            "",
-            "",
-            DistributionMethod.GIT,
-        )
-        val CRT = SwiftDependency(
-            "AwsCommonRuntimeKit",
-            null,
-            "0.31.0",
-            "https://github.com/awslabs/aws-crt-swift",
-            "",
-            "aws-crt-swift",
-            DistributionMethod.GIT,
-        )
+        val NONE =
+            SwiftDependency(
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                DistributionMethod.GIT,
+            )
+        val SWIFT =
+            SwiftDependency(
+                "Swift",
+                "",
+                "",
+                "",
+                "",
+                "",
+                SwiftDependency.DistributionMethod.GIT,
+            )
+        val XCTest =
+            SwiftDependency(
+                "XCTest",
+                null,
+                "",
+                "",
+                "",
+                "",
+                DistributionMethod.GIT,
+            )
+        val CRT =
+            SwiftDependency(
+                "AwsCommonRuntimeKit",
+                null,
+                "0.52.1",
+                "https://github.com/awslabs/aws-crt-swift",
+                "",
+                "aws-crt-swift",
+                DistributionMethod.GIT,
+            )
         val CLIENT_RUNTIME = smithySwiftDependency("ClientRuntime")
         val SMITHY = smithySwiftDependency("Smithy")
         val SMITHY_IDENTITY_API = smithySwiftDependency("SmithyIdentityAPI")
@@ -80,9 +84,10 @@ class SwiftDependency(
         val SMITHY_JSON = smithySwiftDependency("SmithyJSON")
         val SMITHY_FORM_URL = smithySwiftDependency("SmithyFormURL")
         val SMITHY_WAITERS_API = smithySwiftDependency("SmithyWaitersAPI")
+        val SMITHY_CBOR = smithySwiftDependency("SmithyCBOR")
 
-        fun smithySwiftDependency(name: String): SwiftDependency {
-            return SwiftDependency(
+        fun smithySwiftDependency(name: String): SwiftDependency =
+            SwiftDependency(
                 name,
                 "main",
                 "0.0.1",
@@ -91,20 +96,19 @@ class SwiftDependency(
                 "smithy-swift",
                 DistributionMethod.GIT,
             )
-        }
     }
 
-    override fun getDependencies(): List<SymbolDependency> {
-        return listOf(toSymbolDependency())
-    }
+    override fun getDependencies(): List<SymbolDependency> = listOf(toSymbolDependency())
 
     private fun toSymbolDependency(): SymbolDependency {
-        val builder = SymbolDependency.builder()
-            .putProperty("target", target)
-            .putProperty("branch", branch)
-            .putProperty("localPath", localPath)
-            .packageName(packageName)
-            .version(version)
+        val builder =
+            SymbolDependency
+                .builder()
+                .putProperty("target", target)
+                .putProperty("branch", branch)
+                .putProperty("localPath", localPath)
+                .packageName(packageName)
+                .version(version)
         when (distributionMethod) {
             DistributionMethod.GIT -> {
                 builder.putProperty("url", location)

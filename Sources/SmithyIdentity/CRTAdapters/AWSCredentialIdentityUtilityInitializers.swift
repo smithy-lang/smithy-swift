@@ -23,6 +23,7 @@ public extension AWSCredentialIdentity {
         self.init(
             accessKey: accessKey,
             secret: secret,
+            accountID: crtAWSCredentialIdentity.getAccountId(),
             expiration: crtAWSCredentialIdentity.getExpiration(),
             sessionToken: crtAWSCredentialIdentity.getSessionToken()
         )
@@ -36,6 +37,7 @@ public extension CRTAWSCredentialIdentity {
             accessKey: awsCredentialIdentity.accessKey,
             secret: awsCredentialIdentity.secret,
             sessionToken: awsCredentialIdentity.sessionToken,
+            accountId: awsCredentialIdentity.accountID,
             expiration: awsCredentialIdentity.expiration
         )
     }

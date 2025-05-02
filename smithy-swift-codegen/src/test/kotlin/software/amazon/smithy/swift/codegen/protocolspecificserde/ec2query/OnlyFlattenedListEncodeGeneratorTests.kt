@@ -14,7 +14,6 @@ import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPEC2Qu
 import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class OnlyFlattenedListEncodeGeneratorTests {
-
     @Test
     fun `001 encode different types of lists`() {
         val context = setupTests("Isolated/ec2/query-lists.smithy", "aws.protocoltests.ec2#AwsEc2")
@@ -44,10 +43,15 @@ extension Ec2QueryListsInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPEC2QueryProtocolGenerator()) { model ->
-            model.defaultSettings(serviceShapeId, "Example", "2020-01-08", "Ec2 query protocol")
-        }
+
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
+        val context =
+            TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPEC2QueryProtocolGenerator()) { model ->
+                model.defaultSettings(serviceShapeId, "Example", "2020-01-08", "Ec2 query protocol")
+            }
         context.generator.generateCodableConformanceForNestedTypes(context.generationCtx)
         context.generator.generateSerializers(context.generationCtx)
         context.generationCtx.delegator.flushWriters()

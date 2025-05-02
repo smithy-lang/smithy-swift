@@ -28,7 +28,6 @@ class EndpointTests: XCTestCase {
         let endpoint1 = try Endpoint(url: url)
         let endpoint2 = try Endpoint(url: url)
         XCTAssertEqual(endpoint1, endpoint2)
-        XCTAssertEqual(endpoint1.hashValue, endpoint2.hashValue)
     }
 
     func test_path_percentEncodedInput() throws {

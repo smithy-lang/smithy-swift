@@ -8,43 +8,48 @@
 import protocol Smithy.ResponseMessage
 import protocol Smithy.Stream
 import enum Smithy.ByteStream
-import class Foundation.DispatchQueue
+import class Foundation.NSRecursiveLock
 
-public class HTTPResponse: HTTPURLResponse, ResponseMessage {
+public final class HTTPResponse: ResponseMessage, @unchecked Sendable {
+    private var lock = NSRecursiveLock()
 
-    public var headers: Headers
-    public var body: ByteStream
-    public var reason: String?
+    private var _headers: Headers
+    public var headers: Headers {
+        get { lock.lock(); defer { lock.unlock() }; return _headers }
+        set { lock.lock(); defer { lock.unlock() }; self._headers = newValue }
+    }
+
+    private var _body: ByteStream
+    public var body: ByteStream {
+        get { lock.lock(); defer { lock.unlock() }; return _body }
+        set { lock.lock(); defer { lock.unlock() }; self._body = newValue }
+    }
 
     private var _statusCode: HTTPStatusCode
-    private let statusCodeQueue = DispatchQueue(label: "statusCodeSerialQueue")
     public var statusCode: HTTPStatusCode {
-        get {
-            statusCodeQueue.sync {
-                return _statusCode
-            }
-        }
-        set {
-            statusCodeQueue.sync {
-                self._statusCode = newValue
-            }
-        }
+        get { lock.lock(); defer { lock.unlock() }; return _statusCode }
+        set { lock.lock(); defer { lock.unlock() }; self._statusCode = newValue }
     }
+
+    public let reason: String?
 
     public init(
         headers: Headers = .init(),
         statusCode: HTTPStatusCode = .processing,
         body: ByteStream = .noStream,
-        reason: String? = nil) {
-        self.headers = headers
+        reason: String? = nil
+    ) {
+        self._headers = headers
         self._statusCode = statusCode
-        self.body = body
+        self._body = body
+        self.reason = reason
     }
 
     public init(headers: Headers = .init(), body: ByteStream, statusCode: HTTPStatusCode, reason: String? = nil) {
-        self.body = body
+        self._body = body
         self._statusCode = statusCode
-        self.headers = headers
+        self._headers = headers
+        self.reason = reason
     }
 
     /**

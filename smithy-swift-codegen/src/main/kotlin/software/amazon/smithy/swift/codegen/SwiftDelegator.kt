@@ -26,13 +26,12 @@ class SwiftDelegator(
     private val model: Model,
     private val fileManifest: FileManifest,
     private val symbolProvider: SymbolProvider,
-    private val integrations: List<SwiftIntegration> = listOf()
+    private val integrations: List<SwiftIntegration> = listOf(),
 ) : WriterDelegator<SwiftWriter>(
-    fileManifest,
-    symbolProvider,
-    SwiftWriter.SwiftWriterFactory(integrations, settings)
-) {
-
+        fileManifest,
+        symbolProvider,
+        SwiftWriter.SwiftWriterFactory(integrations, settings),
+    ) {
     /**
      * Gets a previously created writer or creates a new one if needed.
      *
@@ -41,7 +40,7 @@ class SwiftDelegator(
      */
     fun useShapeWriter(
         shape: Shape?,
-        writerConsumer: (SwiftWriter) -> Unit
+        writerConsumer: (SwiftWriter) -> Unit,
     ) {
         val symbol = symbolProvider.toSymbol(shape)
         useShapeWriter(symbol, writerConsumer)
@@ -55,7 +54,7 @@ class SwiftDelegator(
      */
     fun useShapeWriter(
         symbol: Symbol,
-        block: (SwiftWriter) -> Unit
+        block: (SwiftWriter) -> Unit,
     ) {
         useFileWriter(symbol.definitionFile) { writer ->
 
@@ -78,16 +77,22 @@ class SwiftDelegator(
         }
     }
 
-    fun useShapeExtensionWriter(shape: Shape, extensionName: String, block: (SwiftWriter) -> Unit) {
+    fun useShapeExtensionWriter(
+        shape: Shape,
+        extensionName: String,
+        block: (SwiftWriter) -> Unit,
+    ) {
         val symbol = symbolProvider.toSymbol(shape)
         val baseFilename = "${symbol.name}+$extensionName"
         val filename = ModelFileUtils.filename(settings, baseFilename)
-        val extensionSymbol = Symbol.builder()
-            .name(symbol.name)
-            .definitionFile(filename)
-            .putProperty(SymbolProperty.BOXED_KEY, symbol.isBoxed())
-            .putProperty("defaultValue", symbol.defaultValue())
-            .build()
+        val extensionSymbol =
+            Symbol
+                .builder()
+                .name(symbol.name)
+                .definitionFile(filename)
+                .putProperty(SymbolProperty.BOXED_KEY, symbol.isBoxed())
+                .putProperty("defaultValue", symbol.defaultValue())
+                .build()
 
         useShapeWriter(extensionSymbol, block)
     }
@@ -99,7 +104,11 @@ class SwiftDelegator(
      * @param filename Name of the file to create.
      * @param block Lambda that accepts and works with the file.
      */
-    fun useTestFileWriter(filename: String, namespace: String, block: (SwiftWriter) -> Unit) {
+    fun useTestFileWriter(
+        filename: String,
+        namespace: String,
+        block: (SwiftWriter) -> Unit,
+    ) {
         useFileWriter(filename, namespace, block)
     }
 }

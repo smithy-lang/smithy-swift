@@ -41,7 +41,7 @@ public final class FileStream: Stream, @unchecked Sendable {
     /// Initializes a new `FileStream` instance.
     public init(fileHandle: FileHandle) {
         self.fileHandle = fileHandle
-        self.position = fileHandle.availableData.startIndex
+        self.position = Int(fileHandle.offsetInFile)
     }
 
     /// Reads up to `count` bytes from the stream.
@@ -138,5 +138,26 @@ public final class FileStream: Stream, @unchecked Sendable {
         // The error is only relevant when streaming to a programmatic consumer, not to disk.
         // So close the file handle in this case, and the error is dropped.
         close()
+    }
+}
+
+fileprivate extension FileHandle {
+    func length() throws -> UInt64 {
+        let length: UInt64
+        let savedPos: UInt64
+        if #available(macOS 11, tvOS 13.4, iOS 13.4, watchOS 6.2, *) {
+            savedPos = try offset()
+            try seekToEnd()
+            length = try offset()
+        } else {
+            savedPos = offsetInFile
+            seekToEndOfFile()
+            length = offsetInFile
+        }
+        guard length != savedPos else {
+            return length
+        }
+        try self.seek(toOffset: savedPos)
+        return length
     }
 }

@@ -10,8 +10,9 @@ import kotlin.jvm.optionals.getOrNull
 
 val PACKAGE_MANIFEST_NAME = "Package.swift.txt"
 
-class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
-
+class PackageManifestGenerator(
+    val ctx: ProtocolGenerator.GenerationContext,
+) {
     fun writePackageManifest(dependencies: List<SymbolDependency>) {
         ctx.delegator.useFileWriter(PACKAGE_MANIFEST_NAME) { writer ->
             writer.write("// swift-tools-version: \$L", ctx.settings.swiftVersion)
@@ -30,24 +31,28 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
                     writer.write(".library(name: \$S, targets: [\$S])", ctx.settings.moduleName, ctx.settings.moduleName)
                 }
 
-                val externalDependencies = dependencies.filter {
-                    it.getProperty("url", String::class.java).getOrNull() != null ||
-                        it.getProperty("scope", String::class.java).getOrNull() != null
-                }
-                val dependenciesByURL = externalDependencies
-                    .distinctBy {
-                        it.getProperty("url", String::class.java).getOrNull()
-                            ?: "${it.getProperty("scope", String::class.java).get()}.${it.packageName}"
-                    }
-                    .sorted()
+                val externalDependencies =
+                    dependencies
+                        .filter {
+                            it.getProperty("url", String::class.java).getOrNull() != null ||
+                                it.getProperty("scope", String::class.java).getOrNull() != null
+                        }
+
+                val dependenciesByURL =
+                    externalDependencies
+                        .distinctBy {
+                            it.getProperty("url", String::class.java).getOrNull()
+                                ?: "${it.getProperty("scope", String::class.java).get()}.${it.packageName}"
+                        }.sortedBy { it.targetName() }
 
                 writer.openBlock("dependencies: [", "],") {
                     dependenciesByURL.forEach { writePackageDependency(writer, it) }
                 }
 
-                val dependenciesByTarget = externalDependencies
-                    .distinctBy { it.expectProperty("target", String::class.java) + it.packageName }
-                    .sorted()
+                val dependenciesByTarget =
+                    externalDependencies
+                        .distinctBy { it.targetName() + it.packageName }
+                        .sortedBy { it.targetName() }
 
                 writer.openBlock("targets: [", "]") {
                     writer.openBlock(".target(", "),") {
@@ -68,7 +73,10 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
         }
     }
 
-    private fun writePackageDependency(writer: SwiftWriter, dependency: SymbolDependency) {
+    private fun writePackageDependency(
+        writer: SwiftWriter,
+        dependency: SymbolDependency,
+    ) {
         writer.openBlock(".package(", "),") {
             val scope = dependency.getProperty("scope", String::class.java).getOrNull()
             scope?.let {
@@ -82,9 +90,12 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
         }
     }
 
-    private fun writeTargetDependency(writer: SwiftWriter, dependency: SymbolDependency) {
+    private fun writeTargetDependency(
+        writer: SwiftWriter,
+        dependency: SymbolDependency,
+    ) {
         writer.openBlock(".product(", "),") {
-            val target = dependency.expectProperty("target", String::class.java)
+            val target = dependency.targetName()
             writer.write("name: \$S,", target)
             val scope = dependency.getProperty("scope", String::class.java).getOrNull()
             val packageName = scope?.let { "$it.${dependency.packageName}" } ?: dependency.packageName
@@ -92,3 +103,5 @@ class PackageManifestGenerator(val ctx: ProtocolGenerator.GenerationContext) {
         }
     }
 }
+
+private fun SymbolDependency.targetName(): String = expectProperty("target", String::class.java)

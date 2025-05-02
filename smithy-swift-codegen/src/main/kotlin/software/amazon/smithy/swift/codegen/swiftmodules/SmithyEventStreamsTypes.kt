@@ -17,10 +17,14 @@ object SmithyEventStreamsTypes {
     val DefaultMessageDecoderStream = runtimeSymbol("DefaultMessageDecoderStream", SwiftDeclaration.STRUCT)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SMITHY_EVENT_STREAMS,
-    emptyList(),
-    emptyList(),
-)
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration? = null,
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SMITHY_EVENT_STREAMS,
+        emptyList(),
+        emptyList(),
+    )

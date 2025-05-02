@@ -20,9 +20,8 @@ import software.amazon.smithy.waiters.WaitableTrait
 class WaiterGenerator(
     val ctx: SwiftCodegenContext,
     val protoCtx: ProtocolGenerator.GenerationContext,
-    val delegator: SwiftDelegator
+    val delegator: SwiftDelegator,
 ) {
-
     fun render() {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
 
@@ -33,10 +32,10 @@ class WaiterGenerator(
 
             // Render an extension on the service client, which will hold the waitUntil... methods
             writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
-
                 // Get the operation shapes for this service
-                val operationShapes = service.allOperations
-                    .map { ctx.model.expectShape<OperationShape>(it) }
+                val operationShapes =
+                    service.allOperations
+                        .map { ctx.model.expectShape<OperationShape>(it) }
 
                 // On each operation shape, get only the waitable traits from the operation
                 operationShapes.forEach { waitedOperation ->

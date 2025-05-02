@@ -36,9 +36,8 @@ class StructureGenerator(
     private val writer: SwiftWriter,
     private val shape: StructureShape,
     private val settings: SwiftSettings,
-    private val serviceErrorProtocolSymbol: Symbol? = null
+    private val serviceErrorProtocolSymbol: Symbol? = null,
 ) {
-
     private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { it.toLowerCamelCase() }
     private var memberShapeDataContainer: MutableMap<MemberShape, Pair<String, Symbol>> = mutableMapOf()
 
@@ -116,8 +115,10 @@ class StructureGenerator(
         writer.write("")
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        val equatableConformance = writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
-        writer.openBlock("public struct \$struct.name:L: \$N$equatableConformance {", SwiftTypes.Protocols.Sendable)
+        val equatableConformance =
+            writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
+        writer
+            .openBlock("public struct \$struct.name:L: \$N$equatableConformance {", SwiftTypes.Protocols.Sendable)
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure(false) }
@@ -143,7 +144,8 @@ class StructureGenerator(
         val hasMembers = membersSortedByName.isNotEmpty()
 
         if (hasMembers) {
-            writer.openBlock("public init(", ")") {
+            writer.write("public init(")
+            writer.indent {
                 for ((index, member) in membersSortedByName.withIndex()) {
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
@@ -151,13 +153,15 @@ class StructureGenerator(
                     writer.write("\$L: \$D$terminator", memberName, memberSymbol)
                 }
             }
-            writer.openBlock("{", "}") {
+            writer.write(") {")
+            writer.indent {
                 val path = "properties.".takeIf { error } ?: ""
                 membersSortedByName.forEach {
                     val (memberName, _) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.write("self.$path\$L = \$L", memberName, memberName)
                 }
             }
+            writer.write("}")
         } else {
             writer.write("public init() { }")
         }
@@ -214,13 +218,14 @@ class StructureGenerator(
         }
 
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock(
-            "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N {",
-            ClientRuntimeTypes.Core.ModeledError,
-            ClientRuntimeTypes.Http.HttpError,
-            SwiftTypes.Error
-        )
-            .call { generateErrorStructMembers() }
+        writer
+            .openBlock(
+                "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N {",
+                ClientRuntimeTypes.Core.ModeledError,
+                ClientRuntimeTypes.Http.HttpError,
+                SwiftTypes.Error,
+                SwiftTypes.Protocols.Sendable,
+            ).call { generateErrorStructMembers() }
             .write("")
             .call { generateInitializerForStructure(true) }
             .closeBlock("}")
@@ -234,7 +239,7 @@ class StructureGenerator(
     private fun generateErrorStructMembers() {
         if (membersSortedByName.isNotEmpty()) {
             writer.write("")
-            writer.openBlock("public struct Properties {", "}") {
+            writer.openBlock("public struct Properties: \$N {", "}", SwiftTypes.Protocols.Sendable) {
                 membersSortedByName.forEach {
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.writeMemberDocs(model, it)
