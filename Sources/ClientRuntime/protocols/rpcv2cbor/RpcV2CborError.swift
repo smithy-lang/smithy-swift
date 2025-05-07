@@ -19,12 +19,13 @@ public struct RpcV2CborError: BaseError {
 
     @_spi(SmithyReadWrite)
     public init(httpResponse: HTTPResponse, responseReader: Reader, noErrorWrapping: Bool, code: String? = nil) throws {
+        let sanitizedCode = code.map { sanitizeErrorType($0) }
         switch responseReader.cborValue {
         case .map(let errorDetails):
             if case let .text(errorCode) = errorDetails["__type"] {
-                self.code = code ?? sanitizeErrorType(errorCode)
+                self.code = sanitizedCode ?? sanitizeErrorType(errorCode)
             } else {
-                self.code = code ?? "UnknownError"
+                self.code = sanitizedCode ?? "UnknownError"
             }
 
             if case let .text(errorMessage) = errorDetails["Message"] {
@@ -33,7 +34,7 @@ public struct RpcV2CborError: BaseError {
                 self.message = nil
             }
         default:
-            self.code = code ?? "UnknownError"
+            self.code = sanitizedCode ?? "UnknownError"
             self.message = nil
         }
 
