@@ -33,8 +33,6 @@ class RpcV2CborCustomizations : DefaultHTTPProtocolCustomizations() {
     // Required by RPCv2 CBOR
     override val baseErrorSymbol: Symbol = ClientRuntimeTypes.RpcV2Cbor.RpcV2CborError
 
-    override val queryCompatibleUtilsSymbol: Symbol = ClientRuntimeTypes.RpcV2Cbor.RpcV2CborQueryCompatibleUtils
-
     // Timestamp format is not used in RpcV2Cbor since it's a binary protocol. We seem to be missing an abstraction
     // between text-based and binary-based protocols
     override val defaultTimestampFormat = TimestampFormatTrait.Format.UNKNOWN
