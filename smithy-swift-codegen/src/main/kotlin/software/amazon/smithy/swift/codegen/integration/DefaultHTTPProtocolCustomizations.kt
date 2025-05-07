@@ -42,6 +42,8 @@ abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
 
     override val baseErrorSymbol: Symbol = SmithyTestUtilTypes.TestBaseError
 
+    override val queryCompatibleUtilsSymbol: Symbol = ClientRuntimeTypes.RpcV2Cbor.RpcV2CborQueryCompatibleUtils
+
     override val unknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
 
     override val defaultTimestampFormat = TimestampFormatTrait.Format.EPOCH_SECONDS
