@@ -98,6 +98,7 @@ object ClientRuntimeTypes {
 
     object RpcV2Cbor {
         val RpcV2CborError = runtimeSymbol("RpcV2CborError", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
+        val RpcV2CborQueryCompatibleUtils = runtimeSymbol("RpcV2CborQueryCompatibleUtils", SwiftDeclaration.ENUM, additionalImports = emptyList(), listOf("SmithyReadWrite"))
         val CborValidateResponseHeaderMiddleware = runtimeSymbol("CborValidateResponseHeaderMiddleware", SwiftDeclaration.STRUCT)
     }
 }

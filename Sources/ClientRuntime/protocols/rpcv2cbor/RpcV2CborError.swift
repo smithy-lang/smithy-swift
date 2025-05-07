@@ -22,9 +22,9 @@ public struct RpcV2CborError: BaseError {
         switch responseReader.cborValue {
         case .map(let errorDetails):
             if case let .text(errorCode) = errorDetails["__type"] {
-                self.code = sanitizeErrorType(errorCode)
+                self.code = code ?? sanitizeErrorType(errorCode)
             } else {
-                self.code = "UnknownError"
+                self.code = code ?? "UnknownError"
             }
 
             if case let .text(errorMessage) = errorDetails["Message"] {
@@ -33,7 +33,7 @@ public struct RpcV2CborError: BaseError {
                 self.message = nil
             }
         default:
-            self.code = "UnknownError"
+            self.code = code ?? "UnknownError"
             self.message = nil
         }
 
