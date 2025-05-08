@@ -91,6 +91,7 @@ class MiddlewareExecutionGenerator(
 
         // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
 
+        writer.write("  .withClientConfig(value: config)")
         writer.write("  .withMethod(value: .\$L)", httpMethod)
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \$S)", op.toLowerCamelCase())

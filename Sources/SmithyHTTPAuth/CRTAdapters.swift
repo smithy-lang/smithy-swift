@@ -26,6 +26,7 @@ extension SigningAlgorithm {
         switch self {
         case .sigv4: return .signingV4
         case .sigv4a: return .signingV4Asymmetric
+        case .sigv4s3express: return .signingV4S3Express
         }
     }
 }
