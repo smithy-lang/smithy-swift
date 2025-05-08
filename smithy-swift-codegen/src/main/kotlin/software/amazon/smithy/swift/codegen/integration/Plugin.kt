@@ -8,9 +8,7 @@ interface Plugin {
     val isDefault: Boolean
         get() = false
 
-    fun customInitialization(writer: SwiftWriter) {
-        writer.writeInline("\$N()", className)
-    }
+    fun customInitialization(writer: SwiftWriter): String = writer.format("\$N()", className)
 
     fun render(
         ctx: ProtocolGenerator.GenerationContext,
