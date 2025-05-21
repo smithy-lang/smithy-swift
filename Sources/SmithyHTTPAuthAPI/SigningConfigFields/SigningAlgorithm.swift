@@ -7,7 +7,7 @@
 
 /// Type of signing algorithm
 /// String raw value used for serialization and deserialization
-public enum SigningAlgorithm: String {
+public enum SigningAlgorithm: String, Sendable {
     ///  Signature Version 4
     case sigv4
     ///  Signature Version 4 Asymmetric

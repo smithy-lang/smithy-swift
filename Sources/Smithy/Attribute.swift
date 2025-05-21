@@ -23,17 +23,17 @@ public struct AttributeKey<ValueType>: Sendable {
 }
 
 /// Type safe property bag
-public struct Attributes {
-    private var attributes = [String: Any]()
+public struct Attributes: Sendable {
+    private var attributes = [String: any Sendable]()
     public var size: Int { attributes.count }
 
     public init() {}
 
-    public func get<T>(key: AttributeKey<T>) -> T? {
+    public func get<T: Sendable>(key: AttributeKey<T>) -> T? {
         attributes[key.name] as? T
     }
 
-    public func contains<T>(key: AttributeKey<T>) -> Bool {
+    public func contains<T: Sendable>(key: AttributeKey<T>) -> Bool {
         get(key: key) != nil
     }
 
@@ -41,7 +41,7 @@ public struct Attributes {
         return Array(self.attributes.keys)
     }
 
-    public mutating func set<T>(key: AttributeKey<T>, value: T?) {
+    public mutating func set<T: Sendable>(key: AttributeKey<T>, value: T?) {
         attributes[key.name] = value
     }
 

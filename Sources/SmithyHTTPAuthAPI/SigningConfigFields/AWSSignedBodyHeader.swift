@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public enum AWSSignedBodyHeader {
+public enum AWSSignedBodyHeader: Sendable {
     case none
     case contentSha256
 }

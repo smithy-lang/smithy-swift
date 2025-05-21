@@ -17,9 +17,11 @@ public typealias RuntimeConfigType
 
 open class ClientConfigDefaultsProvider {
     /// Returns a default `HTTPClient` engine.
-    open class func httpClientEngine() -> HTTPClient {
+    open class func httpClientEngine(
+        _ config: HttpClientConfiguration? = nil
+    ) -> HTTPClient {
         return RuntimeConfigType.makeClient(
-            httpClientConfiguration: RuntimeConfigType.defaultHttpClientConfiguration
+            httpClientConfiguration: config ?? RuntimeConfigType.defaultHttpClientConfiguration
         )
     }
 
