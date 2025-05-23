@@ -47,4 +47,6 @@ abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
     override val unknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
 
     override val defaultTimestampFormat = TimestampFormatTrait.Format.EPOCH_SECONDS
+
+    override fun smokeTestGenerator(ctx: ProtocolGenerator.GenerationContext): SmokeTestGenerator = SmokeTestGenerator(ctx)
 }
