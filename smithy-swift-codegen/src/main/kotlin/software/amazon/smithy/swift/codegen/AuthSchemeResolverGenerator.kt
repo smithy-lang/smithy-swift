@@ -138,6 +138,8 @@ class AuthSchemeResolverGenerator {
                 serviceSpecificAuthResolverProtocol,
             ) {
                 write("")
+                renderInit(writer)
+                write("")
                 renderResolveAuthSchemeMethod(serviceIndex, ctx, writer)
                 write("")
                 renderConstructParametersMethod(
@@ -145,6 +147,19 @@ class AuthSchemeResolverGenerator {
                     ctx,
                     writer,
                 )
+            }
+        }
+    }
+
+    private fun renderInit(writer: SwiftWriter) {
+        writer.apply {
+            write("public let authSchemePreference: [String]?")
+            write("")
+            openBlock(
+                "public init(authSchemePreference: [String]? = nil) {",
+                "}"
+            ) {
+                write("self.authSchemePreference = authSchemePreference")
             }
         }
     }
@@ -175,8 +190,8 @@ class AuthSchemeResolverGenerator {
                 }
                 // Render switch block
                 renderSwitchBlock(serviceIndex, ctx, writer)
-                // Return result
-                write("return validAuthOptions")
+                // Call reprioritizeAuthOptions and return result
+                write("return self.reprioritizeAuthOptions(authSchemePreference: authSchemePreference, authOptions: validAuthOptions)")
             }
         }
     }
