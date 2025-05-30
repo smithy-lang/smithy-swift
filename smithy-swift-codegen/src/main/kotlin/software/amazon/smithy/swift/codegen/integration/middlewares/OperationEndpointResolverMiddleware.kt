@@ -52,8 +52,9 @@ open class OperationEndpointResolverMiddleware(
         // Write code that saves endpoint params to middleware context for use in auth scheme middleware when using rules-based auth scheme resolvers
         if (AuthSchemeResolverGenerator.usesRulesBasedAuthResolver(ctx)) {
             writer.write(
-                "context.set(key: \$N<EndpointParams>(name: \"EndpointParams\"), value: endpointParamsBlock(context))",
+                "context.set(key: \$N<EndpointParams>(name: \$S), value: endpointParamsBlock(context))",
                 SmithyTypes.AttributeKey,
+                "EndpointParams",
             )
         }
 
