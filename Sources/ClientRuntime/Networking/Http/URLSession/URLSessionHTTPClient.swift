@@ -18,6 +18,7 @@ import enum SmithyHTTPAPI.HTTPStatusCode
 import protocol Smithy.ReadableStream
 import enum Smithy.ByteStream
 import class SmithyStreams.BufferedStream
+import struct Foundation.Date
 import class Foundation.Bundle
 import class Foundation.InputStream
 import class Foundation.NSObject
