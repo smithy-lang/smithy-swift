@@ -44,15 +44,16 @@ class SwiftSettingsTest {
     // Smithy Protocol Selection Tests
 
     // Row 1: SDK supports all protocols
-    private val allProtocolsSupported = setOf(
-        Rpcv2CborTrait.ID,
-        AwsJson1_0Trait.ID,
-        AwsJson1_1Trait.ID,
-        RestJson1Trait.ID,
-        RestXmlTrait.ID,
-        AwsQueryTrait.ID,
-        Ec2QueryTrait.ID
-    )
+    private val allProtocolsSupported =
+        setOf(
+            Rpcv2CborTrait.ID,
+            AwsJson1_0Trait.ID,
+            AwsJson1_1Trait.ID,
+            RestJson1Trait.ID,
+            RestXmlTrait.ID,
+            AwsQueryTrait.ID,
+            Ec2QueryTrait.ID,
+        )
 
     @Test
     fun `when SDK supports all protocols and service has rpcv2Cbor and awsJson1_0 then resolves rpcv2Cbor`() {
@@ -110,14 +111,15 @@ class SwiftSettingsTest {
     }
 
     // Row 2: SDK does not support rpcv2Cbor
-    private val withoutRpcv2CborSupport = setOf(
-        AwsJson1_0Trait.ID,
-        AwsJson1_1Trait.ID,
-        RestJson1Trait.ID,
-        RestXmlTrait.ID,
-        AwsQueryTrait.ID,
-        Ec2QueryTrait.ID
-    )
+    private val withoutRpcv2CborSupport =
+        setOf(
+            AwsJson1_0Trait.ID,
+            AwsJson1_1Trait.ID,
+            RestJson1Trait.ID,
+            RestXmlTrait.ID,
+            AwsQueryTrait.ID,
+            Ec2QueryTrait.ID,
+        )
 
     @Test
     fun `when SDK does not support rpcv2Cbor and service has rpcv2Cbor and awsJson1_0 then resolves awsJson1_0`() {
@@ -176,8 +178,8 @@ class SwiftSettingsTest {
 
     // Helper functions
 
-    private fun createTestSettings(): SwiftSettings {
-        return SwiftSettings(
+    private fun createTestSettings(): SwiftSettings =
+        SwiftSettings(
             service = ShapeId.from("test#TestService"),
             moduleName = "TestModule",
             moduleVersion = "1.0.0",
@@ -188,14 +190,15 @@ class SwiftSettingsTest {
             gitRepo = "https://github.com/test/test.git",
             swiftVersion = "5.7",
             mergeModels = false,
-            copyrightNotice = "// Test copyright"
+            copyrightNotice = "// Test copyright",
         )
-    }
 
     private fun createServiceWithProtocols(protocols: Set<ShapeId>): ServiceShape {
-        var builder = ServiceShape.builder()
-            .id("test#TestService")
-            .version("1.0")
+        var builder =
+            ServiceShape
+                .builder()
+                .id("test#TestService")
+                .version("1.0")
 
         // Apply the actual protocol traits to the service
         for (protocolId in protocols) {
@@ -221,24 +224,29 @@ class SwiftSettingsTest {
 
         // Add protocol definition shapes to the model
         // These are needed for ServiceIndex to recognize the protocols
-        val protocolShapes = listOf(
-            Rpcv2CborTrait.ID,
-            AwsJson1_0Trait.ID,
-            AwsJson1_1Trait.ID,
-            RestJson1Trait.ID,
-            RestXmlTrait.ID,
-            AwsQueryTrait.ID,
-            Ec2QueryTrait.ID
-        )
+        val protocolShapes =
+            listOf(
+                Rpcv2CborTrait.ID,
+                AwsJson1_0Trait.ID,
+                AwsJson1_1Trait.ID,
+                RestJson1Trait.ID,
+                RestXmlTrait.ID,
+                AwsQueryTrait.ID,
+                Ec2QueryTrait.ID,
+            )
 
         for (protocolId in protocolShapes) {
             // Create a shape that represents the protocol definition
             // and add the ProtocolDefinitionTrait to it
-            val protocolShape = StringShape.builder()
-                .id(protocolId)
-                .addTrait(ProtocolDefinitionTrait.builder()
-                    .build())
-                .build()
+            val protocolShape =
+                StringShape
+                    .builder()
+                    .id(protocolId)
+                    .addTrait(
+                        ProtocolDefinitionTrait
+                            .builder()
+                            .build(),
+                    ).build()
             modelBuilder.addShape(protocolShape)
         }
 
