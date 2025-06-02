@@ -19,7 +19,6 @@ import software.amazon.smithy.codegen.core.directed.GenerateUnionDirective
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator
