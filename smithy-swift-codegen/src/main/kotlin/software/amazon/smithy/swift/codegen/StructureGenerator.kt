@@ -118,7 +118,7 @@ class StructureGenerator(
         val equatableConformance =
             writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
         writer
-            .openBlock("public struct \$struct.name:L: \$N$equatableConformance {", SwiftTypes.Protocols.Sendable)
+            .openBlock("${settings.visibility} struct \$struct.name:L: \$N$equatableConformance {", SwiftTypes.Protocols.Sendable)
             .call { generateStructMembers() }
             .write("")
             .call { generateInitializerForStructure(false) }
@@ -220,7 +220,7 @@ class StructureGenerator(
         writer.writeAvailableAttribute(model, shape)
         writer
             .openBlock(
-                "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N {",
+                "${settings.visibility} struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N {",
                 ClientRuntimeTypes.Core.ModeledError,
                 ClientRuntimeTypes.Http.HttpError,
                 SwiftTypes.Error,
@@ -239,7 +239,7 @@ class StructureGenerator(
     private fun generateErrorStructMembers() {
         if (membersSortedByName.isNotEmpty()) {
             writer.write("")
-            writer.openBlock("public struct Properties: \$N {", "}", SwiftTypes.Protocols.Sendable) {
+            writer.openBlock("${settings.visibility} struct Properties: \$N {", "}", SwiftTypes.Protocols.Sendable) {
                 membersSortedByName.forEach {
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.writeMemberDocs(model, it)

@@ -47,7 +47,7 @@ class AuthSchemeResolverGenerator {
     ) {
         writer.apply {
             openBlock(
-                "public struct ${getSdkId(ctx)}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$N {",
+                "${ctx.settings.visibility} struct ${getSdkId(ctx)}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$N {",
                 "}",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolverParams,
             ) {
@@ -96,7 +96,7 @@ class AuthSchemeResolverGenerator {
     ) {
         writer.apply {
             openBlock(
-                "public protocol ${getServiceSpecificAuthSchemeResolverName(ctx)}: \$N {",
+                "${ctx.settings.visibility} protocol ${getServiceSpecificAuthSchemeResolverName(ctx)}: \$N {",
                 "}",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolver,
             ) {
