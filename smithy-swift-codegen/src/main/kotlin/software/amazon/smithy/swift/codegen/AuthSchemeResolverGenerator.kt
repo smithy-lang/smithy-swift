@@ -127,13 +127,16 @@ class AuthSchemeResolverGenerator {
 
         // Model-based auth scheme resolver should be private internal impl detail if service uses rules-based resolver.
         val accessModifier = if (usesRulesBasedResolver) "private" else "public"
+        val resolvedAccessModifier = if (
+            accessModifier == "public" && ctx.settings.visibility == "internal"
+            ) ctx.settings.visibility else accessModifier
         val serviceSpecificAuthResolverProtocol = sdkId + AUTH_SCHEME_RESOLVER
 
         writer.apply {
             writer.openBlock(
                 "\$L struct \$L: \$L {",
                 "}",
-                accessModifier,
+                resolvedAccessModifier,
                 defaultResolverName,
                 serviceSpecificAuthResolverProtocol,
             ) {
