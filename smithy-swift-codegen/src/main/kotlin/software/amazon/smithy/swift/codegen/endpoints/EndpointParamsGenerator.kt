@@ -41,7 +41,7 @@ class EndpointParamsGenerator(
         writer: SwiftWriter,
         endpointRuleSet: EndpointRuleSet?,
     ) {
-        writer.openBlock("public struct EndpointParams: Sendable {", "}") {
+        writer.openBlock("${ctx.settings.visibility} struct EndpointParams: Sendable {", "}") {
             endpointRuleSet?.parameters?.toList()?.sortedBy { it.name.toString() }?.let { sortedParameters ->
                 renderMembers(writer, sortedParameters)
                 writer.write("")

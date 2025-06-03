@@ -47,7 +47,7 @@ class AuthSchemeResolverGenerator {
     ) {
         writer.apply {
             openBlock(
-                "public struct ${getSdkId(ctx)}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$N {",
+                "${ctx.settings.visibility} struct ${getSdkId(ctx)}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$N {",
                 "}",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolverParams,
             ) {
@@ -96,7 +96,7 @@ class AuthSchemeResolverGenerator {
     ) {
         writer.apply {
             openBlock(
-                "public protocol ${getServiceSpecificAuthSchemeResolverName(ctx)}: \$N {",
+                "${ctx.settings.visibility} protocol ${getServiceSpecificAuthSchemeResolverName(ctx)}: \$N {",
                 "}",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolver,
             ) {
@@ -127,13 +127,19 @@ class AuthSchemeResolverGenerator {
 
         // Model-based auth scheme resolver should be private internal impl detail if service uses rules-based resolver.
         val accessModifier = if (usesRulesBasedResolver) "private" else "public"
+        val resolvedAccessModifier =
+            if (accessModifier == "public" && ctx.settings.visibility == "internal") {
+                ctx.settings.visibility
+            } else {
+                accessModifier
+            }
         val serviceSpecificAuthResolverProtocol = sdkId + AUTH_SCHEME_RESOLVER
 
         writer.apply {
             writer.openBlock(
                 "\$L struct \$L: \$L {",
                 "}",
-                accessModifier,
+                resolvedAccessModifier,
                 defaultResolverName,
                 serviceSpecificAuthResolverProtocol,
             ) {
