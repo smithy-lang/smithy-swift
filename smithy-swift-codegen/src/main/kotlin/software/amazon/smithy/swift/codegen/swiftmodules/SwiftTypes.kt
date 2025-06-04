@@ -10,7 +10,7 @@ import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object SwiftTypes {
-    val OptionalString = builtInSymbol("String?", SwiftDeclaration.STRUCT)
+    val OptionalStringArray = builtInSymbol("[String]?", SwiftDeclaration.STRUCT)
     val String = builtInSymbol("String", SwiftDeclaration.STRUCT)
     val Int = builtInSymbol("Int", SwiftDeclaration.STRUCT)
     val Int8 = builtInSymbol("Int8", SwiftDeclaration.STRUCT)
