@@ -210,7 +210,7 @@ extension EventStreamTestClientTypes.TestStream {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
         println(context.manifest.files)
         val contents = getFileContents(context.manifest, "Sources/Example/EventStreamTestClient.swift")
-        var expected = """
+        val expected = """
     public func testStreamOp(input: TestStreamOpInput) async throws -> TestStreamOpOutput {
         let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
