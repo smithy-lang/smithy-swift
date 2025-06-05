@@ -213,7 +213,6 @@ extension EventStreamTestClientTypes.TestStream {
         val expected = """
     public func testStreamOp(input: TestStreamOpInput) async throws -> TestStreamOpOutput {
         let context = Smithy.ContextBuilder()
-                      .withClientConfig(value: config)
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "testStreamOp")
