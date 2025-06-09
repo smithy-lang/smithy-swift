@@ -43,11 +43,6 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
             ),
             ConfigProperty("authSchemes", SmithyHTTPAuthAPITypes.AuthSchemes.toOptional(), AuthUtils(ctx).authSchemesDefaultProvider),
             ConfigProperty(
-                "authSchemePreference",
-                SwiftTypes.OptionalStringArray,
-                { "nil" },
-            ),
-            ConfigProperty(
                 "authSchemeResolver",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolver,
                 { it.format("\$N.defaultAuthSchemeResolver", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },

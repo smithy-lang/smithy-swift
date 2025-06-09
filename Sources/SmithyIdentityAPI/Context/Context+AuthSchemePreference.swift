@@ -27,33 +27,17 @@ extension ContextBuilder {
         return self
     }
     
-    /// Sets the auth scheme priority from a preference string.
-    /// - Parameter preference: A comma-separated string of auth scheme IDs.
-    /// - Returns: Self for method chaining.
+    /// Sets the auth scheme priority from a preference list of IDs.
     @discardableResult
-    public func withAuthSchemePreference(value: String?) -> Self {
-        guard let value = value, !value.isEmpty else {
-            // Remove the attributes if value is nil or empty
-            attributes.remove(key: authSchemePreferenceKey)
-            return self
-        }
-        
-        let normalizedSchemes = normalizeSchemes(value)
-        if normalizedSchemes.isEmpty {
-            // If normalization results in empty array, remove the attributes
+    public func withAuthSchemePreference(value: [String]?) -> Self {
+        if (value ?? []).isEmpty {
+            // If value in empty array, remove the attributes
             attributes.remove(key: authSchemePreferenceKey)
         } else {
-            attributes.set(key: authSchemePreferenceKey, value: normalizedSchemes)
+            attributes.set(key: authSchemePreferenceKey, value: value)
         }
         return self
     }
-}
-
-func normalizeSchemes(_ input: String) -> [String] {
-    return input
-        .split(separator: ",")
-        .map { $0.replacingOccurrences(of: "[ \\t]+", with: "", options: .regularExpression) }
-        .filter { !$0.isEmpty }
 }
 
 // Private attribute keys

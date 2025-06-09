@@ -35,64 +35,94 @@ final class AuthSchemeResolverTests: XCTestCase {
         super.tearDown()
     }
 
-    /// When no preference is provided, the order should remain unchanged
-    func testNoPreference() {
-        let options = [
-            AuthOption(schemeID: "aws.auth#sigv4"),
-            AuthOption(schemeID: "smithy.api#noAuth")
-        ]
-        let result = resolver.reprioritizeAuthOptions(authSchemePreference: nil, authOptions: options)
-        XCTAssertEqual(result.map { $0.schemeID }, options.map { $0.schemeID })
-    }
+    // Manual Auth Schemes Configuration Tests
 
-    /// Preferred option should move to the front
-    func testExactMatchAndOrder() {
+    /// Row 1: Supported Auth contains sigv4 and sigv4a, service trait contains sigv4 and sigv4a
+    func testManualConfigRow1() {
         let options = [
             AuthOption(schemeID: "aws.auth#sigv4"),
-            AuthOption(schemeID: "smithy.api#noAuth")
+            AuthOption(schemeID: "aws.auth#sigv4a")
         ]
-        let preference = ["smithy.api#noAuth"]
-        let result = resolver.reprioritizeAuthOptions(authSchemePreference: preference, authOptions: options)
-        let expectedOrder = ["smithy.api#noAuth", "aws.auth#sigv4"]
-        XCTAssertEqual(result.map { $0.schemeID }, expectedOrder)
-    }
 
-    /// Preference without namespace prefix should still match
-    func testNormalizedPreferenceWithoutPrefix() {
-        let options = [
-            AuthOption(schemeID: "aws.auth#sigv4"),
-            AuthOption(schemeID: "smithy.api#noAuth")
-        ]
+        // No preference list - should maintain original order
+        let resultNoPreference = resolver.reprioritizeAuthOptions(authSchemePreference: nil, authOptions: options)
+        XCTAssertEqual(resultNoPreference.map { $0.schemeID }, ["aws.auth#sigv4", "aws.auth#sigv4a"])
+
+        // Empty preference list - should maintain original order
+        let resultEmptyPreference = resolver.reprioritizeAuthOptions(authSchemePreference: [], authOptions: options)
+        XCTAssertEqual(resultEmptyPreference.map { $0.schemeID }, ["aws.auth#sigv4", "aws.auth#sigv4a"])
+
+        // Resolved auth should be sigv4
         let preference = ["sigv4"]
         let result = resolver.reprioritizeAuthOptions(authSchemePreference: preference, authOptions: options)
-        let expectedOrder = ["aws.auth#sigv4", "smithy.api#noAuth"]
+        XCTAssertEqual(result.first?.schemeID, "aws.auth#sigv4")
+    }
+
+    /// Row 2: Service trait has sigv4, sigv4a; preference list has sigv4a
+    func testManualConfigRow2() {
+        let options = [
+            AuthOption(schemeID: "aws.auth#sigv4"),
+            AuthOption(schemeID: "aws.auth#sigv4a")
+        ]
+        let preference = ["sigv4a"]
+        let result = resolver.reprioritizeAuthOptions(authSchemePreference: preference, authOptions: options)
+        XCTAssertEqual(result.first?.schemeID, "aws.auth#sigv4a")
+    }
+
+    /// Row 3: Service trait has sigv4, sigv4a; preference list has sigv4a, sigv4
+    func testManualConfigRow3() {
+        let options = [
+            AuthOption(schemeID: "aws.auth#sigv4"),
+            AuthOption(schemeID: "aws.auth#sigv4a")
+        ]
+        let preference = ["sigv4a", "sigv4"]
+        let result = resolver.reprioritizeAuthOptions(authSchemePreference: preference, authOptions: options)
+        let expectedOrder = ["aws.auth#sigv4a", "aws.auth#sigv4"]
         XCTAssertEqual(result.map { $0.schemeID }, expectedOrder)
     }
 
-    /// Non-matching preferences should be ignored
-    func testNonMatchingPreference() {
+    /// Row 4: Service trait has only sigv4; preference list has sigv4a
+    func testManualConfigRow4() {
         let options = [
-            AuthOption(schemeID: "aws.auth#sigv4"),
-            AuthOption(schemeID: "smithy.api#noAuth")
+            AuthOption(schemeID: "aws.auth#sigv4")
         ]
-        let preference = ["unknownScheme"]
+        let preference = ["sigv4a"]
         let result = resolver.reprioritizeAuthOptions(authSchemePreference: preference, authOptions: options)
-        XCTAssertEqual(result.map { $0.schemeID }, options.map { $0.schemeID })
+        // Since sigv4a is not available, should return sigv4
+        XCTAssertEqual(result.map { $0.schemeID }, ["aws.auth#sigv4"])
     }
 
-    /// Duplicate preferences should include duplicates in the result
-    func testMultiplePreferencesOrderAndDuplication() {
+    /// Row 5: Service trait has sigv4, sigv4a; operation trait has sigv4
+    func testManualConfigRow5() {
+        // When operation trait specifies sigv4, only sigv4 should be available
+        let options = [
+            AuthOption(schemeID: "aws.auth#sigv4")
+        ]
+        let preference = ["sigv4a"]
+        let result = resolver.reprioritizeAuthOptions(authSchemePreference: preference, authOptions: options)
+        XCTAssertEqual(result.map { $0.schemeID }, ["aws.auth#sigv4"])
+    }
+
+    /// Row 6: Service trait has sigv4, sigv4a; preference list has sigv4a
+    func testManualConfigRow6() {
         let options = [
             AuthOption(schemeID: "aws.auth#sigv4"),
-            AuthOption(schemeID: "smithy.api#noAuth")
+            AuthOption(schemeID: "aws.auth#sigv4a")
         ]
-        let preference = ["noAuth", "sigv4", "sigv4"]
+        let preference = ["sigv4a"]
         let result = resolver.reprioritizeAuthOptions(authSchemePreference: preference, authOptions: options)
-        let expectedOrder = [
-            "smithy.api#noAuth",  // match for "noAuth"
-            "aws.auth#sigv4",     // first match for "sigv4"
-            "aws.auth#sigv4"      // duplicate match for second "sigv4"
+        XCTAssertEqual(result.first?.schemeID, "aws.auth#sigv4a")
+    }
+
+    /// Row 7: Service trait has sigv4, sigv4a; preference list has sigv3
+    func testManualConfigRow7() {
+        let options = [
+            AuthOption(schemeID: "aws.auth#sigv4"),
+            AuthOption(schemeID: "aws.auth#sigv4a")
         ]
-        XCTAssertEqual(result.map { $0.schemeID }, expectedOrder)
+        let preference = ["sigv3"]
+        let result = resolver.reprioritizeAuthOptions(authSchemePreference: preference, authOptions: options)
+        // Since sigv3 is not available, should maintain original order
+        XCTAssertEqual(result.map { $0.schemeID }, ["aws.auth#sigv4", "aws.auth#sigv4a"])
     }
 }
