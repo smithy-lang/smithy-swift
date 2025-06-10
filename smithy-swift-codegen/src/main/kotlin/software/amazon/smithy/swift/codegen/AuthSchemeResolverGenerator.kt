@@ -26,7 +26,9 @@ import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import java.util.Locale
 
-class AuthSchemeResolverGenerator {
+class AuthSchemeResolverGenerator(
+    private val optionCustomization: ((String, SwiftWriter) -> SwiftWriter)? = null
+) {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val serviceIndex = ServiceIndex(ctx.model)
 
@@ -231,35 +233,39 @@ class AuthSchemeResolverGenerator {
         writer.apply {
             indent()
             schemes.forEach {
-                if (it.key == SigV4Trait.ID) {
-                    renderSigV4AuthOption(it, writer)
-                } else {
-                    write(
-                        "validAuthOptions.append(\$N(schemeID: \$S))",
-                        SmithyHTTPAuthAPITypes.AuthOption,
-                        it.key,
-                    )
-                }
+                renderAuthOption(it, writer)
             }
             dedent()
         }
     }
 
-    private fun renderSigV4AuthOption(
+    private fun renderAuthOption(
         scheme: Map.Entry<ShapeId, Trait>,
         writer: SwiftWriter,
     ) {
         writer.apply {
-            write("var sigV4Option = \$N(schemeID: \$S)", SmithyHTTPAuthAPITypes.AuthOption, scheme.key)
+            val authOptionName = "${scheme.key.name}Option"
+            write("var $authOptionName = \$N(schemeID: \$S)", SmithyHTTPAuthAPITypes.AuthOption, scheme.key)
+            if (scheme.key == SigV4Trait.ID) { renderSigV4AuthOptionCustomization(authOptionName, scheme, writer) }
+            optionCustomization?.invoke(authOptionName, writer)
+            write("validAuthOptions.append($authOptionName)")
+        }
+    }
+
+    private fun renderSigV4AuthOptionCustomization(
+        authOptionName: String,
+        scheme: Map.Entry<ShapeId, Trait>,
+        writer: SwiftWriter,
+    ) {
+        writer.apply {
             write(
-                "sigV4Option.signingProperties.set(key: \$N.signingName, value: \"${(scheme.value as SigV4Trait).name}\")",
+                "$authOptionName.signingProperties.set(key: \$N.signingName, value: \"${(scheme.value as SigV4Trait).name}\")",
                 SmithyHTTPAuthAPITypes.SigningPropertyKeys,
             )
             openBlock("guard let region = serviceParams.region else {", "}") {
                 write("throw \$N.authError(\"Missing region in auth scheme parameters for SigV4 auth scheme.\")", SmithyTypes.ClientError)
             }
-            write("sigV4Option.signingProperties.set(key: \$N.signingRegion, value: region)", SmithyHTTPAuthAPITypes.SigningPropertyKeys)
-            write("validAuthOptions.append(sigV4Option)")
+            write("$authOptionName.signingProperties.set(key: \$N.signingRegion, value: region)", SmithyHTTPAuthAPITypes.SigningPropertyKeys)
         }
     }
 
