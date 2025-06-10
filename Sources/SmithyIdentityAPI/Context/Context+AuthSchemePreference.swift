@@ -30,7 +30,7 @@ extension ContextBuilder {
     /// Sets the auth scheme priority from a preference list of IDs.
     @discardableResult
     public func withAuthSchemePreference(value: [String]?) -> Self {
-        if (value ?? []).isEmpty {
+        if value?.isEmpty ?? true {
             // If value in empty array, remove the attributes
             attributes.remove(key: authSchemePreferenceKey)
         } else {

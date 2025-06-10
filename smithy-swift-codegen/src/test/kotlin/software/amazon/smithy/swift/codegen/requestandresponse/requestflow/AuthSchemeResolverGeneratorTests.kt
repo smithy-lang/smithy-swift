@@ -34,9 +34,9 @@ public protocol ExampleAuthSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver 
 
 public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
 
-    public let authSchemePreference: [String]?
+    public let authSchemePreference: [String]
 
-    public init(authSchemePreference: [String]? = nil) {
+    public init(authSchemePreference: [String] = []) {
         self.authSchemePreference = authSchemePreference
     }
 

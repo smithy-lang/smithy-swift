@@ -153,10 +153,10 @@ class AuthSchemeResolverGenerator {
 
     private fun renderInit(writer: SwiftWriter) {
         writer.apply {
-            write("public let authSchemePreference: [String]?")
+            write("public let authSchemePreference: [String]")
             write("")
             openBlock(
-                "public init(authSchemePreference: [String]? = nil) {",
+                "public init(authSchemePreference: [String] = []) {",
                 "}",
             ) {
                 write("self.authSchemePreference = authSchemePreference")
