@@ -26,7 +26,7 @@ extension ContextBuilder {
         attributes.remove(key: authSchemePreferenceKey)
         return self
     }
-    
+
     /// Sets the auth scheme priority from a preference list of IDs.
     @discardableResult
     public func withAuthSchemePreference(value: [String]?) -> Self {

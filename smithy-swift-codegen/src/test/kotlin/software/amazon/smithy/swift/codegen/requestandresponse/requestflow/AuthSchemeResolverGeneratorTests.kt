@@ -14,12 +14,12 @@ import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPRestJ
 import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class AuthSchemeResolverGeneratorTests {
-     @Test
-     fun `test auth scheme resolver generation`() {
-         val context = setupTests("auth-scheme-resolver-generator-test.smithy", "com.test#Example")
-         val contents = getFileContents(context.manifest, "Sources/Example/AuthSchemeResolver.swift")
-         contents.shouldSyntacticSanityCheck()
-         val expected = """
+    @Test
+    fun `test auth scheme resolver generation`() {
+        val context = setupTests("auth-scheme-resolver-generator-test.smithy", "com.test#Example")
+        val contents = getFileContents(context.manifest, "Sources/Example/AuthSchemeResolver.swift")
+        contents.shouldSyntacticSanityCheck()
+        val expected = """
 public struct ExampleAuthSchemeResolverParameters: SmithyHTTPAuthAPI.AuthSchemeResolverParameters {
     public let operation: Swift.String
     // Region is used for SigV4 auth scheme
@@ -105,8 +105,8 @@ public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
     }
 }
 """
-         contents.shouldContainOnlyOnce(expected)
-     }
+        contents.shouldContainOnlyOnce(expected)
+    }
 
     private fun setupTests(
         smithyFile: String,

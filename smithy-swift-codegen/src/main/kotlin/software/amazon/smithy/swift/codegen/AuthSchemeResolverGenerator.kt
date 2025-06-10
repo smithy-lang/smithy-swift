@@ -157,7 +157,7 @@ class AuthSchemeResolverGenerator {
             write("")
             openBlock(
                 "public init(authSchemePreference: [String]? = nil) {",
-                "}"
+                "}",
             ) {
                 write("self.authSchemePreference = authSchemePreference")
             }
