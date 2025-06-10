@@ -18,8 +18,6 @@ import Foundation
 
 @_spi(SmithyReadWrite)
 public final class Reader: SmithyReader {
-    public typealias NodeInfo = String
-
     public let cborValue: CBORType?
     public let nodeInfo: NodeInfo
     public internal(set) var children: [Reader] = []
@@ -49,12 +47,12 @@ public final class Reader: SmithyReader {
         switch cborValue {
         case .map(let map):
             for (key, value) in map {
-                let child = Reader(nodeInfo: key, cborValue: value, parent: parent)
+                let child = Reader(nodeInfo: .init(key), cborValue: value, parent: parent)
                 children.append(child)
             }
         case .array(let array):
             for (index, value) in array.enumerated() {
-                let child = Reader(nodeInfo: "\(index)", cborValue: value, parent: parent)
+                let child = Reader(nodeInfo: .init("\(index)"), cborValue: value, parent: parent)
                 children.append(child)
             }
         default:
@@ -190,7 +188,7 @@ public final class Reader: SmithyReader {
         guard case .map(let map) = cborValue else { return nil }
         var dict = [String: Value]()
         for (key, _) in map {
-            let reader = self[key]
+            let reader = self[.init(key)]
             do {
                 let value = try valueReadingClosure(reader)
                 dict[key] = value
