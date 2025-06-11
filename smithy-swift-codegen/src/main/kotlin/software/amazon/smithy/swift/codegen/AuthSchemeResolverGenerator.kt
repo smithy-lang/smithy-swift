@@ -10,6 +10,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.AuthTrait
 import software.amazon.smithy.model.traits.OptionalAuthTrait
 import software.amazon.smithy.model.traits.Trait
+import software.amazon.smithy.model.traits.synthetic.NoAuthTrait
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
@@ -233,7 +234,15 @@ class AuthSchemeResolverGenerator(
         writer.apply {
             indent()
             schemes.forEach {
-                renderAuthOption(it, writer)
+                if (it.key == NoAuthTrait.ID) {
+                    write(
+                        "validAuthOptions.append(\$N(schemeID: \$S))",
+                        SmithyHTTPAuthAPITypes.AuthOption,
+                        it.key,
+                    )
+                } else {
+                    renderAuthOption(it, writer)
+                }
             }
             dedent()
         }
