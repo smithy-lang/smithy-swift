@@ -192,6 +192,7 @@ class SwiftSettingsTest {
             mergeModels = false,
             copyrightNotice = "// Test copyright",
             visibility = "public",
+            forProtocolTests = false,
         )
 
     private fun createServiceWithProtocols(protocols: Set<ShapeId>): ServiceShape {
