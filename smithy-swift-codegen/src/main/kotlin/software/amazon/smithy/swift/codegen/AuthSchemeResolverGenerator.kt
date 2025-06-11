@@ -28,7 +28,7 @@ import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import java.util.Locale
 
 class AuthSchemeResolverGenerator(
-    private val optionCustomization: ((String, SwiftWriter) -> SwiftWriter)? = null
+    private val optionCustomization: ((String, SwiftWriter) -> SwiftWriter)? = null,
 ) {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val serviceIndex = ServiceIndex(ctx.model)
@@ -255,7 +255,7 @@ class AuthSchemeResolverGenerator(
         writer.apply {
             val authOptionName = "${scheme.key.name}Option"
             write("var $authOptionName = \$N(schemeID: \$S)", SmithyHTTPAuthAPITypes.AuthOption, scheme.key)
-            if (scheme.key == SigV4Trait.ID) { renderSigV4AuthOptionCustomization(authOptionName, scheme, writer) }
+            if (scheme.key == SigV4Trait.ID) renderSigV4AuthOptionCustomization(authOptionName, scheme, writer)
             optionCustomization?.invoke(authOptionName, writer)
             write("validAuthOptions.append($authOptionName)")
         }
@@ -274,7 +274,10 @@ class AuthSchemeResolverGenerator(
             openBlock("guard let region = serviceParams.region else {", "}") {
                 write("throw \$N.authError(\"Missing region in auth scheme parameters for SigV4 auth scheme.\")", SmithyTypes.ClientError)
             }
-            write("$authOptionName.signingProperties.set(key: \$N.signingRegion, value: region)", SmithyHTTPAuthAPITypes.SigningPropertyKeys)
+            write(
+                "$authOptionName.signingProperties.set(key: \$N.signingRegion, value: region)",
+                SmithyHTTPAuthAPITypes.SigningPropertyKeys,
+            )
         }
     }
 
