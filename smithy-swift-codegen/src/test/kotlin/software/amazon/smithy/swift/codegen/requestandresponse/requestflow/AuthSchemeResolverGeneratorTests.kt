@@ -19,8 +19,7 @@ class AuthSchemeResolverGeneratorTests {
         val context = setupTests("auth-scheme-resolver-generator-test.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "Sources/Example/AuthSchemeResolver.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContainOnlyOnce(
-            """
+        val expected = """
 public struct ExampleAuthSchemeResolverParameters: SmithyHTTPAuthAPI.AuthSchemeResolverParameters {
     public let operation: Swift.String
     // Region is used for SigV4 auth scheme
@@ -34,6 +33,12 @@ public protocol ExampleAuthSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver 
 }
 
 public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
+
+    public let authSchemePreference: [String]
+
+    public init(authSchemePreference: [String] = []) {
+        self.authSchemePreference = authSchemePreference
+    }
 
     public func resolveAuthScheme(params: SmithyHTTPAuthAPI.AuthSchemeResolverParameters) throws -> [SmithyHTTPAuthAPI.AuthOption] {
         var validAuthOptions = [SmithyHTTPAuthAPI.AuthOption]()
@@ -88,7 +93,7 @@ public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
                 sigV4Option.signingProperties.set(key: SmithyHTTPAuthAPI.SigningPropertyKeys.signingRegion, value: region)
                 validAuthOptions.append(sigV4Option)
         }
-        return validAuthOptions
+        return self.reprioritizeAuthOptions(authSchemePreference: authSchemePreference, authOptions: validAuthOptions)
     }
 
     public func constructParameters(context: Smithy.Context) throws -> SmithyHTTPAuthAPI.AuthSchemeResolverParameters {
@@ -99,8 +104,8 @@ public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
         return ExampleAuthSchemeResolverParameters(operation: opName, region: opRegion)
     }
 }
-""",
-        )
+"""
+        contents.shouldContainOnlyOnce(expected)
     }
 
     private fun setupTests(
