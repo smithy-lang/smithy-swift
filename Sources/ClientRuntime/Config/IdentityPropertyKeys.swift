@@ -13,5 +13,7 @@ public enum IdentityPropertyKeys {
     ///
     /// Used only in conjunction with the `awsv4-s3express` auth scheme, which generates bucket-specific credentials
     /// for use with the S3 Express service.
-    public static let clientConfig = AttributeKey<any DefaultClientConfiguration>(name: "ClientRuntimeClientConfig")
+    @_spi(ClientConfigWrapper)
+    public static let clientConfigWrapper =
+        AttributeKey<ClientConfigurationWrapper>(name: "ClientConfigurationWrapperIdentityKey")
 }
