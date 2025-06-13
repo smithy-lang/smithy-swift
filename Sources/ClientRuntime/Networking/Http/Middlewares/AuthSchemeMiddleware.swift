@@ -76,7 +76,7 @@ extension AuthSchemeMiddleware: SelectAuthScheme {
                     var modifiedIdentityProperties = option.identityProperties
                     modifiedIdentityProperties.set(
                         key: IdentityPropertyKeys.clientConfigWrapper,
-                        value: DefaultClientConfigurationWrapper(clientConfig: attributes.clientConfig)
+                        value: ClientConfigurationWrapper(clientConfig: attributes.clientConfig)
                     )
                     let identity = try await identityResolver.getIdentity(
                         identityProperties: modifiedIdentityProperties
