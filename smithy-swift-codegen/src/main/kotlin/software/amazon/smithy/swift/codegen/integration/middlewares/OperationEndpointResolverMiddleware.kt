@@ -113,7 +113,16 @@ open class OperationEndpointResolverMiddleware(
                 }
         }
 
-        writer.openBlock("let endpointParamsBlock = { [config] (context: \$N) in", "}", SmithyTypes.Context) {
+        // Capture list is omitted when there are no client context params, to prevent a Swift "unused capture" warning.
+        // This primarily happens in protocol tests.
+        val hasClientContextParams = ctx.service.getTrait<ClientContextParamsTrait>()?.parameters?.isNotEmpty() ?: false
+        val captureList = "[config] ".takeIf { hasClientContextParams } ?: ""
+        writer.openBlock(
+            "let endpointParamsBlock = { \$L(context: \$N) in",
+            "}",
+            captureList,
+            SmithyTypes.Context,
+        ) {
             writer.write("EndpointParams(\$L)", params.joinToString(", "))
         }
     }
