@@ -98,6 +98,7 @@ class MiddlewareExecutionGenerator(
         writer.write("  .withLogger(value: config.logger)")
         writer.write("  .withPartitionID(value: config.partitionID)")
         writer.write("  .withAuthSchemes(value: config.authSchemes ?? [])")
+        writer.write("  .withAuthSchemePreference(value: config.authSchemePreference)")
         writer.write("  .withAuthSchemeResolver(value: config.authSchemeResolver)")
         writer.write("  .withUnsignedPayloadTrait(value: \$L)", op.hasTrait<UnsignedPayloadTrait>())
         writer.write("  .withSocketTimeout(value: config.httpClientConfiguration.socketTimeout)")
