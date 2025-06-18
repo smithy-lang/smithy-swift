@@ -571,6 +571,7 @@ public class CRTClientEngine: HTTPClient {
             case .failure(let error):
                 self.logger.error("Response encountered an error: \(error)")
                 stream.closeWithError(error)
+                continuation.resume(throwing: error)
             }
         }
 
