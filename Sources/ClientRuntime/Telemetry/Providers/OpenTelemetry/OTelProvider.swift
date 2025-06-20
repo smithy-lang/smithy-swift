@@ -7,9 +7,9 @@
 
 #if !(os(Linux) || os(visionOS))
 import Foundation
-@preconcurrency import OpenTelemetryApi
-@preconcurrency import OpenTelemetryProtocolExporterHttp
-@preconcurrency import OpenTelemetrySdk
+import OpenTelemetryApi
+import OpenTelemetryProtocolExporterHttp
+import OpenTelemetrySdk
 import Smithy
 
 /// Namespace for the SDK Telemetry implementation.

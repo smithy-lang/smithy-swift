@@ -6,7 +6,7 @@
 //
 
 #if !(os(Linux) || os(visionOS))
-@preconcurrency import OpenTelemetryApi
+import OpenTelemetryApi
 
 import Smithy
 
@@ -20,7 +20,30 @@ extension Attributes {
         }
 
         keys.forEach { key in
-            otelKeys[key] = AttributeValue(self.get(key: AttributeKey(name: key))!)
+            guard let value = self.get(key: AttributeKey(name: key)) else { return }
+
+            // Handle different types that AttributeValue can accept
+            switch value {
+            case let stringValue as String:
+                otelKeys[key] = AttributeValue.string(stringValue)
+            case let intValue as Int:
+                otelKeys[key] = AttributeValue.int(intValue)
+            case let doubleValue as Double:
+                otelKeys[key] = AttributeValue.double(doubleValue)
+            case let boolValue as Bool:
+                otelKeys[key] = AttributeValue.bool(boolValue)
+            case let arrayValue as [String]:
+                otelKeys[key] = AttributeValue.stringArray(arrayValue)
+            case let arrayValue as [Int]:
+                otelKeys[key] = AttributeValue.intArray(arrayValue)
+            case let arrayValue as [Double]:
+                otelKeys[key] = AttributeValue.doubleArray(arrayValue)
+            case let arrayValue as [Bool]:
+                otelKeys[key] = AttributeValue.boolArray(arrayValue)
+            default:
+                // For any other type, convert to string
+                otelKeys[key] = AttributeValue.string(String(describing: value))
+            }
         }
 
         return otelKeys
