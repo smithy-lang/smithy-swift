@@ -6,8 +6,8 @@
 //
 
 #if !(os(Linux) || os(visionOS))
-import OpenTelemetryApi
-import OpenTelemetrySdk
+@preconcurrency import OpenTelemetryApi
+@preconcurrency import OpenTelemetrySdk
 import Smithy
 
 public typealias OpenTelemetryTracer = OpenTelemetryApi.Tracer
