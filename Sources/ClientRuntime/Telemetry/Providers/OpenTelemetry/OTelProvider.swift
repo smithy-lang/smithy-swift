@@ -11,14 +11,6 @@ import Foundation
 // OpenTelemetrySdk specific imports
 @preconcurrency import protocol OpenTelemetrySdk.SpanExporter
 
-// Smithy imports
-import protocol Smithy.TelemetryProvider
-import protocol Smithy.TelemetryContextManager
-import protocol Smithy.LoggerProvider
-import protocol Smithy.MeterProvider
-import protocol Smithy.TracerProvider
-import struct Smithy.DefaultTelemetry
-
 /// Namespace for the SDK Telemetry implementation.
 public enum OpenTelemetrySwift {
     /// The SDK TelemetryProviderOTel Implementation.

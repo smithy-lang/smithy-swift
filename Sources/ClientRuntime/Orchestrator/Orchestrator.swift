@@ -176,7 +176,7 @@ public struct Orchestrator<
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
             scope: telemetry.tracerScope,
-            attributes: telemetry.tracerAttributes)
+        )
 
         // DURATION - smithy.client.call.duration
         do {
@@ -310,7 +310,7 @@ public struct Orchestrator<
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
             scope: telemetry.tracerScope,
-            attributes: telemetry.tracerAttributes)
+        )
 
         // TICK - smithy.client.call.attempts
         telemetry.rpcAttempts.add(

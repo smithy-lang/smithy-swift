@@ -8,7 +8,7 @@
  #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
 // OpenTelemetryApi specific imports
 @preconcurrency import enum OpenTelemetryApi.AttributeValue
-@preconcurrency import struct OpenTelemetryApi.AttributeArray
+@preconcurrency import class OpenTelemetryApi.AttributeArray
 
 // Smithy imports
 import struct Smithy.Attributes

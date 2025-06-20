@@ -11,24 +11,18 @@
 @preconcurrency import protocol OpenTelemetryApi.Span
 @preconcurrency import enum OpenTelemetryApi.SpanKind
 @preconcurrency import enum OpenTelemetryApi.Status
-@preconcurrency import struct OpenTelemetryApi.AttributeValue
+@preconcurrency import enum OpenTelemetryApi.AttributeValue
 
 // OpenTelemetrySdk specific imports
 @preconcurrency import class OpenTelemetrySdk.TracerProviderSdk
 @preconcurrency import class OpenTelemetrySdk.TracerProviderBuilder
-@preconcurrency import class OpenTelemetrySdk.SimpleSpanProcessor
+@preconcurrency import struct OpenTelemetrySdk.SimpleSpanProcessor
 @preconcurrency import protocol OpenTelemetrySdk.SpanExporter
-@preconcurrency import class OpenTelemetrySdk.Resource
+@preconcurrency import struct OpenTelemetrySdk.Resource
 
-// Smithy imports
-import protocol Smithy.TracerProvider
-import protocol Smithy.Tracer
-import protocol Smithy.TraceSpan
-import struct Smithy.Attributes
+// Smithy specific imports
 import struct Smithy.AttributeKey
-import enum Smithy.SpanKind
-import enum Smithy.TraceSpanStatus
-import protocol Smithy.TelemetryContext
+import struct Smithy.Attributes
 
 public typealias OpenTelemetryTracer = OpenTelemetryApi.Tracer
 public typealias OpenTelemetrySpanKind = OpenTelemetryApi.SpanKind
