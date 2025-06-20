@@ -5,10 +5,30 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if !(os(Linux) || os(visionOS))
-@preconcurrency import OpenTelemetryApi
-@preconcurrency import OpenTelemetrySdk
-import Smithy
+ #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
+// OpenTelemetryApi specific imports
+@preconcurrency import protocol OpenTelemetryApi.Tracer
+@preconcurrency import protocol OpenTelemetryApi.Span
+@preconcurrency import enum OpenTelemetryApi.SpanKind
+@preconcurrency import enum OpenTelemetryApi.Status
+@preconcurrency import struct OpenTelemetryApi.AttributeValue
+
+// OpenTelemetrySdk specific imports
+@preconcurrency import class OpenTelemetrySdk.TracerProviderSdk
+@preconcurrency import class OpenTelemetrySdk.TracerProviderBuilder
+@preconcurrency import class OpenTelemetrySdk.SimpleSpanProcessor
+@preconcurrency import protocol OpenTelemetrySdk.SpanExporter
+@preconcurrency import class OpenTelemetrySdk.Resource
+
+// Smithy imports
+import protocol Smithy.TracerProvider
+import protocol Smithy.Tracer
+import protocol Smithy.TraceSpan
+import struct Smithy.Attributes
+import struct Smithy.AttributeKey
+import enum Smithy.SpanKind
+import enum Smithy.TraceSpanStatus
+import protocol Smithy.TelemetryContext
 
 public typealias OpenTelemetryTracer = OpenTelemetryApi.Tracer
 public typealias OpenTelemetrySpanKind = OpenTelemetryApi.SpanKind
@@ -26,7 +46,7 @@ public final class OTelTracerProvider: TracerProvider {
             .build()
     }
 
-    public func getTracer(scope: String, attributes: Attributes?) -> any Tracer {
+    public func getTracer(scope: String) -> any Tracer {
         let tracer = self.sdkTracerProvider.get(instrumentationName: scope)
         return OTelTracerImpl(otelTracer: tracer)
     }

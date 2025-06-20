@@ -5,10 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if !(os(Linux) || os(visionOS))
-@preconcurrency import OpenTelemetryApi
+ #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
+// OpenTelemetryApi specific imports
+@preconcurrency import enum OpenTelemetryApi.AttributeValue
+@preconcurrency import struct OpenTelemetryApi.AttributeArray
 
-import Smithy
+// Smithy imports
+import struct Smithy.Attributes
+import struct Smithy.AttributeKey
 
 extension Attributes {
     public func toOtelAttributes() -> [String: AttributeValue] {

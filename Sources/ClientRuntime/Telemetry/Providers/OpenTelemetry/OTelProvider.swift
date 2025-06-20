@@ -5,12 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if !(os(Linux) || os(visionOS))
+ #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
 import Foundation
-@preconcurrency import OpenTelemetryApi
-@preconcurrency import OpenTelemetryProtocolExporterHttp
-@preconcurrency import OpenTelemetrySdk
-import Smithy
+
+// OpenTelemetrySdk specific imports
+@preconcurrency import protocol OpenTelemetrySdk.SpanExporter
+
+// Smithy imports
+import protocol Smithy.TelemetryProvider
+import protocol Smithy.TelemetryContextManager
+import protocol Smithy.LoggerProvider
+import protocol Smithy.MeterProvider
+import protocol Smithy.TracerProvider
+import struct Smithy.DefaultTelemetry
 
 /// Namespace for the SDK Telemetry implementation.
 public enum OpenTelemetrySwift {
