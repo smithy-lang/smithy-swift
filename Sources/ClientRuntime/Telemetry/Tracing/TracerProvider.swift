@@ -13,7 +13,6 @@ public protocol TracerProvider: Sendable {
     /// Gets a scoped Tracer.
     ///
     /// - Parameter scope: the unique scope of the Tracer
-    /// - Parameter attributes: instrumentation scope attributes
     /// - Returns: a Tracer
-    func getTracer(scope: String, attributes: Attributes?) -> Tracer
+    func getTracer(scope: String) -> Tracer
 }
