@@ -191,11 +191,9 @@ extension Headers: Equatable {
     ///   - rhs: The second `Headers` to compare.
     /// - Returns: `true` if the two values are equal irrespective of order, otherwise `false`.
     public static func == (lhs: Headers, rhs: Headers) -> Bool {
-        lhs.access { lhsHeaders in
-            rhs.access { rhsHeaders in
-                lhsHeaders.sorted() == rhsHeaders.sorted()
-            }
-        }
+        let lhsHeaders = lhs.access { $0 }.sorted()
+        let rhsHeaders = rhs.access { $0 }.sorted()
+        return lhsHeaders == rhsHeaders
     }
 }
 

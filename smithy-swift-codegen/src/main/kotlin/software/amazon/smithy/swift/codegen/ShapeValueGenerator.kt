@@ -10,6 +10,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.ArrayNode
 import software.amazon.smithy.model.node.BooleanNode
 import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.node.NodeType
 import software.amazon.smithy.model.node.NodeVisitor
 import software.amazon.smithy.model.node.NullNode
 import software.amazon.smithy.model.node.NumberNode
@@ -54,6 +55,13 @@ class ShapeValueGenerator(
         shape: Shape,
         params: Node,
     ) {
+        // If the node for the value to be written is NULL, then the value for this shape is not present.
+        // Just write a Swift `nil` and stop rendering.
+        if (params.type == NodeType.NULL) {
+            writer.writeInline("nil")
+            return
+        }
+
         val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
 
         when (shape.type) {
