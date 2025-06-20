@@ -250,8 +250,9 @@ public class CRTClientEngine: HTTPClient {
             let span = tracer.createSpan(
                 name: telemetry.spanName,
                 initialAttributes: telemetry.spanAttributes,
-                spanKind: SpanKind.internal,
-                parentContext: telemetryContext)
+                spanKind: .internal,
+                parentContext: telemetryContext
+            )
             defer {
                 span.end()
             }
@@ -322,7 +323,8 @@ public class CRTClientEngine: HTTPClient {
                             telemetry.connectionsUptime.record(
                                 value: Date().timeIntervalSinceReferenceDate - connectionUptimeStart,
                                 attributes: Attributes(),
-                                context: telemetryContext)
+                                context: telemetryContext
+                            )
                         }
                         // TICK - smithy.client.http.bytes_sent
                         try await stream.write(
