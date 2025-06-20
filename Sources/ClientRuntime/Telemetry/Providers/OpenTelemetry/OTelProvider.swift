@@ -6,11 +6,11 @@
 //
 
 #if !(os(Linux) || os(visionOS))
-import OpenTelemetryApi
-import OpenTelemetrySdk
-import Smithy
-import OpenTelemetryProtocolExporterHttp
 import Foundation
+@preconcurrency import OpenTelemetryApi
+@preconcurrency import OpenTelemetryProtocolExporterHttp
+@preconcurrency import OpenTelemetrySdk
+import Smithy
 
 /// Namespace for the SDK Telemetry implementation.
 public enum OpenTelemetrySwift {

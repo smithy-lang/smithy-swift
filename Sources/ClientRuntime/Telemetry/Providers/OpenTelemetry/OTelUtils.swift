@@ -6,7 +6,7 @@
 //
 
 #if !(os(Linux) || os(visionOS))
-import OpenTelemetryApi
+@preconcurrency import OpenTelemetryApi
 
 import Smithy
 
