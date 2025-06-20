@@ -242,7 +242,7 @@ public class CRTClientEngine: HTTPClient {
     func executeHTTP2Request(request: HTTPRequest) async throws -> HTTPResponse {
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
-            scope: telemetry.tracerScope,
+            scope: telemetry.tracerScope
         )
         do {
             // START - smithy.client.http.requests.queued_duration

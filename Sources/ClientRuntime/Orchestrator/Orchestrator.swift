@@ -175,7 +175,7 @@ public struct Orchestrator<
     public func execute(input: InputType) async throws -> OutputType {
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
-            scope: telemetry.tracerScope,
+            scope: telemetry.tracerScope
         )
 
         // DURATION - smithy.client.call.duration
@@ -309,7 +309,7 @@ public struct Orchestrator<
         // with the thrown error in context.result
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
-            scope: telemetry.tracerScope,
+            scope: telemetry.tracerScope
         )
 
         // TICK - smithy.client.call.attempts
