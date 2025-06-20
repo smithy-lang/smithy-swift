@@ -24,7 +24,7 @@ class PackageManifestGenerator(
                 writer.write("name: \$S,", ctx.settings.moduleName)
 
                 writer.openBlock("platforms: [", "],") {
-                    writer.write(".macOS(.v10_15), .iOS(.v13)")
+                    writer.write(".macOS(.v12), .iOS(.v13)")
                 }
 
                 writer.openBlock("products: [", "],") {
