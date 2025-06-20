@@ -20,30 +20,29 @@ extension Attributes {
         }
 
         keys.forEach { key in
-            guard let value = self.get(key: AttributeKey(name: key)) else { return }
-
-            // Handle different types that AttributeValue can accept
-            switch value {
-            case let stringValue as String:
+            // Try to get the value as different types
+            if let stringValue = self.get(key: AttributeKey<String>(name: key)) {
                 otelKeys[key] = AttributeValue.string(stringValue)
-            case let intValue as Int:
+            } else if let intValue = self.get(key: AttributeKey<Int>(name: key)) {
                 otelKeys[key] = AttributeValue.int(intValue)
-            case let doubleValue as Double:
+            } else if let doubleValue = self.get(key: AttributeKey<Double>(name: key)) {
                 otelKeys[key] = AttributeValue.double(doubleValue)
-            case let boolValue as Bool:
+            } else if let boolValue = self.get(key: AttributeKey<Bool>(name: key)) {
                 otelKeys[key] = AttributeValue.bool(boolValue)
-            case let arrayValue as [String]:
-                otelKeys[key] = AttributeValue.stringArray(arrayValue)
-            case let arrayValue as [Int]:
-                otelKeys[key] = AttributeValue.intArray(arrayValue)
-            case let arrayValue as [Double]:
-                otelKeys[key] = AttributeValue.doubleArray(arrayValue)
-            case let arrayValue as [Bool]:
-                otelKeys[key] = AttributeValue.boolArray(arrayValue)
-            default:
-                // For any other type, convert to string
-                otelKeys[key] = AttributeValue.string(String(describing: value))
+            } else if let arrayValue = self.get(key: AttributeKey<[String]>(name: key)) {
+                let attributeArray = arrayValue.map { AttributeValue.string($0) }
+                otelKeys[key] = AttributeValue.array(AttributeArray(values: attributeArray))
+            } else if let arrayValue = self.get(key: AttributeKey<[Int]>(name: key)) {
+                let attributeArray = arrayValue.map { AttributeValue.int($0) }
+                otelKeys[key] = AttributeValue.array(AttributeArray(values: attributeArray))
+            } else if let arrayValue = self.get(key: AttributeKey<[Double]>(name: key)) {
+                let attributeArray = arrayValue.map { AttributeValue.double($0) }
+                otelKeys[key] = AttributeValue.array(AttributeArray(values: attributeArray))
+            } else if let arrayValue = self.get(key: AttributeKey<[Bool]>(name: key)) {
+                let attributeArray = arrayValue.map { AttributeValue.bool($0) }
+                otelKeys[key] = AttributeValue.array(AttributeArray(values: attributeArray))
             }
+            // If none of the above types match, the value is skipped
         }
 
         return otelKeys
