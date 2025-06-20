@@ -75,30 +75,25 @@ open class HttpProtocolServiceClient(
                 ClientRuntimeTypes.Core.ClientBuilder,
                 serviceSymbol.name,
             ) {
-                writer.openBlock(
-                    "return \$N<\$L>(defaultPlugins: [",
-                    "])",
+                writer.write(
+                    "return \$N<\$L>()",
                     ClientRuntimeTypes.Core.ClientBuilder,
                     serviceSymbol.name,
-                ) {
-                    val defaultPlugins: MutableList<Plugin> = mutableListOf(DefaultClientPlugin())
+                )
+                writer.indent()
+                val defaultPlugins: MutableList<Plugin> = mutableListOf(DefaultClientPlugin())
 
-                    ctx.integrations
-                        .flatMap { it.plugins(serviceConfig) }
-                        .filter { it.isDefault }
-                        .onEach { defaultPlugins.add(it) }
+                ctx.integrations
+                    .flatMap { it.plugins(serviceConfig) }
+                    .filter { it.isDefault }
+                    .onEach { defaultPlugins.add(it) }
 
-                    val pluginsIterator = defaultPlugins.iterator()
+                val pluginsIterator = defaultPlugins.iterator()
 
-                    while (pluginsIterator.hasNext()) {
-                        pluginsIterator.next().customInitialization(writer)
-                        if (pluginsIterator.hasNext()) {
-                            writer.write(",")
-                        }
-                    }
-
-                    writer.unwrite(",\n").write("")
+                while (pluginsIterator.hasNext()) {
+                    writer.write(".withPlugin(\$L)", pluginsIterator.next().customInitialization(writer))
                 }
+                writer.dedent()
             }
         }
         writer.write("")
@@ -113,7 +108,7 @@ open class HttpProtocolServiceClient(
                 .joinToString(" & ")
 
         writer.openBlock(
-            "public class \$LConfiguration: \$L {",
+            "public struct \$LConfiguration: \$L {",
             "}",
             serviceConfig.clientName.toUpperCamelCase(),
             clientConfigurationProtocols,
@@ -156,7 +151,7 @@ open class HttpProtocolServiceClient(
     open fun overrideConfigProperties(properties: List<ConfigProperty>): List<ConfigProperty> = properties
 
     private fun renderEmptyAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
-        writer.openBlock("public convenience required init() async throws {", "}") {
+        writer.openBlock("public init() async throws {", "}") {
             writer.openBlock("try await self.init(", ")") {
                 properties.forEach { property ->
                     writer.write("\$L: nil,", property.name)
@@ -219,7 +214,7 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderSynchronousConfigInitializer(properties: List<ConfigProperty>) {
-        writer.openBlock("public convenience init(", ") throws {") {
+        writer.openBlock("public init(", ") throws {") {
             properties.forEach { property ->
                 writer.write("\$L: \$N = nil,", property.name, property.type.toOptional())
             }
@@ -246,7 +241,7 @@ open class HttpProtocolServiceClient(
     private fun renderAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
         if (properties.none { it.default?.isAsync == true }) return
 
-        writer.openBlock("public convenience init(", ") async throws {") {
+        writer.openBlock("public init(", ") async throws {") {
             properties.forEach { property ->
                 writer.write("\$L: \$L = nil,", property.name, property.type.toOptional().renderSwiftType(writer))
             }

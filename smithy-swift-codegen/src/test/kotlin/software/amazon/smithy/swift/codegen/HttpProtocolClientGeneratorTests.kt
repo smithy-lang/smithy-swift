@@ -38,7 +38,7 @@ public class RestJsonProtocolClient: ClientRuntime.Client {
 
 extension RestJsonProtocolClient {
 
-    public class RestJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration {
+    public struct RestJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration {
         public var telemetryProvider: ClientRuntime.TelemetryProvider
         public var retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
         public var clientLogMode: ClientRuntime.ClientLogMode
@@ -83,7 +83,7 @@ extension RestJsonProtocolClient {
             self.httpInterceptorProviders = httpInterceptorProviders
         }
 
-        public convenience init(
+        public init(
             telemetryProvider: ClientRuntime.TelemetryProvider? = nil,
             retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil,
             clientLogMode: ClientRuntime.ClientLogMode? = nil,
@@ -115,7 +115,7 @@ extension RestJsonProtocolClient {
             )
         }
 
-        public convenience required init() async throws {
+        public init() async throws {
             try await self.init(
                 telemetryProvider: nil,
                 retryStrategyOptions: nil,
@@ -137,20 +137,19 @@ extension RestJsonProtocolClient {
             return ""
         }
 
-        public func addInterceptorProvider(_ provider: ClientRuntime.InterceptorProvider) {
+        public mutating func addInterceptorProvider(_ provider: ClientRuntime.InterceptorProvider) {
             self.interceptorProviders.append(provider)
         }
 
-        public func addInterceptorProvider(_ provider: ClientRuntime.HttpInterceptorProvider) {
+        public mutating func addInterceptorProvider(_ provider: ClientRuntime.HttpInterceptorProvider) {
             self.httpInterceptorProviders.append(provider)
         }
 
     }
 
     public static func builder() -> ClientRuntime.ClientBuilder<RestJsonProtocolClient> {
-        return ClientRuntime.ClientBuilder<RestJsonProtocolClient>(defaultPlugins: [
-            ClientRuntime.DefaultClientPlugin()
-        ])
+        return ClientRuntime.ClientBuilder<RestJsonProtocolClient>()
+            .withPlugin(ClientRuntime.DefaultClientPlugin())
     }
 }
 """

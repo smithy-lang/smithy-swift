@@ -76,6 +76,7 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
                     listOf(
                         FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.HttpInterceptorProvider),
                     ),
+                isMutating = true,
             ),
         )
 }
