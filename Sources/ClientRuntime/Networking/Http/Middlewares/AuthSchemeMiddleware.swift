@@ -73,7 +73,14 @@ extension AuthSchemeMiddleware: SelectAuthScheme {
                         context: attributes
                     )
                     // Resolve identity using the resolver from auth scheme
-                    let identity = try await identityResolver.getIdentity(identityProperties: option.identityProperties)
+                    var modifiedIdentityProperties = option.identityProperties
+                    modifiedIdentityProperties.set(
+                        key: IdentityPropertyKeys.clientConfigWrapper,
+                        value: ClientConfigurationWrapper(clientConfig: attributes.clientConfig)
+                    )
+                    let identity = try await identityResolver.getIdentity(
+                        identityProperties: modifiedIdentityProperties
+                    )
                     // Save selected auth scheme
                     selectedAuthScheme = SelectedAuthScheme(
                         schemeID: option.schemeID,

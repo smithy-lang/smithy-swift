@@ -53,6 +53,8 @@ extension EndpointResolverMiddleware: ApplyEndpoint {
                 signingName = param.signingName
             case .sigV4A(let param):
                 signingName = param.signingName
+            case .sigV4S3Express(let param):
+                signingName = param.signingName
             case .none:
                 break
             }
