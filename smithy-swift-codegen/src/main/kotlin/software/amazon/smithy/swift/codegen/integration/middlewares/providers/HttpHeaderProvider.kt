@@ -180,6 +180,10 @@ class HttpHeaderProvider(
                 val mapValueShapeTargetSymbol = ctx.symbolProvider.toSymbol(mapValueShapeTarget)
 
                 writer.openBlock("for (prefixHeaderMapKey, prefixHeaderMapValue) in $memberName { ", "}") {
+                    // Don't write a prefix header over a specific header that was also written to this request.
+                    // See the HttpEmptyPrefixHeadersRequestClient protocol tests on the REST protocols.
+                    writer.write("guard !items.exists(name: \"$paramName\\(prefixHeaderMapKey)\") else { continue }")
+
                     if (mapValueShapeTarget is CollectionShape) {
                         writer.openBlock("prefixHeaderMapValue.forEach { headerValue in ", "}") {
                             if (mapValueShapeTargetSymbol.isBoxed()) {

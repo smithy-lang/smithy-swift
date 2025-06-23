@@ -345,7 +345,16 @@ class SwiftSymbolProvider(
 
         return when (targetShape) {
             is ListShape -> builder.defaultValue("[]")
-            is EnumShape -> builder.defaultValue(".${swiftEnumCaseName(null, defaultValueLiteral)}")
+            is EnumShape -> {
+                // Get the corresponding enum member name (enum case name) for the string value from default trait
+                val enumMemberName =
+                    targetShape.enumValues.entries
+                        .firstOrNull {
+                            it.value == defaultValueLiteral
+                        }!!
+                        .key
+                builder.defaultValue(".${swiftEnumCaseName(enumMemberName, defaultValueLiteral)}")
+            }
             is IntEnumShape -> {
                 // Get the corresponding enum member name (enum case name) for the int value from default trait
                 val enumMemberName =

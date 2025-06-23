@@ -112,8 +112,11 @@ open class OperationEndpointResolverMiddleware(
                     }
                 }
         }
-
-        writer.openBlock("let endpointParamsBlock = { [config] (context: \$N) in", "}", SmithyTypes.Context) {
+        writer.openBlock(
+            "let endpointParamsBlock = { [config] (context: \$N) in",
+            "}",
+            SmithyTypes.Context,
+        ) {
             writer.write("EndpointParams(\$L)", params.joinToString(", "))
         }
     }
