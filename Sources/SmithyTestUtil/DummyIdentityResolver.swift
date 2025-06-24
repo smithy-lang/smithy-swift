@@ -8,7 +8,7 @@
 import struct SmithyIdentity.StaticAWSCredentialIdentityResolver
 
 public func dummyIdentityResolver() throws -> StaticAWSCredentialIdentityResolver {
-    try StaticAWSCredentialIdentityResolver(
+    StaticAWSCredentialIdentityResolver(
         .init(
             accessKey: "dummy-aws-access-key-id",
             secret: "dummy-aws-secret-access-key"
