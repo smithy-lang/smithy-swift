@@ -463,8 +463,8 @@ public final class URLSessionHTTPClient: HTTPClient {
     public func send(request: HTTPRequest) async throws -> HTTPResponse {
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
-            scope: telemetry.tracerScope,
-            attributes: telemetry.tracerAttributes)
+            scope: telemetry.tracerScope
+        )
         do {
             // START - smithy.client.http.requests.queued_duration
             let queuedStart = Date().timeIntervalSinceReferenceDate
