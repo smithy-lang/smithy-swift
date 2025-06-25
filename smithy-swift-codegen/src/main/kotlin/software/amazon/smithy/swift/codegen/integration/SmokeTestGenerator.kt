@@ -218,7 +218,7 @@ open class SmokeTestGenerator(
                     .get()
                     .inputShape,
             )
-        if (testCase.params?.get()?.size() == 0) {
+        if (!testCase.params.isPresent || testCase.params?.get()?.size() == 0) {
             writer.write("let input = ${inputShape.id.name}()")
         } else {
             writer
