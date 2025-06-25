@@ -188,8 +188,7 @@ public class CRTClientEngine: HTTPClient {
     public func send(request: HTTPRequest) async throws -> HTTPResponse {
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
-            scope: telemetry.tracerScope,
-            attributes: telemetry.tracerAttributes
+            scope: telemetry.tracerScope
         )
         let queuedStart = Date().timeIntervalSinceReferenceDate
         let span = tracer.createSpan(
@@ -243,16 +242,17 @@ public class CRTClientEngine: HTTPClient {
     func executeHTTP2Request(request: HTTPRequest) async throws -> HTTPResponse {
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
-            scope: telemetry.tracerScope,
-            attributes: telemetry.tracerAttributes)
+            scope: telemetry.tracerScope
+        )
         do {
             // START - smithy.client.http.requests.queued_duration
             let queuedStart = Date().timeIntervalSinceReferenceDate
             let span = tracer.createSpan(
                 name: telemetry.spanName,
                 initialAttributes: telemetry.spanAttributes,
-                spanKind: SpanKind.internal,
-                parentContext: telemetryContext)
+                spanKind: .internal,
+                parentContext: telemetryContext
+            )
             defer {
                 span.end()
             }
@@ -323,7 +323,8 @@ public class CRTClientEngine: HTTPClient {
                             telemetry.connectionsUptime.record(
                                 value: Date().timeIntervalSinceReferenceDate - connectionUptimeStart,
                                 attributes: Attributes(),
-                                context: telemetryContext)
+                                context: telemetryContext
+                            )
                         }
                         // TICK - smithy.client.http.bytes_sent
                         try await stream.write(
