@@ -8,9 +8,8 @@
 import class Smithy.ContextBuilder
 
 extension ContextBuilder {
-    public typealias SmithyConfig = DefaultClientConfiguration & DefaultHttpClientConfiguration
 
-    public func withSmithyDefaultConfig<Config: SmithyConfig>(
+    public func withSmithyDefaultConfig<Config: DefaultClientConfiguration & DefaultHttpClientConfiguration>(
         _ config: Config
     ) -> Smithy.ContextBuilder {
         return self
