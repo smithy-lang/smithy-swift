@@ -94,15 +94,8 @@ class MiddlewareExecutionGenerator(
         writer.write("  .withMethod(value: .\$L)", httpMethod)
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \$S)", op.toLowerCamelCase())
-        writer.write("  .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)")
-        writer.write("  .withLogger(value: config.logger)")
-        writer.write("  .withPartitionID(value: config.partitionID)")
-        writer.write("  .withAuthSchemes(value: config.authSchemes ?? [])")
-        writer.write("  .withAuthSchemePreference(value: config.authSchemePreference)")
-        writer.write("  .withAuthSchemeResolver(value: config.authSchemeResolver)")
         writer.write("  .withUnsignedPayloadTrait(value: \$L)", op.hasTrait<UnsignedPayloadTrait>())
-        writer.write("  .withSocketTimeout(value: config.httpClientConfiguration.socketTimeout)")
-        writer.write("  .withIdentityResolver(value: config.bearerTokenIdentityResolver, schemeID: \$S)", "smithy.api#httpBearerAuth")
+        writer.write("  .withSmithyDefaultConfig(config)")
 
         // Add flag for presign / presign-url flows
         if (flowType == ContextAttributeCodegenFlowType.PRESIGN_REQUEST) {
