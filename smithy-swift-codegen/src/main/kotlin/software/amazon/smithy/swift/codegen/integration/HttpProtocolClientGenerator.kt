@@ -46,9 +46,17 @@ open class HttpProtocolClientGenerator(
         val operationsIndex = OperationIndex.of(model)
 
         writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
-            operations.forEach {
-                val serviceName = ctx.settings.sdkId.toUpperCamelCase()
-                ServiceGenerator.renderOperationDefinition(serviceName, model, serviceShape, symbolProvider, writer, operationsIndex, it)
+            val serviceName = ctx.settings.sdkId.toUpperCamelCase()
+            operations.forEach { operation ->
+                ServiceGenerator.renderOperationDefinition(
+                    serviceName,
+                    model,
+                    serviceShape,
+                    symbolProvider,
+                    writer,
+                    operationsIndex,
+                    operation,
+                )
                 writer.openBlock(" {", "}") {
                     val operationStackName = "operation"
                     val generator =
@@ -60,11 +68,12 @@ open class HttpProtocolClientGenerator(
                             operationMiddleware,
                             operationStackName,
                         )
-                    generator.render(serviceShape, it)
+                    generator.render(serviceShape, operation)
                     writer.write("return try await op.execute(input: input)")
                 }
                 writer.write("")
             }
+            writer.unwrite("\n")
         }
     }
 }
