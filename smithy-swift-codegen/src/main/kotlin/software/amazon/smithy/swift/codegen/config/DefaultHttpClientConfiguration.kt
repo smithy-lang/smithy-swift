@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyIdentityTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.AuthUtils
 
 class DefaultHttpClientConfiguration : ClientConfiguration {
@@ -41,6 +42,7 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
                 { it.format("\$N.defaultHttpClientConfiguration", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
             ),
             ConfigProperty("authSchemes", SmithyHTTPAuthAPITypes.AuthSchemes.toOptional(), AuthUtils(ctx).authSchemesDefaultProvider),
+            ConfigProperty("authSchemePreference", SwiftTypes.StringList.toOptional(), { "nil" }),
             ConfigProperty(
                 "authSchemeResolver",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolver,

@@ -11,7 +11,7 @@ import struct SmithyIdentity.StaticAWSCredentialIdentityResolver
 class StaticAWSCredentialIdentityResolverTests: XCTestCase {
 
     func testGetCredentials() async throws {
-        let subject = try StaticAWSCredentialIdentityResolver(.init(
+        let subject = StaticAWSCredentialIdentityResolver(.init(
             accessKey: "static_access_key",
             secret: "static_secret",
             accountID: "static_account_id"

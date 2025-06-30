@@ -55,7 +55,11 @@ interface HTTPProtocolCustomizable {
 
     val baseErrorSymbol: Symbol
 
+    val queryCompatibleUtilsSymbol: Symbol
+
     val unknownServiceErrorSymbol: Symbol
 
     val defaultTimestampFormat: TimestampFormatTrait.Format
+
+    fun smokeTestGenerator(ctx: ProtocolGenerator.GenerationContext): SmokeTestGenerator
 }

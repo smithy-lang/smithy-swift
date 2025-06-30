@@ -9,7 +9,7 @@ import struct Foundation.Data
 
 /// Encodes a `Message` into a `Data` object
 /// to be sent over the wire.
-public protocol MessageEncoder {
+public protocol MessageEncoder: Sendable {
 
     /// Encodes a `Message` into a `Data` object
     func encode(message: Message) throws -> Data

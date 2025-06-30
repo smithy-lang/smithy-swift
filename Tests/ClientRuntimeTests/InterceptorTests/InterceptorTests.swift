@@ -20,7 +20,7 @@ class InterceptorTests: XCTestCase {
         public var property: String?
     }
 
-    struct AddAttributeInterceptor<T, InputType, OutputType, RequestType: RequestMessage, ResponseType: ResponseMessage>: Interceptor {
+    struct AddAttributeInterceptor<T: Sendable, InputType, OutputType, RequestType: RequestMessage, ResponseType: ResponseMessage>: Interceptor {
         private let key: AttributeKey<T>
         private let value: T
 

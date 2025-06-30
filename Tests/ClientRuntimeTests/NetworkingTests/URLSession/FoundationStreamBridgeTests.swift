@@ -104,7 +104,7 @@ class FoundationStreamBridgeTests: XCTestCase {
     }
 }
 
-private class TestLogger: LogAgent {
+private class TestLogger: LogAgent, @unchecked Sendable {
     var name: String
 
     var messages: [(level: LogAgentLevel, message: String)] = []

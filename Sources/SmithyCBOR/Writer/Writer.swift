@@ -18,8 +18,6 @@ import Foundation
 
 @_spi(SmithyReadWrite)
 public final class Writer: SmithyWriter {
-    public typealias NodeInfo = String
-
     let nodeInfo: NodeInfo
     var cborValue: CBORType?
     var children: [Writer] = []
@@ -52,7 +50,7 @@ public final class Writer: SmithyWriter {
                 guard !(child.cborValue == nil && child.children.isEmpty) else {
                     continue
                 }
-                encoder.encode(.text(child.nodeInfo)) // Key for the child
+                encoder.encode(.text(child.nodeInfo.name)) // Key for the child
 
                 if let cborValue = child.cborValue {
                     encoder.encode(cborValue) // Encode the value directly
@@ -159,7 +157,7 @@ public final class Writer: SmithyWriter {
         guard let value else { return }
         var map: [String: CBORType] = [:]
         for (key, val) in value {
-            let writer = self[key]
+            let writer = self[.init(key)]
             try valueWritingClosure(val, writer)
 
             if let cborValue = extractCBORValue(from: writer) {
@@ -202,7 +200,7 @@ public final class Writer: SmithyWriter {
             var childMap: [String: CBORType] = [:]
             for child in writer.children {
                 if let childValue = extractCBORValue(from: child) {
-                    childMap[child.nodeInfo] = childValue
+                    childMap[child.nodeInfo.name] = childValue
                 }
             }
             // Return a map if any children provided a value

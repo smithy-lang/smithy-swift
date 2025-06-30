@@ -8,6 +8,6 @@
 import struct Foundation.Date
 
 // Base protocol for all identity types
-public protocol Identity {
+public protocol Identity: Sendable {
     var expiration: Date? { get }
 }

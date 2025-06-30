@@ -25,7 +25,8 @@ import struct Foundation.URLRequest
 
 // we need to maintain a reference to this same request while we add headers
 // in the CRT engine so that is why it's a class
-public final class HTTPRequest: RequestMessage {
+// developer must ensure HTTPRequest’s internal state remains thread-safe
+public final class HTTPRequest: RequestMessage, @unchecked Sendable {
     public var body: ByteStream
     public let destination: URI
     public var headers: Headers
@@ -152,7 +153,7 @@ public final class HTTPRequestBuilder: RequestMessageBuilder {
     public private(set) var path: String = "/"
     public private(set) var body: ByteStream = .noStream
     public private(set) var queryItems = [URIQueryItem]()
-    public private(set) var port: Int16?
+    public private(set) var port: UInt16?
     public private(set) var protocolType: URIScheme = .https
     public private(set) var trailingHeaders: Headers = Headers()
 
@@ -242,7 +243,7 @@ public final class HTTPRequestBuilder: RequestMessageBuilder {
     }
 
     @discardableResult
-    public func withPort(_ value: Int16?) -> HTTPRequestBuilder {
+    public func withPort(_ value: UInt16?) -> HTTPRequestBuilder {
         self.port = value
         return self
     }

@@ -7,6 +7,7 @@
 
 import XCTest
 @testable import ClientRuntime
+import enum SmithyHTTPAPI.EndpointPropertyValue
 
 final class EndpointsAuthSchemeResolverTests: XCTestCase {
     func testParsing() throws {
@@ -15,7 +16,7 @@ final class EndpointsAuthSchemeResolverTests: XCTestCase {
             "name": "sigv4",
             "signingName": "s3",
             "disableDoubleEncoding": true
-        ] as [String: AnyHashable]
+        ] as [String: EndpointPropertyValue]
 
         let actualSigV4 = try EndpointsAuthScheme(from: sigV4)
         if case let .sigV4(data) = actualSigV4 {
@@ -33,7 +34,7 @@ final class EndpointsAuthSchemeResolverTests: XCTestCase {
             "name": "sigv4a",
             "signingName": "s3",
             "disableDoubleEncoding": true
-        ] as [String: AnyHashable]
+        ] as [String: EndpointPropertyValue]
 
         let actualSigV4a = try EndpointsAuthScheme(from: sigV4A)
         if case let .sigV4A(data) = actualSigV4a {

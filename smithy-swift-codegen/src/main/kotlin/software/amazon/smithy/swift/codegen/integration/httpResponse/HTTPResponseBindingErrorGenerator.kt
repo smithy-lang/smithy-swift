@@ -103,8 +103,9 @@ class HTTPResponseBindingErrorGenerator(
                     if (ctx.service.hasTrait<AwsQueryCompatibleTrait>()) {
                         writer.write("let errorDetails = httpResponse.headers.value(for: \"x-amzn-query-error\")")
                         writer.write(
-                            "let baseError = try \$N.makeQueryCompatibleError(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L, errorDetails: errorDetails)",
+                            "let baseError: \$N = try \$N.makeQueryCompatibleError(httpResponse: httpResponse, responseReader: responseReader, noErrorWrapping: \$L, errorDetails: errorDetails)",
                             customizations.baseErrorSymbol,
+                            customizations.queryCompatibleUtilsSymbol,
                             noErrorWrapping,
                         )
                     } else {
