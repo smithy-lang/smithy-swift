@@ -11,7 +11,9 @@ import SmithyIdentityAPI
 import ClientRuntime
 
 public struct MockIdentity: Identity {
-    public init() {}
+    public var properties: Smithy.Attributes
+
+    public init() { self.properties = Attributes() }
     public var expiration: Date? = nil
 }
 
