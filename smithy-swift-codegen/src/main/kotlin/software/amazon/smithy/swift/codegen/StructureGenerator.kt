@@ -127,7 +127,7 @@ class StructureGenerator(
 
     private fun generateStructMembers() {
         membersSortedByName.forEach {
-            var (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
+            val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
             writer.writeMemberDocs(model, it)
             val indirect = it.hasTrait<SwiftBoxTrait>()
             var indirectOrNot = ""
@@ -150,7 +150,7 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(member) { Pair(null, null) }
                     if (memberName == null || memberSymbol == null) continue
                     val terminator = if (index == membersSortedByName.size - 1) "" else ","
-                    writer.write("\$L: \$D$terminator", memberName, memberSymbol)
+                    writer.write("\$L: \$D\$L", memberName, memberSymbol, terminator)
                 }
             }
             writer.write(") {")

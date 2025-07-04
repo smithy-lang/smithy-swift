@@ -113,7 +113,7 @@ class ShapeValueGenerator(
         block: () -> Unit,
     ) {
         val symbol = symbolProvider.toSymbol(shape)
-        writer.writeInline("\$N.", symbol).call { block() }.write(")")
+        writer.writeInline("\$N.", symbol).call { block() }
     }
 
     private fun documentDecl(
@@ -286,8 +286,13 @@ class ShapeValueGenerator(
                                 CodegenException("unknown member ${currShape.id}.${keyNode.value}")
                             }
                         memberShape = generator.model.expectShape(member.target)
-                        writer.writeInline("\$L(", lowerCase(keyNode.value))
-                        generator.writeShapeValueInline(writer, memberShape, valueNode)
+                        if (member.target.toString() != "smithy.api#Unit") {
+                            writer.writeInline("\$L(", lowerCase(keyNode.value))
+                            generator.writeShapeValueInline(writer, memberShape, valueNode)
+                            writer.writeInline(")")
+                        } else {
+                            writer.writeInline("\$L", lowerCase(keyNode.value))
+                        }
                     }
                     else -> throw CodegenException("unexpected shape type " + currShape.type)
                 }
