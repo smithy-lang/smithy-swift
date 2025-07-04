@@ -29,7 +29,6 @@ class SchemaGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
     val writer: SwiftWriter,
 ) {
-
     fun renderSchema(shape: Shape) {
         writer.openBlock(
             "var \$L: \$N<\$N> {",
@@ -59,7 +58,8 @@ class SchemaGenerator(
             }
             if (shape.members().isNotEmpty() && !shape.isEnum && !shape.isIntEnumShape) {
                 writer.openBlock("members: [", "],") {
-                    shape.members()
+                    shape
+                        .members()
                         .filter { it.isInHttpBody() }
                         .filter { !ctx.model.expectShape(it.target).hasTrait<StreamingTrait>() }
                         .forEach { member ->
@@ -83,10 +83,14 @@ class SchemaGenerator(
                 }
             }
             targetShape(shape)?.let { writer.write("targetSchema: { \$L },", it.schemaVar(writer)) }
-            shape.id.member.getOrNull()?.let { writer.write("memberName: \$S,", it) }
+            shape.id.member
+                .getOrNull()
+                ?.let { writer.write("memberName: \$S,", it) }
             memberShape(shape)?.let { writer.write("containerType: .\$L,", ctx.model.expectShape(it.container).type) }
             jsonName(shape)?.let { writer.write("jsonName: \$S,", it) }
-            if (shape.hasTrait<HttpPayloadTrait>()) { writer.write("httpPayload: true,") }
+            if (shape.hasTrait<HttpPayloadTrait>()) {
+                writer.write("httpPayload: true,")
+            }
             enumValue(shape)?.let { node ->
                 when (node.type) {
                     NodeType.STRING -> writer.write("enumValue: \$N(value: \$S)", SmithyTypes.StringDocument, node)
@@ -110,14 +114,19 @@ class SchemaGenerator(
         }
     }
 
-    private fun writeSetterGetter(writer: SwiftWriter, shape: Shape, member: MemberShape) {
+    private fun writeSetterGetter(
+        writer: SwiftWriter,
+        shape: Shape,
+        member: MemberShape,
+    ) {
         val target = ctx.model.expectShape(member.target)
         val readMethodName = target.readMethodName
-        val memberIsRequired = member.isRequired ||
-            (member.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) ||
-            (shape.isMapShape && member.memberName == "value" && !shape.hasTrait<SparseTrait>()) ||
-            (shape.isListShape && !shape.hasTrait<SparseTrait>()) ||
-            shape.isUnionShape
+        val memberIsRequired =
+            member.isRequired ||
+                (member.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) ||
+                (shape.isMapShape && member.memberName == "value" && !shape.hasTrait<SparseTrait>()) ||
+                (shape.isListShape && !shape.hasTrait<SparseTrait>()) ||
+                shape.isUnionShape
         val readMethodExtension = "NonNull".takeIf { memberIsRequired } ?: ""
         when (shape.type) {
             ShapeType.STRUCTURE -> {
@@ -170,28 +179,18 @@ class SchemaGenerator(
         }
     }
 
-    private fun targetShape(shape: Shape): Shape? {
-        return memberShape(shape)?.let { ctx.model.expectShape(it.target) }
-    }
+    private fun targetShape(shape: Shape): Shape? = memberShape(shape)?.let { ctx.model.expectShape(it.target) }
 
-    private fun memberShape(shape: Shape): MemberShape? {
-        return shape.asMemberShape().getOrNull()
-    }
+    private fun memberShape(shape: Shape): MemberShape? = shape.asMemberShape().getOrNull()
 
-    private fun enumValue(shape: Shape): Node? {
-        return shape.getTrait<EnumValueTrait>()?.toNode()
-    }
+    private fun enumValue(shape: Shape): Node? = shape.getTrait<EnumValueTrait>()?.toNode()
 
-    private fun jsonName(shape: Shape): String? {
-        return shape.getTrait<JsonNameTrait>()?.value
-    }
+    private fun jsonName(shape: Shape): String? = shape.getTrait<JsonNameTrait>()?.value
 
-    private fun isRequired(shape: Shape): Boolean {
-        return shape.hasTrait<RequiredTrait>()
-    }
+    private fun isRequired(shape: Shape): Boolean = shape.hasTrait<RequiredTrait>()
 
-    private fun defaultValue(shape: Shape): String? {
-        return shape.getTrait<DefaultTrait>()?.let {
+    private fun defaultValue(shape: Shape): String? =
+        shape.getTrait<DefaultTrait>()?.let {
             val node = it.toNode()
             when (node.type) {
                 NodeType.STRING -> writer.format("\$N(value: \$S)", SmithyTypes.StringDocument, node.toString())
@@ -202,11 +201,8 @@ class SchemaGenerator(
                 NodeType.NULL -> writer.format("\$N()", SmithyTypes.NullDocument)
             }
         }
-    }
 
-    private fun timestampFormat(shape: Shape): TimestampFormatTrait.Format? {
-        return shape.getTrait<TimestampFormatTrait>()?.format
-    }
+    private fun timestampFormat(shape: Shape): TimestampFormatTrait.Format? = shape.getTrait<TimestampFormatTrait>()?.format
 
     private val TimestampFormatTrait.Format.swiftEnumCase: String
         get() {

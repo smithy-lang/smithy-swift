@@ -33,7 +33,11 @@ object NestedShapeTransformer {
         service: ServiceShape,
     ): Model? {
         // find all the shapes in this models shapes that have are nested shapes (not a top level input or output)
-        val allShapesNeedingNested = model.getNestedShapes(service).filter { !it.hasTrait<NestedTrait>() && it.id.namespace != "smithy.api" }
+        val allShapesNeedingNested =
+            model
+                .getNestedShapes(
+                    service,
+                ).filter { !it.hasTrait<NestedTrait>() && it.id.namespace != "smithy.api" }
 
         if (allShapesNeedingNested.isEmpty()) {
             return null

@@ -90,13 +90,20 @@ open class MemberShapeDecodeGenerator(
         }
     }
 
-    private fun renderStructOrUnionExp(memberShape: MemberShape, isPayload: Boolean): String {
+    private fun renderStructOrUnionExp(
+        memberShape: MemberShape,
+        isPayload: Boolean,
+    ): String {
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
                 "try \$L.readStructure\$L(schema: \$L)",
                 reader(memberShape, isPayload),
-                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                "NonNull".takeIf {
+                    decodingUnion ||
+                        (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>())
+                }
+                    ?: "",
                 memberShape.schemaVar(writer),
             )
         }
@@ -109,13 +116,20 @@ open class MemberShapeDecodeGenerator(
         )
     }
 
-    private fun renderListExp(memberShape: MemberShape, listShape: ListShape): String {
+    private fun renderListExp(
+        memberShape: MemberShape,
+        listShape: ListShape,
+    ): String {
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
                 "try \$L.readList\$L(schema: \$L)",
                 reader(memberShape, false),
-                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                "NonNull".takeIf {
+                    decodingUnion ||
+                        (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>())
+                }
+                    ?: "",
                 memberShape.schemaVar(writer),
             )
         }
@@ -134,13 +148,20 @@ open class MemberShapeDecodeGenerator(
         )
     }
 
-    private fun renderMapExp(memberShape: MemberShape, mapShape: MapShape): String {
+    private fun renderMapExp(
+        memberShape: MemberShape,
+        mapShape: MapShape,
+    ): String {
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
                 "try \$L.readMap\$L(schema: \$L)",
                 reader(memberShape, false),
-                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                "NonNull".takeIf {
+                    decodingUnion ||
+                        (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>())
+                }
+                    ?: "",
                 memberShape.schemaVar(writer),
             )
         }
@@ -161,7 +182,10 @@ open class MemberShapeDecodeGenerator(
         )
     }
 
-    private fun renderTimestampExp(memberShape: MemberShape, timestampShape: TimestampShape): String {
+    private fun renderTimestampExp(
+        memberShape: MemberShape,
+        timestampShape: TimestampShape,
+    ): String {
         if (useSBS) {
             return renderMemberExp(memberShape, isPayload = false)
         }
@@ -177,14 +201,21 @@ open class MemberShapeDecodeGenerator(
         )
     }
 
-    private fun renderMemberExp(memberShape: MemberShape, isPayload: Boolean): String {
+    private fun renderMemberExp(
+        memberShape: MemberShape,
+        isPayload: Boolean,
+    ): String {
         if (useSBS) {
             val target = ctx.model.expectShape(memberShape.target)
             return writer.format(
                 "try \$L.\$L\$L(schema: \$L)",
                 reader(memberShape, isPayload),
                 target.readMethodName,
-                "NonNull".takeIf { decodingUnion || (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>()) } ?: "",
+                "NonNull".takeIf {
+                    decodingUnion ||
+                        (memberShape.hasTrait<RequiredTrait>() || memberShape.hasTrait<DefaultTrait>() || target.hasTrait<DefaultTrait>())
+                }
+                    ?: "",
                 memberShape.schemaVar(writer),
             )
         }
@@ -194,6 +225,7 @@ open class MemberShapeDecodeGenerator(
             readMethodName("read"),
             default(memberShape),
         )
+    }
 
     private fun readMethodName(baseName: String): String {
         val extension = "".takeIf { decodingUnion } ?: "IfPresent"

@@ -9,16 +9,15 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import kotlin.jvm.optionals.getOrNull
 
-fun Shape.schemaVar(writer: SwiftWriter): String {
-    return if (this.id.namespace == "smithy.api") {
+fun Shape.schemaVar(writer: SwiftWriter): String =
+    if (this.id.namespace == "smithy.api") {
         this.id.preludeSchemaVarName(writer)
     } else {
         this.id.schemaVarName()
     }
-}
 
-private fun ShapeId.preludeSchemaVarName(writer: SwiftWriter): String {
-    return when (this.name) {
+private fun ShapeId.preludeSchemaVarName(writer: SwiftWriter): String =
+    when (this.name) {
         "Unit" -> writer.format("\$N", SmithyReadWriteTypes.unitSchema)
         "String" -> writer.format("\$N", SmithyReadWriteTypes.stringSchema)
         "Blob" -> writer.format("\$N", SmithyReadWriteTypes.blobSchema)
@@ -40,7 +39,6 @@ private fun ShapeId.preludeSchemaVarName(writer: SwiftWriter): String {
         "Document" -> writer.format("\$N", SmithyReadWriteTypes.documentSchema)
         else -> throw Exception("Unhandled prelude type converted to schemaVar: ${this.name}")
     }
-}
 
 private fun ShapeId.schemaVarName(): String {
     val namespacePortion = this.namespace.replace(".", "_")
@@ -50,25 +48,26 @@ private fun ShapeId.schemaVarName(): String {
 }
 
 val Shape.readMethodName: String
-    get() = when (type) {
-        ShapeType.BLOB -> "readBlob"
-        ShapeType.BOOLEAN -> "readBoolean"
-        ShapeType.STRING -> "readEnum".takeIf { hasTrait<EnumTrait>() } ?: "readString"
-        ShapeType.ENUM -> "readEnum"
-        ShapeType.TIMESTAMP -> "readTimestamp"
-        ShapeType.BYTE -> "readByte"
-        ShapeType.SHORT -> "readShort"
-        ShapeType.INTEGER -> "readInteger"
-        ShapeType.INT_ENUM -> "readIntEnum"
-        ShapeType.LONG -> "readLong"
-        ShapeType.FLOAT -> "readFloat"
-        ShapeType.DOCUMENT -> "readDocument"
-        ShapeType.DOUBLE -> "readDouble"
-        ShapeType.BIG_DECIMAL -> "readBigDecimal"
-        ShapeType.BIG_INTEGER -> "readBigInteger"
-        ShapeType.LIST, ShapeType.SET -> "readList"
-        ShapeType.MAP -> "readMap"
-        ShapeType.STRUCTURE, ShapeType.UNION -> "readStructure"
-        ShapeType.MEMBER, ShapeType.SERVICE, ShapeType.RESOURCE, ShapeType.OPERATION, null ->
-            throw Exception("Unsupported member target type: $type")
-    }
+    get() =
+        when (type) {
+            ShapeType.BLOB -> "readBlob"
+            ShapeType.BOOLEAN -> "readBoolean"
+            ShapeType.STRING -> "readEnum".takeIf { hasTrait<EnumTrait>() } ?: "readString"
+            ShapeType.ENUM -> "readEnum"
+            ShapeType.TIMESTAMP -> "readTimestamp"
+            ShapeType.BYTE -> "readByte"
+            ShapeType.SHORT -> "readShort"
+            ShapeType.INTEGER -> "readInteger"
+            ShapeType.INT_ENUM -> "readIntEnum"
+            ShapeType.LONG -> "readLong"
+            ShapeType.FLOAT -> "readFloat"
+            ShapeType.DOCUMENT -> "readDocument"
+            ShapeType.DOUBLE -> "readDouble"
+            ShapeType.BIG_DECIMAL -> "readBigDecimal"
+            ShapeType.BIG_INTEGER -> "readBigInteger"
+            ShapeType.LIST, ShapeType.SET -> "readList"
+            ShapeType.MAP -> "readMap"
+            ShapeType.STRUCTURE, ShapeType.UNION -> "readStructure"
+            ShapeType.MEMBER, ShapeType.SERVICE, ShapeType.RESOURCE, ShapeType.OPERATION, null ->
+                throw Exception("Unsupported member target type: $type")
+        }

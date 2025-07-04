@@ -219,7 +219,10 @@ class MessageUnmarshallableGenerator(
         }
     }
 
-    private fun renderReadToValue(writer: SwiftWriter, member: MemberShape) {
+    private fun renderReadToValue(
+        writer: SwiftWriter,
+        member: MemberShape,
+    ) {
         if (ctx.service.responseWireProtocol == WireProtocol.JSON) {
             renderReadWithSchemaToValue(writer, member)
         } else {
@@ -227,7 +230,10 @@ class MessageUnmarshallableGenerator(
         }
     }
 
-    private fun renderReadWithSchemaToValue(writer: SwiftWriter, memberShape: MemberShape) {
+    private fun renderReadWithSchemaToValue(
+        writer: SwiftWriter,
+        memberShape: MemberShape,
+    ) {
         val target = ctx.model.expectShape(memberShape.target)
         writer.write(
             "let value = try \$N.from(data: message.payload).\$LNonNull(schema: \$L)",
@@ -237,7 +243,10 @@ class MessageUnmarshallableGenerator(
         )
     }
 
-    private fun renderReadWithSerdeToValue(writer: SwiftWriter, memberShape: MemberShape) {
+    private fun renderReadWithSerdeToValue(
+        writer: SwiftWriter,
+        memberShape: MemberShape,
+    ) {
         val readingClosure = ReadingClosureUtils(ctx, writer).readingClosure(memberShape)
         writer.write(
             "let value = try \$N.readFrom(message.payload, with: \$L)",

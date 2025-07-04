@@ -39,10 +39,14 @@ object NeedsReaderWriterTransformer {
         trait: Trait,
     ): Model {
         // Get all shapes nested under the passed trait
-        var allShapesNeedingTrait = model.getNestedShapes(structure)
-            .filter { it.id.namespace != "smithy.api" }
-            .filter { !it.hasTrait(trait.toShapeId()) }
-        if (allShapesNeedingTrait.isEmpty()) { return model }
+        var allShapesNeedingTrait =
+            model
+                .getNestedShapes(structure)
+                .filter { it.id.namespace != "smithy.api" }
+                .filter { !it.hasTrait(trait.toShapeId()) }
+        if (allShapesNeedingTrait.isEmpty()) {
+            return model
+        }
         // If it's a struct or union, tag it with the trait.  Else leave it unchanged.
         return ModelTransformer.create().mapShapes(model) { shape ->
             if (allShapesNeedingTrait.contains(shape)) {

@@ -36,7 +36,11 @@ abstract class MemberShapeEncodeGenerator(
 
     private val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol)
 
-    fun writeMember(memberShape: MemberShape, unionMember: Boolean, errorMember: Boolean) {
+    fun writeMember(
+        memberShape: MemberShape,
+        unionMember: Boolean,
+        errorMember: Boolean,
+    ) {
         if (unionMember && memberShape.target.toString() == "smithy.api#Unit") {
             writeUnitMember(memberShape)
             return

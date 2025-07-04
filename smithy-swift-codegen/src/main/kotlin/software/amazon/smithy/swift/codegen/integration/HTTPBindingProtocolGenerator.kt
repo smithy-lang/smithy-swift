@@ -206,29 +206,35 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateSchemas(ctx: ProtocolGenerator.GenerationContext) {
-        if (ctx.service.responseWireProtocol != WireProtocol.JSON) { return }
-        val nestedShapes = resolveShapesNeedingSchema(ctx)
-            .filter { !it.hasTrait<StreamingTrait>() }
-            .filter {
-                !(
-                    it.asMemberShape().getOrNull()?.let {
-                        ctx.model.expectShape(it.target).hasTrait<StreamingTrait>()
-                    } ?: false
+        if (ctx.service.responseWireProtocol != WireProtocol.JSON) return
+        val nestedShapes =
+            resolveShapesNeedingSchema(ctx)
+                .filter { !it.hasTrait<StreamingTrait>() }
+                .filter {
+                    !(
+                        it.asMemberShape().getOrNull()?.let {
+                            ctx.model.expectShape(it.target).hasTrait<StreamingTrait>()
+                        } ?: false
                     )
-            }
+                }
         for (shape in nestedShapes) {
             renderSchemas(ctx, shape)
         }
     }
 
-    private fun renderSchemas(ctx: ProtocolGenerator.GenerationContext, shape: Shape) {
+    private fun renderSchemas(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+    ) {
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
         val filename = SchemaFileUtils.filename(ctx.settings, "${shape.id.name}+Schema")
-        val encodeSymbol = Symbol.builder()
-            .definitionFile(filename)
-            .name(symbolName)
-            .build()
+        val encodeSymbol =
+            Symbol
+                .builder()
+                .definitionFile(filename)
+                .name(symbolName)
+                .build()
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
             SchemaGenerator(ctx, writer).renderSchema(shape)
         }
@@ -238,9 +244,13 @@ abstract class HTTPBindingProtocolGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
     ) {
-        if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) { return }
+        if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) {
+            return
+        }
         val shapeUsesSchemaBasedRead = ctx.service.responseWireProtocol == WireProtocol.JSON && shape.hasTrait<NestedTrait>()
-        if (shapeUsesSchemaBasedRead && !shape.hasTrait<NeedsWriterTrait>()) { return }
+        if (shapeUsesSchemaBasedRead && !shape.hasTrait<NeedsWriterTrait>()) {
+            return
+        }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
         val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+ReadWrite")
@@ -396,18 +406,21 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     private fun resolveShapesNeedingSchema(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        val topLevelOutputMembers = getHttpBindingOperations(ctx)
-            .map { ctx.model.expectShape(it.output.get()) }
-            .toSet()
+        val topLevelOutputMembers =
+            getHttpBindingOperations(ctx)
+                .map { ctx.model.expectShape(it.output.get()) }
+                .toSet()
 
-        val topLevelErrorMembers = getHttpBindingOperations(ctx)
-            .flatMap { it.errors }
-            .map { ctx.model.expectShape(it) }
-            .toSet()
+        val topLevelErrorMembers =
+            getHttpBindingOperations(ctx)
+                .flatMap { it.errors }
+                .map { ctx.model.expectShape(it) }
+                .toSet()
 
-        val topLevelServiceErrorMembers = ctx.service.errors
-            .map { ctx.model.expectShape(it) }
-            .toSet()
+        val topLevelServiceErrorMembers =
+            ctx.service.errors
+                .map { ctx.model.expectShape(it) }
+                .toSet()
 
         // Input members excluded from schema generation until schema-based deserialization is implemented
 
@@ -427,30 +440,36 @@ abstract class HTTPBindingProtocolGenerator(
         return walkNestedShapesRequiringSchema(ctx, allTopLevelMembers)
     }
 
-    private fun walkNestedShapesRequiringSchema(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<Shape> {
+    private fun walkNestedShapesRequiringSchema(
+        ctx: ProtocolGenerator.GenerationContext,
+        shapes: Set<Shape>,
+    ): Set<Shape> {
         val resolved = mutableSetOf<Shape>()
         val walker = Walker(ctx.model)
 
         // walk all the shapes in the set and find all other
         // structs/unions (or collections thereof) in the graph from that shape
         shapes.forEach { shape ->
-            walker.iterateShapes(shape) { relationship ->
-                when (relationship.relationshipType) {
-                    RelationshipType.MEMBER_TARGET,
-                    RelationshipType.STRUCTURE_MEMBER,
-                    RelationshipType.LIST_MEMBER,
-                    RelationshipType.SET_MEMBER,
-                    RelationshipType.MAP_KEY,
-                    RelationshipType.MAP_VALUE,
-                    RelationshipType.UNION_MEMBER,
-                    -> true
-                    else -> false
+            walker
+                .iterateShapes(shape) { relationship ->
+                    when (relationship.relationshipType) {
+                        RelationshipType.MEMBER_TARGET,
+                        RelationshipType.STRUCTURE_MEMBER,
+                        RelationshipType.LIST_MEMBER,
+                        RelationshipType.SET_MEMBER,
+                        RelationshipType.MAP_KEY,
+                        RelationshipType.MAP_VALUE,
+                        RelationshipType.UNION_MEMBER,
+                        -> true
+                        else -> false
+                    }
+                }.forEach {
+                    // Don't generate schemas for Smithy built-in / "prelude" shapes.
+                    // Those are included in runtime.
+                    if (it.id.namespace != "smithy.api") {
+                        resolved.add(it)
+                    }
                 }
-            }.forEach {
-                // Don't generate schemas for Smithy built-in / "prelude" shapes.
-                // Those are included in runtime.
-                if (it.id.namespace != "smithy.api") { resolved.add(it) }
-            }
         }
         return resolved
     }
