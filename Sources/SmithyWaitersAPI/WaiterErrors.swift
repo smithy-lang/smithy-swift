@@ -11,7 +11,7 @@ public struct WaiterConfigurationError: Error {
 }
 
 /// Thrown when a waiter matches a failure acceptor on an attempt to call the waited operation.
-public struct WaiterFailureError<Output>: Error {
+public struct WaiterFailureError<Output: Sendable>: Error {
     /// The number of attempts at the operation that were made while waiting.
     public let attempts: Int
 

@@ -74,14 +74,22 @@ private val Shape.isStreaming: Boolean
         return this.hasTrait<StreamingTrait>()
     }
 
-class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSettings) :
-    SymbolProvider,
+class SwiftSymbolProvider(
+    private val model: Model,
+    val swiftSettings: SwiftSettings,
+) : SymbolProvider,
     ShapeVisitor<Symbol> {
     private val sdkId = swiftSettings.sdkId
-    private val service: ServiceShape? = try { swiftSettings.getService(model) } catch (e: CodegenException) { null }
+    private val service: ServiceShape? =
+        try {
+            swiftSettings.getService(model)
+        } catch (e: CodegenException) {
+            null
+        }
     private val logger = Logger.getLogger(SwiftSymbolProvider::class.java.name)
     private val escaper: Escaper
     private val nullableIndex: NullableIndex
+
     // model depth; some shapes use `toSymbol()` internally as they convert (e.g.) member shapes to symbols, this tracks
     // how deep in the model we have recursed
     private var depth = 0
@@ -89,13 +97,14 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
     init {
         val reservedWords = swiftReservedWords
         nullableIndex = NullableIndex.of(model)
-        escaper = ReservedWordSymbolProvider
-            .builder()
-            .nameReservedWords(reservedWords) // Only escape words when the symbol has a definition file to
-            .memberReservedWords(reservedWords)
-            // prevent escaping intentional references to built-in types.
-            .escapePredicate { _, symbol: Symbol -> symbol.definitionFile.isNotEmpty() }
-            .buildEscaper()
+        escaper =
+            ReservedWordSymbolProvider
+                .builder()
+                .nameReservedWords(reservedWords) // Only escape words when the symbol has a definition file to
+                .memberReservedWords(reservedWords)
+                // prevent escaping intentional references to built-in types.
+                .escapePredicate { _, symbol: Symbol -> symbol.definitionFile.isNotEmpty() }
+                .buildEscaper()
     }
 
     override fun toSymbol(shape: Shape): Symbol {
@@ -139,14 +148,13 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         return createSymbolBuilder(shape, "String", namespace = "Swift", SwiftDeclaration.STRUCT, boxed = true).build()
     }
 
-    override fun enumShape(shape: EnumShape): Symbol {
-        return createEnumSymbol(shape)
-    }
+    override fun enumShape(shape: EnumShape): Symbol = createEnumSymbol(shape)
 
     private fun createEnumSymbol(shape: Shape): Symbol {
         val name = shape.defaultName(service)
-        val builder = createSymbolBuilder(shape, name, SwiftDeclaration.ENUM, boxed = true)
-            .definitionFile(formatModuleName(name))
+        val builder =
+            createSymbolBuilder(shape, name, SwiftDeclaration.ENUM, boxed = true)
+                .definitionFile(formatModuleName(name))
 
         // add a reference to each member symbol
         if (shape is UnionShape) {
@@ -159,14 +167,14 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         return builder.build()
     }
 
-    override fun booleanShape(shape: BooleanShape): Symbol {
-        return createSymbolBuilder(shape, "Bool", namespace = "Swift", SwiftDeclaration.STRUCT).build()
-    }
+    override fun booleanShape(shape: BooleanShape): Symbol =
+        createSymbolBuilder(shape, "Bool", namespace = "Swift", SwiftDeclaration.STRUCT).build()
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName(service)
-        val builder = createSymbolBuilder(shape, name, SwiftDeclaration.STRUCT, boxed = true)
-            .definitionFile(formatModuleName(name))
+        val builder =
+            createSymbolBuilder(shape, name, SwiftDeclaration.STRUCT, boxed = true)
+                .definitionFile(formatModuleName(name))
 
         // add a reference to each member symbol
         addDeclareMemberReferences(builder, shape.allMembers.values)
@@ -205,7 +213,8 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<$reference>", "Swift", SwiftDeclaration.STRUCT, true).addReference(reference)
+        return createSymbolBuilder(shape, "Set<$reference>", "Swift", SwiftDeclaration.STRUCT, true)
+            .addReference(reference)
             .build()
     }
 
@@ -230,14 +239,11 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         return handleDefaultValue(shape, symbol.toBuilder()).build()
     }
 
-    override fun timestampShape(shape: TimestampShape): Symbol {
-        return createSymbolBuilder(shape, "Date", "Foundation", SwiftDeclaration.STRUCT, true)
+    override fun timestampShape(shape: TimestampShape): Symbol =
+        createSymbolBuilder(shape, "Date", "Foundation", SwiftDeclaration.STRUCT, true)
             .build()
-    }
 
-    override fun unionShape(shape: UnionShape): Symbol {
-        return createEnumSymbol(shape)
-    }
+    override fun unionShape(shape: UnionShape): Symbol = createEnumSymbol(shape)
 
     override fun operationShape(shape: OperationShape): Symbol {
         // The Swift SDK does not produce code explicitly based on Operations, returning an empty symbol
@@ -252,11 +258,10 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         }
     }
 
-    override fun documentShape(shape: DocumentShape): Symbol {
-        return createSymbolBuilder(shape, "Document", "Smithy", SwiftDeclaration.STRUCT, true)
+    override fun documentShape(shape: DocumentShape): Symbol =
+        createSymbolBuilder(shape, "Document", "Smithy", SwiftDeclaration.STRUCT, true)
             .addDependency(SwiftDependency.SMITHY)
             .build()
-    }
 
     override fun serviceShape(shape: ServiceShape): Symbol {
         val name = sdkId.clientName()
@@ -265,7 +270,10 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
             .build()
     }
 
-    private fun numberShape(shape: Shape, typeName: String): Symbol {
+    private fun numberShape(
+        shape: Shape,
+        typeName: String,
+    ): Symbol {
         if (shape.isIntEnumShape()) {
             return createEnumSymbol(shape)
         }
@@ -279,12 +287,14 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         shape: Shape,
         typeName: String,
         declaration: SwiftDeclaration,
-        boxed: Boolean = false
+        boxed: Boolean = false,
     ): Symbol.Builder {
-        val builder = Symbol.builder()
-            .putProperty("shape", shape)
-            .putProperty("decl", declaration.keyword)
-            .name(typeName)
+        val builder =
+            Symbol
+                .builder()
+                .putProperty("shape", shape)
+                .putProperty("decl", declaration.keyword)
+                .name(typeName)
         if (boxed) {
             builder.boxed()
         }
@@ -301,15 +311,12 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         typeName: String,
         namespace: String,
         declaration: SwiftDeclaration,
-        boxed: Boolean = false
-    ): Symbol.Builder {
-        return createSymbolBuilder(shape, typeName, declaration, boxed)
+        boxed: Boolean = false,
+    ): Symbol.Builder =
+        createSymbolBuilder(shape, typeName, declaration, boxed)
             .namespace(namespace, ".")
-    }
 
-    private fun formatModuleName(name: String): String {
-        return ModelFileUtils.filename(swiftSettings, name)
-    }
+    private fun formatModuleName(name: String): String = ModelFileUtils.filename(swiftSettings, name)
 
     /**
      * Resolve default value for a given shape and save it as a property in symbol builder if needed.
@@ -324,7 +331,10 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
      *  - list: can only be set to an empty list.
      *  - map: can only be set to an empty map.
      */
-    private fun handleDefaultValue(shape: Shape, builder: Symbol.Builder): Symbol.Builder {
+    private fun handleDefaultValue(
+        shape: Shape,
+        builder: Symbol.Builder,
+    ): Symbol.Builder {
         // Skip if the current shape is a member shape with @clientOptional trait
         if (shape.hasTrait<ClientOptionalTrait>()) return builder
         // Skip if the current shape doesn't have default trait. Otherwise, get the default value as literal string
@@ -333,24 +343,37 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
         if (defaultValueLiteral == "null") return builder
 
         // The current shape may be a member shape or a root level shape.
-        val targetShape = when (shape) {
-            is MemberShape -> {
-                // If containing shape is an input shape, return unmodified builder.
-                if (model.expectShape(shape.container).hasTrait<InputTrait>()) return builder
-                model.expectShape(shape.target)
+        val targetShape =
+            when (shape) {
+                is MemberShape -> {
+                    // If containing shape is an input shape, return unmodified builder.
+                    if (model.expectShape(shape.container).hasTrait<InputTrait>()) return builder
+                    model.expectShape(shape.target)
+                }
+                else -> shape
             }
-            else -> shape
-        }
         val node = shape.getTrait<DefaultTrait>()!!.toNode()
 
         return when (targetShape) {
             is ListShape -> builder.defaultValue("[]")
-            is EnumShape -> builder.defaultValue(".${swiftEnumCaseName(null, defaultValueLiteral)}")
+            is EnumShape -> {
+                // Get the corresponding enum member name (enum case name) for the string value from default trait
+                val enumMemberName =
+                    targetShape.enumValues.entries
+                        .firstOrNull {
+                            it.value == defaultValueLiteral
+                        }!!
+                        .key
+                builder.defaultValue(".${swiftEnumCaseName(enumMemberName, defaultValueLiteral)}")
+            }
             is IntEnumShape -> {
                 // Get the corresponding enum member name (enum case name) for the int value from default trait
-                val enumMemberName = targetShape.enumValues.entries.firstOrNull {
-                    it.value == defaultValueLiteral.toInt()
-                }!!.key
+                val enumMemberName =
+                    targetShape.enumValues.entries
+                        .firstOrNull {
+                            it.value == defaultValueLiteral.toInt()
+                        }!!
+                        .key
                 builder.defaultValue(".${swiftEnumCaseName(enumMemberName, defaultValueLiteral)}")
             }
             is StringShape -> builder.defaultValue("\"$defaultValueLiteral\"")
@@ -371,40 +394,52 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
     }
 
     // Document: default value can be set to null, true, false, string, numbers, an empty list, or an empty map.
-    private fun handleDocumentDefaultValue(literal: String, node: Node, builder: Symbol.Builder): Symbol.Builder {
-        var formatString = when {
-            node.isObjectNode -> "[:]"
-            node.isArrayNode -> "[]"
-            node.isBooleanNode -> literal
-            node.isStringNode -> "\"$literal\""
-            node.isNumberNode -> literal
-            else -> return builder // no-op
-        }
+    private fun handleDocumentDefaultValue(
+        literal: String,
+        node: Node,
+        builder: Symbol.Builder,
+    ): Symbol.Builder {
+        var formatString =
+            when {
+                node.isObjectNode -> "[:]"
+                node.isArrayNode -> "[]"
+                node.isBooleanNode -> literal
+                node.isStringNode -> "\"$literal\""
+                node.isNumberNode -> literal
+                else -> return builder // no-op
+            }
         return builder.defaultValueClosure { writer ->
             writer.addImport(SwiftDependency.SMITHY_JSON.target)
             writer.format(formatString)
         }
     }
 
-    private fun handleBlobDefaultValue(literal: String, shape: Shape, builder: Symbol.Builder): Symbol.Builder {
-        return builder.defaultValueClosure(
+    private fun handleBlobDefaultValue(
+        literal: String,
+        shape: Shape,
+        builder: Symbol.Builder,
+    ): Symbol.Builder =
+        builder.defaultValueClosure(
             if (shape.hasTrait<StreamingTrait>()) {
                 { writer ->
                     writer.format(
                         "\$N.data(\$N(base64Encoded: \"$literal\"))",
                         SmithyTypes.ByteStream,
-                        FoundationTypes.Data
+                        FoundationTypes.Data,
                     )
                 }
             } else {
                 { writer ->
                     writer.format("\$N(base64Encoded: \"$literal\")", FoundationTypes.Data)
                 }
-            }
+            },
         )
-    }
 
-    private fun handleTimestampDefaultValue(literal: String, node: Node, builder: Symbol.Builder): Symbol.Builder {
+    private fun handleTimestampDefaultValue(
+        literal: String,
+        node: Node,
+        builder: Symbol.Builder,
+    ): Symbol.Builder {
         // Smithy validates that default value given to timestamp shape must either be a
         // number (for epoch-seconds) or a date-time string compliant with RFC3339.
         return builder.defaultValueClosure(
@@ -416,27 +451,32 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
                 { writer ->
                     writer.format(
                         "\$N(format: .dateTime).date(from: \"$literal\")",
-                        SmithyTimestampsTypes.TimestampFormatter
+                        SmithyTimestampsTypes.TimestampFormatter,
                     )
                 }
-            }
+            },
         )
     }
 
     /**
      * Add all the [members] as references needed to declare the given symbol being built.
      */
-    private fun addDeclareMemberReferences(builder: Symbol.Builder, members: Collection<MemberShape>) {
+    private fun addDeclareMemberReferences(
+        builder: Symbol.Builder,
+        members: Collection<MemberShape>,
+    ) {
         // when converting a shape to a symbol we only need references to top level members
         // in order to declare the symbol. This prevents recursive shapes from causing a stack overflow (and doing
         // unnecessary work since we don't need the inner references)
         if (depth > 1) return
         members.forEach {
             val memberSymbol = toSymbol(it)
-            val ref = SymbolReference.builder()
-                .symbol(memberSymbol)
-                .options(SymbolReference.ContextOption.DECLARE)
-                .build()
+            val ref =
+                SymbolReference
+                    .builder()
+                    .symbol(memberSymbol)
+                    .options(SymbolReference.ContextOption.DECLARE)
+                    .build()
             builder.addReference(ref)
 
             val targetShape = model.expectShape(it.target)
@@ -452,10 +492,9 @@ class SwiftSymbolProvider(private val model: Model, val swiftSettings: SwiftSett
          * Check if a given string can be a valid swift identifier.
          * Valid swift identifier has only alphanumerics and underscore and does not start with a number
          */
-        fun isValidSwiftIdentifier(value: String): Boolean {
-            return !value.contains(Regex("[^a-zA-Z0-9_]")) &&
+        fun isValidSwiftIdentifier(value: String): Boolean =
+            !value.contains(Regex("[^a-zA-Z0-9_]")) &&
                 !Character.isDigit(value.first())
-        }
 
         fun escapeReservedWords(word: String): String = "`$word`"
     }

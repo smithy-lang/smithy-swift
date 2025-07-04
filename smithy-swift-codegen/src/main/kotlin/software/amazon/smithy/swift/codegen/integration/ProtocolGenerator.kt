@@ -13,7 +13,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.SwiftWriter
-import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampFormatHelpers
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
@@ -45,10 +45,10 @@ interface ProtocolGenerator {
             writer: SwiftWriter,
             tsFormat: TimestampFormatTrait.Format,
             memberName: String,
-            urlEncode: Boolean = false
+            urlEncode: Boolean = false,
         ): String {
             val stringDateTerminator = if (urlEncode) ".urlPercentEncoding()" else ""
-            val timestampFormat = TimestampHelpers.generateTimestampFormatEnumValue(tsFormat)
+            val timestampFormat = TimestampFormatHelpers.generateTimestampFormatEnumValue(tsFormat)
             return writer.format(
                 "\$N(format: .$timestampFormat).string(from: $memberName)$stringDateTerminator",
                 SmithyTimestampsTypes.TimestampFormatter,
@@ -137,8 +137,10 @@ interface ProtocolGenerator {
 
     fun initializeMiddleware(ctx: GenerationContext)
 
-    fun getProtocolHttpBindingResolver(ctx: GenerationContext, defaultContentType: String): HttpBindingResolver =
-        HttpTraitResolver(ctx, defaultContentType)
+    fun getProtocolHttpBindingResolver(
+        ctx: GenerationContext,
+        defaultContentType: String,
+    ): HttpBindingResolver = HttpTraitResolver(ctx, defaultContentType)
 
     val operationMiddleware: OperationMiddleware
     val customizations: HTTPProtocolCustomizable
@@ -154,6 +156,6 @@ interface ProtocolGenerator {
         val symbolProvider: SymbolProvider,
         val integrations: List<SwiftIntegration>,
         val protocol: ShapeId,
-        val delegator: SwiftDelegator
+        val delegator: SwiftDelegator,
     )
 }

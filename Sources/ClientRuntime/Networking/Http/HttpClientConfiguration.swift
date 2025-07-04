@@ -29,6 +29,12 @@ public class HttpClientConfiguration {
     /// If none is provided, defaults to no extra headers.
     public var defaultHeaders: Headers
 
+    /// The maximum connections the HTTP client makes per host or per endpoint depending on the OS.
+    ///
+    /// For Apple platforms, it will be per host.
+    /// For Linux, it will be per endpoint (protocol + host + port).
+    public var maxConnections: Int
+
     // add any other properties here you want to give the service operations
     // control over to be mapped to the Http Client
 
@@ -56,13 +62,15 @@ public class HttpClientConfiguration {
     ///   Note that certain headers may cause your API request to fail.  Defaults to no headers.
     ///   - protocolType: The HTTP scheme (`http` or `https`) to be used for API requests.  Defaults to the operation's standard configuration.
     ///   - tlsConfiguration: Optional custom TLS configuration for HTTPS requests. If `nil`, defaults to a standard configuration.
+    ///   - maxConnections: The maximum number of connections the HTTP client makes per host (for Apple platforms) or per endpoint (for Linux). For non-mac Apple platforms, defaults to 6. For macOS and Linux, defaults to 50.
     public init(
         connectTimeout: TimeInterval? = nil,
         socketTimeout: TimeInterval = 60.0,
         protocolType: URIScheme = .https,
         defaultHeaders: Headers = Headers(),
         tlsConfiguration: (any TLSConfiguration)? = nil,
-        telemetry: HttpTelemetry? = nil
+        telemetry: HttpTelemetry? = nil,
+        maxConnections: Int? = nil
     ) {
         self.socketTimeout = socketTimeout
         self.protocolType = protocolType
@@ -70,5 +78,14 @@ public class HttpClientConfiguration {
         self.connectTimeout = connectTimeout
         self.tlsConfiguration = tlsConfiguration
         self.telemetry = telemetry
+        if let maxConnections {
+            self.maxConnections = maxConnections
+        } else {
+            #if os(macOS) || os(Linux)
+            self.maxConnections = 50
+            #else // iOS, ipadOS, watchOS, tvOS.
+            self.maxConnections = 6 // URLSession default.
+            #endif
+        }
     }
 }

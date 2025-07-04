@@ -13,10 +13,14 @@ object XCTestTypes {
     val XCTestCase = runtimeSymbol("XCTestCase")
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.NONE,
-    emptyList(),
-    emptyList(),
-)
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration? = null,
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.NONE,
+        emptyList(),
+        emptyList(),
+    )

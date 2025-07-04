@@ -146,7 +146,7 @@ extension DefaultTelemetry {
     fileprivate static let defaultTraceSpan: TraceSpan = NoOpTraceSpan()
 
     fileprivate final class NoOpTracerProvider: TracerProvider {
-        func getTracer(scope: String, attributes: Attributes?) -> Tracer { defaultTracer }
+        func getTracer(scope: String) -> Tracer { defaultTracer }
     }
 
     fileprivate final class NoOpTracer: Tracer {

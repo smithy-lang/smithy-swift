@@ -21,6 +21,7 @@ import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class StructDecodeGenerationTests {
     var model = javaClass.classLoader.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
@@ -29,6 +30,7 @@ class StructDecodeGenerationTests {
         model = NeedsReaderWriterTransformer.transform(model, settings.getService(model))
         return model.newTestContext()
     }
+
     val newTestContext = newTestContext()
 
     init {
@@ -66,11 +68,12 @@ extension ExampleClientTypes.Nested4 {
 
     @Test
     fun `it decodes recursive boxed types correctly`() {
-        val contents = getModelFileContents(
-            "Sources/example",
-            "RecursiveShapesInputOutputNested1+ReadWrite.swift",
-            newTestContext.manifest
-        )
+        val contents =
+            getModelFileContents(
+                "Sources/example",
+                "RecursiveShapesInputOutputNested1+ReadWrite.swift",
+                newTestContext.manifest,
+            )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExampleClientTypes.RecursiveShapesInputOutputNested1 {
@@ -86,11 +89,12 @@ extension ExampleClientTypes.RecursiveShapesInputOutputNested1 {
 
     @Test
     fun `it encodes one side of the recursive shape`() {
-        val contents = getModelFileContents(
-            "Sources/example",
-            "RecursiveShapesInputOutputNested2+ReadWrite.swift",
-            newTestContext.manifest
-        )
+        val contents =
+            getModelFileContents(
+                "Sources/example",
+                "RecursiveShapesInputOutputNested2+ReadWrite.swift",
+                newTestContext.manifest,
+            )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExampleClientTypes.RecursiveShapesInputOutputNested2 {

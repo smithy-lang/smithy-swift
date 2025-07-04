@@ -13,22 +13,23 @@ import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHtt
 
 class RPCV2CBORHttpBindingResolver(
     context: ProtocolGenerator.GenerationContext,
-    defaultContentType: String
+    defaultContentType: String,
 ) : StaticHttpBindingResolver(context, rpcv2CborHttpTrait, defaultContentType) {
-
     companion object {
-        private val rpcv2CborHttpTrait: HttpTrait = HttpTrait
+        private val rpcv2CborHttpTrait: HttpTrait =
+            HttpTrait
+                .builder()
+                .code(200)
+                .method("POST")
+                .uri(UriPattern.parse("/"))
+                .build()
+    }
+
+    override fun httpTrait(operationShape: OperationShape): HttpTrait =
+        HttpTrait
             .builder()
             .code(200)
             .method("POST")
-            .uri(UriPattern.parse("/"))
+            .uri(UriPattern.parse("/service/${getServiceName()}/operation/${operationShape.id.name}"))
             .build()
-    }
-
-    override fun httpTrait(operationShape: OperationShape): HttpTrait = HttpTrait
-        .builder()
-        .code(200)
-        .method("POST")
-        .uri(UriPattern.parse("/service/${getServiceName()}/operation/${operationShape.id.name}"))
-        .build()
 }

@@ -33,32 +33,43 @@ class HttpHeaderProvider(
     private val inputSymbol: Symbol,
     private val headerBindings: List<HttpBindingDescriptor>,
     private val prefixHeaderBindings: List<HttpBindingDescriptor>,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
+    private val defaultTimestampFormat: TimestampFormatTrait.Format,
 ) {
-
     private val bindingIndex = HttpBindingIndex.of(ctx.model)
+
     companion object {
         fun renderHeaderMiddleware(
             ctx: ProtocolGenerator.GenerationContext,
             op: OperationShape,
             httpBindingResolver: HttpBindingResolver,
-            defaultTimestampFormat: TimestampFormatTrait.Format
+            defaultTimestampFormat: TimestampFormatTrait.Format,
         ) {
             if (MiddlewareShapeUtils.hasHttpHeaders(ctx.model, op)) {
                 val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
                 val requestBindings = httpBindingResolver.requestBindings(op)
-                val headerBindings = requestBindings
-                    .filter { it.location == HttpBinding.Location.HEADER }
-                    .sortedBy { it.memberName }
-                val prefixHeaderBindings = requestBindings
-                    .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
+                val headerBindings =
+                    requestBindings
+                        .filter { it.location == HttpBinding.Location.HEADER }
+                        .sortedBy { it.memberName }
+                val prefixHeaderBindings =
+                    requestBindings
+                        .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
                 val filename = ModelFileUtils.filename(ctx.settings, "${inputSymbol.name}+HeaderProvider")
-                val headerMiddlewareSymbol = Symbol.builder()
-                    .definitionFile(filename)
-                    .name(inputSymbol.name)
-                    .build()
+                val headerMiddlewareSymbol =
+                    Symbol
+                        .builder()
+                        .definitionFile(filename)
+                        .name(inputSymbol.name)
+                        .build()
                 ctx.delegator.useShapeWriter(headerMiddlewareSymbol) { writer ->
-                    HttpHeaderProvider(writer, ctx, inputSymbol, headerBindings, prefixHeaderBindings, defaultTimestampFormat).renderProvider(writer)
+                    HttpHeaderProvider(
+                        writer,
+                        ctx,
+                        inputSymbol,
+                        headerBindings,
+                        prefixHeaderBindings,
+                        defaultTimestampFormat,
+                    ).renderProvider(writer)
                 }
             }
         }
@@ -106,16 +117,22 @@ class HttpHeaderProvider(
         }
     }
 
-    private fun renderHeader(member: MemberShape, memberName: String, paramName: String, inCollection: Boolean = false) {
-        val (memberNameWithExtension, requiresDoCatch) = formatHeaderOrQueryValue(
-            ctx,
-            writer,
-            memberName,
-            member,
-            HttpBinding.Location.HEADER,
-            bindingIndex,
-            defaultTimestampFormat,
-        )
+    private fun renderHeader(
+        member: MemberShape,
+        memberName: String,
+        paramName: String,
+        inCollection: Boolean = false,
+    ) {
+        val (memberNameWithExtension, requiresDoCatch) =
+            formatHeaderOrQueryValue(
+                ctx,
+                writer,
+                memberName,
+                member,
+                HttpBinding.Location.HEADER,
+                bindingIndex,
+                defaultTimestampFormat,
+            )
 
         if (requiresDoCatch) {
             renderDoCatch(memberNameWithExtension, paramName)
@@ -163,11 +180,20 @@ class HttpHeaderProvider(
                 val mapValueShapeTargetSymbol = ctx.symbolProvider.toSymbol(mapValueShapeTarget)
 
                 writer.openBlock("for (prefixHeaderMapKey, prefixHeaderMapValue) in $memberName { ", "}") {
+                    // Don't write a prefix header over a specific header that was also written to this request.
+                    // See the HttpEmptyPrefixHeadersRequestClient protocol tests on the REST protocols.
+                    writer.write("guard !items.exists(name: \"$paramName\\(prefixHeaderMapKey)\") else { continue }")
+
                     if (mapValueShapeTarget is CollectionShape) {
                         writer.openBlock("prefixHeaderMapValue.forEach { headerValue in ", "}") {
                             if (mapValueShapeTargetSymbol.isBoxed()) {
                                 writer.openBlock("if let unwrappedHeaderValue = headerValue {", "}") {
-                                    renderHeader(mapValueShapeTarget.member, "unwrappedHeaderValue", "$paramName\\(prefixHeaderMapKey)", true)
+                                    renderHeader(
+                                        mapValueShapeTarget.member,
+                                        "unwrappedHeaderValue",
+                                        "$paramName\\(prefixHeaderMapKey)",
+                                        true,
+                                    )
                                 }
                             } else {
                                 renderHeader(mapValueShapeTarget.member, "headerValue", "$paramName\\(prefixHeaderMapKey)", true)
@@ -181,7 +207,10 @@ class HttpHeaderProvider(
         }
     }
 
-    private fun renderDoCatch(headerValueWithExtension: String, headerName: String) {
+    private fun renderDoCatch(
+        headerValueWithExtension: String,
+        headerName: String,
+    ) {
         writer.openBlock("do {", "} catch {") {
             writer.write("let base64EncodedValue = \$L", headerValueWithExtension)
             writer.write(

@@ -21,7 +21,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HttpBindingDescriptor
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.TimestampHelpers
+import software.amazon.smithy.swift.codegen.integration.serde.TimestampFormatHelpers
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
@@ -34,7 +34,7 @@ class HTTPResponseHeaders(
     val error: Boolean,
     val bindings: List<HttpBindingDescriptor>,
     val defaultTimestampFormat: TimestampFormatTrait.Format,
-    val writer: SwiftWriter
+    val writer: SwiftWriter,
 ) {
     fun render() {
         bindings.forEach { hdrBinding ->
@@ -55,7 +55,10 @@ class HTTPResponseHeaders(
                             val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
                             writer.write(
                                 "value.$path\$L = \$L(rawValue: \$L(\$L) ?? 0)",
-                                memberName, enumSymbol, SwiftTypes.Int, headerDeclaration
+                                memberName,
+                                enumSymbol,
+                                SwiftTypes.Int,
+                                headerDeclaration,
                             )
                         } else {
                             val memberValue = stringToNumber(memberTarget, headerDeclaration, true)
@@ -71,27 +74,29 @@ class HTTPResponseHeaders(
                         writer.write("value.$path\$L = $memberValue", memberName)
                     }
                     is StringShape -> {
-                        val memberValue = when {
-                            memberTarget.hasTrait<EnumTrait>() -> {
-                                val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-                                "$enumSymbol(rawValue: $headerDeclaration)"
+                        val memberValue =
+                            when {
+                                memberTarget.hasTrait<EnumTrait>() -> {
+                                    val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+                                    "$enumSymbol(rawValue: $headerDeclaration)"
+                                }
+                                memberTarget.hasTrait<MediaTypeTrait>() -> {
+                                    "try $headerDeclaration.base64DecodedString()"
+                                }
+                                else -> {
+                                    headerDeclaration
+                                }
                             }
-                            memberTarget.hasTrait<MediaTypeTrait>() -> {
-                                "try $headerDeclaration.base64DecodedString()"
-                            }
-                            else -> {
-                                headerDeclaration
-                            }
-                        }
                         writer.write("value.$path\$L = $memberValue", memberName)
                     }
                     is TimestampShape -> {
                         val bindingIndex = HttpBindingIndex.of(ctx.model)
-                        val tsFormat = bindingIndex.determineTimestampFormat(
-                            hdrBinding.member,
-                            HttpBinding.Location.HEADER,
-                            defaultTimestampFormat
-                        )
+                        val tsFormat =
+                            bindingIndex.determineTimestampFormat(
+                                hdrBinding.member,
+                                HttpBinding.Location.HEADER,
+                                defaultTimestampFormat,
+                            )
                         var memberValue = stringToDate(writer, headerDeclaration, tsFormat)
                         writer.write("value.$path\$L = \$L", memberName, memberValue)
                     }
@@ -103,50 +108,54 @@ class HTTPResponseHeaders(
                         // we also have to handle multiple comma separated values (e.g. 'X-Foo': "1, 2, 3"`)
                         var splitFnSymbol = ClientRuntimeTypes.Core.splitHeaderListValues
                         var invalidHeaderListErrorName = "invalidNumbersHeaderList"
-                        val conversion = when (val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)) {
-                            is BooleanShape -> {
-                                invalidHeaderListErrorName = "invalidBooleanHeaderList"
-                                "${SwiftTypes.Bool}(\$0)"
-                            }
-                            is NumberShape -> {
-                                if (collectionMemberTarget.isIntEnumShape) {
-                                    val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
-                                    "${SwiftTypes.Int}(\$0).map({ intValue in $enumSymbol(rawValue: intValue) })"
-                                } else {
-                                    "${stringToNumber(collectionMemberTarget, "\$0", false)}"
+                        val conversion =
+                            when (val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)) {
+                                is BooleanShape -> {
+                                    invalidHeaderListErrorName = "invalidBooleanHeaderList"
+                                    "${SwiftTypes.Bool}(\$0)"
                                 }
-                            }
-                            is TimestampShape -> {
-                                val bindingIndex = HttpBindingIndex.of(ctx.model)
-                                val tsFormat = bindingIndex.determineTimestampFormat(
-                                    hdrBinding.member,
-                                    HttpBinding.Location.HEADER,
-                                    defaultTimestampFormat
-                                )
-                                if (tsFormat == TimestampFormatTrait.Format.HTTP_DATE) {
-                                    splitFnSymbol = ClientRuntimeTypes.Core.splitHttpDateHeaderListValues
-                                }
-                                invalidHeaderListErrorName = "invalidTimestampHeaderList"
-                                writer.format(
-                                    "(${stringToDate(writer, "\$\$\$\$0", tsFormat)} ?? \$N())",
-                                    FoundationTypes.Date
-                                )
-                            }
-                            is StringShape -> {
-                                invalidHeaderListErrorName = "invalidStringHeaderList"
-                                when {
-                                    collectionMemberTarget.hasTrait<EnumTrait>() -> {
+                                is NumberShape -> {
+                                    if (collectionMemberTarget.isIntEnumShape) {
                                         val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
-                                        "($enumSymbol(rawValue: \$0) ?? $enumSymbol(rawValue: \"Bar\")!)"
+                                        "${SwiftTypes.Int}(\$0).map({ intValue in $enumSymbol(rawValue: intValue) })"
+                                    } else {
+                                        "${stringToNumber(collectionMemberTarget, "\$0", false)}"
                                     }
-                                    collectionMemberTarget.hasTrait<MediaTypeTrait>() -> {
-                                        "try \$0.base64EncodedString()"
-                                    }
-                                    else -> ""
                                 }
+                                is TimestampShape -> {
+                                    val bindingIndex = HttpBindingIndex.of(ctx.model)
+                                    val tsFormat =
+                                        bindingIndex.determineTimestampFormat(
+                                            hdrBinding.member,
+                                            HttpBinding.Location.HEADER,
+                                            defaultTimestampFormat,
+                                        )
+                                    if (tsFormat == TimestampFormatTrait.Format.HTTP_DATE) {
+                                        splitFnSymbol = ClientRuntimeTypes.Core.splitHttpDateHeaderListValues
+                                    }
+                                    invalidHeaderListErrorName = "invalidTimestampHeaderList"
+                                    writer.format(
+                                        "(${stringToDate(writer, "\$\$\$\$0", tsFormat)} ?? \$N())",
+                                        FoundationTypes.Date,
+                                    )
+                                }
+                                is StringShape -> {
+                                    invalidHeaderListErrorName = "invalidStringHeaderList"
+                                    when {
+                                        collectionMemberTarget.hasTrait<EnumTrait>() -> {
+                                            val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
+                                            "($enumSymbol(rawValue: \$0) ?? $enumSymbol(rawValue: \"Bar\")!)"
+                                        }
+                                        collectionMemberTarget.hasTrait<MediaTypeTrait>() -> {
+                                            "try \$0.base64EncodedString()"
+                                        }
+                                        else -> ""
+                                    }
+                                }
+                                else -> throw CodegenException(
+                                    "invalid member type for header collection: binding: $hdrBinding; member: $memberName",
+                                )
                             }
-                            else -> throw CodegenException("invalid member type for header collection: binding: $hdrBinding; member: $memberName")
-                        }
                         val mapFn = if (conversion.isNotEmpty()) ".map { $conversion }" else ""
                         var memberValue = "${memberName}HeaderValues$mapFn"
                         if (memberTarget.isSetShape) {
@@ -164,7 +173,7 @@ class HTTPResponseHeaders(
                                             "throw \$N.\$L(value: \$LHeaderValue)",
                                             ClientRuntimeTypes.Core.HeaderDeserializationError,
                                             invalidHeaderListErrorName,
-                                            memberName
+                                            memberName,
                                         )
                                     }
                                     writer.write("return \$L", transformedHeaderDeclaration)
@@ -180,7 +189,11 @@ class HTTPResponseHeaders(
         }
     }
 
-    private fun stringToNumber(shape: NumberShape, stringValue: String, zeroDefaultValue: Boolean): String {
+    private fun stringToNumber(
+        shape: NumberShape,
+        stringValue: String,
+        zeroDefaultValue: Boolean,
+    ): String {
         val defaultValue = if (zeroDefaultValue) " ?? 0" else ""
         return when (shape.type) {
             ShapeType.BYTE -> "${SwiftTypes.Int8}($stringValue)$defaultValue"
@@ -193,8 +206,12 @@ class HTTPResponseHeaders(
         }
     }
 
-    private fun stringToDate(writer: SwiftWriter, stringValue: String, tsFormat: TimestampFormatTrait.Format): String {
-        val timestampFormat = TimestampHelpers.generateTimestampFormatEnumValue(tsFormat)
+    private fun stringToDate(
+        writer: SwiftWriter,
+        stringValue: String,
+        tsFormat: TimestampFormatTrait.Format,
+    ): String {
+        val timestampFormat = TimestampFormatHelpers.generateTimestampFormatEnumValue(tsFormat)
         return writer.format(
             "\$N(format: .$timestampFormat).date(from: $stringValue)",
             SmithyTimestampsTypes.TimestampFormatter,

@@ -39,17 +39,22 @@ open class OperationEndpointResolverMiddleware(
     val ctx: ProtocolGenerator.GenerationContext,
     val endpointResolverMiddlewareSymbol: Symbol,
 ) : MiddlewareRenderable {
-
     override val name = "EndpointResolverMiddleware"
 
-    override fun render(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape, operationStackName: String) {
+    override fun render(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape,
+        operationStackName: String,
+    ) {
         renderEndpointParams(ctx, writer, op)
 
         // Write code that saves endpoint params to middleware context for use in auth scheme middleware when using rules-based auth scheme resolvers
         if (AuthSchemeResolverGenerator.usesRulesBasedAuthResolver(ctx)) {
             writer.write(
-                "context.set(key: \$N<EndpointParams>(name: \"EndpointParams\"), value: endpointParamsBlock(context))",
-                SmithyTypes.AttributeKey
+                "context.set(key: \$N<EndpointParams>(name: \$S), value: endpointParamsBlock(context))",
+                SmithyTypes.AttributeKey,
+                "EndpointParams",
             )
         }
 
@@ -59,17 +64,21 @@ open class OperationEndpointResolverMiddleware(
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
         writer.write(
             "\$N<\$N, EndpointParams>(paramsBlock: endpointParamsBlock, resolverBlock: { [config] in try config.endpointResolver.resolve(params: \$\$0) })",
             endpointResolverMiddlewareSymbol,
-            output
+            output,
         )
     }
 
-    private fun renderEndpointParams(ctx: ProtocolGenerator.GenerationContext, writer: SwiftWriter, op: OperationShape) {
+    private fun renderEndpointParams(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape,
+    ) {
         val params = mutableListOf<String>()
         ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet?.let { node ->
             val ruleSet = EndpointRuleSet.fromNode(node)
@@ -78,29 +87,37 @@ open class OperationEndpointResolverMiddleware(
             val clientContextParams = ctx.service.getTrait<ClientContextParamsTrait>()?.parameters ?: emptyMap()
             val parameters = ruleSet.parameters.toList()
             val setToUseForUniqueVarNamesInOperationContextParamCodegen = mutableSetOf<String>()
-            parameters.toList()
+            parameters
+                .toList()
                 .sortedBy { it.name.toString() }
                 .forEach { param ->
                     val memberName = param.name.toString().toLowerCamelCase()
-                    val contextParam = ctx.model.expectShape(op.inputShape).members()
-                        .firstOrNull { it.getTrait<ContextParamTrait>()?.name == param.name.toString() }
-                    val value = resolveParameterValue(
-                        op,
-                        param,
-                        staticContextParams[param.name.toString()],
-                        contextParam,
-                        setToUseForUniqueVarNamesInOperationContextParamCodegen,
-                        operationContextParams[param.name.toString()],
-                        clientContextParams[param.name.toString()],
-                        writer,
-                    )
+                    val contextParam =
+                        ctx.model
+                            .expectShape(op.inputShape)
+                            .members()
+                            .firstOrNull { it.getTrait<ContextParamTrait>()?.name == param.name.toString() }
+                    val value =
+                        resolveParameterValue(
+                            op,
+                            param,
+                            staticContextParams[param.name.toString()],
+                            contextParam,
+                            setToUseForUniqueVarNamesInOperationContextParamCodegen,
+                            operationContextParams[param.name.toString()],
+                            clientContextParams[param.name.toString()],
+                            writer,
+                        )
                     value?.let {
                         params.add("$memberName: $it")
                     }
                 }
         }
-
-        writer.openBlock("let endpointParamsBlock = { [config] (context: \$N) in", "}", SmithyTypes.Context) {
+        writer.openBlock(
+            "let endpointParamsBlock = { [config] (context: \$N) in",
+            "}",
+            SmithyTypes.Context,
+        ) {
             writer.write("EndpointParams(\$L)", params.joinToString(", "))
         }
     }
@@ -123,8 +140,8 @@ open class OperationEndpointResolverMiddleware(
         operationContextParam: OperationContextParamDefinition?,
         clientContextParam: ClientContextParamDefinition?,
         writer: SwiftWriter,
-    ): String? {
-        return when {
+    ): String? =
+        when {
             staticContextParam != null -> {
                 swiftParam(param.type, staticContextParam.value)
             }
@@ -139,9 +156,11 @@ open class OperationEndpointResolverMiddleware(
                 val startingVar = JMESVariable("input", false, ctx.model.expectShape(op.inputShape))
 
                 // Create a model & symbol provider with the JMESPath synthetic types included in it
-                val model = ctx.model.toBuilder()
-                    .addShapes(listOf(boolShape, stringShape, doubleShape))
-                    .build()
+                val model =
+                    ctx.model
+                        .toBuilder()
+                        .addShapes(listOf(boolShape, stringShape, doubleShape))
+                        .build()
                 val symbolProvider = SwiftSymbolProvider(model, ctx.settings)
 
                 // Create a visitor & send it through the AST.  actual will hold the name of the variable
@@ -175,9 +194,11 @@ open class OperationEndpointResolverMiddleware(
                 null
             }
         }
-    }
 
-    open fun handleClientContextParam(param: Parameter, writer: SwiftWriter): String {
+    open fun handleClientContextParam(
+        param: Parameter,
+        writer: SwiftWriter,
+    ): String {
         // if a default is present, use `?? default`, otherwise just return `config.myParam`
         return if (param.default.isPresent) {
             "config.${param.name.toString().toLowerCamelCase()} ?? ${param.defaultValueLiteral}"
@@ -186,7 +207,10 @@ open class OperationEndpointResolverMiddleware(
         }
     }
 
-    open fun handleBuiltInParam(param: Parameter, writer: SwiftWriter): String {
+    open fun handleBuiltInParam(
+        param: Parameter,
+        writer: SwiftWriter,
+    ): String {
         // default behavior for handling endpoint if not overriden
         if (getBuiltInName(param) == "endpoint") {
             return "config.endpoint"
@@ -199,7 +223,7 @@ open class OperationEndpointResolverMiddleware(
                 writer.write(
                     "throw \$N.unknownError(\"Missing required parameter: \$L\")",
                     SmithyTypes.ClientError,
-                    param.name.toString()
+                    param.name.toString(),
                 )
             }
             param.name.toString().toLowerCamelCase()
@@ -212,9 +236,12 @@ open class OperationEndpointResolverMiddleware(
         }
     }
 
-    fun getBuiltInName(param: Parameter): String {
-        return param.builtIn.get().split("::").last().toLowerCamelCase()
-    }
+    fun getBuiltInName(param: Parameter): String =
+        param.builtIn
+            .get()
+            .split("::")
+            .last()
+            .toLowerCamelCase()
 
     // Shapes used within JMESPath expressions
     private val stringShape = StringShape.builder().id("smithy.swift.synthetic#LiteralString").build()
@@ -225,10 +252,12 @@ open class OperationEndpointResolverMiddleware(
 val Parameter.defaultValueLiteral: String
     get() = swiftParam(type, default.get().toNode())
 
-private fun swiftParam(parameterType: ParameterType, node: Node): String {
-    return when (parameterType) {
+private fun swiftParam(
+    parameterType: ParameterType,
+    node: Node,
+): String =
+    when (parameterType) {
         ParameterType.STRING -> "\"${node}\""
         ParameterType.BOOLEAN -> node.toString()
         ParameterType.STRING_ARRAY -> "[${node.expectArrayNode().map { "\"$it\"" }.joinToString(", ")}]"
     }
-}

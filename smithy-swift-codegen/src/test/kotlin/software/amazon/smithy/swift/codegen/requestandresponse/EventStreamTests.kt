@@ -210,20 +210,14 @@ extension EventStreamTestClientTypes.TestStream {
         val context = setupTests("eventstream.smithy", "aws.protocoltests.restjson#TestService")
         println(context.manifest.files)
         val contents = getFileContents(context.manifest, "Sources/Example/EventStreamTestClient.swift")
-        var expected = """
+        val expected = """
     public func testStreamOp(input: TestStreamOpInput) async throws -> TestStreamOpOutput {
         let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "testStreamOp")
-                      .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
-                      .withLogger(value: config.logger)
-                      .withPartitionID(value: config.partitionID)
-                      .withAuthSchemes(value: config.authSchemes ?? [])
-                      .withAuthSchemeResolver(value: config.authSchemeResolver)
                       .withUnsignedPayloadTrait(value: false)
-                      .withSocketTimeout(value: config.httpClientConfiguration.socketTimeout)
-                      .withIdentityResolver(value: config.bearerTokenIdentityResolver, schemeID: "smithy.api#httpBearerAuth")
+                      .withSmithyDefaultConfig(config)
                       .build()
         let builder = ClientRuntime.OrchestratorBuilder<TestStreamOpInput, TestStreamOpOutput, SmithyHTTPAPI.HTTPRequest, SmithyHTTPAPI.HTTPResponse>()
         config.interceptorProviders.forEach { provider in
@@ -261,14 +255,18 @@ extension EventStreamTestClientTypes.TestStream {
         contents.shouldContainOnlyOnce(expected)
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
-        val context = TestContext.initContextFrom(
-            listOf(smithyFile),
-            serviceShapeId,
-            MockHTTPRestJsonProtocolGenerator(),
-            { model -> model.defaultSettings(serviceShapeId, "Example", "456", "EventStreamTest") },
-            listOf(DefaultClientConfigurationIntegration())
-        )
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
+        val context =
+            TestContext.initContextFrom(
+                listOf(smithyFile),
+                serviceShapeId,
+                MockHTTPRestJsonProtocolGenerator(),
+                { model -> model.defaultSettings(serviceShapeId, "Example", "456", "EventStreamTest") },
+                listOf(DefaultClientConfigurationIntegration()),
+            )
         context.generator.initializeMiddleware(context.generationCtx)
         context.generator.generateProtocolClient(context.generationCtx)
         context.generator.generateMessageMarshallable(context.generationCtx)

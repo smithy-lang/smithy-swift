@@ -33,9 +33,8 @@ import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 class OperationInputBodyMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
-    private val alwaysSendBody: Boolean = false
+    private val alwaysSendBody: Boolean = false,
 ) : MiddlewareRenderable {
-
     override val name = "OperationInputBodyMiddleware"
 
     override fun render(
@@ -51,7 +50,7 @@ class OperationInputBodyMiddleware(
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val writingClosureUtils = WritingClosureUtils(ctx, writer)
         val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol)
@@ -64,7 +63,13 @@ class OperationInputBodyMiddleware(
         var payloadWritingClosure = writingClosureUtils.writingClosure(payloadShape)
         var rootNodeInfo = nodeInfoUtils.nodeInfo(payloadShape, true)
         var isPayloadMember = false
-        val defaultBody = "\"{}\"".takeIf { ctx.service.hasTrait<AwsJson1_0Trait>() || ctx.service.hasTrait<AwsJson1_1Trait>() || ctx.service.hasTrait<RestJson1Trait>() } ?: "nil"
+        val defaultBody =
+            "\"{}\"".takeIf {
+                ctx.service.hasTrait<AwsJson1_0Trait>() ||
+                    ctx.service.hasTrait<AwsJson1_1Trait>() ||
+                    ctx.service.hasTrait<RestJson1Trait>()
+            }
+                ?: "nil"
         var payloadMember = inputShape.members().find { it.hasTrait<HttpPayloadTrait>() }
         var sendInitialRequest = false
         // RPC-based protocols do not support HTTP traits.
@@ -89,22 +94,67 @@ class OperationInputBodyMiddleware(
         when (payloadShape) {
             is UnionShape -> {
                 if (isStreaming) {
-                    addEventStreamMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, keyPath, defaultBody, requestWireProtocol, sendInitialRequest)
+                    addEventStreamMiddleware(
+                        writer,
+                        inputSymbol,
+                        outputSymbol,
+                        payloadSymbol,
+                        keyPath,
+                        defaultBody,
+                        requestWireProtocol,
+                        sendInitialRequest,
+                    )
                 } else {
-                    addAggregateMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
+                    addAggregateMiddleware(
+                        writer,
+                        inputSymbol,
+                        outputSymbol,
+                        payloadSymbol,
+                        writerSymbol,
+                        rootNodeInfo,
+                        payloadWritingClosure,
+                        keyPath,
+                        defaultBody,
+                        isPayloadMember,
+                    )
                 }
             }
             is StructureShape, is DocumentShape -> {
-                addAggregateMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure, keyPath, defaultBody, isPayloadMember)
+                addAggregateMiddleware(
+                    writer,
+                    inputSymbol,
+                    outputSymbol,
+                    payloadSymbol,
+                    writerSymbol,
+                    rootNodeInfo,
+                    payloadWritingClosure,
+                    keyPath,
+                    defaultBody,
+                    isPayloadMember,
+                )
             }
             is BlobShape -> {
                 addBlobStreamMiddleware(writer, inputSymbol, outputSymbol, keyPath, isStreaming)
             }
             is EnumShape -> {
-                addEnumMiddleware(writer, ClientRuntimeTypes.Middleware.EnumBodyMiddleware, inputSymbol, outputSymbol, payloadSymbol, keyPath)
+                addEnumMiddleware(
+                    writer,
+                    ClientRuntimeTypes.Middleware.EnumBodyMiddleware,
+                    inputSymbol,
+                    outputSymbol,
+                    payloadSymbol,
+                    keyPath,
+                )
             }
             is IntEnumShape -> {
-                addEnumMiddleware(writer, ClientRuntimeTypes.Middleware.IntEnumBodyMiddleware, inputSymbol, outputSymbol, payloadSymbol, keyPath)
+                addEnumMiddleware(
+                    writer,
+                    ClientRuntimeTypes.Middleware.IntEnumBodyMiddleware,
+                    inputSymbol,
+                    outputSymbol,
+                    payloadSymbol,
+                    keyPath,
+                )
             }
             is StringShape -> {
                 addStringMiddleware(writer, inputSymbol, outputSymbol, keyPath)
@@ -112,15 +162,43 @@ class OperationInputBodyMiddleware(
         }
     }
 
-    private fun addAggregateMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, writerSymbol: Symbol, rootNodeInfo: String, payloadWritingClosure: String, keyPath: String, defaultBody: String, isPayloadMember: Boolean) {
+    private fun addAggregateMiddleware(
+        writer: SwiftWriter,
+        inputSymbol: Symbol,
+        outputSymbol: Symbol,
+        payloadSymbol: Symbol,
+        writerSymbol: Symbol,
+        rootNodeInfo: String,
+        payloadWritingClosure: String,
+        keyPath: String,
+        defaultBody: String,
+        isPayloadMember: Boolean,
+    ) {
         if (isPayloadMember) {
-            addPayloadBodyMiddleware(writer, inputSymbol, outputSymbol, payloadSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure, keyPath, defaultBody)
+            addPayloadBodyMiddleware(
+                writer,
+                inputSymbol,
+                outputSymbol,
+                payloadSymbol,
+                writerSymbol,
+                rootNodeInfo,
+                payloadWritingClosure,
+                keyPath,
+                defaultBody,
+            )
         } else {
             addBodyMiddleware(writer, inputSymbol, outputSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure)
         }
     }
 
-    private fun addBodyMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, writerSymbol: Symbol, rootNodeInfo: String, payloadWritingClosure: String) {
+    private fun addBodyMiddleware(
+        writer: SwiftWriter,
+        inputSymbol: Symbol,
+        outputSymbol: Symbol,
+        writerSymbol: Symbol,
+        rootNodeInfo: String,
+        payloadWritingClosure: String,
+    ) {
         writer.write(
             "\$N<\$N, \$N, \$N>(rootNodeInfo: \$L, inputWritingClosure: \$L)",
             ClientRuntimeTypes.Middleware.BodyMiddleware,
@@ -132,7 +210,17 @@ class OperationInputBodyMiddleware(
         )
     }
 
-    private fun addPayloadBodyMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, writerSymbol: Symbol, rootNodeInfo: String, payloadWritingClosure: String, keyPath: String, defaultBody: String) {
+    private fun addPayloadBodyMiddleware(
+        writer: SwiftWriter,
+        inputSymbol: Symbol,
+        outputSymbol: Symbol,
+        payloadSymbol: Symbol,
+        writerSymbol: Symbol,
+        rootNodeInfo: String,
+        payloadWritingClosure: String,
+        keyPath: String,
+        defaultBody: String,
+    ) {
         writer.write(
             "\$N<\$N, \$N, \$N, \$N>(rootNodeInfo: \$L, inputWritingClosure: \$L, keyPath: \$L, defaultBody: \$L)",
             ClientRuntimeTypes.Middleware.PayloadBodyMiddleware,
@@ -143,11 +231,20 @@ class OperationInputBodyMiddleware(
             rootNodeInfo,
             payloadWritingClosure,
             keyPath,
-            defaultBody
+            defaultBody,
         )
     }
 
-    private fun addEventStreamMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String, defaultBody: String, requestWireProtocol: WireProtocol, sendInitialRequest: Boolean) {
+    private fun addEventStreamMiddleware(
+        writer: SwiftWriter,
+        inputSymbol: Symbol,
+        outputSymbol: Symbol,
+        payloadSymbol: Symbol,
+        keyPath: String,
+        defaultBody: String,
+        requestWireProtocol: WireProtocol,
+        sendInitialRequest: Boolean,
+    ) {
         writer.write(
             "\$N<\$N, \$N, \$N>(keyPath: \$L, defaultBody: \$L, marshalClosure: \$N.marshal\$L)",
             ClientRuntimeTypes.Middleware.EventStreamBodyMiddleware,
@@ -157,38 +254,56 @@ class OperationInputBodyMiddleware(
             keyPath,
             defaultBody,
             payloadSymbol,
-            if (sendInitialRequest) ", initialRequestMessage: try input.makeInitialRequestMessage()" else ""
+            if (sendInitialRequest) ", initialRequestMessage: try input.makeInitialRequestMessage()" else "",
         )
     }
 
-    private fun addBlobStreamMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, keyPath: String, streaming: Boolean) {
+    private fun addBlobStreamMiddleware(
+        writer: SwiftWriter,
+        inputSymbol: Symbol,
+        outputSymbol: Symbol,
+        keyPath: String,
+        streaming: Boolean,
+    ) {
         writer.write(
             "\$N<\$N, \$N>(keyPath: \$L)",
             ClientRuntimeTypes.Middleware.BlobStreamBodyMiddleware.takeIf { streaming } ?: ClientRuntimeTypes.Middleware.BlobBodyMiddleware,
             inputSymbol,
             outputSymbol,
-            keyPath
+            keyPath,
         )
     }
 
-    private fun addEnumMiddleware(writer: SwiftWriter, middlewareSymbol: Symbol, inputSymbol: Symbol, outputSymbol: Symbol, payloadSymbol: Symbol, keyPath: String) {
+    private fun addEnumMiddleware(
+        writer: SwiftWriter,
+        middlewareSymbol: Symbol,
+        inputSymbol: Symbol,
+        outputSymbol: Symbol,
+        payloadSymbol: Symbol,
+        keyPath: String,
+    ) {
         writer.write(
             "\$N<\$N, \$N, \$N>(keyPath: \$L)",
             middlewareSymbol,
             inputSymbol,
             outputSymbol,
             payloadSymbol,
-            keyPath
+            keyPath,
         )
     }
 
-    private fun addStringMiddleware(writer: SwiftWriter, inputSymbol: Symbol, outputSymbol: Symbol, keyPath: String) {
+    private fun addStringMiddleware(
+        writer: SwiftWriter,
+        inputSymbol: Symbol,
+        outputSymbol: Symbol,
+        keyPath: String,
+    ) {
         writer.write(
             "\$N<\$N, \$N>(keyPath: \$L)",
             ClientRuntimeTypes.Middleware.StringBodyMiddleware,
             inputSymbol,
             outputSymbol,
-            keyPath
+            keyPath,
         )
     }
 }

@@ -21,7 +21,10 @@ import software.amazon.smithy.swift.codegen.customtraits.EquatableConformanceTra
  * Minimizing protocol conformance has significant benefits for compile time and binary size of the SDK.
  */
 object EquatableConformanceTransformer {
-    fun transform(model: Model, service: ServiceShape): Model {
+    fun transform(
+        model: Model,
+        service: ServiceShape,
+    ): Model {
         val paginationTokenMembers = mutableSetOf<MemberShape>()
         val paginatedIndex = PaginatedIndex.of(model)
         // Collect all member shapes used as inputToken or outputToken for paginated operations.
@@ -43,8 +46,20 @@ object EquatableConformanceTransformer {
         return ModelTransformer.create().mapShapes(model) { shape ->
             if (shapesToAddEquatableConformanceTraitTo.contains(shape)) {
                 when (shape.type) {
-                    ShapeType.STRUCTURE -> shape.asStructureShape().get().toBuilder().addTrait(EquatableConformanceTrait()).build()
-                    ShapeType.UNION -> shape.asUnionShape().get().toBuilder().addTrait(EquatableConformanceTrait()).build()
+                    ShapeType.STRUCTURE ->
+                        shape
+                            .asStructureShape()
+                            .get()
+                            .toBuilder()
+                            .addTrait(EquatableConformanceTrait())
+                            .build()
+                    ShapeType.UNION ->
+                        shape
+                            .asUnionShape()
+                            .get()
+                            .toBuilder()
+                            .addTrait(EquatableConformanceTrait())
+                            .build()
                     else -> shape
                 }
             } else {

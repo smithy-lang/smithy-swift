@@ -20,6 +20,7 @@ import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class UnionDecodeGeneratorTests {
     var model = javaClass.classLoader.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
@@ -27,6 +28,7 @@ class UnionDecodeGeneratorTests {
         model = NeedsReaderWriterTransformer.transform(model, settings.getService(model))
         return model.newTestContext()
     }
+
     val newTestContext = newTestContext()
 
     init {

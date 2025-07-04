@@ -11,16 +11,21 @@ import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import software.amazon.smithy.swift.codegen.customtraits.TestEquatableConformanceTrait
 
 object TestEquatableConformanceTransformer {
-
-    fun transform(model: Model, service: ServiceShape): Model {
+    fun transform(
+        model: Model,
+        service: ServiceShape,
+    ): Model {
         // Both operation shapes and error shapes may have the HttpResponseTestsTrait.
         // Find both types of shape with that trait for this service.
-        val errorsWithResponseTests = model.getNestedErrors(service)
-            .filter { it.hasTrait<HttpResponseTestsTrait>() }
-        val outputsWithResponseTests = service.allOperations
-            .map { model.expectShape(it) as OperationShape }
-            .filter { it.hasTrait<HttpResponseTestsTrait>() }
-            .map { model.expectShape(it.outputShape) as StructureShape }
+        val errorsWithResponseTests =
+            model
+                .getNestedErrors(service)
+                .filter { it.hasTrait<HttpResponseTestsTrait>() }
+        val outputsWithResponseTests =
+            service.allOperations
+                .map { model.expectShape(it) as OperationShape }
+                .filter { it.hasTrait<HttpResponseTestsTrait>() }
+                .map { model.expectShape(it.outputShape) as StructureShape }
 
         // Get all the shapes that need to have Equatable conformance added for testing,
         // and add them to the list
@@ -36,11 +41,21 @@ object TestEquatableConformanceTransformer {
                 // If the shape is a structure or union, add the TestEquatableConformanceTrait to it
                 // All other shape types don't need to have Equatable generated for them
                 when (shape.type) {
-                    ShapeType.STRUCTURE -> shape.asStructureShape().get().toBuilder().addTrait(
-                        TestEquatableConformanceTrait()
-                    ).build()
-                    ShapeType.UNION -> shape.asUnionShape().get().toBuilder().addTrait(TestEquatableConformanceTrait())
-                        .build()
+                    ShapeType.STRUCTURE ->
+                        shape
+                            .asStructureShape()
+                            .get()
+                            .toBuilder()
+                            .addTrait(
+                                TestEquatableConformanceTrait(),
+                            ).build()
+                    ShapeType.UNION ->
+                        shape
+                            .asUnionShape()
+                            .get()
+                            .toBuilder()
+                            .addTrait(TestEquatableConformanceTrait())
+                            .build()
                     else -> shape
                 }
             } else {
@@ -52,7 +67,11 @@ object TestEquatableConformanceTransformer {
 
     // Adds the ShapeIds for the passed structure and all of its nested structures or unions
     // to the passed list.
-    private fun addToList(model: Model, shape: StructureShape, list: MutableSet<ShapeId>) {
+    private fun addToList(
+        model: Model,
+        shape: StructureShape,
+        list: MutableSet<ShapeId>,
+    ) {
         list.add(shape.id)
         model.getNestedShapes(shape).forEach { nested ->
             if (nested.isStructureShape || nested.isUnionShape) {

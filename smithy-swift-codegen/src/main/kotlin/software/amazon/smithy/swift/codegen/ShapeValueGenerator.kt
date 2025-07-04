@@ -10,6 +10,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.ArrayNode
 import software.amazon.smithy.model.node.BooleanNode
 import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.node.NodeType
 import software.amazon.smithy.model.node.NodeVisitor
 import software.amazon.smithy.model.node.NullNode
 import software.amazon.smithy.model.node.NumberNode
@@ -42,7 +43,6 @@ class ShapeValueGenerator(
     internal val model: Model,
     internal val symbolProvider: SymbolProvider,
 ) {
-
     /**
      * Writes generation of a shape value type declaration for the given the parameters.
      *
@@ -50,59 +50,93 @@ class ShapeValueGenerator(
      * @param shape the shape that will be declared.
      * @param params parameters to fill the generated shape declaration.
      */
-    fun writeShapeValueInline(writer: SwiftWriter, shape: Shape, params: Node) {
+    fun writeShapeValueInline(
+        writer: SwiftWriter,
+        shape: Shape,
+        params: Node,
+    ) {
+        // If the node for the value to be written is NULL, then the value for this shape is not present.
+        // Just write a Swift `nil` and stop rendering.
+        if (params.type == NodeType.NULL) {
+            writer.writeInline("nil")
+            return
+        }
+
         val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
 
         when (shape.type) {
-            ShapeType.STRUCTURE -> structDecl(writer, shape.asStructureShape().get()) {
-                params.accept(nodeVisitor)
-            }
-            ShapeType.MAP -> mapDecl(writer) {
-                params.accept(nodeVisitor)
-            }
-            ShapeType.LIST -> listDecl(writer, shape as CollectionShape) {
-                params.accept(nodeVisitor)
-            }
-            ShapeType.SET -> unorderedSetDecl(writer, shape as CollectionShape, params) {
-                params.accept(nodeVisitor)
-            }
-            ShapeType.UNION -> unionDecl(writer, shape.asUnionShape().get()) {
-                params.accept(nodeVisitor)
-            }
+            ShapeType.STRUCTURE ->
+                structDecl(writer, shape.asStructureShape().get()) {
+                    params.accept(nodeVisitor)
+                }
+            ShapeType.MAP ->
+                mapDecl(writer) {
+                    params.accept(nodeVisitor)
+                }
+            ShapeType.LIST ->
+                listDecl(writer, shape as CollectionShape) {
+                    params.accept(nodeVisitor)
+                }
+            ShapeType.SET ->
+                unorderedSetDecl(writer, shape as CollectionShape, params) {
+                    params.accept(nodeVisitor)
+                }
+            ShapeType.UNION ->
+                unionDecl(writer, shape.asUnionShape().get()) {
+                    params.accept(nodeVisitor)
+                }
             ShapeType.DOCUMENT -> documentDecl(writer, params)
-            else -> primitiveDecl(writer, shape) {
-                params.accept(nodeVisitor)
-            }
+            else ->
+                primitiveDecl(writer, shape) {
+                    params.accept(nodeVisitor)
+                }
         }
     }
 
-    private fun structDecl(writer: SwiftWriter, shape: StructureShape, block: () -> Unit) {
+    private fun structDecl(
+        writer: SwiftWriter,
+        shape: StructureShape,
+        block: () -> Unit,
+    ) {
         var symbol = symbolProvider.toSymbol(shape)
-        writer.writeInline("\$N(", symbol)
+        writer
+            .writeInline("\$N(", symbol)
             .indent()
             .call { block() }
             .dedent()
             .writeInline("\n)")
     }
 
-    private fun unionDecl(writer: SwiftWriter, shape: UnionShape, block: () -> Unit) {
+    private fun unionDecl(
+        writer: SwiftWriter,
+        shape: UnionShape,
+        block: () -> Unit,
+    ) {
         val symbol = symbolProvider.toSymbol(shape)
         writer.writeInline("\$N.", symbol).call { block() }
     }
 
-    private fun documentDecl(writer: SwiftWriter, node: Node) {
+    private fun documentDecl(
+        writer: SwiftWriter,
+        node: Node,
+    ) {
         writer.openBlock(
-            "try \$N.make(from: Data(\"\"\"", "\"\"\".utf8))",
+            "try \$N.make(from: Data(\"\"\"",
+            "\"\"\".utf8))",
             SmithyTypes.Document,
         ) {
             writer.write(Node.prettyPrintJson(node))
         }
     }
 
-    private fun mapDecl(writer: SwiftWriter, block: () -> Unit) {
+    private fun mapDecl(
+        writer: SwiftWriter,
+        block: () -> Unit,
+    ) {
         writer.pushState()
         writer.trimTrailingSpaces(false)
-        writer.writeInline("[")
+        writer
+            .writeInline("[")
             .indent()
             .call { block() }
             .dedent()
@@ -111,12 +145,17 @@ class ShapeValueGenerator(
         writer.popState()
     }
 
-    private fun listDecl(writer: SwiftWriter, shape: CollectionShape, block: () -> Unit) {
+    private fun listDecl(
+        writer: SwiftWriter,
+        shape: CollectionShape,
+        block: () -> Unit,
+    ) {
         writer.pushState()
         writer.trimTrailingSpaces(false)
 
         val targetMemberShape = model.expectShape(shape.member.target)
-        writer.writeInline("[")
+        writer
+            .writeInline("[")
             .indent()
             .call { block() }
             .dedent()
@@ -124,7 +163,12 @@ class ShapeValueGenerator(
         writer.popState()
     }
 
-    private fun unorderedSetDecl(writer: SwiftWriter, shape: CollectionShape, params: Node, block: () -> Unit) {
+    private fun unorderedSetDecl(
+        writer: SwiftWriter,
+        shape: CollectionShape,
+        params: Node,
+        block: () -> Unit,
+    ) {
         val currNode = params as ArrayNode
         val isEmpty = currNode.elements.count() == 0
 
@@ -134,7 +178,8 @@ class ShapeValueGenerator(
         val targetMemberShape = model.expectShape(shape.member.target)
         val memberSymbol = symbolProvider.toSymbol(targetMemberShape)
         if (!isEmpty) {
-            writer.writeInline("Set<\$N>(arrayLiteral: ", memberSymbol)
+            writer
+                .writeInline("Set<\$N>(arrayLiteral: ", memberSymbol)
                 .indent()
                 .call { block() }
                 .dedent()
@@ -145,32 +190,41 @@ class ShapeValueGenerator(
         writer.popState()
     }
 
-    private fun primitiveDecl(writer: SwiftWriter, shape: Shape, block: () -> Unit) {
-        val suffix = when (shape.type) {
-            ShapeType.STRING -> {
-                if (shape.hasTrait(EnumTrait::class.java)) {
+    private fun primitiveDecl(
+        writer: SwiftWriter,
+        shape: Shape,
+        block: () -> Unit,
+    ) {
+        val suffix =
+            when (shape.type) {
+                ShapeType.STRING -> {
+                    if (shape.hasTrait(EnumTrait::class.java)) {
+                        val symbol = symbolProvider.toSymbol(shape)
+                        writer.writeInline("\$N(rawValue: ", symbol)
+                        ")!"
+                    } else {
+                        ""
+                    }
+                }
+                ShapeType.ENUM -> {
                     val symbol = symbolProvider.toSymbol(shape)
                     writer.writeInline("\$N(rawValue: ", symbol)
                     ")!"
-                } else { "" }
-            }
-            ShapeType.ENUM -> {
-                val symbol = symbolProvider.toSymbol(shape)
-                writer.writeInline("\$N(rawValue: ", symbol)
-                ")!"
-            }
-            ShapeType.BLOB -> {
-                if (shape.hasTrait<StreamingTrait>()) {
-                    writer.writeInline(".stream(\$N(data: \$N(", SmithyStreamsTypes.Core.BufferedStream, FoundationTypes.Data)
-                    ".utf8), isClosed: true))"
-                } else {
-                    // TODO: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.
-                    writer.writeInline("\$N(", FoundationTypes.Data)
-                    ".utf8)"
+                }
+                ShapeType.BLOB -> {
+                    if (shape.hasTrait<StreamingTrait>()) {
+                        writer.writeInline(".stream(\$N(data: \$N(", SmithyStreamsTypes.Core.BufferedStream, FoundationTypes.Data)
+                        ".utf8), isClosed: true))"
+                    } else {
+                        // TODO: properly handle this optional with an unwrapped statement before it's passed as a value to a shape.
+                        writer.writeInline("\$N(", FoundationTypes.Data)
+                        ".utf8)"
+                    }
+                }
+                else -> {
+                    ""
                 }
             }
-            else -> { "" }
-        }
 
         block()
 
@@ -185,9 +239,8 @@ class ShapeValueGenerator(
     private class ShapeValueNodeVisitor(
         val writer: SwiftWriter,
         val generator: ShapeValueGenerator,
-        val currShape: Shape
+        val currShape: Shape,
     ) : NodeVisitor<Unit> {
-
         override fun objectNode(node: ObjectNode) {
             var i = 0
             // this is important because when a struct is generated in swift it is generated with its members sorted by name.
@@ -198,9 +251,10 @@ class ShapeValueGenerator(
                 val memberShape: Shape
                 when (currShape) {
                     is StructureShape -> {
-                        val member = currShape.getMember(keyNode.value).orElseThrow {
-                            CodegenException("unknown member ${currShape.id}.${keyNode.value}")
-                        }
+                        val member =
+                            currShape.getMember(keyNode.value).orElseThrow {
+                                CodegenException("unknown member ${currShape.id}.${keyNode.value}")
+                            }
                         memberShape = generator.model.expectShape(member.target)
                         val memberName = generator.symbolProvider.toMemberNames(member).second
                         // NOTE - `write()` appends a newline and keeps indentation,
@@ -227,9 +281,10 @@ class ShapeValueGenerator(
                         }
                     }
                     is UnionShape -> {
-                        val member = currShape.getMember(keyNode.value).orElseThrow {
-                            CodegenException("unknown member ${currShape.id}.${keyNode.value}")
-                        }
+                        val member =
+                            currShape.getMember(keyNode.value).orElseThrow {
+                                CodegenException("unknown member ${currShape.id}.${keyNode.value}")
+                            }
                         memberShape = generator.model.expectShape(member.target)
                         if (member.target.toString() != "smithy.api#Unit") {
                             writer.writeInline("\$L(", lowerCase(keyNode.value))
@@ -257,21 +312,22 @@ class ShapeValueGenerator(
                     writer.writeInline(
                         "\$N(format: .dateTime).date(from: \$S)",
                         SmithyTimestampsTypes.TimestampFormatter,
-                        value
+                        value,
                     )
                 }
                 is DoubleShape, is FloatShape -> {
                     val symbol = generator.symbolProvider.toSymbol(currShape)
-                    val value = when (node.value.toString()) {
-                        "NaN" -> {
-                            "$symbol.nan"
+                    val value =
+                        when (node.value.toString()) {
+                            "NaN" -> {
+                                "$symbol.nan"
+                            }
+                            "-Infinity", "Infinity" -> {
+                                val isNegative = if (node.value.toString() == "-Infinity") "-" else ""
+                                "$isNegative$symbol.infinity"
+                            }
+                            else -> "${node.value}"
                         }
-                        "-Infinity", "Infinity" -> {
-                            val isNegative = if (node.value.toString() == "-Infinity") "-" else ""
-                            "$isNegative$symbol.infinity"
-                        }
-                        else -> "${node.value}"
-                    }
                     writer.writeInline("\$L", value)
                 }
                 else -> writer.writeInline("\$S", node.value)
@@ -305,13 +361,15 @@ class ShapeValueGenerator(
                     val enumSymbol = generator.symbolProvider.toSymbol(currShape)
                     writer.writeInline(
                         "\$L(rawValue: \$L)",
-                        enumSymbol, node.value
+                        enumSymbol,
+                        node.value,
                     )
                 }
 
                 ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,
                 ShapeType.LONG, ShapeType.DOUBLE, ShapeType.FLOAT,
-                ShapeType.BIG_INTEGER, ShapeType.BIG_DECIMAL -> writer.writeInline("\$L", node.value)
+                ShapeType.BIG_INTEGER, ShapeType.BIG_DECIMAL,
+                -> writer.writeInline("\$L", node.value)
 
                 else -> throw CodegenException("unexpected shape type $currShape for numberNode")
             }

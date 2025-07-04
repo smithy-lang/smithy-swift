@@ -28,26 +28,30 @@ import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 class HTTPResponseBindingOutputGenerator(
     val customizations: HTTPProtocolCustomizable,
 ) {
-
     fun render(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
         httpBindingResolver: HttpBindingResolver,
         defaultTimestampFormat: TimestampFormatTrait.Format,
     ) {
-        if (op.output.isEmpty) { return }
+        if (op.output.isEmpty) {
+            return
+        }
         val outputShape = ctx.model.expectShape(op.outputShape)
         val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
         val responseBindings = httpBindingResolver.responseBindings(op)
-        val headerBindings = responseBindings
-            .filter { it.location == HttpBinding.Location.HEADER }
-            .sortedBy { it.memberName }
+        val headerBindings =
+            responseBindings
+                .filter { it.location == HttpBinding.Location.HEADER }
+                .sortedBy { it.memberName }
         val baseFilename = "${outputSymbol.name}+HttpResponseBinding"
         val filename = ModelFileUtils.filename(ctx.settings, baseFilename)
-        val httpBindingSymbol = Symbol.builder()
-            .definitionFile(filename)
-            .name(outputSymbol.name)
-            .build()
+        val httpBindingSymbol =
+            Symbol
+                .builder()
+                .definitionFile(filename)
+                .name(outputSymbol.name)
+                .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.openBlock("extension \$N {", "}", outputSymbol) {
@@ -62,7 +66,15 @@ class HTTPResponseBindingOutputGenerator(
                         writer.write("return \$N()", outputSymbol)
                     } else {
                         if (needsAReader(ctx, responseBindings)) {
-                            writer.addImport(SwiftSymbol.make("ClientRuntime", null, SwiftDependency.CLIENT_RUNTIME, emptyList(), listOf("SmithyReadWrite")))
+                            writer.addImport(
+                                SwiftSymbol.make(
+                                    "ClientRuntime",
+                                    null,
+                                    SwiftDependency.CLIENT_RUNTIME,
+                                    emptyList(),
+                                    listOf("SmithyReadWrite"),
+                                ),
+                            )
                             writer.write("let data = try await httpResponse.data()")
                             writer.write("let responseReader = try \$N.from(data: data)", ctx.service.readerSymbol)
                             writer.write("let reader = \$L", reader(ctx, op, writer))
@@ -83,21 +95,30 @@ class HTTPResponseBindingOutputGenerator(
         }
     }
 
-    private fun needsAReader(ctx: ProtocolGenerator.GenerationContext, responseBindings: List<HttpBindingDescriptor>): Boolean {
-        return responseBindings
+    private fun needsAReader(
+        ctx: ProtocolGenerator.GenerationContext,
+        responseBindings: List<HttpBindingDescriptor>,
+    ): Boolean =
+        responseBindings
             .filter { !ctx.model.expectShape(it.member.target).hasTrait<StreamingTrait>() }
             .any { hasPayloadThatNeedsReader(ctx, it) || it.location == HttpBinding.Location.DOCUMENT }
-    }
 
-    private fun hasPayloadThatNeedsReader(ctx: ProtocolGenerator.GenerationContext, binding: HttpBindingDescriptor): Boolean {
+    private fun hasPayloadThatNeedsReader(
+        ctx: ProtocolGenerator.GenerationContext,
+        binding: HttpBindingDescriptor,
+    ): Boolean {
         val targetShape = ctx.model.expectShape(binding.member.target)
         return binding.location == HttpBinding.Location.PAYLOAD &&
             (targetShape is StructureShape || targetShape is UnionShape) &&
             !targetShape.members().isEmpty()
     }
 
-    private fun reader(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: SwiftWriter): String {
-        return when (ctx.service.awsProtocol) {
+    private fun reader(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        writer: SwiftWriter,
+    ): String =
+        when (ctx.service.awsProtocol) {
             // AwsQuery responses are nested in an XML element named with the operation's name + "Result"
             AWSProtocol.AWS_QUERY -> writer.format("responseReader[\$S]", "${op.id.name}Result")
             // For RestXML, "unwrap" the reader when the operation has S3UnwrappedXmlOutputTrait.
@@ -105,5 +126,4 @@ class HTTPResponseBindingOutputGenerator(
             // Other AWS protocols simply read the root element
             else -> "responseReader"
         }
-    }
 }

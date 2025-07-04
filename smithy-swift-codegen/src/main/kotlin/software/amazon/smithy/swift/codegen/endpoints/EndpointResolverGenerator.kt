@@ -26,7 +26,7 @@ class EndpointResolverGenerator(
         val ruleSet = if (ruleSetNode != null) EndpointRuleSet.fromNode(ruleSetNode) else null
 
         ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Endpoints.swift") {
-            renderResolverProtocol(it)
+            renderResolverProtocol(it, ctx.settings.visibility)
             it.write("")
             renderResolver(it, ruleSet)
             renderStaticResolver(it)
@@ -34,13 +34,19 @@ class EndpointResolverGenerator(
         }
     }
 
-    private fun renderResolverProtocol(writer: SwiftWriter) {
-        writer.openBlock("public protocol \$N {", "}", EndpointTypes.EndpointResolver) {
+    private fun renderResolverProtocol(
+        writer: SwiftWriter,
+        visibility: String,
+    ) {
+        writer.openBlock("$visibility protocol \$N {", "}", EndpointTypes.EndpointResolver) {
             writer.write("func resolve(params: EndpointParams) throws -> \$N", SmithyHTTPAPITypes.Endpoint)
         }
     }
 
-    private fun renderResolver(writer: SwiftWriter, endpointRuleSet: EndpointRuleSet?) {
+    private fun renderResolver(
+        writer: SwiftWriter,
+        endpointRuleSet: EndpointRuleSet?,
+    ) {
         writer.write(
             "typealias DefaultEndpointResolver = \$N<EndpointParams>",
             ClientRuntimeTypes.Core.DefaultEndpointResolver,

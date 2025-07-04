@@ -109,9 +109,8 @@ class EnumGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: SwiftWriter,
     private val shape: Shape,
-    private val settings: SwiftSettings
+    private val settings: SwiftSettings,
 ) {
-
     init {
         assert(shape.getTrait(EnumTrait::class.java).isPresent)
     }
@@ -142,18 +141,14 @@ class EnumGenerator(
     private fun renderEnum() {
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(null, shape)
-        val conformances = writer.format(
-            "\$N, \$N, \$N, \$N, \$N",
+        writer.openBlock(
+            "${settings.visibility} enum \$enum.name:L: \$N, \$N, \$N, \$N, \$N {",
+            "}",
             SwiftTypes.Protocols.Sendable,
             SwiftTypes.Protocols.Equatable,
             SwiftTypes.Protocols.RawRepresentable,
             SwiftTypes.Protocols.CaseIterable,
             SwiftTypes.Protocols.Hashable,
-        )
-        writer.openBlock(
-            "public enum \$enum.name:L: \$L {",
-            "}",
-            conformances,
         ) {
             createEnumWriterContexts()
             // add the sdkUnknown case which will always be last
@@ -227,7 +222,6 @@ class EnumGenerator(
      * Uses either name or value attributes of EnumDefinition in that order and formats
      * them to camelCase after removing chars except alphanumeric, space and underscore.
      */
-    fun EnumDefinition.swiftEnumCaseName(shouldBeEscaped: Boolean = true): String {
-        return swiftEnumCaseName(name.orElse(null), value, shouldBeEscaped)
-    }
+    fun EnumDefinition.swiftEnumCaseName(shouldBeEscaped: Boolean = true): String =
+        swiftEnumCaseName(name.orElse(null), value, shouldBeEscaped)
 }

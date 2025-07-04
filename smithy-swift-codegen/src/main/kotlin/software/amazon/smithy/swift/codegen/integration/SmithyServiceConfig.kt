@@ -15,9 +15,10 @@ const val ENDPOINT_RESOLVER = "endpointResolver"
 const val AUTH_SCHEME_RESOLVER = "authSchemeResolver"
 const val ENDPOINT_PARAMS = "endpointParams"
 
-class SmithyServiceConfig(writer: SwiftWriter, val ctx: ProtocolGenerator.GenerationContext) :
-    ServiceConfig(writer, ctx.symbolProvider.toSymbol(ctx.service).name, ctx.service.id.name) {
-
+class SmithyServiceConfig(
+    writer: SwiftWriter,
+    val ctx: ProtocolGenerator.GenerationContext,
+) : ServiceConfig(writer, ctx.symbolProvider.toSymbol(ctx.service).name, ctx.service.id.name) {
     override fun serviceSpecificConfigProperties(): List<ConfigField> {
         var configs = mutableListOf<ConfigField>()
         // service specific EndpointResolver
@@ -32,10 +33,9 @@ class SmithyServiceConfig(writer: SwiftWriter, val ctx: ProtocolGenerator.Genera
     }
 }
 
-fun ShapeType.toSwiftType(): Symbol {
-    return when (this) {
+fun ShapeType.toSwiftType(): Symbol =
+    when (this) {
         ShapeType.STRING -> SwiftTypes.String
         ShapeType.BOOLEAN -> SwiftTypes.Bool
         else -> throw IllegalArgumentException("Unsupported shape type: $this")
     }
-}

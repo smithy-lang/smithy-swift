@@ -19,15 +19,13 @@ abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
     override fun serviceClient(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        serviceConfig: ServiceConfig
-    ): HttpProtocolServiceClient {
-        return HttpProtocolServiceClient(ctx, writer, serviceConfig)
-    }
+        serviceConfig: ServiceConfig,
+    ): HttpProtocolServiceClient = HttpProtocolServiceClient(ctx, writer, serviceConfig)
 
     override fun renderEventStreamAttributes(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         // Default implementation is no-op
     }
@@ -44,7 +42,11 @@ abstract class DefaultHTTPProtocolCustomizations : HTTPProtocolCustomizable {
 
     override val baseErrorSymbol: Symbol = SmithyTestUtilTypes.TestBaseError
 
+    override val queryCompatibleUtilsSymbol: Symbol = ClientRuntimeTypes.RpcV2Cbor.RpcV2CborQueryCompatibleUtils
+
     override val unknownServiceErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
 
     override val defaultTimestampFormat = TimestampFormatTrait.Format.EPOCH_SECONDS
+
+    override fun smokeTestGenerator(ctx: ProtocolGenerator.GenerationContext): SmokeTestGenerator = SmokeTestGenerator(ctx)
 }

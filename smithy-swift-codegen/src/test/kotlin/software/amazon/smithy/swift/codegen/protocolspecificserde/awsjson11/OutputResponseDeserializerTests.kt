@@ -16,8 +16,9 @@ import software.amazon.smithy.swift.codegen.newTestContext
 import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
-class OutputDeserializerTests {
+class OutputResponseDeserializerTests {
     private var model = javaClass.classLoader.getResource("awsjson-output-response-deserializer.smithy").asSmithy()
+
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
@@ -36,11 +37,12 @@ class OutputDeserializerTests {
 
     @Test
     fun `it creates correct init for simple structure payloads`() {
-        val contents = getModelFileContents(
-            "Sources/example",
-            "SimpleStructureOutput+HttpResponseBinding.swift",
-            newTestContext.manifest
-        )
+        val contents =
+            getModelFileContents(
+                "Sources/example",
+                "SimpleStructureOutput+HttpResponseBinding.swift",
+                newTestContext.manifest,
+            )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension SimpleStructureOutput {
@@ -61,11 +63,12 @@ extension SimpleStructureOutput {
 
     @Test
     fun `it creates correct init for data streaming payloads`() {
-        val contents = getModelFileContents(
-            "Sources/example",
-            "DataStreamingOutput+HttpResponseBinding.swift",
-            newTestContext.manifest
-        )
+        val contents =
+            getModelFileContents(
+                "Sources/example",
+                "DataStreamingOutput+HttpResponseBinding.swift",
+                newTestContext.manifest,
+            )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension DataStreamingOutput {
@@ -89,11 +92,12 @@ extension DataStreamingOutput {
 
     @Test
     fun `it creates correct init for event streaming payloads`() {
-        val contents = getModelFileContents(
-            "Sources/example",
-            "EventStreamingOutput+HttpResponseBinding.swift",
-            newTestContext.manifest
-        )
+        val contents =
+            getModelFileContents(
+                "Sources/example",
+                "EventStreamingOutput+HttpResponseBinding.swift",
+                newTestContext.manifest,
+            )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension EventStreamingOutput {

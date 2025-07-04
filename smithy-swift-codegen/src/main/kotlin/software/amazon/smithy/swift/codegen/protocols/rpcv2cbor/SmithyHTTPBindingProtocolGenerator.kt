@@ -26,7 +26,7 @@ import software.amazon.smithy.swift.codegen.testModuleName
 abstract class SmithyHTTPBindingProtocolGenerator(
     customizations: HTTPProtocolCustomizable,
     private val operationEndpointResolverMiddlewareFactory: ((ProtocolGenerator.GenerationContext, Symbol) -> MiddlewareRenderable)? = null,
-    private val userAgentMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null
+    private val userAgentMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null,
 ) : HTTPBindingProtocolGenerator(customizations) {
     override val httpProtocolClientGeneratorFactory = SmithyHttpProtocolClientGeneratorFactory()
 
@@ -37,8 +37,9 @@ abstract class SmithyHTTPBindingProtocolGenerator(
     open val protocolTestTagsToIgnore: Set<String> = setOf()
 
     override val shouldRenderEncodableConformance = false
-    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {
-        return HttpProtocolTestGenerator(
+
+    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int =
+        HttpProtocolTestGenerator(
             ctx,
             requestTestBuilder,
             responseTestBuilder,
@@ -48,7 +49,6 @@ abstract class SmithyHTTPBindingProtocolGenerator(
             protocolTestsToIgnore,
             protocolTestTagsToIgnore,
         ).generateProtocolTests() + renderEndpointsTests(ctx)
-    }
 
     fun renderEndpointsTests(ctx: ProtocolGenerator.GenerationContext): Int {
         val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
@@ -61,25 +61,33 @@ abstract class SmithyHTTPBindingProtocolGenerator(
             }
 
             ctx.delegator.useFileWriter("Tests/${ctx.settings.testModuleName}/EndpointResolverTest.swift") { swiftWriter ->
-                testCount = + EndpointTestGenerator(testsTrait, ruleSet, ctx).render(swiftWriter)
+                testCount = +EndpointTestGenerator(testsTrait, ruleSet, ctx).render(swiftWriter)
             }
         }
 
         return testCount
     }
 
-    override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
-        val operationEndpointResolverMiddleware = (
-            operationEndpointResolverMiddlewareFactory ?: { _, endpointMiddlewareSymbol -> OperationEndpointResolverMiddleware(ctx, endpointMiddlewareSymbol) }
+    override fun addProtocolSpecificMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    ) {
+        val operationEndpointResolverMiddleware =
+            (
+                operationEndpointResolverMiddlewareFactory
+                    ?: { _, endpointMiddlewareSymbol -> OperationEndpointResolverMiddleware(ctx, endpointMiddlewareSymbol) }
             )(ctx, customizations.endpointMiddlewareSymbol)
 
         operationMiddleware.appendMiddleware(
             operation,
-            operationEndpointResolverMiddleware
+            operationEndpointResolverMiddleware,
         )
     }
 
-    override fun addUserAgentMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+    override fun addUserAgentMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    ) {
         userAgentMiddlewareFactory?.let { factory ->
             val userAgentMiddleware = factory(ctx)
             operationMiddleware.appendMiddleware(operation, userAgentMiddleware)

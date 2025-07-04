@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Date
 import class Smithy.Context
 import enum Smithy.ClientError
 import protocol Smithy.RequestMessage
@@ -174,8 +175,8 @@ public struct Orchestrator<
     public func execute(input: InputType) async throws -> OutputType {
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
-            scope: telemetry.tracerScope,
-            attributes: telemetry.tracerAttributes)
+            scope: telemetry.tracerScope
+        )
 
         // DURATION - smithy.client.call.duration
         do {
@@ -308,14 +309,15 @@ public struct Orchestrator<
         // with the thrown error in context.result
         let telemetryContext = telemetry.contextManager.current()
         let tracer = telemetry.tracerProvider.getTracer(
-            scope: telemetry.tracerScope,
-            attributes: telemetry.tracerAttributes)
+            scope: telemetry.tracerScope
+        )
 
         // TICK - smithy.client.call.attempts
         telemetry.rpcAttempts.add(
             value: 1,
             attributes: telemetry.metricsAttributes,
-            context: telemetryContext)
+            context: telemetryContext
+        )
 
         // DURATION - smithy.client.call.attempt_duration
         do {
@@ -348,7 +350,8 @@ public struct Orchestrator<
                 telemetry.resolveIdentityDuration.record(
                     value: Date().timeIntervalSinceReferenceDate - identityStart,
                     attributes: authSchemeAttributes,
-                    context: telemetryContext)
+                    context: telemetryContext
+                )
                 // END - smithy.client.call.auth.resolve_identity_duration
 
                 // START - smithy.client.call.resolve_endpoint_duration
@@ -361,7 +364,8 @@ public struct Orchestrator<
                 telemetry.resolveEndpointDuration.record(
                     value: Date().timeIntervalSinceReferenceDate - endpointStart,
                     attributes: telemetry.metricsAttributes,
-                    context: telemetryContext)
+                    context: telemetryContext
+                )
                 // END - smithy.client.call.resolve_endpoint_duration
 
                 context.updateRequest(updated: withEndpoint)
@@ -379,7 +383,8 @@ public struct Orchestrator<
                 telemetry.signingDuration.record(
                     value: Date().timeIntervalSinceReferenceDate - signingStart,
                     attributes: authSchemeAttributes,
-                    context: telemetryContext)
+                    context: telemetryContext
+                )
                 // END - smithy.client.call.auth.signing_duration
 
                 context.updateRequest(updated: signed)
@@ -404,7 +409,8 @@ public struct Orchestrator<
                 telemetry.deserializationDuration.record(
                     value: Date().timeIntervalSinceReferenceDate - deserializeStart,
                     attributes: telemetry.metricsAttributes,
-                    context: telemetryContext)
+                    context: telemetryContext
+                )
                 // END - smithy.client.call.deserialization_duration
                 context.updateOutput(updated: output)
 

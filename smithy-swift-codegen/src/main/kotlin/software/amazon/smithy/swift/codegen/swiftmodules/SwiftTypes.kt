@@ -11,6 +11,14 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object SwiftTypes {
     val Void = builtInSymbol("Void", SwiftDeclaration.STRUCT)
+    val StringList =
+        SwiftSymbol.make(
+            "[String]",
+            null,
+            null,
+            emptyList(),
+            emptyList(),
+        )
     val String = builtInSymbol("String", SwiftDeclaration.STRUCT)
     val Int = builtInSymbol("Int", SwiftDeclaration.STRUCT)
     val Int8 = builtInSymbol("Int8", SwiftDeclaration.STRUCT)
@@ -36,10 +44,14 @@ object SwiftTypes {
     }
 }
 
-private fun builtInSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SWIFT,
-    emptyList(),
-    emptyList(),
-)
+private fun builtInSymbol(
+    name: String,
+    declaration: SwiftDeclaration? = null,
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SWIFT,
+        emptyList(),
+        emptyList(),
+    )

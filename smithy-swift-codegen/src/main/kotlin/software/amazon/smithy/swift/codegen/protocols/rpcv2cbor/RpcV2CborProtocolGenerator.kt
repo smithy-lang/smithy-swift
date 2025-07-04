@@ -1,7 +1,9 @@
 package software.amazon.smithy.swift.codegen.protocols.rpcv2cbor
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.UnitTypeTrait
@@ -22,22 +24,25 @@ import software.amazon.smithy.swift.codegen.model.targetOrSelf
 class RpcV2CborProtocolGenerator(
     customizations: DefaultHTTPProtocolCustomizations = RpcV2CborCustomizations(),
     operationEndpointResolverMiddlewareFactory: ((ProtocolGenerator.GenerationContext, Symbol) -> MiddlewareRenderable)? = null,
-    userAgentMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null
+    userAgentMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null,
 ) : SmithyHTTPBindingProtocolGenerator(
-    customizations,
-    operationEndpointResolverMiddlewareFactory,
-    userAgentMiddlewareFactory
-) {
+        customizations,
+        operationEndpointResolverMiddlewareFactory,
+        userAgentMiddlewareFactory,
+    ) {
     override val defaultContentType = "application/cbor"
     override val protocol: ShapeId = Rpcv2CborTrait.ID
     override val shouldRenderEncodableConformance = true
 
     override fun getProtocolHttpBindingResolver(
         ctx: ProtocolGenerator.GenerationContext,
-        defaultContentType: String
+        defaultContentType: String,
     ): HttpBindingResolver = RPCV2CBORHttpBindingResolver(ctx, defaultContentType)
 
-    override fun addProtocolSpecificMiddleware(ctx: ProtocolGenerator.GenerationContext, operation: OperationShape) {
+    override fun addProtocolSpecificMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    ) {
         super.addProtocolSpecificMiddleware(ctx, operation)
 
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
@@ -47,27 +52,31 @@ class RpcV2CborProtocolGenerator(
         val hasEventStreamRequest = ctx.model.expectShape(operation.inputShape).hasTrait<StreamingTrait>()
 
         // Determine the value of the Accept header based on output shape
-        val acceptHeaderValue = if (hasEventStreamResponse) {
-            "application/vnd.amazon.eventstream"
-        } else {
-            "application/cbor"
-        }
+        val acceptHeaderValue =
+            if (hasEventStreamResponse) {
+                "application/vnd.amazon.eventstream"
+            } else {
+                "application/cbor"
+            }
 
         // Determine the value of the Content-Type header based on input shape
-        val contentTypeValue = if (hasEventStreamRequest) {
-            "application/vnd.amazon.eventstream"
-        } else {
-            defaultContentType
-        }
+        val contentTypeValue =
+            if (hasEventStreamRequest) {
+                "application/vnd.amazon.eventstream"
+            } else {
+                defaultContentType
+            }
 
         // Middleware to set smithy-protocol and Accept headers
         // Every request for the rpcv2Cbor protocol MUST contain a smithy-protocol header with the value of rpc-v2-cbor
-        val smithyProtocolRequestHeaderMiddleware = MutateHeadersMiddleware(
-            overrideHeaders = mapOf(
-                "smithy-protocol" to "rpc-v2-cbor",
-                "Accept" to acceptHeaderValue
+        val smithyProtocolRequestHeaderMiddleware =
+            MutateHeadersMiddleware(
+                overrideHeaders =
+                    mapOf(
+                        "smithy-protocol" to "rpc-v2-cbor",
+                        "Accept" to acceptHeaderValue,
+                    ),
             )
-        )
 
         operationMiddleware.appendMiddleware(operation, smithyProtocolRequestHeaderMiddleware)
         operationMiddleware.appendMiddleware(operation, CborValidateResponseHeaderMiddleware())
@@ -82,17 +91,26 @@ class RpcV2CborProtocolGenerator(
         }
     }
 
+    override fun httpBodyMembers(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+    ): List<MemberShape> =
+        shape
+            .members()
+            .toList()
+
     /**
      * @return whether the operation input does _not_ target the unit shape ([UnitTypeTrait.UNIT])
      */
     private fun OperationShape.hasHttpBody(ctx: ProtocolGenerator.GenerationContext): Boolean {
-        val input = ctx.model.expectShape(inputShape).targetOrSelf(ctx.model).let {
-            // If the input has been synthetically cloned from the original (most likely),
-            // pull the archetype and check _that_
-            it.getTrait<SyntheticClone>()?.let { clone ->
-                ctx.model.expectShape(clone.archetype).targetOrSelf(ctx.model)
-            } ?: it
-        }
+        val input =
+            ctx.model.expectShape(inputShape).targetOrSelf(ctx.model).let {
+                // If the input has been synthetically cloned from the original (most likely),
+                // pull the archetype and check _that_
+                it.getTrait<SyntheticClone>()?.let { clone ->
+                    ctx.model.expectShape(clone.archetype).targetOrSelf(ctx.model)
+                } ?: it
+            }
 
         return input.id != UnitTypeTrait.UNIT
     }

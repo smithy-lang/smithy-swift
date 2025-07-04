@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public enum AWSSignedBodyValue {
+public enum AWSSignedBodyValue: Sendable {
     case empty
     case emptySha256
     case unsignedPayload

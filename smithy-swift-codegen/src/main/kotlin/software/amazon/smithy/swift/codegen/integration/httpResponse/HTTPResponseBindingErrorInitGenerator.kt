@@ -21,8 +21,8 @@ import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 class HTTPResponseBindingErrorInitGenerator(
     val customizations: HTTPProtocolCustomizable,
 ) {
-
     object XMLHttpResponseBindingErrorInit : SectionId
+
     object XMLHttpResponseBindingErrorInitMemberAssignment : SectionId
 
     fun render(
@@ -31,17 +31,25 @@ class HTTPResponseBindingErrorInitGenerator(
         httpBindingResolver: HttpBindingResolver,
     ) {
         val responseBindings = httpBindingResolver.responseBindings(structureShape)
-        val headerBindings = responseBindings
-            .filter { it.location == HttpBinding.Location.HEADER }
-            .sortedBy { it.memberName }
+        val headerBindings =
+            responseBindings
+                .filter { it.location == HttpBinding.Location.HEADER }
+                .sortedBy { it.memberName }
         val needsReader = responseBindings.filter { it.location == HttpBinding.Location.DOCUMENT }.isNotEmpty()
-        val needsResponse = responseBindings.filter { it.location == HttpBinding.Location.HEADER || it.location == HttpBinding.Location.PREFIX_HEADERS }.isNotEmpty()
+        val needsResponse =
+            responseBindings
+                .filter {
+                    it.location == HttpBinding.Location.HEADER ||
+                        it.location == HttpBinding.Location.PREFIX_HEADERS
+                }.isNotEmpty()
         val errorShape = ctx.symbolProvider.toSymbol(structureShape)
         val filename = ModelFileUtils.filename(ctx.settings, "${errorShape.name}+Init")
-        val httpBindingSymbol = Symbol.builder()
-            .definitionFile(filename)
-            .name(errorShape.name)
-            .build()
+        val httpBindingSymbol =
+            Symbol
+                .builder()
+                .definitionFile(filename)
+                .name(errorShape.name)
+                .build()
 
         ctx.delegator.useShapeWriter(httpBindingSymbol) { writer ->
             writer.openBlock("extension \$N {", "}", errorShape) {
@@ -78,7 +86,12 @@ class HTTPResponseBindingErrorInitGenerator(
         }
     }
 
-    private fun httpResponseTraitPayload(ctx: ProtocolGenerator.GenerationContext, responseBindings: List<HttpBindingDescriptor>, errorShape: Shape, writer: SwiftWriter) {
+    private fun httpResponseTraitPayload(
+        ctx: ProtocolGenerator.GenerationContext,
+        responseBindings: List<HttpBindingDescriptor>,
+        errorShape: Shape,
+        writer: SwiftWriter,
+    ) {
         HTTPResponseTraitPayload(ctx, responseBindings, errorShape, writer, customizations).render()
     }
 }

@@ -17,9 +17,11 @@ public typealias RuntimeConfigType
 
 open class ClientConfigDefaultsProvider {
     /// Returns a default `HTTPClient` engine.
-    open class func httpClientEngine() -> HTTPClient {
+    open class func httpClientEngine(
+        _ config: HttpClientConfiguration? = nil
+    ) -> HTTPClient {
         return RuntimeConfigType.makeClient(
-            httpClientConfiguration: RuntimeConfigType.defaultHttpClientConfiguration
+            httpClientConfiguration: config ?? RuntimeConfigType.defaultHttpClientConfiguration
         )
     }
 
@@ -38,9 +40,11 @@ open class ClientConfigDefaultsProvider {
         return RuntimeConfigType.defaultClientLogMode
     }
 
-    /// Returns default retry strategy options *without* referencing AWS-specific config.
-    open class func retryStrategyOptions(maxAttempts: Int? = nil) -> RetryStrategyOptions {
-        // Provide some simple fallback for non-AWS usage, e.g. a standard exponential backoff.
+    /// Returns default retry strategy options.
+    public static func backoffRetryStrategyOptions(
+        _ maxAttempts: Int? = nil
+    ) throws -> RetryStrategyOptions {
+        // Provide standard exponential backoff
         let attempts = maxAttempts ?? 3
         return RetryStrategyOptions(
             backoffStrategy: ExponentialBackoffStrategy(),

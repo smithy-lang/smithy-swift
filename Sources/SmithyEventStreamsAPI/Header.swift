@@ -9,7 +9,7 @@ import Foundation
 
 /// A header in an event stream message.
 /// Headers are used to convey metadata about the message.
-public struct Header: Equatable {
+public struct Header: Equatable, Sendable {
 
     /// The name of the header.
     public let name: String
@@ -25,7 +25,7 @@ public struct Header: Equatable {
 
 /// The value of a header in an event stream message.
 /// Encoders and decoders may use this to determine how to encode or decode the header.
-public enum HeaderValue: Equatable {
+public enum HeaderValue: Equatable, Sendable {
     case bool(Bool)
     case byte(Int8)
     case int16(Int16)

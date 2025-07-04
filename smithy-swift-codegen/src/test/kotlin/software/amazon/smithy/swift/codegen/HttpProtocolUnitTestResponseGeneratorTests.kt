@@ -11,6 +11,7 @@ import software.amazon.smithy.swift.codegen.model.AddOperationShapes
 
 open class HttpProtocolUnitTestResponseGeneratorTests {
     var model = javaClass.classLoader.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)

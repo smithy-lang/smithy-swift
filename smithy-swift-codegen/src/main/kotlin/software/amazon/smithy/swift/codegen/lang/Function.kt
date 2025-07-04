@@ -21,7 +21,6 @@ data class Function(
     val isAsync: Boolean = false,
     val isThrowing: Boolean = false,
 ) {
-
     /**
      * Render this function using the given writer.
      */
@@ -30,7 +29,10 @@ data class Function(
         val renderedAsync = if (isAsync) "async " else ""
         val renderedThrows = if (isThrowing) "throws " else ""
         val renderedReturnType = returnType?.let { writer.format("-> \$N ", it) } ?: ""
-        writer.openBlock("${accessModifier.renderedRightPad()}func $name($renderedParameters) $renderedAsync$renderedThrows$renderedReturnType{", "}") {
+        writer.openBlock(
+            "${accessModifier.renderedRightPad()}func $name($renderedParameters) $renderedAsync$renderedThrows$renderedReturnType{",
+            "}",
+        ) {
             renderBody.accept(writer)
         }
     }

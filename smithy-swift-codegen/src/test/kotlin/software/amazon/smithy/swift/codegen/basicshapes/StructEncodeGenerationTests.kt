@@ -20,6 +20,7 @@ import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class StructEncodeGenerationTests {
     var model = javaClass.classLoader.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+
     private fun newTestContext(): TestContext {
         val settings = model.defaultSettings()
         model = AddOperationShapes.execute(model, settings.getService(model), settings.moduleName)
@@ -27,7 +28,9 @@ class StructEncodeGenerationTests {
         model = NeedsReaderWriterTransformer.transform(model, settings.getService(model))
         return model.newTestContext()
     }
+
     val newTestContext = newTestContext()
+
     init {
         newTestContext.generator.generateSerializers(newTestContext.generationCtx)
         newTestContext.generator.generateCodableConformanceForNestedTypes(newTestContext.generationCtx)
@@ -166,11 +169,12 @@ extension NestedEnum {
 
     @Test
     fun `it encodes recursive boxed types correctly`() {
-        val contents = getModelFileContents(
-            "Sources/example",
-            "RecursiveShapesInputOutputNested1+ReadWrite.swift",
-            newTestContext.manifest
-        )
+        val contents =
+            getModelFileContents(
+                "Sources/example",
+                "RecursiveShapesInputOutputNested1+ReadWrite.swift",
+                newTestContext.manifest,
+            )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension RecursiveShapesInputOutputNested1 {
@@ -195,11 +199,12 @@ extension RecursiveShapesInputOutputNested1 {
 
     @Test
     fun `it encodes one side of the recursive shape`() {
-        val contents = getModelFileContents(
-            "Sources/example",
-            "RecursiveShapesInputOutputNested2+ReadWrite.swift",
-            newTestContext.manifest
-        )
+        val contents =
+            getModelFileContents(
+                "Sources/example",
+                "RecursiveShapesInputOutputNested2+ReadWrite.swift",
+                newTestContext.manifest,
+            )
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension RecursiveShapesInputOutputNested2 {

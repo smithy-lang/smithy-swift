@@ -10,10 +10,14 @@ object SmithyTestUtilTypes {
     val dummyIdentityResolver = runtimeSymbol("dummyIdentityResolver", SwiftDeclaration.FUNC)
 }
 
-private fun runtimeSymbol(name: String, declaration: SwiftDeclaration? = null): Symbol = SwiftSymbol.make(
-    name,
-    declaration,
-    SwiftDependency.SMITHY_TEST_UTIL,
-    emptyList(),
-    emptyList(),
-)
+private fun runtimeSymbol(
+    name: String,
+    declaration: SwiftDeclaration? = null,
+): Symbol =
+    SwiftSymbol.make(
+        name,
+        declaration,
+        SwiftDependency.SMITHY_TEST_UTIL,
+        emptyList(),
+        emptyList(),
+    )

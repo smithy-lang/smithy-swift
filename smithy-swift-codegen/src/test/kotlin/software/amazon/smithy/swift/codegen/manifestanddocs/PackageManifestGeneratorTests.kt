@@ -30,7 +30,7 @@ class PackageManifestGeneratorTests {
         assertNotNull(packageManifest)
         val expected = """
     platforms: [
-        .macOS(.v10_15), .iOS(.v13)
+        .macOS(.v12), .iOS(.v13)
     ],
 """
         packageManifest.shouldContain(expected)
@@ -74,7 +74,10 @@ class PackageManifestGeneratorTests {
         packageManifest.shouldContain(expected)
     }
 
-    private fun setupTests(smithyFile: String, serviceShapeId: String): TestContext {
+    private fun setupTests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext {
         val context =
             TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPAWSJson11ProtocolGenerator()) { model ->
                 model.defaultSettings(serviceShapeId, "MockSDK", "2019-12-16", "MockSDKID")

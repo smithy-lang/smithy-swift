@@ -14,7 +14,6 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.SwiftWriter
 
 interface HTTPProtocolCustomizable {
-
     fun renderInternals(ctx: ProtocolGenerator.GenerationContext) {
         // Default implementation is no-op
     }
@@ -23,7 +22,7 @@ interface HTTPProtocolCustomizable {
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         serviceShape: ServiceShape,
-        op: OperationShape
+        op: OperationShape,
     ) {
         // Default implementation is no-op
     }
@@ -31,36 +30,36 @@ interface HTTPProtocolCustomizable {
     fun renderEventStreamAttributes(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     )
 
     fun serviceClient(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        serviceConfig: ServiceConfig
+        serviceConfig: ServiceConfig,
     ): HttpProtocolServiceClient
 
-    fun customRenderBodyComparison(test: HttpRequestTestCase): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, String, String) -> Unit)? {
-        return null
-    }
+    fun customRenderBodyComparison(
+        test: HttpRequestTestCase,
+    ): ((SwiftWriter, HttpRequestTestCase, Symbol, Shape, String, String) -> Unit)? = null
 
-    fun alwaysHasHttpBody(): Boolean {
-        return false
-    }
+    fun alwaysHasHttpBody(): Boolean = false
 
     interface ServiceErrorCustomRenderer {
         fun render(writer: SwiftWriter)
     }
 
-    fun serviceErrorCustomRenderer(ctx: ProtocolGenerator.GenerationContext): ServiceErrorCustomRenderer? {
-        return null
-    }
+    fun serviceErrorCustomRenderer(ctx: ProtocolGenerator.GenerationContext): ServiceErrorCustomRenderer? = null
 
     val endpointMiddlewareSymbol: Symbol
 
     val baseErrorSymbol: Symbol
 
+    val queryCompatibleUtilsSymbol: Symbol
+
     val unknownServiceErrorSymbol: Symbol
 
     val defaultTimestampFormat: TimestampFormatTrait.Format
+
+    fun smokeTestGenerator(ctx: ProtocolGenerator.GenerationContext): SmokeTestGenerator
 }

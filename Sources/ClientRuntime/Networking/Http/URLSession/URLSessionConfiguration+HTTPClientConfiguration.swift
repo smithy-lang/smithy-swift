@@ -17,6 +17,7 @@ extension URLSessionConfiguration {
         config.httpShouldSetCookies = false
         config.httpCookieAcceptPolicy = .never
         config.httpCookieStorage = nil
+        config.httpMaximumConnectionsPerHost = httpClientConfiguration.maxConnections
         return config
     }
 }

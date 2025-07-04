@@ -15,24 +15,27 @@ enum class AccessModifier {
     PublicPrivateSet,
     Internal,
     Private,
-    None;
+    None,
+    ;
 
     /**
      * Creates a string representation of the access control modifier.
      */
-    fun rendered(): String = when (this) {
-        Public -> "public"
-        PublicPrivateSet -> "public private(set)"
-        Internal -> "internal"
-        Private -> "private"
-        None -> ""
-    }
+    fun rendered(): String =
+        when (this) {
+            Public -> "public"
+            PublicPrivateSet -> "public private(set)"
+            Internal -> "internal"
+            Private -> "private"
+            None -> ""
+        }
 
     /**
      * Same as [rendered], but with a trailing space when not [None].
      */
-    fun renderedRightPad(): String = when (this) {
-        None -> ""
-        else -> rendered().plus(" ")
-    }
+    fun renderedRightPad(): String =
+        when (this) {
+            None -> ""
+            else -> rendered().plus(" ")
+        }
 }

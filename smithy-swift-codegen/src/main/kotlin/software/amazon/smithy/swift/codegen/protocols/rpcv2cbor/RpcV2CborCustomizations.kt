@@ -11,12 +11,11 @@ import software.amazon.smithy.swift.codegen.integration.ServiceConfig
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class RpcV2CborCustomizations : DefaultHTTPProtocolCustomizations() {
-
     // Defaults that may need to be changed in future
     override fun renderEventStreamAttributes(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         // Event streams are not supported
     }
@@ -24,10 +23,8 @@ class RpcV2CborCustomizations : DefaultHTTPProtocolCustomizations() {
     override fun serviceClient(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        serviceConfig: ServiceConfig
-    ): HttpProtocolServiceClient {
-        return HttpProtocolServiceClient(ctx, writer, serviceConfig)
-    }
+        serviceConfig: ServiceConfig,
+    ): HttpProtocolServiceClient = HttpProtocolServiceClient(ctx, writer, serviceConfig)
 
     override val endpointMiddlewareSymbol: Symbol = ClientRuntimeTypes.Core.EndpointResolverMiddleware
 

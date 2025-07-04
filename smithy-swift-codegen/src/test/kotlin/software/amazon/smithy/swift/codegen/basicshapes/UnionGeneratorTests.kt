@@ -20,18 +20,27 @@ import software.amazon.smithy.swift.codegen.defaultSettings
 import software.amazon.smithy.swift.codegen.model.UnionIndirectivizer
 
 class UnionGeneratorTests {
-
     @Test
     fun `it renders simple union shape`() {
-
-        val simpleUnionShapeBuilder = createUnionShapeBuilderWithMembers(
-            MemberShape.builder().id("smithy.example#MyUnion\$foo").target("smithy.api#String").build(),
-            MemberShape.builder().id("smithy.example#MyUnion\$baz").target("smithy.api#Integer").build(),
-            MemberShape.builder().id("smithy.example#MyUnion\$bar")
-                .target("smithy.api#PrimitiveInteger")
-                .addTrait(DocumentationTrait("Documentation for bar"))
-                .build()
-        )
+        val simpleUnionShapeBuilder =
+            createUnionShapeBuilderWithMembers(
+                MemberShape
+                    .builder()
+                    .id("smithy.example#MyUnion\$foo")
+                    .target("smithy.api#String")
+                    .build(),
+                MemberShape
+                    .builder()
+                    .id("smithy.example#MyUnion\$baz")
+                    .target("smithy.api#Integer")
+                    .build(),
+                MemberShape
+                    .builder()
+                    .id("smithy.example#MyUnion\$bar")
+                    .target("smithy.api#PrimitiveInteger")
+                    .addTrait(DocumentationTrait("Documentation for bar"))
+                    .build(),
+            )
         val simpleUnionShape = simpleUnionShapeBuilder.build()
         val model = createModelFromShapes(simpleUnionShape)
         val settings = model.defaultSettings()
@@ -60,19 +69,32 @@ public enum MyUnion: Swift.Sendable {
 
     @Test
     fun `it renders union shape with struct member`() {
+        val struct =
+            StructureShape
+                .builder()
+                .id("smithy.example#MyStruct")
+                .addMember(
+                    MemberShape
+                        .builder()
+                        .id("smithy.example#MyStruct\$baz")
+                        .target("smithy.api#String")
+                        .build(),
+                ).build()
 
-        val struct = StructureShape.builder()
-            .id("smithy.example#MyStruct")
-            .addMember(MemberShape.builder().id("smithy.example#MyStruct\$baz").target("smithy.api#String").build())
-            .build()
-
-        val unionShapeBuilder = createUnionShapeBuilderWithMembers(
-            MemberShape.builder().id("smithy.example#MyUnion\$foo").target("smithy.api#String").build(),
-            MemberShape.builder().id("smithy.example#MyUnion\$bar")
-                .target("smithy.api#PrimitiveInteger")
-                .addTrait(DocumentationTrait("Documentation for bar"))
-                .build()
-        )
+        val unionShapeBuilder =
+            createUnionShapeBuilderWithMembers(
+                MemberShape
+                    .builder()
+                    .id("smithy.example#MyUnion\$foo")
+                    .target("smithy.api#String")
+                    .build(),
+                MemberShape
+                    .builder()
+                    .id("smithy.example#MyUnion\$bar")
+                    .target("smithy.api#PrimitiveInteger")
+                    .addTrait(DocumentationTrait("Documentation for bar"))
+                    .build(),
+            )
         unionShapeBuilder.addMember("myStruct", struct.id)
         val unionShapeWithStructMember = unionShapeBuilder.build()
         val model = createModelFromShapes(struct, unionShapeWithStructMember)
@@ -102,14 +124,25 @@ public enum MyUnion: Swift.Sendable {
 
     @Test
     fun `it renders recursive union shape`() {
-        val simpleUnionShapeBuilder = createUnionShapeBuilderWithMembers(
-            MemberShape.builder().id("smithy.example#MyUnion\$foo").target("smithy.example#MyUnion").build(),
-            MemberShape.builder().id("smithy.example#MyUnion\$baz").target("smithy.api#Integer").build(),
-            MemberShape.builder().id("smithy.example#MyUnion\$bar")
-                .target("smithy.api#PrimitiveInteger")
-                .addTrait(DocumentationTrait("Documentation for bar"))
-                .build()
-        )
+        val simpleUnionShapeBuilder =
+            createUnionShapeBuilderWithMembers(
+                MemberShape
+                    .builder()
+                    .id("smithy.example#MyUnion\$foo")
+                    .target("smithy.example#MyUnion")
+                    .build(),
+                MemberShape
+                    .builder()
+                    .id("smithy.example#MyUnion\$baz")
+                    .target("smithy.api#Integer")
+                    .build(),
+                MemberShape
+                    .builder()
+                    .id("smithy.example#MyUnion\$bar")
+                    .target("smithy.api#PrimitiveInteger")
+                    .addTrait(DocumentationTrait("Documentation for bar"))
+                    .build(),
+            )
         val simpleUnionShape = simpleUnionShapeBuilder.build()
         val model = createModelFromShapes(simpleUnionShape)
         val transformedModel = UnionIndirectivizer.transform(model)
@@ -143,8 +176,8 @@ public indirect enum MyUnion: Swift.Sendable {
         unionShapeBuilder.id("smithy.example#MyUnion").addTrait(
             DocumentationTrait(
                 "Really long multi-line\n" +
-                    "Documentation for MyUnion"
-            )
+                    "Documentation for MyUnion",
+            ),
         )
         for (memberShape in memberShapes) {
             unionShapeBuilder.addMember(memberShape)

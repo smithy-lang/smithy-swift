@@ -37,6 +37,7 @@ public extension CRTAWSCredentialIdentity {
             accessKey: awsCredentialIdentity.accessKey,
             secret: awsCredentialIdentity.secret,
             sessionToken: awsCredentialIdentity.sessionToken,
+            accountId: awsCredentialIdentity.accountID,
             expiration: awsCredentialIdentity.expiration
         )
     }

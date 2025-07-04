@@ -2,6 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
+
 // copied and modified from: https://github.com/awslabs/smithy-kotlin/blob/b386392b1cd7cc73a9bc08bedcff0c109487b74f/smithy-kotlin-codegen/src/main/kotlin/software/amazon/smithy/kotlin/codegen/model/SymbolBuilder.kt
 package software.amazon.smithy.swift.codegen.model
 
@@ -35,14 +36,19 @@ open class SymbolBuilder {
 
     fun reference(ref: SymbolReference) = references.add(ref)
 
-    fun reference(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
+    fun reference(
+        symbol: Symbol,
+        vararg options: SymbolReference.ContextOption,
+    ) {
         if (options.isEmpty()) {
             builder.addReference(symbol)
         } else {
-            val ref = SymbolReference.builder()
-                .symbol(symbol)
-                .options(options.toSet())
-                .build()
+            val ref =
+                SymbolReference
+                    .builder()
+                    .symbol(symbol)
+                    .options(options.toSet())
+                    .build()
             references += ref
         }
     }
@@ -52,19 +58,37 @@ open class SymbolBuilder {
         reference(refSymbol)
     }
 
-    fun setProperty(key: String, value: Any) { builder.putProperty(key, value) }
-    fun removeProperty(key: String) { builder.removeProperty(key) }
+    fun setProperty(
+        key: String,
+        value: Any,
+    ) {
+        builder.putProperty(key, value)
+    }
+
+    fun removeProperty(key: String) {
+        builder.removeProperty(key)
+    }
+
     fun properties(block: PropertiesBuilder.() -> Unit) {
-        val propBuilder = object : PropertiesBuilder {
-            override fun set(key: String, value: Any) = setProperty(key, value)
-            override fun remove(key: String) = removeProperty(key)
-        }
+        val propBuilder =
+            object : PropertiesBuilder {
+                override fun set(
+                    key: String,
+                    value: Any,
+                ) = setProperty(key, value)
+
+                override fun remove(key: String) = removeProperty(key)
+            }
 
         block(propBuilder)
     }
 
     interface PropertiesBuilder {
-        fun set(key: String, value: Any)
+        fun set(
+            key: String,
+            value: Any,
+        )
+
         fun remove(key: String)
     }
 
@@ -88,35 +112,38 @@ open class SymbolBuilder {
 /**
  * Build a symbol inside the given block
  */
-fun buildSymbol(block: SymbolBuilder.() -> Unit): Symbol =
-    SymbolBuilder().apply(block).build()
+fun buildSymbol(block: SymbolBuilder.() -> Unit): Symbol = SymbolBuilder().apply(block).build()
 
-fun SymbolBuilder.namespace(dependency: SwiftDependency, type: String = "") {
-    namespace = if (type.isNotEmpty()) {
-        "${dependency.target}.$type"
-    } else {
-        dependency.target
-    }
+fun SymbolBuilder.namespace(
+    dependency: SwiftDependency,
+    type: String = "",
+) {
+    namespace =
+        if (type.isNotEmpty()) {
+            "${dependency.target}.$type"
+        } else {
+            dependency.target
+        }
 
     dependency(dependency)
 }
 
-fun Symbol.isGeneric(): Boolean {
-    return this.getProperty("isGeneric").orElse(false) as Boolean
-}
+fun Symbol.isGeneric(): Boolean = this.getProperty("isGeneric").orElse(false) as Boolean
 
-fun Symbol.isOptional(): Boolean {
-    return this.getProperty("isOptional").orElse(false) as Boolean
-}
+fun Symbol.isOptional(): Boolean = this.getProperty("isOptional").orElse(false) as Boolean
 
-fun Symbol.toOptional(): Symbol {
-    return this.toBuilder().putProperty("isOptional", true).name(name).build()
-}
+fun Symbol.toOptional(): Symbol =
+    this
+        .toBuilder()
+        .putProperty("isOptional", true)
+        .name(name)
+        .build()
 
-fun Symbol.toGeneric(): Symbol {
-    return this.toBuilder().putProperty("isGeneric", true).name(name).build()
-}
+fun Symbol.toGeneric(): Symbol =
+    this
+        .toBuilder()
+        .putProperty("isGeneric", true)
+        .name(name)
+        .build()
 
-fun Symbol.renderSwiftType(writer: SwiftWriter): String {
-    return writer.format("\$N", this)
-}
+fun Symbol.renderSwiftType(writer: SwiftWriter): String = writer.format("\$N", this)

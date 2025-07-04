@@ -30,16 +30,23 @@ import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 class EndpointTestGenerator(
     private val endpointTest: EndpointTestsTrait,
     private val endpointRuleSet: EndpointRuleSet?,
-    private val ctx: ProtocolGenerator.GenerationContext
+    private val ctx: ProtocolGenerator.GenerationContext,
 ) {
     fun render(writer: SwiftWriter): Int {
-        if (endpointTest.testCases.isEmpty()) { return 0 }
+        if (endpointTest.testCases.isEmpty()) {
+            return 0
+        }
 
         writer.addImport(ctx.settings.moduleName, isTestable = true)
         writer.addImport(SwiftDependency.XCTest.target)
 
         // used to filter out test params that are not valid
-        val endpointParamsMembers = endpointRuleSet?.parameters?.toList()?.map { it.name.name.value }?.toSet() ?: emptySet()
+        val endpointParamsMembers =
+            endpointRuleSet
+                ?.parameters
+                ?.toList()
+                ?.map { it.name.name.value }
+                ?.toSet() ?: emptySet()
 
         var count = 0
         writer.openBlock("class EndpointResolverTest: \$N {", "}", XCTestTypes.XCTestCase) {
@@ -54,8 +61,10 @@ class EndpointTestGenerator(
                 writer.openBlock("func testResolve${++count}() throws {", "}") {
                     writer.openBlock("let endpointParams = \$N(", ")", EndpointTypes.EndpointParams) {
                         val applicableParams =
-                            testCase.params.members.filter { endpointParamsMembers.contains(it.key.value) }
-                                .toSortedMap(compareBy { it.value }).map { (key, value) ->
+                            testCase.params.members
+                                .filter { endpointParamsMembers.contains(it.key.value) }
+                                .toSortedMap(compareBy { it.value })
+                                .map { (key, value) ->
                                     key to value
                                 }
 
@@ -64,7 +73,9 @@ class EndpointTestGenerator(
                             val value = Value.fromNode(pair.second)
                             writer.call {
                                 generateValue(
-                                    writer, value, if (idx < applicableParams.count() - 1) "," else "", false
+                                    writer,
+                                    value,
+                                    if (idx < applicableParams.count() - 1) "," else "",
                                 )
                             }
                         }
@@ -73,7 +84,8 @@ class EndpointTestGenerator(
 
                     testCase.expect.error.ifPresent { error ->
                         writer.openBlock(
-                            "XCTAssertThrowsError(try resolver.resolve(params: endpointParams)) { error in", "}"
+                            "XCTAssertThrowsError(try resolver.resolve(params: endpointParams)) { error in",
+                            "}",
                         ) {
                             writer.openBlock("switch error {", "}") {
                                 writer.dedent().write("case \$N.unresolved(let message):", ClientRuntimeTypes.Core.EndpointError)
@@ -86,10 +98,10 @@ class EndpointTestGenerator(
                     testCase.expect.endpoint.ifPresent { endpoint ->
                         writer.write("let actual = try resolver.resolve(params: endpointParams)").write("")
 
-                        // [String: AnyHashable] can't be constructed from a dictionary literal
+                        // [String: EndpointPropertyValue] can't be constructed from a dictionary literal
                         // first create a string JSON string literal
-                        // then convert to [String: AnyHashable] using JSONSerialization.jsonObject(with:)
-                        writer.openBlock("let properties: [String: AnyHashable] = ", "") {
+                        // then convert to [String: EndpointPropertyValue] using JSONSerialization.jsonObject(with:)
+                        writer.openBlock("let properties: [String: \$N] = ", "", SmithyHTTPAPITypes.EndpointPropertyValue) {
                             generateProperties(writer, endpoint.properties)
                         }
 
@@ -98,11 +110,12 @@ class EndpointTestGenerator(
                         endpoint.headers.forEach { (name, values) ->
                             writer.write("headers.add(name: \$S, values: [\$S])", name, values.sorted().joinToString(","))
                         }
-                        writer.write(
-                            "let expected = try \$N(urlString: \$S, headers: headers, properties: properties)",
-                            SmithyHTTPAPITypes.Endpoint,
-                            endpoint.url
-                        ).write("")
+                        writer
+                            .write(
+                                "let expected = try \$N(urlString: \$S, headers: headers, properties: properties)",
+                                SmithyHTTPAPITypes.Endpoint,
+                                endpoint.url,
+                            ).write("")
                         writer.write("XCTAssertEqual(expected, actual)")
                     }
                 }
@@ -116,7 +129,10 @@ class EndpointTestGenerator(
     /**
      * Recursively traverse map of properties and generate JSON string literal.
      */
-    private fun generateProperties(writer: SwiftWriter, properties: Map<String, Node>) {
+    private fun generateProperties(
+        writer: SwiftWriter,
+        properties: Map<String, Node>,
+    ) {
         if (properties.isEmpty()) {
             writer.write("[:]")
         } else {
@@ -125,7 +141,7 @@ class EndpointTestGenerator(
                     val value = Value.fromNode(second)
                     writer.writeInline("\$S: ", first)
                     writer.call {
-                        generateValue(writer, value, if (idx < properties.values.count() - 1) "," else "", true)
+                        generateValue(writer, value, if (idx < properties.values.count() - 1) "," else "")
                     }
                 }
             }
@@ -135,7 +151,11 @@ class EndpointTestGenerator(
     /**
      * Recursively traverse the value and render a JSON string literal.
      */
-    private fun generateValue(writer: SwiftWriter, value: Value, delimeter: String, castToAnyHashable: Boolean) {
+    private fun generateValue(
+        writer: SwiftWriter,
+        value: Value,
+        delimeter: String,
+    ) {
         when (value) {
             is StringValue -> {
                 writer.write("\$S$delimeter", value.toString())
@@ -154,11 +174,10 @@ class EndpointTestGenerator(
             }
 
             is ArrayValue -> {
-                val castStmt = if (castToAnyHashable) " as [AnyHashable]$delimeter" else delimeter
-                writer.openBlock("[", "]$castStmt") {
+                writer.openBlock("[", "]$delimeter") {
                     value.values.forEachIndexed { idx, item ->
                         writer.call {
-                            generateValue(writer, item, if (idx < value.values.count() - 1) "," else "", castToAnyHashable)
+                            generateValue(writer, item, if (idx < value.values.count() - 1) "," else "")
                         }
                     }
                 }
@@ -168,11 +187,11 @@ class EndpointTestGenerator(
                 if (value.value.isEmpty()) {
                     writer.writeInline("[:]")
                 } else {
-                    writer.openBlock("[", "] as [String: AnyHashable]$delimeter") {
+                    writer.openBlock("[", "]$delimeter") {
                         value.value.map { it.key to it.value }.forEachIndexed { idx, (first, second) ->
                             writer.writeInline("\$S: ", first.name)
                             writer.call {
-                                generateValue(writer, second, if (idx < value.value.count() - 1) "," else "", castToAnyHashable)
+                                generateValue(writer, second, if (idx < value.value.count() - 1) "," else "")
                             }
                         }
                     }

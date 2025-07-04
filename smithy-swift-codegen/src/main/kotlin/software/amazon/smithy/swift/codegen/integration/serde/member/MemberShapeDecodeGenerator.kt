@@ -65,15 +65,19 @@ open class MemberShapeDecodeGenerator(
     private val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.responseWireProtocol)
     private val readingClosureUtils = ReadingClosureUtils(ctx, writer)
 
-    fun render(member: MemberShape, isPayload: Boolean = false) {
+    fun render(
+        member: MemberShape,
+        isPayload: Boolean = false,
+    ) {
         val targetShape = ctx.model.expectShape(member.target)
-        val readExp = when (targetShape) {
-            is StructureShape, is UnionShape -> renderStructOrUnionExp(member, isPayload)
-            is MapShape -> renderMapExp(member, targetShape)
-            is ListShape -> renderListExp(member, targetShape)
-            is TimestampShape -> renderTimestampExp(member, targetShape)
-            else -> renderMemberExp(member, isPayload)
-        }
+        val readExp =
+            when (targetShape) {
+                is StructureShape, is UnionShape -> renderStructOrUnionExp(member, isPayload)
+                is MapShape -> renderMapExp(member, targetShape)
+                is ListShape -> renderListExp(member, targetShape)
+                is TimestampShape -> renderTimestampExp(member, targetShape)
+                else -> renderMemberExp(member, isPayload)
+            }
         val memberName = ctx.symbolProvider.toMemberName(member)
         if (decodingUnion && member.target.toString() != "smithy.api#Unit") {
             writer.write("return .\$L(\$L)", memberName, readExp)
@@ -101,7 +105,7 @@ open class MemberShapeDecodeGenerator(
             "try \$L.\$L(with: \$L)",
             reader(memberShape, isPayload),
             readMethodName("read"),
-            readingClosure
+            readingClosure,
         )
     }
 
@@ -126,7 +130,7 @@ open class MemberShapeDecodeGenerator(
             memberReadingClosure,
             memberNodeInfo,
             isFlattened,
-            default(memberShape)
+            default(memberShape),
         )
     }
 
@@ -153,7 +157,7 @@ open class MemberShapeDecodeGenerator(
             keyNodeInfo,
             valueNodeInfo,
             isFlattened,
-            default(memberShape)
+            default(memberShape),
         )
     }
 
@@ -169,7 +173,7 @@ open class MemberShapeDecodeGenerator(
             readMethodName("readTimestamp"),
             SmithyTimestampsTypes.TimestampFormat,
             swiftTimestampFormatCase,
-            default(memberShape)
+            default(memberShape),
         )
     }
 
@@ -190,21 +194,25 @@ open class MemberShapeDecodeGenerator(
             readMethodName("read"),
             default(memberShape),
         )
-    }
 
     private fun readMethodName(baseName: String): String {
         val extension = "".takeIf { decodingUnion } ?: "IfPresent"
         return writer.format("\$L\$L", baseName, extension)
     }
 
-    private fun reader(memberShape: MemberShape, isPayload: Boolean): String {
+    private fun reader(
+        memberShape: MemberShape,
+        isPayload: Boolean,
+    ): String {
         val nodeInfo = nodeInfoUtils.nodeInfo(memberShape)
         return "reader".takeIf { isPayload || useSBS } ?: writer.format("reader[\$L]", nodeInfo)
     }
 
     private fun default(memberShape: MemberShape): String {
         // If decoding the member of a union, then no default is needed.
-        if (decodingUnion) { return "" }
+        if (decodingUnion) {
+            return ""
+        }
 
         val targetShape = ctx.model.expectShape(memberShape.target)
         val defaultTrait = memberShape.getTrait<DefaultTrait>() ?: targetShape.getTrait<DefaultTrait>()
@@ -236,10 +244,12 @@ open class MemberShapeDecodeGenerator(
         }
         return defaultTrait?.toNode()?.let {
             // If the default value is null, provide no default.
-            if (it.isNullNode) { return "" }
+            if (it.isNullNode) {
+                return ""
+            }
             // Provide a default value dependent on the type.
             return when (targetShape) {
-                is EnumShape -> " ?? .${enumDefaultValue(targetShape, it.expectStringNode().value)}"
+                is EnumShape -> " ?? ${enumDefaultValue(writer, targetShape, it.expectStringNode().value)}"
                 is IntEnumShape -> intEnumDefaultValue(it)
                 is StringShape -> " ?? \"${it.expectStringNode().value}\""
                 is ByteShape -> " ?? ${it.expectNumberNode().value}"
@@ -269,22 +279,33 @@ open class MemberShapeDecodeGenerator(
     // >
     // > enum: can be set to any valid string _value_ of the enum.
     // So, find the member with the default value, then render it as a Swift enum case.
-    private fun enumDefaultValue(enumShape: EnumShape, value: String): String {
-        val matchingMember = enumShape.members().first { member ->
-            value == member.expectTrait<EnumValueTrait>().expectStringValue()
-        }
-        return swiftEnumCaseName(matchingMember.memberName, value)
+    private fun enumDefaultValue(
+        writer: SwiftWriter,
+        enumShape: EnumShape,
+        value: String,
+    ): String {
+        val matchingMember =
+            enumShape.members().first { member ->
+                value == member.expectTrait<EnumValueTrait>().expectStringValue()
+            }
+        return writer.format(
+            "\$N.\$L",
+            ctx.symbolProvider.toSymbol(enumShape),
+            swiftEnumCaseName(matchingMember.memberName, value),
+        )
     }
 
-    private fun intEnumDefaultValue(node: Node): String {
-        return when (node) {
+    private fun intEnumDefaultValue(node: Node): String =
+        when (node) {
             is StringNode -> " ?? .${node.value}"
             is NumberNode -> " ?? .init(rawValue: ${node.value})"
             else -> ""
         }
-    }
 
-    private fun resolveBlobDefault(targetShape: Shape, value: String = ""): String {
+    private fun resolveBlobDefault(
+        targetShape: Shape,
+        value: String = "",
+    ): String {
         writer.addImport(FoundationTypes.Data)
         return if (targetShape.hasTrait<StreamingTrait>()) {
             writer.format(
@@ -302,7 +323,10 @@ open class MemberShapeDecodeGenerator(
         }
     }
 
-    private fun resolveDocumentDefault(useZeroValue: Boolean, node: Node): String {
+    private fun resolveDocumentDefault(
+        useZeroValue: Boolean,
+        node: Node,
+    ): String {
         writer.addImport(SwiftDependency.SMITHY_JSON.target)
         return when {
             node.isObjectNode -> writer.format(" ?? [:]")
@@ -323,20 +347,23 @@ open class MemberShapeDecodeGenerator(
         }
     }
 
-    private fun resolveTimestampDefault(useZeroValue: Boolean, node: Node): String {
+    private fun resolveTimestampDefault(
+        useZeroValue: Boolean,
+        node: Node,
+    ): String {
         // Smithy validates that default value given to timestamp shape must either be a
         // number (for epoch-seconds) or a date-time string compliant with RFC3339.
         return if (node.isNumberNode) {
             val value = "0".takeIf { useZeroValue } ?: node.expectNumberNode().value
             writer.format(
                 " ?? \$N(timeIntervalSince1970: $value)",
-                FoundationTypes.Date
+                FoundationTypes.Date,
             )
         } else {
             val value = "1970-01-01T00:00:00Z".takeIf { useZeroValue } ?: node.expectStringNode().value
             writer.format(
                 " ?? \$N(format: .dateTime).date(from: \"$value\")",
-                SmithyTimestampsTypes.TimestampFormatter
+                SmithyTimestampsTypes.TimestampFormatter,
             )
         }
     }

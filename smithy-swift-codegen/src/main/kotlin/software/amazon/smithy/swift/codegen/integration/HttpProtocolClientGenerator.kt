@@ -25,12 +25,13 @@ open class HttpProtocolClientGenerator(
     private val httpBindingResolver: HttpBindingResolver,
     private val defaultContentType: String,
     private val httpProtocolCustomizable: HTTPProtocolCustomizable,
-    private val operationMiddleware: OperationMiddleware
+    private val operationMiddleware: OperationMiddleware,
 ) {
     private val model: Model = ctx.model
     private val symbolProvider = ctx.symbolProvider
     private val serviceShape = ctx.service
     private val httpProtocolServiceClient = httpProtocolCustomizable.serviceClient(ctx, writer, serviceConfig)
+
     fun render() {
         val serviceSymbol = symbolProvider.toSymbol(serviceShape)
         httpProtocolCustomizable.renderInternals(ctx)
@@ -45,17 +46,34 @@ open class HttpProtocolClientGenerator(
         val operationsIndex = OperationIndex.of(model)
 
         writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
-            operations.forEach {
-                val serviceName = ctx.settings.sdkId.toUpperCamelCase()
-                ServiceGenerator.renderOperationDefinition(serviceName, model, serviceShape, symbolProvider, writer, operationsIndex, it)
+            val serviceName = ctx.settings.sdkId.toUpperCamelCase()
+            operations.forEach { operation ->
+                ServiceGenerator.renderOperationDefinition(
+                    serviceName,
+                    model,
+                    serviceShape,
+                    symbolProvider,
+                    writer,
+                    operationsIndex,
+                    operation,
+                )
                 writer.openBlock(" {", "}") {
                     val operationStackName = "operation"
-                    val generator = MiddlewareExecutionGenerator(ctx, writer, httpBindingResolver, httpProtocolCustomizable, operationMiddleware, operationStackName)
-                    generator.render(serviceShape, it)
+                    val generator =
+                        MiddlewareExecutionGenerator(
+                            ctx,
+                            writer,
+                            httpBindingResolver,
+                            httpProtocolCustomizable,
+                            operationMiddleware,
+                            operationStackName,
+                        )
+                    generator.render(serviceShape, operation)
                     writer.write("return try await op.execute(input: input)")
                 }
                 writer.write("")
             }
+            writer.unwrite("\n")
         }
     }
 }

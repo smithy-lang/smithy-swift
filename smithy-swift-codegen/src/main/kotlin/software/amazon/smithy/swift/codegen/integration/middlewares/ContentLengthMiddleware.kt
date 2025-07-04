@@ -12,9 +12,8 @@ class ContentLengthMiddleware(
     val model: Model,
     private val alwaysIntercept: Boolean,
     private val requiresLength: Boolean,
-    private val unsignedPayload: Boolean
+    private val unsignedPayload: Boolean,
 ) : MiddlewareRenderable {
-
     override val name = "ContentLengthMiddleware"
 
     override fun render(
@@ -32,7 +31,7 @@ class ContentLengthMiddleware(
     override fun renderMiddlewareInit(
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         val str = "requiresLength: $requiresLength, unsignedPayload: $unsignedPayload"
         val middlewareArgs = str.takeIf { requiresLength || unsignedPayload } ?: ""

@@ -22,10 +22,12 @@ import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class UnionEncodeGeneratorTests {
     var model = javaClass.classLoader.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+
     private fun newTestContext(): TestContext {
         model = preprocessModel(model)
         return model.newTestContext()
     }
+
     private fun preprocessModel(model: Model): Model {
         val settings = model.defaultSettings()
         var resolvedModel = model
@@ -35,7 +37,9 @@ class UnionEncodeGeneratorTests {
         resolvedModel = NeedsReaderWriterTransformer.transform(resolvedModel, settings.getService(resolvedModel))
         return resolvedModel
     }
+
     val newTestContext = newTestContext()
+
     init {
         newTestContext.generator.generateSerializers(newTestContext.generationCtx)
         newTestContext.generator.generateCodableConformanceForNestedTypes(newTestContext.generationCtx)

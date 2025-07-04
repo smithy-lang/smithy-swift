@@ -36,9 +36,8 @@ class StructureGenerator(
     private val writer: SwiftWriter,
     private val shape: StructureShape,
     private val settings: SwiftSettings,
-    private val serviceErrorProtocolSymbol: Symbol? = null
+    private val serviceErrorProtocolSymbol: Symbol? = null,
 ) {
-
     private val membersSortedByName: List<MemberShape> = shape.allMembers.values.sortedBy { it.toLowerCamelCase() }
     private var memberShapeDataContainer: MutableMap<MemberShape, Pair<String, Symbol>> = mutableMapOf()
 
@@ -116,15 +115,14 @@ class StructureGenerator(
         writer.write("")
         writer.writeShapeDocs(shape)
         writer.writeAvailableAttribute(model, shape)
-        val equatableConformance = writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
-        writer.openBlock(
-            "public struct \$struct.name:L: \$N$equatableConformance {", "}",
-            SwiftTypes.Protocols.Sendable,
-        ) {
-            generateStructMembers()
-            writer.write("")
-            generateInitializerForStructure(false)
-        }
+        val equatableConformance =
+            writer.format(", \$N", SwiftTypes.Protocols.Equatable).takeIf { shape.hasTrait<EquatableConformanceTrait>() } ?: ""
+        writer
+            .openBlock("${settings.visibility} struct \$struct.name:L: \$N$equatableConformance {", SwiftTypes.Protocols.Sendable)
+            .call { generateStructMembers() }
+            .write("")
+            .call { generateInitializerForStructure(false) }
+            .closeBlock("}")
     }
 
     private fun generateStructMembers() {
@@ -220,14 +218,14 @@ class StructureGenerator(
         }
 
         writer.writeAvailableAttribute(model, shape)
-        writer.openBlock(
-            "public struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N {",
-            ClientRuntimeTypes.Core.ModeledError,
-            ClientRuntimeTypes.Http.HttpError,
-            SwiftTypes.Error,
-            SwiftTypes.Protocols.Sendable,
-        )
-            .call { generateErrorStructMembers() }
+        writer
+            .openBlock(
+                "${settings.visibility} struct \$struct.name:L: \$N, \$error.protocol:N, \$N, \$N, \$N {",
+                ClientRuntimeTypes.Core.ModeledError,
+                ClientRuntimeTypes.Http.HttpError,
+                SwiftTypes.Error,
+                SwiftTypes.Protocols.Sendable,
+            ).call { generateErrorStructMembers() }
             .write("")
             .call { generateInitializerForStructure(true) }
             .closeBlock("}")
@@ -241,7 +239,7 @@ class StructureGenerator(
     private fun generateErrorStructMembers() {
         if (membersSortedByName.isNotEmpty()) {
             writer.write("")
-            writer.openBlock("public struct Properties: \$N {", "}", SwiftTypes.Protocols.Sendable) {
+            writer.openBlock("${settings.visibility} struct Properties: \$N {", "}", SwiftTypes.Protocols.Sendable) {
                 membersSortedByName.forEach {
                     val (memberName, memberSymbol) = memberShapeDataContainer.getOrElse(it) { return@forEach }
                     writer.writeMemberDocs(model, it)

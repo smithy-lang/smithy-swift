@@ -9,7 +9,6 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 
 class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGeneratorTests() {
-
     @Test
     fun `it creates error test for simple error with no payload`() {
         val contents = getTestFileContents("Tests/example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)

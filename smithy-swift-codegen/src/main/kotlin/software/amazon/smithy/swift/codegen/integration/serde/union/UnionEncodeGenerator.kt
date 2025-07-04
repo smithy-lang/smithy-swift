@@ -16,12 +16,13 @@ class UnionEncodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val shapeContainingMembers: Shape,
     private val members: List<MemberShape>,
-    private val writer: SwiftWriter
+    private val writer: SwiftWriter,
 ) : MemberShapeEncodeGenerator(ctx, writer) {
     override fun render() {
         val structSymbol = ctx.symbolProvider.toSymbol(shapeContainingMembers)
         writer.openBlock(
-            "static func write(value: \$N?, to writer: \$N) throws {", "}",
+            "static func write(value: \$N?, to writer: \$N) throws {",
+            "}",
             structSymbol,
             ctx.service.writerSymbol,
         ) {

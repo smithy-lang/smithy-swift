@@ -53,7 +53,7 @@ public class ExpectedSdkHttpRequestBuilder {
     var queryItems = [URIQueryItem]()
     var forbiddenQueryItems = [URIQueryItem]()
     var requiredQueryItems = [URIQueryItem]()
-    var port: Int16 = 443
+    var port: UInt16 = 443
     var protocolType: URIScheme = .https
 
     // We follow the convention of returning the builder object
@@ -127,7 +127,7 @@ public class ExpectedSdkHttpRequestBuilder {
     }
 
     @discardableResult
-    public func withPort(_ value: Int16) -> ExpectedSdkHttpRequestBuilder {
+    public func withPort(_ value: UInt16) -> ExpectedSdkHttpRequestBuilder {
         self.port = value
         return self
     }
