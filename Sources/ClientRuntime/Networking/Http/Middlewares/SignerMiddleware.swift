@@ -57,6 +57,11 @@ extension SignerMiddleware: ApplySigner {
             updatedSigningProperties.set(key: AttributeKey(name: "SignedBodyValue"), value: bodyValue)
         }
 
+        if case .stream(let stream) = request.body, stream.isEligibleForChunkedStreaming {
+            // Pass in context object via signing properties to reuse final checksum value in chunked streaming.
+            updatedSigningProperties.set(key: AttributeKey(name: "Context"), value: attributes)
+        }
+
         let signed = try await signer.signRequest(
             requestBuilder: request.toBuilder(),
             identity: identity,

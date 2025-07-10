@@ -10,6 +10,7 @@ import struct SmithyHTTPAPI.Headers
 import struct Foundation.Data
 import AwsCommonRuntimeKit
 import class SmithyStreams.BufferedStream
+import class Smithy.Context
 
 /// Reads data from the input stream, chunks it, and passes it out through its output stream.
 ///
@@ -50,20 +51,21 @@ public class ChunkedStream: @unchecked Sendable {
         signingConfig: SigningConfig,
         previousSignature: String,
         trailingHeaders: Headers,
-        checksumString: String? = nil
+        checksumString: String? = nil,
+        context: Smithy.Context
     ) throws {
         self.inputStream = inputStream
         self.signingConfig = signingConfig
         self.previousSignature = previousSignature
         self.trailingHeaders = trailingHeaders
         self.checksumString = checksumString
-
         self.chunkedReader = try ChunkedReader(
             stream: self.inputStream,
             signingConfig: self.signingConfig,
             previousSignature: self.previousSignature,
             trailingHeaders: self.trailingHeaders,
-            checksumString: self.checksumString
+            checksumString: self.checksumString,
+            context: context
         )
     }
 }
