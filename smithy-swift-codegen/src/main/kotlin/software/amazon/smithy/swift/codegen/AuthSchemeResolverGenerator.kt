@@ -186,7 +186,7 @@ class AuthSchemeResolverGenerator(
                 // Render switch block
                 renderSwitchBlock(serviceIndex, ctx, writer)
                 // Call reprioritizeAuthOptions and return result
-                write("return self.reprioritizeAuthOptions(authSchemePreference: authSchemePreference, authOptions: validAuthOptions)")
+                write("return self.reprioritizeAuthOptions(authSchemePreference: serviceParams.authSchemePreference, authOptions: validAuthOptions)")
             }
         }
     }
