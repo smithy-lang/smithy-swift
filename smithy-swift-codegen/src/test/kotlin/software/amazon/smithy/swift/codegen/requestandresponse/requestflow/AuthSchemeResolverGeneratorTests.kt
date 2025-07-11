@@ -105,7 +105,7 @@ public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
         guard let opName = context.getOperation() else {
             throw Smithy.ClientError.dataNotFound("Operation name not configured in middleware context for auth scheme resolver params construction.")
         }
-        authSchemePreference: authSchemePreference,
+        let authSchemePreference = context.getAuthSchemePreference()
         let opRegion = context.getRegion()
         return ExampleAuthSchemeResolverParameters(authSchemePreference: authSchemePreference, operation: opName, region: opRegion)
     }
