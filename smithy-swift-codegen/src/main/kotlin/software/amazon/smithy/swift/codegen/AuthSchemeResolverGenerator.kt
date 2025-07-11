@@ -54,6 +54,7 @@ class AuthSchemeResolverGenerator(
                 "}",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolverParams,
             ) {
+                writer.write("public let authSchemePreference: \$N?", SwiftTypes.StringList)
                 write("public let operation: \$N", SwiftTypes.String)
 
                 if (usesRulesBasedAuthResolver(ctx)) {
@@ -147,8 +148,6 @@ class AuthSchemeResolverGenerator(
                 serviceSpecificAuthResolverProtocol,
             ) {
                 write("")
-                renderInit(writer)
-                write("")
                 renderResolveAuthSchemeMethod(serviceIndex, ctx, writer)
                 write("")
                 renderConstructParametersMethod(
@@ -156,19 +155,6 @@ class AuthSchemeResolverGenerator(
                     ctx,
                     writer,
                 )
-            }
-        }
-    }
-
-    private fun renderInit(writer: SwiftWriter) {
-        writer.apply {
-            write("public let authSchemePreference: [String]")
-            write("")
-            openBlock(
-                "public init(authSchemePreference: [String] = []) {",
-                "}",
-            ) {
-                write("self.authSchemePreference = authSchemePreference")
             }
         }
     }
@@ -317,12 +303,13 @@ class AuthSchemeResolverGenerator(
                             SmithyTypes.ClientError,
                         )
                     }
+                    writer.write("let authSchemePreference = context.getAuthSchemePreference()")
                     val paramType = getSdkId(ctx) + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
                     if (hasSigV4) {
                         write("let opRegion = context.getRegion()")
-                        write("return $paramType(operation: opName, region: opRegion)")
+                        write("return $paramType(authSchemePreference: authSchemePreference, operation: opName, region: opRegion)")
                     } else {
-                        write("return $paramType(operation: opName)")
+                        write("return $paramType(authSchemePreference: authSchemePreference, operation: opName)")
                     }
                 }
             }

@@ -21,6 +21,7 @@ class AuthSchemeResolverGeneratorTests {
         contents.shouldSyntacticSanityCheck()
         val expected = """
 public struct ExampleAuthSchemeResolverParameters: SmithyHTTPAuthAPI.AuthSchemeResolverParameters {
+    public let authSchemePreference: [String]?
     public let operation: Swift.String
     // Region is used for SigV4 auth scheme
     public let region: Swift.String?
@@ -33,12 +34,6 @@ public protocol ExampleAuthSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver 
 }
 
 public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
-
-    public let authSchemePreference: [String]
-
-    public init(authSchemePreference: [String] = []) {
-        self.authSchemePreference = authSchemePreference
-    }
 
     public func resolveAuthScheme(params: SmithyHTTPAuthAPI.AuthSchemeResolverParameters) throws -> [SmithyHTTPAuthAPI.AuthOption] {
         var validAuthOptions = [SmithyHTTPAuthAPI.AuthOption]()
@@ -110,8 +105,9 @@ public struct DefaultExampleAuthSchemeResolver: ExampleAuthSchemeResolver {
         guard let opName = context.getOperation() else {
             throw Smithy.ClientError.dataNotFound("Operation name not configured in middleware context for auth scheme resolver params construction.")
         }
+        authSchemePreference: authSchemePreference,
         let opRegion = context.getRegion()
-        return ExampleAuthSchemeResolverParameters(operation: opName, region: opRegion)
+        return ExampleAuthSchemeResolverParameters(authSchemePreference: authSchemePreference, operation: opName, region: opRegion)
     }
 }
 """
