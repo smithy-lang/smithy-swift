@@ -124,7 +124,7 @@ class WaiterAcceptorGenerator(
                 )
             PathComparator.ALL_STRING_EQUALS ->
                 writer.write(
-                    "return (\$L?.count ?? 0) > 1 && (\$L?.allSatisfy { \$N.compare($$0, ==, \$S) } ?? false)",
+                    "return (\$L?.count ?? 0) >= 1 && (\$L?.allSatisfy { \$N.compare($$0, ==, \$S) } ?? false)",
                     actual.name,
                     actual.name,
                     SmithyWaitersAPITypes.JMESUtils,
