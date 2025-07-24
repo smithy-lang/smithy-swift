@@ -162,7 +162,10 @@ interface SwiftIntegration : SmithyIntegration<SwiftSettings, SwiftWriter, Gener
     /**
      * Returns a list of default Plugins for configuring client configuration's default properties
      */
-    fun plugins(ctx: ProtocolGenerator.GenerationContext, serviceConfig: ServiceConfig): List<Plugin> = emptyList()
+    fun plugins(
+        ctx: ProtocolGenerator.GenerationContext,
+        serviceConfig: ServiceConfig,
+    ): List<Plugin> = emptyList()
 
     /**
      * Returns a list of ClientConfiguration protocols to be implemented by the client configuration
