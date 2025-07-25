@@ -16,6 +16,12 @@ extension Context {
     public func getAuthSchemePreference() -> [String]? {
         get(key: authSchemePreferenceKey)
     }
+
+    /// The auth scheme preferences for authenticating this request.
+    public var authSchemePreference: [String]? {
+        get { getAuthSchemePreference() }
+        set { set(key: authSchemePreferenceKey, value: newValue) }
+    }
 }
 
 extension ContextBuilder {
