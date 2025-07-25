@@ -84,7 +84,7 @@ open class HttpProtocolServiceClient(
                     val defaultPlugins: MutableList<Plugin> = mutableListOf(DefaultClientPlugin())
 
                     ctx.integrations
-                        .flatMap { it.plugins(ctx, serviceConfig) }
+                        .flatMap { it.plugins(serviceConfig) }
                         .filter { it.isDefault }
                         .onEach { defaultPlugins.add(it) }
 
@@ -273,7 +273,7 @@ open class HttpProtocolServiceClient(
     private fun renderServiceSpecificPlugins() {
         ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Plugins.swift") { writer ->
             ctx.integrations
-                .flatMap { it.plugins(ctx, serviceConfig) }
+                .flatMap { it.plugins(serviceConfig) }
                 .onEach { it.render(ctx, writer) }
         }
     }
