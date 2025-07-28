@@ -440,7 +440,7 @@ abstract class HTTPBindingProtocolGenerator(
             operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
             operationMiddleware.appendMiddleware(operation, SignerMiddleware(ctx.model, ctx.symbolProvider))
             addProtocolSpecificMiddleware(ctx, operation)
-            addCustomizationMiddleware(ctx, operation)
+            addServiceSpecificMiddleware(ctx, operation)
             operationMiddleware.appendMiddleware(operation, AuthSchemeMiddleware(ctx.model, ctx.symbolProvider))
             for (integration in ctx.integrations) {
                 integration.customizeMiddleware(ctx, operation, operationMiddleware)
@@ -483,7 +483,7 @@ abstract class HTTPBindingProtocolGenerator(
         operation: OperationShape,
     )
 
-    protected open fun addCustomizationMiddleware(
+    protected open fun addServiceSpecificMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
         operation: OperationShape,
     ) {
