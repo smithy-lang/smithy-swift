@@ -14,6 +14,12 @@ extension Context {
     public func getIdentityResolvers() -> Attributes? {
         get(key: identityResolversKey)
     }
+
+    public func addIdentityResolver<T: IdentityResolver>(value: T, schemeID: String) {
+        var identityResolvers: Attributes = get(key: identityResolversKey) ?? Attributes()
+        identityResolvers.set(key: AttributeKey<any IdentityResolver>(name: schemeID), value: value)
+        set(key: identityResolversKey, value: identityResolvers)
+    }
 }
 
 extension ContextBuilder {
