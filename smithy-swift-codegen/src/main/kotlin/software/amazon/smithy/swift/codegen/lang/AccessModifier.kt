@@ -15,6 +15,7 @@ enum class AccessModifier {
     PublicPrivateSet,
     Internal,
     Private,
+    Package,
     None,
     ;
 
@@ -27,6 +28,7 @@ enum class AccessModifier {
             PublicPrivateSet -> "public private(set)"
             Internal -> "internal"
             Private -> "private"
+            Package -> "package"
             None -> ""
         }
 
