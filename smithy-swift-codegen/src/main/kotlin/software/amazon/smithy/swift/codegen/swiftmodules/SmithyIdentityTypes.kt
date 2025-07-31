@@ -9,6 +9,8 @@ object SmithyIdentityTypes {
     val BearerTokenIdentityResolver = runtimeSymbol("BearerTokenIdentityResolver", SwiftDeclaration.PROTOCOL)
     val BearerTokenIdentity = runtimeSymbol("BearerTokenIdentity", SwiftDeclaration.STRUCT)
     val StaticBearerTokenIdentityResolver = runtimeSymbol("StaticBearerTokenIdentityResolver", SwiftDeclaration.STRUCT)
+    val ClientConfigDefaultBearerTokenIdentityResolver =
+        runtimeSymbol("ClientConfigDefaultBearerTokenIdentityResolver", SwiftDeclaration.STRUCT)
     val StaticAWSCredentialIdentityResolver = runtimeSymbol("StaticAWSCredentialIdentityResolver", SwiftDeclaration.STRUCT)
 }
 
