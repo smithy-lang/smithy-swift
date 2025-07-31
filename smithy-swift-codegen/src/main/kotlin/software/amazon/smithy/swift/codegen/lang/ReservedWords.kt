@@ -83,6 +83,7 @@ val reservedWords =
         "operator",
         "optional",
         "override",
+        "package",
         "postfix",
         "prefix",
         "private",
