@@ -11,6 +11,7 @@ import struct Smithy.Attributes
 ///
 /// Performs no resolution of its own, instead it returns the bearer token resolved by its inner resolver.
 public struct ClientConfigDefaultBearerTokenIdentityResolver {
+    // swiftlint:disable:previous type_name
     private let innerResolver: any BearerTokenIdentityResolver
 
     public init(_ innerResolver: any BearerTokenIdentityResolver) {
