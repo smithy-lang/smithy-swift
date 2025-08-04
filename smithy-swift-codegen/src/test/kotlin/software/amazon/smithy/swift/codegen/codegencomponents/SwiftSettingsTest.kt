@@ -39,6 +39,7 @@ class SwiftSettingsTest {
         assertEquals("Amazon Web Services", settings.author)
         assertEquals("https://github.com/aws-amplify/amplify-codegen.git", settings.gitRepo)
         assertEquals(false, settings.mergeModels)
+        assertEquals(false, settings.internalClient)
     }
 
     // Smithy Protocol Selection Tests
@@ -193,6 +194,7 @@ class SwiftSettingsTest {
             copyrightNotice = "// Test copyright",
             visibility = "public",
             forProtocolTests = false,
+            internalClient = false,
         )
 
     private fun createServiceWithProtocols(protocols: Set<ShapeId>): ServiceShape {
