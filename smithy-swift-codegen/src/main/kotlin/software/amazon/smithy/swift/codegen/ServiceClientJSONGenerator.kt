@@ -8,13 +8,13 @@ import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import kotlin.jvm.optionals.getOrNull
 
-val PACKAGE_MANIFEST_JSON_NAME = "Package.swift.json"
+val SERVICE_CLIENT_JSON_NAME = "Dependencies.json"
 
-class ServiceClientJSONManifestGenerator(
+class ServiceClientJSONGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
 ) {
     fun writePackageJSON(dependencies: List<SymbolDependency>) {
-        ctx.delegator.useFileWriter(PACKAGE_MANIFEST_JSON_NAME) { writer ->
+        ctx.delegator.useFileWriter(SERVICE_CLIENT_JSON_NAME) { writer ->
             writer.openBlock("[", "]") {
                 val externalDependencies =
                     dependencies

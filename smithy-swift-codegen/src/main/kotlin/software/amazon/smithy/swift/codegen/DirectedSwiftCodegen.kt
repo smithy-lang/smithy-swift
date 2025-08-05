@@ -99,7 +99,7 @@ class DirectedSwiftCodegen(
             generateSmokeTests(ctx)
 
             LOGGER.info("Generating package manifest JSON file")
-            ServiceClientJSONManifestGenerator(ctx).writePackageJSON(writers.dependencies)
+            ServiceClientJSONGenerator(ctx).writePackageJSON(writers.dependencies)
 
             LOGGER.info("Flushing swift writers")
             writers.flushWriters()

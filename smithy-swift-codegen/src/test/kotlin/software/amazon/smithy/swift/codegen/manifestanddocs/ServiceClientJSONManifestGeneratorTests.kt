@@ -8,7 +8,7 @@ package software.amazon.smithy.swift.codegen.manifestanddocs
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.ServiceClientJSONManifestGenerator
+import software.amazon.smithy.swift.codegen.ServiceClientJSONGenerator
 import software.amazon.smithy.swift.codegen.TestContext
 import software.amazon.smithy.swift.codegen.defaultSettings
 import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJson11ProtocolGenerator
@@ -18,7 +18,7 @@ class ServiceClientJSONManifestGeneratorTests {
 
     @Test
     fun `it renders package manifest JSON with dependencies`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift.json").get()
+        val packageManifest = testContext.manifest.getFileString("Dependencies.json").get()
         assertNotNull(packageManifest)
         val expected = """[
 
@@ -35,7 +35,7 @@ class ServiceClientJSONManifestGeneratorTests {
             TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPAWSJson11ProtocolGenerator()) { model ->
                 model.defaultSettings(serviceShapeId, "MockSDK", "2019-12-16", "MockSDKID")
             }
-        ServiceClientJSONManifestGenerator(context.generationCtx).writePackageJSON(context.generationCtx.delegator.dependencies)
+        ServiceClientJSONGenerator(context.generationCtx).writePackageJSON(context.generationCtx.delegator.dependencies)
         context.generationCtx.delegator.flushWriters()
         return context
     }
