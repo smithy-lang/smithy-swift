@@ -86,5 +86,5 @@ class PackageManifestGenerator(
     }
 }
 
-private val SymbolDependency.targetName: String
+val SymbolDependency.targetName: String
     get() = expectProperty("target", String::class.java)
