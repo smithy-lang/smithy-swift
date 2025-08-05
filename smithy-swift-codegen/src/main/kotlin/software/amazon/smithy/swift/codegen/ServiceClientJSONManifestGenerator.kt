@@ -6,7 +6,6 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import kotlin.jvm.optionals.getOrNull
 
 val PACKAGE_MANIFEST_JSON_NAME = "Package.swift.json"
@@ -21,7 +20,7 @@ class ServiceClientJSONManifestGenerator(
                     dependencies
                         .filter {
                             it.getProperty("url", String::class.java).getOrNull() != null ||
-                                    it.getProperty("scope", String::class.java).getOrNull() != null
+                                it.getProperty("scope", String::class.java).getOrNull() != null
                         }
 
                 val dependenciesByTarget =
