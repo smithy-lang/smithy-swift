@@ -14,13 +14,7 @@ class SwiftDependency(
     private val location: String,
     private val localPath: String,
     override var packageName: String,
-    private val distributionMethod: DistributionMethod,
 ) : Dependency {
-    enum class DistributionMethod {
-        SPR,
-        GIT,
-    }
-
     companion object {
         val NONE =
             SwiftDependency(
@@ -30,7 +24,6 @@ class SwiftDependency(
                 "",
                 "",
                 "",
-                DistributionMethod.GIT,
             )
         val SWIFT =
             SwiftDependency(
@@ -40,7 +33,6 @@ class SwiftDependency(
                 "",
                 "",
                 "",
-                DistributionMethod.GIT,
             )
         val XCTest =
             SwiftDependency(
@@ -50,7 +42,6 @@ class SwiftDependency(
                 "",
                 "",
                 "",
-                DistributionMethod.GIT,
             )
         val CLIENT_RUNTIME = smithySwiftDependency("ClientRuntime")
         val SMITHY = smithySwiftDependency("Smithy")
@@ -80,29 +71,19 @@ class SwiftDependency(
                 "https://github.com/smithy-lang/smithy-swift",
                 "../../../smithy-swift",
                 "smithy-swift",
-                DistributionMethod.GIT,
             )
     }
 
     override fun getDependencies(): List<SymbolDependency> = listOf(toSymbolDependency())
 
-    private fun toSymbolDependency(): SymbolDependency {
-        val builder =
-            SymbolDependency
-                .builder()
-                .putProperty("target", target)
-                .putProperty("branch", branch)
-                .putProperty("localPath", localPath)
-                .packageName(packageName)
-                .version(version)
-        when (distributionMethod) {
-            DistributionMethod.GIT -> {
-                builder.putProperty("url", location)
-            }
-            DistributionMethod.SPR -> {
-                builder.putProperty("scope", location)
-            }
-        }
-        return builder.build()
-    }
+    private fun toSymbolDependency(): SymbolDependency =
+        SymbolDependency
+            .builder()
+            .putProperty("target", target)
+            .putProperty("branch", branch)
+            .putProperty("localPath", localPath)
+            .putProperty("url", location)
+            .packageName(packageName)
+            .version(version)
+            .build()
 }
