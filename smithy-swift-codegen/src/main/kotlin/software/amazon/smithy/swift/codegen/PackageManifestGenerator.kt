@@ -6,7 +6,6 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import kotlin.jvm.optionals.getOrNull
 
 class PackageManifestGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -30,12 +29,12 @@ class PackageManifestGenerator(
                 }
 
                 val externalDependencies =
-                    dependencies.filter { it.getProperty("url", String::class.java).getOrNull() != null }
+                    dependencies.filter { it.getProperty("url", String::class.java).isPresent }
 
                 val dependenciesByURL =
                     externalDependencies
-                        .distinctBy { it.getProperty("url", String::class.java).getOrNull() }
-                        .sortedBy { it.targetName() }
+                        .distinctBy { it.expectProperty("url", String::class.java) }
+                        .sortedBy { it.targetName }
 
                 writer.openBlock("dependencies: [", "],") {
                     dependenciesByURL.forEach { writePackageDependency(writer, it) }
@@ -43,8 +42,8 @@ class PackageManifestGenerator(
 
                 val dependenciesByTarget =
                     externalDependencies
-                        .distinctBy { it.targetName() + it.packageName }
-                        .sortedBy { it.targetName() }
+                        .distinctBy { it.targetName + it.packageName }
+                        .sortedBy { it.targetName }
 
                 writer.openBlock("targets: [", "]") {
                     writer.openBlock(".target(", "),") {
@@ -70,7 +69,7 @@ class PackageManifestGenerator(
         dependency: SymbolDependency,
     ) {
         writer.openBlock(".package(", "),") {
-            val url = dependency.getProperty("url", String::class.java).get()
+            val url = dependency.expectProperty("url", String::class.java)
             writer.write("url: \$S,", url)
             writer.write("exact: \$S", dependency.version)
         }
@@ -81,10 +80,11 @@ class PackageManifestGenerator(
         dependency: SymbolDependency,
     ) {
         writer.openBlock(".product(", "),") {
-            writer.write("name: \$S,", dependency.targetName())
+            writer.write("name: \$S,", dependency.targetName)
             writer.write("package: \$S", dependency.packageName)
         }
     }
 }
 
-private fun SymbolDependency.targetName(): String = expectProperty("target", String::class.java)
+private val SymbolDependency.targetName: String
+    get() = expectProperty("target", String::class.java)
