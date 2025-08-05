@@ -30,18 +30,12 @@ class PackageManifestGenerator(
                 }
 
                 val externalDependencies =
-                    dependencies
-                        .filter {
-                            it.getProperty("url", String::class.java).getOrNull() != null ||
-                                it.getProperty("scope", String::class.java).getOrNull() != null
-                        }
+                    dependencies.filter { it.getProperty("url", String::class.java).getOrNull() != null }
 
                 val dependenciesByURL =
                     externalDependencies
-                        .distinctBy {
-                            it.getProperty("url", String::class.java).getOrNull()
-                                ?: "${it.getProperty("scope", String::class.java).get()}.${it.packageName}"
-                        }.sortedBy { it.targetName() }
+                        .distinctBy { it.getProperty("url", String::class.java).getOrNull() }
+                        .sortedBy { it.targetName() }
 
                 writer.openBlock("dependencies: [", "],") {
                     dependenciesByURL.forEach { writePackageDependency(writer, it) }
@@ -76,14 +70,8 @@ class PackageManifestGenerator(
         dependency: SymbolDependency,
     ) {
         writer.openBlock(".package(", "),") {
-            val scope = dependency.getProperty("scope", String::class.java).getOrNull()
-            scope?.let {
-                writer.write("id: \$S,", "$it.${dependency.packageName}")
-            }
-            val url = dependency.getProperty("url", String::class.java).getOrNull()
-            url?.let {
-                writer.write("url: \$S,", it)
-            }
+            val url = dependency.getProperty("url", String::class.java).get()
+            writer.write("url: \$S,", url)
             writer.write("exact: \$S", dependency.version)
         }
     }
@@ -93,11 +81,8 @@ class PackageManifestGenerator(
         dependency: SymbolDependency,
     ) {
         writer.openBlock(".product(", "),") {
-            val target = dependency.targetName()
-            writer.write("name: \$S,", target)
-            val scope = dependency.getProperty("scope", String::class.java).getOrNull()
-            val packageName = scope?.let { "$it.${dependency.packageName}" } ?: dependency.packageName
-            writer.write("package: \$S", packageName)
+            writer.write("name: \$S,", dependency.targetName())
+            writer.write("package: \$S", dependency.packageName)
         }
     }
 }

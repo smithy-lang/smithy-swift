@@ -8,20 +8,14 @@ import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import kotlin.jvm.optionals.getOrNull
 
-val DEPENDENCY_JSON_NAME = "Dependencies.json"
-
 class DependencyJSONGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
 ) {
     fun writePackageJSON(dependencies: List<SymbolDependency>) {
-        ctx.delegator.useFileWriter(DEPENDENCY_JSON_NAME) { writer ->
+        ctx.delegator.useFileWriter("Dependencies.json") { writer ->
             writer.openBlock("[", "]") {
                 val externalDependencies =
-                    dependencies
-                        .filter {
-                            it.getProperty("url", String::class.java).getOrNull() != null ||
-                                it.getProperty("scope", String::class.java).getOrNull() != null
-                        }
+                    dependencies.filter { it.getProperty("url", String::class.java).getOrNull() != null }
 
                 val dependenciesByTarget =
                     externalDependencies
