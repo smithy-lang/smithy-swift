@@ -40,7 +40,7 @@ class SwiftDependency(
                 "",
                 "",
                 "",
-                SwiftDependency.DistributionMethod.GIT,
+                DistributionMethod.GIT,
             )
         val XCTest =
             SwiftDependency(
@@ -60,11 +60,8 @@ class SwiftDependency(
         val SMITHY_HTTP_API = smithySwiftDependency("SmithyHTTPAPI")
         val SMITHY_HTTP_AUTH_API = smithySwiftDependency("SmithyHTTPAuthAPI")
         val SMITHY_HTTP_AUTH = smithySwiftDependency("SmithyHTTPAuth")
-        val SMITHY_CHECKSUMS_API = smithySwiftDependency("SmithyChecksumsAPI")
-        val SMITHY_CHECKSUMS = smithySwiftDependency("SmithyChecksums")
         val SMITHY_STREAMS = smithySwiftDependency("SmithyStreams")
         val SMITHY_EVENT_STREAMS_API = smithySwiftDependency("SmithyEventStreamsAPI")
-        val SMITHY_EVENT_STREAMS_AUTH_API = smithySwiftDependency("SmithyEventStreamsAuthAPI")
         val SMITHY_EVENT_STREAMS = smithySwiftDependency("SmithyEventStreams")
         val SMITHY_TEST_UTIL = smithySwiftDependency("SmithyTestUtil")
         val SMITHY_READ_WRITE = smithySwiftDependency("SmithyReadWrite")
