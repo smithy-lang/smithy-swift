@@ -98,6 +98,7 @@ class SwiftSettings(
                     COPYRIGHT_NOTICE,
                     VISIBILITY,
                     FOR_PROTOCOL_TESTS,
+                    INTERNAL_CLIENT,
                 ),
             )
 
