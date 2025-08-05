@@ -98,8 +98,15 @@ class DirectedSwiftCodegen(
             LOGGER.info("[${service.id}] Generating smoke tests for service")
             generateSmokeTests(ctx)
 
-            LOGGER.info("Generating dependency JSON file")
-            DependencyJSONGenerator(ctx).writePackageJSON(writers.dependencies)
+            if (settings.generatePackageManifest) {
+                LOGGER.info("Generating package manifest file")
+                PackageManifestGenerator(ctx).writePackageManifest(writers.dependencies)
+            }
+
+            if (settings.generateDependencyJSON) {
+                LOGGER.info("Generating dependency JSON file")
+                DependencyJSONGenerator(ctx).writePackageJSON(writers.dependencies)
+            }
 
             LOGGER.info("Flushing swift writers")
             writers.flushWriters()
