@@ -53,5 +53,4 @@ extension Attributes {
         return otelKeys
     }
 }
-
 #endif
