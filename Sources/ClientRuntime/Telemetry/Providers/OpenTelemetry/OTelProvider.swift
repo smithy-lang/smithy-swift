@@ -5,7 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
- #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
+#if AWS_SWIFT_SDK_ENABLE_OPENTELEMETRY && (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
+
 import Foundation
 
 // OpenTelemetrySdk specific imports
