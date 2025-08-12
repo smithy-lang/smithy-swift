@@ -5,10 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-
-// Only compile OpenTelemetry code when explicitly enabled
-#if AWS_SWIFT_SDK_ENABLE_OPENTELEMETRY
+#if AWS_SWIFT_SDK_ENABLE_OPENTELEMETRY && (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
 
 // OpenTelemetryApi specific imports
 @preconcurrency import protocol OpenTelemetryApi.Tracer
@@ -136,5 +133,4 @@ extension TraceSpanStatus {
     }
 }
 
-#endif // AWS_SWIFT_SDK_ENABLE_OPENTELEMETRY
-#endif // Platform check
+#endif
