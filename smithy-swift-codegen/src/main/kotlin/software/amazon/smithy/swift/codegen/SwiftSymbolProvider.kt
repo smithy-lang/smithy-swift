@@ -182,6 +182,17 @@ class SwiftSymbolProvider(
         if (shape.hasTrait<NestedTrait>() && service != null && !shape.hasTrait<ErrorTrait>()) {
             builder.namespace(service.nestedNamespaceType(this).name, ".")
         }
+        if (shape.id.namespace == "smithy.api") {
+            when (shape.id.name) {
+                "Unit" -> {
+                    builder.addDependency(SwiftDependency.SMITHY_READ_WRITE)
+                    builder.namespace(SwiftDependency.SMITHY_READ_WRITE.target, ".")
+                    builder.name("Unit")
+                    builder.putProperty("spiNames", listOf("SmithyReadWrite"))
+                }
+                else -> throw Exception("Unhandled prelude type converted to Symbol")
+            }
+        }
         return builder.build()
     }
 
@@ -249,7 +260,7 @@ class SwiftSymbolProvider(
 
     override fun documentShape(shape: DocumentShape): Symbol =
         createSymbolBuilder(shape, "Document", "Smithy", SwiftDeclaration.STRUCT, true)
-            .addDependency(SwiftDependency.SMITHY_READ_WRITE)
+            .addDependency(SwiftDependency.SMITHY)
             .build()
 
     override fun serviceShape(shape: ServiceShape): Symbol {
