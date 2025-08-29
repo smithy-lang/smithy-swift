@@ -5,11 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(ClientConfigDefaultIdentityResolver) import protocol SmithyIdentityAPI.ClientConfigDefaultIdentityResolver
 import struct Smithy.Attributes
 
 /// A credential identity resolver that provides a fixed set of credentials
 public struct StaticAWSCredentialIdentityResolver: AWSCredentialIdentityResolver {
-    private let credentials: AWSCredentialIdentity
+    fileprivate let credentials: AWSCredentialIdentity
+
+    @_spi(StaticAWSCredentialIdentityResolver)
+    public init() {
+        self.credentials = AWSCredentialIdentity(accessKey: "", secret: "")
+    }
 
     /// Creates a credential identity resolver for a fixed set of credentials
     ///
@@ -22,5 +28,13 @@ public struct StaticAWSCredentialIdentityResolver: AWSCredentialIdentityResolver
 
     public func getIdentity(identityProperties: Attributes?) async throws -> AWSCredentialIdentity {
         return credentials
+    }
+}
+
+@_spi(ClientConfigDefaultIdentityResolver)
+extension StaticAWSCredentialIdentityResolver: ClientConfigDefaultIdentityResolver {
+
+    public var isClientConfigDefault: Bool {
+        self.credentials.accessKey.isEmpty && self.credentials.secret.isEmpty
     }
 }

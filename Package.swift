@@ -56,7 +56,7 @@ let package = Package(
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
-            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.52.1"),
+            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.54.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.13.0"),
         ]
@@ -97,26 +97,26 @@ let package = Package(
                 "SmithyChecksums",
                 "SmithyCBOR",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
-                // Only include these on macOS, iOS, tvOS, and watchOS (visionOS and Linux are excluded)
+                // Only include these on macOS, iOS, tvOS, watchOS, and macCatalyst (visionOS and Linux are excluded)
                 .product(
                     name: "InMemoryExporter",
                     package: "opentelemetry-swift",
-                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS])
+                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS, .macCatalyst])
                 ),
                 .product(
                     name: "OpenTelemetryApi",
                     package: "opentelemetry-swift",
-                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS])
+                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS, .macCatalyst])
                 ),
                 .product(
                     name: "OpenTelemetrySdk",
                     package: "opentelemetry-swift",
-                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS])
+                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS, .macCatalyst])
                 ),
                 .product(
                     name: "OpenTelemetryProtocolExporterHTTP",
                     package: "opentelemetry-swift",
-                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS])
+                    condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS, .macCatalyst])
                 ),
             ],
             resources: [

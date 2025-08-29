@@ -14,13 +14,7 @@ class SwiftDependency(
     private val location: String,
     private val localPath: String,
     override var packageName: String,
-    private val distributionMethod: DistributionMethod,
 ) : Dependency {
-    enum class DistributionMethod {
-        SPR,
-        GIT,
-    }
-
     companion object {
         val NONE =
             SwiftDependency(
@@ -30,7 +24,6 @@ class SwiftDependency(
                 "",
                 "",
                 "",
-                DistributionMethod.GIT,
             )
         val SWIFT =
             SwiftDependency(
@@ -40,7 +33,6 @@ class SwiftDependency(
                 "",
                 "",
                 "",
-                SwiftDependency.DistributionMethod.GIT,
             )
         val XCTest =
             SwiftDependency(
@@ -50,32 +42,17 @@ class SwiftDependency(
                 "",
                 "",
                 "",
-                DistributionMethod.GIT,
-            )
-        val CRT =
-            SwiftDependency(
-                "AwsCommonRuntimeKit",
-                null,
-                "0.52.1",
-                "https://github.com/awslabs/aws-crt-swift",
-                "",
-                "aws-crt-swift",
-                DistributionMethod.GIT,
             )
         val CLIENT_RUNTIME = smithySwiftDependency("ClientRuntime")
         val SMITHY = smithySwiftDependency("Smithy")
-        val SMITHY_IDENTITY_API = smithySwiftDependency("SmithyIdentityAPI")
         val SMITHY_IDENTITY = smithySwiftDependency("SmithyIdentity")
         val SMITHY_RETRIES_API = smithySwiftDependency("SmithyRetriesAPI")
         val SMITHY_RETRIES = smithySwiftDependency("SmithyRetries")
         val SMITHY_HTTP_API = smithySwiftDependency("SmithyHTTPAPI")
         val SMITHY_HTTP_AUTH_API = smithySwiftDependency("SmithyHTTPAuthAPI")
         val SMITHY_HTTP_AUTH = smithySwiftDependency("SmithyHTTPAuth")
-        val SMITHY_CHECKSUMS_API = smithySwiftDependency("SmithyChecksumsAPI")
-        val SMITHY_CHECKSUMS = smithySwiftDependency("SmithyChecksums")
         val SMITHY_STREAMS = smithySwiftDependency("SmithyStreams")
         val SMITHY_EVENT_STREAMS_API = smithySwiftDependency("SmithyEventStreamsAPI")
-        val SMITHY_EVENT_STREAMS_AUTH_API = smithySwiftDependency("SmithyEventStreamsAuthAPI")
         val SMITHY_EVENT_STREAMS = smithySwiftDependency("SmithyEventStreams")
         val SMITHY_TEST_UTIL = smithySwiftDependency("SmithyTestUtil")
         val SMITHY_READ_WRITE = smithySwiftDependency("SmithyReadWrite")
@@ -94,29 +71,19 @@ class SwiftDependency(
                 "https://github.com/smithy-lang/smithy-swift",
                 "../../../smithy-swift",
                 "smithy-swift",
-                DistributionMethod.GIT,
             )
     }
 
     override fun getDependencies(): List<SymbolDependency> = listOf(toSymbolDependency())
 
-    private fun toSymbolDependency(): SymbolDependency {
-        val builder =
-            SymbolDependency
-                .builder()
-                .putProperty("target", target)
-                .putProperty("branch", branch)
-                .putProperty("localPath", localPath)
-                .packageName(packageName)
-                .version(version)
-        when (distributionMethod) {
-            DistributionMethod.GIT -> {
-                builder.putProperty("url", location)
-            }
-            DistributionMethod.SPR -> {
-                builder.putProperty("scope", location)
-            }
-        }
-        return builder.build()
-    }
+    private fun toSymbolDependency(): SymbolDependency =
+        SymbolDependency
+            .builder()
+            .putProperty("target", target)
+            .putProperty("branch", branch)
+            .putProperty("localPath", localPath)
+            .putProperty("url", location)
+            .packageName(packageName)
+            .version(version)
+            .build()
 }
