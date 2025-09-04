@@ -10,6 +10,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShapeDecodeGenerator
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
@@ -46,7 +47,8 @@ open class StructDecodeGenerator(
             if (members.isEmpty()) {
                 writer.write("return \$N()", symbol)
             } else {
-                writer.write("var value = \$N()", symbol)
+                val decl = "let".takeIf { members.all { it.hasTrait<SwiftBoxTrait>() } } ?: "var"
+                writer.write("\$L value = \$N()", decl, symbol)
                 if (isUnwrapped) {
                     writer.write("let reader = reader.parent ?? reader")
                 }
