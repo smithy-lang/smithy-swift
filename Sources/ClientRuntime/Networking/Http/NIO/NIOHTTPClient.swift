@@ -6,9 +6,9 @@
 //
 
 import AsyncHTTPClient
-import SmithyHTTPAPI
 import NIOCore
 import NIOPosix
+import SmithyHTTPAPI
 
 /// AsyncHTTPClient-based HTTP client implementation that conforms to SmithyHTTPAPI.HTTPClient
 /// This implementation is thread-safe and supports concurrent request execution.
