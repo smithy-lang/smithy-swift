@@ -22,7 +22,7 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
     /// - Parameters:
     ///   - httpClientConfiguration: The configuration to use for the client's `AsyncHTTPClient` setup.
     public init(
-        httpClientConfiguration: HttpClientConfiguration,
+        httpClientConfiguration: HttpClientConfiguration
     ) throws {
         self.config = httpClientConfiguration
         self.client = AsyncHTTPClient.HTTPClient(
