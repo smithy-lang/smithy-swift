@@ -11,18 +11,11 @@ import NIO
 import Smithy
 import SmithyStreams
 
-/// Default chunk size for streaming operations
-private let CHUNK_SIZE_BYTES = 8192
-
 /// Handles streaming between Smithy streams and AsyncHTTPClient
-public final class AsyncHTTPClientStreamBridge {
+final class NIOHTTPClientStreamBridge {
 
     /// Convert Smithy ByteStream to AsyncHTTPClient request body
-    /// - Parameters:
-    ///   - body: Smithy ByteStream to convert
-    ///   - allocator: ByteBuffer allocator
-    /// - Returns: AsyncHTTPClient request body
-    public static func convertRequestBody(
+    static func convertRequestBody(
         from body: ByteStream,
         allocator: ByteBufferAllocator
     ) async throws -> AsyncHTTPClient.HTTPClientRequest.Body {
@@ -42,18 +35,15 @@ public final class AsyncHTTPClientStreamBridge {
             }
 
         case .stream(let stream):
-            // Handle streaming request body with proper backpressure
+            // Handle streaming request body
             return try await convertStreamToRequestBody(stream: stream, allocator: allocator)
         }
     }
 
     /// Convert AsyncHTTPClient response body to Smithy ByteStream
-    /// - Parameter response: AsyncHTTPClient response
-    /// - Returns: Smithy ByteStream
-    public static func convertResponseBody(
+    static func convertResponseBody(
         from response: AsyncHTTPClient.HTTPClientResponse
     ) -> ByteStream {
-        // Create a BufferedStream like URLSessionHTTPClient does for proper streaming
         let bufferedStream = BufferedStream()
 
         // Start a background task to stream data from AsyncHTTPClient to BufferedStream
@@ -67,10 +57,8 @@ public final class AsyncHTTPClientStreamBridge {
                         try bufferedStream.write(contentsOf: data)
                     }
                 }
-                // Close the stream when done
                 bufferedStream.close()
             } catch {
-                // Close with error if something goes wrong
                 bufferedStream.closeWithError(error)
             }
         }
@@ -78,11 +66,7 @@ public final class AsyncHTTPClientStreamBridge {
         return .stream(bufferedStream)
     }
 
-    /// Convert a Smithy Stream to AsyncHTTPClient request body with streaming support
-    /// - Parameters:
-    ///   - stream: Smithy stream to convert
-    ///   - allocator: ByteBuffer allocator
-    /// - Returns: AsyncHTTPClient request body
+    /// Convert a Smithy Stream to AsyncHTTPClient request body
     private static func convertStreamToRequestBody(
         stream: Smithy.Stream,
         allocator: ByteBufferAllocator
@@ -101,7 +85,7 @@ public final class AsyncHTTPClientStreamBridge {
                     return .bytes(allocator.buffer(capacity: 0))
                 }
             } catch {
-                throw AsyncHTTPClientError.streamingError(underlying: error)
+                throw NIOHTTPClientError.streamingError(error)
             }
         }
     }
@@ -145,18 +129,14 @@ internal struct StreamToAsyncSequence: AsyncSequence, Sendable {
                     buffer.writeBytes(data)
                     return buffer
                 } else {
-                    // Stream is finished - ensure proper cleanup
                     isFinished = true
                     stream.close()
                     return nil
                 }
             } catch {
-                // Handle stream errors and ensure cleanup
                 isFinished = true
                 stream.close()
-
-                // Wrap the error with context
-                throw AsyncHTTPClientError.streamingError(underlying: error)
+                throw NIOHTTPClientError.streamingError(error)
             }
         }
     }
