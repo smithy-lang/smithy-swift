@@ -10,7 +10,7 @@ import NIOCore
 
 extension HTTPClient.Configuration {
 
-    public static func from(httpClientConfiguration: HttpClientConfiguration) -> HTTPClient.Configuration {
+    private static func from(httpClientConfiguration: HttpClientConfiguration) -> HTTPClient.Configuration {
         let connect: TimeAmount? = httpClientConfiguration.connectTimeout != nil
             ? .seconds(Int64(httpClientConfiguration.connectTimeout!))
             : nil
