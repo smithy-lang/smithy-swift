@@ -7,7 +7,6 @@ package software.amazon.smithy.swift.codegen.integration.serde.member
 
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.NodeType
-import software.amazon.smithy.model.node.NullNode
 import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.BigDecimalShape
@@ -215,7 +214,14 @@ open class MemberShapeDecodeGenerator(
                 target.readMethodName,
                 "NonNull".takeIf {
                     decodingUnion ||
-                        (memberShape.hasTrait<RequiredTrait>() || (memberShape.hasTrait<DefaultTrait>() && memberShape.expectTrait<DefaultTrait>().toNode().type != NodeType.NULL) || (target.hasTrait<DefaultTrait>() && target.expectTrait<DefaultTrait>().toNode().type != NodeType.NULL))
+                        (
+                            memberShape.hasTrait<RequiredTrait>() ||
+                                (
+                                    memberShape.hasTrait<DefaultTrait>() &&
+                                        memberShape.expectTrait<DefaultTrait>().toNode().type != NodeType.NULL
+                                ) ||
+                                (target.hasTrait<DefaultTrait>() && target.expectTrait<DefaultTrait>().toNode().type != NodeType.NULL)
+                        )
                 }
                     ?: "",
                 memberShape.schemaVar(writer),
