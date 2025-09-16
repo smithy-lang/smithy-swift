@@ -198,7 +198,7 @@ class SchemaGenerator(
                 NodeType.NUMBER -> writer.format("\$N(value: \$L)", SmithyTypes.DoubleDocument, node.toString())
                 NodeType.ARRAY -> writer.format("\$N(value: [])", SmithyTypes.ListDocument)
                 NodeType.OBJECT -> writer.format("\$N(value: [:])", SmithyTypes.StringMapDocument)
-                NodeType.NULL -> writer.format("\$N()", SmithyTypes.NullDocument)
+                NodeType.NULL -> writer.format("nil")
             }
         }
 
