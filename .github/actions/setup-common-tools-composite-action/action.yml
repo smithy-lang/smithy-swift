@@ -28,3 +28,4 @@ runs:
       with:
         distribution: corretto
         java-version: 17
+        cache: gradle
