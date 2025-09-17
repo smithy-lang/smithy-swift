@@ -167,7 +167,7 @@ jobs:
           - ubuntu-24.04-arm
         swift:
           - 5.9-focal
-          - 6.1-jammy
+          - 6.2-jammy
     container:
       image: swift:${{ matrix.swift }}
     env:
@@ -200,7 +200,7 @@ jobs:
           - ubuntu-24.04-arm
         swift:
           - 5.9-focal
-          - 6.1-jammy
+          - 6.2-jammy
     container:
       image: swift:${{ matrix.swift }}
     env:
