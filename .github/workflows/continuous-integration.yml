@@ -19,7 +19,7 @@ jobs:
         # This matrix runs tests on iOS sim & Mac, on oldest & newest supported Xcodes
         runner:
           - macos-14
-          - macos-15
+          - macos-26
         xcode:
           - Xcode_15.2
           - Xcode_26.0
@@ -36,7 +36,7 @@ jobs:
           - runner: macos-14
             xcode: Xcode_26.0
           # Don't run new macOS with old Xcode
-          - runner: macos-15
+          - runner: macos-26
             xcode: Xcode_15.2
           # Don't run old simulators with new Xcode
           - destination: 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
@@ -57,27 +57,6 @@ jobs:
         run: |
           sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
           xcode-select -p
-      - name: Install visionOS sim if needed
-        if: ${{ contains(matrix.destination, 'platform=visionOS Simulator') }}
-        run: |
-          sudo xcodebuild -runFirstLaunch
-          xcrun simctl list > /dev/null
-          sudo xcodebuild -downloadPlatform visionOS
-          sudo xcodebuild -runFirstLaunch
-      - name: Install iOS 26 sim if needed
-        if: ${{ contains(matrix.xcode, '26') && contains(matrix.destination, 'platform=iOS Simulator') }}
-        run: |
-          sudo xcodebuild -runFirstLaunch
-          xcrun simctl list > /dev/null
-          sudo xcodebuild -downloadPlatform iOS
-          sudo xcodebuild -runFirstLaunch
-      - name: Install tvOS 26 sim if needed
-        if: ${{ contains(matrix.xcode, '26') && contains(matrix.destination, 'platform=tvOS Simulator') }}
-        run: |
-          sudo xcodebuild -runFirstLaunch
-          xcrun simctl list > /dev/null
-          sudo xcodebuild -downloadPlatform tvOS
-          sudo xcodebuild -runFirstLaunch
       - name: Checkout smithy-swift
         uses: actions/checkout@v4
       - name: Setup common tools
@@ -103,7 +82,7 @@ jobs:
         # This matrix runs tests on iOS sim & Mac, on oldest & newest supported Xcodes
         runner:
           - macos-14
-          - macos-15
+          - macos-26
         xcode:
           - Xcode_15.2
           - Xcode_26.0
@@ -120,7 +99,7 @@ jobs:
           - runner: macos-14
             xcode: Xcode_26.0
           # Don't run new macOS with old Xcode
-          - runner: macos-15
+          - runner: macos-26
             xcode: Xcode_15.2
           # Don't run old simulators with new Xcode
           - destination: 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
@@ -141,27 +120,6 @@ jobs:
         run: |
           sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
           xcode-select -p
-      - name: Install visionOS sim if needed
-        if: ${{ contains(matrix.destination, 'platform=visionOS Simulator') }}
-        run: |
-          sudo xcodebuild -runFirstLaunch
-          xcrun simctl list > /dev/null
-          sudo xcodebuild -downloadPlatform visionOS
-          sudo xcodebuild -runFirstLaunch
-      - name: Install iOS 26 sim if needed
-        if: ${{ contains(matrix.xcode, '26') && contains(matrix.destination, 'platform=iOS Simulator') }}
-        run: |
-          sudo xcodebuild -runFirstLaunch
-          xcrun simctl list > /dev/null
-          sudo xcodebuild -downloadPlatform iOS
-          sudo xcodebuild -runFirstLaunch
-      - name: Install tvOS 26 sim if needed
-        if: ${{ contains(matrix.xcode, '26') && contains(matrix.destination, 'platform=tvOS Simulator') }}
-        run: |
-          sudo xcodebuild -runFirstLaunch
-          xcrun simctl list > /dev/null
-          sudo xcodebuild -downloadPlatform tvOS
-          sudo xcodebuild -runFirstLaunch
       - name: Checkout smithy-swift
         uses: actions/checkout@v4
         with:
@@ -209,7 +167,7 @@ jobs:
           - ubuntu-24.04-arm
         swift:
           - 5.9-focal
-          - 6.1-jammy
+          - 6.2-jammy
     container:
       image: swift:${{ matrix.swift }}
     env:
@@ -242,7 +200,7 @@ jobs:
           - ubuntu-24.04-arm
         swift:
           - 5.9-focal
-          - 6.1-jammy
+          - 6.2-jammy
     container:
       image: swift:${{ matrix.swift }}
     env:
