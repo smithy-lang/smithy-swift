@@ -7,33 +7,38 @@ import software.amazon.smithy.model.node.NullNode
 import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
+import software.amazon.smithy.swift.codegen.SwiftWriter
 
-fun Node.toSwiftNode(): String {
+fun Node.toSwiftNode(writer: SwiftWriter): String =
     when (this) {
         is ObjectNode -> {
-            return if (members.isEmpty()) {
-                "[:]"
+            if (members.isEmpty()) {
+                writer.format("[:]")
             } else {
-                "[" + members.map { "\"${it.key}\":${it.value.toSwiftNode()}" }.joinToString(",") + "]"
+                val contents =
+                    members.map {
+                        writer.format("\$S:\$L", it.key, it.value.toSwiftNode(writer))
+                    }
+                writer.format("[\$L]", contents.joinToString(","))
             }
         }
         is ArrayNode -> {
-            return "[" + elements.joinToString(",") { it.toSwiftNode() } + "]"
+            val contents = elements.map { it.toSwiftNode(writer) }
+            writer.format("[\$L]", contents.joinToString(","))
         }
         is StringNode -> {
-            return "\"" + value + "\""
+            writer.format("\$S", value)
         }
         is NumberNode -> {
-            return "$value"
+            writer.format("\$L", value)
         }
         is BooleanNode -> {
-            return "$value"
+            writer.format("\$L", value)
         }
         is NullNode -> {
-            return "nil"
+            writer.format("nil")
         }
         else -> {
             throw Exception("Unknown node type")
         }
     }
-}
