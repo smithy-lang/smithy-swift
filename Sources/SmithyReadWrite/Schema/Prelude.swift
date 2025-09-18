@@ -71,35 +71,35 @@ public var documentSchema: Schema<Document> {
 
 @_spi(SmithyReadWrite)
 public var primitiveBooleanSchema: Schema<Bool> {
-    Schema<Bool>(id: "smithy.api#PrimitiveBoolean", type: .boolean, defaultValue: BooleanDocument(value: false))
+    Schema<Bool>(id: "smithy.api#PrimitiveBoolean", type: .boolean, traits: ["smithy.api#default": false])
 }
 
 @_spi(SmithyReadWrite)
 public var primitiveIntegerSchema: Schema<Int> {
-    Schema<Int>(id: "smithy.api#PrimitiveInteger", type: .integer, defaultValue: IntegerDocument(value: 0))
+    Schema<Int>(id: "smithy.api#PrimitiveInteger", type: .integer, traits: ["smithy.api#default": 0])
 }
 
 @_spi(SmithyReadWrite)
 public var primitiveByteSchema: Schema<Int8> {
-    Schema<Int8>(id: "smithy.api#PrimitiveByte", type: .byte, defaultValue: ByteDocument(value: 0))
+    Schema<Int8>(id: "smithy.api#PrimitiveByte", type: .byte, traits: ["smithy.api#default": 0])
 }
 
 @_spi(SmithyReadWrite)
 public var primitiveShortSchema: Schema<Int16> {
-    Schema<Int16>(id: "smithy.api#PrimitiveShort", type: .short, defaultValue: ShortDocument(value: 0))
+    Schema<Int16>(id: "smithy.api#PrimitiveShort", type: .short, traits: ["smithy.api#default": 0])
 }
 
 @_spi(SmithyReadWrite)
 public var primitiveLongSchema: Schema<Int> {
-    Schema<Int>(id: "smithy.api#PrimitiveLong", type: .long, defaultValue: LongDocument(value: 0))
+    Schema<Int>(id: "smithy.api#PrimitiveLong", type: .long, traits: ["smithy.api#default": 0])
 }
 
 @_spi(SmithyReadWrite)
 public var primitiveFloatSchema: Schema<Float> {
-    Schema<Float>(id: "smithy.api#PrimitiveFloat", type: .float, defaultValue: FloatDocument(value: 0.0))
+    Schema<Float>(id: "smithy.api#PrimitiveFloat", type: .float, traits: ["smithy.api#default": 0])
 }
 
 @_spi(SmithyReadWrite)
 public var primitiveDoubleSchema: Schema<Double> {
-    Schema<Double>(id: "smithy.api#PrimitiveDouble", type: .double, defaultValue: DoubleDocument(value: 0.0))
+    Schema<Double>(id: "smithy.api#PrimitiveDouble", type: .double, traits: ["smithy.api#default": 0])
 }

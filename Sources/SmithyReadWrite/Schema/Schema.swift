@@ -14,40 +14,9 @@ import struct Foundation.Date
 public protocol SchemaProtocol {
     var id: String { get }
     var type: ShapeType { get }
-    var defaultValue: (any SmithyDocument)? { get }
-    var jsonName: String? { get }
-    var httpPayload: Bool { get }
-    var enumValue: (any SmithyDocument)? { get }
+    var traits: [String: TraitNode] { get }
     var memberName: String? { get }
     var containerType: ShapeType? { get }
-    var isRequired: Bool { get }
-}
-
-public extension SchemaProtocol {
-
-    var lastResortDefaultValue: any SmithyDocument {
-        get throws {
-            switch type {
-            case .structure, .union, .map: return StringMapDocument(value: [:])
-            case .string, .enum: return StringDocument(value: "")
-            case .integer, .intEnum: return IntegerDocument(value: 0)
-            case .boolean: return BooleanDocument(value: false)
-            case .blob: return BlobDocument(value: Data())
-            case .timestamp: return TimestampDocument(value: Date(timeIntervalSince1970: 0.0))
-            case .bigDecimal: return BigDecimalDocument(value: 0.0)
-            case .bigInteger: return BigIntegerDocument(value: 0)
-            case .byte: return ByteDocument(value: 0)
-            case .document: return NullDocument()
-            case .list, .set: return ListDocument(value: [])
-            case .short: return ShortDocument(value: 0)
-            case .long: return LongDocument(value: 0)
-            case .float: return FloatDocument(value: 0.0)
-            case .double: return DoubleDocument(value: 0.0)
-            case .member, .service, .resource, .operation:
-                throw ReaderError.invalidSchema("Last resort not defined for type \(type)")
-            }
-        }
-    }
 }
 
 @_spi(SmithyReadWrite)
@@ -105,48 +74,83 @@ public struct Schema<Base>: SchemaProtocol {
 
     public let id: String
     public let type: ShapeType
+    public let traits: [String: TraitNode]
     public let factory: (() -> Base)?
     public let members: [MemberContainer<Base>]
     public let targetSchema: () -> Schema<Base>?
     public let memberName: String?
     public let containerType: ShapeType?
-    public let jsonName: String?
-    public let httpPayload: Bool
-    public let enumValue: (any SmithyDocument)?
-    public let timestampFormat: SmithyTimestamps.TimestampFormat?
-    public let isSparse: Bool
-    public let isRequired: Bool
-    public let defaultValue: (any Smithy.SmithyDocument)?
 
     public init(
         id: String,
         type: ShapeType,
+        traits: [String: TraitNode] = [:],
         factory: (() -> Base)? = nil,
         members: [MemberContainer<Base>] = [],
         targetSchema: @escaping () -> Schema<Base>? = { nil },
         memberName: String? = nil,
         containerType: ShapeType? = nil,
-        jsonName: String? = nil,
-        httpPayload: Bool = false,
-        enumValue: (any SmithyDocument)? = nil,
-        timestampFormat: SmithyTimestamps.TimestampFormat? = nil,
-        isSparse: Bool = false,
-        isRequired: Bool = false,
-        defaultValue: (any SmithyDocument)? = nil
     ) {
         self.id = id
         self.type = type
+        self.traits = traits
         self.factory = factory
         self.members = members
         self.targetSchema = targetSchema
         self.memberName = memberName
         self.containerType = containerType
-        self.jsonName = jsonName
-        self.httpPayload = httpPayload
-        self.enumValue = enumValue
-        self.timestampFormat = timestampFormat
-        self.isSparse = isSparse
-        self.isRequired = isRequired
-        self.defaultValue = defaultValue
+    }
+}
+
+extension SchemaProtocol {
+
+    public var jsonName: String? {
+        guard let jsonNameTrait = traits["smithy.api#jsonName"] else { return nil }
+        guard case .string(let jsonName) = jsonNameTrait else { return nil }
+        return jsonName
+    }
+
+    public var enumValue: (any SmithyDocument)? {
+        guard let enumValueTrait = traits["smithy.api#enumValue"] else { return nil }
+        switch enumValueTrait {
+        case .string(let value):
+            return StringDocument(value: value)
+        case .number(let value):
+            return IntegerDocument(value: Int(value.rounded(.toNearestOrAwayFromZero)))
+        default:
+            fatalError("Unexpected enum value")
+        }
+    }
+
+    public var isSparse: Bool {
+        traits.contains { $0.key == "smithy.api#sparse" }
+    }
+
+    public var isRequired: Bool {
+        traits.contains { $0.key == "smithy.api#required" }
+    }
+
+    public var httpPayload: Bool {
+        traits.contains { $0.key == "smithy.api#httpPayload" }
+    }
+
+    public var timestampFormat: SmithyTimestamps.TimestampFormat? {
+        guard let timestampFormatTrait = traits["smithy.api#timestampFormat"] else { return nil }
+        guard case .string(let timestampFormatString) = timestampFormatTrait else { return nil }
+        switch timestampFormatString {
+        case "date-time":
+            return .dateTime
+        case "epoch-seconds":
+            return .epochSeconds
+        case "http-date":
+            return .httpDate
+        default:
+            fatalError("Unexpected value for timestamp format")
+        }
+    }
+
+    public var defaultValue: (any Smithy.SmithyDocument)? {
+        guard let defaultValueTrait = traits["smithy.api#default"] else { return nil }
+        return defaultValueTrait.toDocument()
     }
 }
