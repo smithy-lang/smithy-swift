@@ -7,13 +7,14 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
+import enum Smithy.Node
 import enum Smithy.ShapeType
 
 @_spi(SmithyReadWrite)
 public protocol SchemaProtocol {
     var id: String { get }
     var type: ShapeType { get }
-    var traits: [String: TraitNode] { get }
+    var traits: [String: Node] { get }
     var memberName: String? { get }
     var containerType: ShapeType? { get }
 }
@@ -73,7 +74,7 @@ public struct Schema<Base>: SchemaProtocol {
 
     public let id: String
     public let type: ShapeType
-    public let traits: [String: TraitNode]
+    public let traits: [String: Node]
     public let factory: (() -> Base)?
     public let members: [MemberContainer<Base>]
     public let targetSchema: () -> Schema<Base>?
@@ -83,7 +84,7 @@ public struct Schema<Base>: SchemaProtocol {
     public init(
         id: String,
         type: ShapeType,
-        traits: [String: TraitNode] = [:],
+        traits: [String: Node] = [:],
         factory: (() -> Base)? = nil,
         members: [MemberContainer<Base>] = [],
         targetSchema: @escaping () -> Schema<Base>? = { nil },

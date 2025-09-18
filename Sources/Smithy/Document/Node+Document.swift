@@ -5,14 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol Smithy.SmithyDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.StringMapDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.ListDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.StringDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.DoubleDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.BooleanDocument
-
-extension TraitNode {
+@_spi(SmithyNodeImpl)
+extension Node {
 
     public func toDocument() -> (any SmithyDocument)? {
         switch self {
