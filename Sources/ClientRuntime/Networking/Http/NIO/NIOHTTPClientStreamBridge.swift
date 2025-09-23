@@ -17,7 +17,8 @@ final class NIOHTTPClientStreamBridge {
     /// Convert Smithy ByteStream to AsyncHTTPClient request body
     static func convertRequestBody(
         from body: ByteStream,
-        allocator: ByteBufferAllocator
+        allocator: ByteBufferAllocator,
+        chunkSize: Int = CHUNK_SIZE_BYTES
     ) async throws -> AsyncHTTPClient.HTTPClientRequest.Body {
         switch body {
         case .noStream:
@@ -36,31 +37,28 @@ final class NIOHTTPClientStreamBridge {
 
         case .stream(let stream):
             // Handle streaming request body
-            return try await convertStreamToRequestBody(stream: stream, allocator: allocator)
+            return try await convertStreamToRequestBody(stream: stream, allocator: allocator, chunkSize: chunkSize)
         }
     }
 
     /// Convert AsyncHTTPClient response body to Smithy ByteStream
     static func convertResponseBody(
         from response: AsyncHTTPClient.HTTPClientResponse
-    ) -> ByteStream {
+    ) async -> ByteStream {
         let bufferedStream = BufferedStream()
 
-        // Start a background task to stream data from AsyncHTTPClient to BufferedStream
-        Task {
-            do {
-                var iterator = response.body.makeAsyncIterator()
-                while let buffer = try await iterator.next() {
-                    // Convert ByteBuffer to Data and write to buffered stream
-                    if let bytes = buffer.getBytes(at: buffer.readerIndex, length: buffer.readableBytes) {
-                        let data = Data(bytes)
-                        try bufferedStream.write(contentsOf: data)
-                    }
+        do {
+            var iterator = response.body.makeAsyncIterator()
+            while let buffer = try await iterator.next() {
+                // Convert ByteBuffer to Data and write to buffered stream
+                if let bytes = buffer.getBytes(at: buffer.readerIndex, length: buffer.readableBytes) {
+                    let data = Data(bytes)
+                    try bufferedStream.write(contentsOf: data)
                 }
-                bufferedStream.close()
-            } catch {
-                bufferedStream.closeWithError(error)
             }
+            bufferedStream.close()
+        } catch {
+            bufferedStream.closeWithError(error)
         }
 
         return .stream(bufferedStream)
@@ -69,10 +67,11 @@ final class NIOHTTPClientStreamBridge {
     /// Convert a Smithy Stream to AsyncHTTPClient request body
     private static func convertStreamToRequestBody(
         stream: Smithy.Stream,
-        allocator: ByteBufferAllocator
+        allocator: ByteBufferAllocator,
+        chunkSize: Int = CHUNK_SIZE_BYTES
     ) async throws -> AsyncHTTPClient.HTTPClientRequest.Body {
         if let streamLength = stream.length {
-            let asyncSequence = StreamToAsyncSequence(stream: stream, allocator: allocator)
+            let asyncSequence = StreamToAsyncSequence(stream: stream, allocator: allocator, chunkSize: chunkSize)
             return .stream(asyncSequence, length: .known(Int64(streamLength)))
         } else {
             do {
@@ -97,32 +96,36 @@ internal struct StreamToAsyncSequence: AsyncSequence, Sendable {
 
     private let stream: Smithy.Stream
     private let allocator: ByteBufferAllocator
+    private let chunkSize: Int
 
-    init(stream: Smithy.Stream, allocator: ByteBufferAllocator) {
+    init(stream: Smithy.Stream, allocator: ByteBufferAllocator, chunkSize: Int = CHUNK_SIZE_BYTES) {
         self.stream = stream
         self.allocator = allocator
+        self.chunkSize = chunkSize
     }
 
     func makeAsyncIterator() -> AsyncIterator {
-        AsyncIterator(stream: stream, allocator: allocator)
+        AsyncIterator(stream: stream, allocator: allocator, chunkSize: chunkSize)
     }
 
     struct AsyncIterator: AsyncIteratorProtocol {
         private let stream: Smithy.Stream
         private let allocator: ByteBufferAllocator
+        private let chunkSize: Int
         private var isFinished = false
 
-        init(stream: Smithy.Stream, allocator: ByteBufferAllocator) {
+        init(stream: Smithy.Stream, allocator: ByteBufferAllocator, chunkSize: Int) {
             self.stream = stream
             self.allocator = allocator
+            self.chunkSize = chunkSize
         }
 
         mutating func next() async throws -> ByteBuffer? {
             guard !isFinished else { return nil }
 
             do {
-                // Read a chunk from the stream (using default chunk size)
-                let data = try await stream.readAsync(upToCount: CHUNK_SIZE_BYTES)
+                // Read a chunk from the stream (using configurable chunk size)
+                let data = try await stream.readAsync(upToCount: chunkSize)
 
                 if let data = data, !data.isEmpty {
                     var buffer = allocator.buffer(capacity: data.count)
