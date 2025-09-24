@@ -17,6 +17,7 @@ import enum Smithy.ByteStream
 @testable import ClientRuntime
 
 class NIOHTTPClientStreamBridgeTests: XCTestCase {
+    let allocator = ByteBufferAllocator()
 
     func test_convertResponseBody_streamsAllDataCorrectly() async throws {
 
@@ -44,7 +45,6 @@ class NIOHTTPClientStreamBridgeTests: XCTestCase {
             let originalData = Data(bytes: randomBuffer, count: dataSize)
 
             // Create a mock AsyncHTTPClient response with the test data
-            let allocator = ByteBufferAllocator()
             var buffer = allocator.buffer(capacity: originalData.count)
             buffer.writeBytes(originalData)
 
@@ -64,7 +64,6 @@ class NIOHTTPClientStreamBridgeTests: XCTestCase {
     }
 
     func test_convertRequestBody_withNoStream() async throws {
-        let allocator = ByteBufferAllocator()
         let byteStream = ByteStream.noStream
 
         let result = try await NIOHTTPClientStreamBridge.convertRequestBody(
@@ -82,7 +81,6 @@ class NIOHTTPClientStreamBridgeTests: XCTestCase {
     }
 
     func test_convertRequestBody_withData() async throws {
-        let allocator = ByteBufferAllocator()
         let testData = "Hello, World!".data(using: .utf8)!
         let byteStream = ByteStream.data(testData)
 
@@ -100,8 +98,16 @@ class NIOHTTPClientStreamBridgeTests: XCTestCase {
     }
 
     func test_convertRequestBody_withStream() async throws {
-        let allocator = ByteBufferAllocator()
-        let testData = Data(repeating: 42, count: 1000)
+        // Create random test data
+        let dataSize = 1000
+        let randomBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: dataSize)
+        defer { randomBuffer.deallocate() }
+
+        for i in 0..<dataSize {
+            randomBuffer[i] = UInt8.random(in: UInt8.min...UInt8.max)
+        }
+
+        let testData = Data(bytes: randomBuffer, count: dataSize)
         let bufferedStream = BufferedStream(data: testData, isClosed: true)
         let byteStream = ByteStream.stream(bufferedStream)
 
