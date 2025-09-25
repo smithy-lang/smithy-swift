@@ -262,7 +262,7 @@ public struct Orchestrator<
         do {
             _ = try context.getOutput()
             await strategy.recordSuccess(token: token)
-        } catch let error {
+        } catch {
             // If we can't get errorInfo, we definitely can't retry
             guard let errorInfo = retryErrorInfoProvider(error) else { return }
 
