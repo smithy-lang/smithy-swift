@@ -6,15 +6,20 @@
 //
 
 import AsyncHTTPClient
+import Foundation
 import NIOCore
 import NIOPosix
+import NIOSSL
 import SmithyHTTPAPI
+import NIOHTTP1
 
 /// AsyncHTTPClient-based HTTP client implementation that conforms to SmithyHTTPAPI.HTTPClient
 /// This implementation is thread-safe and supports concurrent request execution.
 public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
     private let client: AsyncHTTPClient.HTTPClient
     private let config: HttpClientConfiguration
+    private let tlsConfiguration: NIOHTTPClientTLSOptions?
+    private let allocator: ByteBufferAllocator
 
     /// Creates a new `NIOHTTPClient`.
     ///
@@ -25,13 +30,22 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
         httpClientConfiguration: HttpClientConfiguration
     ) throws {
         self.config = httpClientConfiguration
-        self.client = AsyncHTTPClient.HTTPClient(
-            configuration: .init() // TODO
-        )
+        self.tlsConfiguration = httpClientConfiguration.tlsConfiguration as? NIOHTTPClientTLSOptions
+        self.allocator = ByteBufferAllocator()
+
+        var clientConfig = AsyncHTTPClient.HTTPClient.Configuration()
+
+        // Configure TLS if options are provided
+        if let tlsOptions = tlsConfiguration {
+            clientConfig.tlsConfiguration = try tlsOptions.makeNIOSSLConfiguration()
+        }
+
+        self.client = AsyncHTTPClient.HTTPClient(configuration: clientConfig)
     }
 
     public func send(request: SmithyHTTPAPI.HTTPRequest) async throws -> SmithyHTTPAPI.HTTPResponse {
         // TODO
         return HTTPResponse()
     }
+
 }
