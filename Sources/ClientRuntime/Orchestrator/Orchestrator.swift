@@ -6,6 +6,7 @@
 //
 
 import struct Foundation.Date
+import struct Foundation.TimeInterval
 import class Smithy.Context
 import enum Smithy.ClientError
 import protocol Smithy.RequestMessage
@@ -76,6 +77,7 @@ public struct Orchestrator<
     private let deserialize: (ResponseType, Context) async throws -> OutputType
     private let retryStrategy: (any RetryStrategy)?
     private let retryErrorInfoProvider: (Error) -> RetryErrorInfo?
+    private let clockSkewProvider: ClockSkewProvider<RequestType, ResponseType>
     private let telemetry: OrchestratorTelemetry
     private let selectAuthScheme: SelectAuthScheme
     private let applyEndpoint: any ApplyEndpoint<RequestType>
@@ -94,6 +96,12 @@ public struct Orchestrator<
             self.retryErrorInfoProvider = retryErrorInfoProvider
         } else {
             self.retryErrorInfoProvider = { _ in nil }
+        }
+
+        if let clockSkewProvider = builder.clockSkewProvider {
+            self.clockSkewProvider = clockSkewProvider
+        } else {
+            self.clockSkewProvider = { (_, _, _, _) in nil }
         }
 
         if let selectAuthScheme = builder.selectAuthScheme {
@@ -262,9 +270,20 @@ public struct Orchestrator<
         do {
             _ = try context.getOutput()
             await strategy.recordSuccess(token: token)
-        } catch let error {
-            // If we can't get errorInfo, we definitely can't retry
-            guard let errorInfo = retryErrorInfoProvider(error) else { return }
+        } catch {
+            // Check for clock skew, and if found, store in the shared map of hosts to clock skews
+            let clockSkewErrorInfo: RetryErrorInfo?
+            let request: RequestType = context.getRequest()
+            let response: ResponseType? = context.getResponse()
+            if let response, let clockSkew = clockSkewProvider(copiedRequest, response, error, Date()) {
+                await ClockSkewStore.shared.setClockSkew(host: request.host, value: clockSkew)
+                clockSkewErrorInfo = RetryErrorInfo(errorType: .clientError, retryAfterHint: nil, isTimeout: false)
+            } else {
+                clockSkewErrorInfo = nil
+            }
+
+            // If we can't get errorInfo and no clock skew was found, we definitely can't retry
+            guard let errorInfo = clockSkewErrorInfo ?? retryErrorInfoProvider(error) else { return }
 
             // If the body is a nonseekable stream, we also can't retry
             do {

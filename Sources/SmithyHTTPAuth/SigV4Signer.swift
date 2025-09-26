@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Date
+import struct Foundation.TimeInterval
+import struct Foundation.URL
 import class AwsCommonRuntimeKit.HTTPRequestBase
 import class AwsCommonRuntimeKit.Signer
 import class SmithyHTTPAPI.HTTPRequest
@@ -25,9 +28,6 @@ import struct Smithy.Attributes
 import struct Smithy.SwiftLogger
 import struct SmithyIdentity.AWSCredentialIdentity
 import struct SmithyHTTPAuthAPI.SigningFlags
-import struct Foundation.Date
-import struct Foundation.TimeInterval
-import struct Foundation.URL
 import SmithyHTTPClient
 
 public class SigV4Signer: SmithyHTTPAuthAPI.Signer, @unchecked Sendable {
@@ -97,6 +97,7 @@ public class SigV4Signer: SmithyHTTPAuthAPI.Signer, @unchecked Sendable {
             )
         }
 
+        let clockSkew: TimeInterval = signingProperties.get(key: SigningPropertyKeys.clockSkew) ?? 0.0
         let expiration: TimeInterval = signingProperties.get(key: SigningPropertyKeys.expiration) ?? 0
         let signedBodyHeader: AWSSignedBodyHeader =
             signingProperties.get(key: SigningPropertyKeys.signedBodyHeader) ?? .none
@@ -127,7 +128,7 @@ public class SigV4Signer: SmithyHTTPAuthAPI.Signer, @unchecked Sendable {
             signedBodyHeader: signedBodyHeader,
             signedBodyValue: signedBodyValue,
             flags: flags,
-            date: Date(),
+            date: Date().addingTimeInterval(clockSkew),
             service: signingName,
             region: signingRegion,
             signatureType: signatureType,
