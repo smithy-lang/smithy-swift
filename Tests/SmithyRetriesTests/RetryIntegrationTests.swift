@@ -54,7 +54,13 @@ final class RetryIntegrationTests: XCTestCase {
             .attributes(context)
             .retryErrorInfoProvider(DefaultRetryErrorInfoProvider.errorInfo(for:))
             .retryStrategy(subject)
-            .deserialize({ _, _ in TestOutputResponse() })
+            .deserialize({ response, _ in
+                if response.statusCode == .ok {
+                    return TestOutputResponse()
+                } else {
+                    throw TestHTTPError(statusCode: response.statusCode)
+                }
+            })
             .executeRequest(next)
 
         // Set the quota on the test output handler so it can verify state during tests
@@ -221,9 +227,10 @@ private class TestOutputHandler: ExecuteRequest {
         // Return either a successful response or a HTTP error, depending on the directions in the test step.
         switch testStep.response {
         case .success:
-            return HTTPResponse()
+            return HTTPResponse(statusCode: .ok)
         case .httpError(let statusCode):
-            throw TestHTTPError(statusCode: statusCode)
+            let httpStatusCode = HTTPStatusCode(rawValue: statusCode)!
+            return HTTPResponse(statusCode: httpStatusCode)
         }
     }
 
@@ -301,9 +308,8 @@ private class TestOutputHandler: ExecuteRequest {
 private struct TestHTTPError: HTTPError, Error {
     var httpResponse: HTTPResponse
 
-    init(statusCode: Int) {
-        guard let statusCodeValue = HTTPStatusCode(rawValue: statusCode) else { fatalError("Unrecognized HTTP code") }
-        self.httpResponse = HTTPResponse(statusCode: statusCodeValue)
+    init(statusCode: HTTPStatusCode) {
+        self.httpResponse = HTTPResponse(statusCode: statusCode)
     }
 }
 
