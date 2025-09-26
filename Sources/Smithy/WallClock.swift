@@ -14,9 +14,9 @@ import struct Foundation.Date
 /// The `WallClock.clockClosure` property may be modified or replaced for testing to simulate a different
 /// current time.  The default closure returns the actual current time (i.e. by calling `Foundation.Date()`.)
 @_spi(WallClock)
+@preconcurrency
 public struct WallClock {
-    @preconcurrency
-    public static var clockClosure: @Sendable () -> Date = { Date().addingTimeInterval(1800) }
+    public static var clockClosure: @Sendable () -> Date = { Date() }
 
     // Prevents creation of an instance of this type.
     private init() {}
