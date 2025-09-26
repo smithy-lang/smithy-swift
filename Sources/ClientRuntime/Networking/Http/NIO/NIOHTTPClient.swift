@@ -13,6 +13,7 @@ import struct Smithy.Attributes
 import struct Smithy.SwiftLogger
 import protocol Smithy.LogAgent
 import struct SmithyHTTPAPI.Headers
+import protocol SmithyHTTPAPI.HTTPClient
 import class SmithyHTTPAPI.HTTPResponse
 import class SmithyHTTPAPI.HTTPRequest
 import enum SmithyHTTPAPI.HTTPStatusCode
