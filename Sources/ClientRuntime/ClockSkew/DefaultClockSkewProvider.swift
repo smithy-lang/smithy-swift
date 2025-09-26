@@ -13,7 +13,12 @@ import class SmithyHTTPAPI.HTTPResponse
 public enum DefaultClockSkewProvider {
 
     @Sendable
-    public static func clockSkew(request: HTTPRequest, response: HTTPResponse, error: Error, now: Date) -> TimeInterval? {
+    public static func clockSkew(
+        request: HTTPRequest,
+        response: HTTPResponse,
+        error: Error,
+        now: Date
+    ) -> TimeInterval? {
         // The default clock skew provider does not determine clock skew.
         return nil
     }

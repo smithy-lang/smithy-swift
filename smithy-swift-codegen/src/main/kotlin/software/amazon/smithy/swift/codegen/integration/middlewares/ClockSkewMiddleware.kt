@@ -12,7 +12,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesTypes
 
 class ClockSkewMiddleware(
     val model: Model,

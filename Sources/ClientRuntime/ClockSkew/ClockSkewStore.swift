@@ -10,7 +10,7 @@ import struct Foundation.TimeInterval
 /// Serves as a concurrency-safe repository for recorded clock skew values.
 actor ClockSkewStore {
     static let shared = ClockSkewStore()
-    
+
     /// Stores clock skew values, keyed by hostname.
     var clockSkewStorage = [String: TimeInterval]()
 
