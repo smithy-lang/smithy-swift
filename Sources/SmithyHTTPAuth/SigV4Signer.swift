@@ -23,9 +23,9 @@ import struct AwsCommonRuntimeKit.SigningConfig
 import struct Smithy.AttributeKey
 import struct Smithy.Attributes
 import struct Smithy.SwiftLogger
+@_spi(WallClock) import struct Smithy.WallClock
 import struct SmithyIdentity.AWSCredentialIdentity
 import struct SmithyHTTPAuthAPI.SigningFlags
-import struct Foundation.Date
 import struct Foundation.TimeInterval
 import struct Foundation.URL
 import SmithyHTTPClient
@@ -128,7 +128,7 @@ public class SigV4Signer: SmithyHTTPAuthAPI.Signer, @unchecked Sendable {
             signedBodyHeader: signedBodyHeader,
             signedBodyValue: signedBodyValue,
             flags: flags,
-            date: Date().addingTimeInterval(clockSkew),
+            date: WallClock.now.addingTimeInterval(clockSkew),
             service: signingName,
             region: signingRegion,
             signatureType: signatureType,

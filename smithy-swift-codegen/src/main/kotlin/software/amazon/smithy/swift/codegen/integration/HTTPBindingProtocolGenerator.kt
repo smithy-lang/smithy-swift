@@ -41,6 +41,7 @@ import software.amazon.smithy.swift.codegen.events.MessageMarshallableGenerator
 import software.amazon.smithy.swift.codegen.events.MessageUnmarshallableGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.AuthSchemeMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.ClockSkewMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentMD5Middleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
@@ -437,6 +438,7 @@ abstract class HTTPBindingProtocolGenerator(
             )
             operationMiddleware.appendMiddleware(operation, DeserializeMiddleware(ctx.model, ctx.symbolProvider))
             operationMiddleware.appendMiddleware(operation, LoggingMiddleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, ClockSkewMiddleware(ctx.model, ctx.symbolProvider, clockSkewProviderSymbol))
             operationMiddleware.appendMiddleware(operation, RetryMiddleware(ctx.model, ctx.symbolProvider, retryErrorInfoProviderSymbol))
             operationMiddleware.appendMiddleware(operation, SignerMiddleware(ctx.model, ctx.symbolProvider))
             addProtocolSpecificMiddleware(ctx, operation)

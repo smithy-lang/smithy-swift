@@ -13,6 +13,7 @@ import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
 import struct Smithy.AttributeKey
 import struct Smithy.Attributes
+@_spi(WallClock) import struct Smithy.WallClock
 import SmithyHTTPAPI
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryErrorInfo
@@ -193,10 +194,10 @@ public struct Orchestrator<
                 initialAttributes: telemetry.spanAttributes,
                 spanKind: SpanKind.internal,
                 parentContext: telemetryContext)
-            let callStart = Date().timeIntervalSinceReferenceDate
+            let callStart = WallClock.now.timeIntervalSinceReferenceDate
             defer {
                 telemetry.rpcCallDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - callStart,
+                    value: WallClock.now.timeIntervalSinceReferenceDate - callStart,
                     attributes: telemetry.metricsAttributes,
                     context: telemetryContext)
                 span.end()
@@ -215,10 +216,10 @@ public struct Orchestrator<
                 let builder = RequestType.RequestBuilderType()
 
                 // START - smithy.client.call.serialization_duration
-                let serializeStart = Date().timeIntervalSinceReferenceDate
+                let serializeStart = WallClock.now.timeIntervalSinceReferenceDate
                 try serialize(finalizedInput, builder, context.getAttributes())
                 telemetry.serializationDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - serializeStart,
+                    value: WallClock.now.timeIntervalSinceReferenceDate - serializeStart,
                     attributes: telemetry.metricsAttributes,
                     context: telemetryContext)
                 // END - smithy.client.call.serialization_duration
@@ -271,16 +272,19 @@ public struct Orchestrator<
             _ = try context.getOutput()
             await strategy.recordSuccess(token: token)
         } catch {
-            // If we can't get errorInfo, we definitely can't retry
-            guard let errorInfo = retryErrorInfoProvider(error) else { return }
-
             // Check for clock skew, and if found, store in the shared map of hosts to clock skews
-            let now = Date()
-            let request: RequestType? = context.getRequest()
-            let response: ResponseType? = context.getResponse()
-            if let request, let response, let clockSkew = clockSkewProvider(request, response, error, now) {
+            let clockSkewErrorInfo: RetryErrorInfo?
+            let request: RequestType = context.getRequest()
+            let response: ResponseType = context.getResponse()
+            if let clockSkew = clockSkewProvider(copiedRequest, response, error, WallClock.now) {
                 await ClockSkewStore.shared.setClockSkew(host: request.host, value: clockSkew)
+                clockSkewErrorInfo = RetryErrorInfo(errorType: .clientError, retryAfterHint: nil, isTimeout: false)
+            } else {
+                clockSkewErrorInfo = nil
             }
+
+            // If we can't get errorInfo and no clock skew was found, we definitely can't retry
+            guard let errorInfo = clockSkewErrorInfo ?? retryErrorInfoProvider(error) else { return }
 
             // If the body is a nonseekable stream, we also can't retry
             do {
@@ -342,10 +346,10 @@ public struct Orchestrator<
                 initialAttributes: telemetry.spanAttributes,
                 spanKind: SpanKind.internal,
                 parentContext: telemetryContext)
-            let attemptStart = Date().timeIntervalSinceReferenceDate
+            let attemptStart = WallClock.now.timeIntervalSinceReferenceDate
             defer {
                 telemetry.rpcAttemptDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - attemptStart,
+                    value: WallClock.now.timeIntervalSinceReferenceDate - attemptStart,
                     attributes: telemetry.metricsAttributes,
                     context: telemetryContext)
                 span.end()
@@ -354,7 +358,7 @@ public struct Orchestrator<
                 try await interceptors.readBeforeAttempt(context: context)
 
                 // START - smithy.client.call.auth.resolve_identity_duration
-                let identityStart = Date().timeIntervalSinceReferenceDate
+                let identityStart = WallClock.now.timeIntervalSinceReferenceDate
                 let selectedAuthScheme = try await selectAuthScheme.select(attributes: context.getAttributes())
                 if selectedAuthScheme == nil {
                     throw ClientError.authError("auth scheme could not be selected")
@@ -364,21 +368,21 @@ public struct Orchestrator<
                     key: AttributeKey<String>(name: "auth.scheme_id"),
                     value: selectedAuthScheme!.schemeID)
                 telemetry.resolveIdentityDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - identityStart,
+                    value: WallClock.now.timeIntervalSinceReferenceDate - identityStart,
                     attributes: authSchemeAttributes,
                     context: telemetryContext
                 )
                 // END - smithy.client.call.auth.resolve_identity_duration
 
                 // START - smithy.client.call.resolve_endpoint_duration
-                let endpointStart = Date().timeIntervalSinceReferenceDate
+                let endpointStart = WallClock.now.timeIntervalSinceReferenceDate
                 let withEndpoint = try await applyEndpoint.apply(
                     request: context.getRequest(),
                     selectedAuthScheme: selectedAuthScheme,
                     attributes: context.getAttributes()
                 )
                 telemetry.resolveEndpointDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - endpointStart,
+                    value: WallClock.now.timeIntervalSinceReferenceDate - endpointStart,
                     attributes: telemetry.metricsAttributes,
                     context: telemetryContext
                 )
@@ -390,14 +394,14 @@ public struct Orchestrator<
                 try await interceptors.readBeforeSigning(context: context)
 
                 // START - smithy.client.call.auth.signing_duration
-                let signingStart = Date().timeIntervalSinceReferenceDate
+                let signingStart = WallClock.now.timeIntervalSinceReferenceDate
                 let signed = try await applySigner.apply(
                     request: context.getRequest(),
                     selectedAuthScheme: selectedAuthScheme,
                     attributes: context.getAttributes()
                 )
                 telemetry.signingDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - signingStart,
+                    value: WallClock.now.timeIntervalSinceReferenceDate - signingStart,
                     attributes: authSchemeAttributes,
                     context: telemetryContext
                 )
@@ -420,10 +424,10 @@ public struct Orchestrator<
                 try await interceptors.readBeforeDeserialization(context: context)
 
                 // START - smithy.client.call.deserialization_duration
-                let deserializeStart = Date().timeIntervalSinceReferenceDate
+                let deserializeStart = WallClock.now.timeIntervalSinceReferenceDate
                 let output = try await deserialize(context.getResponse(), context.getAttributes())
                 telemetry.deserializationDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - deserializeStart,
+                    value: WallClock.now.timeIntervalSinceReferenceDate - deserializeStart,
                     attributes: telemetry.metricsAttributes,
                     context: telemetryContext
                 )
