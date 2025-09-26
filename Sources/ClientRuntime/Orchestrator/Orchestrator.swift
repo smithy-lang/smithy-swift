@@ -275,8 +275,8 @@ public struct Orchestrator<
             // Check for clock skew, and if found, store in the shared map of hosts to clock skews
             let clockSkewErrorInfo: RetryErrorInfo?
             let request: RequestType = context.getRequest()
-            let response: ResponseType = context.getResponse()
-            if let clockSkew = clockSkewProvider(copiedRequest, response, error, WallClock.now) {
+            let response: ResponseType? = context.getResponse()
+            if let response, let clockSkew = clockSkewProvider(copiedRequest, response, error, WallClock.now) {
                 await ClockSkewStore.shared.setClockSkew(host: request.host, value: clockSkew)
                 clockSkewErrorInfo = RetryErrorInfo(errorType: .clientError, retryAfterHint: nil, isTimeout: false)
             } else {
