@@ -12,6 +12,8 @@ import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 import struct Foundation.TimeInterval
 import class Foundation.NSError
 import var Foundation.NSURLErrorDomain
+import struct AwsCommonRuntimeKit.CRTError
+import enum AwsCommonRuntimeKit.CommonRunTimeError
 
 public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
     /// Returns information used to determine how & if to retry an error.
@@ -41,6 +43,11 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
             // NSURLErrorTimedOut =             -1001
             // "The request timed out."
             return .init(errorType: .transient, retryAfterHint: nil, isTimeout: true)
+        } else if let crtError = error as? CommonRunTimeError,
+                  case .crtError(let crtErrorStruct) = crtError,
+                  crtErrorStruct.code == 1051 {
+            // Retries CRTError(code: 1051, message: "socket is closed.", name: "AWS_IO_SOCKET_CLOSED"))
+            return .init(errorType: .transient, retryAfterHint: nil, isTimeout: false)
         }
         return nil
     }
