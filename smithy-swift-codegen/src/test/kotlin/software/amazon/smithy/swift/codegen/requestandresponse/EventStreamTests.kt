@@ -233,7 +233,7 @@ extension EventStreamTestClientTypes.TestStream {
         builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<TestStreamOpInput, TestStreamOpOutput>())
         builder.deserialize(ClientRuntime.DeserializeMiddleware<TestStreamOpOutput>(TestStreamOpOutput.httpOutput(from:), TestStreamOpOutputError.httpError(from:)))
         builder.interceptors.add(ClientRuntime.LoggerMiddleware<TestStreamOpInput, TestStreamOpOutput>(clientLogMode: config.clientLogMode))
-        builder.clockSkewProvider(ClientRuntime.DefaultClockSkewProvider.clockSkew(request:response:error:now:))
+        builder.clockSkewProvider(ClientRuntime.DefaultClockSkewProvider.clockSkew(request:response:error:))
         builder.retryStrategy(SmithyRetries.DefaultRetryStrategy(options: config.retryStrategyOptions))
         builder.retryErrorInfoProvider(ClientRuntime.DefaultRetryErrorInfoProvider.errorInfo(for:))
         builder.applySigner(ClientRuntime.SignerMiddleware<TestStreamOpOutput>())

@@ -26,6 +26,6 @@ class ClockSkewMiddleware(
         op: OperationShape,
         operationStackName: String,
     ) {
-        writer.write("builder.clockSkewProvider(\$N.clockSkew(request:response:error:now:))", clockSkewProviderSymbol)
+        writer.write("builder.clockSkewProvider(\$N.clockSkew(request:response:error:))", clockSkewProviderSymbol)
     }
 }

@@ -52,7 +52,7 @@ extension SignerMiddleware: ApplySigner {
 
         var updatedSigningProperties = signingProperties
 
-        // Apply any applicable clock skew for this request
+        // Look up & apply any applicable clock skew for this request
         if let clockSkew = await ClockSkewStore.shared.clockSkew(host: request.host) {
             updatedSigningProperties.set(key: AttributeKey(name: "ClockSkew"), value: clockSkew)
         }

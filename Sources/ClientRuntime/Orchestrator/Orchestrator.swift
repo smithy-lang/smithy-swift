@@ -101,7 +101,7 @@ public struct Orchestrator<
         if let clockSkewProvider = builder.clockSkewProvider {
             self.clockSkewProvider = clockSkewProvider
         } else {
-            self.clockSkewProvider = { (_, _, _, _) in nil }
+            self.clockSkewProvider = { (_, _, _) in nil }
         }
 
         if let selectAuthScheme = builder.selectAuthScheme {
@@ -271,19 +271,23 @@ public struct Orchestrator<
             _ = try context.getOutput()
             await strategy.recordSuccess(token: token)
         } catch {
-            // Check for clock skew, and if found, store in the shared map of hosts to clock skews
-            let clockSkewErrorInfo: RetryErrorInfo?
-            let request: RequestType = context.getRequest()
-            let response: ResponseType? = context.getResponse()
-            if let response, let clockSkew = clockSkewProvider(copiedRequest, response, error, Date()) {
-                await ClockSkewStore.shared.setClockSkew(host: request.host, value: clockSkew)
-                clockSkewErrorInfo = RetryErrorInfo(errorType: .clientError, retryAfterHint: nil, isTimeout: false)
-            } else {
-                clockSkewErrorInfo = nil
+            var clockSkewErrorInfo: RetryErrorInfo?
+
+            // Clock skew can't be calculated when there is no response, so safe-unwrap it
+            if let response = context.getResponse() {
+                // Check for clock skew, and if found, store in the shared map of hosts to clock skews
+                await ClockSkewStore.shared.setClockSkew(host: context.getRequest().host) { previousClockSkew in
+                    let newClockSkew = clockSkewProvider(context.getRequest(), response, error)
+                    // Retry if the new clock skew is substantially different than previous
+                    if newClockSkew.isDifferentFrom(previousClockSkew) {
+                        clockSkewErrorInfo = .clockSkewErrorInfo
+                    }
+                    return newClockSkew
+                }
             }
 
             // If we can't get errorInfo and no clock skew was found, we definitely can't retry
-            guard let errorInfo = clockSkewErrorInfo ?? retryErrorInfoProvider(error) else { return }
+            guard let errorInfo =  retryErrorInfoProvider(error) ?? clockSkewErrorInfo else { return }
 
             // If the body is a nonseekable stream, we also can't retry
             do {
@@ -475,6 +479,28 @@ public struct Orchestrator<
                 attributes: telemetry.metricsAttributes,
                 context: telemetry.contextManager.current())
             throw error
+        }
+    }
+}
+
+private extension RetryErrorInfo {
+
+    static var clockSkewErrorInfo: RetryErrorInfo {
+        RetryErrorInfo(errorType: .clientError, retryAfterHint: nil, isTimeout: false)
+    }
+
+}
+
+private extension Optional where Wrapped == TimeInterval {
+
+    func isDifferentFrom(_ previous: TimeInterval?) -> Bool {
+        let new = self
+        if let new, let previous /* both new and previous are non-nil */ {
+            return abs(new - previous) > 60.0
+        } else if new != nil && previous == nil || new == nil && previous != nil /* 1/2 of new & previous is nil */ {
+            return true
+        } else /* both new and previous are nil */ {
+            return false
         }
     }
 }
