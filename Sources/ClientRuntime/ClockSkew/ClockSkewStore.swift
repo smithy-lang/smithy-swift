@@ -17,14 +17,25 @@ actor ClockSkewStore {
     /// Stores clock skew values, keyed by hostname.
     private var clockSkewStorage = [String: TimeInterval]()
 
+    // Disable creation of new instances of this type.
     private init() {}
 
     func clockSkew(host: String) async -> TimeInterval? {
         clockSkewStorage[host]
     }
-
-    func setClockSkew(host: String, block: (TimeInterval?) -> TimeInterval?) {
-        clockSkewStorage[host] = block(clockSkewStorage[host])
+    
+    /// Calls the passed block to modify the clock skew value for the passed host.
+    ///
+    /// Returns a `Bool` indicating whether the clock skew value changed.
+    /// - Parameters:
+    ///   - host: The host for which clock skew is to be updated.
+    ///   - block: A block that accepts the previous clock skew value, and returns the updated value.
+    /// - Returns: `true` if the clock skew value was changed, `false` otherwise.
+    func setClockSkew(host: String, block: @Sendable (TimeInterval?) -> TimeInterval?) async -> Bool {
+        let previousValue = clockSkewStorage[host]
+        let newValue = block(previousValue)
+        clockSkewStorage[host] = newValue
+        return newValue != previousValue
     }
 
     /// Clears all saved clock skew values.  For use during testing.

@@ -271,20 +271,22 @@ public struct Orchestrator<
             _ = try context.getOutput()
             await strategy.recordSuccess(token: token)
         } catch {
+            let clockSkewStore = ClockSkewStore.shared
             var clockSkewErrorInfo: RetryErrorInfo?
 
-            // Clock skew can't be calculated when there is no response, so safe-unwrap it
-            if let response = context.getResponse() {
+            // Clock skew can't be calculated when there is no request/response, so safe-unwrap them
+            if let request = context.getRequest(), let response = context.getResponse() {
+                // Assign clock skew to local var to prevent capturing self in block below
+                let clockSkewProvider = self.clockSkewProvider
                 // Check for clock skew, and if found, store in the shared map of hosts to clock skews
-                await ClockSkewStore.shared.setClockSkew(host: context.getRequest().host) { previousClockSkew in
-                    let newClockSkew = clockSkewProvider(context.getRequest(), response, error, previousClockSkew)
-                    // Retry only if the new clock skew is different than previous.
-                    // If clock skew was unchanged on this error, then clock skew is likely not the
-                    // cause of the error
-                    if newClockSkew != previousClockSkew {
-                        clockSkewErrorInfo = .clockSkewErrorInfo
-                    }
-                    return newClockSkew
+                let clockSkewDidChange = await clockSkewStore.setClockSkew(host: request.host) { @Sendable previous in
+                    clockSkewProvider(request, response, error, previous)
+                }
+                // Retry only if the new clock skew is different than previous.
+                // If clock skew was unchanged on this errored request, then clock skew is likely not the
+                // cause of the error
+                if clockSkewDidChange {
+                    clockSkewErrorInfo = .clockSkewErrorInfo
                 }
             }
 
