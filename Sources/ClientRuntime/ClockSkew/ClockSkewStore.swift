@@ -22,11 +22,11 @@ actor ClockSkewStore {
     func clockSkew(host: String) async -> TimeInterval? {
         clockSkewStorage[host]
     }
-    
+
     func setClockSkew(host: String, block: (TimeInterval?) -> TimeInterval?) {
         clockSkewStorage[host] = block(clockSkewStorage[host])
     }
-    
+
     /// Clears all saved clock skew values.  For use during testing.
     func clear() async {
         clockSkewStorage = [:]

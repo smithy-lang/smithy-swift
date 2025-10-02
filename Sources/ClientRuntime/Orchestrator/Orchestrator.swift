@@ -279,7 +279,7 @@ public struct Orchestrator<
                 await ClockSkewStore.shared.setClockSkew(host: context.getRequest().host) { previousClockSkew in
                     let newClockSkew = clockSkewProvider(context.getRequest(), response, error)
                     // Retry if the new clock skew is substantially different than previous
-                    if newClockSkew.isDifferentFrom(previousClockSkew) {
+                    if newClockSkew.isSubstantiallyDifferentFrom(previousClockSkew) {
                         clockSkewErrorInfo = .clockSkewErrorInfo
                     }
                     return newClockSkew
@@ -287,7 +287,7 @@ public struct Orchestrator<
             }
 
             // If we can't get errorInfo and no clock skew was found, we definitely can't retry
-            guard let errorInfo =  retryErrorInfoProvider(error) ?? clockSkewErrorInfo else { return }
+            guard let errorInfo = retryErrorInfoProvider(error) ?? clockSkewErrorInfo else { return }
 
             // If the body is a nonseekable stream, we also can't retry
             do {
@@ -485,15 +485,18 @@ public struct Orchestrator<
 
 private extension RetryErrorInfo {
 
+    /// `RetryErrorInfo` value used to signal that a retry should be performed due to clock skew.
     static var clockSkewErrorInfo: RetryErrorInfo {
         RetryErrorInfo(errorType: .clientError, retryAfterHint: nil, isTimeout: false)
     }
-
 }
 
 private extension Optional where Wrapped == TimeInterval {
 
-    func isDifferentFrom(_ previous: TimeInterval?) -> Bool {
+    /// Used to determine if clock skew has changed sufficiently to warrant retrying.  This method is called on the latest clock skew value.
+    /// - Parameter previous: The previous value for clock skew.
+    /// - Returns: `true` if clock skew has changed enough to warrant a retry, `false` otherwise.
+    func isSubstantiallyDifferentFrom(_ previous: TimeInterval?) -> Bool {
         let new = self
         if let new, let previous /* both new and previous are non-nil */ {
             return abs(new - previous) > 60.0
