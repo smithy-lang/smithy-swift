@@ -20,10 +20,13 @@ actor ClockSkewStore {
     // Disable creation of new instances of this type.
     private init() {}
 
+    /// Retrieves the clock skew value for the passed host.
+    /// - Parameter host: The host name for which to retrieve clock skew
+    /// - Returns: The clock skew for the indicated host or `nil` if none is set.
     func clockSkew(host: String) async -> TimeInterval? {
         clockSkewStorage[host]
     }
-    
+
     /// Calls the passed block to modify the clock skew value for the passed host.
     ///
     /// Returns a `Bool` indicating whether the clock skew value changed.
