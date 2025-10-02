@@ -23,7 +23,7 @@ class DefaultClientConfiguration : ClientConfiguration {
             ConfigProperty(
                 "telemetryProvider",
                 ClientRuntimeTypes.Core.TelemetryProvider,
-                { it.format("\$N.provider", ClientRuntimeTypes.Core.DefaultTelemetry) },
+                { it.format("\$N.provider()", ClientRuntimeTypes.Core.DefaultTelemetry) },
             ),
             ConfigProperty(
                 "retryStrategyOptions",
