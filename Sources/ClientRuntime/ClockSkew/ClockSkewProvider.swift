@@ -6,6 +6,8 @@
 //
 
 import struct Foundation.TimeInterval
+import protocol Smithy.RequestMessage
+import protocol Smithy.ResponseMessage
 
 /// A closure that is called to determine what, if any, correction should be made to the system's clock when signing requests.
 ///
@@ -16,6 +18,8 @@ import struct Foundation.TimeInterval
 ///   - response: The response that was returned from the server. (Typically this is a `HTTPResponse`)
 ///   - error: The error that was returned by the server; typically this is a `ServiceError` with an error code that
 ///   indicates clock skew is or might be the cause of the failed request.
+///   - previous: The previously clock skew value, or `nil` if non was recorded.
 /// - Returns: The calculated clock skew `TimeInterval`, or `nil` if no clock skew adjustment is to be applied.
 
-public typealias ClockSkewProvider<Request, Response> = @Sendable (Request, Response, Error) -> TimeInterval?
+public typealias ClockSkewProvider<Request: RequestMessage, Response: ResponseMessage> =
+    @Sendable (Request, Response, Error, TimeInterval?) -> TimeInterval?

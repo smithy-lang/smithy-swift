@@ -101,7 +101,7 @@ public struct Orchestrator<
         if let clockSkewProvider = builder.clockSkewProvider {
             self.clockSkewProvider = clockSkewProvider
         } else {
-            self.clockSkewProvider = { (_, _, _) in nil }
+            self.clockSkewProvider = { (_, _, _, _) in nil }
         }
 
         if let selectAuthScheme = builder.selectAuthScheme {
@@ -277,17 +277,20 @@ public struct Orchestrator<
             if let response = context.getResponse() {
                 // Check for clock skew, and if found, store in the shared map of hosts to clock skews
                 await ClockSkewStore.shared.setClockSkew(host: context.getRequest().host) { previousClockSkew in
-                    let newClockSkew = clockSkewProvider(context.getRequest(), response, error)
-                    // Retry if the new clock skew is substantially different than previous
-                    if newClockSkew.isSubstantiallyDifferentFrom(previousClockSkew) {
+                    let newClockSkew = clockSkewProvider(context.getRequest(), response, error, previousClockSkew)
+                    // Retry only if the new clock skew is different than previous.
+                    // If clock skew was unchanged on this error, then clock skew is likely not the
+                    // cause of the error
+                    if newClockSkew != previousClockSkew {
                         clockSkewErrorInfo = .clockSkewErrorInfo
                     }
                     return newClockSkew
                 }
             }
 
-            // If we can't get errorInfo and no clock skew was found, we definitely can't retry
-            guard let errorInfo = retryErrorInfoProvider(error) ?? clockSkewErrorInfo else { return }
+            // If clock skew was found or has substantially changed, then retry on that
+            // Else get errorInfo on the error
+            guard let errorInfo = clockSkewErrorInfo ?? retryErrorInfoProvider(error) else { return }
 
             // If the body is a nonseekable stream, we also can't retry
             do {
@@ -488,22 +491,5 @@ private extension RetryErrorInfo {
     /// `RetryErrorInfo` value used to signal that a retry should be performed due to clock skew.
     static var clockSkewErrorInfo: RetryErrorInfo {
         RetryErrorInfo(errorType: .clientError, retryAfterHint: nil, isTimeout: false)
-    }
-}
-
-private extension Optional where Wrapped == TimeInterval {
-
-    /// Used to determine if clock skew has changed sufficiently to warrant retrying.  This method is called on the latest clock skew value.
-    /// - Parameter previous: The previous value for clock skew.
-    /// - Returns: `true` if clock skew has changed enough to warrant a retry, `false` otherwise.
-    func isSubstantiallyDifferentFrom(_ previous: TimeInterval?) -> Bool {
-        let new = self
-        if let new, let previous /* both new and previous are non-nil */ {
-            return abs(new - previous) > 60.0
-        } else if new != nil && previous == nil || new == nil && previous != nil /* 1/2 of new & previous is nil */ {
-            return true
-        } else /* both new and previous are nil */ {
-            return false
-        }
     }
 }
