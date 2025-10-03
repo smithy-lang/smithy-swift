@@ -20,6 +20,5 @@ import protocol Smithy.ResponseMessage
 ///   indicates clock skew is or might be the cause of the failed request.
 ///   - previous: The previously clock skew value, or `nil` if non was recorded.
 /// - Returns: The calculated clock skew `TimeInterval`, or `nil` if no clock skew adjustment is to be applied.
-
 public typealias ClockSkewProvider<Request: RequestMessage, Response: ResponseMessage> =
-    @Sendable (Request, Response, Error, TimeInterval?) -> TimeInterval?
+    @Sendable (_ request: Request, _ response: Response, _ error: Error, _ previous: TimeInterval?) -> TimeInterval?
