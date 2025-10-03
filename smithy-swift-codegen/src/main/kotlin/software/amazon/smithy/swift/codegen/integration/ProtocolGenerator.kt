@@ -57,6 +57,8 @@ interface ProtocolGenerator {
 
         val DefaultServiceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Core.ServiceError
 
+        val DefaultClockSkewProviderSymbol: Symbol = ClientRuntimeTypes.Core.DefaultClockSkewProvider
+
         val DefaultRetryErrorInfoProviderSymbol: Symbol = ClientRuntimeTypes.Core.DefaultRetryErrorInfoProvider
     }
 
@@ -84,6 +86,9 @@ interface ProtocolGenerator {
      * It defaults to the ServiceError available in smithy-swift's client-runtime.
      */
     var serviceErrorProtocolSymbol: Symbol
+
+    val clockSkewProviderSymbol: Symbol
+        get() = DefaultClockSkewProviderSymbol
 
     /**
      * Symbol that should be used when the deserialized service error type cannot be determined
