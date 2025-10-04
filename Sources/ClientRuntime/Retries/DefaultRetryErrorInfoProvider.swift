@@ -53,6 +53,11 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
                   crtErrorStruct.code == 1048 {
             // Retries CRTError(code: 1048, message: "socket operation timed out.", name: "AWS_IO_SOCKET_TIMEOUT"))
             return .init(errorType: .transient, retryAfterHint: nil, isTimeout: true)
+        } else if let crtError = error as? CommonRunTimeError,
+                  case .crtError(let crtErrorStruct) = crtError,
+                  crtErrorStruct.code == 1067 {
+            // Retries CRTError(code: 1067, message: "Channel shutdown due to tls negotiation timeout", name: "AWS_IO_TLS_NEGOTIATION_TIMEOUT"))
+            return .init(errorType: .transient, retryAfterHint: nil, isTimeout: true)
         }
         return nil
     }
