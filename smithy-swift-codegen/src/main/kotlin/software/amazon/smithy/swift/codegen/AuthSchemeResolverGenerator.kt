@@ -27,7 +27,7 @@ import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import java.util.Locale
 
-class AuthSchemeResolverGenerator() {
+class AuthSchemeResolverGenerator {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val serviceIndex = ServiceIndex(ctx.model)
 
