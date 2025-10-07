@@ -18,7 +18,7 @@ import protocol Smithy.ResponseMessage
 ///   - response: The response that was returned from the server. (Typically this is a `HTTPResponse`)
 ///   - error: The error that was returned by the server; typically this is a `ServiceError` with an error code that
 ///   indicates clock skew is or might be the cause of the failed request.
-///   - previous: The previously clock skew value, or `nil` if non was recorded.
+///   - previous: The previously measured clock skew value, or `nil` if none was recorded.
 /// - Returns: The calculated clock skew `TimeInterval`, or `nil` if no clock skew adjustment is to be applied.
 public typealias ClockSkewProvider<Request: RequestMessage, Response: ResponseMessage> =
     @Sendable (_ request: Request, _ response: Response, _ error: Error, _ previous: TimeInterval?) -> TimeInterval?
