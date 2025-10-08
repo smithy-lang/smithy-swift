@@ -155,33 +155,6 @@ class MessageMarshallableGenerator(
         }
     }
 
-    /**
-     *
-     *     if let headerValue = value.blob {
-     *         headers.append(.init(name: "blob", value: .byteArray(headerValue)))
-     *     }
-     *     if let headerValue = value.boolean {
-     *         headers.append(.init(name: "boolean", value: .bool(headerValue)))
-     *     }
-     *     if let headerValue = value.byte {
-     *         headers.append(.init(name: "byte", value: .byte(headerValue)))
-     *     }
-     *     if let headerValue = value.int {
-     *         headers.append(.init(name: "int", value: .int32(Int32(headerValue))))
-     *     }
-     *     if let headerValue = value.long {
-     *         headers.append(.init(name: "long", value: .int64(Int64(headerValue))))
-     *     }
-     *     if let headerValue = value.short {
-     *         headers.append(.init(name: "short", value: .int16(headerValue)))
-     *     }
-     *     if let headerValue = value.string {
-     *         headers.append(.init(name: "string", value: .string(headerValue)))
-     *     }
-     *     if let headerValue = value.timestamp {
-     *         headers.append(.init(name: "timestamp", value: .timestamp(headerValue)))
-     *     }
-     */
     private fun renderSerializeEventHeader(
         ctx: ProtocolGenerator.GenerationContext,
         member: MemberShape,
@@ -208,13 +181,21 @@ class MessageMarshallableGenerator(
                     writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(Int32(headerValue))))", headerValue)
                 }
                 ShapeType.INT_ENUM -> {
-                    writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(Int32(headerValue.rawValue))))", headerValue)
+                    writer.write(
+                        "headers.append(.init(name: \$S, value: .\$L(Int32(headerValue.rawValue))))",
+                        member.memberName,
+                        headerValue,
+                    )
                 }
                 ShapeType.LONG -> {
                     writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(Int64(headerValue))))", headerValue)
                 }
                 ShapeType.ENUM -> {
-                    writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(headerValue.rawValue)))", headerValue)
+                    writer.write(
+                        "headers.append(.init(name: \$S, value: .\$L(headerValue.rawValue)))",
+                        member.memberName,
+                        headerValue,
+                    )
                 }
                 else -> {
                     writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(headerValue)))", headerValue)
