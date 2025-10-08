@@ -193,10 +193,10 @@ class MessageMarshallableGenerator(
                 ShapeType.BOOLEAN -> "bool"
                 ShapeType.BYTE -> "byte"
                 ShapeType.SHORT -> "int16"
-                ShapeType.INTEGER -> "int32"
+                ShapeType.INTEGER, ShapeType.INT_ENUM -> "int32"
                 ShapeType.LONG -> "int64"
                 ShapeType.BLOB -> "byteArray"
-                ShapeType.STRING -> "string"
+                ShapeType.STRING, ShapeType.ENUM -> "string"
                 ShapeType.TIMESTAMP -> "timestamp"
                 else -> throw CodegenException("unsupported shape type `${target.type}` for eventHeader member `$member`; target: $target")
             }
@@ -207,8 +207,14 @@ class MessageMarshallableGenerator(
                 ShapeType.INTEGER -> {
                     writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(Int32(headerValue))))", headerValue)
                 }
+                ShapeType.INT_ENUM -> {
+                    writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(Int32(headerValue.rawValue))))", headerValue)
+                }
                 ShapeType.LONG -> {
                     writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(Int64(headerValue))))", headerValue)
+                }
+                ShapeType.ENUM -> {
+                    writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(headerValue.rawValue)))", headerValue)
                 }
                 else -> {
                     writer.write("headers.append(.init(name: \"${member.memberName}\", value: .\$L(headerValue)))", headerValue)
