@@ -5,11 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Date
+import struct Foundation.URLComponents
 import struct Smithy.URIQueryItem
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import struct SmithyHTTPAPI.Headers
-import struct Foundation.URLComponents
 import AwsCommonRuntimeKit
 
 extension HTTPRequestBuilder {
@@ -19,10 +20,15 @@ extension HTTPRequestBuilder {
     ///   - crtRequest: the CRT request, this can be either a `HTTPRequest` or a `HTTP2Request`
     ///   - originalRequest: the SDK request that is used to hold the original values
     /// - Returns: the builder
-    public func update(from crtRequest: HTTPRequestBase, originalRequest: HTTPRequest) -> HTTPRequestBuilder {
+    public func update(
+        from crtRequest: HTTPRequestBase,
+        originalRequest: HTTPRequest,
+        signedAt: Date
+    ) -> HTTPRequestBuilder {
         headers = convertSignedHeadersToHeaders(crtRequest: crtRequest)
         withMethod(originalRequest.method)
         withHost(originalRequest.host)
+        withSignedAt(signedAt)
         if let crtRequest = crtRequest as? AwsCommonRuntimeKit.HTTPRequest,
            let components = URLComponents(string: crtRequest.path) {
             withPath(components.percentEncodedPath)

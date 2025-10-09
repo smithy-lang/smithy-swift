@@ -13,6 +13,7 @@ import protocol Smithy.RequestMessage
 import protocol Smithy.RequestMessageBuilder
 import enum Smithy.ByteStream
 import enum Smithy.ClientError
+import struct Foundation.Date
 import struct Foundation.CharacterSet
 import struct Foundation.URLQueryItem
 import struct Foundation.URLComponents
@@ -35,9 +36,8 @@ public final class HTTPRequest: RequestMessage, @unchecked Sendable {
     public var path: String { destination.path }
     public var queryItems: [URIQueryItem]? { destination.queryItems }
     public var trailingHeaders: Headers = Headers()
-    public var endpoint: Endpoint {
-        return Endpoint(uri: self.destination, headers: self.headers)
-    }
+    public var endpoint: Endpoint { .init(uri: destination, headers: headers) }
+    public internal(set) var signedAt: Date?
 
     public convenience init(method: HTTPMethodType,
                             endpoint: Endpoint,
@@ -45,14 +45,18 @@ public final class HTTPRequest: RequestMessage, @unchecked Sendable {
         self.init(method: method, uri: endpoint.uri, headers: endpoint.headers, body: body)
     }
 
-    public init(method: HTTPMethodType,
-                uri: URI,
-                headers: Headers,
-                body: ByteStream = ByteStream.noStream) {
+    public init(
+        method: HTTPMethodType,
+        uri: URI,
+        headers: Headers,
+        body: ByteStream = ByteStream.noStream,
+        signedAt: Date? = nil
+    ) {
         self.method = method
         self.destination = uri
         self.headers = headers
         self.body = body
+        self.signedAt = signedAt
     }
 
     public func toBuilder() -> HTTPRequestBuilder {
@@ -66,6 +70,7 @@ public final class HTTPRequest: RequestMessage, @unchecked Sendable {
             .withPort(self.destination.port)
             .withProtocol(self.destination.scheme)
             .withQueryItems(self.destination.queryItems)
+            .withSignedAt(signedAt)
         return builder
     }
 
@@ -156,6 +161,7 @@ public final class HTTPRequestBuilder: RequestMessageBuilder {
     public private(set) var port: UInt16?
     public private(set) var protocolType: URIScheme = .https
     public private(set) var trailingHeaders: Headers = Headers()
+    public private(set) var signedAt: Date?
 
     public var currentQueryItems: [URIQueryItem]? {
         return queryItems
@@ -254,6 +260,12 @@ public final class HTTPRequestBuilder: RequestMessageBuilder {
         return self
     }
 
+    @discardableResult
+    public func withSignedAt(_ value: Date?) -> HTTPRequestBuilder {
+        self.signedAt = value
+        return self
+    }
+
     public func build() -> HTTPRequest {
         let uri = URIBuilder()
             .withScheme(protocolType)
@@ -262,7 +274,7 @@ public final class HTTPRequestBuilder: RequestMessageBuilder {
             .withPort(port)
             .withQueryItems(queryItems)
             .build()
-        return HTTPRequest(method: methodType, uri: uri, headers: headers, body: body)
+        return HTTPRequest(method: methodType, uri: uri, headers: headers, body: body, signedAt: signedAt)
     }
 }
 

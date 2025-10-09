@@ -160,10 +160,10 @@ class MessageUnmarshallableGenerator(
                         ShapeType.BOOLEAN -> "bool"
                         ShapeType.BYTE -> "byte"
                         ShapeType.SHORT -> "int16"
-                        ShapeType.INTEGER -> "int32"
+                        ShapeType.INTEGER, ShapeType.INT_ENUM -> "int32"
                         ShapeType.LONG -> "int64"
                         ShapeType.BLOB -> "byteArray"
-                        ShapeType.STRING -> "string"
+                        ShapeType.STRING, ShapeType.ENUM -> "string"
                         ShapeType.TIMESTAMP -> "timestamp"
                         else -> throw CodegenException("unsupported eventHeader shape: member=$hdrBinding; targetShape=$target")
                     }
@@ -173,6 +173,12 @@ class MessageUnmarshallableGenerator(
                     when (target.type) {
                         ShapeType.INTEGER, ShapeType.LONG -> {
                             writer.write("event.\$L = Int(value)", memberName)
+                        }
+                        ShapeType.INT_ENUM -> {
+                            writer.write("event.\$L = .init(rawValue: Int(value))", memberName)
+                        }
+                        ShapeType.ENUM -> {
+                            writer.write("event.\$L = .init(rawValue: value)", memberName)
                         }
                         else -> {
                             writer.write("event.\$L = value", memberName)
