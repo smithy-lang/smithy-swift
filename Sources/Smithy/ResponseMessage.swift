@@ -6,7 +6,7 @@
 //
 
 /// Message that is sent from service to client.
-public protocol ResponseMessage {
+public protocol ResponseMessage: Sendable {
 
     /// The body of the response.
     var body: ByteStream { get }

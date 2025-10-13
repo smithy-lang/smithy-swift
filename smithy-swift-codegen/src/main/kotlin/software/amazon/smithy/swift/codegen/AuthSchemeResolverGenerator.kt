@@ -27,9 +27,7 @@ import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import java.util.Locale
 
-class AuthSchemeResolverGenerator(
-    private val optionCustomization: ((String, SwiftWriter) -> SwiftWriter)? = null,
-) {
+class AuthSchemeResolverGenerator {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val serviceIndex = ServiceIndex(ctx.model)
 
@@ -257,10 +255,17 @@ class AuthSchemeResolverGenerator(
     ) {
         writer.apply {
             val authOptionName = "${scheme.key.name}Option"
-            write("var $authOptionName = \$N(schemeID: \$S)", SmithyHTTPAuthAPITypes.AuthOption, scheme.key)
-            if (scheme.key == SigV4Trait.ID) renderSigV4AuthOptionCustomization(authOptionName, scheme, writer)
-            optionCustomization?.invoke(authOptionName, writer)
-            write("validAuthOptions.append($authOptionName)")
+            val authOptionType = SmithyHTTPAuthAPITypes.AuthOption
+            when (scheme.key) {
+                SigV4Trait.ID -> {
+                    write("var \$L = \$N(schemeID: \$S)", authOptionName, authOptionType, scheme.key)
+                    renderSigV4AuthOptionCustomization(authOptionName, scheme, writer)
+                }
+                else -> {
+                    write("let \$L = \$N(schemeID: \$S)", authOptionName, authOptionType, scheme.key)
+                }
+            }
+            write("validAuthOptions.append(\$L)", authOptionName)
         }
     }
 

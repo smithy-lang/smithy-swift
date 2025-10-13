@@ -6,6 +6,7 @@
 //
 
 import struct Foundation.Date
+import struct Foundation.TimeInterval
 import class Smithy.Context
 import enum Smithy.ClientError
 import protocol Smithy.RequestMessage
@@ -76,6 +77,7 @@ public struct Orchestrator<
     private let deserialize: (ResponseType, Context) async throws -> OutputType
     private let retryStrategy: (any RetryStrategy)?
     private let retryErrorInfoProvider: (Error) -> RetryErrorInfo?
+    private let clockSkewProvider: ClockSkewProvider<RequestType, ResponseType>
     private let telemetry: OrchestratorTelemetry
     private let selectAuthScheme: SelectAuthScheme
     private let applyEndpoint: any ApplyEndpoint<RequestType>
@@ -94,6 +96,12 @@ public struct Orchestrator<
             self.retryErrorInfoProvider = retryErrorInfoProvider
         } else {
             self.retryErrorInfoProvider = { _ in nil }
+        }
+
+        if let clockSkewProvider = builder.clockSkewProvider {
+            self.clockSkewProvider = clockSkewProvider
+        } else {
+            self.clockSkewProvider = { (_, _, _, _) in nil }
         }
 
         if let selectAuthScheme = builder.selectAuthScheme {
@@ -262,9 +270,29 @@ public struct Orchestrator<
         do {
             _ = try context.getOutput()
             await strategy.recordSuccess(token: token)
-        } catch let error {
-            // If we can't get errorInfo, we definitely can't retry
-            guard let errorInfo = retryErrorInfoProvider(error) else { return }
+        } catch {
+            let clockSkewStore = ClockSkewStore.shared
+            var clockSkewErrorInfo: RetryErrorInfo?
+
+            // Clock skew can't be calculated when there is no request/response, so safe-unwrap them
+            if let request = context.getRequest(), let response = context.getResponse() {
+                // Assign clock skew to local var to prevent capturing self in block below
+                let clockSkewProvider = self.clockSkewProvider
+                // Check for clock skew, and if found, store in the shared map of hosts to clock skews
+                let clockSkewDidChange = await clockSkewStore.setClockSkew(host: request.host) { @Sendable previous in
+                    clockSkewProvider(request, response, error, previous)
+                }
+                // Retry only if the new clock skew is different than previous.
+                // If clock skew was unchanged on this errored request, then clock skew is likely not the
+                // cause of the error
+                if clockSkewDidChange {
+                    clockSkewErrorInfo = .clockSkewErrorInfo
+                }
+            }
+
+            // If clock skew was found or has substantially changed, then retry on that
+            // Else get errorInfo on the error
+            guard let errorInfo = clockSkewErrorInfo ?? retryErrorInfoProvider(error) else { return }
 
             // If the body is a nonseekable stream, we also can't retry
             do {
@@ -457,5 +485,13 @@ public struct Orchestrator<
                 context: telemetry.contextManager.current())
             throw error
         }
+    }
+}
+
+private extension RetryErrorInfo {
+
+    /// `RetryErrorInfo` value used to signal that a retry should be performed due to clock skew.
+    static var clockSkewErrorInfo: RetryErrorInfo {
+        RetryErrorInfo(errorType: .clientError, retryAfterHint: nil, isTimeout: false)
     }
 }

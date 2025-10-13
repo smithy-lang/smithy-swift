@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+import struct Foundation.TimeInterval
 
 public protocol RetryBackoffStrategy: Sendable {
     /// Returns a Duration that a caller performing retries should use for delaying between retries. In a green-threads context, this would be
