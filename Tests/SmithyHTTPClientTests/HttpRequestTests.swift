@@ -126,7 +126,7 @@ class HttpRequestTests: NetworkingTestUtils {
 
         let httpRequest = try builder.build().toHttpRequest()
         httpRequest.path = "/hello?foo=bar&quz=bar&signedthing=signed"
-        let updatedRequest = builder.update(from: httpRequest, originalRequest: builder.build())
+        let updatedRequest = builder.update(from: httpRequest, originalRequest: builder.build(), signedAt: Date())
 
         XCTAssertEqual(updatedRequest.path, "/hello")
         XCTAssertEqual(updatedRequest.queryItems.count, 3)
@@ -149,5 +149,11 @@ class HttpRequestTests: NetworkingTestUtils {
         // path is empty, and protocolType is nil.
         let endpoint = Endpoint(host: "", path: "")
         XCTAssertNil(endpoint.url, "An invalid endpoint should result in a nil URL.")
+    }
+
+    func test_requestBuilder_SignedAt() {
+        let now = Date()
+        let request = HTTPRequestBuilder().withSignedAt(now).build()
+        XCTAssertEqual(request.signedAt, now)
     }
 }

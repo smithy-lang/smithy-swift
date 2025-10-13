@@ -81,10 +81,10 @@ class ServiceGenerator {
             }
 
             writeEmptyLine()
-            writer.writeDocs("\\- Parameter ${op.inputShape.name} : ${retrieveMemberShapeDoc(op.inputShape, model)}")
+            writer.writeDocs("\\- Parameter input: ${retrieveMemberShapeDoc(op.inputShape, model)} (Type: \\`${op.inputShape.name}\\`)")
 
             writeEmptyLine()
-            writer.writeDocs("\\- Returns: \\`${op.outputShape.name}\\` : ${retrieveMemberShapeDoc(op.outputShape, model)}")
+            writer.writeDocs("\\- Returns: ${retrieveMemberShapeDoc(op.outputShape, model)} (Type: \\`${op.outputShape.name}\\`)")
 
             if (op.getErrors(service).isNotEmpty()) {
                 writeEmptyLine()

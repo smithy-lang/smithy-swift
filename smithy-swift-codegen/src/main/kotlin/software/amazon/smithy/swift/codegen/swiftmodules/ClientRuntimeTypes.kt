@@ -60,6 +60,7 @@ object ClientRuntimeTypes {
         val SDKLogLevel = runtimeSymbol("SDKLogLevel", SwiftDeclaration.ENUM)
         val ClientLogMode = runtimeSymbol("ClientLogMode", SwiftDeclaration.ENUM)
         val IdempotencyTokenGenerator = runtimeSymbol("IdempotencyTokenGenerator", SwiftDeclaration.PROTOCOL)
+        val DefaultClockSkewProvider = runtimeSymbol("DefaultClockSkewProvider", SwiftDeclaration.ENUM)
         val DefaultRetryErrorInfoProvider = runtimeSymbol("DefaultRetryErrorInfoProvider", SwiftDeclaration.ENUM)
         val PaginateToken = runtimeSymbol("PaginateToken", SwiftDeclaration.PROTOCOL)
         val PaginatorSequence = runtimeSymbol("PaginatorSequence", SwiftDeclaration.STRUCT)

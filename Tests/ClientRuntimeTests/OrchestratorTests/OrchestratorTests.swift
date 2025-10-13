@@ -41,6 +41,11 @@ class OrchestratorTests: XCTestCase {
         }
     }
 
+    struct TestClockSkewError: ServiceError, Error {
+        var typeName: String? { "TestClockSkewError" }
+        var message: String? { "" }
+    }
+
     struct TestError: Error, Equatable, LocalizedError {
         let value: String
 
@@ -1323,6 +1328,42 @@ class OrchestratorTests: XCTestCase {
     /// Used in retry tests to perform the next retry without waiting, so that tests complete without delay.
     private struct ImmediateBackoffStrategy: RetryBackoffStrategy {
         func computeNextBackoffDelay(attempt: Int) -> TimeInterval { 0.0 }
+    }
+
+    func test_clockSkew_retriesWithClockSkewApplied() async throws {
+        await ClockSkewStore.shared.clear()
+        let host = "clockskew.test"
+        let input = TestInput(foo: "bar")
+        let trace = Trace()
+        var attempt = 0
+        let executeRequest = TraceExecuteRequest(succeedAfter: 2, trace: trace)
+        let orchestrator = traceOrchestrator(trace: trace)
+            .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ImmediateBackoffStrategy())))
+            .retryErrorInfoProvider({ ($0 is TestError) ? RetryErrorInfo(errorType: .clientError, retryAfterHint: nil, isTimeout: false) : nil })
+            .clockSkewProvider({ _, _, error, previous in error is TestClockSkewError ? 300.0 : previous })
+            .serialize({ (input: TestInput, builder: HTTPRequestBuilder, context) in
+                builder.withHost(host).withBody(.noStream).withSignedAt(Date())
+            })
+            .deserialize({ response, context in
+                attempt += 1
+                switch attempt {
+                case 1:
+                    throw TestClockSkewError()
+                case 2:
+                    throw TestError(value: "")
+                default:
+                    return TestOutput(bar: "")
+                }
+            })
+            .executeRequest(executeRequest)
+        let result = await asyncResult {
+            return try await orchestrator.build().execute(input: input)
+        }
+        XCTAssertNoThrow(try result.get())
+        XCTAssertEqual(executeRequest.requestCount, 3)
+        let recordedClockSkew = await ClockSkewStore.shared.clockSkew(host: host)
+        XCTAssertEqual(recordedClockSkew, 300.0)
+        await ClockSkewStore.shared.clear()
     }
 
     func test_retry_retriesDataBody() async throws {

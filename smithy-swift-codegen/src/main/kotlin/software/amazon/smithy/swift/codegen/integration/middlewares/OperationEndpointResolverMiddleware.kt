@@ -80,6 +80,7 @@ open class OperationEndpointResolverMiddleware(
         op: OperationShape,
     ) {
         val params = mutableListOf<String>()
+        var shouldCaptureConfig = false
         ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet?.let { node ->
             val ruleSet = EndpointRuleSet.fromNode(node)
             val staticContextParams = op.getTrait<StaticContextParamsTrait>()?.parameters ?: emptyMap()
@@ -87,6 +88,9 @@ open class OperationEndpointResolverMiddleware(
             val clientContextParams = ctx.service.getTrait<ClientContextParamsTrait>()?.parameters ?: emptyMap()
             val parameters = ruleSet.parameters.toList()
             val setToUseForUniqueVarNamesInOperationContextParamCodegen = mutableSetOf<String>()
+            if (clientContextParams.isNotEmpty() || parameters.any { it.isBuiltIn }) {
+                shouldCaptureConfig = true
+            }
             parameters
                 .toList()
                 .sortedBy { it.name.toString() }
@@ -113,9 +117,11 @@ open class OperationEndpointResolverMiddleware(
                     }
                 }
         }
+        val capture = "[config] ".takeIf { shouldCaptureConfig } ?: ""
         writer.openBlock(
-            "let endpointParamsBlock = { [config] (context: \$N) in",
+            "let endpointParamsBlock = { \$L(context: \$N) in",
             "}",
+            capture,
             SmithyTypes.Context,
         ) {
             writer.write("EndpointParams(\$L)", params.joinToString(", "))
