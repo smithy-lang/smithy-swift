@@ -36,4 +36,9 @@ fun swiftEnumCaseName(
     return enumCaseName
 }
 
-fun supportsStreamingAndIsRPC(protocolID: ShapeId): Boolean = arrayOf(AwsJson1_0Trait.ID, AwsJson1_1Trait.ID, Rpcv2CborTrait.ID).contains(protocolID)
+fun supportsStreamingAndIsRPC(protocolID: ShapeId): Boolean =
+    arrayOf(
+        AwsJson1_0Trait.ID,
+        AwsJson1_1Trait.ID,
+        Rpcv2CborTrait.ID,
+    ).contains(protocolID)
