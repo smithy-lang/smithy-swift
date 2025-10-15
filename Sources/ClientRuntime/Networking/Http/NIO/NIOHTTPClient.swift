@@ -73,7 +73,9 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
                 clientConfig.tlsConfiguration = try tlsOptions.makeNIOSSLConfiguration()
             } catch {
                 // Log TLS configuration error but continue with default TLS settings
-                self.logger.error("Failed to configure TLS: \(error). Using default TLS configuration.")
+                self.logger.error(
+                    "Failed to configure TLS: \(String(describing: error)). Using default TLS configuration."
+                )
             }
         }
 
@@ -173,7 +175,7 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
 
             return response
         } catch {
-            logger.error("NIOHTTPClient(\(httpMethod) \(url)) failed with error: \(error)")
+            logger.error("NIOHTTPClient(\(httpMethod) \(url)) failed with error: \(String(describing: error))")
             throw error
         }
     }
