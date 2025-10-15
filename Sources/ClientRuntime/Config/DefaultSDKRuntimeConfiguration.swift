@@ -91,10 +91,12 @@ public extension DefaultSDKRuntimeConfiguration {
     static func makeClient(
         httpClientConfiguration: HttpClientConfiguration = defaultHttpClientConfiguration
     ) -> HTTPClient {
-        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS) || os(macOS)
+        // TODO -- For testing,revert prior to merge to main
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         return URLSessionHTTPClient(httpClientConfiguration: httpClientConfiguration)
         #else
-        // TODO -- For testing, delete prior to merge to main
+        // TODO -- For testing, revert prior to merge to main
+        // Will be used on Mac and Linux
         return NIOHTTPClient(httpClientConfiguration: httpClientConfiguration)
         #endif
     }
