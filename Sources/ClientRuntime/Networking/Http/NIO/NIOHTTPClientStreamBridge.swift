@@ -70,22 +70,13 @@ final class NIOHTTPClientStreamBridge {
         allocator: ByteBufferAllocator,
         chunkSize: Int = CHUNK_SIZE_BYTES
     ) async throws -> AsyncHTTPClient.HTTPClientRequest.Body {
-        if let streamLength = stream.length {
-            let asyncSequence = StreamToAsyncSequence(stream: stream, allocator: allocator, chunkSize: chunkSize)
-            return .stream(asyncSequence, length: .known(Int64(streamLength)))
+        let asyncSequence = StreamToAsyncSequence(stream: stream, allocator: allocator, chunkSize: chunkSize)
+
+        // Use known length if available, unless the stream is eligible for chunked streaming.
+        if let length = stream.length, !stream.isEligibleForChunkedStreaming {
+            return .stream(asyncSequence, length: .known(length))
         } else {
-            do {
-                let data = try await stream.readToEndAsync()
-                if let data = data {
-                    var buffer = allocator.buffer(capacity: data.count)
-                    buffer.writeBytes(data)
-                    return .bytes(buffer)
-                } else {
-                    return .bytes(allocator.buffer(capacity: 0))
-                }
-            } catch {
-                throw NIOHTTPClientError.streamingError(error)
-            }
+            return .stream(asyncSequence, length: .unknown)
         }
     }
 }

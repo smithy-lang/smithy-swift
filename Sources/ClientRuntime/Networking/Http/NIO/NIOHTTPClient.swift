@@ -52,8 +52,10 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
     /// The client is created with its own internal `AsyncHTTPClient`, which is configured with system defaults.
     /// - Parameters:
     ///   - httpClientConfiguration: The configuration to use for the client's `AsyncHTTPClient` setup.
+    ///   - eventLoopGroup: The `EventLoopGroup` that the ``HTTPClient`` will use.
     public init(
-        httpClientConfiguration: HttpClientConfiguration
+        httpClientConfiguration: HttpClientConfiguration,
+        eventLoopGroup: (any NIOCore.EventLoopGroup)? = nil
     ) {
         self.config = httpClientConfiguration
         self.telemetry = httpClientConfiguration.telemetry ?? NIOHTTPClient.noOpNIOHTTPClientTelemetry
@@ -61,7 +63,9 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
         self.tlsConfiguration = httpClientConfiguration.tlsConfiguration as? NIOHTTPClientTLSOptions
         self.allocator = ByteBufferAllocator()
 
-        var clientConfig = AsyncHTTPClient.HTTPClient.Configuration()
+        var clientConfig = AsyncHTTPClient.HTTPClient.Configuration.from(
+            httpClientConfiguration: httpClientConfiguration
+        )
 
         // Configure TLS if options are provided
         if let tlsOptions = tlsConfiguration {
@@ -73,7 +77,11 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
             }
         }
 
-        self.client = AsyncHTTPClient.HTTPClient(configuration: clientConfig)
+        if let eventLoopGroup {
+            self.client = AsyncHTTPClient.HTTPClient(eventLoopGroup: eventLoopGroup, configuration: clientConfig)
+        } else {
+            self.client = AsyncHTTPClient.HTTPClient(configuration: clientConfig)
+        }
     }
 
     deinit {
@@ -190,9 +198,10 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
         var nioRequest = AsyncHTTPClient.HTTPClientRequest(url: url.absoluteString)
         nioRequest.method = method
 
-        for header in request.headers.headers + config.defaultHeaders.headers {
+        // request headers will replace default if the same value is present in both
+        for header in config.defaultHeaders.headers + request.headers.headers {
             for value in header.value {
-                nioRequest.headers.add(name: header.name, value: value)
+                nioRequest.headers.replaceOrAdd(name: header.name, value: value)
             }
         }
 
