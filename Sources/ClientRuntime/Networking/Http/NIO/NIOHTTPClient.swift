@@ -154,7 +154,7 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
 
         let httpMethod = request.method.rawValue
         let url = request.destination.url
-        logger.debug("NIOHTTPClient(\(httpMethod) \(url)) started")
+        logger.debug("NIOHTTPClient(\(httpMethod) \(String(describing: url))) started")
         logBodyDescription(request.body)
 
         do {
@@ -171,11 +171,13 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
             let body = await NIOHTTPClientStreamBridge.convertResponseBody(from: nioResponse)
 
             let response = HTTPResponse(headers: headers, body: body, statusCode: statusCode)
-            logger.debug("NIOHTTPClient(\(httpMethod) \(url)) succeeded")
+            logger.debug("NIOHTTPClient(\(httpMethod) \(String(describing: url))) succeeded")
 
             return response
         } catch {
-            logger.error("NIOHTTPClient(\(httpMethod) \(url)) failed with error: \(String(describing: error))")
+            let urlDescription = String(describing: url)
+            let errorDescription = String(describing: error)
+            logger.error("NIOHTTPClient(\(httpMethod) \(urlDescription)) failed with error: \(errorDescription)")
             throw error
         }
     }

@@ -74,7 +74,7 @@ final class NIOHTTPClientStreamBridge {
 
         // Use known length if available, unless the stream is eligible for chunked streaming.
         if let length = stream.length, !stream.isEligibleForChunkedStreaming {
-            return .stream(asyncSequence, length: .known(length))
+            return .stream(asyncSequence, length: .known(Int64(length)))
         } else {
             return .stream(asyncSequence, length: .unknown)
         }
