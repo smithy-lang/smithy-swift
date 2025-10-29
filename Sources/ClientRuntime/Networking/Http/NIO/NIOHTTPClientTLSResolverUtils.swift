@@ -79,7 +79,7 @@ public enum NIOHTTPClientTLSError: Error, LocalizedError {
         case .noCertificateFound(let path):
             return "No certificate found at path: \(path)"
         case .invalidPKCS12(let path, let underlying):
-            return "Failed to load PKCS#12 file at path: \(path). Error: \(underlying.localizedDescription)"
+            return "Failed to load PKCS#12 file at path: \(path). Error: \(String(describing: underlying))"
         }
     }
 }

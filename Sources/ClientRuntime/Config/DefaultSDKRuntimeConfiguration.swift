@@ -91,19 +91,13 @@ public extension DefaultSDKRuntimeConfiguration {
     static func makeClient(
         httpClientConfiguration: HttpClientConfiguration = defaultHttpClientConfiguration
     ) -> HTTPClient {
-        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS) || os(macOS)
+        // TODO -- For testing,revert prior to merge to main
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
         return URLSessionHTTPClient(httpClientConfiguration: httpClientConfiguration)
         #else
-        let connectTimeoutMs = httpClientConfiguration.connectTimeout.map { UInt32($0 * 1000) }
-        let socketTimeout = UInt32(httpClientConfiguration.socketTimeout)
-        let config = CRTClientEngineConfig(
-            maxConnectionsPerEndpoint: httpClientConfiguration.maxConnections,
-            telemetry: httpClientConfiguration.telemetry ?? CRTClientEngine.noOpCrtClientEngineTelemetry,
-            connectTimeoutMs: connectTimeoutMs,
-            crtTlsOptions: httpClientConfiguration.tlsConfiguration as? CRTClientTLSOptions,
-            socketTimeout: socketTimeout
-        )
-        return CRTClientEngine(config: config)
+        // TODO -- For testing, revert prior to merge to main
+        // Will be used on Mac and Linux
+        return NIOHTTPClient(httpClientConfiguration: httpClientConfiguration)
         #endif
     }
 
