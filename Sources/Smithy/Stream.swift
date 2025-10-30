@@ -64,6 +64,7 @@ public enum StreamError: Error, Sendable {
     case invalidOffset(String)
     case notSupported(String)
     case connectionReleased(String)
+    case writeToClosedStream(String)
 }
 
 extension Stream {

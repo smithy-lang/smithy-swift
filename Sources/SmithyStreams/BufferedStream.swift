@@ -8,6 +8,7 @@
 import struct Foundation.Data
 import class Foundation.NSRecursiveLock
 import protocol Smithy.Stream
+import enum Smithy.StreamError
 
 /// A `Stream` implementation that buffers data in memory.
 /// The buffer size depends on the amount of data written and read.
@@ -207,8 +208,15 @@ public class BufferedStream: Stream, @unchecked Sendable {
     /// Writes the specified data to the stream.
     /// Then, continues a suspended reader (if any) to read the data.
     /// - Parameter data: The data to write.
+    /// - Throws: `StreamError.writeToClosedStream` if a write is attempted after the stream is closed.
     public func write(contentsOf data: Data) throws {
-        lock.withLockingClosure {
+        try lock.withLockingClosure {
+            // Do not allow writing to stream once it closes.
+            // This ensures length of stream does not change once it reports a length.
+            // Throw `StreamError.writeToClosedStream` to alert the caller.
+            guard !isClosed else {
+                throw StreamError.writeToClosedStream("Attempt to write to closed stream")
+            }
             // append the data to the buffer
             // this will increase the in-memory size of the buffer
             _buffer.append(data)
