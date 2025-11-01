@@ -11,6 +11,7 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.SparseTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -83,6 +84,14 @@ abstract class MemberShapeEncodeGenerator(
         memberShape: MemberShape,
         prefix: String,
     ) {
+        // If member shape is a event streaming member (union with streaming trait),
+        //   we must ignore it when encoding input struct.
+        // The event streaming member will be set as body via EventStreamBodyMiddleware.
+        val targetShape = ctx.model.expectShape(memberShape.target)
+        if (targetShape is UnionShape && targetShape.hasTrait<StreamingTrait>()) {
+            return
+        }
+
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val propertyKey = nodeInfoUtils.nodeInfo(memberShape)
         val writingClosure = writingClosureUtils.writingClosure(memberShape)
