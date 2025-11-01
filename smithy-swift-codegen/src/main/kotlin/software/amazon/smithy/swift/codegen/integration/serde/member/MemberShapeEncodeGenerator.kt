@@ -24,6 +24,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProto
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 
 abstract class MemberShapeEncodeGenerator(
@@ -41,6 +42,10 @@ abstract class MemberShapeEncodeGenerator(
         unionMember: Boolean,
         errorMember: Boolean,
     ) {
+        if (unionMember && memberShape.target.toString() == "smithy.api#Unit") {
+            writeUnitMember(memberShape)
+            return
+        }
         val prefix1 = "value.".takeIf { !unionMember } ?: ""
         val prefix2 = "properties.".takeIf { errorMember } ?: ""
         val prefix = prefix1 + prefix2
@@ -63,6 +68,16 @@ abstract class MemberShapeEncodeGenerator(
                 writePropertyMember(memberShape, prefix)
             }
         }
+    }
+
+    private fun writeUnitMember(memberShape: MemberShape) {
+        val propertyKey = nodeInfoUtils.nodeInfo(memberShape)
+        writer.write(
+            "try writer[\$L].write(\$N(), with: \$N.write(value:to:))",
+            propertyKey,
+            SmithyReadWriteTypes.Unit,
+            SmithyReadWriteTypes.Unit,
+        )
     }
 
     private fun writeStructureOrUnionMember(
