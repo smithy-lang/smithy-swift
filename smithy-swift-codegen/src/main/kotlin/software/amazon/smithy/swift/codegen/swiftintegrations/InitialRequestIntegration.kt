@@ -7,6 +7,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.EventStreamIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
@@ -26,7 +27,7 @@ class InitialRequestIntegration : SwiftIntegration {
         settings: SwiftSettings,
     ): Boolean {
         val service = settings.getService(model)
-        return service.hasTrait<AwsJson1_0Trait>() || service.hasTrait<AwsJson1_1Trait>()
+        return service.hasTrait<AwsJson1_0Trait>() || service.hasTrait<AwsJson1_1Trait>() || service.hasTrait<Rpcv2CborTrait>()
     }
 
     override fun writeAdditionalFiles(

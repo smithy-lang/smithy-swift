@@ -22,15 +22,17 @@ open class HttpProtocolServiceClient(
 ) {
     private val serviceName: String = ctx.settings.sdkId
 
+    open val clientProtocolSymbol: Symbol = ClientRuntimeTypes.Core.Client
+
     fun render(serviceSymbol: Symbol) {
         writer.openBlock(
             "${ctx.settings.visibility} class \$L: \$N {",
             "}",
             serviceSymbol.name,
-            ClientRuntimeTypes.Core.Client,
+            clientProtocolSymbol,
         ) {
             writer.write("public static let clientName = \$S", serviceSymbol.name)
-            writer.write("public static let version = \$S", ctx.settings.moduleVersion)
+            renderVersionProperty()
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
             writer.write("let config: \$L", serviceConfig.typeName)
             writer.write("let serviceName = \$S", serviceName)
@@ -42,6 +44,10 @@ open class HttpProtocolServiceClient(
         writer.write("")
         renderClientExtension(serviceSymbol)
         renderServiceSpecificPlugins()
+    }
+
+    open fun renderVersionProperty() {
+        writer.write("public static let version = \$S", ctx.settings.moduleVersion)
     }
 
     open fun renderInitFunction() {
