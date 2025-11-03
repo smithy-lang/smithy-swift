@@ -5,11 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 @_spi(SmithyNodeImpl) import enum Smithy.Node
 @_spi(SmithyTimestamps) import SmithyTimestamps
 
-extension SchemaProtocol {
+extension Schema {
 
     public var jsonName: String? {
         traits["smithy.api#jsonName"]?.string
@@ -31,18 +32,10 @@ extension SchemaProtocol {
         traits.contains { $0.key == "smithy.api#httpPayload" }
     }
 
+    @_spi(SmithyTimestamps)
     public var timestampFormat: SmithyTimestamps.TimestampFormat? {
         guard let timestampFormatString = traits["smithy.api#timestampFormat"]?.string else { return nil }
-        switch timestampFormatString {
-        case "date-time":
-            return .dateTime
-        case "epoch-seconds":
-            return .epochSeconds
-        case "http-date":
-            return .httpDate
-        default:
-            fatalError("Unexpected value for timestamp format")
-        }
+        return TimestampFormat(rawValue: timestampFormatString)
     }
 
     public var defaultValue: (any Smithy.SmithyDocument)? {
