@@ -21,16 +21,38 @@ object SmithyTypes {
     val LogAgent = runtimeSymbol("LogAgent", SwiftDeclaration.PROTOCOL)
     val RequestMessageSerializer = runtimeSymbol("RequestMessageSerializer", SwiftDeclaration.PROTOCOL)
     val URIQueryItem = runtimeSymbol("URIQueryItem", SwiftDeclaration.STRUCT)
+    val Schema = runtimeSymbol("Schema", SwiftDeclaration.CLASS)
+    val unitSchema = runtimeSymbol("unitSchema", SwiftDeclaration.VAR)
+    val stringSchema = runtimeSymbol("stringSchema", SwiftDeclaration.VAR)
+    val blobSchema = runtimeSymbol("blobSchema", SwiftDeclaration.VAR)
+    val integerSchema = runtimeSymbol("integerSchema", SwiftDeclaration.VAR)
+    val timestampSchema = runtimeSymbol("timestampSchema", SwiftDeclaration.VAR)
+    val booleanSchema = runtimeSymbol("booleanSchema", SwiftDeclaration.VAR)
+    val floatSchema = runtimeSymbol("floatSchema", SwiftDeclaration.VAR)
+    val doubleSchema = runtimeSymbol("doubleSchema", SwiftDeclaration.VAR)
+    val longSchema = runtimeSymbol("longSchema", SwiftDeclaration.VAR)
+    val shortSchema = runtimeSymbol("shortSchema", SwiftDeclaration.VAR)
+    val byteSchema = runtimeSymbol("byteSchema", SwiftDeclaration.VAR)
+    val primitiveBooleanSchema = runtimeSymbol("primitiveBooleanSchema", SwiftDeclaration.VAR)
+    val primitiveFloatSchema = runtimeSymbol("primitiveFloatSchema", SwiftDeclaration.VAR)
+    val primitiveDoubleSchema = runtimeSymbol("primitiveDoubleSchema", SwiftDeclaration.VAR)
+    val primitiveLongSchema = runtimeSymbol("primitiveLongSchema", SwiftDeclaration.VAR)
+    val primitiveIntegerSchema = runtimeSymbol("primitiveIntegerSchema", SwiftDeclaration.VAR)
+    val primitiveShortSchema = runtimeSymbol("primitiveShortSchema", SwiftDeclaration.VAR)
+    val primitiveByteSchema = runtimeSymbol("primitiveByteSchema", SwiftDeclaration.VAR)
+    val documentSchema = runtimeSymbol("documentSchema", SwiftDeclaration.VAR)
 }
 
 private fun runtimeSymbol(
     name: String,
-    declaration: SwiftDeclaration? = null,
+    declaration: SwiftDeclaration?,
+    additionalImports: List<Symbol> = emptyList(),
+    spiName: List<String> = emptyList(),
 ): Symbol =
     SwiftSymbol.make(
         name,
         declaration,
-        SwiftDependency.SMITHY,
-        emptyList(),
-        emptyList(),
+        SwiftDependency.SMITHY.takeIf { additionalImports.isEmpty() },
+        additionalImports,
+        spiName,
     )

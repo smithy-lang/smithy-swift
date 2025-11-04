@@ -27,6 +27,11 @@ object SmithyReadWriteTypes {
     val WritingClosures = runtimeSymbol("WritingClosures", SwiftDeclaration.ENUM)
     val ReadingClosureBox = runtimeSymbol("ReadingClosureBox", SwiftDeclaration.STRUCT)
     val WritingClosureBox = runtimeSymbol("WritingClosureBox", SwiftDeclaration.STRUCT)
+    val ShapeSerializer = runtimeSymbol("ShapeSerializer", SwiftDeclaration.PROTOCOL)
+    val ShapeDeserializer = runtimeSymbol("ShapeDeserializer", SwiftDeclaration.PROTOCOL)
+    val SerializableStruct = runtimeSymbol("SerializableStruct", SwiftDeclaration.PROTOCOL)
+    val DeserializableStruct = runtimeSymbol("DeserializableStruct", SwiftDeclaration.PROTOCOL)
+    val Unit = runtimeSymbol("Unit", SwiftDeclaration.STRUCT)
 }
 
 private fun runtimeSymbol(
