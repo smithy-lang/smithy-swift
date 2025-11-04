@@ -21,7 +21,7 @@ public enum Node: Sendable {
 }
 
 public extension Node {
-    
+
     /// Returns the object dictionary if this Node is `.object`, else returns `nil`.
     var object: [String: Node]? {
         guard case .object(let value) = self else { return nil }
