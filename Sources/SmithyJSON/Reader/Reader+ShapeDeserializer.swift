@@ -12,70 +12,67 @@ import struct Smithy.Document
 import protocol Smithy.SmithyDocument
 import enum SmithyReadWrite.ReaderError
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.ShapeDeserializer
-import class Smithy.Schema
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SchemaProtocol
+@_spi(SmithyReadWrite) import struct SmithyReadWrite.Schema
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 
 @_spi(SmithyReadWrite)
 extension Reader: SmithyReadWrite.ShapeDeserializer {
 
-    public func readStructure<Target>(schema: Schema) throws -> Target? {
+    public func readStructure<Target>(schema: SmithyReadWrite.Schema<Target>) throws -> Target? {
         let resolvedReader = try resolvedReader(schema: schema)
         let structureSchema = resolvedTargetSchema(schema: schema)
-//        guard let factory = structureSchema.factory else {
-//            throw ReaderError.invalidSchema("Missing factory for structure or union: \(structureSchema.id)")
-//        }
-        guard resolvedReader.hasContent, resolvedReader.jsonNode == .object else {
-//            return resolvedDefault(schema: schema) != nil ? factory() : nil
-            return nil
+        guard let factory = structureSchema.factory else {
+            throw ReaderError.invalidSchema("Missing factory for structure or union: \(structureSchema.id)")
         }
-//        var value = factory()
-//        try structureSchema.members.forEach { memberContainer in
-//            try memberContainer.performRead(base: &value, key: "", reader: resolvedReader)
-//        }
-//        return value
-        return nil
+        guard resolvedReader.hasContent, resolvedReader.jsonNode == .object else {
+            return resolvedDefault(schema: schema) != nil ? factory() : nil
+        }
+        var value = factory()
+        try structureSchema.members.forEach { memberContainer in
+            try memberContainer.performRead(base: &value, key: "", reader: resolvedReader)
+        }
+        return value
     }
 
-    public func readList<T>(schema: Schema) throws -> [T]? {
+    public func readList<T>(schema: Schema<[T]>) throws -> [T]? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, resolvedReader.jsonNode == .array else {
             return resolvedDefault(schema: schema) != nil ? [] : nil
         }
         let listSchema = resolvedTargetSchema(schema: schema)
-//        guard let memberContainer = listSchema.members.first(
-//            where: { $0.member.memberSchema().memberName == "member" }
-//        ) else {
-//            throw ReaderError.requiredValueNotPresent
-//        }
+        guard let memberContainer = listSchema.members.first(
+            where: { $0.member.memberSchema().memberName == "member" }
+        ) else {
+            throw ReaderError.requiredValueNotPresent
+        }
         var value = [T]()
         for child in resolvedReader.children {
-//            try memberContainer.performRead(base: &value, key: "", reader: child)
+            try memberContainer.performRead(base: &value, key: "", reader: child)
         }
-//        return value
-        return nil
+        return value
     }
 
-    public func readMap<T>(schema: Schema) throws -> [String: T]? {
+    public func readMap<T>(schema: Schema<[String: T]>) throws -> [String: T]? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, resolvedReader.jsonNode == .object else {
             return resolvedDefault(schema: schema) != nil ? [:] : nil
         }
         let mapSchema = resolvedTargetSchema(schema: schema)
-//        guard let valueContainer = mapSchema.members.first(
-//            where: { $0.member.memberSchema().memberName == "value" }
-//        ) else {
-//            throw ReaderError.requiredValueNotPresent
-//        }
+        guard let valueContainer = mapSchema.members.first(
+            where: { $0.member.memberSchema().memberName == "value" }
+        ) else {
+            throw ReaderError.requiredValueNotPresent
+        }
         var value = [String: T]()
         for child in resolvedReader.children {
             if !mapSchema.isSparse && child.jsonNode == .null { continue }
-//            try valueContainer.performRead(base: &value, key: child.nodeInfo.name, reader: child)
+            try valueContainer.performRead(base: &value, key: child.nodeInfo.name, reader: child)
         }
-//        return value
-        return nil
+        return value
     }
 
-    public func readEnum<T: RawRepresentable>(schema: Schema) throws -> T? where T.RawValue == String {
+    public func readEnum<T: RawRepresentable>(schema: Schema<T>) throws -> T? where T.RawValue == String {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, case .string = resolvedReader.jsonNode else {
             return try resolvedDefault(schema: schema).map { T(rawValue: try $0.asString())! }
@@ -84,7 +81,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return T(rawValue: rawValue)
     }
 
-    public func readIntEnum<T: RawRepresentable>(schema: Schema) throws -> T? where T.RawValue == Int {
+    public func readIntEnum<T: RawRepresentable>(schema: Schema<T>) throws -> T? where T.RawValue == Int {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, case .number = resolvedReader.jsonNode else {
             return try resolvedDefault(schema: schema).map { T(rawValue: try $0.asInteger())! }
@@ -93,7 +90,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return T(rawValue: rawValue)
     }
 
-    public func readString(schema: Schema) throws -> String? {
+    public func readString(schema: Schema<String>) throws -> String? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, case .string = resolvedReader.jsonNode else {
             return try resolvedDefault(schema: schema)?.asString()
@@ -101,7 +98,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    public func readBoolean(schema: Schema) throws -> Bool? {
+    public func readBoolean(schema: SmithyReadWrite.Schema<Bool>) throws -> Bool? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, case .bool = resolvedReader.jsonNode else {
             return try resolvedDefault(schema: schema)?.asBoolean()
@@ -109,7 +106,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    public func readByte(schema: Schema) throws -> Int8? {
+    public func readByte(schema: SmithyReadWrite.Schema<Int8>) throws -> Int8? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, case .number = resolvedReader.jsonNode else {
             return try resolvedDefault(schema: schema)?.asByte()
@@ -117,7 +114,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    public func readShort(schema: Schema) throws -> Int16? {
+    public func readShort(schema: SmithyReadWrite.Schema<Int16>) throws -> Int16? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, case .number = resolvedReader.jsonNode else {
             return try resolvedDefault(schema: schema)?.asShort()
@@ -125,7 +122,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    public func readInteger(schema: Schema) throws -> Int? {
+    public func readInteger(schema: SmithyReadWrite.Schema<Int>) throws -> Int? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, case .number = resolvedReader.jsonNode else {
             return try resolvedDefault(schema: schema)?.asInteger()
@@ -133,7 +130,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    public func readLong(schema: Schema) throws -> Int? {
+    public func readLong(schema: SmithyReadWrite.Schema<Int>) throws -> Int? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, case .number = resolvedReader.jsonNode else {
             return try resolvedDefault(schema: schema)?.asInteger()
@@ -141,7 +138,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    public func readFloat(schema: Schema) throws -> Float? {
+    public func readFloat(schema: SmithyReadWrite.Schema<Float>) throws -> Float? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent else {
             return try resolvedDefault(schema: schema)?.asFloat()
@@ -149,7 +146,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    public func readDouble(schema: Schema) throws -> Double? {
+    public func readDouble(schema: SmithyReadWrite.Schema<Double>) throws -> Double? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent else {
             return try resolvedDefault(schema: schema)?.asDouble()
@@ -157,7 +154,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    public func readBigInteger(schema: Schema) throws -> Int64? {
+    public func readBigInteger(schema: SmithyReadWrite.Schema<Int64>) throws -> Int64? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, case .number = resolvedReader.jsonNode else {
             return try resolvedDefault(schema: schema)?.asBigInteger()
@@ -166,7 +163,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return int.map { Int64($0) }
     }
 
-    public func readBigDecimal(schema: Schema) throws -> Double? {
+    public func readBigDecimal(schema: SmithyReadWrite.Schema<Double>) throws -> Double? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent else {
             return try resolvedDefault(schema: schema)?.asDouble()
@@ -174,7 +171,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    public func readBlob(schema: Schema) throws -> Data? {
+    public func readBlob(schema: SmithyReadWrite.Schema<Data>) throws -> Data? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, case .string = resolvedReader.jsonNode else {
             guard let base64String = try resolvedDefault(schema: schema)?.asString() else { return nil }
@@ -183,7 +180,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    public func readTimestamp(schema: Schema) throws -> Date? {
+    public func readTimestamp(schema: SmithyReadWrite.Schema<Date>) throws -> Date? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent else {
             guard let defaultValue = resolvedDefault(schema: schema) else { return nil }
@@ -200,13 +197,12 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
             }
         }
         let memberSchema = schema.type == .member ? schema : nil
-//        let timestampSchema = schema.targetSchema() ?? schema
-//        let resolvedTimestampFormat = memberSchema?.timestampFormat ?? timestampSchema.timestampFormat
-//        return try resolvedReader.readTimestampIfPresent(format: resolvedTimestampFormat ?? .epochSeconds)
-        return nil
+        let timestampSchema = schema.targetSchema() ?? schema
+        let resolvedTimestampFormat = memberSchema?.timestampFormat ?? timestampSchema.timestampFormat
+        return try resolvedReader.readTimestampIfPresent(format: resolvedTimestampFormat ?? .epochSeconds)
     }
 
-    public func readDocument(schema: Schema) throws -> Document? {
+    public func readDocument(schema: SmithyReadWrite.Schema<Document>) throws -> Document? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent else {
             return resolvedDefault(schema: schema).map { Document($0) }
@@ -214,7 +210,7 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    public func readNull(schema: Schema) throws -> Bool? {
+    public func readNull(schema: any SmithyReadWrite.SchemaProtocol) throws -> Bool? {
         let resolvedReader = try resolvedReader(schema: schema)
         guard resolvedReader.hasContent, case .null = resolvedReader.jsonNode else {
             return false
@@ -222,11 +218,11 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         return try resolvedReader.readIfPresent()
     }
 
-    private func resolvedReader(schema: Schema) throws -> Reader {
+    private func resolvedReader(schema: any SchemaProtocol) throws -> Reader {
         if schema.httpPayload {
             return self
-//        } else if schema.containerType == .map || schema.containerType == .list || schema.containerType == .set {
-//            return self
+        } else if schema.containerType == .map || schema.containerType == .list || schema.containerType == .set {
+            return self
         } else if schema.type == .member {
             let resolvedName = try resolvedName(memberSchema: schema)
             return self[NodeInfo(resolvedName)]
@@ -235,19 +231,19 @@ extension Reader: SmithyReadWrite.ShapeDeserializer {
         }
     }
 
-    private func resolvedDefault(schema: Schema) -> (any SmithyDocument)? {
-//        if schema.type == .member {
-//            return schema.defaultValue ?? schema.targetSchema()?.defaultValue
-//        } else {
+    private func resolvedDefault<Target>(schema: Schema<Target>) -> (any SmithyDocument)? {
+        if schema.type == .member {
+            return schema.defaultValue ?? schema.targetSchema()?.defaultValue
+        } else {
             return schema.defaultValue
-//        }
+        }
     }
 
-    private func resolvedTargetSchema(schema: Schema) -> Schema {
-        schema.target ?? schema
+    private func resolvedTargetSchema<Target>(schema: Schema<Target>) -> Schema<Target> {
+        schema.targetSchema() ?? schema
     }
 
-    private func resolvedName(memberSchema: Schema) throws -> String {
+    private func resolvedName(memberSchema: any SchemaProtocol) throws -> String {
         if respectsJSONName {
             guard let resolvedName = memberSchema.jsonName ?? memberSchema.memberName else {
                 throw ReaderError.requiredValueNotPresent

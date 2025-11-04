@@ -18,7 +18,6 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
@@ -37,6 +36,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.customtraits.NeedsReaderTrait
 import software.amazon.smithy.swift.codegen.customtraits.NeedsWriterTrait
+import software.amazon.smithy.swift.codegen.customtraits.NestedTrait
 import software.amazon.smithy.swift.codegen.events.MessageMarshallableGenerator
 import software.amazon.smithy.swift.codegen.events.MessageUnmarshallableGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.HTTPResponseGenerator
@@ -60,11 +60,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.providers.Ht
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.schema.DeserializableStructGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.schema.DeserializableUnionGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.schema.SchemaGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.schema.SerializableStructGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.schema.SerializableUnionGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionDecodeGenerator
@@ -78,7 +74,6 @@ import software.amazon.smithy.swift.codegen.model.isInputEventStream
 import software.amazon.smithy.swift.codegen.model.isOutputEventStream
 import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 import software.amazon.smithy.swift.codegen.utils.SchemaFileUtils
 import software.amazon.smithy.utils.OptionalUtils
@@ -189,7 +184,7 @@ abstract class HTTPBindingProtocolGenerator(
                         symbolName,
                     ) {
                         writer.write("")
-                        StructEncodeGenerator(ctx, shape, httpBodyMembers, mapOf(), writer).render()
+                        renderStructEncode(ctx, shape, shapeMetadata, httpBodyMembers, writer)
                     }
                 }
             }
@@ -216,7 +211,6 @@ abstract class HTTPBindingProtocolGenerator(
         val nestedShapes =
             resolveShapesNeedingSchema(ctx)
                 .filter { !it.hasTrait<StreamingTrait>() }
-                .filter { it.type != ShapeType.MEMBER }  // Member schemas are only rendered in-line
                 .filter {
                     !(
                         it.asMemberShape().getOrNull()?.let {
@@ -254,7 +248,10 @@ abstract class HTTPBindingProtocolGenerator(
         if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) {
             return
         }
-        val shapeUsesSchemaBasedSerde = ctx.service.responseWireProtocol == WireProtocol.JSON
+        val shapeUsesSchemaBasedRead = ctx.service.responseWireProtocol == WireProtocol.JSON && shape.hasTrait<NestedTrait>()
+        if (shapeUsesSchemaBasedRead && !shape.hasTrait<NeedsWriterTrait>()) {
+            return
+        }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
         val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+ReadWrite")
@@ -265,61 +262,29 @@ abstract class HTTPBindingProtocolGenerator(
                 .name(symbolName)
                 .build()
         ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
-            val members = shape.members().toList()
-            when (shape) {
-                is StructureShape -> {
-                    if (shapeUsesSchemaBasedSerde) {
+            writer.openBlock("extension \$N {", "}", symbol) {
+                val members = shape.members().toList()
+                when (shape) {
+                    is StructureShape -> {
+                        // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
+                        val httpBodyMembers = members.filter { it.isInHttpBody() }
                         if (shape.hasTrait<NeedsWriterTrait>()) {
-                            writer.openBlock("extension \$N: \$N {", "}", symbol, SmithyReadWriteTypes.SerializableStruct) {
-                                writer.write("")
-                                SerializableStructGenerator(ctx, shape, members, mapOf(), writer).render()
-                            }
+                            writer.write("")
+                            renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer)
                         }
-                        if (shape.hasTrait<NeedsReaderTrait>()) {
-                            writer.openBlock("extension \$N: \$N {", "}", symbol, SmithyReadWriteTypes.DeserializableStruct) {
-                                writer.write("")
-                                DeserializableStructGenerator(ctx, shape, members, mapOf(), writer).render()
-                            }
-                        }
-                    } else {
-                        writer.openBlock("extension \$N {", "}", symbol) {
-                            // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
-                            val httpBodyMembers = members.filter { it.isInHttpBody() }
-                            if (shape.hasTrait<NeedsWriterTrait>()) {
-                                writer.write("")
-                                StructEncodeGenerator(ctx, shape, httpBodyMembers, mapOf(), writer).render()
-                            }
-                            if (shape.hasTrait<NeedsReaderTrait>()) {
-                                writer.write("")
-                                StructDecodeGenerator(ctx, shape, httpBodyMembers, mapOf(), writer).render()
-                            }
+                        if (shape.hasTrait<NeedsReaderTrait>() && !shapeUsesSchemaBasedRead) {
+                            writer.write("")
+                            renderStructDecode(ctx, shape, mapOf(), httpBodyMembers, writer)
                         }
                     }
-                }
-                is UnionShape -> {
-                    if (shapeUsesSchemaBasedSerde) {
+                    is UnionShape -> {
                         if (shape.hasTrait<NeedsWriterTrait>()) {
-                            writer.openBlock("extension \$N: \$N {", "}", symbol, SmithyReadWriteTypes.SerializableStruct) {
-                                writer.write("")
-                                SerializableUnionGenerator(ctx, shape, members, mapOf(), writer).render()
-                            }
+                            writer.write("")
+                            UnionEncodeGenerator(ctx, shape, members, writer).render()
                         }
-                        if (shape.hasTrait<NeedsReaderTrait>()) {
-                            writer.openBlock("extension \$N: \$N {", "}", symbol, SmithyReadWriteTypes.DeserializableStruct) {
-                                writer.write("")
-                                DeserializableUnionGenerator(ctx, shape, members, mapOf(), writer).render()
-                            }
-                        }
-                    } else {
-                        writer.openBlock("extension \$N {", "}", symbol) {
-                            if (shape.hasTrait<NeedsWriterTrait>()) {
-                                writer.write("")
-                                UnionEncodeGenerator(ctx, shape, members, writer).render()
-                            }
-                            if (shape.hasTrait<NeedsReaderTrait>()) {
-                                writer.write("")
-                                UnionDecodeGenerator(ctx, shape, members, writer).render()
-                            }
+                        if (shape.hasTrait<NeedsReaderTrait>() && !shapeUsesSchemaBasedRead) {
+                            writer.write("")
+                            UnionDecodeGenerator(ctx, shape, members, writer).render()
                         }
                     }
                 }
@@ -328,11 +293,11 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     private fun resolveInputShapes(ctx: ProtocolGenerator.GenerationContext): Map<Shape, Map<ShapeMetadata, Any>> {
-        val shapesInfo: MutableMap<Shape, Map<ShapeMetadata, Any>> = mutableMapOf()
+        var shapesInfo: MutableMap<Shape, Map<ShapeMetadata, Any>> = mutableMapOf()
         val operations = getHttpBindingOperations(ctx)
         for (operation in operations) {
             val inputType = ctx.model.expectShape(operation.input.get())
-            val metadata =
+            var metadata =
                 mapOf<ShapeMetadata, Any>(
                     Pair(ShapeMetadata.OPERATION_SHAPE, operation),
                     Pair(ShapeMetadata.SERVICE_VERSION, ctx.service.version),
@@ -442,13 +407,6 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     private fun resolveShapesNeedingSchema(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
-            val inputShape = ctx.model.expectShape(it.input.get())
-            inputShape.members()
-        }
-            .map { ctx.model.expectShape(it.target) }
-            .toSet()
-
         val topLevelOutputMembers =
             getHttpBindingOperations(ctx)
                 .map { ctx.model.expectShape(it.output.get()) }
@@ -465,11 +423,20 @@ abstract class HTTPBindingProtocolGenerator(
                 .map { ctx.model.expectShape(it) }
                 .toSet()
 
+        // Input members excluded from schema generation until schema-based deserialization is implemented
+
+//        val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
+//            val inputShape = ctx.model.expectShape(it.input.get())
+//            inputShape.members()
+//        }
+//            .map { ctx.model.expectShape(it.target) }
+//            .toSet()
+
         val allTopLevelMembers =
-            topLevelInputMembers
-                .union(topLevelOutputMembers)
+            topLevelOutputMembers
                 .union(topLevelErrorMembers)
                 .union(topLevelServiceErrorMembers)
+//                .union(topLevelInputMembers)
 
         return walkNestedShapesRequiringSchema(ctx, allTopLevelMembers)
     }
@@ -604,6 +571,26 @@ abstract class HTTPBindingProtocolGenerator(
     protected val httpResponseGenerator = HTTPResponseGenerator(customizations)
 
     protected abstract val shouldRenderEncodableConformance: Boolean
+
+    private fun renderStructEncode(
+        ctx: ProtocolGenerator.GenerationContext,
+        shapeContainingMembers: Shape,
+        shapeMetadata: Map<ShapeMetadata, Any>,
+        members: List<MemberShape>,
+        writer: SwiftWriter,
+    ) {
+        StructEncodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
+    }
+
+    private fun renderStructDecode(
+        ctx: ProtocolGenerator.GenerationContext,
+        shapeContainingMembers: Shape,
+        shapeMetadata: Map<ShapeMetadata, Any>,
+        members: List<MemberShape>,
+        writer: SwiftWriter,
+    ) {
+        StructDecodeGenerator(ctx, shapeContainingMembers, members, shapeMetadata, writer).render()
+    }
 
     protected abstract fun addProtocolSpecificMiddleware(
         ctx: ProtocolGenerator.GenerationContext,

@@ -6,7 +6,7 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.model.hasTrait
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
 import kotlin.jvm.optionals.getOrNull
 
 fun Shape.schemaVar(writer: SwiftWriter): String =
@@ -18,33 +18,33 @@ fun Shape.schemaVar(writer: SwiftWriter): String =
 
 private fun ShapeId.preludeSchemaVarName(writer: SwiftWriter): String =
     when (this.name) {
-        "Unit" -> writer.format("\$N", SmithyTypes.unitSchema)
-        "String" -> writer.format("\$N", SmithyTypes.stringSchema)
-        "Blob" -> writer.format("\$N", SmithyTypes.blobSchema)
-        "Integer" -> writer.format("\$N", SmithyTypes.integerSchema)
-        "Timestamp" -> writer.format("\$N", SmithyTypes.timestampSchema)
-        "Boolean" -> writer.format("\$N", SmithyTypes.booleanSchema)
-        "Float" -> writer.format("\$N", SmithyTypes.floatSchema)
-        "Double" -> writer.format("\$N", SmithyTypes.doubleSchema)
-        "Long" -> writer.format("\$N", SmithyTypes.longSchema)
-        "Short" -> writer.format("\$N", SmithyTypes.shortSchema)
-        "Byte" -> writer.format("\$N", SmithyTypes.byteSchema)
-        "PrimitiveInteger" -> writer.format("\$N", SmithyTypes.primitiveIntegerSchema)
-        "PrimitiveBoolean" -> writer.format("\$N", SmithyTypes.primitiveBooleanSchema)
-        "PrimitiveFloat" -> writer.format("\$N", SmithyTypes.primitiveFloatSchema)
-        "PrimitiveDouble" -> writer.format("\$N", SmithyTypes.primitiveDoubleSchema)
-        "PrimitiveLong" -> writer.format("\$N", SmithyTypes.primitiveLongSchema)
-        "PrimitiveShort" -> writer.format("\$N", SmithyTypes.primitiveShortSchema)
-        "PrimitiveByte" -> writer.format("\$N", SmithyTypes.primitiveByteSchema)
-        "Document" -> writer.format("\$N", SmithyTypes.documentSchema)
+        "Unit" -> writer.format("\$N", SmithyReadWriteTypes.unitSchema)
+        "String" -> writer.format("\$N", SmithyReadWriteTypes.stringSchema)
+        "Blob" -> writer.format("\$N", SmithyReadWriteTypes.blobSchema)
+        "Integer" -> writer.format("\$N", SmithyReadWriteTypes.integerSchema)
+        "Timestamp" -> writer.format("\$N", SmithyReadWriteTypes.timestampSchema)
+        "Boolean" -> writer.format("\$N", SmithyReadWriteTypes.booleanSchema)
+        "Float" -> writer.format("\$N", SmithyReadWriteTypes.floatSchema)
+        "Double" -> writer.format("\$N", SmithyReadWriteTypes.doubleSchema)
+        "Long" -> writer.format("\$N", SmithyReadWriteTypes.longSchema)
+        "Short" -> writer.format("\$N", SmithyReadWriteTypes.shortSchema)
+        "Byte" -> writer.format("\$N", SmithyReadWriteTypes.byteSchema)
+        "PrimitiveInteger" -> writer.format("\$N", SmithyReadWriteTypes.primitiveIntegerSchema)
+        "PrimitiveBoolean" -> writer.format("\$N", SmithyReadWriteTypes.primitiveBooleanSchema)
+        "PrimitiveFloat" -> writer.format("\$N", SmithyReadWriteTypes.primitiveFloatSchema)
+        "PrimitiveDouble" -> writer.format("\$N", SmithyReadWriteTypes.primitiveDoubleSchema)
+        "PrimitiveLong" -> writer.format("\$N", SmithyReadWriteTypes.primitiveLongSchema)
+        "PrimitiveShort" -> writer.format("\$N", SmithyReadWriteTypes.primitiveShortSchema)
+        "PrimitiveByte" -> writer.format("\$N", SmithyReadWriteTypes.primitiveByteSchema)
+        "Document" -> writer.format("\$N", SmithyReadWriteTypes.documentSchema)
         else -> throw Exception("Unhandled prelude type converted to schemaVar: ${this.name}")
     }
 
 private fun ShapeId.schemaVarName(): String {
-    assert(this.member.getOrNull() == null)
     val namespacePortion = this.namespace.replace(".", "_")
     val namePortion = this.name
-    return "schema__${namespacePortion}__${namePortion}"
+    val memberPortion = this.member.getOrNull()?.let { "__member_$it" } ?: ""
+    return "schema__namespace_${namespacePortion}__name_${namePortion}$memberPortion"
 }
 
 val Shape.readMethodName: String
