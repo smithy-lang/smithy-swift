@@ -6,7 +6,7 @@
 //
 
 /// Reproduces the cases in Smithy [ShapeType](https://github.com/smithy-lang/smithy/blob/main/smithy-model/src/main/java/software/amazon/smithy/model/shapes/ShapeType.java).
-public enum ShapeType {
+public enum ShapeType: Sendable {
     case blob
     case boolean
     case string

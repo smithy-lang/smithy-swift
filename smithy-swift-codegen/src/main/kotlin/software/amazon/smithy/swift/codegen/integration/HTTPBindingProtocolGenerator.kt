@@ -142,7 +142,7 @@ abstract class HTTPBindingProtocolGenerator(
     override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpError
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
-//        if (usesSchemaBasedSerialization(ctx)) { return } // temporary condition
+//        if (usesSchemaBasedSerialization(ctx)) return // temporary condition
         // render conformance to HttpRequestBinding for all input shapes
         val inputShapesWithHttpBindings: MutableSet<ShapeId> = mutableSetOf()
         for (operation in getHttpBindingOperations(ctx)) {
@@ -191,14 +191,14 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
-//        if (usesSchemaBasedSerialization(ctx)) { return } // temporary condition
+//        if (usesSchemaBasedSerialization(ctx)) return // temporary condition
         val httpOperations = getHttpBindingOperations(ctx)
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         httpResponseGenerator.render(ctx, httpOperations, httpBindingResolver)
     }
 
     override fun generateCodableConformanceForNestedTypes(ctx: ProtocolGenerator.GenerationContext) {
-//        if (usesSchemaBasedSerialization(ctx)) { return } // temporary condition
+//        if (usesSchemaBasedSerialization(ctx)) return // temporary condition
         val nestedShapes =
             resolveShapesNeedingCodableConformance(ctx)
                 .filter { !it.isEventStreaming }
@@ -209,12 +209,14 @@ abstract class HTTPBindingProtocolGenerator(
 
     private fun usesSchemaBasedSerialization(ctx: ProtocolGenerator.GenerationContext): Boolean =
         // This fun is temporary; it will be eliminated when all services/protocols are moved to schema-based
-        ctx.service.allTraits.keys.any { it.name == "rpcv2Cbor" || it.name == "awsJson1_0" || it.name == "awsJson1_1" }
+        ctx.service.allTraits.keys
+            .any { it.name == "rpcv2Cbor" }
 
     override fun generateSchemas(ctx: ProtocolGenerator.GenerationContext) {
-        if (!usesSchemaBasedSerialization(ctx)) { return } // temporary condition
-        val nestedShapes = resolveShapesNeedingSchema(ctx)
-            .filter { it.type != ShapeType.MEMBER }  // Member schemas are only rendered in-line
+        if (!usesSchemaBasedSerialization(ctx)) return // temporary condition
+        val nestedShapes =
+            resolveShapesNeedingSchema(ctx)
+                .filter { it.type != ShapeType.MEMBER } // Member schemas are only rendered in-line
         nestedShapes.forEach { renderSchemas(ctx, it) }
     }
 
@@ -240,7 +242,7 @@ abstract class HTTPBindingProtocolGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
     ) {
-//        if (!usesSchemaBasedSerialization(ctx)) { return } // temporary condition
+//        if (!usesSchemaBasedSerialization(ctx)) return // temporary condition
         if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) {
             return
         }
@@ -400,12 +402,13 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     private fun resolveShapesNeedingSchema(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        val topLevelInputMembers = getHttpBindingOperations(ctx).flatMap {
-            val inputShape = ctx.model.expectShape(it.input.get())
-            inputShape.members()
-        }
-            .map { ctx.model.expectShape(it.target) }
-            .toSet()
+        val topLevelInputMembers =
+            getHttpBindingOperations(ctx)
+                .flatMap {
+                    val inputShape = ctx.model.expectShape(it.input.get())
+                    inputShape.members()
+                }.map { ctx.model.expectShape(it.target) }
+                .toSet()
 
         val topLevelOutputMembers =
             getHttpBindingOperations(ctx)

@@ -8,11 +8,11 @@
 /// Represents a single Smithy shape ID.
 ///
 /// Shape ID is described in the Smithy 2.0 spec [here](https://smithy.io/2.0/spec/model.html#shape-id).
-public struct ShapeID: Hashable {
+public struct ShapeID: Sendable, Hashable {
     public let namespace: String
     public let name: String
     public let member: String?
-    
+
     /// Creates a Shape ID for a Smithy shape.
     ///
     /// This initializer does no validation of length or of allowed characters in the Shape ID;
@@ -30,7 +30,7 @@ public struct ShapeID: Hashable {
 }
 
 extension ShapeID: CustomStringConvertible {
-    
+
     /// Returns the absolute Shape ID in a single, printable string.
     public var description: String {
         if let member = self.member {

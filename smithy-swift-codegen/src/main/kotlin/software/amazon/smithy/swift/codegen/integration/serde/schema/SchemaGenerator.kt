@@ -25,7 +25,10 @@ class SchemaGenerator(
         }
     }
 
-    private fun renderSchemaStruct(shape: Shape, index: Int? = null) {
+    private fun renderSchemaStruct(
+        shape: Shape,
+        index: Int? = null,
+    ) {
         writer.openBlock(".init(", "),") {
             writer.write(
                 "id: \$L,",
@@ -68,9 +71,7 @@ class SchemaGenerator(
             id.member.getOrNull()?.let { writer.format(", \$S", it) } ?: "",
         )
 
-    private fun targetShape(shape: Shape): Shape? =
-        memberShape(shape)?.let { ctx.model.expectShape(it.target) }
+    private fun targetShape(shape: Shape): Shape? = memberShape(shape)?.let { ctx.model.expectShape(it.target) }
 
-    private fun memberShape(shape: Shape): MemberShape? =
-        shape.asMemberShape().getOrNull()
+    private fun memberShape(shape: Shape): MemberShape? = shape.asMemberShape().getOrNull()
 }
