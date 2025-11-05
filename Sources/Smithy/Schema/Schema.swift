@@ -5,24 +5,24 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// A structure which describes selected Smithy model information for a Smithy model shape.
+/// A class which describes selected Smithy model information for a Smithy model shape.
 ///
 /// Typically, the Schema contains only modeled info & properties that are relevant to
 /// serialization, transport bindings, and other functions performed by the SDK.
-public class Schema {
+public final class Schema: Sendable {
 
     /// The Smithy shape ID for the shape described by this schema.
     public let id: ShapeID
-    
+
     /// The type of the shape being described.
     public let type: ShapeType
-    
+
     /// A dictionary of the described shape's trait shape IDs to Nodes with trait data.
     ///
     /// Not all traits for a shape will be represented in the schema;
     /// typically the Schema contains only the traits relevant to the client-side SDK.
     public let traits: [ShapeID: Node]
-    
+
     /// The member schemas for this schema, if any.
     ///
     /// Typically only a schema of type Structure, Union, Enum, IntEnum, List or Map will have members.
@@ -39,7 +39,7 @@ public class Schema {
     /// This index is intended for use as a performance enhancement when looking up member schemas
     /// during deserialization.
     public let index: Int
-    
+
     /// Creates a new Schema using the passed parameters.
     ///
     /// No validation is performed on the parameters since calls to this initializer
