@@ -8,7 +8,7 @@
 /// Contains the value of a Smithy Node.
 ///
 /// Smithy node data is basically the same as the data that can be stored in JSON.
-/// The root of a Smithy node may be of any case, i.e. unlike JSON, the root element is not limited to object or list.
+/// The root of a Smithy node may be of any type, i.e. unlike JSON, the root element is not limited to object or list.
 ///
 /// See the definition of node value in the Smithy spec: https://smithy.io/2.0/spec/model.html#node-values
 public enum Node: Sendable {

@@ -269,6 +269,10 @@ let package = Package(
             resources: [ .process("Resources") ]
         ),
         .testTarget(
+            name: "SmithyTests",
+            dependencies: ["Smithy"]
+        ),
+        .testTarget(
             name: "SmithyCBORTests",
             dependencies: ["SmithyCBOR", "ClientRuntime", "SmithyTestUtil"]
         ),

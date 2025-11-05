@@ -5,8 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// Reproduces the cases in Smithy `ShapeType`.
-/// https://github.com/smithy-lang/smithy/blob/main/smithy-model/src/main/java/software/amazon/smithy/model/shapes/ShapeType.java
+/// Reproduces the cases in Smithy [ShapeType](https://github.com/smithy-lang/smithy/blob/main/smithy-model/src/main/java/software/amazon/smithy/model/shapes/ShapeType.java).
 public enum ShapeType {
     case blob
     case boolean
