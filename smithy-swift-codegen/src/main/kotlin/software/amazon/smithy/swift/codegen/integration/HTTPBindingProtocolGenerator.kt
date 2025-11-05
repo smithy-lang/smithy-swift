@@ -142,7 +142,7 @@ abstract class HTTPBindingProtocolGenerator(
     override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpError
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
-        if (usesSchemaBasedSerialization(ctx)) { return } // temporary condition
+//        if (usesSchemaBasedSerialization(ctx)) { return } // temporary condition
         // render conformance to HttpRequestBinding for all input shapes
         val inputShapesWithHttpBindings: MutableSet<ShapeId> = mutableSetOf()
         for (operation in getHttpBindingOperations(ctx)) {
@@ -191,14 +191,14 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
-        if (usesSchemaBasedSerialization(ctx)) { return } // temporary condition
+//        if (usesSchemaBasedSerialization(ctx)) { return } // temporary condition
         val httpOperations = getHttpBindingOperations(ctx)
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         httpResponseGenerator.render(ctx, httpOperations, httpBindingResolver)
     }
 
     override fun generateCodableConformanceForNestedTypes(ctx: ProtocolGenerator.GenerationContext) {
-        if (usesSchemaBasedSerialization(ctx)) { return } // temporary condition
+//        if (usesSchemaBasedSerialization(ctx)) { return } // temporary condition
         val nestedShapes =
             resolveShapesNeedingCodableConformance(ctx)
                 .filter { !it.isEventStreaming }
@@ -240,7 +240,7 @@ abstract class HTTPBindingProtocolGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
     ) {
-        if (!usesSchemaBasedSerialization(ctx)) { return } // temporary condition
+//        if (!usesSchemaBasedSerialization(ctx)) { return } // temporary condition
         if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) {
             return
         }

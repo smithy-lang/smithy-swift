@@ -72,7 +72,6 @@ class DirectedSwiftCodegen(
 
         LOGGER.info("Generating Swift client for service ${directive.settings().service}")
 
-        var shouldGenerateTestTarget = false
         context.protocolGenerator?.apply {
             val ctx = ProtocolGenerator.GenerationContext(settings, model, service, symbolProvider, integrations, this.protocol, writers)
             LOGGER.info("[${service.id}] Generating serde for protocol ${this.protocol}")
@@ -87,7 +86,6 @@ class DirectedSwiftCodegen(
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol ${this.protocol}")
             val numProtocolUnitTestsGenerated = generateProtocolUnitTests(ctx)
-            shouldGenerateTestTarget = (numProtocolUnitTestsGenerated > 0)
 
             LOGGER.info("[${service.id}] Generated $numProtocolUnitTestsGenerated tests for protocol ${this.protocol}")
 
