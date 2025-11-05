@@ -191,12 +191,14 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
+        if (usesSchemaBasedSerialization(ctx)) { return } // temporary condition
         val httpOperations = getHttpBindingOperations(ctx)
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         httpResponseGenerator.render(ctx, httpOperations, httpBindingResolver)
     }
 
     override fun generateCodableConformanceForNestedTypes(ctx: ProtocolGenerator.GenerationContext) {
+        if (usesSchemaBasedSerialization(ctx)) { return } // temporary condition
         val nestedShapes =
             resolveShapesNeedingCodableConformance(ctx)
                 .filter { !it.isEventStreaming }
