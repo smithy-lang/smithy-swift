@@ -6,19 +6,19 @@
 //
 
  #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
-// OpenTelemetryApi specific imports
-@preconcurrency import protocol OpenTelemetryApi.Tracer
+@preconcurrency import enum OpenTelemetryApi.AttributeValue
 @preconcurrency import protocol OpenTelemetryApi.Span
 @preconcurrency import enum OpenTelemetryApi.SpanKind
 @preconcurrency import enum OpenTelemetryApi.Status
-@preconcurrency import enum OpenTelemetryApi.AttributeValue
+// OpenTelemetryApi specific imports
+@preconcurrency import protocol OpenTelemetryApi.Tracer
 
-// OpenTelemetrySdk specific imports
-@preconcurrency import class OpenTelemetrySdk.TracerProviderSdk
-@preconcurrency import class OpenTelemetrySdk.TracerProviderBuilder
+@preconcurrency import struct OpenTelemetrySdk.Resource
 @preconcurrency import struct OpenTelemetrySdk.SimpleSpanProcessor
 @preconcurrency import protocol OpenTelemetrySdk.SpanExporter
-@preconcurrency import struct OpenTelemetrySdk.Resource
+@preconcurrency import class OpenTelemetrySdk.TracerProviderBuilder
+// OpenTelemetrySdk specific imports
+@preconcurrency import class OpenTelemetrySdk.TracerProviderSdk
 
 // Smithy specific imports
 import struct Smithy.AttributeKey

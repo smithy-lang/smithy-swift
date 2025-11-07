@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyIdentityAPI.Identity
-import struct Smithy.Attributes
 import struct Smithy.AttributeKey
+import struct Smithy.Attributes
+import protocol SmithyIdentityAPI.Identity
 
 public struct SelectedAuthScheme: Sendable {
     public let schemeID: String

@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Smithy
-import enum SmithyEventStreamsAPI.EventStreamError
-import struct SmithyEventStreamsAPI.Message
-import struct SmithyEventStreamsAPI.Header
-import protocol SmithyEventStreamsAPI.MessageDecoder
 import AwsCommonRuntimeKit
 import struct Foundation.Data
+import Smithy
+import enum SmithyEventStreamsAPI.EventStreamError
+import struct SmithyEventStreamsAPI.Header
+import struct SmithyEventStreamsAPI.Message
+import protocol SmithyEventStreamsAPI.MessageDecoder
 
 /// AWS implementation of `MessageDecoder` for decoding event stream messages
 /// Note: This is class because struct does not allow using `self` in closure

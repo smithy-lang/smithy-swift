@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithyIdentityAPI.Identity
 import struct Foundation.Date
 import struct Smithy.Attributes
+import protocol SmithyIdentityAPI.Identity
 
 /// A type representing AWS credentials for authenticating with an AWS service
 ///

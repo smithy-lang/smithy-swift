@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum AwsCommonRuntimeKit.EndpointProperty
 import Foundation
 import Smithy
-import enum AwsCommonRuntimeKit.EndpointProperty
 
 public enum EndpointPropertyValue: Sendable, Equatable {
     case bool(Bool)

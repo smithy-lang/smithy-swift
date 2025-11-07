@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.Attributes
 import class Smithy.Context
 import protocol SmithyHTTPAuthAPI.AuthScheme
 import protocol SmithyHTTPAuthAPI.Signer
-import struct Smithy.Attributes
 
 public struct BearerTokenAuthScheme: AuthScheme {
     public let schemeID: String = "smithy.api#httpBearerAuth"

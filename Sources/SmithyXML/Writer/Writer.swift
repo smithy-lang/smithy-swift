@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
-import protocol Smithy.SmithyDocument
-import struct Foundation.Date
 import struct Foundation.Data
+import struct Foundation.Date
+import protocol Smithy.SmithyDocument
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
 @_spi(SmithyReadWrite) import typealias SmithyReadWrite.WritingClosure
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter

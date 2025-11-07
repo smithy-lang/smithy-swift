@@ -7,41 +7,41 @@
 
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
 
-import struct Smithy.Attributes
-import struct Smithy.SwiftLogger
-import protocol Smithy.LogAgent
-import protocol SmithyHTTPAPI.HTTPClient
-import struct SmithyHTTPAPI.Headers
-import class SmithyHTTPAPI.HTTPResponse
-import class SmithyHTTPAPI.HTTPRequest
-import enum SmithyHTTPAPI.HTTPStatusCode
-import protocol Smithy.ReadableStream
-import enum Smithy.ByteStream
-import class SmithyStreams.BufferedStream
-import struct Foundation.Date
+import AwsCommonRuntimeKit
 import class Foundation.Bundle
+import struct Foundation.Data
+import struct Foundation.Date
+import class Foundation.HTTPURLResponse
 import class Foundation.InputStream
 import class Foundation.NSObject
 import class Foundation.NSRecursiveLock
 import var Foundation.NSURLAuthenticationMethodClientCertificate
 import var Foundation.NSURLAuthenticationMethodServerTrust
+import struct Foundation.TimeInterval
 import class Foundation.URLAuthenticationChallenge
 import struct Foundation.URLComponents
 import class Foundation.URLCredential
 import struct Foundation.URLQueryItem
 import struct Foundation.URLRequest
 import class Foundation.URLResponse
-import class Foundation.HTTPURLResponse
-import struct Foundation.TimeInterval
 import class Foundation.URLSession
 import class Foundation.URLSessionConfiguration
+import protocol Foundation.URLSessionDataDelegate
+import class Foundation.URLSessionDataTask
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionTaskMetrics
-import class Foundation.URLSessionDataTask
-import protocol Foundation.URLSessionDataDelegate
-import struct Foundation.Data
-import AwsCommonRuntimeKit
 import Security
+import struct Smithy.Attributes
+import enum Smithy.ByteStream
+import protocol Smithy.LogAgent
+import protocol Smithy.ReadableStream
+import struct Smithy.SwiftLogger
+import struct SmithyHTTPAPI.Headers
+import protocol SmithyHTTPAPI.HTTPClient
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPResponse
+import enum SmithyHTTPAPI.HTTPStatusCode
+import class SmithyStreams.BufferedStream
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
 ///
