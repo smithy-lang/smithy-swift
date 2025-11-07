@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
 import enum Smithy.ByteStream
 import enum Smithy.ClientError
-import protocol Smithy.RequestMessageSerializer
 import class Smithy.Context
-import struct Foundation.Data
+import protocol Smithy.RequestMessageSerializer
+import SmithyHTTPAPI
 @_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
 @_spi(SmithyReadWrite) import typealias SmithyReadWrite.WritingClosure
-import SmithyHTTPAPI
 
 @_spi(SmithyReadWrite)
 public struct PayloadBodyMiddleware<OperationStackInput,

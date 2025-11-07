@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyHTTPAPI
-@_spi(SmithyReadWrite) import SmithyReadWrite
 import struct Foundation.Date
 import class Foundation.DateFormatter
 import struct Foundation.Locale
@@ -15,6 +13,8 @@ import struct Foundation.TimeZone
 import struct Foundation.UUID
 import class Smithy.Context
 import protocol Smithy.ResponseMessageDeserializer
+import SmithyHTTPAPI
+@_spi(SmithyReadWrite) import SmithyReadWrite
 
 @_spi(SmithyReadWrite)
 public struct DeserializeMiddleware<OperationStackOutput> {

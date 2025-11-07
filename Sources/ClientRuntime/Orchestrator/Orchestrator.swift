@@ -7,15 +7,15 @@
 
 import struct Foundation.Date
 import struct Foundation.TimeInterval
-import class Smithy.Context
-import enum Smithy.ClientError
-import protocol Smithy.RequestMessage
-import protocol Smithy.ResponseMessage
 import struct Smithy.AttributeKey
 import struct Smithy.Attributes
+import enum Smithy.ClientError
+import class Smithy.Context
+import protocol Smithy.RequestMessage
+import protocol Smithy.ResponseMessage
 import SmithyHTTPAPI
-import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryErrorInfo
+import protocol SmithyRetriesAPI.RetryStrategy
 
 /// Orchestrates operation execution
 ///

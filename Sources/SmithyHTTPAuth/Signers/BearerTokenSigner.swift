@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyHTTPAPI.HTTPRequestBuilder
-import enum Smithy.ClientError
-import protocol SmithyIdentityAPI.Identity
-import protocol SmithyHTTPAuthAPI.Signer
 import struct Smithy.Attributes
+import enum Smithy.ClientError
+import class SmithyHTTPAPI.HTTPRequestBuilder
+import protocol SmithyHTTPAuthAPI.Signer
 import struct SmithyIdentity.BearerTokenIdentity
+import protocol SmithyIdentityAPI.Identity
 
 /// The signer for HTTP bearer auth.
 /// Adds the Authorization header to the request using the resolved bearer token identity as its value.

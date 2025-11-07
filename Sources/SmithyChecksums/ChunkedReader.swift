@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import AwsCommonRuntimeKit
+import struct Foundation.Data
+import Smithy
 import protocol SmithyChecksumsAPI.Checksum
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import struct SmithyHTTPAPI.Headers
-import AwsCommonRuntimeKit
 import SmithyHTTPClient
-import struct Foundation.Data
-import Smithy
 
 public class ChunkedReader {
     private var stream: ReadableStream

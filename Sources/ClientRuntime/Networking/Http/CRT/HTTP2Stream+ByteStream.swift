@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum Smithy.ByteStream
-import struct Smithy.Attributes
 import AwsCommonRuntimeKit
+import struct Smithy.Attributes
+import enum Smithy.ByteStream
 
 extension HTTP2Stream {
     /// Returns the recommended size, in bytes, for the data to write

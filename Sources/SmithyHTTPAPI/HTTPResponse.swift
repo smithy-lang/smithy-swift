@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Foundation.NSRecursiveLock
+import enum Smithy.ByteStream
 import protocol Smithy.ResponseMessage
 import protocol Smithy.Stream
-import enum Smithy.ByteStream
-import class Foundation.NSRecursiveLock
 
 public final class HTTPResponse: ResponseMessage, @unchecked Sendable {
     private var lock = NSRecursiveLock()

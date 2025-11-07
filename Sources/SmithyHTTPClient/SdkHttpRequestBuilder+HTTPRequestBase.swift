@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import AwsCommonRuntimeKit
 import struct Foundation.Date
 import struct Foundation.URLComponents
 import struct Smithy.URIQueryItem
+import struct SmithyHTTPAPI.Headers
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
-import struct SmithyHTTPAPI.Headers
-import AwsCommonRuntimeKit
 
 extension HTTPRequestBuilder {
 

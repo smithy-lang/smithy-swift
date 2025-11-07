@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import AwsCommonRuntimeKit
+import struct Foundation.Data
+import class Smithy.Context
 import protocol Smithy.Stream
 import struct SmithyHTTPAPI.Headers
-import struct Foundation.Data
-import AwsCommonRuntimeKit
 import class SmithyStreams.BufferedStream
-import class Smithy.Context
 
 /// Reads data from the input stream, chunks it, and passes it out through its output stream.
 ///

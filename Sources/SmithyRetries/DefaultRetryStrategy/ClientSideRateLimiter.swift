@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.TimeInterval
 import struct Foundation.Date
 import func Foundation.pow
+import struct Foundation.TimeInterval
 
 actor ClientSideRateLimiter {
 

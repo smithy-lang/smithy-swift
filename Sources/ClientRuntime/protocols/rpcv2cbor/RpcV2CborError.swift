@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyHTTPAPI.HTTPResponse
 @_spi(SmithyReadWrite) import class SmithyCBOR.Reader
+import class SmithyHTTPAPI.HTTPResponse
 
 public struct RpcV2CborError: BaseError {
     public let code: String
