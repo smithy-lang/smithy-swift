@@ -1,10 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0.
 
-import Smithy
-import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import AwsCommonRuntimeKit
+import Smithy
 import SmithyChecksums
+import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import SmithyHTTPAPI
 
 public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput> {

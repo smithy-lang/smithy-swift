@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol Smithy.RequestMessageSerializer
+import struct Foundation.Data
 import class Smithy.Context
+import protocol Smithy.RequestMessageSerializer
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
-import struct Foundation.Data
 
 public struct BlobBodyMiddleware<OperationStackInput, OperationStackOutput> {
     public let id: Swift.String = "BlobBodyMiddleware"

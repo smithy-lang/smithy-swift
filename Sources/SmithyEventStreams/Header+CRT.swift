@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct SmithyEventStreamsAPI.Header
-import enum SmithyEventStreamsAPI.HeaderValue
 import AwsCommonRuntimeKit
 import Foundation
+import struct SmithyEventStreamsAPI.Header
+import enum SmithyEventStreamsAPI.HeaderValue
 
 extension Header {
 

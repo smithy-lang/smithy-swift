@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum Smithy.ClientError
-import struct Smithy.Attributes
 import struct Smithy.AttributeKey
+import struct Smithy.Attributes
+import enum Smithy.ClientError
 import class Smithy.Context
 import class SmithyHTTPAPI.HTTPRequestBuilder
-import struct SmithyHTTPAuthAPI.SelectedAuthScheme
-import protocol SmithyHTTPAuthAPI.AuthScheme
 import struct SmithyHTTPAuth.DefaultIdentityResolverConfiguration
+import protocol SmithyHTTPAuthAPI.AuthScheme
+import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 
 public struct AuthSchemeMiddleware<OperationStackOutput> {
     public let id: String = "AuthSchemeMiddleware"

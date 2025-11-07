@@ -5,18 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.URI
-import class Smithy.URIBuilder
-import enum Smithy.URIScheme
-import struct Smithy.URIQueryItem
-import protocol Smithy.RequestMessage
-import protocol Smithy.RequestMessageBuilder
+import struct Foundation.CharacterSet
+import struct Foundation.Date
+import struct Foundation.URLComponents
+import struct Foundation.URLQueryItem
 import enum Smithy.ByteStream
 import enum Smithy.ClientError
-import struct Foundation.Date
-import struct Foundation.CharacterSet
-import struct Foundation.URLQueryItem
-import struct Foundation.URLComponents
+import protocol Smithy.RequestMessage
+import protocol Smithy.RequestMessageBuilder
+import struct Smithy.URI
+import class Smithy.URIBuilder
+import struct Smithy.URIQueryItem
+import enum Smithy.URIScheme
 // In Linux, Foundation.URLRequest is moved to FoundationNetworking.
 #if canImport(FoundationNetworking)
 import FoundationNetworking

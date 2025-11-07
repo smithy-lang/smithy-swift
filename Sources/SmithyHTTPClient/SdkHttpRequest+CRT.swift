@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.URI
-import class SmithyStreams.StreamableHttpBody
-import class SmithyHTTPAPI.HTTPRequest
 import AwsCommonRuntimeKit
+import struct Smithy.URI
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyStreams.StreamableHttpBody
 
 extension HTTPRequest {
 

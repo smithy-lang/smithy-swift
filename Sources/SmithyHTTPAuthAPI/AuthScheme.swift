@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.Attributes
 import class Smithy.Context
 import protocol SmithyIdentityAPI.IdentityResolver
-import struct Smithy.Attributes
 
 public protocol AuthScheme: Sendable {
     var schemeID: String { get }
