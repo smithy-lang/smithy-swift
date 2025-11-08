@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Context
-import struct Smithy.Attributes
 import struct Smithy.AttributeKey
+import struct Smithy.Attributes
+import class Smithy.Context
 import enum SmithyHTTPAPI.SmithyHTTPAPIKeys
 
 /// Container for Orchestrator telemetry, including configurable attributes and names.

@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import AwsCommonRuntimeKit
+import struct Foundation.Data
 import protocol Smithy.Stream
 import protocol SmithyChecksumsAPI.Checksum
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
-import struct Foundation.Data
-import AwsCommonRuntimeKit
 import class SmithyStreams.BufferedStream
 
 public class ValidatingBufferedStream: @unchecked Sendable {

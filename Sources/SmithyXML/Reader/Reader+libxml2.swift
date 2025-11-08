@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@preconcurrency import libxml2
 import struct Foundation.Data
+@preconcurrency import libxml2
 import struct SmithySerde.InvalidEncodingError
 
 extension Reader {

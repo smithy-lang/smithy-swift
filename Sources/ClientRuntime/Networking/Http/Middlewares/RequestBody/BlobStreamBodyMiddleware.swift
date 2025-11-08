@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol Smithy.RequestMessageSerializer
-import class Smithy.Context
+import struct Foundation.Data
 import enum Smithy.ByteStream
+import class Smithy.Context
+import protocol Smithy.RequestMessageSerializer
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
-import struct Foundation.Data
 
 public struct BlobStreamBodyMiddleware<OperationStackInput, OperationStackOutput> {
     public let id: Swift.String = "BlobStreamBodyMiddleware"

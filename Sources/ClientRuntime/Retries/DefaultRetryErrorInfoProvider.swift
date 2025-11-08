@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum SmithyHTTPAPI.HTTPStatusCode
-import struct SmithyRetriesAPI.RetryErrorInfo
-import enum SmithyRetriesAPI.RetryErrorType
-import protocol SmithyRetriesAPI.RetryErrorInfoProvider
-import struct Foundation.TimeInterval
+import enum AwsCommonRuntimeKit.CommonRunTimeError
+import struct AwsCommonRuntimeKit.CRTError
 import class Foundation.NSError
 import var Foundation.NSURLErrorDomain
-import struct AwsCommonRuntimeKit.CRTError
-import enum AwsCommonRuntimeKit.CommonRunTimeError
+import struct Foundation.TimeInterval
+import enum SmithyHTTPAPI.HTTPStatusCode
+import struct SmithyRetriesAPI.RetryErrorInfo
+import protocol SmithyRetriesAPI.RetryErrorInfoProvider
+import enum SmithyRetriesAPI.RetryErrorType
 
 public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
     /// Returns information used to determine how & if to retry an error.

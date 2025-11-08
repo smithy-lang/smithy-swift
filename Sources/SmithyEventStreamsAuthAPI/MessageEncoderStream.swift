@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
 import Smithy
 import SmithyEventStreamsAPI
-import struct Foundation.Data
 
 /// Stream adapter that encodes input into `Data` objects that are encoded, signed events.
 public protocol MessageEncoderStream: Stream, AsyncSequence where Element == Data {

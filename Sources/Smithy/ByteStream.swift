@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Foundation.FileHandle
 import struct Foundation.Data
+import class Foundation.FileHandle
 
 public enum ByteStream: Sendable {
     case data(Data?)

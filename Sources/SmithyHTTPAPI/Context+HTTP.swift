@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.Attributes
+import struct Foundation.TimeInterval
 import struct Smithy.AttributeKey
+import struct Smithy.Attributes
 import class Smithy.Context
 import class Smithy.ContextBuilder
-import struct Foundation.TimeInterval
 
 /// This extends `OperationContext` for all http middleware operations
 extension Context {

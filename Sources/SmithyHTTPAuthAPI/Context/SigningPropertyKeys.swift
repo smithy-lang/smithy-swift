@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.AttributeKey
 import struct Foundation.TimeInterval
+import struct Smithy.AttributeKey
 
 public enum SigningPropertyKeys {
     public static let signingName = AttributeKey<String>(name: "SigningName")

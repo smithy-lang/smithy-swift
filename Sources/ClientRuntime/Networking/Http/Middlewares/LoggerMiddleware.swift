@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol Smithy.LogAgent
 import class Smithy.Context
+import protocol Smithy.LogAgent
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 

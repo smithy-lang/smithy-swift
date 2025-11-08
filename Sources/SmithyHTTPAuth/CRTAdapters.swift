@@ -5,16 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum AwsCommonRuntimeKit.SigningAlgorithmType
+import enum AwsCommonRuntimeKit.SignatureType
 import enum AwsCommonRuntimeKit.SignedBodyHeaderType
 import enum AwsCommonRuntimeKit.SignedBodyValue
-import enum AwsCommonRuntimeKit.SignatureType
+import enum AwsCommonRuntimeKit.SigningAlgorithmType
 import struct AwsCommonRuntimeKit.SigningConfig
 
-import enum SmithyHTTPAuthAPI.SigningAlgorithm
+import enum SmithyHTTPAuthAPI.AWSSignatureType
 import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
 import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
-import enum SmithyHTTPAuthAPI.AWSSignatureType
+import enum SmithyHTTPAuthAPI.SigningAlgorithm
 
 import struct Foundation.Locale
 import class SmithyIdentity.CRTAWSCredentialIdentity
