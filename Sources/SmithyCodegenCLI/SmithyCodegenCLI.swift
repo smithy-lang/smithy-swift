@@ -1,0 +1,41 @@
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+import ArgumentParser
+import Foundation
+import SmithyCodegenCore
+
+@main
+struct SmithyCodegenCLI: AsyncParsableCommand {
+
+    @Argument(help: "The full path to the JSON model file.")
+    var modelPath: String
+
+    @Argument(help: "The full path to write the output file.  Intermediate directories will be created as needed.")
+    var outputPath: String
+
+    func run() async throws {
+        guard FileManager.default.fileExists(atPath: modelPath) else {
+            throw SmithySchemaCodegenToolError(localizedDescription: "no file at model path")
+        }
+        let model = try SmithyModel(modelFileURL: URL(fileURLWithPath: modelPath))
+
+        let outputFileURL = URL(fileURLWithPath: outputPath)
+        let contents = """
+            // My Awesome File
+            
+            /// The count of bytes in the model.
+            public let modelCount = \(model.count)
+            """
+        try FileManager.default.createDirectory(at: outputFileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data(contents.utf8).write(to: outputFileURL)
+    }
+}
+
+struct SmithySchemaCodegenToolError: Error {
+    let localizedDescription: String
+}
