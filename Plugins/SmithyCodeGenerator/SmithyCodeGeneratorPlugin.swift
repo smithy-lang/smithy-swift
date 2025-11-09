@@ -5,7 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+import struct Foundation.Data
+import class Foundation.FileManager
+import class Foundation.JSONDecoder
+import struct Foundation.URL
 import PackagePlugin
 
 @main
@@ -15,12 +18,12 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         // This plugin only runs for package targets that can have source files.
         guard let sourceFiles = target.sourceModule?.sourceFiles else { return [] }
 
-        // Retrieve the `SmithySchemaCodegenTool` from the plugin's tools.
-        let generatorTool = try context.tool(named: "SmithyCodegenCLI")
+        // Retrieve the `SmithyCodegenCLI` tool from the plugin's tools.
+        let smithyCodegenCLITool = try context.tool(named: "SmithyCodegenCLI")
 
         // Construct a build command for each source file with a particular suffix.
         return try sourceFiles.map(\.path).compactMap {
-            try createBuildCommand(for: $0, in: context.pluginWorkDirectory, with: generatorTool.path)
+            try createBuildCommand(for: $0, in: context.pluginWorkDirectory, with: smithyCodegenCLITool.path)
         }
     }
 
@@ -41,26 +44,23 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         let modelPath = Path(modelPathURL.path)
 
         // Return a command that will run during the build to generate the output file.
-        let inputName = inputPath.lastComponent
-        let schemasSwiftPath = outputDirectoryPath.appending("Schemas.swift")
+        let modelCountSwiftPath = outputDirectoryPath.appending("ModelCount.swift")
         return .buildCommand(
-            displayName: "Generating Schemas.swift from \(inputName)",
+            displayName: "Generating Swift source files from \(smithyModelInfo.path)",
             executable: generatorToolPath,
-            arguments: [modelPath, schemasSwiftPath],
+            arguments: [modelPath, modelCountSwiftPath],
             inputFiles: [inputPath, modelPath],
-            outputFiles: [schemasSwiftPath]
+            outputFiles: [modelCountSwiftPath]
         )
     }
 }
 
-struct SmithySchemaGeneratorPluginError: Error {
-    let localizedDescription: String
-
-    init(_ localizedDescription: String) {
-        self.localizedDescription = localizedDescription
-    }
+/// Codable structure for reading the contents of `smithy-model-info.json`
+private struct SmithyModelInfo: Decodable {
+    /// The path to the model, from the root of the target's project.  Required.
+    let path: String
 }
 
-struct SmithyModelInfo: Codable {
-    let path: String
+struct Err: Error {
+    var localizedDescription: String { "boom" }
 }
