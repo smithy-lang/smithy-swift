@@ -27,11 +27,14 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
         let outputFileURL = URL(fileURLWithPath: outputPath)
         let contents = """
             // My Awesome File
-            
+
             /// The count of bytes in the model.
             public let modelCount = \(model.count)
             """
-        try FileManager.default.createDirectory(at: outputFileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: outputFileURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
         try Data(contents.utf8).write(to: outputFileURL)
     }
 }

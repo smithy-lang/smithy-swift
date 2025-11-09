@@ -8,12 +8,15 @@ class SmithyModelFileInfoGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
 ) {
     fun writeSmithyModelFileInfo() {
-        val model = ctx.service.expectTrait<ServiceTrait>().sdkId
-            .replace(",", "")
-            .lowercase()
-            .replace(" ", "-")
+        val model =
+            ctx.service
+                .expectTrait<ServiceTrait>()
+                .sdkId
+                .replace(",", "")
+                .lowercase()
+                .replace(" ", "-")
         ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/smithy-model-file-info.txt") { writer ->
-            writer.write("codegen/sdk-codegen/aws-models/${model}.json")
+            writer.write("codegen/sdk-codegen/aws-models/$model.json")
         }
     }
 }

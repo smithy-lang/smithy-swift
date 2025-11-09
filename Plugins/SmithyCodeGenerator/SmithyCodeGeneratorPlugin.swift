@@ -24,7 +24,11 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         }
     }
 
-    private func createBuildCommand(for inputPath: Path, in outputDirectoryPath: Path, with generatorToolPath: Path) throws -> Command? {
+    private func createBuildCommand(
+        for inputPath: Path,
+        in outputDirectoryPath: Path,
+        with generatorToolPath: Path
+    ) throws -> Command? {
         // Skip any file that isn't the model.json for this service.
         guard inputPath.lastComponent == "smithy-model-file-info.txt" else { return nil }
 
