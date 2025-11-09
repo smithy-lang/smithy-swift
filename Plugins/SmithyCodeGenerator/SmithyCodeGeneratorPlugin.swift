@@ -35,7 +35,7 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         guard inputPath.lastComponent == "smithy-model-info.json" else { return nil }
 
         // Get the smithy model path.
-        let modelInfoData = try Data(contentsOf: URL(filePath: inputPath.string))
+        let modelInfoData = try Data(contentsOf: URL(fileURLWithPath: inputPath.string))
         let smithyModelInfo = try JSONDecoder().decode(SmithyModelInfo.self, from: modelInfoData)
         let modelPathURL = currentWorkingDirectoryURL.appendingPathComponent(smithyModelInfo.path)
         let modelPath = Path(modelPathURL.path)
