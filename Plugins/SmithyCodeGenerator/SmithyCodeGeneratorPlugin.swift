@@ -34,11 +34,12 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
 
         // Get the smithy model path.
         let locationData = try Data(contentsOf: URL(filePath: inputPath.string))
-        guard let location = String(data: locationData, encoding: .utf8) else {
+        let locationString = String(data: locationData, encoding: .utf8)
+        guard let location = locationString?.trimmingCharacters(in: .whitespacesAndNewlines) else {
             throw SmithySchemaGeneratorPluginError("smithy-model-file-info.txt did not contain valid UTF-8")
         }
-        let modelPathURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-            .appendingPathComponent(location.trimmingCharacters(in: .whitespacesAndNewlines))
+        let currentWorkingDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let modelPathURL = currentWorkingDirectoryURL.appendingPathComponent(location)
         let modelPath = Path(modelPathURL.path)
 
         // Return a command that will run during the build to generate the output file.
