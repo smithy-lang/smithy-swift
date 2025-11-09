@@ -209,9 +209,8 @@ abstract class HTTPBindingProtocolGenerator(
 
     private fun usesSchemaBasedSerialization(ctx: ProtocolGenerator.GenerationContext): Boolean =
         // This fun is temporary; it will be eliminated when all services/protocols are moved to schema-based
-        false
-//        ctx.service.allTraits.keys
-//            .any { it.name == "rpcv2Cbor" }
+        ctx.service.allTraits.keys
+            .any { it.name == "rpcv2Cbor" }
 
     override fun generateSchemas(ctx: ProtocolGenerator.GenerationContext) {
         if (!usesSchemaBasedSerialization(ctx)) return // temporary condition
