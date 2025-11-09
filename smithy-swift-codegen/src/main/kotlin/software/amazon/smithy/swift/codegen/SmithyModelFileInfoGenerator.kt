@@ -9,7 +9,7 @@ class SmithyModelFileInfoGenerator(
 ) {
     fun writeSmithyModelFileInfo() {
         ctx.service.getTrait<ServiceTrait>()?.let { serviceTrait ->
-            val filename = "Sources/${ctx.settings.moduleName}/smithy-model-file-info.txt"
+            val filename = "Sources/${ctx.settings.moduleName}/smithy-model-info.json"
             val modelFileName =
                 serviceTrait
                     .sdkId
@@ -18,7 +18,7 @@ class SmithyModelFileInfoGenerator(
                     .replace(" ", "-")
             val contents = "codegen/sdk-codegen/aws-models/$modelFileName.json"
             ctx.delegator.useFileWriter(filename) { writer ->
-                writer.write(contents)
+                writer.write("{\"path\":\"$contents\"}")
             }
         }
     }

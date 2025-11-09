@@ -29,28 +29,26 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         in outputDirectoryPath: Path,
         with generatorToolPath: Path
     ) throws -> Command? {
-        // Skip any file that isn't the model.json for this service.
-        guard inputPath.lastComponent == "smithy-model-file-info.txt" else { return nil }
+        let currentWorkingDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+
+        // Skip any file that isn't the smithy-model-info.json for this service.
+        guard inputPath.lastComponent == "smithy-model-info.json" else { return nil }
 
         // Get the smithy model path.
-        let locationData = try Data(contentsOf: URL(filePath: inputPath.string))
-        let locationString = String(data: locationData, encoding: .utf8)
-        guard let location = locationString?.trimmingCharacters(in: .whitespacesAndNewlines) else {
-            throw SmithySchemaGeneratorPluginError("smithy-model-file-info.txt did not contain valid UTF-8")
-        }
-        let currentWorkingDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        let modelPathURL = currentWorkingDirectoryURL.appendingPathComponent(location)
+        let modelInfoData = try Data(contentsOf: URL(filePath: inputPath.string))
+        let smithyModelInfo = try JSONDecoder().decode(SmithyModelInfo.self, from: modelInfoData)
+        let modelPathURL = currentWorkingDirectoryURL.appendingPathComponent(smithyModelInfo.path)
         let modelPath = Path(modelPathURL.path)
 
         // Return a command that will run during the build to generate the output file.
         let inputName = inputPath.lastComponent
-        let outputPath = outputDirectoryPath.appending("Schemas.swift")
+        let schemasSwiftPath = outputDirectoryPath.appending("Schemas.swift")
         return .buildCommand(
             displayName: "Generating Schemas.swift from \(inputName)",
             executable: generatorToolPath,
-            arguments: [modelPath, outputPath],
+            arguments: [modelPath, schemasSwiftPath],
             inputFiles: [inputPath, modelPath],
-            outputFiles: [outputPath]
+            outputFiles: [schemasSwiftPath]
         )
     }
 }
@@ -61,4 +59,8 @@ struct SmithySchemaGeneratorPluginError: Error {
     init(_ localizedDescription: String) {
         self.localizedDescription = localizedDescription
     }
+}
+
+struct SmithyModelInfo: Codable {
+    let path: String
 }
