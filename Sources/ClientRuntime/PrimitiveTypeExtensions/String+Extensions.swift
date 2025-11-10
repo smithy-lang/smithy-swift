@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import enum Smithy.ClientError
-import struct Foundation.Data
 import AwsCommonRuntimeKit
+import struct Foundation.Data
+import enum Smithy.ClientError
 
 extension StringProtocol where Self.Index == String.Index {
     func escape(_ characterSet: [(character: String, escapedCharacter: String)]) -> String {

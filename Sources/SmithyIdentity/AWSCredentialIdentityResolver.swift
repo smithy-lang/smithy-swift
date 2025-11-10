@@ -6,8 +6,8 @@
 //
 
 import class AwsCommonRuntimeKit.CredentialsProvider
-import protocol SmithyIdentityAPI.IdentityResolver
 import struct Smithy.Attributes
+import protocol SmithyIdentityAPI.IdentityResolver
 
 /// A type that can provide credentials for authenticating with an AWS service
 public protocol AWSCredentialIdentityResolver: IdentityResolver where IdentityT == AWSCredentialIdentity {}

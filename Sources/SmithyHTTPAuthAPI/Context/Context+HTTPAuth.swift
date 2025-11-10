@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.AttributeKey
+import struct Smithy.Attributes
 import class Smithy.Context
 import class Smithy.ContextBuilder
-import struct Smithy.Attributes
-import struct Smithy.AttributeKey
 
 public extension Context {
 

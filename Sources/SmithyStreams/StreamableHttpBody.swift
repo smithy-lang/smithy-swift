@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.Data
 import AwsCommonRuntimeKit
-import struct Smithy.SwiftLogger
-import protocol Smithy.Stream
+import struct Foundation.Data
 import enum Smithy.ByteStream
+import protocol Smithy.Stream
 import enum Smithy.StreamError
+import struct Smithy.SwiftLogger
 
 /// A class that implements the `IStreamable` protocol for `ByteStream`.
 /// It acts as a bridge between AWS SDK and CRT.

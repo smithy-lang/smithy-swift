@@ -8,11 +8,11 @@
 import AwsCommonRuntimeKit
 import Foundation
 
-@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
-@_spi(SmithyReadWrite) import enum SmithyReadWrite.ReaderError
-@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
 @_spi(Smithy) import struct Smithy.Document
 @_spi(Smithy) import protocol Smithy.SmithyDocument
+@_spi(SmithyReadWrite) import enum SmithyReadWrite.ReaderError
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyReader
+@_spi(SmithyReadWrite) import protocol SmithyReadWrite.SmithyWriter
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 

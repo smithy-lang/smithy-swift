@@ -5,17 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum Smithy.ClientError
 import class Smithy.Context
 import protocol SmithyHTTPAPI.HTTPClient
-import enum Smithy.ClientError
 import struct SmithyHTTPAuthAPI.AuthOption
 import protocol SmithyHTTPAuthAPI.AuthSchemeResolver
 import protocol SmithyHTTPAuthAPI.AuthSchemeResolverParameters
-import protocol SmithyRetriesAPI.RetryStrategy
-import protocol SmithyRetriesAPI.RetryErrorInfoProvider
-import struct SmithyRetriesAPI.RetryStrategyOptions
 import struct SmithyRetries.DefaultRetryStrategy
 import struct SmithyRetries.ExponentialBackoffStrategy
+import protocol SmithyRetriesAPI.RetryErrorInfoProvider
+import protocol SmithyRetriesAPI.RetryStrategy
+import struct SmithyRetriesAPI.RetryStrategyOptions
 
 public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy,
     DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider> {

@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import AwsCommonRuntimeKit
+import struct Foundation.Data
 import protocol SmithyChecksumsAPI.Checksum
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import enum SmithyChecksumsAPI.HashResult
-import struct Foundation.Data
-import AwsCommonRuntimeKit
 
 public enum HashError: Error {
     case invalidInput

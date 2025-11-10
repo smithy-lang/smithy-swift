@@ -6,8 +6,8 @@
 //
 
 import struct SmithyHTTPAPI.Endpoint
-import struct SmithyHTTPAPI.Headers
 import enum SmithyHTTPAPI.EndpointPropertyValue
+import struct SmithyHTTPAPI.Headers
 
 public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding> {
 

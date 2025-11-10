@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Context
 import protocol Smithy.RequestMessageSerializer
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
-import class Smithy.Context
 
 public struct HeaderMiddleware<OperationStackInput, OperationStackOutput> {
     public let id: String = "\(String(describing: OperationStackInput.self))HeadersMiddleware"

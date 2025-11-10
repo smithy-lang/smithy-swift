@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Context
-import enum Smithy.ClientError
 import Foundation
+import struct Smithy.AttributeKey
+import enum Smithy.ClientError
+import class Smithy.Context
 import SmithyHTTPAPI
 import SmithyHTTPAuthAPI
-import struct Smithy.AttributeKey
 
 public struct SignerMiddleware<OperationStackOutput> {
     public let id: String = "SignerMiddleware"

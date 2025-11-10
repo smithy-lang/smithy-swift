@@ -5,17 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class SmithyIdentity.CRTAWSCredentialIdentity
-import enum SmithyHTTPAuthAPI.SigningAlgorithm
-import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
-import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
-import enum SmithyHTTPAuthAPI.AWSSignatureType
-import protocol SmithyIdentity.AWSCredentialIdentityResolver
 import struct Foundation.Date
 import struct Foundation.Locale
 import struct Foundation.TimeInterval
+import enum SmithyHTTPAuthAPI.AWSSignatureType
+import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
+import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
+import enum SmithyHTTPAuthAPI.SigningAlgorithm
 import struct SmithyHTTPAuthAPI.SigningFlags
 import struct SmithyIdentity.AWSCredentialIdentity
+import protocol SmithyIdentity.AWSCredentialIdentityResolver
+import class SmithyIdentity.CRTAWSCredentialIdentity
 
 public struct AWSSigningConfig: Sendable {
     public let credentials: AWSCredentialIdentity?
