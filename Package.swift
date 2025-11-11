@@ -30,6 +30,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
+        .library(name: "SmithySerde", targets: ["SmithySerde"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
@@ -72,6 +73,12 @@ let package = Package(
             name: "Smithy",
             dependencies: [
                 .product(name: "Logging", package: "swift-log"),
+            ]
+        ),
+        .target(
+            name: "SmithySerde",
+            dependencies: [
+                "Smithy",
             ]
         ),
         .target(
@@ -137,6 +144,7 @@ let package = Package(
         .target(
             name: "SmithyXML",
             dependencies: [
+                "SmithySerde",
                 "SmithyReadWrite",
                 "SmithyTimestamps",
                 libXML2DependencyOrNil
@@ -145,6 +153,7 @@ let package = Package(
         .target(
             name: "SmithyJSON",
             dependencies: [
+                "SmithySerde",
                 "SmithyReadWrite",
                 "SmithyTimestamps"
             ]
@@ -284,7 +293,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyXMLTests",
-            dependencies: ["SmithyXML", "ClientRuntime"]
+            dependencies: ["SmithySerde", "SmithyXML", "ClientRuntime"]
         ),
         .testTarget(
             name: "SmithyHTTPAuthTests",
@@ -296,7 +305,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyJSONTests",
-            dependencies: ["SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
+            dependencies: ["SmithySerde", "SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
         ),
         .testTarget(
             name: "SmithyFormURLTests",
