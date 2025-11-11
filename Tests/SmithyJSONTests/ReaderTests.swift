@@ -11,11 +11,10 @@ import struct SmithySerde.InvalidEncodingError
 
 final class ReaderTests: XCTestCase {
 
-    func test_readsEmptyDataAsEmptyJSONObject() async throws {
+    func test_readsEmptyDataAsNil() async throws {
         let jsonData = Data()
         let reader = try SmithyJSON.Reader.from(data: jsonData)
-        XCTAssertEqual(reader.jsonNode, .object)
-        XCTAssert(reader.children.isEmpty)
+        XCTAssertNil(reader.jsonNode)
     }
 
     func test_readsAJSONObject() async throws {
