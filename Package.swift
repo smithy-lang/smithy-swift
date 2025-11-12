@@ -53,10 +53,12 @@ let package = Package(
         .library(name: "SmithyCBOR", targets: ["SmithyCBOR"]),
         .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
+        .plugin(name: "SmithyCodeGenerator", targets: ["SmithyCodeGenerator"]),
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
             .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.54.2"),
+            .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.0.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.13.0"),
         ]
@@ -257,6 +259,23 @@ let package = Package(
         ),
         .target(
             name: "SmithyWaitersAPI"
+        ),
+        .plugin(
+            name: "SmithyCodeGenerator",
+            capability: .buildTool(),
+            dependencies: [
+                "SmithyCodegenCLI",
+            ]
+        ),
+        .executableTarget(
+            name: "SmithyCodegenCLI",
+            dependencies: [
+                "SmithyCodegenCore",
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            ]
+        ),
+        .target(
+            name: "SmithyCodegenCore"
         ),
         .testTarget(
             name: "ClientRuntimeTests",
