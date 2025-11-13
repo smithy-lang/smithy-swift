@@ -11,7 +11,7 @@ import class Foundation.URLSessionConfiguration
 
 extension URLSessionConfiguration {
 
-    public static func from(httpClientConfiguration: HttpClientConfiguration) -> URLSessionConfiguration {
+    static func from(httpClientConfiguration: HttpClientConfiguration) -> URLSessionConfiguration {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = httpClientConfiguration.socketTimeout
         config.httpShouldSetCookies = false
