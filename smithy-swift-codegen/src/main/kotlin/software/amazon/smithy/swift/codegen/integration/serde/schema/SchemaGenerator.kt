@@ -49,7 +49,7 @@ class SchemaGenerator(
             }
             if (shape.members().isNotEmpty()) {
                 writer.openBlock("members: [", "],") {
-                    shape.members().withIndex().forEach { renderSchemaStruct(it.value, it.index) }
+                    shape.members().sorted().withIndex().forEach { renderSchemaStruct(it.value, it.index) }
                 }
             }
             targetShape(shape)?.let {

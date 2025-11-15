@@ -23,34 +23,40 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
 
         // Construct a build command for each source file with a particular suffix.
         return try sourceFiles.map(\.path).compactMap {
-            try createBuildCommand(for: $0, in: context.pluginWorkDirectory, with: smithyCodegenCLITool.path)
+            try createBuildCommand(name: target.name, for: $0, in: context.pluginWorkDirectory, with: smithyCodegenCLITool.path)
         }
     }
 
     private func createBuildCommand(
+        name: String,
         for inputPath: Path,
         in outputDirectoryPath: Path,
         with generatorToolPath: Path
     ) throws -> Command? {
-        let currentWorkingDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-
         // Skip any file that isn't the smithy-model-info.json for this service.
         guard inputPath.lastComponent == "smithy-model-info.json" else { return nil }
+
+        let currentWorkingDirectoryFileURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 
         // Get the smithy model path.
         let modelInfoData = try Data(contentsOf: URL(fileURLWithPath: inputPath.string))
         let smithyModelInfo = try JSONDecoder().decode(SmithyModelInfo.self, from: modelInfoData)
-        let modelPathURL = currentWorkingDirectoryURL.appendingPathComponent(smithyModelInfo.path)
+        let modelPathURL = currentWorkingDirectoryFileURL.appendingPathComponent(smithyModelInfo.path)
         let modelPath = Path(modelPathURL.path)
 
-        // Return a command that will run during the build to generate the output file.
-        let modelCountSwiftPath = outputDirectoryPath.appending("ModelCount.swift")
+        // Construct the schemas.swift path.
+        let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
+
+        // Construct the build command that invokes SmithyCodegenCLI.
         return .buildCommand(
-            displayName: "Generating Swift source files from \(smithyModelInfo.path)",
+            displayName: "Generating Swift source files from model file \(smithyModelInfo.path)",
             executable: generatorToolPath,
-            arguments: [modelPath, modelCountSwiftPath],
+            arguments: [
+                "--schemas-path", schemasSwiftPath,
+                modelPath
+            ],
             inputFiles: [inputPath, modelPath],
-            outputFiles: [modelCountSwiftPath]
+            outputFiles: [schemasSwiftPath]
         )
     }
 }
@@ -59,8 +65,4 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
 private struct SmithyModelInfo: Decodable {
     /// The path to the model, from the root of the target's project.  Required.
     let path: String
-}
-
-struct Err: Error {
-    var localizedDescription: String { "boom" }
 }

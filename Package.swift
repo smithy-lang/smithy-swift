@@ -275,7 +275,9 @@ let package = Package(
             ]
         ),
         .target(
-            name: "SmithyCodegenCore"
+            name: "SmithyCodegenCore",
+            dependencies: ["Smithy"],
+            resources: [ .process("Resources") ]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
@@ -352,6 +354,10 @@ let package = Package(
         .testTarget(
             name: "SmithyHTTPAPITests",
             dependencies: ["SmithyHTTPAPI"]
+        ),
+        .testTarget(
+            name: "SmithyCodegenCoreTests",
+            dependencies: ["SmithyCodegenCore"]
         ),
     ].compactMap { $0 }
 )
