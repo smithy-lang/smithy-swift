@@ -30,10 +30,13 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
 
         // If --schemas-path was supplied, create the schema file URL
         let schemasFileURL = resolve(paramName: "--schemas-path", path: schemasPath)
-        print("Schemas file path: \(schemasFileURL?.path ?? "nil")")
 
         // All file URLs needed for code generation have now been resolved.
         // Implement code generation here.
+        if let schemasFileURL {
+            print("Schemas file path: \(schemasFileURL)")
+            FileManager.default.createFile(atPath: schemasFileURL.path, contents: Data())
+        }
     }
 
     private func currentWorkingDirectoryFileURL() -> URL {
