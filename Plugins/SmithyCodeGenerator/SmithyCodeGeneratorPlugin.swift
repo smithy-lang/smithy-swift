@@ -23,7 +23,12 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
 
         // Construct a build command for each source file with a particular suffix.
         return try sourceFiles.map(\.path).compactMap {
-            try createBuildCommand(name: target.name, for: $0, in: context.pluginWorkDirectory, with: smithyCodegenCLITool.path)
+            try createBuildCommand(
+                name: target.name,
+                for: $0,
+                in: context.pluginWorkDirectory,
+                with: smithyCodegenCLITool.path
+            )
         }
     }
 
