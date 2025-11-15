@@ -107,6 +107,9 @@ class DirectedSwiftCodegen(
                 DependencyJSONGenerator(ctx).writePackageJSON(writers.dependencies)
             }
 
+            LOGGER.info("Generating Smithy model file info")
+            SmithyModelFileInfoGenerator(ctx).writeSmithyModelFileInfo()
+
             LOGGER.info("Flushing swift writers")
             writers.flushWriters()
         }
