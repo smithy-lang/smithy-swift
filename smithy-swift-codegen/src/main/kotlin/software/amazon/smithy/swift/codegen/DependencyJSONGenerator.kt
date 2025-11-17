@@ -17,10 +17,13 @@ class DependencyJSONGenerator(
             writer.setIndentText("  ") // two spaces
             writer.openBlock("{", "}") {
                 // Write the path to the model as "modelPath".
-                val modelFileName = ctx.service.expectTrait<ServiceTrait>().sdkId
-                    .lowercase()
-                    .replace(",", "")
-                    .replace(" ", "-")
+                val modelFileName =
+                    ctx.service
+                        .expectTrait<ServiceTrait>()
+                        .sdkId
+                        .lowercase()
+                        .replace(",", "")
+                        .replace(" ", "-")
                 writer.write("\"modelPath\": \$S,", "codegen/sdk-codegen/aws-models/$modelFileName.json")
 
                 // Write the dependencies as an array of strings to key "dependencies".
