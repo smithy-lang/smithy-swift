@@ -20,9 +20,11 @@ class DependencyJSONGeneratorTests {
     fun `it renders package manifest JSON with dependencies`() {
         val packageManifest = testContext.manifest.getFileString("Dependencies.json").get()
         assertNotNull(packageManifest)
-        val expected = """[
+        val expected = """{
+  "dependencies": [
 
-]
+  ]
+}
 """
         packageManifest.shouldContain(expected)
     }
