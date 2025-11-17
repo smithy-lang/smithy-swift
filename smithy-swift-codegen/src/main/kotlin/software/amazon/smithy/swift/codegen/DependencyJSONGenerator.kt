@@ -4,26 +4,39 @@
  */
 package software.amazon.smithy.swift.codegen
 
+import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.model.expectTrait
 
 class DependencyJSONGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
 ) {
     fun writePackageJSON(dependencies: List<SymbolDependency>) {
         ctx.delegator.useFileWriter("Dependencies.json") { writer ->
-            writer.openBlock("[", "]") {
-                val externalDependencies =
-                    dependencies.filter { it.getProperty("url", String::class.java).isPresent }
+            writer.setIndentText("  ") // two spaces
+            writer.openBlock("{", "}") {
+                // Write the path to the model as "modelPath".
+                val modelFileName = ctx.service.expectTrait<ServiceTrait>().sdkId
+                    .lowercase()
+                    .replace(",", "")
+                    .replace(" ", "-")
+                writer.write("\"modelPath\": \$S,", "codegen/sdk-codegen/aws-models/$modelFileName.json")
 
-                val dependenciesByTarget =
-                    externalDependencies
-                        .distinctBy { it.targetName + it.packageName }
-                        .sortedBy { it.targetName }
+                // Write the dependencies as an array of strings to key "dependencies".
+                writer.openBlock("\"dependencies\": [", "]") {
+                    val externalDependencies =
+                        dependencies.filter { it.getProperty("url", String::class.java).isPresent }
 
-                dependenciesByTarget.forEach { writer.write("\$S,", it.targetName) }
-                writer.unwrite(",\n")
-                writer.write("")
+                    val dependenciesByTarget =
+                        externalDependencies
+                            .distinctBy { it.targetName + it.packageName }
+                            .sortedBy { it.targetName }
+
+                    dependenciesByTarget.forEach { writer.write("\$S,", it.targetName) }
+                    writer.unwrite(",\n")
+                    writer.write("")
+                }
             }
         }
     }
