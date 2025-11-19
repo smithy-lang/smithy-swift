@@ -25,11 +25,17 @@ public struct ShapeID: Hashable {
             throw ModelError("id \"\(id)\" does not have a nonempty namespace")
         }
         self.namespace = String(namespace)
-        guard let name = splitOnPound.last, !name.isEmpty else {
-            throw ModelError("id \"\(id)\" does not have a nonempty name")
+        let splitOnDollar = splitOnPound.last!.split(separator: "$")
+        switch splitOnDollar.count {
+        case 2:
+            self.name = String(splitOnDollar.first!)
+            self.member = String(splitOnDollar.last!)
+        case 1:
+            self.name = String(splitOnDollar.first!)
+            self.member = nil
+        default:
+            throw ModelError("id \"\(id)\" has more than one $")
         }
-        self.name = String(name)
-        self.member = nil
     }
 
     public init(id: ShapeID, member: String) {

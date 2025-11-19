@@ -11,22 +11,22 @@ import SmithyCodegenCore
 final class ShapeIDTests: XCTestCase {
 
     func test_init_createsShapeIDWithNamespace() throws {
-        let subject = ShapeID("smithy.test#TestName$TestMember")
+        let subject = try ShapeID("smithy.test#TestName$TestMember")
         XCTAssertEqual(subject.namespace, "smithy.test")
     }
 
     func test_init_createsShapeIDWithName() throws {
-        let subject = ShapeID("smithy.test#TestName$TestMember")
+        let subject = try ShapeID("smithy.test#TestName$TestMember")
         XCTAssertEqual(subject.name, "TestName")
     }
 
     func test_init_createsShapeIDWithMember() throws {
-        let subject = ShapeID("smithy.test#TestName$TestMember")
+        let subject = try ShapeID("smithy.test#TestName$TestMember")
         XCTAssertEqual(subject.member, "TestMember")
     }
 
     func test_init_createsShapeIDWithoutMember() throws {
-        let subject = ShapeID("smithy.test#TestName")
+        let subject = try ShapeID("smithy.test#TestName")
         XCTAssertNil(subject.member)
     }
 }
