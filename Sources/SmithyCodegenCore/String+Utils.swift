@@ -6,7 +6,7 @@
 //
 
 extension String {
-    
+
     /// Escapes special characters in the string, then surrounds it in double quotes
     /// to form a Swift string literal.
     var literal: String {

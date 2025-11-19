@@ -31,7 +31,10 @@ package struct SmithySchemaCodegen {
         // Write schemas for all inputs & outputs and their descendants.
         let shapes = try model.shapes.values
             .filter { $0.type == .structure }
-            .filter { try $0.hasTrait(try .init("smithy.api#input")) || $0.hasTrait(try .init("smithy.api#output")) || $0.hasTrait(try .init("smithy.api#error"))}
+            .filter {
+                try $0.hasTrait(try .init("smithy.api#input")) ||
+                $0.hasTrait(try .init("smithy.api#output")) ||
+                $0.hasTrait(try .init("smithy.api#error"))}
             .map { try [$0] + $0.children }
             .flatMap { $0 }
         let sortedShapes = Array(Set(shapes)).sorted { $0.id.id.lowercased() < $1.id.id.lowercased() }

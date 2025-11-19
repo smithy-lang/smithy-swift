@@ -21,7 +21,7 @@ public enum Node: Sendable {
 }
 
 extension ASTNode {
-    
+
     /// Creates a model Node from a AST-specific ASTNode.
     var modelNode: Node {
         switch self {

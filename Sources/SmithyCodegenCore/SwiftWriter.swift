@@ -18,6 +18,7 @@ class SwiftWriter {
     init(includeHeader: Bool = true) {
         if includeHeader {
             let defaultHeaderFileURL = Bundle.module.url(forResource: "DefaultSwiftHeader", withExtension: "txt")!
+            // swiftlint:disable:next force_try
             let defaultHeader = try! String(data: Data(contentsOf: defaultHeaderFileURL), encoding: .utf8)!
             self.lines = defaultHeader.split(separator: "\n", omittingEmptySubsequences: false).map { String($0) }
         } else {
