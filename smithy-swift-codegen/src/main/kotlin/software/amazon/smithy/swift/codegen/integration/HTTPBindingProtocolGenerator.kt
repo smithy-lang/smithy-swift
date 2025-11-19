@@ -237,7 +237,7 @@ abstract class HTTPBindingProtocolGenerator(
         nestedShapes.forEach { renderSchema(ctx, it) }
     }
 
-    private fun renderSchema(
+    private fun renderSchemas(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
     ) {

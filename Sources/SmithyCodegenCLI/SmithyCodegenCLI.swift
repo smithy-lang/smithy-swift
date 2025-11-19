@@ -7,7 +7,7 @@
 
 import ArgumentParser
 import Foundation
-import SmithyCodegenCore
+import struct SmithyCodegenCore.CodeGenerator
 
 @main
 struct SmithyCodegenCLI: AsyncParsableCommand {
