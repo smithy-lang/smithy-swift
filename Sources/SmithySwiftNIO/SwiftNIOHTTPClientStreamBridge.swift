@@ -19,7 +19,8 @@ final class SwiftNIOHTTPClientStreamBridge {
         from body: ByteStream,
         allocator: ByteBufferAllocator,
         chunkSize: Int = CHUNK_SIZE_BYTES
-    ) async throws -> AsyncHTTPClient.HTTPClientRequest.Body {
+    ) async throws
+        -> AsyncHTTPClient.HTTPClientRequest.Body {
         switch body {
         case .noStream:
             // No body to send
@@ -37,7 +38,11 @@ final class SwiftNIOHTTPClientStreamBridge {
 
         case .stream(let stream):
             // Handle streaming request body
-            return try await convertStreamToRequestBody(stream: stream, allocator: allocator, chunkSize: chunkSize)
+            return try await convertStreamToRequestBody(
+                stream: stream,
+                allocator: allocator,
+                chunkSize: chunkSize
+            )
         }
     }
 
@@ -51,7 +56,10 @@ final class SwiftNIOHTTPClientStreamBridge {
             var iterator = response.body.makeAsyncIterator()
             while let buffer = try await iterator.next() {
                 // Convert ByteBuffer to Data and write to buffered stream
-                if let bytes = buffer.getBytes(at: buffer.readerIndex, length: buffer.readableBytes) {
+                if let bytes = buffer.getBytes(
+                    at: buffer.readerIndex,
+                    length: buffer.readableBytes
+                ) {
                     let data = Data(bytes)
                     try bufferedStream.write(contentsOf: data)
                 }
@@ -70,7 +78,11 @@ final class SwiftNIOHTTPClientStreamBridge {
         allocator: ByteBufferAllocator,
         chunkSize: Int = CHUNK_SIZE_BYTES
     ) async throws -> AsyncHTTPClient.HTTPClientRequest.Body {
-        let asyncSequence = StreamToAsyncSequence(stream: stream, allocator: allocator, chunkSize: chunkSize)
+        let asyncSequence = StreamToAsyncSequence(
+            stream: stream,
+            allocator: allocator,
+            chunkSize: chunkSize
+        )
 
         // Use known length if available, unless the stream is eligible for chunked streaming.
         if let length = stream.length, !stream.isEligibleForChunkedStreaming {
@@ -89,7 +101,11 @@ internal struct StreamToAsyncSequence: AsyncSequence, Sendable {
     private let allocator: ByteBufferAllocator
     private let chunkSize: Int
 
-    init(stream: Smithy.Stream, allocator: ByteBufferAllocator, chunkSize: Int = CHUNK_SIZE_BYTES) {
+    init(
+        stream: Smithy.Stream,
+        allocator: ByteBufferAllocator,
+        chunkSize: Int = CHUNK_SIZE_BYTES
+    ) {
         self.stream = stream
         self.allocator = allocator
         self.chunkSize = chunkSize

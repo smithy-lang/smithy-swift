@@ -26,12 +26,19 @@ extension SwiftNIOHTTPClientTLSOptions {
 
         if useProvidedKeystore {
             if let pkcs12Path = pkcs12Path, let pkcs12Password = pkcs12Password {
-                let bundle = try SwiftNIOHTTPClientTLSOptions.loadPKCS12Bundle(from: pkcs12Path, password: pkcs12Password)
+                let bundle = try SwiftNIOHTTPClientTLSOptions.loadPKCS12Bundle(
+                    from: pkcs12Path,
+                    password: pkcs12Password
+                )
                 tlsConfig.certificateChain = bundle.certificateChain.map { .certificate($0) }
                 tlsConfig.privateKey = .privateKey(bundle.privateKey)
             } else if let certificate = certificate, let privateKey = privateKey {
-                let cert = try SwiftNIOHTTPClientTLSOptions.loadCertificate(from: certificate)
-                let key = try SwiftNIOHTTPClientTLSOptions.loadPrivateKey(from: privateKey)
+                let cert = try SwiftNIOHTTPClientTLSOptions.loadCertificate(
+                    from: certificate
+                )
+                let key = try SwiftNIOHTTPClientTLSOptions.loadPrivateKey(
+                    from: privateKey
+                )
                 tlsConfig.certificateChain = [.certificate(cert)]
                 tlsConfig.privateKey = .privateKey(key)
             }
@@ -61,7 +68,10 @@ extension SwiftNIOHTTPClientTLSOptions {
         return try NIOSSLPrivateKey(bytes: Array(fileData), format: .pem)
     }
 
-    static func loadPKCS12Bundle(from filePath: String, password: String) throws -> NIOSSLPKCS12Bundle {
+    static func loadPKCS12Bundle(
+        from filePath: String,
+        password: String
+    ) throws -> NIOSSLPKCS12Bundle {
         do {
             return try NIOSSLPKCS12Bundle(file: filePath, passphrase: password.utf8)
         } catch {
@@ -79,7 +89,10 @@ public enum SwiftNIOHTTPClientTLSError: Error, LocalizedError {
         case .noCertificateFound(let path):
             return "No certificate found at path: \(path)"
         case .invalidPKCS12(let path, let underlying):
-            return "Failed to load PKCS#12 file at path: \(path). Error: \(String(describing: underlying))"
+            return """
+                Failed to load PKCS#12 file at path: \(path). \
+                Error: \(String(describing: underlying))
+                """
         }
     }
 }
