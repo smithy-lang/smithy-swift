@@ -60,8 +60,8 @@ open class SmokeTestGenerator(
     private fun getOperationShapeIdToTestCasesMapping(serviceName: String): Map<ShapeId, List<SmokeTestCase>> {
         val operationShapeIdToTestCases = mutableMapOf<ShapeId, List<SmokeTestCase>>()
         ctx.model.operationShapes.forEach { op ->
-            val input = ctx.model.getShape(op.input.get()).getOrNull() as? StructureShape
-            val output = ctx.model.getShape(op.output.get()).getOrNull() as? StructureShape
+            val input = op.input.getOrNull()?.let { ctx.model.expectShape<StructureShape>(it) }
+            val output = op.output.getOrNull()?.let { ctx.model.expectShape<StructureShape>(it) }
             val operationHasEventStreams =
                 ((input?.members() ?: listOf<MemberShape>()) + (output?.members() ?: listOf())).any { member ->
                     ctx.model.expectShape(member.target).hasTrait<StreamingTrait>()
