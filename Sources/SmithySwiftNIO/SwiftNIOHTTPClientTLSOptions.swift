@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import ClientRuntime
+import SmithyHTTPClientAPI
 import Foundation
 import NIOSSL
 
-public struct SwiftNIOHTTPClientTLSOptions: ClientRuntime.TLSConfiguration, Sendable {
+public struct SwiftNIOHTTPClientTLSOptions: SmithyHTTPClientAPI.TLSConfiguration, Sendable {
 
     /// Optional path to a PEM certificate
     public var certificate: String?

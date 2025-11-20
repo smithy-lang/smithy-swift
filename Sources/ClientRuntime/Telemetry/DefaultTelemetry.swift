@@ -9,6 +9,7 @@ import struct Smithy.AttributeKey
 import struct Smithy.Attributes
 import protocol Smithy.LogAgent
 import struct Smithy.SwiftLogger
+import SmithyTelemetry
 
 /// Namespace for the Default SDK Telemetry implementations.
 public enum DefaultTelemetry: Sendable {

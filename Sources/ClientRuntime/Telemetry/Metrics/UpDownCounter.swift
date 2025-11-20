@@ -5,17 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.Attributes
+import SmithyTelemetry
 
-/// An UpDownCounter measures a value that goes up or down.
-///
-/// Examples include: queue length
-public protocol UpDownCounter: Sendable {
-
-    /// Records a value for a metric.
-    ///
-    /// - Parameter value: value to record
-    /// - Parameter attributes: associated attributes, typically of the metric
-    /// - Parameter context: context in which value is recorded in
-    func add(value: Int, attributes: Attributes?, context: TelemetryContext?)
-}
+/// Typealias for backward compatibility.
+/// The actual implementation is now in SmithyTelemetry.
+public typealias UpDownCounter = SmithyTelemetry.UpDownCounter

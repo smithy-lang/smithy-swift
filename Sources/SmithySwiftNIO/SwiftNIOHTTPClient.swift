@@ -7,6 +7,7 @@
 
 import AsyncHTTPClient
 import ClientRuntime
+import SmithyHTTPClientAPI
 import NIOCore
 import NIOHTTP1
 import NIOPosix
@@ -28,7 +29,7 @@ public final class SwiftNIOHTTPClient: SmithyHTTPAPI.HTTPClient {
     )
 
     private let client: AsyncHTTPClient.HTTPClient
-    private let config: ClientRuntime.HttpClientConfiguration
+    private let config: SmithyHTTPClientAPI.HttpClientConfiguration
     private let tlsConfiguration: SwiftNIOHTTPClientTLSOptions?
     private let allocator: ByteBufferAllocator
 
@@ -47,7 +48,7 @@ public final class SwiftNIOHTTPClient: SmithyHTTPAPI.HTTPClient {
     ///     client's `AsyncHTTPClient` setup.
     ///   - eventLoopGroup: The `EventLoopGroup` that the ``HTTPClient`` will use.
     public init(
-        httpClientConfiguration: ClientRuntime.HttpClientConfiguration,
+        httpClientConfiguration: SmithyHTTPClientAPI.HttpClientConfiguration,
         eventLoopGroup: (any NIOCore.EventLoopGroup)? = nil
     ) {
         self.config = httpClientConfiguration

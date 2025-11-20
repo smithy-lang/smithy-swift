@@ -5,29 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.Attributes
+import SmithyTelemetry
 
-/// Handle to stop recording values of an AsyncMeasurement.
-public protocol AsyncMeasurementHandle: Sendable {
+/// Typealias for backward compatibility.
+/// The actual implementation is now in SmithyTelemetry.
+public typealias AsyncMeasurementHandle = SmithyTelemetry.AsyncMeasurementHandle
 
-    /// Stop recording values of an AsyncMeasurement.
-    ///
-    /// Implementations probably will unregister an AsyncMeasurement callback.
-    func stop()
-}
+/// Typealias for backward compatibility.
+/// The actual implementation is now in SmithyTelemetry.
+public typealias LongAsyncMeasurement = SmithyTelemetry.LongAsyncMeasurement
 
-public typealias LongAsyncMeasurement = AsyncMeasurement<Int>
+/// Typealias for backward compatibility.
+/// The actual implementation is now in SmithyTelemetry.
+public typealias DoubleAsyncMeasurement = SmithyTelemetry.DoubleAsyncMeasurement
 
-public typealias DoubleAsyncMeasurement = AsyncMeasurement<Double>
-
-/// Async measurement of a specific numeric type.
-public protocol AsyncMeasurement<NumericType> {
-    associatedtype NumericType: Numeric
-
-    /// Asynchronously records a value for a metric, usually as a callback to an async instrument created by a Meter.
-    ///
-    /// - Parameter value: value to record
-    /// - Parameter attributes: associated attributes, typically of the metric
-    /// - Parameter context: context in which value is recorded in
-    func record(value: NumericType, attributes: Attributes?, context: TelemetryContext?)
-}
+/// Typealias for backward compatibility.
+/// The actual implementation is now in SmithyTelemetry.
+public typealias AsyncMeasurement = SmithyTelemetry.AsyncMeasurement

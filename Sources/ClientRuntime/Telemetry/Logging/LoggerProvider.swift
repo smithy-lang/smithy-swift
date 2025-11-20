@@ -5,13 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol Smithy.LogAgent
+import SmithyTelemetry
 
-/// A Logger Provider provides implementations of LogAgents.
-public protocol LoggerProvider: Sendable {
-    /// Provides a LogAgent.
-    ///
-    /// - Parameter name: the name associated with the LogAgent
-    /// - Returns: a LogAgent
-    func getLogger(name: String) -> LogAgent
-}
+/// Typealias for backward compatibility.
+/// The actual implementation is now in SmithyTelemetry.
+public typealias LoggerProvider = SmithyTelemetry.LoggerProvider
