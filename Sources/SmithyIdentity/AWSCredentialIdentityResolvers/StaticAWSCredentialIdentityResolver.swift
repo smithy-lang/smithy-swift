@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@_spi(ClientConfigDefaultIdentityResolver) import protocol SmithyIdentityAPI.ClientConfigDefaultIdentityResolver
 import struct Smithy.Attributes
+@_spi(ClientConfigDefaultIdentityResolver) import protocol SmithyIdentityAPI.ClientConfigDefaultIdentityResolver
 
 /// A credential identity resolver that provides a fixed set of credentials
 public struct StaticAWSCredentialIdentityResolver: AWSCredentialIdentityResolver {

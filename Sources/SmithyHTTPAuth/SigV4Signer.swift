@@ -5,30 +5,30 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum AwsCommonRuntimeKit.CommonRunTimeError
+import class AwsCommonRuntimeKit.HTTPRequestBase
+import class AwsCommonRuntimeKit.Signer
+import struct AwsCommonRuntimeKit.SigningConfig
 import struct Foundation.Date
 import struct Foundation.TimeInterval
 import struct Foundation.URL
-import class AwsCommonRuntimeKit.HTTPRequestBase
-import class AwsCommonRuntimeKit.Signer
-import class SmithyHTTPAPI.HTTPRequest
-import class SmithyHTTPAPI.HTTPRequestBuilder
-import enum AwsCommonRuntimeKit.CommonRunTimeError
-import enum Smithy.ClientError
-import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
-import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
-import enum SmithyHTTPAuthAPI.AWSSignatureType
-import enum SmithyHTTPAuthAPI.SigningAlgorithm
-import enum SmithyHTTPAuthAPI.SigningPropertyKeys
-import protocol SmithyIdentity.AWSCredentialIdentityResolver
-import protocol SmithyIdentityAPI.Identity
-import protocol SmithyHTTPAuthAPI.Signer
-import struct AwsCommonRuntimeKit.SigningConfig
 import struct Smithy.AttributeKey
 import struct Smithy.Attributes
+import enum Smithy.ClientError
 import struct Smithy.SwiftLogger
-import struct SmithyIdentity.AWSCredentialIdentity
+import class SmithyHTTPAPI.HTTPRequest
+import class SmithyHTTPAPI.HTTPRequestBuilder
+import enum SmithyHTTPAuthAPI.AWSSignatureType
+import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
+import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
+import protocol SmithyHTTPAuthAPI.Signer
+import enum SmithyHTTPAuthAPI.SigningAlgorithm
 import struct SmithyHTTPAuthAPI.SigningFlags
+import enum SmithyHTTPAuthAPI.SigningPropertyKeys
 import SmithyHTTPClient
+import struct SmithyIdentity.AWSCredentialIdentity
+import protocol SmithyIdentity.AWSCredentialIdentityResolver
+import protocol SmithyIdentityAPI.Identity
 
 public class SigV4Signer: SmithyHTTPAuthAPI.Signer, @unchecked Sendable {
     public init() {}

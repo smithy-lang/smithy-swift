@@ -7,8 +7,8 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 import protocol Smithy.SmithyDocument
+@_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 
 @_spi(SmithyReadWrite)
 public typealias WritingClosure<T, Writer> = (T, Writer) throws -> Void

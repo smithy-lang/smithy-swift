@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Context
-import class Smithy.ContextBuilder
 import struct Foundation.TimeInterval
 import struct Smithy.AttributeKey
+import class Smithy.Context
+import class Smithy.ContextBuilder
 
 public extension Context {
     var estimatedSkew: TimeInterval? {

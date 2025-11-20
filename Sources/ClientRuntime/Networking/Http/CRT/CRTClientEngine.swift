@@ -3,23 +3,23 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+import AwsCommonRuntimeKit
 import Foundation
-import enum Smithy.URIScheme
 import struct Smithy.Attributes
-import struct Smithy.SwiftLogger
+import enum Smithy.ByteStreamError
 import protocol Smithy.LogAgent
 import enum Smithy.StreamError
-import enum Smithy.ByteStreamError
-import protocol SmithyHTTPAPI.HTTPClient
-import struct SmithyHTTPAPI.Headers
-import struct SmithyHTTPAPI.Endpoint
+import struct Smithy.SwiftLogger
+import enum Smithy.URIScheme
+import class SmithyChecksums.ChunkedStream
 import enum SmithyHTTPAPI.ALPNProtocol
+import struct SmithyHTTPAPI.Endpoint
+import struct SmithyHTTPAPI.Headers
+import protocol SmithyHTTPAPI.HTTPClient
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 import enum SmithyHTTPAPI.HTTPStatusCode
-import class SmithyChecksums.ChunkedStream
 import class SmithyStreams.BufferedStream
-import AwsCommonRuntimeKit
 #if os(Linux)
 import Glibc
 #elseif !os(Windows)

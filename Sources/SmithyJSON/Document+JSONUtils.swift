@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import func CoreFoundation.CFGetTypeID
 import func CoreFoundation.CFBooleanGetTypeID
+import func CoreFoundation.CFGetTypeID
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.DateFormatter
