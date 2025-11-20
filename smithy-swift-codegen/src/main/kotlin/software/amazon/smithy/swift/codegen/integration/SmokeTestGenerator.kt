@@ -1,7 +1,6 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.model.node.ObjectNode
-import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.StreamingTrait
