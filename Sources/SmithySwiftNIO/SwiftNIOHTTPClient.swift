@@ -23,7 +23,7 @@ import struct Foundation.URLQueryItem
 /// This implementation is thread-safe and supports concurrent request execution.
 public final class SwiftNIOHTTPClient: SmithyHTTPAPI.HTTPClient {
     public static let noOpSwiftNIOHTTPClientTelemetry =
-        ClientRuntime.HttpTelemetry(
+        SmithyHTTPClientAPI.HttpTelemetry(
         httpScope: "SwiftNIOHTTPClient",
         telemetryProvider: ClientRuntime.DefaultTelemetry.provider
     )
@@ -34,7 +34,7 @@ public final class SwiftNIOHTTPClient: SmithyHTTPAPI.HTTPClient {
     private let allocator: ByteBufferAllocator
 
     /// HTTP Client Telemetry
-    private let telemetry: ClientRuntime.HttpTelemetry
+    private let telemetry: SmithyHTTPClientAPI.HttpTelemetry
 
     /// Logger for HTTP-related events.
     private var logger: LogAgent

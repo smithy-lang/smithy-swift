@@ -87,7 +87,7 @@ public class HttpTelemetry: @unchecked Sendable {
 
     public init(
         httpScope: String,
-        telemetryProvider: any TelemetryProvider = DefaultTelemetry.provider,
+        telemetryProvider: any TelemetryProvider,
         meterScope: String? = nil,
         meterAttributes: Attributes? = nil,
         tracerScope: String? = nil,
@@ -189,9 +189,9 @@ private enum RequestState {
     fileprivate static let queued = "queued"
 }
 
-internal enum HttpMetricsAttributesKeys {
+public enum HttpMetricsAttributesKeys {
     fileprivate static let state = AttributeKey<String>(name: "state")
-    internal static let serverAddress = AttributeKey<String>(name: "server.address")
+    public static let serverAddress = AttributeKey<String>(name: "server.address")
 }
 
 public struct HttpMetricsUsage {
