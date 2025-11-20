@@ -6,8 +6,8 @@
 //
 
 import AsyncHTTPClient
-import SmithyHTTPClientAPI
 import NIOCore
+import SmithyHTTPClientAPI
 
 extension HTTPClient.Configuration {
 

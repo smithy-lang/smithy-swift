@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyHTTPClientAPI
 import Foundation
 import NIOSSL
+import SmithyHTTPClientAPI
 
 public struct SwiftNIOHTTPClientTLSOptions: SmithyHTTPClientAPI.TLSConfiguration, Sendable {
 

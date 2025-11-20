@@ -7,13 +7,13 @@
 
 import AsyncHTTPClient
 import ClientRuntime
-import SmithyHTTPClientAPI
 import NIOCore
 import NIOHTTP1
 import NIOPosix
 import NIOSSL
 import Smithy
 import SmithyHTTPAPI
+import SmithyHTTPClientAPI
 import SmithyStreams
 import struct Foundation.Date
 import struct Foundation.URLComponents
