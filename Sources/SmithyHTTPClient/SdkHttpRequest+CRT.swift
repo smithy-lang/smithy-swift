@@ -18,7 +18,6 @@ extension HTTPRequest {
         httpRequest.path = [endpoint.path, endpoint.uri.queryString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
         httpRequest.body = isChunked ? nil : StreamableHttpBody(body: body) // body needs to be nil to use writeChunk()
-        httpRequest.addHeader(name: "If-Range", value: "ETAG")
         return httpRequest
     }
 
@@ -30,7 +29,6 @@ extension HTTPRequest {
         httpRequest.method = method.rawValue
         httpRequest.path = [endpoint.path, endpoint.uri.queryString].compactMap { $0 }.joined(separator: "?")
         httpRequest.addHeaders(headers: headers.toHttpHeaders())
-        httpRequest.addHeader(name: "If-Range", value: "ETAG")
 
         // Remove the "Transfer-Encoding" header if it exists since h2 does not support it
         httpRequest.removeHeader(name: "Transfer-Encoding")
