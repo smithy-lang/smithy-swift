@@ -7,10 +7,11 @@
 
 import AsyncHTTPClient
 import NIOCore
+import ClientRuntime
 
 extension HTTPClient.Configuration {
 
-    static func from(httpClientConfiguration: HttpClientConfiguration) -> HTTPClient.Configuration {
+    static func from(httpClientConfiguration: ClientRuntime.HttpClientConfiguration) -> HTTPClient.Configuration {
         let connect: TimeAmount? = httpClientConfiguration.connectTimeout != nil
             ? .seconds(Int64(httpClientConfiguration.connectTimeout!))
             : nil

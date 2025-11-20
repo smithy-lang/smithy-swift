@@ -53,6 +53,7 @@ let package = Package(
         .library(name: "SmithyCBOR", targets: ["SmithyCBOR"]),
         .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
+        .library(name: "SmithySwiftNIO", targets: ["SmithySwiftNIO"]),
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
@@ -98,7 +99,6 @@ let package = Package(
                 "SmithyChecksums",
                 "SmithyCBOR",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
-                .product(name: "AsyncHTTPClient", package: "async-http-client"),
                 // Only include these on macOS, iOS, tvOS, watchOS, and macCatalyst (visionOS and Linux are excluded)
                 .product(
                     name: "InMemoryExporter",
@@ -124,6 +124,18 @@ let package = Package(
             resources: [
                 .copy("PrivacyInfo.xcprivacy")
             ]
+        ),
+        .target(
+            name: "SmithySwiftNIO",
+            dependencies: [
+                "Smithy",
+                "SmithyHTTPAPI",
+                "SmithyHTTPClient",
+                "SmithyStreams",
+                "ClientRuntime",
+                .product(name: "AsyncHTTPClient", package: "async-http-client"),
+            ],
+            path: "Sources/SmithySwiftNIO"
         ),
         .target(
             name: "SmithyRetriesAPI"
@@ -269,6 +281,13 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ],
             resources: [ .process("Resources") ]
+        ),
+        .testTarget(
+            name: "SmithySwiftNIOTests",
+            dependencies: [
+                "SmithySwiftNIO",
+                "SmithyTestUtil",
+            ]
         ),
         .testTarget(
             name: "SmithyCBORTests",

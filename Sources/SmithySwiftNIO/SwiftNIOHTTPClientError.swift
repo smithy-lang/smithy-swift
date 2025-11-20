@@ -6,7 +6,7 @@
 //
 
 /// Errors that are particular to the NIO-based Smithy HTTP client.
-public enum NIOHTTPClientError: Error {
+public enum SwiftNIOHTTPClientError: Error {
 
     /// A URL could not be formed from the `HTTPRequest`.
     /// Please file a bug with aws-sdk-swift if you experience this error.

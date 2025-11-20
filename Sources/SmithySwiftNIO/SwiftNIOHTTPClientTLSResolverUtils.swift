@@ -8,7 +8,7 @@
 import Foundation
 import NIOSSL
 
-extension NIOHTTPClientTLSOptions {
+extension SwiftNIOHTTPClientTLSOptions {
 
     func makeNIOSSLConfiguration() throws -> NIOSSL.TLSConfiguration {
         var tlsConfig = NIOSSL.TLSConfiguration.makeClientConfiguration()
@@ -16,22 +16,22 @@ extension NIOHTTPClientTLSOptions {
         if useSelfSignedCertificate {
             if let certificateDir = certificateDir, let certificate = certificate {
                 let certificatePath = "\(certificateDir)/\(certificate)"
-                let certificates = try NIOHTTPClientTLSOptions.loadCertificates(from: certificatePath)
+                let certificates = try SwiftNIOHTTPClientTLSOptions.loadCertificates(from: certificatePath)
                 tlsConfig.trustRoots = .certificates(certificates)
             } else if let certificate = certificate {
-                let certificates = try NIOHTTPClientTLSOptions.loadCertificates(from: certificate)
+                let certificates = try SwiftNIOHTTPClientTLSOptions.loadCertificates(from: certificate)
                 tlsConfig.trustRoots = .certificates(certificates)
             }
         }
 
         if useProvidedKeystore {
             if let pkcs12Path = pkcs12Path, let pkcs12Password = pkcs12Password {
-                let bundle = try NIOHTTPClientTLSOptions.loadPKCS12Bundle(from: pkcs12Path, password: pkcs12Password)
+                let bundle = try SwiftNIOHTTPClientTLSOptions.loadPKCS12Bundle(from: pkcs12Path, password: pkcs12Password)
                 tlsConfig.certificateChain = bundle.certificateChain.map { .certificate($0) }
                 tlsConfig.privateKey = .privateKey(bundle.privateKey)
             } else if let certificate = certificate, let privateKey = privateKey {
-                let cert = try NIOHTTPClientTLSOptions.loadCertificate(from: certificate)
-                let key = try NIOHTTPClientTLSOptions.loadPrivateKey(from: privateKey)
+                let cert = try SwiftNIOHTTPClientTLSOptions.loadCertificate(from: certificate)
+                let key = try SwiftNIOHTTPClientTLSOptions.loadPrivateKey(from: privateKey)
                 tlsConfig.certificateChain = [.certificate(cert)]
                 tlsConfig.privateKey = .privateKey(key)
             }
@@ -41,7 +41,7 @@ extension NIOHTTPClientTLSOptions {
     }
 }
 
-extension NIOHTTPClientTLSOptions {
+extension SwiftNIOHTTPClientTLSOptions {
 
     static func loadCertificates(from filePath: String) throws -> [NIOSSLCertificate] {
         let fileData = try Data(contentsOf: URL(fileURLWithPath: filePath))
@@ -51,7 +51,7 @@ extension NIOHTTPClientTLSOptions {
     static func loadCertificate(from filePath: String) throws -> NIOSSLCertificate {
         let certificates = try loadCertificates(from: filePath)
         guard let certificate = certificates.first else {
-            throw NIOHTTPClientTLSError.noCertificateFound(filePath)
+            throw SwiftNIOHTTPClientTLSError.noCertificateFound(filePath)
         }
         return certificate
     }
@@ -65,12 +65,12 @@ extension NIOHTTPClientTLSOptions {
         do {
             return try NIOSSLPKCS12Bundle(file: filePath, passphrase: password.utf8)
         } catch {
-            throw NIOHTTPClientTLSError.invalidPKCS12(filePath, underlying: error)
+            throw SwiftNIOHTTPClientTLSError.invalidPKCS12(filePath, underlying: error)
         }
     }
 }
 
-public enum NIOHTTPClientTLSError: Error, LocalizedError {
+public enum SwiftNIOHTTPClientTLSError: Error, LocalizedError {
     case noCertificateFound(String)
     case invalidPKCS12(String, underlying: Error)
 

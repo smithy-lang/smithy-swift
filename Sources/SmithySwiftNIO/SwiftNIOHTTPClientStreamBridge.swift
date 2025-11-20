@@ -12,7 +12,7 @@ import Smithy
 import SmithyStreams
 
 /// Handles streaming between Smithy streams and AsyncHTTPClient
-final class NIOHTTPClientStreamBridge {
+final class SwiftNIOHTTPClientStreamBridge {
 
     /// Convert Smithy ByteStream to AsyncHTTPClient request body
     static func convertRequestBody(
@@ -130,7 +130,7 @@ internal struct StreamToAsyncSequence: AsyncSequence, Sendable {
             } catch {
                 isFinished = true
                 stream.close()
-                throw NIOHTTPClientError.streamingError(error)
+                throw SwiftNIOHTTPClientError.streamingError(error)
             }
         }
     }

@@ -14,9 +14,9 @@ import class SmithyStreams.BufferedStream
 import enum Smithy.LogAgentLevel
 import protocol Smithy.LogAgent
 import enum Smithy.ByteStream
-@testable import ClientRuntime
+@testable import SmithySwiftNIO
 
-class NIOHTTPClientStreamBridgeTests: XCTestCase {
+class SwiftNIOHTTPClientStreamBridgeTests: XCTestCase {
     let allocator = ByteBufferAllocator()
 
     func test_convertResponseBody_streamsAllDataCorrectly() async throws {
@@ -55,7 +55,7 @@ class NIOHTTPClientStreamBridgeTests: XCTestCase {
                 body: .bytes(buffer)
             )
 
-            let resultStream = await NIOHTTPClientStreamBridge.convertResponseBody(from: response)
+            let resultStream = await SwiftNIOHTTPClientStreamBridge.convertResponseBody(from: response)
             let convertedData = try await readAllData(from: resultStream)
 
             XCTAssertEqual(convertedData, originalData,
@@ -66,7 +66,7 @@ class NIOHTTPClientStreamBridgeTests: XCTestCase {
     func test_convertRequestBody_withNoStream() async throws {
         let byteStream = ByteStream.noStream
 
-        let result = try await NIOHTTPClientStreamBridge.convertRequestBody(
+        let result = try await SwiftNIOHTTPClientStreamBridge.convertRequestBody(
             from: byteStream,
             allocator: allocator
         )
@@ -84,7 +84,7 @@ class NIOHTTPClientStreamBridgeTests: XCTestCase {
         let testData = "Hello, World!".data(using: .utf8)!
         let byteStream = ByteStream.data(testData)
 
-        let result = try await NIOHTTPClientStreamBridge.convertRequestBody(
+        let result = try await SwiftNIOHTTPClientStreamBridge.convertRequestBody(
             from: byteStream,
             allocator: allocator
         )
@@ -111,7 +111,7 @@ class NIOHTTPClientStreamBridgeTests: XCTestCase {
         let bufferedStream = BufferedStream(data: testData, isClosed: true)
         let byteStream = ByteStream.stream(bufferedStream)
 
-        let result = try await NIOHTTPClientStreamBridge.convertRequestBody(
+        let result = try await SwiftNIOHTTPClientStreamBridge.convertRequestBody(
             from: byteStream,
             allocator: allocator,
             chunkSize: 100 // try a non-default chunk size

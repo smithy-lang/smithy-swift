@@ -33,21 +33,21 @@ public class HttpTelemetry: @unchecked Sendable {
         return attributes
     }
 
-    internal let contextManager: any TelemetryContextManager
-    internal let tracerProvider: any TracerProvider
-    internal let loggerProvider: any LoggerProvider
+    public let contextManager: any TelemetryContextManager
+    public let tracerProvider: any TracerProvider
+    public let loggerProvider: any LoggerProvider
 
-    internal let tracerScope: String
-    internal let spanName: String
+    public let tracerScope: String
+    public let spanName: String
 
-    internal let connectionsAcquireDuration: any Histogram
+    public let connectionsAcquireDuration: any Histogram
     private let connectionsLimit: any AsyncMeasurementHandle
     private let connectionsUsage: any AsyncMeasurementHandle
-    internal let connectionsUptime: any Histogram
+    public let connectionsUptime: any Histogram
     private let requestsUsage: any AsyncMeasurementHandle
-    internal let requestsQueuedDuration: any Histogram
-    internal let bytesSent: any MonotonicCounter
-    internal let bytesReceived: any MonotonicCounter
+    public let requestsQueuedDuration: any Histogram
+    public let bytesSent: any MonotonicCounter
+    public let bytesReceived: any MonotonicCounter
 
     // Lock to enforce exclusive access to non-Sendable properties
     private let lock = NSRecursiveLock()
@@ -64,7 +64,7 @@ public class HttpTelemetry: @unchecked Sendable {
 
     private let _spanAttributes: Attributes?
 
-    var spanAttributes: Attributes? {
+    public var spanAttributes: Attributes? {
         lock.lock()
         defer { lock.unlock() }
         return _spanAttributes
@@ -78,7 +78,7 @@ public class HttpTelemetry: @unchecked Sendable {
         return _httpMetricsUsage
     }
 
-    func updateHTTPMetricsUsage(_ block: (inout HttpMetricsUsage) -> Void) {
+    public func updateHTTPMetricsUsage(_ block: (inout HttpMetricsUsage) -> Void) {
         lock.lock()
         defer { lock.unlock() }
         block(&_httpMetricsUsage)
@@ -193,7 +193,7 @@ internal enum HttpMetricsAttributesKeys {
     internal static let serverAddress = AttributeKey<String>(name: "server.address")
 }
 
-internal struct HttpMetricsUsage {
+public struct HttpMetricsUsage {
     public var connectionsLimit: Int = 0
     public var idleConnections: Int = 0
     public var acquiredConnections: Int = 0

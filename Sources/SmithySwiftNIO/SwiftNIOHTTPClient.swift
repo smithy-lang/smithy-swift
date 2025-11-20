@@ -10,57 +10,47 @@ import NIOCore
 import NIOHTTP1
 import NIOPosix
 import NIOSSL
-import struct Smithy.Attributes
-import struct Smithy.SwiftLogger
-import protocol Smithy.LogAgent
-import struct SmithyHTTPAPI.Headers
-import struct SmithyHTTPAPI.Header
-import protocol SmithyHTTPAPI.HTTPClient
-import class SmithyHTTPAPI.HTTPResponse
-import class SmithyHTTPAPI.HTTPRequest
-import enum SmithyHTTPAPI.HTTPStatusCode
-import enum SmithyHTTPAPI.HTTPMethodType
-import protocol Smithy.ReadableStream
-import enum Smithy.ByteStream
-import class SmithyStreams.BufferedStream
+import Smithy
+import SmithyHTTPAPI
+import SmithyStreams
+import ClientRuntime
 import struct Foundation.Date
 import struct Foundation.URLComponents
 import struct Foundation.URLQueryItem
-import AwsCommonRuntimeKit
 
 /// AsyncHTTPClient-based HTTP client implementation that conforms to SmithyHTTPAPI.HTTPClient
 /// This implementation is thread-safe and supports concurrent request execution.
-public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
-    public static let noOpNIOHTTPClientTelemetry = HttpTelemetry(
-        httpScope: "NIOHTTPClient",
-        telemetryProvider: DefaultTelemetry.provider
+public final class SwiftNIOHTTPClient: SmithyHTTPAPI.HTTPClient {
+    public static let noOpSwiftNIOHTTPClientTelemetry = ClientRuntime.HttpTelemetry(
+        httpScope: "SwiftNIOHTTPClient",
+        telemetryProvider: ClientRuntime.DefaultTelemetry.provider
     )
 
     private let client: AsyncHTTPClient.HTTPClient
-    private let config: HttpClientConfiguration
-    private let tlsConfiguration: NIOHTTPClientTLSOptions?
+    private let config: ClientRuntime.HttpClientConfiguration
+    private let tlsConfiguration: SwiftNIOHTTPClientTLSOptions?
     private let allocator: ByteBufferAllocator
 
     /// HTTP Client Telemetry
-    private let telemetry: HttpTelemetry
+    private let telemetry: ClientRuntime.HttpTelemetry
 
     /// Logger for HTTP-related events.
     private var logger: LogAgent
 
-    /// Creates a new `NIOHTTPClient`.
+    /// Creates a new `SwiftNIOHTTPClient`.
     ///
     /// The client is created with its own internal `AsyncHTTPClient`, which is configured with system defaults.
     /// - Parameters:
     ///   - httpClientConfiguration: The configuration to use for the client's `AsyncHTTPClient` setup.
     ///   - eventLoopGroup: The `EventLoopGroup` that the ``HTTPClient`` will use.
     public init(
-        httpClientConfiguration: HttpClientConfiguration,
+        httpClientConfiguration: ClientRuntime.HttpClientConfiguration,
         eventLoopGroup: (any NIOCore.EventLoopGroup)? = nil
     ) {
         self.config = httpClientConfiguration
-        self.telemetry = httpClientConfiguration.telemetry ?? NIOHTTPClient.noOpNIOHTTPClientTelemetry
-        self.logger = self.telemetry.loggerProvider.getLogger(name: "NIOHTTPClient")
-        self.tlsConfiguration = httpClientConfiguration.tlsConfiguration as? NIOHTTPClientTLSOptions
+        self.telemetry = httpClientConfiguration.telemetry ?? SwiftNIOHTTPClient.noOpSwiftNIOHTTPClientTelemetry
+        self.logger = self.telemetry.loggerProvider.getLogger(name: "SwiftNIOHTTPClient")
+        self.tlsConfiguration = httpClientConfiguration.tlsConfiguration as? SwiftNIOHTTPClientTLSOptions
         self.allocator = ByteBufferAllocator()
 
         var clientConfig = AsyncHTTPClient.HTTPClient.Configuration.from(
@@ -154,7 +144,7 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
 
         let httpMethod = request.method.rawValue
         let url = request.destination.url
-        logger.debug("NIOHTTPClient(\(httpMethod) \(String(describing: url))) started")
+        logger.debug("SwiftNIOHTTPClient(\(httpMethod) \(String(describing: url))) started")
         logBodyDescription(request.body)
 
         do {
@@ -168,16 +158,16 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
                 headers.add(name: name, value: value)
             }
 
-            let body = await NIOHTTPClientStreamBridge.convertResponseBody(from: nioResponse)
+            let body = await SwiftNIOHTTPClientStreamBridge.convertResponseBody(from: nioResponse)
 
             let response = HTTPResponse(headers: headers, body: body, statusCode: statusCode)
-            logger.debug("NIOHTTPClient(\(httpMethod) \(String(describing: url))) succeeded")
+            logger.debug("SwiftNIOHTTPClient(\(httpMethod) \(String(describing: url))) succeeded")
 
             return response
         } catch {
             let urlDescription = String(describing: url)
             let errorDescription = String(describing: error)
-            logger.error("NIOHTTPClient(\(httpMethod) \(urlDescription)) failed with error: \(errorDescription)")
+            logger.error("SwiftNIOHTTPClient(\(httpMethod) \(urlDescription)) failed with error: \(errorDescription)")
             throw error
         }
     }
@@ -196,7 +186,7 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
                 URLQueryItem(name: $0.name, value: $0.value)
             }
         }
-        guard let url = components.url else { throw NIOHTTPClientError.incompleteHTTPRequest }
+        guard let url = components.url else { throw SwiftNIOHTTPClientError.incompleteHTTPRequest }
 
         let method = NIOHTTP1.HTTPMethod(rawValue: request.method.rawValue)
         var nioRequest = AsyncHTTPClient.HTTPClientRequest(url: url.absoluteString)
@@ -209,7 +199,7 @@ public final class NIOHTTPClient: SmithyHTTPAPI.HTTPClient {
             }
         }
 
-        nioRequest.body = try await NIOHTTPClientStreamBridge.convertRequestBody(
+        nioRequest.body = try await SwiftNIOHTTPClientStreamBridge.convertRequestBody(
             from: request.body,
             allocator: allocator
         )
