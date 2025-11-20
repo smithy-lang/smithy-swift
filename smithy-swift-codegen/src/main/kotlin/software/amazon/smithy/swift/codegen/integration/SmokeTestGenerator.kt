@@ -1,6 +1,7 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.model.node.ObjectNode
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -15,6 +16,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
+import kotlin.jvm.optionals.getOrNull
 
 open class SmokeTestGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -58,10 +60,10 @@ open class SmokeTestGenerator(
     private fun getOperationShapeIdToTestCasesMapping(serviceName: String): Map<ShapeId, List<SmokeTestCase>> {
         val operationShapeIdToTestCases = mutableMapOf<ShapeId, List<SmokeTestCase>>()
         ctx.model.operationShapes.forEach { op ->
-            val input = ctx.model.expectShape<StructureShape>(op.input.get())
-            val output = ctx.model.expectShape<StructureShape>(op.output.get())
+            val input = ctx.model.getShape(op.input.get()).getOrNull() as? StructureShape
+            val output = ctx.model.getShape(op.output.get()).getOrNull() as? StructureShape
             val operationHasEventStreams =
-                (input.members() + output.members()).any { member ->
+                ((input?.members() ?: listOf<MemberShape>()) + (output?.members() ?: listOf())).any { member ->
                     ctx.model.expectShape(member.target).hasTrait<StreamingTrait>()
                 }
             if (op.hasTrait<SmokeTestsTrait>() && !operationHasEventStreams) {
