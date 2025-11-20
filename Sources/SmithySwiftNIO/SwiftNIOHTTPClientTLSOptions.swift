@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import ClientRuntime
 import Foundation
 import NIOSSL
-import ClientRuntime
 
 public struct SwiftNIOHTTPClientTLSOptions: ClientRuntime.TLSConfiguration, Sendable {
 

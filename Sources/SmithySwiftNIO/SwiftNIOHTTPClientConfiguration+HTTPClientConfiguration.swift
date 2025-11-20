@@ -6,8 +6,8 @@
 //
 
 import AsyncHTTPClient
-import NIOCore
 import ClientRuntime
+import NIOCore
 
 extension HTTPClient.Configuration {
 

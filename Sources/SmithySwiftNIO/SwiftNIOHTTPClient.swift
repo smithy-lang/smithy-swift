@@ -6,6 +6,7 @@
 //
 
 import AsyncHTTPClient
+import ClientRuntime
 import NIOCore
 import NIOHTTP1
 import NIOPosix
@@ -13,7 +14,6 @@ import NIOSSL
 import Smithy
 import SmithyHTTPAPI
 import SmithyStreams
-import ClientRuntime
 import struct Foundation.Date
 import struct Foundation.URLComponents
 import struct Foundation.URLQueryItem
