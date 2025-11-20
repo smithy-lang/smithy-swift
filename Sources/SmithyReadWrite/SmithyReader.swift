@@ -44,7 +44,8 @@ public protocol SmithyReader: AnyObject {
     ) throws -> [Member]?
 
     /// Attempts to read a `null` value from the source document.
-    /// - Returns: `true` if the value read is null, `false` if a value is present but it is not null, `nil` if no value is present.
+    /// - Returns: `true` if the value read is null, `false` if a value is present but it is not null,
+    ///   `nil` if no value is present.
     func readNullIfPresent() throws -> Bool?
 }
 
