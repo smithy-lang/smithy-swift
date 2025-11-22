@@ -356,6 +356,10 @@ let package = Package(
             dependencies: ["SmithyHTTPAPI"]
         ),
         .testTarget(
+            name: "SmithyStreamsTests",
+            dependencies: ["SmithyStreams", "Smithy"]
+        ),
+        .testTarget(
             name: "SmithyCodegenCoreTests",
             dependencies: ["SmithyCodegenCore"]
         ),

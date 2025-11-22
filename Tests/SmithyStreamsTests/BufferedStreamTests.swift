@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import ClientRuntime
+import enum Smithy.StreamError
 import class SmithyStreams.BufferedStream
 
 final class BufferedStreamTests: XCTestCase {
@@ -206,6 +206,29 @@ final class BufferedStreamTests: XCTestCase {
         try subject.write(contentsOf: additionalData)
         let readData1 = try subject.read(upToCount: Int.max)
         XCTAssertEqual(testData + additionalData, readData1)
+    }
+
+    func test_write_throwsWriteToClosedStreamErrorWhenStreamIsClosed() throws {
+        let subject = BufferedStream(data: testData, isClosed: true)
+        XCTAssertThrowsError(
+            try subject.write(contentsOf: additionalData),
+            "No error was thrown when writing to a closed stream",
+            { error in
+                switch error {
+                case StreamError.writeToClosedStream:
+                    break // expected error, test passes
+                default:
+                    XCTFail("Error was thrown, but not of expected error type")
+                }
+            }
+        )
+    }
+
+    func test_write_rejectsAdditionalDataWhenStreamIsClosed() throws {
+        let subject = BufferedStream(data: testData, isClosed: true)
+        XCTAssertThrowsError(try subject.write(contentsOf: additionalData))
+        let readData = try subject.read(upToCount: Int.max)
+        XCTAssertEqual(testData, readData)
     }
 
     // MARK: - length
