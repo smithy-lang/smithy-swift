@@ -349,5 +349,9 @@ let package = Package(
             name: "SmithyHTTPAPITests",
             dependencies: ["SmithyHTTPAPI"]
         ),
+        .testTarget(
+            name: "SmithyStreamsTests",
+            dependencies: ["SmithyStreams", "Smithy"]
+        ),
     ].compactMap { $0 }
 )
