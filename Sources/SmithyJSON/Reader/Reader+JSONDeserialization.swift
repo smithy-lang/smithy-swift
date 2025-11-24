@@ -9,7 +9,7 @@ import struct Foundation.Data
 import class Foundation.JSONSerialization
 import class Foundation.NSError
 import class Foundation.NSNull
-import struct SmithySerde.InvalidEncodingError
+import struct SmithySerialization.InvalidEncodingError
 
 extension Reader {
 

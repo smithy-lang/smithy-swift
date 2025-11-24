@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import struct SmithySerde.InvalidEncodingError
+import struct SmithySerialization.InvalidEncodingError
 @testable @_spi(SmithyReadWrite) import SmithyJSON
 
 final class ReaderTests: XCTestCase {

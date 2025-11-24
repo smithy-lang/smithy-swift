@@ -30,7 +30,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
-        .library(name: "SmithySerde", targets: ["SmithySerde"]),
+        .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
@@ -76,7 +76,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "SmithySerde",
+            name: "SmithySerialization",
             dependencies: [
                 "Smithy",
             ]
@@ -144,7 +144,7 @@ let package = Package(
         .target(
             name: "SmithyXML",
             dependencies: [
-                "SmithySerde",
+                "SmithySerialization",
                 "SmithyReadWrite",
                 "SmithyTimestamps",
                 libXML2DependencyOrNil
@@ -153,7 +153,7 @@ let package = Package(
         .target(
             name: "SmithyJSON",
             dependencies: [
-                "SmithySerde",
+                "SmithySerialization",
                 "SmithyReadWrite",
                 "SmithyTimestamps"
             ]
@@ -293,7 +293,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyXMLTests",
-            dependencies: ["SmithySerde", "SmithyXML", "ClientRuntime"]
+            dependencies: ["SmithySerialization", "SmithyXML", "ClientRuntime"]
         ),
         .testTarget(
             name: "SmithyHTTPAuthTests",
@@ -305,7 +305,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyJSONTests",
-            dependencies: ["SmithySerde", "SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
+            dependencies: ["SmithySerialization", "SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
         ),
         .testTarget(
             name: "SmithyFormURLTests",

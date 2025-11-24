@@ -7,7 +7,7 @@
 
 import struct Foundation.Data
 @preconcurrency import libxml2
-import struct SmithySerde.InvalidEncodingError
+import struct SmithySerialization.InvalidEncodingError
 
 extension Reader {
 
