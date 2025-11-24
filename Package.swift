@@ -90,7 +90,6 @@ let package = Package(
                 "Smithy",
                 "SmithyHTTPAPI",
                 "SmithyTelemetryAPI",
-                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ]
         ),
         .target(
