@@ -17,7 +17,6 @@ import SmithyTelemetryAPI
 import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryStrategyOptions
-import class SmithySwiftNIO.SwiftNIOHTTPClient
 
 public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy,
     DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider> {
@@ -93,21 +92,20 @@ public extension DefaultSDKRuntimeConfiguration {
     static func makeClient(
         httpClientConfiguration: HttpClientConfiguration = defaultHttpClientConfiguration
     ) -> HTTPClient {
-        return SmithySwiftNIO.SwiftNIOHTTPClient(httpClientConfiguration: httpClientConfiguration)
-        // #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS) || os(macOS)
-        // return URLSessionHTTPClient(httpClientConfiguration: httpClientConfiguration)
-        // #else
-        // let connectTimeoutMs = httpClientConfiguration.connectTimeout.map { UInt32($0 * 1000) }
-        // let socketTimeout = UInt32(httpClientConfiguration.socketTimeout)
-        // let config = CRTClientEngineConfig(
-        //     maxConnectionsPerEndpoint: httpClientConfiguration.maxConnections,
-        //     telemetry: httpClientConfiguration.telemetry ?? CRTClientEngine.noOpCrtClientEngineTelemetry,
-        //     connectTimeoutMs: connectTimeoutMs,
-        //     crtTlsOptions: httpClientConfiguration.tlsConfiguration as? CRTClientTLSOptions,
-        //     socketTimeout: socketTimeout
-        // )
-        // return CRTClientEngine(config: config)
-        // #endif
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS) || os(macOS)
+        return URLSessionHTTPClient(httpClientConfiguration: httpClientConfiguration)
+        #else
+        let connectTimeoutMs = httpClientConfiguration.connectTimeout.map { UInt32($0 * 1000) }
+        let socketTimeout = UInt32(httpClientConfiguration.socketTimeout)
+        let config = CRTClientEngineConfig(
+            maxConnectionsPerEndpoint: httpClientConfiguration.maxConnections,
+            telemetry: httpClientConfiguration.telemetry ?? CRTClientEngine.noOpCrtClientEngineTelemetry,
+            connectTimeoutMs: connectTimeoutMs,
+            crtTlsOptions: httpClientConfiguration.tlsConfiguration as? CRTClientTLSOptions,
+            socketTimeout: socketTimeout
+        )
+        return CRTClientEngine(config: config)
+        #endif
     }
 
     /// The default HTTP client configuration to use.
