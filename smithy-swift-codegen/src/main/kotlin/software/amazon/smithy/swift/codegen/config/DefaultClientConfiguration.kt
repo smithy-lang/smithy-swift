@@ -13,7 +13,6 @@ import software.amazon.smithy.swift.codegen.lang.FunctionParameter
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesAPITypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTelemetryAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 class DefaultClientConfiguration : ClientConfiguration {
@@ -24,7 +23,7 @@ class DefaultClientConfiguration : ClientConfiguration {
             ConfigProperty(
                 "telemetryProvider",
                 ClientRuntimeTypes.Core.TelemetryProvider,
-                { it.format("\$N.provider", SmithyTelemetryAPITypes.DefaultTelemetry) },
+                { it.format("\$N.provider", ClientRuntimeTypes.Core.DefaultTelemetry) },
             ),
             ConfigProperty(
                 "retryStrategyOptions",

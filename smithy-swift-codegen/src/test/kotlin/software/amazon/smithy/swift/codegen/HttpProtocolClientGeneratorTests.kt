@@ -99,7 +99,7 @@ extension RestJsonProtocolClient {
             httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]? = nil
         ) throws {
             self.init(
-                telemetryProvider ?? SmithyTelemetryAPI.DefaultTelemetry.provider,
+                telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider,
                 retryStrategyOptions ?? ClientRuntime.ClientConfigurationDefaults.defaultRetryStrategyOptions,
                 clientLogMode ?? ClientRuntime.ClientConfigurationDefaults.defaultClientLogMode,
                 endpoint,
