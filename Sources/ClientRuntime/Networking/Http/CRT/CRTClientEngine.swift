@@ -22,6 +22,7 @@ import enum SmithyHTTPAPI.HTTPStatusCode
 import class SmithyHTTPClientAPI.HttpTelemetry
 import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 import class SmithyStreams.BufferedStream
+import SmithyTelemetryAPI
 #if os(Linux)
 import Glibc
 #elseif !os(Windows)

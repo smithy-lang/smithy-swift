@@ -18,6 +18,7 @@ import enum Smithy.LogAgentLevel
 import protocol Smithy.LogAgent
 import class SmithyStreams.BufferedStream
 import class SmithyHTTPClientAPI.HttpTelemetry
+import SmithyTelemetryAPI
 
 class FoundationStreamBridgeTests: XCTestCase {
 

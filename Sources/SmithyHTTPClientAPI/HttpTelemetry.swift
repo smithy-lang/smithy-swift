@@ -7,7 +7,7 @@ import class Foundation.NSRecursiveLock
 import struct Smithy.AttributeKey
 import struct Smithy.Attributes
 import protocol SmithyHTTPAPI.HTTPClient
-import SmithyTelemetry
+import SmithyTelemetryAPI
 
 /// Container for HTTPClient telemetry, including configurable attributes and names.
 ///

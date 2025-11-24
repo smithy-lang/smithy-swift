@@ -5,20 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyTelemetry
+import SmithyTelemetryAPI
 
 /// Typealias for backward compatibility.
-/// The actual implementation is now in SmithyTelemetry.
-public typealias AsyncMeasurementHandle = SmithyTelemetry.AsyncMeasurementHandle
+/// The actual implementation is now in SmithyTelemetryAPI.
+public typealias AsyncMeasurementHandle = SmithyTelemetryAPI.AsyncMeasurementHandle
 
 /// Typealias for backward compatibility.
-/// The actual implementation is now in SmithyTelemetry.
-public typealias LongAsyncMeasurement = SmithyTelemetry.LongAsyncMeasurement
+/// The actual implementation is now in SmithyTelemetryAPI.
+public typealias LongAsyncMeasurement = SmithyTelemetryAPI.LongAsyncMeasurement
 
 /// Typealias for backward compatibility.
-/// The actual implementation is now in SmithyTelemetry.
-public typealias DoubleAsyncMeasurement = SmithyTelemetry.DoubleAsyncMeasurement
+/// The actual implementation is now in SmithyTelemetryAPI.
+public typealias DoubleAsyncMeasurement = SmithyTelemetryAPI.DoubleAsyncMeasurement
 
 /// Typealias for backward compatibility.
-/// The actual implementation is now in SmithyTelemetry.
-public typealias AsyncMeasurement = SmithyTelemetry.AsyncMeasurement
+/// The actual implementation is now in SmithyTelemetryAPI.
+public typealias AsyncMeasurement = SmithyTelemetryAPI.AsyncMeasurement

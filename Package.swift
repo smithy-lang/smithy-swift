@@ -54,7 +54,7 @@ let package = Package(
         .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
         .library(name: "SmithySwiftNIO", targets: ["SmithySwiftNIO"]),
-        .library(name: "SmithyTelemetry", targets: ["SmithyTelemetry"]),
+        .library(name: "SmithyTelemetryAPI", targets: ["SmithyTelemetryAPI"]),
         .library(name: "SmithyHTTPClientAPI", targets: ["SmithyHTTPClientAPI"]),
     ],
     dependencies: {
@@ -79,7 +79,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "SmithyTelemetry",
+            name: "SmithyTelemetryAPI",
             dependencies: [
                 "Smithy",
             ]
@@ -89,7 +89,7 @@ let package = Package(
             dependencies: [
                 "Smithy",
                 "SmithyHTTPAPI",
-                "SmithyTelemetry",
+                "SmithyTelemetryAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ]
         ),
@@ -97,7 +97,7 @@ let package = Package(
             name: "ClientRuntime",
             dependencies: [
                 "Smithy",
-                "SmithyTelemetry",
+                "SmithyTelemetryAPI",
                 "SmithyHTTPClientAPI",
                 "SmithyRetriesAPI",
                 "SmithyRetries",
@@ -149,10 +149,8 @@ let package = Package(
             dependencies: [
                 "Smithy",
                 "SmithyHTTPAPI",
-                "SmithyHTTPClient",
                 "SmithyStreams",
                 "SmithyHTTPClientAPI",
-                "ClientRuntime",
                 .product(name: "AsyncHTTPClient", package: "async-http-client"),
             ],
             path: "Sources/SmithySwiftNIO"

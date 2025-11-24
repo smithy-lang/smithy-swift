@@ -6,7 +6,6 @@
 //
 
 import AsyncHTTPClient
-import ClientRuntime
 import NIOCore
 import NIOHTTP1
 import NIOPosix
@@ -15,6 +14,7 @@ import Smithy
 import SmithyHTTPAPI
 import SmithyHTTPClientAPI
 import SmithyStreams
+import SmithyTelemetryAPI
 import struct Foundation.Date
 import struct Foundation.URLComponents
 import struct Foundation.URLQueryItem
@@ -25,11 +25,11 @@ public final class SwiftNIOHTTPClient: SmithyHTTPAPI.HTTPClient {
     public static let noOpSwiftNIOHTTPClientTelemetry =
         SmithyHTTPClientAPI.HttpTelemetry(
         httpScope: "SwiftNIOHTTPClient",
-        telemetryProvider: ClientRuntime.DefaultTelemetry.provider
+        telemetryProvider: SmithyTelemetryAPI.DefaultTelemetry.provider
     )
 
     private let client: AsyncHTTPClient.HTTPClient
-    private let config: SmithyHTTPClientAPI.HttpClientConfiguration
+    private let config: SmithyHTTPClientAPI.HTTPClientConfiguration
     private let tlsConfiguration: SwiftNIOHTTPClientTLSOptions?
     private let allocator: ByteBufferAllocator
 
@@ -48,7 +48,7 @@ public final class SwiftNIOHTTPClient: SmithyHTTPAPI.HTTPClient {
     ///     client's `AsyncHTTPClient` setup.
     ///   - eventLoopGroup: The `EventLoopGroup` that the ``HTTPClient`` will use.
     public init(
-        httpClientConfiguration: SmithyHTTPClientAPI.HttpClientConfiguration,
+        httpClientConfiguration: SmithyHTTPClientAPI.HTTPClientConfiguration,
         eventLoopGroup: (any NIOCore.EventLoopGroup)? = nil
     ) {
         self.config = httpClientConfiguration

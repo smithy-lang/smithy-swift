@@ -7,6 +7,7 @@
 
  #if os(macOS) || os(iOS) || os(watchOS) || os(tvOS)
 import Foundation
+import SmithyTelemetryAPI
 
 // OpenTelemetrySdk specific imports
 @preconcurrency import protocol OpenTelemetrySdk.SpanExporter

@@ -10,7 +10,7 @@ import struct Foundation.TimeInterval
 import enum Smithy.URIScheme
 import struct SmithyHTTPAPI.Headers
 
-public class HttpClientConfiguration {
+public class HTTPClientConfiguration {
 
     /// The timeout for establishing a connection, in seconds.
     ///

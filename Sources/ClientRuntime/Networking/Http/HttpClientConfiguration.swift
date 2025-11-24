@@ -9,4 +9,4 @@ import SmithyHTTPClientAPI
 
 /// Typealias for backward compatibility.
 /// The actual implementation is now in SmithyHTTPClientAPI.
-public typealias HttpClientConfiguration = SmithyHTTPClientAPI.HttpClientConfiguration
+public typealias HttpClientConfiguration = SmithyHTTPClientAPI.HTTPClientConfiguration

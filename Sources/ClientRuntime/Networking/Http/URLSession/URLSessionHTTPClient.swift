@@ -29,6 +29,7 @@ import class Foundation.URLResponse
 import class Foundation.URLSession
 import class Foundation.URLSessionConfiguration
 import protocol Foundation.URLSessionDataDelegate
+import SmithyTelemetryAPI
 import class Foundation.URLSessionDataTask
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionTaskMetrics

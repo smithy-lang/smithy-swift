@@ -12,7 +12,7 @@ import SmithyHTTPClientAPI
 extension HTTPClient.Configuration {
 
     static func from(
-        httpClientConfiguration: SmithyHTTPClientAPI.HttpClientConfiguration
+        httpClientConfiguration: SmithyHTTPClientAPI.HTTPClientConfiguration
     ) -> HTTPClient.Configuration {
         let connect: TimeAmount? = httpClientConfiguration.connectTimeout != nil
             ? .seconds(Int64(httpClientConfiguration.connectTimeout!))
