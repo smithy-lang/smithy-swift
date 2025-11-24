@@ -9,8 +9,8 @@ import enum AwsCommonRuntimeKit.EndpointProperty
 import struct Foundation.URLComponents
 import enum Smithy.ClientError
 import struct SmithyHTTPAPI.Endpoint
-import struct SmithyHTTPAPI.Headers
 import enum SmithyHTTPAPI.EndpointPropertyValue
+import struct SmithyHTTPAPI.Headers
 
 extension Endpoint {
 
