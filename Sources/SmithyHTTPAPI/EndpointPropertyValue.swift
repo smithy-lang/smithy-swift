@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum AwsCommonRuntimeKit.EndpointProperty
+//import enum AwsCommonRuntimeKit.EndpointProperty
 import Foundation
 import Smithy
 
@@ -20,21 +20,6 @@ public extension EndpointPropertyValue {
     // Convenience for string literals
     init(_ string: String) { self = .string(string) }
     init(_ bool: Bool) { self = .bool(bool) }
-}
-
-extension EndpointPropertyValue {
-    init(_ endpointProperty: EndpointProperty) {
-        switch endpointProperty {
-        case .bool(let value):
-            self = .bool(value)
-        case .string(let value):
-            self = .string(value)
-        case .array(let values):
-            self = .array(values.map(EndpointPropertyValue.init))
-        case .dictionary(let dict):
-            self = .dictionary(dict.mapValues(EndpointPropertyValue.init))
-        }
-    }
 }
 
 extension EndpointPropertyValue: ExpressibleByStringLiteral {
