@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import struct SmithySerialization.InvalidEncodingError
+import struct SmithySerialization.ResponseEncodingError
 @testable @_spi(SmithyReadWrite) import SmithyJSON
 
 final class ReaderTests: XCTestCase {
@@ -31,7 +31,7 @@ final class ReaderTests: XCTestCase {
         { "json": "incomplet    
         """.utf8)
         XCTAssertThrowsError(try SmithyJSON.Reader.from(data: jsonData)) { error in
-            XCTAssert(error is InvalidEncodingError)
+            XCTAssert(error is ResponseEncodingError)
         }
     }
 }

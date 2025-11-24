@@ -8,7 +8,7 @@
 /// The data being deserialized was invalid, and a response could not be parsed.
 ///
 /// If an error of this type is received, it indicates a bug either on the server or client.  Please file a [bug ticket](https://github.com/smithy-lang/smithy-swift/issues).
-public struct InvalidEncodingError {
+public struct ResponseEncodingError {
 
     /// The error thrown by the deserializing implementation.
     ///
@@ -20,7 +20,7 @@ public struct InvalidEncodingError {
     }
 }
 
-extension InvalidEncodingError: Error {
+extension ResponseEncodingError: Error {
 
     public var localizedDescription: String {
         "The data in the response could not be parsed.  More info: \(wrapped)"
