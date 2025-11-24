@@ -7,12 +7,12 @@
 
 import Foundation
 import XCTest
-@testable import ClientRuntime
+@testable import SmithySwiftNIO
 
-class NIOHTTPClientTLSOptionsTests: XCTestCase {
+class SwiftNIOHTTPClientTLSOptionsTests: XCTestCase {
 
     func test_init_withDefaults() {
-        let tlsOptions = NIOHTTPClientTLSOptions()
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions()
         
         XCTAssertNil(tlsOptions.certificate)
         XCTAssertNil(tlsOptions.certificateDir)
@@ -24,7 +24,7 @@ class NIOHTTPClientTLSOptionsTests: XCTestCase {
     }
 
     func test_init_withCertificate() {
-        let tlsOptions = NIOHTTPClientTLSOptions(certificate: "/path/to/cert.pem")
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions(certificate: "/path/to/cert.pem")
         
         XCTAssertEqual(tlsOptions.certificate, "/path/to/cert.pem")
         XCTAssertTrue(tlsOptions.useSelfSignedCertificate)
@@ -32,7 +32,7 @@ class NIOHTTPClientTLSOptionsTests: XCTestCase {
     }
 
     func test_init_withCertificateDir() {
-        let tlsOptions = NIOHTTPClientTLSOptions(certificateDir: "/path/to/certs/")
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions(certificateDir: "/path/to/certs/")
         
         XCTAssertEqual(tlsOptions.certificateDir, "/path/to/certs/")
         XCTAssertTrue(tlsOptions.useSelfSignedCertificate)
@@ -40,7 +40,7 @@ class NIOHTTPClientTLSOptionsTests: XCTestCase {
     }
 
     func test_init_withPKCS12() {
-        let tlsOptions = NIOHTTPClientTLSOptions(
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions(
             pkcs12Path: "/path/to/cert.p12",
             pkcs12Password: "password"
         )
@@ -52,7 +52,7 @@ class NIOHTTPClientTLSOptionsTests: XCTestCase {
     }
 
     func test_init_withCertificateAndPrivateKey() {
-        let tlsOptions = NIOHTTPClientTLSOptions(
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions(
             certificate: "/path/to/cert.pem",
             privateKey: "/path/to/key.pem"
         )

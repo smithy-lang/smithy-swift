@@ -53,13 +53,16 @@ let package = Package(
         .library(name: "SmithyCBOR", targets: ["SmithyCBOR"]),
         .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
+        .library(name: "SmithySwiftNIO", targets: ["SmithySwiftNIO"]),
+        .library(name: "SmithyTelemetryAPI", targets: ["SmithyTelemetryAPI"]),
+        .library(name: "SmithyHTTPClientAPI", targets: ["SmithyHTTPClientAPI"]),
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
             .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.54.2"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.13.0"),
-            .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.26.0"),
+            .package(url: "https://github.com/swift-server/async-http-client.git", exact: "1.22.0"),
         ]
 
         let isDocCEnabled = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil
@@ -76,9 +79,26 @@ let package = Package(
             ]
         ),
         .target(
+            name: "SmithyTelemetryAPI",
+            dependencies: [
+                "Smithy",
+            ]
+        ),
+        .target(
+            name: "SmithyHTTPClientAPI",
+            dependencies: [
+                "Smithy",
+                "SmithyHTTPAPI",
+                "SmithyTelemetryAPI",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+            ]
+        ),
+        .target(
             name: "ClientRuntime",
             dependencies: [
                 "Smithy",
+                "SmithyTelemetryAPI",
+                "SmithyHTTPClientAPI",
                 "SmithyRetriesAPI",
                 "SmithyRetries",
                 "SmithyXML",
@@ -98,7 +118,6 @@ let package = Package(
                 "SmithyChecksums",
                 "SmithyCBOR",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
-                .product(name: "AsyncHTTPClient", package: "async-http-client"),
                 // Only include these on macOS, iOS, tvOS, watchOS, and macCatalyst (visionOS and Linux are excluded)
                 .product(
                     name: "InMemoryExporter",
@@ -124,6 +143,17 @@ let package = Package(
             resources: [
                 .copy("PrivacyInfo.xcprivacy")
             ]
+        ),
+        .target(
+            name: "SmithySwiftNIO",
+            dependencies: [
+                "Smithy",
+                "SmithyHTTPAPI",
+                "SmithyStreams",
+                "SmithyHTTPClientAPI",
+                .product(name: "AsyncHTTPClient", package: "async-http-client"),
+            ],
+            path: "Sources/SmithySwiftNIO"
         ),
         .target(
             name: "SmithyRetriesAPI"
@@ -269,6 +299,13 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ],
             resources: [ .process("Resources") ]
+        ),
+        .testTarget(
+            name: "SmithySwiftNIOTests",
+            dependencies: [
+                "SmithySwiftNIO",
+                "SmithyTestUtil",
+            ]
         ),
         .testTarget(
             name: "SmithyCBORTests",

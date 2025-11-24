@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyTelemetryAPI
+import SmithyHTTPClientAPI
 
 /// Typealias for backward compatibility.
-/// The actual implementation is now in SmithyTelemetryAPI.
-public typealias SpanKind = SmithyTelemetryAPI.SpanKind
+/// The actual implementation is now in SmithyHTTPClientAPI.
+public typealias TLSConfiguration = SmithyHTTPClientAPI.TLSConfiguration

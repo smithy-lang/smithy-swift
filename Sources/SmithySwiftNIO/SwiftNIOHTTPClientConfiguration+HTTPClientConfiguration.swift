@@ -7,10 +7,13 @@
 
 import AsyncHTTPClient
 import NIOCore
+import SmithyHTTPClientAPI
 
 extension HTTPClient.Configuration {
 
-    static func from(httpClientConfiguration: HttpClientConfiguration) -> HTTPClient.Configuration {
+    static func from(
+        httpClientConfiguration: SmithyHTTPClientAPI.HTTPClientConfiguration
+    ) -> HTTPClient.Configuration {
         let connect: TimeAmount? = httpClientConfiguration.connectTimeout != nil
             ? .seconds(Int64(httpClientConfiguration.connectTimeout!))
             : nil
@@ -24,7 +27,8 @@ extension HTTPClient.Configuration {
 
         let pool = HTTPClient.Configuration.ConnectionPool(
             idleTimeout: .seconds(60), // default
-            concurrentHTTP1ConnectionsPerHostSoftLimit: httpClientConfiguration.maxConnections
+            concurrentHTTP1ConnectionsPerHostSoftLimit:
+                httpClientConfiguration.maxConnections
         )
 
         return .init(

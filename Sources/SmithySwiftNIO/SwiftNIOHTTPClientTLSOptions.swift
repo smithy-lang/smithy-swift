@@ -7,8 +7,9 @@
 
 import Foundation
 import NIOSSL
+import SmithyHTTPClientAPI
 
-public struct NIOHTTPClientTLSOptions: TLSConfiguration, Sendable {
+public struct SwiftNIOHTTPClientTLSOptions: SmithyHTTPClientAPI.TLSConfiguration, Sendable {
 
     /// Optional path to a PEM certificate
     public var certificate: String?
