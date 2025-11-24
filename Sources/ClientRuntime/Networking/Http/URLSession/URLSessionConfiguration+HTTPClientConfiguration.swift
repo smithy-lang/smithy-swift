@@ -18,6 +18,8 @@ extension URLSessionConfiguration {
         config.httpCookieAcceptPolicy = .never
         config.httpCookieStorage = nil
         config.httpMaximumConnectionsPerHost = httpClientConfiguration.maxConnections
+        config.urlCache = nil
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData
         return config
     }
 }
