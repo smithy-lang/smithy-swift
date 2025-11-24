@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import AwsCommonRuntimeKit
 import struct Foundation.TimeInterval
 import enum Smithy.URIScheme
 import struct SmithyHTTPAPI.Headers
