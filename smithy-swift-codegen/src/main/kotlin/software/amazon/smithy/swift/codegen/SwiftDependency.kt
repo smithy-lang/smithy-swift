@@ -54,6 +54,7 @@ class SwiftDependency(
         val SMITHY_STREAMS = smithySwiftDependency("SmithyStreams")
         val SMITHY_EVENT_STREAMS_API = smithySwiftDependency("SmithyEventStreamsAPI")
         val SMITHY_EVENT_STREAMS = smithySwiftDependency("SmithyEventStreams")
+        val SMITHY_TELEMETRY_API = smithySwiftDependency("SmithyTelemetryAPI")
         val SMITHY_TEST_UTIL = smithySwiftDependency("SmithyTestUtil")
         val SMITHY_READ_WRITE = smithySwiftDependency("SmithyReadWrite")
         val SMITHY_TIMESTAMPS = smithySwiftDependency("SmithyTimestamps")
