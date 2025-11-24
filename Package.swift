@@ -117,6 +117,7 @@ let package = Package(
                 "SmithyChecksumsAPI",
                 "SmithyChecksums",
                 "SmithyCBOR",
+                "SmithySwiftNIO",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 // Only include these on macOS, iOS, tvOS, watchOS, and macCatalyst (visionOS and Linux are excluded)
                 .product(
