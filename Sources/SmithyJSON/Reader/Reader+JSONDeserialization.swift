@@ -9,7 +9,7 @@ import struct Foundation.Data
 import class Foundation.JSONSerialization
 import class Foundation.NSError
 import class Foundation.NSNull
-import struct SmithySerialization.ResponseEncodingError
+import struct SmithySerialization.ResponseDecodingError
 
 extension Reader {
 
@@ -24,7 +24,7 @@ extension Reader {
             let jsonObject = try JSONSerialization.jsonObject(with: data)
             return try Reader(nodeInfo: "", jsonObject: jsonObject)
         } catch {
-            throw ResponseEncodingError(wrapped: error)
+            throw ResponseDecodingError(wrapped: error)
         }
     }
 }

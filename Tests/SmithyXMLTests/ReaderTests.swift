@@ -7,7 +7,7 @@
 
 import XCTest
 @testable @_spi(SmithyReadWrite) import SmithyXML
-import struct SmithySerialization.ResponseEncodingError
+import struct SmithySerialization.ResponseDecodingError
 
 class ReaderTests: XCTestCase {
     let xmlData = Data("""
@@ -72,7 +72,7 @@ class ReaderTests: XCTestCase {
 """.utf8)
 
         XCTAssertThrowsError(try Reader.from(data: invalidXML)) { error in
-            XCTAssert(error is ResponseEncodingError)
+            XCTAssert(error is ResponseDecodingError)
         }
     }
 }
