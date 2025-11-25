@@ -5,11 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// A Telemetry Context Manager manages the Telemetry Contexts in a client.
-///
-/// Implementations should be able to manage contexts in a thread-safe way.
-public protocol TelemetryContextManager: Sendable {
+import SmithyTelemetryAPI
 
-    /// - Returns: the current Telemetry Context
-    func current() -> TelemetryContext
-}
+/// Typealias for backward compatibility.
+/// The actual implementation is now in SmithyTelemetryAPI.
+public typealias TelemetryContextManager = SmithyTelemetryAPI.TelemetryContextManager
