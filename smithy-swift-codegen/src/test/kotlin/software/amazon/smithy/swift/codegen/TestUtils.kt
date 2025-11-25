@@ -23,6 +23,7 @@ import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
+import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.customtraits.SwiftBoxTrait
 import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
@@ -328,6 +329,7 @@ fun createStructureWithOptionalErrorMessage(): StructureShape {
 }
 
 class TestContext(
+    val context: GenerationContext,
     val generationCtx: ProtocolGenerator.GenerationContext,
     val manifest: MockManifest,
     val generator: ProtocolGenerator,
@@ -398,6 +400,17 @@ fun Model.newTestContext(
             .get()
     val delegator = SwiftDelegator(settings, this, manifest, provider)
 
+    val context =
+        GenerationContext(
+            this,
+            provider,
+            settings,
+            manifest,
+            generator,
+            emptyList(),
+            delegator,
+        )
+
     val ctx =
         ProtocolGenerator.GenerationContext(
             settings,
@@ -408,7 +421,7 @@ fun Model.newTestContext(
             generator.protocol,
             delegator,
         )
-    return TestContext(ctx, manifest, generator)
+    return TestContext(context, ctx, manifest, generator)
 }
 
 fun getSettingsNode(

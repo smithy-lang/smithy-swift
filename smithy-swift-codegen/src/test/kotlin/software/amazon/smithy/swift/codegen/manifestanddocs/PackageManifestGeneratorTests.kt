@@ -98,15 +98,15 @@ class PackageManifestGeneratorTests {
         smithyFile: String,
         serviceShapeId: String,
     ): TestContext {
-        val context =
+        val testContext =
             TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPAWSJson11ProtocolGenerator()) { model ->
                 model.defaultSettings(serviceShapeId, "MockSDK", "2019-12-16", "MockSDKID")
             }
-        context.generationCtx.delegator.useFileWriter("xyz.swift") { writer ->
+        testContext.generationCtx.delegator.useFileWriter("xyz.swift") { writer ->
             writer.addDependency(SwiftDependency.CLIENT_RUNTIME)
         }
-        PackageManifestGenerator(context.generationCtx).writePackageManifest(context.generationCtx.delegator.dependencies)
-        context.generationCtx.delegator.flushWriters()
-        return context
+        PackageManifestGenerator(testContext.context).writePackageManifest(testContext.generationCtx.delegator.dependencies)
+        testContext.generationCtx.delegator.flushWriters()
+        return testContext
     }
 }

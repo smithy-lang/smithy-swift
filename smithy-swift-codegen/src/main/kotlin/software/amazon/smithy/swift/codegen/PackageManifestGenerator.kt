@@ -5,13 +5,13 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.core.GenerationContext
 
 class PackageManifestGenerator(
-    val ctx: ProtocolGenerator.GenerationContext,
+    val ctx: GenerationContext,
 ) {
     fun writePackageManifest(dependencies: List<SymbolDependency>) {
-        ctx.delegator.useFileWriter("Package.swift") { writer ->
+        ctx.writerDelegator().useFileWriter("Package.swift") { writer ->
             writer.write("// swift-tools-version: \$L", ctx.settings.swiftVersion)
             writer.write("")
             writer.write("import PackageDescription")

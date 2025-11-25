@@ -72,7 +72,6 @@ class DirectedSwiftCodegen(
 
         LOGGER.info("Generating Swift client for service ${directive.settings().service}")
 
-        var shouldGenerateTestTarget = false
         context.protocolGenerator?.apply {
             val ctx = ProtocolGenerator.GenerationContext(settings, model, service, symbolProvider, integrations, this.protocol, writers)
             LOGGER.info("[${service.id}] Generating serde for protocol ${this.protocol}")
@@ -86,31 +85,24 @@ class DirectedSwiftCodegen(
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol ${this.protocol}")
             val numProtocolUnitTestsGenerated = generateProtocolUnitTests(ctx)
-            shouldGenerateTestTarget = (numProtocolUnitTestsGenerated > 0)
 
             LOGGER.info("[${service.id}] Generated $numProtocolUnitTestsGenerated tests for protocol ${this.protocol}")
 
             LOGGER.info("[${service.id}] Generating service client for protocol ${this.protocol}")
             generateProtocolClient(ctx)
 
-            integrations.forEach { it.writeAdditionalFiles(context, ctx, writers) }
-
             LOGGER.info("[${service.id}] Generating smoke tests for service")
             generateSmokeTests(ctx)
 
-            if (settings.generatePackageManifest) {
-                LOGGER.info("Generating package manifest file")
-                PackageManifestGenerator(ctx).writePackageManifest(writers.dependencies)
-            }
-
-            if (settings.generateDependencyJSON) {
-                LOGGER.info("Generating dependency JSON file")
-                DependencyJSONGenerator(ctx).writePackageJSON(writers.dependencies)
-            }
-
-            LOGGER.info("Flushing swift writers")
-            writers.flushWriters()
+            LOGGER.info("[${service.id}] Generating additional files")
+            integrations.forEach { it.writeAdditionalFiles(context, ctx, writers) }
         }
+
+        LOGGER.info("[${service.id}] Generating package manifest file")
+        PackageManifestGenerator(context).writePackageManifest(writers.dependencies)
+
+        LOGGER.info("[${service.id}] Flushing swift writers")
+        writers.flushWriters()
     }
 
     override fun generateStructure(directive: GenerateStructureDirective<GenerationContext, SwiftSettings>) {
