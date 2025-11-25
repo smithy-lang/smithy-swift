@@ -7,6 +7,7 @@
 
 import XCTest
 @testable @_spi(SmithyReadWrite) import SmithyXML
+import struct SmithySerialization.ResponseDecodingError
 
 class ReaderTests: XCTestCase {
     let xmlData = Data("""
@@ -58,5 +59,20 @@ class ReaderTests: XCTestCase {
 
         XCTAssertEqual(reader.children[1].nodeInfo.namespaceDef, .init(prefix: "a2abc", uri: "https://def.ghi.com"))
         XCTAssertEqual(reader.children.count, 3)
+    }
+
+    func test_invalidXML_throws() throws {
+        // Same data as above, but the last closing tag is missing its '<'
+        let invalidXML = Data("""
+<a xmlns=\"https://abc.def.com\">
+    <a1 d=\"def\">x</a1>
+    <a2 xmlns:a2abc=\"https://def.ghi.com\" e=\"efg\">y</a2>
+    <a3>z</a3>
+/a>
+""".utf8)
+
+        XCTAssertThrowsError(try Reader.from(data: invalidXML)) { error in
+            XCTAssert(error is ResponseDecodingError)
+        }
     }
 }

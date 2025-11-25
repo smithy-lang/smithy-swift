@@ -30,6 +30,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
+        .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
@@ -79,10 +80,12 @@ let package = Package(
             ]
         ),
         .target(
+            name: "SmithySerialization",
+            dependencies: ["Smithy"]
+        ),
+        .target(
             name: "SmithyTelemetryAPI",
-            dependencies: [
-                "Smithy",
-            ]
+            dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyHTTPClientAPI",
@@ -168,6 +171,7 @@ let package = Package(
         .target(
             name: "SmithyXML",
             dependencies: [
+                "SmithySerialization",
                 "SmithyReadWrite",
                 "SmithyTimestamps",
                 libXML2DependencyOrNil
@@ -176,6 +180,7 @@ let package = Package(
         .target(
             name: "SmithyJSON",
             dependencies: [
+                "SmithySerialization",
                 "SmithyReadWrite",
                 "SmithyTimestamps"
             ]
@@ -319,7 +324,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyXMLTests",
-            dependencies: ["SmithyXML", "ClientRuntime"]
+            dependencies: ["SmithySerialization", "SmithyXML", "ClientRuntime"]
         ),
         .testTarget(
             name: "SmithyHTTPAuthTests",
@@ -331,7 +336,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyJSONTests",
-            dependencies: ["SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
+            dependencies: ["SmithySerialization", "SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
         ),
         .testTarget(
             name: "SmithyFormURLTests",
