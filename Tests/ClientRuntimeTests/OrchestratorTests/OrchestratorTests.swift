@@ -16,6 +16,7 @@ import SmithyRetries
 @_spi(SmithyReadWrite) import SmithyJSON
 @_spi(SmithyReadWrite) import SmithyReadWrite
 import SmithyStreams
+import SmithyTelemetryAPI
 
 class OrchestratorTests: XCTestCase {
     struct TestInput {
