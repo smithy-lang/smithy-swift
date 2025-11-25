@@ -46,7 +46,7 @@ class SwiftSettingsTest {
 
     // Row 1: SDK supports all protocols
     private val allProtocolsSupported =
-        setOf(
+        listOf(
             Rpcv2CborTrait.ID,
             AwsJson1_0Trait.ID,
             AwsJson1_1Trait.ID,
@@ -113,7 +113,7 @@ class SwiftSettingsTest {
 
     // Row 2: SDK does not support rpcv2Cbor
     private val withoutRpcv2CborSupport =
-        setOf(
+        listOf(
             AwsJson1_0Trait.ID,
             AwsJson1_1Trait.ID,
             RestJson1Trait.ID,
