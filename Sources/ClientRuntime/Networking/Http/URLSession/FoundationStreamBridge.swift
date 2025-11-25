@@ -13,6 +13,8 @@ import class Foundation.DispatchQueue
 import class Foundation.InputStream
 import class Foundation.NSObject
 import class Foundation.OutputStream
+import class SmithyHTTPClientAPI.HttpTelemetry
+import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 import class Foundation.RunLoop
 import class Foundation.Stream
 import protocol Foundation.StreamDelegate
