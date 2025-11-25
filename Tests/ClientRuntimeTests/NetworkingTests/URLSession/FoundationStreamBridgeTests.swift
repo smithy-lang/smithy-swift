@@ -17,6 +17,8 @@ import SmithyTestUtil
 import enum Smithy.LogAgentLevel
 import protocol Smithy.LogAgent
 import class SmithyStreams.BufferedStream
+import class SmithyHTTPClientAPI.HttpTelemetry
+import SmithyTelemetryAPI
 
 class FoundationStreamBridgeTests: XCTestCase {
 
@@ -70,7 +72,10 @@ class FoundationStreamBridgeTests: XCTestCase {
                 bridgeBufferSize: bridgeBufferSize,
                 boundStreamBufferSize: boundStreamBufferSize,
                 logger: TestLogger(),
-                telemetry: HttpTelemetry(httpScope: "FoundationStreamBridgeTests"))
+                telemetry: HttpTelemetry(
+                    httpScope: "FoundationStreamBridgeTests",
+                    telemetryProvider: DefaultTelemetry.provider
+                ))
             await subject.open()
 
             // This will hold the data that is bridged from the ReadableStream to the Foundation InputStream
@@ -78,7 +83,7 @@ class FoundationStreamBridgeTests: XCTestCase {
 
             // Open the input stream & read it to either end-of-data or a stream error
             subject.inputStream.open()
-            while ![.atEnd, .error].contains(subject.inputStream.streamStatus) {
+            while ![Stream.Status.atEnd, Stream.Status.error].contains(subject.inputStream.streamStatus) {
 
                 // Copy the input stream to the temp buffer.  When count is positive, bytes were read
                 let count = subject.inputStream.read(tempBuffer, maxLength: tempBufferSize)
