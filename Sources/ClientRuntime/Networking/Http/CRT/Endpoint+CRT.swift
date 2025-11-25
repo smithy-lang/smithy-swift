@@ -26,7 +26,7 @@ extension Endpoint {
     }
 }
 
-extension EndpointPropertyValue {
+private extension EndpointPropertyValue {
 
     init(_ endpointProperty: EndpointProperty) {
         switch endpointProperty {
