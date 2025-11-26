@@ -6,14 +6,15 @@
 //
 
 import XCTest
+import struct SmithySerialization.ResponseDecodingError
 @testable @_spi(SmithyReadWrite) import SmithyJSON
 
-class ReaderTests: XCTestCase {
+final class ReaderTests: XCTestCase {
 
-    func test_readsNil() async throws {
+    func test_readsEmptyDataAsNil() async throws {
         let jsonData = Data()
         let reader = try SmithyJSON.Reader.from(data: jsonData)
-        XCTAssertEqual(reader.jsonNode, nil)
+        XCTAssertNil(reader.jsonNode)
     }
 
     func test_readsAJSONObject() async throws {
@@ -23,5 +24,14 @@ class ReaderTests: XCTestCase {
         let reader = try SmithyJSON.Reader.from(data: jsonData)
         XCTAssertEqual(reader.children.count, 1)
         XCTAssertEqual(try reader["property"].readIfPresent(), "potato")
+    }
+
+    func test_throwsOnInvalidJSON() async throws {
+        let jsonData = Data("""
+        { "json": "incomplet    
+        """.utf8)
+        XCTAssertThrowsError(try SmithyJSON.Reader.from(data: jsonData)) { error in
+            XCTAssert(error is ResponseDecodingError)
+        }
     }
 }

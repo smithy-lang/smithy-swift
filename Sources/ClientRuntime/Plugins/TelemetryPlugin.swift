@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyTelemetryAPI
+
 public class TelemetryPlugin: Plugin {
     private let telemetryProvider: TelemetryProvider
 

@@ -43,7 +43,7 @@ private const val GENERATE_DEPENDENCY_JSON = "generateDependencyJSON"
 
 // Prioritized list of protocols supported for code generation
 private val DEFAULT_PROTOCOL_RESOLUTION_PRIORITY =
-    setOf<ShapeId>(
+    listOf<ShapeId>(
         Rpcv2CborTrait.ID,
         AwsJson1_0Trait.ID,
         AwsJson1_1Trait.ID,
@@ -212,7 +212,7 @@ class SwiftSettings(
         serviceIndex: ServiceIndex,
         service: ServiceShape,
         supportedProtocolTraits: Set<ShapeId>,
-        configuredProtocolPriority: Set<ShapeId>? = null,
+        configuredProtocolPriority: List<ShapeId>? = null,
     ): ShapeId {
         val resolvedProtocols: Set<ShapeId> = serviceIndex.getProtocols(service).keys
 
