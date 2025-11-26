@@ -16,6 +16,7 @@ import SmithyRetries
 @_spi(SmithyReadWrite) import SmithyJSON
 @_spi(SmithyReadWrite) import SmithyReadWrite
 import SmithyStreams
+import SmithyTelemetryAPI
 
 class OrchestratorTests: XCTestCase {
     struct TestInput {
@@ -223,10 +224,11 @@ class OrchestratorTests: XCTestCase {
             .attributes(attributes)
             .serialize({ input, builder, _ in
                 trace.append("serialize")
+                let data = try JSONEncoder().encode(["foo": input.foo])
                 builder.withMethod(.get)
                     .withPath("/")
                     .withHost("localhost")
-                    .withBody(.data(try! JSONEncoder().encode(input.foo)))
+                    .withBody(.data(data))
             })
             .deserialize({ response, _ in
                 trace.append("deserialize")
@@ -234,8 +236,8 @@ class OrchestratorTests: XCTestCase {
                     guard case let .data(data) = response.body else {
                         return TestOutput(bar: "")
                     }
-                    let bar = try! JSONDecoder().decode(String.self, from: data!)
-                    return TestOutput(bar: bar)
+                    let object = try! JSONDecoder().decode([String: String].self, from: data!)
+                    return TestOutput(bar: object["foo"]!)
                 } else {
                     let responseReader = try SmithyJSON.Reader.from(data: try await response.data())
                     let baseError = try TestBaseError(httpResponse: response, responseReader: responseReader, noErrorWrapping: true)
@@ -1373,7 +1375,8 @@ class OrchestratorTests: XCTestCase {
         let orchestrator = traceOrchestrator(trace: trace)
             .retryStrategy(DefaultRetryStrategy(options: RetryStrategyOptions(backoffStrategy: ImmediateBackoffStrategy())))
             .serialize({ (input: TestInput, builder: HTTPRequestBuilder, context) in
-                builder.withBody(.data(Data("\"\(input.foo)\"".utf8)))
+                let data = try JSONEncoder().encode(["foo": input.foo])
+                builder.withBody(.data(data))
             })
             .executeRequest(executeRequest)
         let result = await asyncResult {

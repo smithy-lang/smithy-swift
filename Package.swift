@@ -30,6 +30,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
+        .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
@@ -53,6 +54,9 @@ let package = Package(
         .library(name: "SmithyCBOR", targets: ["SmithyCBOR"]),
         .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
+        .library(name: "SmithySwiftNIO", targets: ["SmithySwiftNIO"]),
+        .library(name: "SmithyTelemetryAPI", targets: ["SmithyTelemetryAPI"]),
+        .library(name: "SmithyHTTPClientAPI", targets: ["SmithyHTTPClientAPI"]),
         .plugin(name: "SmithyCodeGenerator", targets: ["SmithyCodeGenerator"]),
     ],
     dependencies: {
@@ -61,6 +65,7 @@ let package = Package(
             .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.0.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.13.0"),
+            .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
         ]
 
         let isDocCEnabled = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_DOCC"] != nil
@@ -77,9 +82,27 @@ let package = Package(
             ]
         ),
         .target(
+            name: "SmithySerialization",
+            dependencies: ["Smithy"]
+        ),
+        .target(
+            name: "SmithyTelemetryAPI",
+            dependencies: ["Smithy"]
+        ),
+        .target(
+            name: "SmithyHTTPClientAPI",
+            dependencies: [
+                "Smithy",
+                "SmithyHTTPAPI",
+                "SmithyTelemetryAPI",
+            ]
+        ),
+        .target(
             name: "ClientRuntime",
             dependencies: [
                 "Smithy",
+                "SmithyTelemetryAPI",
+                "SmithyHTTPClientAPI",
                 "SmithyRetriesAPI",
                 "SmithyRetries",
                 "SmithyXML",
@@ -126,6 +149,17 @@ let package = Package(
             ]
         ),
         .target(
+            name: "SmithySwiftNIO",
+            dependencies: [
+                "Smithy",
+                "SmithyHTTPAPI",
+                "SmithyStreams",
+                "SmithyHTTPClientAPI",
+                .product(name: "AsyncHTTPClient", package: "async-http-client"),
+            ],
+            path: "Sources/SmithySwiftNIO"
+        ),
+        .target(
             name: "SmithyRetriesAPI"
         ),
         .target(
@@ -139,6 +173,7 @@ let package = Package(
         .target(
             name: "SmithyXML",
             dependencies: [
+                "SmithySerialization",
                 "SmithyReadWrite",
                 "SmithyTimestamps",
                 libXML2DependencyOrNil
@@ -147,6 +182,7 @@ let package = Package(
         .target(
             name: "SmithyJSON",
             dependencies: [
+                "SmithySerialization",
                 "SmithyReadWrite",
                 "SmithyTimestamps"
             ]
@@ -179,10 +215,7 @@ let package = Package(
         ),
         .target(
             name: "SmithyHTTPAPI",
-            dependencies: [
-                "Smithy",
-                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
-            ]
+            dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyHTTPClient",
@@ -288,6 +321,13 @@ let package = Package(
             dependencies: ["Smithy"]
         ),
         .testTarget(
+            name: "SmithySwiftNIOTests",
+            dependencies: [
+                "SmithySwiftNIO",
+                "SmithyTestUtil",
+            ]
+        ),
+        .testTarget(
             name: "SmithyCBORTests",
             dependencies: ["SmithyCBOR", "ClientRuntime", "SmithyTestUtil"]
         ),
@@ -303,7 +343,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyXMLTests",
-            dependencies: ["SmithyXML", "ClientRuntime"]
+            dependencies: ["SmithySerialization", "SmithyXML", "ClientRuntime"]
         ),
         .testTarget(
             name: "SmithyHTTPAuthTests",
@@ -315,7 +355,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyJSONTests",
-            dependencies: ["SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
+            dependencies: ["SmithySerialization", "SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
         ),
         .testTarget(
             name: "SmithyFormURLTests",

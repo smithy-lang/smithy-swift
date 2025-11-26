@@ -7,6 +7,7 @@
 
 import struct Foundation.Data
 @preconcurrency import libxml2
+import struct SmithySerialization.ResponseDecodingError
 
 extension Reader {
 
@@ -21,7 +22,9 @@ extension Reader {
         guard let buffer else { return Reader() }
 
         // Read the buffer into a XML document tree
-        guard let doc = xmlReadMemory(buffer.pointee.content, Int32(count), "", "UTF-8", 0) else { return Reader() }
+        guard let doc = xmlReadMemory(buffer.pointee.content, Int32(count), "", "UTF-8", 0) else {
+            throw ResponseDecodingError(wrapped: XMLError.parsingError)
+        }
 
         // Get rootNode ptr. Just a ptr to inside the doc struct, so no memory allocated
         guard let rootNode = xmlDocGetRootElement(doc) else { return Reader() }
@@ -154,4 +157,5 @@ private struct XMLError: Error {
     static let memoryError = XMLError("XML buffer could not be allocated")
     static let invalidNode = XMLError("XML node was invalid")
     static let invalidNodeName = XMLError("XML node name was invalid")
+    static let parsingError = XMLError("The XML could not be parsed")
 }
