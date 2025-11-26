@@ -209,18 +209,35 @@ abstract class HTTPBindingProtocolGenerator(
 
     private fun usesSchemaBasedSerialization(ctx: ProtocolGenerator.GenerationContext): Boolean =
         // This fun is temporary; it will be eliminated when all services/protocols are moved to schema-based
-        ctx.service.allTraits.keys
-            .any { it.name == "rpcv2Cbor" }
+        true
+//        ctx.service.allTraits.keys
+//            .any { it.name == "rpcv2Cbor" }
 
     override fun generateSchemas(ctx: ProtocolGenerator.GenerationContext) {
         if (!usesSchemaBasedSerialization(ctx)) return // temporary condition
         val nestedShapes =
             resolveShapesNeedingSchema(ctx)
                 .filter { it.type != ShapeType.MEMBER } // Member schemas are only rendered in-line
-        nestedShapes.forEach { renderSchemas(ctx, it) }
+                .sorted()
+        val file = SchemaFileUtils.filename(ctx.settings, "whatever")
+        ctx.delegator.useFileWriter(file) { writer ->
+            writer.write("// Model has ${ctx.model.shapes().count()} shapes")
+            writer.write("// Model has ${ctx.model.shapes().filter { it.type == ShapeType.SERVICE }.count()} services")
+            writer.write("// Model has ${ctx.model.shapes().filter { it.type == ShapeType.OPERATION }.count()} operations")
+            writer.write("// Model has ${ctx.model.shapes().filter { it.type == ShapeType.RESOURCE }.count()} resources")
+            writer.write("// Model has ${ctx.model.shapes().filter { it.type == ShapeType.STRUCTURE }.count()} structures")
+            writer.write("// Model has ${ctx.model.shapes().filter { it.type == ShapeType.UNION }.count()} unions")
+            writer.write("// Model has ${ctx.model.shapes().filter { it.type == ShapeType.ENUM }.count()} enums")
+            writer.write("// Model has ${ctx.model.shapes().filter { it.type == ShapeType.INT_ENUM }.count()} intEnums")
+            writer.write("// Model has ${ctx.model.shapes().filter { it.type == ShapeType.MEMBER }.count()} members")
+            writer.write("")
+            writer.write("// Number of schemas: ${nestedShapes.count()}")
+            writer.write("")
+        }
+        nestedShapes.forEach { renderSchema(ctx, it) }
     }
 
-    private fun renderSchemas(
+    private fun renderSchema(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
     ) {
@@ -404,10 +421,7 @@ abstract class HTTPBindingProtocolGenerator(
     private fun resolveShapesNeedingSchema(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
         val topLevelInputMembers =
             getHttpBindingOperations(ctx)
-                .flatMap {
-                    val inputShape = ctx.model.expectShape(it.input.get())
-                    inputShape.members()
-                }.map { ctx.model.expectShape(it.target) }
+                .map { ctx.model.expectShape(it.input.get()) }
                 .toSet()
 
         val topLevelOutputMembers =

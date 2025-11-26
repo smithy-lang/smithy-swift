@@ -303,8 +303,14 @@ let package = Package(
         .executableTarget(
             name: "SmithyCodegenCLI",
             dependencies: [
+                "SmithyCodegenCore",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
+        ),
+        .target(
+            name: "SmithyCodegenCore",
+            dependencies: ["Smithy"],
+            resources: [ .process("Resources") ]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
@@ -392,6 +398,10 @@ let package = Package(
         .testTarget(
             name: "SmithyStreamsTests",
             dependencies: ["SmithyStreams", "Smithy"]
+        ),
+        .testTarget(
+            name: "SmithyCodegenCoreTests",
+            dependencies: ["SmithyCodegenCore"]
         ),
     ].compactMap { $0 }
 )

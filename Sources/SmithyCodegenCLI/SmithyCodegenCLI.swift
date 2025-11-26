@@ -7,6 +7,7 @@
 
 import ArgumentParser
 import Foundation
+import struct SmithyCodegenCore.CodeGenerator
 
 @main
 struct SmithyCodegenCLI: AsyncParsableCommand {
@@ -31,12 +32,8 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
         // If --schemas-path was supplied, create the schema file URL
         let schemasFileURL = resolve(paramName: "--schemas-path", path: schemasPath)
 
-        // All file URLs needed for code generation have now been resolved.
-        // Implement code generation here.
-        if let schemasFileURL {
-            print("Schemas file path: \(schemasFileURL)")
-            FileManager.default.createFile(atPath: schemasFileURL.path, contents: Data())
-        }
+        // Use resolved file URLs to run code generator
+        try CodeGenerator(modelFileURL: modelFileURL, schemasFileURL: schemasFileURL).run()
     }
 
     private func currentWorkingDirectoryFileURL() -> URL {
