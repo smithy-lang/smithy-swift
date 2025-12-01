@@ -30,6 +30,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
+        .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
@@ -61,6 +62,10 @@ let package = Package(
         var dependencies: [Package.Dependency] = [
             .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.54.2"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+<<<<<<< HEAD
+=======
+            .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.13.0"),
+>>>>>>> main
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
         ]
 
@@ -78,10 +83,19 @@ let package = Package(
             ]
         ),
         .target(
+<<<<<<< HEAD
             name: "SmithyTelemetryAPI",
             dependencies: [
                 "Smithy",
             ]
+=======
+            name: "SmithySerialization",
+            dependencies: ["Smithy"]
+        ),
+        .target(
+            name: "SmithyTelemetryAPI",
+            dependencies: ["Smithy"]
+>>>>>>> main
         ),
         .target(
             name: "SmithyHTTPClientAPI",
@@ -146,6 +160,7 @@ let package = Package(
         .target(
             name: "SmithyXML",
             dependencies: [
+                "SmithySerialization",
                 "SmithyReadWrite",
                 "SmithyTimestamps",
                 libXML2DependencyOrNil
@@ -154,6 +169,7 @@ let package = Package(
         .target(
             name: "SmithyJSON",
             dependencies: [
+                "SmithySerialization",
                 "SmithyReadWrite",
                 "SmithyTimestamps"
             ]
@@ -186,10 +202,7 @@ let package = Package(
         ),
         .target(
             name: "SmithyHTTPAPI",
-            dependencies: [
-                "Smithy",
-                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
-            ]
+            dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyHTTPClient",
@@ -300,7 +313,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyXMLTests",
-            dependencies: ["SmithyXML", "ClientRuntime"]
+            dependencies: ["SmithySerialization", "SmithyXML", "ClientRuntime"]
         ),
         .testTarget(
             name: "SmithyHTTPAuthTests",
@@ -312,7 +325,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithyJSONTests",
-            dependencies: ["SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
+            dependencies: ["SmithySerialization", "SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
         ),
         .testTarget(
             name: "SmithyFormURLTests",

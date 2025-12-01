@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import enum AwsCommonRuntimeKit.EndpointProperty
 import Foundation
 import Smithy
 
@@ -77,19 +76,6 @@ public struct Endpoint: Sendable, Equatable {
         self.uri = uri
         self.headers = headers
         self.properties = properties
-    }
-}
-
-extension Endpoint {
-    public init(urlString: String,
-                headers: Headers = Headers(),
-                endpointProperties: [String: EndpointProperty]) throws {
-        guard let url = URLComponents(string: urlString)?.url else {
-            throw ClientError.unknownError("invalid url \(urlString)")
-        }
-
-        let properties = endpointProperties.mapValues(EndpointPropertyValue.init)
-        try self.init(url: url, headers: headers, properties: properties)
     }
 }
 
