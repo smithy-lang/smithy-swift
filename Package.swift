@@ -62,10 +62,6 @@ let package = Package(
         var dependencies: [Package.Dependency] = [
             .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.54.2"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
-<<<<<<< HEAD
-=======
-            .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.13.0"),
->>>>>>> main
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
         ]
 
@@ -83,19 +79,12 @@ let package = Package(
             ]
         ),
         .target(
-<<<<<<< HEAD
-            name: "SmithyTelemetryAPI",
-            dependencies: [
-                "Smithy",
-            ]
-=======
             name: "SmithySerialization",
             dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyTelemetryAPI",
             dependencies: ["Smithy"]
->>>>>>> main
         ),
         .target(
             name: "SmithyHTTPClientAPI",
