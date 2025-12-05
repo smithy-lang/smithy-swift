@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum Smithy.ShapeType
+
 /// A class which describes selected Smithy model information for a Smithy model shape.
 ///
 /// Typically, the Schema contains only modeled info & properties that are relevant to

@@ -309,7 +309,7 @@ let package = Package(
         ),
         .target(
             name: "SmithyCodegenCore",
-            dependencies: ["Smithy"],
+            dependencies: ["SmithySerialization"],
             resources: [ .process("Resources") ]
         ),
         .testTarget(

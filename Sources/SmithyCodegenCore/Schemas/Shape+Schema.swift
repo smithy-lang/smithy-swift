@@ -6,6 +6,7 @@
 //
 
 extension Shape {
+
     func schemaVarName() throws -> String {
         if id.namespace == "smithy.api" {
             try id.preludeSchemaVarName()
@@ -15,7 +16,7 @@ extension Shape {
     }
 }
 
-extension ShapeID {
+private extension ShapeID {
 
     func preludeSchemaVarName() throws -> String {
         let propertyName =
@@ -41,7 +42,7 @@ extension ShapeID {
             case "Document": "documentSchema"
             default: throw CodegenError("Unhandled prelude type converted to schemaVar: \"\(name)\"")
             }
-        return "Smithy.Prelude.\(propertyName)"
+        return "SmithySerialization.Prelude.\(propertyName)"
     }
 
     func schemaVarName() throws -> String {

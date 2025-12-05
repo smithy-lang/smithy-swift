@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Smithy
+import SmithySerialization
 
 package struct SmithySchemaCodegen {
 
@@ -13,8 +13,8 @@ package struct SmithySchemaCodegen {
 
     package func generate(model: Model) throws -> String {
         let writer = SwiftWriter()
-        writer.write("import class Smithy.Schema")
-        writer.write("import enum Smithy.Prelude")
+        writer.write("import class SmithySerialization.Schema")
+        writer.write("import enum SmithySerialization.Prelude")
         writer.write("")
 
         writer.write("// Model has \(model.shapes.count) shapes")
@@ -41,7 +41,7 @@ package struct SmithySchemaCodegen {
         writer.write("// Number of schemas: \(sortedShapes.count)")
         writer.write("")
         for shape in sortedShapes {
-            try writer.openBlock("public var \(try shape.schemaVarName()): Smithy.Schema {", "}") { writer in
+            try writer.openBlock("public var \(try shape.schemaVarName()): SmithySerialization.Schema {", "}") { writer in
                 try writeSchema(writer: writer, shape: shape)
                 writer.unwrite(",")
             }
@@ -54,7 +54,7 @@ package struct SmithySchemaCodegen {
         try writer.openBlock(".init(", "),") { writer in
             writer.write("id: \(shape.id.rendered),")
             writer.write("type: .\(shape.type),")
-            let relevantTraitIDs = shape.traits.keys.filter { Smithy.permittedTraitIDs.contains($0.id) }
+            let relevantTraitIDs = shape.traits.keys.filter { permittedTraitIDs.contains($0.id) }
             let traitIDs = Array(relevantTraitIDs).sorted()
             if !traitIDs.isEmpty {
                 writer.openBlock("traits: [", "],") { writer in
