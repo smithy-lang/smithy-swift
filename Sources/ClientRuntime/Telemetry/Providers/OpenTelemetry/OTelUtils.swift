@@ -15,7 +15,7 @@ import struct Smithy.AttributeKey
 import struct Smithy.Attributes
 
 extension Attributes {
-    @available(*, deprecated, message: "OpenTelemetry support has been moved to smithy-swift-opentelemetry package. This will be removed after March 8, 2026.")
+    @available(*, deprecated, message: "Moved to smithy-swift-opentelemetry package. Removal after March 8, 2026.")
     public func toOtelAttributes() -> [String: AttributeValue] {
         let keys: [String] = self.getKeys()
         var otelKeys: [String: AttributeValue] = [:]
