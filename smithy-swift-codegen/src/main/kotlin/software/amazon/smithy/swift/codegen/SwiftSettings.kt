@@ -38,8 +38,6 @@ private const val MERGE_MODELS = "mergeModels"
 private const val COPYRIGHT_NOTICE = "copyrightNotice"
 private const val VISIBILITY = "visibility"
 private const val INTERNAL_CLIENT = "internalClient"
-private const val GENERATE_PACKAGE_MANIFEST = "generatePackageManifest"
-private const val GENERATE_DEPENDENCY_JSON = "generateDependencyJSON"
 
 // Prioritized list of protocols supported for code generation
 private val DEFAULT_PROTOCOL_RESOLUTION_PRIORITY =
@@ -67,8 +65,6 @@ class SwiftSettings(
     val copyrightNotice: String,
     val visibility: String,
     val internalClient: Boolean,
-    val generatePackageManifest: Boolean,
-    val generateDependencyJSON: Boolean,
 ) {
     companion object {
         private val LOGGER: Logger = Logger.getLogger(SwiftSettings::class.java.name)
@@ -100,8 +96,6 @@ class SwiftSettings(
                     COPYRIGHT_NOTICE,
                     VISIBILITY,
                     INTERNAL_CLIENT,
-                    GENERATE_PACKAGE_MANIFEST,
-                    GENERATE_DEPENDENCY_JSON,
                 ),
             )
 
@@ -127,8 +121,6 @@ class SwiftSettings(
                 )
             val visibility = config.getStringMemberOrDefault(VISIBILITY, "public")
             val internalClient = config.getBooleanMemberOrDefault(INTERNAL_CLIENT, false)
-            val generatePackageManifest = config.getBooleanMemberOrDefault(GENERATE_PACKAGE_MANIFEST, true)
-            val generateDependencyJSON = config.getBooleanMemberOrDefault(GENERATE_DEPENDENCY_JSON, false)
 
             return SwiftSettings(
                 serviceId,
@@ -144,8 +136,6 @@ class SwiftSettings(
                 copyrightNotice,
                 visibility,
                 internalClient,
-                generatePackageManifest,
-                generateDependencyJSON,
             )
         }
 
