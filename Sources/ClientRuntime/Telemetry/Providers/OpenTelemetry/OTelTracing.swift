@@ -24,12 +24,17 @@
 import struct Smithy.AttributeKey
 import struct Smithy.Attributes
 
+@available(*, deprecated, message: "Moved to smithy-swift-opentelemetry package. Removal after March 10, 2026.")
 public typealias OpenTelemetryTracer = OpenTelemetryApi.Tracer
+@available(*, deprecated, message: "Moved to smithy-swift-opentelemetry package. Removal after March 10, 2026.")
 public typealias OpenTelemetrySpanKind = OpenTelemetryApi.SpanKind
+@available(*, deprecated, message: "Moved to smithy-swift-opentelemetry package. Removal after March 10, 2026.")
 public typealias OpenTelemetrySpan = OpenTelemetryApi.Span
+@available(*, deprecated, message: "Moved to smithy-swift-opentelemetry package. Removal after March 10, 2026.")
 public typealias OpenTelemetryStatus = OpenTelemetryApi.Status
 
 // Trace
+@available(*, deprecated, message: "Moved to smithy-swift-opentelemetry package. Removal after March 10, 2026.")
 public final class OTelTracerProvider: TracerProvider {
     private let sdkTracerProvider: TracerProviderSdk
 
@@ -46,6 +51,7 @@ public final class OTelTracerProvider: TracerProvider {
     }
 }
 
+@available(*, deprecated, message: "Moved to smithy-swift-opentelemetry package. Removal after March 10, 2026.")
 public final class OTelTracerImpl: Tracer {
     private let otelTracer: OpenTelemetryTracer
 
