@@ -26,7 +26,7 @@ open class HttpProtocolServiceClient(
 
     fun render(serviceSymbol: Symbol) {
         writer.openBlock(
-            "${ctx.settings.visibility} class \$L: \$N {",
+            "${ctx.settings.visibility} class \$L: \$N, Sendable {",
             "}",
             serviceSymbol.name,
             clientProtocolSymbol,
@@ -119,7 +119,7 @@ open class HttpProtocolServiceClient(
                 .joinToString(" & ")
 
         writer.openBlock(
-            "public class \$LConfiguration: \$L {",
+            "public class \$LConfiguration: \$L, Sendable {",
             "}",
             serviceConfig.clientName.toUpperCamelCase(),
             clientConfigurationProtocols,
