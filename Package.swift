@@ -303,8 +303,12 @@ let package = Package(
         .executableTarget(
             name: "SmithyCodegenCLI",
             dependencies: [
+                "SmithyCodegenCore",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
+        ),
+        .target(
+            name: "SmithyCodegenCore"
         ),
         .testTarget(
             name: "ClientRuntimeTests",
