@@ -1,14 +1,14 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.aws.traits.ServiceTrait
-import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.model.getTrait
 
 class SmithyModelFileInfoGenerator(
-    val ctx: ProtocolGenerator.GenerationContext,
+    val ctx: GenerationContext,
 ) {
     fun writeSmithyModelFileInfo() {
-        ctx.service.getTrait<ServiceTrait>()?.let { serviceTrait ->
+        ctx.model.serviceShapes.firstOrNull()?.getTrait<ServiceTrait>()?.let { serviceTrait ->
             val filename = "Sources/${ctx.settings.moduleName}/smithy-model-info.json"
             val modelFileName =
                 serviceTrait
@@ -17,7 +17,7 @@ class SmithyModelFileInfoGenerator(
                     .replace(",", "")
                     .replace(" ", "-")
             val contents = "codegen/sdk-codegen/aws-models/$modelFileName.json"
-            ctx.delegator.useFileWriter(filename) { writer ->
+            ctx.writerDelegator().useFileWriter(filename) { writer ->
                 writer.write("{\"path\":\"$contents\"}")
             }
         }
