@@ -9,7 +9,7 @@ import struct Foundation.TimeInterval
 import enum Smithy.URIScheme
 import struct SmithyHTTPAPI.Headers
 
-public class HTTPClientConfiguration {
+public class HTTPClientConfiguration: @unchecked Sendable {
 
     /// The timeout for establishing a connection, in seconds.
     ///
