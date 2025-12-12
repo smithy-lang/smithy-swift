@@ -5,7 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithySerialization
+import struct Smithy.ShapeID
+import let SmithySerialization.permittedTraitIDs
 
 package struct SmithySchemaCodegen {
 
@@ -13,8 +14,8 @@ package struct SmithySchemaCodegen {
 
     package func generate(model: Model) throws -> String {
         let writer = SwiftWriter()
-        writer.write("import class SmithySerialization.Schema")
-        writer.write("import enum SmithySerialization.Prelude")
+        writer.write("import class Smithy.Schema")
+        writer.write("import enum Smithy.Prelude")
         writer.write("")
 
         writer.write("// Model has \(model.shapes.count) shapes")
@@ -35,18 +36,20 @@ package struct SmithySchemaCodegen {
                 try $0.hasTrait(try .init("smithy.api#input")) ||
                 $0.hasTrait(try .init("smithy.api#output")) ||
                 $0.hasTrait(try .init("smithy.api#error"))}
-            .map { try [$0] + $0.children }
+            .map { [$0] + $0.descendants }
             .flatMap { $0 }
+            .filter { $0.id.namespace != "smithy.api" }
         let sortedShapes = Array(Set(shapes)).sorted { $0.id.id.lowercased() < $1.id.id.lowercased() }
         writer.write("// Number of schemas: \(sortedShapes.count)")
         writer.write("")
         for shape in sortedShapes {
-            try writer.openBlock("public var \(try shape.schemaVarName()): SmithySerialization.Schema {", "}") { writer in
+            try writer.openBlock("public var \(shape.schemaVarName): Smithy.Schema {", "}") { writer in
                 try writeSchema(writer: writer, shape: shape)
                 writer.unwrite(",")
             }
             writer.write("")
         }
+        writer.unwrite("\n")
         return writer.finalize()
     }
 
@@ -64,7 +67,7 @@ package struct SmithySchemaCodegen {
                     }
                 }
             }
-            let members = try shape.members
+            let members = shape.members
             if !members.isEmpty {
                 try writer.openBlock("members: [", "],") { writer in
                     for (index, member) in members.enumerated() {
@@ -72,8 +75,8 @@ package struct SmithySchemaCodegen {
                     }
                 }
             }
-            if let target = try shape.target {
-                writer.write("target: \(try target.schemaVarName()),")
+            if let target = shape.target {
+                writer.write("target: \(target.schemaVarName),")
             }
             if let index {
                 writer.write("index: \(index),")

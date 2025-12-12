@@ -52,16 +52,20 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         // Construct the schemas.swift path.
         let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
 
+        // Construct the structconsumers.swift path.
+        let structConsumersSwiftPath = outputDirectoryPath.appending("\(name)StructConsumers.swift")
+
         // Construct the build command that invokes SmithyCodegenCLI.
         return .buildCommand(
             displayName: "Generating Swift source files from model file \(smithyModelInfo.path)",
             executable: generatorToolPath,
             arguments: [
                 "--schemas-path", schemasSwiftPath,
+                "--struct-consumers-path", structConsumersSwiftPath,
                 modelPath
             ],
             inputFiles: [inputPath, modelPath],
-            outputFiles: [schemasSwiftPath]
+            outputFiles: [schemasSwiftPath, structConsumersSwiftPath]
         )
     }
 }

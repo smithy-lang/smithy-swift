@@ -5,8 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+// See https://smithy.io/2.0/spec/model.html#shape-types
 enum ASTType: String, Decodable {
-    // These cases are all the Smithy shape types
+    // These cases are all the standard Smithy shape types
     case blob
     case boolean
     case string

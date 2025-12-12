@@ -40,7 +40,9 @@ class SwiftWriter {
 
     func unwrite(_ text: String) {
         guard let lastIndex = lines.indices.last else { return }
-        if lines[lastIndex].hasSuffix(text) {
+        if text == "\n" && lines[lastIndex] == "" {
+            _ = lines.removeLast()
+        } else if lines[lastIndex].hasSuffix(text) {
             lines[lastIndex].removeLast(text.count)
         }
     }

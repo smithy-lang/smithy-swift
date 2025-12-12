@@ -11,7 +11,7 @@
 /// The root of a Smithy node may be of any type, i.e. unlike JSON, the root element is not limited to object or list.
 ///
 /// See the definition of node value in the Smithy spec: https://smithy.io/2.0/spec/model.html#node-values
-enum ASTNode: Sendable {
+enum ASTNode {
     case object([String: ASTNode])
     case list([ASTNode])
     case string(String)

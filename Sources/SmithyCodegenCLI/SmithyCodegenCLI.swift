@@ -18,6 +18,9 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
     @Option(help: "The full or relative path to write the schemas output file.")
     var schemasPath: String?
 
+    @Option(help: "The full or relative path to write the struct consumers output file.")
+    var structConsumersPath: String?
+
     func run() async throws {
         let currentWorkingDirectoryFileURL = currentWorkingDirectoryFileURL()
         print("Current working directory: \(currentWorkingDirectoryFileURL.path)")
@@ -32,8 +35,15 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
         // If --schemas-path was supplied, create the schema file URL
         let schemasFileURL = resolve(paramName: "--schemas-path", path: schemasPath)
 
+        // If --struct-consumers-path was supplied, create the struct consumers file URL
+        let structConsumersFileURL = resolve(paramName: "--struct-consumers-path", path: structConsumersPath)
+
         // Use resolved file URLs to run code generator
-        try CodeGenerator(modelFileURL: modelFileURL, schemasFileURL: schemasFileURL).run()
+        try CodeGenerator(
+            modelFileURL: modelFileURL,
+            schemasFileURL: schemasFileURL,
+            structConsumersFileURL: structConsumersFileURL
+        ).run()
     }
 
     private func currentWorkingDirectoryFileURL() -> URL {
