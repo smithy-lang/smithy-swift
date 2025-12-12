@@ -17,7 +17,7 @@ class HttpProtocolClientGeneratorTests {
         val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
-public class RestJsonProtocolClient: ClientRuntime.Client, Sendable {
+public final class RestJsonProtocolClient: ClientRuntime.Client, Sendable {
     public static let clientName = "RestJsonProtocolClient"
     public static let version = "2019-12-16"
     let client: ClientRuntime.SdkHttpClient
@@ -38,7 +38,7 @@ public class RestJsonProtocolClient: ClientRuntime.Client, Sendable {
 
 extension RestJsonProtocolClient {
 
-    public class RestJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration, Sendable {
+    public final class RestJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration, @unchecked Sendable {
         public var telemetryProvider: ClientRuntime.TelemetryProvider
         public var retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
         public var clientLogMode: ClientRuntime.ClientLogMode
