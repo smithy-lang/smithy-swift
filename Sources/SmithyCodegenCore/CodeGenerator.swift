@@ -9,14 +9,13 @@ import struct Foundation.Data
 import class Foundation.JSONDecoder
 import struct Foundation.URL
 
-
 public struct CodeGenerator {
     let modelFileURL: URL
     let schemasFileURL: URL?
 
     public init(
         modelFileURL: URL,
-        schemasFileURL: URL?,
+        schemasFileURL: URL?
     ) {
         self.modelFileURL = modelFileURL
         self.schemasFileURL = schemasFileURL
