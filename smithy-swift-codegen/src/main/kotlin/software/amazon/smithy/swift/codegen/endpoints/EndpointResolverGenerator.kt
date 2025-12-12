@@ -38,7 +38,7 @@ class EndpointResolverGenerator(
         writer: SwiftWriter,
         visibility: String,
     ) {
-        writer.openBlock("$visibility protocol \$N: Sendable {", "}", EndpointTypes.EndpointResolver) {
+        writer.openBlock("$visibility protocol \$N {", "}", EndpointTypes.EndpointResolver) {
             writer.write("func resolve(params: EndpointParams) throws -> \$N", SmithyHTTPAPITypes.Endpoint)
         }
     }
@@ -64,7 +64,7 @@ class EndpointResolverGenerator(
             }
         }
         writer.write("")
-        writer.write("extension DefaultEndpointResolver: EndpointResolver {}")
+        writer.write("extension DefaultEndpointResolver: EndpointResolver where Params == EndpointParams {}")
     }
 
     private fun renderStaticResolver(writer: SwiftWriter) {
