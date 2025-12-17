@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// A class which describes selected, modeled information for a Smithy shape.
+/// A class which describes selected Smithy model information for a Smithy model shape.
 ///
 /// Typically, the Schema contains only modeled info & properties that are relevant to
 /// serialization, transport bindings, and other functions performed by the SDK.
@@ -29,13 +29,7 @@ public final class Schema: Sendable {
     public let members: [Schema]
 
     /// The target schema for this schema.  Will only be used when this is a member schema.
-    public var target: Schema? {
-        _target()
-    }
-
-    /// Target schema is passed as an autoclosure so that schemas with self-referencing targets will not cause
-    /// an infinite loop when accessed.
-    private let _target: @Sendable () -> Schema?
+    public let target: Schema?
 
     /// The index of this schema, if it represents a Smithy member.
     ///
@@ -55,14 +49,24 @@ public final class Schema: Sendable {
         type: ShapeType,
         traits: [ShapeID: Node] = [:],
         members: [Schema] = [],
-        target: @Sendable @escaping @autoclosure () -> Schema? = nil,
+        target: Schema? = nil,
         index: Int = -1
     ) {
         self.id = id
         self.type = type
         self.traits = traits
         self.members = members
-        self._target = target
+        self.target = target
         self.index = index
+    }
+}
+
+public extension Schema {
+
+    /// The member name for this schema, if any.
+    ///
+    /// Member name is computed from the schema's ID.
+    var memberName: String? {
+        id.member
     }
 }
