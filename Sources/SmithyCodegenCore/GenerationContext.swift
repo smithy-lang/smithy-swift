@@ -9,7 +9,7 @@ public struct GenerationContext {
     public let service: ServiceShape
     public let model: Model
     public let symbolProvider: SymbolProvider
-    
+
     /// Creates a ``GenerationContext`` from a model.
     ///
     /// The model must contain exactly one service.

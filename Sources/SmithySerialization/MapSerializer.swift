@@ -8,5 +8,5 @@
 import class Smithy.Schema
 
 public protocol MapSerializer {
-    func writeEntry(keySchema: Schema, key: String, valueSerializer: Consumer<ShapeSerializer>)
+    func writeEntry(keySchema: Schema, key: String, valueConsumer: Consumer<ShapeSerializer>)
 }

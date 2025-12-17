@@ -8,7 +8,7 @@
 import enum Smithy.Node
 
 extension Node {
-    
+
     /// Returns the node, rendered into a Swift literal for use in generated code.
     ///
     /// The node is rendered with some interstitial whitespace but single-line.

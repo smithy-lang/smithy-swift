@@ -36,7 +36,10 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
         let schemasFileURL = resolve(paramName: "--schemas-path", path: schemasPath)
 
         // If --serializable-structs-path was supplied, create the serializable structs file URL
-        let serializableStructsFileURL = resolve(paramName: "--serializable-structs-path", path: serializableStructsPath)
+        let serializableStructsFileURL = resolve(
+            paramName: "--serializable-structs-path",
+            path: serializableStructsPath
+        )
 
         // Use resolved file URLs to run code generator
         try CodeGenerator(

@@ -9,7 +9,6 @@ import struct Foundation.Data
 import class Foundation.JSONDecoder
 import struct Foundation.URL
 
-
 public struct CodeGenerator {
     let modelFileURL: URL
     let schemasFileURL: URL?

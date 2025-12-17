@@ -11,15 +11,15 @@ import struct Foundation.Locale
 import struct Foundation.TimeZone
 import enum Smithy.Node
 
-//protocol HasASTTraits {
+// protocol HasASTTraits {
 //    var traits: [String: ASTNode]? { get }
-//}
+// }
 //
-//extension ASTShape: HasASTTraits {}
+// extension ASTShape: HasASTTraits {}
 //
-//extension ASTMember: HasASTTraits {}
+// extension ASTMember: HasASTTraits {}
 //
-//extension HasASTTraits {
+// extension HasASTTraits {
 //
 //    var isDeprecated: Bool {
 //        guard let node = traits?["smithy.api#deprecated"] else { return false }
@@ -30,12 +30,12 @@ import enum Smithy.Node
 //        let removeIfDeprecatedBefore = Date(timeIntervalSince1970: 1726531200.0) // this is '2024-09-17'
 //        return deprecationDate < removeIfDeprecatedBefore
 //    }
-//}
+// }
 //
-//private let formatter = {
+// private let formatter = {
 //    let df = DateFormatter()
 //    df.dateFormat = "yyyy-MM-dd"
 //    df.timeZone = TimeZone(identifier: "UTC")
 //    df.locale = Locale(identifier: "en_US_POSIX")
 //    return df
-//}()
+// }()

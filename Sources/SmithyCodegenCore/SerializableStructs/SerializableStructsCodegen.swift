@@ -8,7 +8,7 @@
 package struct SerializableStructsCodegen {
 
     package init() {}
-    
+
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import enum Smithy.Prelude")
@@ -51,9 +51,34 @@ package struct SerializableStructsCodegen {
     private func writeSerializeCall(writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int) throws {
         switch member.target.type {
         case .list:
-            writer.write("// serialize list here")
+            let listShape = member.target as! ListShape
+            let schemaVarName = try shape.schemaVarName
+            try writer.openBlock(
+                "serializer.writeList(schema: \(schemaVarName).members[\(index)], size: value.count) { serializer in",
+                "}"
+            ) { writer in
+                try writer.openBlock("for value in value {", "}") { writer in
+                    try writeSerializeCall(writer: writer, shape: listShape, member: listShape.member, index: 0)
+                }
+            }
         case .map:
-            writer.write("// serialize map here")
+            let mapShape = member.target as! MapShape
+            let schemaVarName = try shape.schemaVarName
+            try writer.openBlock(
+                "serializer.writeMap(schema: \(schemaVarName).members[\(index)], size: value.count) { mapSerializer in",
+                "}"
+            ) { writer in
+                try writer.openBlock("for (key, value) in value {", "}") { writer in
+                    let schemaVarName = try mapShape.schemaVarName
+                    let schema = "\(schemaVarName).members[0]"
+                    try writer.openBlock(
+                        "mapSerializer.writeEntry(keySchema: \(schema), key: key) { serializer in",
+                        "}"
+                    ) { writer in
+                        try writeSerializeCall(writer: writer, shape: mapShape, member: mapShape.value, index: 1)
+                    }
+                }
+            }
         default:
             let methodName = try member.target.structConsumerMethod
             let schemaVarName = try shape.schemaVarName

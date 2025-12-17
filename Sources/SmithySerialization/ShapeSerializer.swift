@@ -8,8 +8,8 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
-import protocol Smithy.SmithyDocument
 import class Smithy.Schema
+import protocol Smithy.SmithyDocument
 
 public protocol ShapeSerializer {
     func writeStruct(schema: Schema, value: any SerializableStruct)
@@ -34,7 +34,7 @@ public protocol ShapeSerializer {
 }
 
 public extension ShapeSerializer {
-    
+
     func writeString<T: RawRepresentable>(schema: Schema, value: T) where T.RawValue == String {
         writeString(schema: schema, value: value.rawValue)
     }
