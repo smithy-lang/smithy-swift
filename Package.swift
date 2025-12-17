@@ -308,7 +308,10 @@ let package = Package(
             ]
         ),
         .target(
-            name: "SmithyCodegenCore"
+            name: "SmithyCodegenCore",
+            dependencies: [
+                "Smithy",
+            ]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
