@@ -19,6 +19,7 @@ public class ListShape: Shape, HasMembers {
     }
 
     public var member: MemberShape {
+        // swiftlint:disable:next force_cast
         model.shapes[.init(id: id, member: "member")]! as! MemberShape
     }
 

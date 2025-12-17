@@ -31,7 +31,7 @@ public struct CodeGenerator {
         let model = try Model(astModel: astModel)
 
         // Create a generation context from the model
-        let _ = try GenerationContext(model: model)
+        _ = try GenerationContext(model: model)
 
         // Generation context will be used here in the future
         // to generate needed files.

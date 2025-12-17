@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum Smithy.Node
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
-import enum Smithy.Node
 
 public class Shape {
     public let id: ShapeID

@@ -13,8 +13,6 @@ import class Foundation.DispatchQueue
 import class Foundation.InputStream
 import class Foundation.NSObject
 import class Foundation.OutputStream
-import class SmithyHTTPClientAPI.HttpTelemetry
-import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 import class Foundation.RunLoop
 import class Foundation.Stream
 import protocol Foundation.StreamDelegate
@@ -24,6 +22,8 @@ import class Foundation.Timer
 import struct Smithy.Attributes
 import protocol Smithy.LogAgent
 import protocol Smithy.ReadableStream
+import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
+import class SmithyHTTPClientAPI.HttpTelemetry
 
 /// Reads data from a smithy-swift native `ReadableStream` and streams the data through to a Foundation `InputStream`.
 ///

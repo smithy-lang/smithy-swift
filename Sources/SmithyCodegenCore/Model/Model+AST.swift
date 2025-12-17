@@ -9,7 +9,7 @@ import enum Smithy.Node
 import struct Smithy.ShapeID
 
 extension Model {
-    
+
     /// Creates a Smithy model from a JSON AST model.
     ///
     /// Compared to the AST model, this model has custom shape types, members are included in the main body of shapes
@@ -73,7 +73,9 @@ extension Model {
         }
     }
 
-    private static func shapePair(id: String, astShape: ASTShape, memberShapes: [ShapeID: MemberShape]) throws -> (ShapeID, Shape) {
+    private static func shapePair(
+        id: String, astShape: ASTShape, memberShapes: [ShapeID: MemberShape]
+    ) throws -> (ShapeID, Shape) {
         // Create the ShapeID for this shape from the AST shape's string ID.
         let shapeID = try ShapeID(id)
 

@@ -19,7 +19,7 @@ public class IntEnumShape: Shape, HasMembers {
     }
 
     public var members: [MemberShape] {
-        return memberIDs.map { model.shapes[$0]! as! MemberShape }
+        return memberIDs.map { model.shapes[$0]! as! MemberShape } // swiftlint:disable:this force_cast
     }
 
     override func candidates(for shape: Shape) -> [Shape] {

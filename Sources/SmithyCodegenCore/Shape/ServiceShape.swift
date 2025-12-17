@@ -12,7 +12,7 @@ import struct Smithy.ShapeID
 public class ServiceShape: Shape {
     let errorIDs: [ShapeID]
 
-    public init(id: ShapeID, traits: [ShapeID : Node], errorIDs: [ShapeID]) {
+    public init(id: ShapeID, traits: [ShapeID: Node], errorIDs: [ShapeID]) {
         self.errorIDs = errorIDs
         super.init(id: id, type: .service, traits: traits)
     }
