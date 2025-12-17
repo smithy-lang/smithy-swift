@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.Schema
+
 public protocol SerializableShape {
-    func serialize(serializer: ShapeSerializer) throws
+    static var schema: Smithy.Schema { get }
+    func serialize(_ serializer: any ShapeSerializer)
 }

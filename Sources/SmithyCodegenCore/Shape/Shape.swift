@@ -12,16 +12,13 @@ import enum Smithy.Node
 public class Shape {
     public let id: ShapeID
     public let type: ShapeType
-    public internal(set) var traits: [ShapeID: Node]
-    var targetID: ShapeID?
-    var memberIDs: [ShapeID] = []
-    weak var model: Model?
+    public let traits: [ShapeID: Node]
+    weak var model: Model!
 
-    public init(id: ShapeID, type: ShapeType, traits: [ShapeID: Node], targetID: ShapeID?) {
+    public init(id: ShapeID, type: ShapeType, traits: [ShapeID: Node]) {
         self.id = id
         self.type = type
         self.traits = traits
-        self.targetID = targetID
     }
 
     public func hasTrait(_ traitID: ShapeID) -> Bool {
@@ -32,20 +29,9 @@ public class Shape {
         traits[traitID]
     }
 
-    public var members: [Shape] {
-        guard let model else { return [] }
-        return memberIDs.map { model.shapes[$0]! }
-    }
-
-    public var target: Shape? {
-        guard let targetID else { return nil }
-        return model?.shapes[targetID] ?? Shape.prelude[targetID]
-    }
-
     public func adding(traits newTraits: [ShapeID: Node]) -> Shape {
         let combinedTraits = traits.merging(newTraits) { _, new in new }
-        let new = Shape(id: id, type: type, traits: combinedTraits, targetID: targetID)
-        new.memberIDs = memberIDs
+        let new = Shape(id: id, type: type, traits: combinedTraits)
         new.model = model
         return new
     }
@@ -61,15 +47,12 @@ public class Shape {
         for shape in shapes {
             if descendants.contains(shape) { continue }
             descendants.insert(shape)
-            shape.members.map { $0.target }.compactMap { $0 }.forEach {
-                descendants.insert($0)
-                $0.descendants(&descendants)
-            }
+            shape.descendants(&descendants)
         }
     }
 
-    private func candidates(for shape: Shape) -> [Shape] {
-        ([shape.target] + shape.members.map { $0.target }).compactMap { $0 }
+    func candidates(for shape: Shape) -> [Shape] {
+        [] // default.  May be overridden by Shape subclasses.
     }
 }
 

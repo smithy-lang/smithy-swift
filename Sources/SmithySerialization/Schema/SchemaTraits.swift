@@ -18,4 +18,5 @@ public let permittedTraitIDs: Set<String> = [
     "smithy.api#required",
     "smithy.api#default",
     "smithy.api#timestampFormat",
+    "smithy.api#sensitive",
 ]

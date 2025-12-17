@@ -5,24 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// Contains the value of a Smithy Node, as used in a JSON AST.
-///
-/// Smithy node data is basically the same as the data that can be stored in JSON.
-/// The root of a Smithy node may be of any type, i.e. unlike JSON, the root element is not limited to object or list.
-///
-/// See the definition of node value in the Smithy spec: https://smithy.io/2.0/spec/model.html#node-values
-enum ASTNode {
-    case object([String: ASTNode])
-    case list([ASTNode])
-    case string(String)
-    case number(Double)
-    case boolean(Bool)
-    case null
-}
+import enum Smithy.Node
 
-extension ASTNode: Decodable {
+extension Node: Decodable {
 
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         if container.decodeNil() {
             self = .null
@@ -34,9 +21,9 @@ extension ASTNode: Decodable {
             self = .number(double)
         } else if let string = try? container.decode(String.self) {
             self = .string(string)
-        } else if let array = try? container.decode([ASTNode].self) {
+        } else if let array = try? container.decode([Node].self) {
             self = .list(array)
-        } else if let dictionary = try? container.decode([String: ASTNode].self) {
+        } else if let dictionary = try? container.decode([String: Node].self) {
             self = .object(dictionary)
         } else {
             throw ASTError("Undecodable value in AST node")

@@ -10,10 +10,8 @@ import struct Smithy.ShapeID
 extension ASTReference {
 
     var id: ShapeID {
-        do {
+        get throws {
             return try ShapeID(target)
-        } catch {
-            fatalError("Creation of ShapeID from ASTReference failed: \(error.localizedDescription)")
         }
     }
 }

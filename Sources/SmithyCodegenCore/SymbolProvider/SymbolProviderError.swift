@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-struct CodegenError: Error {
+public struct SymbolProviderError: Error {
     let localizedDescription: String
 
     init(_ localizedDescription: String) {

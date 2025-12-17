@@ -6,5 +6,12 @@
 //
 
 public protocol SerializableStruct: SerializableShape {
-    func serializeMembers(encoder: ShapeSerializer) throws
+    func serializeMembers(_ serializer: any ShapeSerializer)
+}
+
+public extension SerializableStruct {
+
+    func serialize(_ serializer: any ShapeSerializer) {
+        serializer.writeStruct(schema: Self.schema, value: self)
+    }
 }

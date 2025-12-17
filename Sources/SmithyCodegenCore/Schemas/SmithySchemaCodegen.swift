@@ -12,25 +12,14 @@ package struct SmithySchemaCodegen {
 
     package init() {}
 
-    package func generate(model: Model) throws -> String {
+    package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import class Smithy.Schema")
         writer.write("import enum Smithy.Prelude")
         writer.write("")
 
-        writer.write("// Model has \(model.shapes.count) shapes")
-        writer.write("// Model has \(model.shapes.values.filter { $0.type == .service }.count) services")
-        writer.write("// Model has \(model.shapes.values.filter { $0.type == .operation }.count) operations")
-        writer.write("// Model has \(model.shapes.values.filter { $0.type == .resource }.count) resources")
-        writer.write("// Model has \(model.shapes.values.filter { $0.type == .structure }.count) structures")
-        writer.write("// Model has \(model.shapes.values.filter { $0.type == .union }.count) unions")
-        writer.write("// Model has \(model.shapes.values.filter { $0.type == .enum }.count) enums")
-        writer.write("// Model has \(model.shapes.values.filter { $0.type == .intEnum }.count) intEnums")
-        writer.write("// Model has \(model.shapes.values.filter { $0.type == .member }.count) members")
-        writer.write("")
-
         // Write schemas for all inputs & outputs and their descendants.
-        let shapes = try model.shapes.values
+        let shapes = try ctx.model.shapes.values
             .filter { $0.type == .structure }
             .filter {
                 try $0.hasTrait(try .init("smithy.api#input")) ||
@@ -67,7 +56,7 @@ package struct SmithySchemaCodegen {
                     }
                 }
             }
-            let members = shape.members
+            let members = (shape as? HasMembers)?.members ?? []
             if !members.isEmpty {
                 try writer.openBlock("members: [", "],") { writer in
                     for (index, member) in members.enumerated() {
@@ -75,8 +64,8 @@ package struct SmithySchemaCodegen {
                     }
                 }
             }
-            if let target = shape.target {
-                writer.write("target: \(target.schemaVarName),")
+            if let target = (shape as? MemberShape)?.target {
+                writer.write(try "target: \(target.schemaVarName),")
             }
             if let index {
                 writer.write("index: \(index),")

@@ -13,16 +13,16 @@ import struct Foundation.URL
 public struct CodeGenerator {
     let modelFileURL: URL
     let schemasFileURL: URL?
-    let structConsumersFileURL: URL?
+    let serializableStructsFileURL: URL?
 
     public init(
         modelFileURL: URL,
         schemasFileURL: URL?,
-        structConsumersFileURL: URL?
+        serializableStructsFileURL: URL?
     ) {
         self.modelFileURL = modelFileURL
         self.schemasFileURL = schemasFileURL
-        self.structConsumersFileURL = structConsumersFileURL
+        self.serializableStructsFileURL = serializableStructsFileURL
     }
 
     public func run() throws {
@@ -33,16 +33,19 @@ public struct CodeGenerator {
         // Create the model from the AST
         let model = try Model(astModel: astModel)
 
-        // If a schema file URL was provided, generate it
+        // Create a generation context from the model
+        let ctx = try GenerationContext(model: model)
+
+        // If a schemas file URL was provided, generate it
         if let schemasFileURL {
-            let schemaContents = try SmithySchemaCodegen().generate(model: model)
-            try Data(schemaContents.utf8).write(to: schemasFileURL)
+            let schemasContents = try SmithySchemaCodegen().generate(ctx: ctx)
+            try Data(schemasContents.utf8).write(to: schemasFileURL)
         }
 
-        // If a struct consumers file URL was provided, generate it
-        if let structConsumersFileURL {
-            let structConsumersContents = try StructConsumersCodegen().generate(model: model)
-            try Data(structConsumersContents.utf8).write(to: structConsumersFileURL)
+        // If a serializable structs file URL was provided, generate it
+        if let serializableStructsFileURL {
+            let serializableStructsContents = try SerializableStructsCodegen().generate(ctx: ctx)
+            try Data(serializableStructsContents.utf8).write(to: serializableStructsFileURL)
         }
     }
 }

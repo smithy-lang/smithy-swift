@@ -53,7 +53,7 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
 
         // Construct the structconsumers.swift path.
-        let structConsumersSwiftPath = outputDirectoryPath.appending("\(name)StructConsumers.swift")
+        let serializableStructsSwiftPath = outputDirectoryPath.appending("\(name)SerializableStructs.swift")
 
         // Construct the build command that invokes SmithyCodegenCLI.
         return .buildCommand(
@@ -61,11 +61,11 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
             executable: generatorToolPath,
             arguments: [
                 "--schemas-path", schemasSwiftPath,
-                "--struct-consumers-path", structConsumersSwiftPath,
+                "--serializable-structs-path", serializableStructsSwiftPath,
                 modelPath
             ],
             inputFiles: [inputPath, modelPath],
-            outputFiles: [schemasSwiftPath, structConsumersSwiftPath]
+            outputFiles: [schemasSwiftPath, serializableStructsSwiftPath]
         )
     }
 }
