@@ -32,7 +32,7 @@ public class StringSerializer: ShapeSerializer {
             let typeName = type(of: value)
             let serializer = StringSerializer(includeMemberNames: true)
             value.serializeMembers(serializer)
-            return "\(typeName)(\(serializer.string)"
+            return "\(typeName)(\(serializer.string))"
         }
     }
 
