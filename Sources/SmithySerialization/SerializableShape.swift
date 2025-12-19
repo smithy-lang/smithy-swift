@@ -9,5 +9,5 @@ import class Smithy.Schema
 
 public protocol SerializableShape {
     static var schema: Smithy.Schema { get }
-    func serialize(_ serializer: any ShapeSerializer)
+    func serialize(_ serializer: any ShapeSerializer) throws
 }
