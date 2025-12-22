@@ -35,11 +35,11 @@ public protocol ShapeSerializer {
 
 public extension ShapeSerializer {
 
-    func writeString<T: RawRepresentable>(_ schema: Schema, _ value: T) throws where T.RawValue == String {
+    func writeEnum<T: RawRepresentable>(_ schema: Schema, _ value: T) throws where T.RawValue == String {
         try writeString(schema, value.rawValue)
     }
 
-    func writeInteger<T: RawRepresentable>(_ schema: Schema, _ value: T) throws where T.RawValue == Int {
+    func writeIntEnum<T: RawRepresentable>(_ schema: Schema, _ value: T) throws where T.RawValue == Int {
         try writeInteger(schema, value.rawValue)
     }
 

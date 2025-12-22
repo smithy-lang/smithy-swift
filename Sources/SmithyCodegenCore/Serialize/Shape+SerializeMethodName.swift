@@ -16,16 +16,20 @@ extension Shape {
                 return "writeBlob"
             case .boolean:
                 return "writeBoolean"
-            case .string, .enum:
+            case .string:
                 return "writeString"
+            case .enum:
+                return "writeEnum"
             case .timestamp:
                 return "writeTimestamp"
             case .byte:
                 return "writeByte"
             case .short:
                 return "writeShort"
-            case .integer, .intEnum:
+            case .integer:
                 return "writeInteger"
+            case .intEnum:
+                return "writeIntEnum"
             case .long:
                 return "writeLong"
             case .float:
