@@ -15,7 +15,7 @@ public class MapShape: Shape, HasMembers {
 
     public init(id: ShapeID, traits: [ShapeID: Node], memberIDs: [ShapeID]) {
         self.memberIDs = memberIDs
-        super.init(id: id, type: .list, traits: traits)
+        super.init(id: id, type: .map, traits: traits)
     }
 
     public var key: MemberShape {

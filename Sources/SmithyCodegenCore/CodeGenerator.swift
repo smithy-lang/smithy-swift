@@ -6,20 +6,25 @@
 //
 
 import struct Foundation.Data
-import class Foundation.FileManager
 import class Foundation.JSONDecoder
 import struct Foundation.URL
 
 public struct CodeGenerator {
     let modelFileURL: URL
     let schemasFileURL: URL?
+    let serializeFileURL: URL?
+    let deserializeFileURL: URL?
 
     public init(
         modelFileURL: URL,
-        schemasFileURL: URL?
+        schemasFileURL: URL?,
+        serializeFileURL: URL?,
+        deserializeFileURL: URL?
     ) {
         self.modelFileURL = modelFileURL
         self.schemasFileURL = schemasFileURL
+        self.serializeFileURL = serializeFileURL
+        self.deserializeFileURL = deserializeFileURL
     }
 
     public func run() throws {
@@ -31,17 +36,24 @@ public struct CodeGenerator {
         let model = try Model(astModel: astModel)
 
         // Create a generation context from the model
-        _ = try GenerationContext(model: model)
+        let ctx = try GenerationContext(model: model)
 
-        // Generation context will be used here in the future
-        // to generate needed files.
-
-        // This code simply writes an empty schemas file, since it is expected to exist after the
-        // code generator plugin runs.
-        //
-        // Actual code generation will be implemented here later.
+        // If a schemas file URL was provided, generate it
         if let schemasFileURL {
-            FileManager.default.createFile(atPath: schemasFileURL.path, contents: Data())
+            let schemasContents = try SmithySchemaCodegen().generate(ctx: ctx)
+            try Data(schemasContents.utf8).write(to: schemasFileURL)
+        }
+
+        // If a Serialize file URL was provided, generate it
+        if let serializeFileURL {
+            let serializeContents = try SerializeCodegen().generate(ctx: ctx)
+            try Data(serializeContents.utf8).write(to: serializeFileURL)
+        }
+
+        // If a Deserialize file URL was provided, generate it
+        if let deserializeFileURL {
+            let deserializeContents = try DeserializeCodegen().generate(ctx: ctx)
+            try Data(deserializeContents.utf8).write(to: deserializeFileURL)
         }
     }
 }

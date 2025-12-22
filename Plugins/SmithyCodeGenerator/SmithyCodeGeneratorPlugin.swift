@@ -49,8 +49,14 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         let modelPathURL = currentWorkingDirectoryFileURL.appendingPathComponent(smithyModelInfo.path)
         let modelPath = Path(modelPathURL.path)
 
-        // Construct the schemas.swift path.
+        // Construct the Schemas.swift path.
         let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
+
+        // Construct the Serialize.swift path.
+        let serializeSwiftPath = outputDirectoryPath.appending("\(name)Serialize.swift")
+
+        // Construct the Deserialize.swift path.
+        let deserializeSwiftPath = outputDirectoryPath.appending("\(name)Deserialize.swift")
 
         // Construct the build command that invokes SmithyCodegenCLI.
         return .buildCommand(
@@ -58,10 +64,12 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
             executable: generatorToolPath,
             arguments: [
                 "--schemas-path", schemasSwiftPath,
+                "--serialize-path", serializeSwiftPath,
+                "--deserialize-path", deserializeSwiftPath,
                 modelPath
             ],
             inputFiles: [inputPath, modelPath],
-            outputFiles: [schemasSwiftPath]
+            outputFiles: [schemasSwiftPath, serializeSwiftPath, deserializeSwiftPath]
         )
     }
 }
