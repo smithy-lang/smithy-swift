@@ -5,11 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum Smithy.Node
+
 // See https://smithy.io/2.0/spec/json-ast.html#json-ast
 // This Swift type captures fields for all AST shape types
 struct ASTShape: Decodable {
     let type: ASTType
-    let traits: [String: ASTNode]?
+    let traits: [String: Node]?
     let member: ASTMember?
     let key: ASTMember?
     let value: ASTMember?

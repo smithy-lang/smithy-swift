@@ -27,8 +27,14 @@ public struct CodeGenerator {
         let modelData = try Data(contentsOf: modelFileURL)
         let astModel = try JSONDecoder().decode(ASTModel.self, from: modelData)
 
-        // In the future, AST will be used to create a Model.
-        // Model will be used to generate code.
+        // Create the model from the AST
+        let model = try Model(astModel: astModel)
+
+        // Create a generation context from the model
+        _ = try GenerationContext(model: model)
+
+        // Generation context will be used here in the future
+        // to generate needed files.
 
         // This code simply writes an empty schemas file, since it is expected to exist after the
         // code generator plugin runs.
