@@ -19,11 +19,11 @@ public class MapShape: Shape, HasMembers {
     }
 
     public var key: MemberShape {
-        model.shapes[.init(id: id, member: "key")]! as! MemberShape
+        model.shapes[.init(id: id, member: "key")]! as! MemberShape // swiftlint:disable:this force_cast
     }
 
     public var value: MemberShape {
-        model.shapes[.init(id: id, member: "value")]! as! MemberShape
+        model.shapes[.init(id: id, member: "value")]! as! MemberShape // swiftlint:disable:this force_cast
     }
 
     public var members: [MemberShape] {

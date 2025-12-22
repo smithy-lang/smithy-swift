@@ -128,34 +128,25 @@ private extension String {
         var result = self
 
         // all non-alphanumeric characters: "acm-success"-> "acm success"
-        let nonAlphaNumericRegex = try! NSRegularExpression(pattern: "[^A-Za-z0-9+_]")
         result = nonAlphaNumericRegex.stringByReplacingMatches(in: result, range: result.range, withTemplate: " ")
 
         // if there is an underscore, split on it: "acm_success" -> "acm", "_", "success"
-        let underscoreRegex = try! NSRegularExpression(pattern: "_")
         result = underscoreRegex.stringByReplacingMatches(in: result, range: result.range, withTemplate: " _ ")
 
         // if a number has a standalone v or V in front of it, separate it out
-        let smallVRegex = try! NSRegularExpression(pattern: "([^a-z]{2,})v([0-9]+)")
         result = smallVRegex.stringByReplacingMatches(in: result, range: result.range, withTemplate: "$1 v$2")
-
-        let largeVRegex = try! NSRegularExpression(pattern: "([^a-z]{2,})V([0-9]+)")
         result = largeVRegex.stringByReplacingMatches(in: result, range: result.range, withTemplate: "$1 V$2")
 
         // add a space between camelCased words
-        let camelCaseSplitRegex = try! NSRegularExpression(pattern: "(?<=[a-z])(?=[A-Z]([a-zA-Z]|[0-9]))")
         result = camelCaseSplitRegex.stringByReplacingMatches(in: result, range: result.range, withTemplate: " ")
 
         // add a space after acronyms
-        let acronymSplitRegex = try! NSRegularExpression(pattern: "([A-Z]+)([A-Z][a-z])")
         result = acronymSplitRegex.stringByReplacingMatches(in: result, range: result.range, withTemplate: "$1 $2")
 
         // add space after a number in the middle of a word
-        let spaceAfterNumberRegex = try! NSRegularExpression(pattern: "([0-9])([a-zA-Z])")
         result = spaceAfterNumberRegex.stringByReplacingMatches(in: result, range: result.range, withTemplate: "$1 $2")
 
         // remove extra spaces - multiple consecutive ones or those and the beginning/end of words
-        let removeExtraSpaceRegex = try! NSRegularExpression(pattern: "\\s+")
         result = removeExtraSpaceRegex.stringByReplacingMatches(in: result, range: result.range, withTemplate: " ")
             .trimmingCharacters(in: .whitespaces)
 
@@ -166,3 +157,17 @@ private extension String {
         NSRange(location: 0, length: count)
     }
 }
+
+// Regexes used in splitOnWordBoundaries() above.
+// force_try linter rule is disabled since these are just created from static strings.
+// swiftlint:disable force_try
+private let nonAlphaNumericRegex = try! NSRegularExpression(pattern: "[^A-Za-z0-9+_]")
+private let underscoreRegex = try! NSRegularExpression(pattern: "_")
+private let smallVRegex = try! NSRegularExpression(pattern: "([^a-z]{2,})v([0-9]+)")
+private let largeVRegex = try! NSRegularExpression(pattern: "([^a-z]{2,})V([0-9]+)")
+private let camelCaseSplitRegex = try! NSRegularExpression(pattern: "(?<=[a-z])(?=[A-Z]([a-zA-Z]|[0-9]))")
+private let acronymSplitRegex = try! NSRegularExpression(pattern: "([A-Z]+)([A-Z][a-z])")
+private let spaceAfterNumberRegex = try! NSRegularExpression(pattern: "([0-9])([a-zA-Z])")
+private let removeExtraSpaceRegex = try! NSRegularExpression(pattern: "\\s+")
+// swiftlint:enable force_try
+
