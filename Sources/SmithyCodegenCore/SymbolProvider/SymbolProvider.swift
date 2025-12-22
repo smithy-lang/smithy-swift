@@ -47,7 +47,7 @@ public struct SymbolProvider {
             } else if shape.hasTrait(inputTraitID) {
                 guard let operation = model.shapes.values
                     .filter({ $0.type == .operation })
-                    .map({ $0 as! OperationShape })
+                    .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
                     .first(where: { $0.inputShapeID == shape.id })
                 else { throw SymbolProviderError("Operation for input \(shape.id) not found") }
                 return "\(operation.id.name)Input"
@@ -57,7 +57,7 @@ public struct SymbolProvider {
             } else if shape.hasTrait(outputTraitID) {
                 guard let operation = model.shapes.values
                     .filter({ $0.type == .operation })
-                    .map({ $0 as! OperationShape })
+                    .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
                     .first(where: { $0.outputShapeID == shape.id })
                 else { throw SymbolProviderError("Operation for output \(shape.id) not found") }
                 return "\(operation.id.name)Output"
@@ -70,11 +70,15 @@ public struct SymbolProvider {
                 return try "\(serviceName)ClientTypes.\(capitalized)"
             }
         case .list, .set:
-            guard let listShape = shape as? ListShape else { throw SymbolProviderError("Shape has type .list but is not a ListShape") }
+            guard let listShape = shape as? ListShape else {
+                throw SymbolProviderError("Shape has type .list but is not a ListShape")
+            }
             let elementType = try swiftType(shape: listShape.member.target)
             return "[\(elementType)]"
         case .map:
-            guard let mapShape = shape as? MapShape else { throw SymbolProviderError("Shape has type .map but is not a MapShape") }
+            guard let mapShape = shape as? MapShape else {
+                throw SymbolProviderError("Shape has type .map but is not a MapShape")
+            }
             let valueType = try swiftType(shape: mapShape.value.target)
             return "[String: \(valueType)]"
         case .string:
@@ -170,4 +174,3 @@ private let acronymSplitRegex = try! NSRegularExpression(pattern: "([A-Z]+)([A-Z
 private let spaceAfterNumberRegex = try! NSRegularExpression(pattern: "([0-9])([a-zA-Z])")
 private let removeExtraSpaceRegex = try! NSRegularExpression(pattern: "\\s+")
 // swiftlint:enable force_try
-

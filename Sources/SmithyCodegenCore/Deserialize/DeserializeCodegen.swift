@@ -23,16 +23,22 @@ package struct DeserializeCodegen {
             let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
             try writer.openBlock("extension \(swiftType): SmithySerialization.DeserializableShape {", "}") { writer in
                 writer.write("")
+                let deserType = "any SmithySerialization.ShapeDeserializer"
                 try writer.openBlock(
-                    "public mutating func deserialize(_ deserializer: any SmithySerialization.ShapeDeserializer) throws {", "}"
+                    "public mutating func deserialize(_ deserializer: \(deserType)) throws {", "}"
                 ) { writer in
-                    try writer.openBlock("try deserializer.readStruct(Self.schema) { (memberSchema, deserializer) in", "}") { writer in
+                    try writer.openBlock(
+                        "try deserializer.readStruct(Self.schema) { (memberSchema, deserializer) in",
+                        "}"
+                    ) { writer in
                         try writer.openBlock("switch memberSchema.index {", "}") { writer in
                             writer.dedent()
                             for (index, member) in members(of: shape).enumerated() {
                                 writer.write("case \(index):")
                                 writer.indent()
-                                try writeDeserializeCall(ctx: ctx, writer: writer, shape: shape, member: member, index: index)
+                                try writeDeserializeCall(
+                                    ctx: ctx, writer: writer, shape: shape, member: member, index: index
+                                )
                                 writer.dedent()
                             }
                             writer.write("default: break")
@@ -48,22 +54,20 @@ package struct DeserializeCodegen {
         return writer.finalize()
     }
 
-    private func writeDeserializeCall(ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int) throws {
+    private func writeDeserializeCall(
+        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int
+    ) throws {
         switch member.target.type {
         case .structure:
-            let target = member.target
-            let propertySwiftType = try ctx.symbolProvider.swiftType(shape: target)
-            writer.write("var value = \(propertySwiftType)()")
-            writer.write("try value.deserialize(deserializer)")
-            try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
+            try writeStructureDeserializeCall(
+                ctx: ctx, writer: writer, shape: shape, member: member, initializer: "()"
+            )
         case .union:
-            let target = member.target
-            let propertySwiftType = try ctx.symbolProvider.swiftType(shape: target)
-            writer.write("var value = \(propertySwiftType).sdkUnknown(\"\")")
-            writer.write("try value.deserialize(deserializer)")
-            try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
+            try writeStructureDeserializeCall(
+                ctx: ctx, writer: writer, shape: shape, member: member, initializer: ".sdkUnknown(\"\")"
+            )
         case .list, .set:
-            let listShape = member.target as! ListShape
+            let listShape = member.target as! ListShape // swiftlint:disable:this force_cast
             let elementSwiftType = try ctx.symbolProvider.swiftType(shape: listShape.member.target)
             writer.write("var value = [\(elementSwiftType)]()")
             let schemaVarName = try shape.schemaVarName
@@ -75,7 +79,7 @@ package struct DeserializeCodegen {
             }
             try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
         case .map:
-            let mapShape = member.target as! MapShape
+            let mapShape = member.target as! MapShape // swiftlint:disable:this force_cast
             let keySwiftType = try ctx.symbolProvider.swiftType(shape: mapShape.key.target)
             let valueSwiftType = try ctx.symbolProvider.swiftType(shape: mapShape.value.target)
             writer.write("var value = [\(keySwiftType): \(valueSwiftType)]()")
@@ -102,17 +106,37 @@ package struct DeserializeCodegen {
         }
     }
 
-    private func writeAssignment(ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape) throws {
-        guard [.structure, .list, .set, .map].contains(member.target.type) else { return }
+    private func writeStructureDeserializeCall(
+        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, initializer: String
+    ) throws {
+        let target = member.target
+        let propertySwiftType = try ctx.symbolProvider.swiftType(shape: target)
+        writer.write("var value = \(propertySwiftType)\(initializer)")
+        writer.write("try value.deserialize(deserializer)")
+        try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
+    }
+
+    private func writeAssignment(
+        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape
+    ) throws {
+        // Only the "composite types" need to have an assignment written.
+        guard [.structure, .union, .list, .set, .map].contains(member.target.type) else { return }
+
+        // The assignment being written is based on the shape enclosing the member.
         switch shape.type {
         case .structure:
+            // For a structure member, write the value to the appropriate structure property,
+            // making the appropriate adjustment for an error.
             let properties = shape.hasTrait(.init("smithy.api", "error")) ? "properties." : ""
             let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
             writer.write("self.\(properties)\(propertyName) = value")
         case .union:
+            // For a union member, write the value to the appropriate union case
             let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
             writer.write("self = .\(enumCaseName)(value)")
         case .list, .set, .map:
+            // For a collection member, return it to the caller since this is being written
+            // into a consumer block that returns the collection element.
             writer.write("return value")
         default: break
         }

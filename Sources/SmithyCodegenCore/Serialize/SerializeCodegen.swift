@@ -52,7 +52,7 @@ package struct SerializeCodegen {
     private func writeSerializeCall(writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int) throws {
         switch member.target.type {
         case .list:
-            let listShape = member.target as! ListShape
+            let listShape = member.target as! ListShape // swiftlint:disable:this force_cast
             let schemaVarName = try shape.schemaVarName
             try writer.openBlock(
                 "try serializer.writeList(\(schemaVarName).members[\(index)], value.count) { serializer in",
@@ -63,7 +63,7 @@ package struct SerializeCodegen {
                 }
             }
         case .map:
-            let mapShape = member.target as! MapShape
+            let mapShape = member.target as! MapShape // swiftlint:disable:this force_cast
             let schemaVarName = try shape.schemaVarName
             try writer.openBlock(
                 "try serializer.writeMap(\(schemaVarName).members[\(index)], value.count) { mapSerializer in",

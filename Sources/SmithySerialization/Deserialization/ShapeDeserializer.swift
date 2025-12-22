@@ -29,8 +29,14 @@ public protocol ShapeDeserializer {
     func isNull() throws -> Bool
 
     func readStruct(_ schema: Smithy.Schema, _ consumer: StructMemberConsumer) throws
-    func readList<Element>(_ schema: Smithy.Schema, _ list: inout [Element], _ consumer: ListMemberConsumer<Element>) throws
-    func readMap<Value>(_ schema: Smithy.Schema, _ map: inout [String: Value], _ consumer: MapMemberConsumer<String, Value>) throws
+
+    func readList<Element>(
+        _ schema: Smithy.Schema, _ list: inout [Element], _ consumer: ListMemberConsumer<Element>
+    ) throws
+
+    func readMap<Value>(
+        _ schema: Smithy.Schema, _ map: inout [String: Value], _ consumer: MapMemberConsumer<String, Value>
+    ) throws
 
     var containerSize: Int { get }
 }
@@ -40,7 +46,6 @@ public extension ShapeDeserializer {
     func readNull<T>() throws -> T? {
         return nil
     }
-
 
     func readEnum<Enum: RawRepresentable>(_ schema: Smithy.Schema) throws -> Enum where Enum.RawValue == String {
         try Enum(rawValue: readString(schema))!

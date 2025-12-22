@@ -131,7 +131,7 @@ public class StringSerializer: ShapeSerializer {
             let list = try value.asList()
             try writeList(schema, list.count) { serializer in
                 for document in list {
-                    try writeDocument(schema.members[0], document)
+                    try serializer.writeDocument(schema.members[0], document)
                 }
             }
         case .map:
@@ -164,7 +164,9 @@ public class StringSerializer: ShapeSerializer {
 
 extension StringSerializer: MapSerializer {
 
-    public func writeEntry(_ keySchema: Smithy.Schema, _ key: String, _ valueConsumer: Consumer<any ShapeSerializer>) throws {
+    public func writeEntry(
+        _ keySchema: Smithy.Schema, _ key: String, _ valueConsumer: Consumer<any ShapeSerializer>
+    ) throws {
         try addNameAndValue(keySchema) {
             let valueSerializer = StringSerializer(includeMemberNames: false)
             try valueConsumer(valueSerializer)
