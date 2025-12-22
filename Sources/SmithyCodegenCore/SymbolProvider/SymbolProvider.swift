@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Locale
 import struct Foundation.NSRange
 import class Foundation.NSRegularExpression
 import struct Smithy.ShapeID
@@ -39,31 +40,69 @@ public struct SymbolProvider {
     private var operationNameTraitID = ShapeID("swift.synthetic", "operationName")
 
     public func swiftType(shape: Shape) throws -> String {
-        if case .string(let name) = shape.getTrait(operationNameTraitID), shape.hasTrait(inputTraitID) {
-            return "\(name)Input"
-        } else if shape.hasTrait(inputTraitID) {
-            guard let operation = model.shapes.values
-                .filter({ $0.type == .operation })
-                .map({ $0 as! OperationShape })
-                .first(where: { $0.inputShapeID == shape.id })
-            else { throw SymbolProviderError("Operation for input \(shape.id) not found") }
-            return "\(operation.id.name)Input"
-        } else if
-            case .string(let name) = shape.getTrait(operationNameTraitID), shape.hasTrait(outputTraitID) {
-            return "\(name)Output"
-        } else if shape.hasTrait(outputTraitID) {
-            guard let operation = model.shapes.values
-                .filter({ $0.type == .operation })
-                .map({ $0 as! OperationShape })
-                .first(where: { $0.outputShapeID == shape.id })
-            else { throw SymbolProviderError("Operation for output \(shape.id) not found") }
-            return "\(operation.id.name)Output"
-        } else if shape.hasTrait(errorTraitID) {
-            return shape.id.name
-        } else {
-            return try "\(serviceName)ClientTypes.\(shape.id.name)"
+        switch shape.type {
+        case .structure, .union, .enum, .intEnum:
+            if case .string(let name) = shape.getTrait(operationNameTraitID), shape.hasTrait(inputTraitID) {
+                return "\(name)Input"
+            } else if shape.hasTrait(inputTraitID) {
+                guard let operation = model.shapes.values
+                    .filter({ $0.type == .operation })
+                    .map({ $0 as! OperationShape })
+                    .first(where: { $0.inputShapeID == shape.id })
+                else { throw SymbolProviderError("Operation for input \(shape.id) not found") }
+                return "\(operation.id.name)Input"
+            } else if
+                case .string(let name) = shape.getTrait(operationNameTraitID), shape.hasTrait(outputTraitID) {
+                return "\(name)Output"
+            } else if shape.hasTrait(outputTraitID) {
+                guard let operation = model.shapes.values
+                    .filter({ $0.type == .operation })
+                    .map({ $0 as! OperationShape })
+                    .first(where: { $0.outputShapeID == shape.id })
+                else { throw SymbolProviderError("Operation for output \(shape.id) not found") }
+                return "\(operation.id.name)Output"
+            } else if shape.hasTrait(errorTraitID) {
+                return shape.id.name
+            } else {
+                let orig = shape.id.name
+                let first = orig.first?.uppercased() ?? ""
+                let capitalized = "\(first)\(orig.dropFirst())"
+                return try "\(serviceName)ClientTypes.\(capitalized)"
+            }
+        case .list, .set:
+            guard let listShape = shape as? ListShape else { throw SymbolProviderError("Shape has type .list but is not a ListShape") }
+            let elementType = try swiftType(shape: listShape.member.target)
+            return "[\(elementType)]"
+        case .map:
+            guard let mapShape = shape as? MapShape else { throw SymbolProviderError("Shape has type .map but is not a MapShape") }
+            let valueType = try swiftType(shape: mapShape.value.target)
+            return "[String: \(valueType)]"
+        case .string:
+            return "Swift.String"
+        case .boolean:
+            return "Swift.Bool"
+        case .byte:
+            return "Swift.Int8"
+        case .short:
+            return "Swift.Int16"
+        case .integer, .long:
+            return "Swift.Int"
+        case .bigInteger:
+            return "Swift.Int64"
+        case .float:
+            return "Swift.Float"
+        case .double, .bigDecimal:
+            return "Swift.Double"
+        case .blob:
+            return "Foundation.Data"
+        case .timestamp:
+            return "Foundation.Date"
+        case .document, .member, .service, .operation, .resource:
+            throw SymbolProviderError("Cannot provide Swift symbol for shape type \(shape.type)")
         }
     }
+
+    static let locale = Locale(identifier: "en_US_POSIX")
 
     public func propertyName(shapeID: ShapeID) throws -> String {
         guard let member = shapeID.member else { throw SymbolProviderError("Shape ID has no member name") }

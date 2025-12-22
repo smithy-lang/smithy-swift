@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-package struct SerializableStructsCodegen {
+package struct SerializeCodegen {
 
     package init() {}
 
@@ -17,7 +17,8 @@ package struct SerializableStructsCodegen {
         writer.write("import protocol SmithySerialization.ShapeSerializer")
         writer.write("")
 
-        for shape in ctx.model.shapes.values where shape.type == .structure || shape.type == .union {
+        let structsAndUnions = ctx.model.allShapesSorted.filter { $0.type == .structure || $0.type == .union }
+        for shape in structsAndUnions {
             let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
             try writer.openBlock("extension \(swiftType): SmithySerialization.SerializableStruct {", "}") { writer in
                 writer.write("")
@@ -54,7 +55,7 @@ package struct SerializableStructsCodegen {
             let listShape = member.target as! ListShape
             let schemaVarName = try shape.schemaVarName
             try writer.openBlock(
-                "try serializer.writeList(schema: \(schemaVarName).members[\(index)], size: value.count) { serializer in",
+                "try serializer.writeList(\(schemaVarName).members[\(index)], value.count) { serializer in",
                 "}"
             ) { writer in
                 try writer.openBlock("for value in value {", "}") { writer in
@@ -65,14 +66,14 @@ package struct SerializableStructsCodegen {
             let mapShape = member.target as! MapShape
             let schemaVarName = try shape.schemaVarName
             try writer.openBlock(
-                "try serializer.writeMap(schema: \(schemaVarName).members[\(index)], size: value.count) { mapSerializer in",
+                "try serializer.writeMap(\(schemaVarName).members[\(index)], value.count) { mapSerializer in",
                 "}"
             ) { writer in
                 try writer.openBlock("for (key, value) in value {", "}") { writer in
                     let schemaVarName = try mapShape.schemaVarName
                     let schema = "\(schemaVarName).members[0]"
                     try writer.openBlock(
-                        "try mapSerializer.writeEntry(keySchema: \(schema), key: key) { serializer in",
+                        "try mapSerializer.writeEntry(\(schema), key) { serializer in",
                         "}"
                     ) { writer in
                         try writeSerializeCall(writer: writer, shape: mapShape, member: mapShape.value, index: 1)
@@ -80,9 +81,9 @@ package struct SerializableStructsCodegen {
                 }
             }
         default:
-            let methodName = try member.target.structConsumerMethod
+            let methodName = try member.target.serializeMethodName
             let schemaVarName = try shape.schemaVarName
-            writer.write("try serializer.\(methodName)(schema: \(schemaVarName).members[\(index)], value: value)")
+            writer.write("try serializer.\(methodName)(\(schemaVarName).members[\(index)], value)")
         }
     }
 

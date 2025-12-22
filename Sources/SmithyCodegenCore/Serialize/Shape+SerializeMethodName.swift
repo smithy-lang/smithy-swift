@@ -9,7 +9,7 @@ import struct Smithy.ShapeID
 
 extension Shape {
 
-    var structConsumerMethod: String {
+    var serializeMethodName: String {
         get throws {
             switch type {
             case .blob:

@@ -12,6 +12,6 @@ public protocol SerializableStruct: SerializableShape {
 public extension SerializableStruct {
 
     func serialize(_ serializer: any ShapeSerializer) throws {
-        try serializer.writeStruct(schema: Self.schema, value: self)
+        try serializer.writeStruct(Self.schema, self)
     }
 }
