@@ -10,7 +10,7 @@
  * All settings are optional.
  * Not specifying them will use the SDK defaults
  */
-public protocol TLSConfiguration {
+public protocol TLSConfiguration: Sendable {
 
     // Optional path to a PEM certificate
     var certificate: String? { get set }

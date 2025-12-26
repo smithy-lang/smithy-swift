@@ -64,7 +64,7 @@ class EndpointResolverGenerator(
             }
         }
         writer.write("")
-        writer.write("extension DefaultEndpointResolver: EndpointResolver {}")
+        writer.write("extension DefaultEndpointResolver: EndpointResolver where Params == EndpointParams {}")
     }
 
     private fun renderStaticResolver(writer: SwiftWriter) {

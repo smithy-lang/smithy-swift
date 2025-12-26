@@ -56,7 +56,7 @@ import class SmithyStreams.BufferedStream
 /// for details about allowable modes of networking on the Apple Watch platform.)
 ///
 /// On Linux platforms, we recommend using the CRT-based HTTP client for its configurability and performance.
-public final class URLSessionHTTPClient: HTTPClient {
+public final class URLSessionHTTPClient: HTTPClient, @unchecked Sendable {
     public static let noOpURLSessionHTTPClientTelemetry = HttpTelemetry(
         httpScope: "URLSessionHTTPClient",
         telemetryProvider: DefaultTelemetry.provider
@@ -406,7 +406,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     private let telemetry: HttpTelemetry
 
     /// The logger for this HTTP client.
-    private var logger: LogAgent
+    private let logger: LogAgent
 
     /// The TLS options for this HTTP client.
     private let tlsConfiguration: URLSessionTLSOptions?
