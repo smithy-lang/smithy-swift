@@ -7,6 +7,4 @@
 
 import class Smithy.Schema
 
-public protocol MapSerializer {
-    func writeEntry(_ keySchema: Schema, _ key: String, _ valueConsumer: Consumer<ShapeSerializer>) throws
-}
+public typealias WriteStructConsumer<Element> = (Smithy.Schema, Element, any ShapeSerializer) throws -> Void

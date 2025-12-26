@@ -6,6 +6,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseErrorClosureUtils
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
@@ -31,6 +32,10 @@ class DeserializeMiddleware(
         writer: SwiftWriter,
         op: OperationShape,
     ) {
+        if (SerdeUtils.useSchemaBased(ctx)) {
+            renderSchemaBasedMiddlewareInit(ctx, writer, op)
+            return
+        }
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val httpResponseClosure = ResponseClosureUtils(ctx, writer, op).render()
         val httpResponseErrorClosure = ResponseErrorClosureUtils(ctx, writer, op).render()
@@ -40,6 +45,22 @@ class DeserializeMiddleware(
             ClientRuntimeTypes.Middleware.DeserializeMiddleware,
             output,
             httpResponseClosure,
+            httpResponseErrorClosure,
+        )
+    }
+
+    private fun renderSchemaBasedMiddlewareInit(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: SwiftWriter,
+        op: OperationShape,
+    ) {
+        val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
+        val httpResponseErrorClosure = ResponseErrorClosureUtils(ctx, writer, op).render()
+
+        writer.write(
+            "\$N<\$N>(codec, \$L)",
+            ClientRuntimeTypes.Middleware.SchemaDeserializeMiddleware,
+            output,
             httpResponseErrorClosure,
         )
     }

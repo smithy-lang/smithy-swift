@@ -80,7 +80,6 @@ class DirectedSwiftCodegen(
             generateMessageMarshallable(ctx)
             generateMessageUnmarshallable(ctx)
             generateCodableConformanceForNestedTypes(ctx)
-            generateSchemas(ctx)
 
             initializeMiddleware(ctx)
 

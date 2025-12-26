@@ -15,163 +15,131 @@ import protocol Smithy.SmithyDocument
 public class StringSerializer: ShapeSerializer {
     public private(set) var string = ""
     private var isFirstElement = true
-    private var includeMemberNames: Bool
     private let interstitial = ", "
     private let redacted = "[REDACTED]"
+    private let key: String?
 
     public init() {
-        self.includeMemberNames = false
+        self.key = nil
     }
 
-    private init(includeMemberNames: Bool) {
-        self.includeMemberNames = includeMemberNames
+    private init(key: String) {
+        self.key = key
     }
 
-    public func writeStruct(_ schema: Smithy.Schema, _ value: any SerializableStruct) throws {
-        try addNameAndValue(schema) {
+    public func writeStruct<S: SerializableStruct>(_ schema: Smithy.Schema, _ value: S) throws {
+        try writeValue(schema) {
+            let structSerializer = StringSerializer()
+            let structMembers = schema.target?.members ?? schema.members
+            for member in structMembers {
+                try structSerializer.writeValue(member) {
+                    let serializer = StringSerializer(key: member.id.member ?? "")
+                    try S.writeConsumer(member, value, serializer)
+                    return serializer.string
+                }
+            }
             let typeName = type(of: value)
-            let serializer = StringSerializer(includeMemberNames: true)
-            try value.serializeMembers(serializer)
-            return "\(typeName)(\(serializer.string))"
+            return "\(typeName)(\(structSerializer.string))"
         }
     }
 
-    public func writeList(_ schema: Smithy.Schema, _ size: Int, _ consumer: Consumer<any ShapeSerializer>) throws {
-        try addNameAndValue(schema) {
-            let serializer = StringSerializer(includeMemberNames: false)
-            try consumer(serializer)
-            return "[\(serializer.string)]"
+    public func writeList<Element>(_ schema: Smithy.Schema, _ value: [Element], _ consumer: WriteValueConsumer<Element>) throws {
+        try writeValue(schema) {
+            let listSerializer = StringSerializer()
+            let elementSchema = schema.target?.members[0] ?? schema.members[0]
+            for element in value {
+                try listSerializer.writeValue(elementSchema) {
+                    let serializer = StringSerializer()
+                    try consumer(element, serializer)
+                    return serializer.string
+                }
+            }
+            return "[\(listSerializer.string)]"
         }
     }
 
-    public func writeMap(_ schema: Smithy.Schema, _ size: Int, _ consumer: Consumer<any MapSerializer>) throws {
-        try addNameAndValue(schema) {
-            let serializer = StringSerializer(includeMemberNames: false)
-            try consumer(serializer)
-            return "[\(serializer.string)]"
+    public func writeMap<Value>(_ schema: Smithy.Schema, _ value: [String: Value], _ consumer: WriteValueConsumer<Value>) throws {
+        try writeValue(schema) {
+            let mapSerializer = StringSerializer()
+            let valueSchema = schema.target?.members[1] ?? schema.members[1]
+            for (key, value) in value {
+                try mapSerializer.writeValue(valueSchema) {
+                    let serializer = StringSerializer(key: "\"\(key)\"")
+                    try consumer(value, serializer)
+                    return serializer.string
+                }
+            }
+            return "[\(mapSerializer.string)]"
         }
     }
 
     public func writeBoolean(_ schema: Smithy.Schema, _ value: Bool) throws {
-        addNameAndValue(schema) { "\(value)" }
+        writeValue(schema) { "\(value)" }
     }
 
     public func writeByte(_ schema: Smithy.Schema, _ value: Int8) throws {
-        addNameAndValue(schema) { "\(value)" }
+        writeValue(schema) { "\(value)" }
     }
 
     public func writeShort(_ schema: Smithy.Schema, _ value: Int16) throws {
-        addNameAndValue(schema) { "\(value)" }
+        writeValue(schema) { "\(value)" }
     }
 
     public func writeInteger(_ schema: Smithy.Schema, _ value: Int) throws {
-        addNameAndValue(schema) { "\(value)" }
+        writeValue(schema) { "\(value)" }
     }
 
     public func writeLong(_ schema: Smithy.Schema, _ value: Int) throws {
-        addNameAndValue(schema) { "\(value)" }
+        writeValue(schema) { "\(value)" }
     }
 
     public func writeFloat(_ schema: Smithy.Schema, _ value: Float) throws {
-        addNameAndValue(schema) { "\(value)" }
+        writeValue(schema) { "\(value)" }
     }
 
     public func writeDouble(_ schema: Smithy.Schema, _ value: Double) throws {
-        addNameAndValue(schema) { "\(value)" }
+        writeValue(schema) { "\(value)" }
     }
 
     public func writeBigInteger(_ schema: Smithy.Schema, _ value: Int64) throws {
-        addNameAndValue(schema) { "\(value)" }
+        writeValue(schema) { "\(value)" }
     }
 
     public func writeBigDecimal(_ schema: Smithy.Schema, _ value: Double) throws {
-        addNameAndValue(schema) { "\(value)" }
+        writeValue(schema) { "\(value)" }
     }
 
     public func writeString(_ schema: Smithy.Schema, _ value: String) throws {
-        addNameAndValue(schema) { "\"\(value)\"" }
+        writeValue(schema) { "\"\(value)\"" }
     }
 
     public func writeBlob(_ schema: Smithy.Schema, _ value: Data) throws {
-        addNameAndValue(schema) { "<\(value.count) bytes>" }
+        writeValue(schema) { "<\(value.count) bytes>" }
     }
 
     public func writeTimestamp(_ schema: Smithy.Schema, _ value: Date) throws {
         let df = ISO8601DateFormatter()
-        addNameAndValue(schema) { df.string(from: value) }
-    }
-
-    public func writeDocument(_ schema: Smithy.Schema, _ value: any Smithy.SmithyDocument) throws {
-        switch value.type {
-        case .blob:
-            try writeBlob(schema, value.asBlob())
-        case .boolean:
-            try writeBoolean(schema, value.asBoolean())
-        case .string:
-            try writeString(schema, value.asString())
-        case .timestamp:
-            try writeTimestamp(schema, value.asTimestamp())
-        case .byte:
-            try writeByte(schema, value.asByte())
-        case .short:
-            try writeShort(schema, value.asShort())
-        case .integer:
-            try writeInteger(schema, value.asInteger())
-        case .long:
-            try writeLong(schema, Int(value.asLong()))
-        case .float:
-            try writeFloat(schema, value.asFloat())
-        case .double:
-            try writeDouble(schema, value.asDouble())
-        case .bigDecimal:
-            try writeBigDecimal(schema, value.asBigDecimal())
-        case .bigInteger:
-            try writeBigInteger(schema, value.asBigInteger())
-        case .list, .set:
-            let list = try value.asList()
-            try writeList(schema, list.count) { serializer in
-                for document in list {
-                    try serializer.writeDocument(schema.members[0], document)
-                }
-            }
-        case .map:
-            let map = try value.asStringMap()
-            try writeMap(schema, map.count) { mapSerializer in
-                for (key, document) in map {
-                    try mapSerializer.writeEntry(schema.members[0], key) { serializer in
-                        try serializer.writeDocument(schema.members[1], document)
-                    }
-                }
-            }
-        case .document, .enum, .intEnum, .structure, .union, .member, .service, .resource, .operation:
-            throw SerializerError("Unsupported or invalid document type: \(value.type)")
-        }
+        writeValue(schema) { df.string(from: value) }
     }
 
     public func writeNull(_ schema: Smithy.Schema) throws {
-        addNameAndValue(schema) { "nil" }
+        writeValue(schema) { "nil" }
     }
 
-    private func addNameAndValue(_ schema: Smithy.Schema, _ value: () throws -> String) rethrows {
-        if !isFirstElement { string += interstitial }
-        isFirstElement = false
-        if includeMemberNames, schema.type == .member, let name = schema.id.member {
-            string += "\(name): "
+    private func writeValue(_ schema: Smithy.Schema, _ value: () throws -> String) rethrows {
+        if isFirstElement {
+            isFirstElement = false
+        } else {
+            string.append(interstitial)
+        }
+        if let key {
+            string += "\(key): "
         }
         string += schema.isSensitive ? redacted : try value()
     }
-}
 
-extension StringSerializer: MapSerializer {
-
-    public func writeEntry(
-        _ keySchema: Smithy.Schema, _ key: String, _ valueConsumer: Consumer<any ShapeSerializer>
-    ) throws {
-        try addNameAndValue(keySchema) {
-            let valueSerializer = StringSerializer(includeMemberNames: false)
-            try valueConsumer(valueSerializer)
-            return "\"\(key)\": \(valueSerializer.string)"
-        }
+    public var data: Data {
+        Data(string.utf8)
     }
 }
 

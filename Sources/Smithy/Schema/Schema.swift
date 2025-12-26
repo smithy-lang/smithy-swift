@@ -65,4 +65,25 @@ public final class Schema: Sendable {
         self._target = target
         self.index = index
     }
+    
+    /// Returns the member for a List's element.
+    ///
+    /// Only access this property on a schema of type `.list`.
+    public var member: Schema {
+        members[0] // `member` will be the only member in a list schema
+    }
+
+    /// Returns the key member for a Map's key.
+    ///
+    /// Only access this property on a schema of type `.map`.
+    public var key: Schema {
+        members[0] // `key` will be the first member in a map schema, before `value`
+    }
+
+    /// Returns the value member for a Map's value.
+    ///
+    /// Only access this property on a schema of type `.map`.
+    public var value: Schema {
+        members[1] // `value` will be the second / last member in a map schema, after `key`
+    }
 }

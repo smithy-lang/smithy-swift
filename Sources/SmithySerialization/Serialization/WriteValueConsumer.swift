@@ -5,4 +5,4 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public typealias Consumer<Serializer> = (Serializer) throws -> Void
+public typealias WriteValueConsumer<Element> = (Element, any ShapeSerializer) throws -> Void

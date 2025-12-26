@@ -121,6 +121,7 @@ let package = Package(
                 "SmithyChecksumsAPI",
                 "SmithyChecksums",
                 "SmithyCBOR",
+                "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 // Only include these on macOS, iOS, tvOS, watchOS, and macCatalyst (visionOS and Linux are excluded)
                 .product(
@@ -285,6 +286,8 @@ let package = Package(
         .target(
             name: "SmithyCBOR",
             dependencies: [
+                "Smithy",
+                "SmithySerialization",
                 "SmithyReadWrite",
                 "SmithyTimestamps",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")

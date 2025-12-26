@@ -6,7 +6,7 @@
 //
 
 public protocol SerializableStruct: SerializableShape {
-    func serializeMembers(_ serializer: any ShapeSerializer) throws
+    static var writeConsumer: WriteStructConsumer<Self> { get }
 }
 
 public extension SerializableStruct {

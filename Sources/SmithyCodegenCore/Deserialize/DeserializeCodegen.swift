@@ -14,9 +14,9 @@ package struct DeserializeCodegen {
         writer.write("import Foundation")
         writer.write("import enum Smithy.Prelude")
         writer.write("import class Smithy.Schema")
-        writer.write("import protocol SmithySerialization.ShapeDeserializer")
         writer.write("import protocol SmithySerialization.DeserializableStruct")
-        writer.write("import typealias SmithySerialization.StructMemberConsumer")
+        writer.write("import typealias SmithySerialization.ReadStructConsumer")
+        writer.write("import protocol SmithySerialization.ShapeDeserializer")
         writer.write("")
 
         let structsAndUnions = ctx.model.allShapesSorted.filter { $0.type == .structure || $0.type == .union }
@@ -24,9 +24,9 @@ package struct DeserializeCodegen {
             let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
             try writer.openBlock("extension \(swiftType): SmithySerialization.DeserializableStruct {", "}") { writer in
                 writer.write("")
-                let consumerType = "SmithySerialization.StructMemberConsumer<\(swiftType)>"
+                let consumerType = "SmithySerialization.ReadStructConsumer<Self>"
                 try writer.openBlock(
-                    "public static var consumer: \(consumerType) {", "}") { writer in
+                    "public static var readConsumer: \(consumerType) {", "}") { writer in
                     try writer.openBlock("{ memberSchema, structure, deserializer in", "}") { writer in
                         try writer.openBlock("switch memberSchema.index {", "}") { writer in
                             writer.dedent()
@@ -34,7 +34,7 @@ package struct DeserializeCodegen {
                                 writer.write("case \(index):")
                                 writer.indent()
                                 try writeDeserializeCall(
-                                    ctx: ctx, writer: writer, shape: shape, member: member, index: index
+                                    ctx: ctx, writer: writer, shape: shape, member: member, index: index, schemaRef: "memberSchema"
                                 )
                                 writer.dedent()
                             }
@@ -46,11 +46,12 @@ package struct DeserializeCodegen {
                 writer.write("")
                 let deserializerType = "any SmithySerialization.ShapeDeserializer"
                 writer.openBlock(
-                    "public mutating func deserialize(_ deserializer: \(deserializerType)) throws {", "}"
+                    "public static func deserialize(_ deserializer: \(deserializerType)) throws -> Self {", "}"
                 ) { writer in
-                    writer.write("var value = self")
-                    writer.write("try deserializer.readStruct(Self.schema, &value, Self.consumer)")
-                    writer.write("self = value")
+                    let initializer = shape.type == .structure ? "()" : ".sdkUnknown(\"\")"
+                    writer.write("var value = Self\(initializer)")
+                    writer.write("try deserializer.readStruct(Self.schema, &value)")
+                    writer.write("return value")
                 }
             }
             writer.write("")
@@ -60,37 +61,40 @@ package struct DeserializeCodegen {
     }
 
     private func writeDeserializeCall(
-        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int
+        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int, schemaRef: String? = nil
     ) throws {
+        let schemaVarName = try schemaRef ?? "\(shape.schemaVarName).members[\(index)]"
         switch member.target.type {
         case .structure:
             try writeStructureDeserializeCall(
-                ctx: ctx, writer: writer, shape: shape, member: member, index: index, initializer: "()"
+                ctx: ctx, writer: writer, shape: shape, member: member, index: index, initializer: "()", schemaVarName: schemaVarName
             )
         case .union:
             try writeStructureDeserializeCall(
-                ctx: ctx, writer: writer, shape: shape, member: member, index: index, initializer: ".sdkUnknown(\"\")"
+                ctx: ctx, writer: writer, shape: shape, member: member, index: index, initializer: ".sdkUnknown(\"\")", schemaVarName: schemaVarName
             )
         case .list, .set:
-            let listShape = member.target as! ListShape // swiftlint:disable:this force_cast
-            let elementSwiftType = try ctx.symbolProvider.swiftType(shape: listShape.member.target)
-            writer.write("var value = [\(elementSwiftType)]()")
-            let schemaVarName = try shape.schemaVarName
+            guard let listShape = member.target as? ListShape else {
+                throw SymbolProviderError("Shape has type .list but is not a ListShape")
+            }
+            let listSwiftType = try ctx.symbolProvider.swiftType(shape: listShape)
+            writer.write("var value = \(listSwiftType)()")
             try writer.openBlock(
-                "try deserializer.readList(\(schemaVarName).members[\(index)], &value) { deserializer in",
+                "try deserializer.readList(\(schemaVarName), &value) { deserializer in",
                 "}"
             ) { writer in
                 try writeDeserializeCall(ctx: ctx, writer: writer, shape: listShape, member: listShape.member, index: 0)
             }
             try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
         case .map:
-            let mapShape = member.target as! MapShape // swiftlint:disable:this force_cast
-            let keySwiftType = try ctx.symbolProvider.swiftType(shape: mapShape.key.target)
-            let valueSwiftType = try ctx.symbolProvider.swiftType(shape: mapShape.value.target)
-            writer.write("var value = [\(keySwiftType): \(valueSwiftType)]()")
+            guard let mapShape = member.target as? MapShape else {
+                throw SymbolProviderError("Shape has type .map but is not a MapShape")
+            }
+            let mapSwiftType = try ctx.symbolProvider.swiftType(shape: mapShape)
+            writer.write("var value = \(mapSwiftType)()")
             let schemaVarName = try shape.schemaVarName
             try writer.openBlock(
-                "try deserializer.readMap(\(schemaVarName).members[\(index)], &value) { key, deserializer in",
+                "try deserializer.readMap(\(schemaVarName), &value) { deserializer in",
                 "}"
             ) { writer in
                 try writeDeserializeCall(ctx: ctx, writer: writer, shape: mapShape, member: mapShape.value, index: 1)
@@ -99,27 +103,24 @@ package struct DeserializeCodegen {
         default:
             let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
             let methodName = try member.target.deserializeMethodName
-            let schemaVarName = try shape.schemaVarName
             let properties = shape.hasTrait(.init("smithy.api", "error")) ? "properties." : ""
             let lhs = switch shape.type {
             case .list, .set, .map:
-                ""
+                "return "
             default:
                 "structure.\(properties)\(propertyName) = "
             }
-            writer.write("\(lhs)try deserializer.\(methodName)(\(schemaVarName).members[\(index)])")
+            writer.write("\(lhs)try deserializer.\(methodName)(\(schemaVarName))")
         }
     }
 
     private func writeStructureDeserializeCall(
-        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int, initializer: String
+        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int, initializer: String, schemaVarName: String
     ) throws {
         let target = member.target
         let propertySwiftType = try ctx.symbolProvider.swiftType(shape: target)
-        let schemaVarName = try shape.schemaVarName
-        let consumer = "\(propertySwiftType).consumer"
         writer.write("var value = \(propertySwiftType)\(initializer)")
-        writer.write("try deserializer.readStruct(\(schemaVarName).members[\(index)], &value, \(consumer))")
+        writer.write("try deserializer.readStruct(\(schemaVarName), &value)")
         try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
     }
 

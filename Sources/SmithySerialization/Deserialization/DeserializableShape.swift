@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public protocol DeserializableShape {
+import class Smithy.Schema
 
-    mutating func deserialize(_ deserializer: ShapeDeserializer) throws
+public protocol DeserializableShape {
+    static var schema: Smithy.Schema { get }
+    static func deserialize(_ deserializer: ShapeDeserializer) throws -> Self
 }

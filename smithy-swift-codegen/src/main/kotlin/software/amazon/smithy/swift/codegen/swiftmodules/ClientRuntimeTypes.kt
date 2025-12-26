@@ -26,6 +26,7 @@ object ClientRuntimeTypes {
         val ContentTypeMiddleware = runtimeSymbol("ContentTypeMiddleware", SwiftDeclaration.STRUCT)
         val ContentMD5Middleware = runtimeSymbol("ContentMD5Middleware", SwiftDeclaration.STRUCT)
         val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
+        val SchemaDeserializeMiddleware = runtimeSymbol("SchemaDeserializeMiddleware", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware", SwiftDeclaration.STRUCT)
         val URLHostMiddleware = runtimeSymbol("URLHostMiddleware", SwiftDeclaration.STRUCT)
         val URLPathMiddleware = runtimeSymbol("URLPathMiddleware", SwiftDeclaration.STRUCT)

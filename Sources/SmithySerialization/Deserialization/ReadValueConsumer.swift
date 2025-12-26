@@ -5,4 +5,4 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public typealias ListMemberConsumer<T> = (any ShapeDeserializer) throws -> T
+public typealias ReadValueConsumer<Value> = (any ShapeDeserializer) throws -> Value

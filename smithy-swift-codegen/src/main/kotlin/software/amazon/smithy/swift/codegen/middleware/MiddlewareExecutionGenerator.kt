@@ -8,10 +8,12 @@ import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyCBORTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
@@ -38,6 +40,9 @@ class MiddlewareExecutionGenerator(
         writer.write("let context = \$N()", SmithyTypes.ContextBuilder)
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op, flowType)
+        }
+        if (SerdeUtils.useSchemaBased(ctx)) {
+            writer.write("let codec = \$N()", SmithyCBORTypes.Codec)
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
         writer.write(

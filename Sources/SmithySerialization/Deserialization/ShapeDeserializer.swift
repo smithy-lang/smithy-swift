@@ -28,26 +28,20 @@ public protocol ShapeDeserializer {
     // Used to implement parsing sparse lists and maps.
     func isNull() throws -> Bool
 
-    func readStruct<T: DeserializableStruct>(
-        _ schema: Smithy.Schema, _ value: inout T, _ consumer: StructMemberConsumer<T>
-    ) throws
+    func readStruct<T: DeserializableStruct>(_ schema: Smithy.Schema, _ value: inout T) throws
 
     func readList<Element>(
-        _ schema: Smithy.Schema, _ list: inout [Element], _ consumer: ListMemberConsumer<Element>
+        _ schema: Smithy.Schema, _ list: inout [Element], _ consumer: ReadValueConsumer<Element>
     ) throws
 
     func readMap<Value>(
-        _ schema: Smithy.Schema, _ map: inout [String: Value], _ consumer: MapMemberConsumer<String, Value>
+        _ schema: Smithy.Schema, _ map: inout [String: Value], _ consumer: ReadValueConsumer<Value>
     ) throws
 
     var containerSize: Int { get }
 }
 
 public extension ShapeDeserializer {
-
-    func readNull<T>() throws -> T? {
-        return nil
-    }
 
     func readEnum<Enum: RawRepresentable>(_ schema: Smithy.Schema) throws -> Enum where Enum.RawValue == String {
         try Enum(rawValue: readString(schema))!

@@ -6,5 +6,5 @@
 //
 
 public protocol DeserializableStruct: DeserializableShape {
-    static var consumer: StructMemberConsumer<Self> { get }
+    static var readConsumer: ReadStructConsumer<Self> { get }
 }

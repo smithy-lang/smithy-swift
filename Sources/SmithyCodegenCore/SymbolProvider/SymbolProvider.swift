@@ -80,7 +80,7 @@ public struct SymbolProvider {
                 throw SymbolProviderError("Shape has type .map but is not a MapShape")
             }
             let valueType = try swiftType(shape: mapShape.value.target)
-            return "[String: \(valueType)]"
+            return "[Swift.String: \(valueType)]"
         case .string:
             return "Swift.String"
         case .boolean:
