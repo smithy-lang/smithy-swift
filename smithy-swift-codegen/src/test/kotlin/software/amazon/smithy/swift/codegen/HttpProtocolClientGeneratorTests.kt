@@ -17,7 +17,7 @@ class HttpProtocolClientGeneratorTests {
         val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
-public class RestJsonProtocolClient: ClientRuntime.Client {
+public final class RestJsonProtocolClient: ClientRuntime.Client {
     public static let clientName = "RestJsonProtocolClient"
     public static let version = "2019-12-16"
     let client: ClientRuntime.SdkHttpClient

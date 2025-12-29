@@ -26,7 +26,7 @@ open class HttpProtocolServiceClient(
 
     fun render(serviceSymbol: Symbol) {
         writer.openBlock(
-            "${ctx.settings.visibility} class \$L: \$N {",
+            "${ctx.settings.visibility} final class \$L: \$N {",
             "}",
             serviceSymbol.name,
             clientProtocolSymbol,
