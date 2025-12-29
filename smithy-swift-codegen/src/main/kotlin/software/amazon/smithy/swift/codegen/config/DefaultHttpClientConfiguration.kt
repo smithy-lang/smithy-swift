@@ -64,5 +64,15 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
             ),
         )
 
-    override fun getMethods(ctx: ProtocolGenerator.GenerationContext): Set<Function> = emptySet()
+    override fun getMethods(ctx: ProtocolGenerator.GenerationContext): Set<Function> =
+        setOf(
+            Function(
+                name = "addHttpInterceptorProvider",
+                isMutating = true,
+                renderBody = { writer -> writer.write("self.httpInterceptorProviders.append(provider)") },
+                parameters = listOf(
+                    software.amazon.smithy.swift.codegen.lang.FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.HttpInterceptorProvider),
+                ),
+            ),
+        )
 }

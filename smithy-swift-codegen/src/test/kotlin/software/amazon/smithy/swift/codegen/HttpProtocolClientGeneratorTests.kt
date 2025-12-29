@@ -39,19 +39,19 @@ public class RestJsonProtocolClient: ClientRuntime.Client {
 extension RestJsonProtocolClient {
 
     public struct RestJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration, Sendable {
-        public let telemetryProvider: ClientRuntime.TelemetryProvider
-        public let retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
-        public let clientLogMode: ClientRuntime.ClientLogMode
-        public let endpoint: Swift.String?
-        public let idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
-        public let interceptorProviders: [ClientRuntime.InterceptorProvider]
-        public let httpClientEngine: SmithyHTTPAPI.HTTPClient
-        public let httpClientConfiguration: ClientRuntime.HttpClientConfiguration
-        public let authSchemes: SmithyHTTPAuthAPI.AuthSchemes?
-        public let authSchemePreference: [String]?
-        public let authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver
-        public let httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]
-        public let bearerTokenIdentityResolver: any SmithyIdentity.BearerTokenIdentityResolver
+        public var telemetryProvider: ClientRuntime.TelemetryProvider
+        public var retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
+        public var clientLogMode: ClientRuntime.ClientLogMode
+        public var endpoint: Swift.String?
+        public var idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
+        public var interceptorProviders: [ClientRuntime.InterceptorProvider]
+        public var httpClientEngine: SmithyHTTPAPI.HTTPClient
+        public var httpClientConfiguration: ClientRuntime.HttpClientConfiguration
+        public var authSchemes: SmithyHTTPAuthAPI.AuthSchemes?
+        public var authSchemePreference: [String]?
+        public var authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver
+        public var httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]
+        public var bearerTokenIdentityResolver: any SmithyIdentity.BearerTokenIdentityResolver
 
         public init(
             telemetryProvider: ClientRuntime.TelemetryProvider? = nil,
@@ -85,6 +85,14 @@ extension RestJsonProtocolClient {
 
         public var partitionID: String? {
             return ""
+        }
+
+        public mutating func addInterceptorProvider(_ provider: ClientRuntime.InterceptorProvider) {
+            self.interceptorProviders.append(provider)
+        }
+
+        public mutating func addHttpInterceptorProvider(_ provider: ClientRuntime.HttpInterceptorProvider) {
+            self.httpInterceptorProviders.append(provider)
         }
 
     }

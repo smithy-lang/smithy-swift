@@ -24,7 +24,7 @@ class ExtractTelemetryLoggerConfig : SwiftIntegration {
             writer: SwiftWriter,
             section: ConfigClassVariablesCustomization,
         ) {
-            writer.write("public let logger: \$N", SmithyTypes.LogAgent)
+            writer.write("public var logger: \$N", SmithyTypes.LogAgent)
             writer.write("")
         }
     }
