@@ -70,9 +70,13 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
                 name = "addHttpInterceptorProvider",
                 isMutating = true,
                 renderBody = { writer -> writer.write("self.httpInterceptorProviders.append(provider)") },
-                parameters = listOf(
-                    software.amazon.smithy.swift.codegen.lang.FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.HttpInterceptorProvider),
-                ),
+                parameters =
+                    listOf(
+                        software.amazon.smithy.swift.codegen.lang.FunctionParameter.NoLabel(
+                            "provider",
+                            ClientRuntimeTypes.Core.HttpInterceptorProvider,
+                        ),
+                    ),
             ),
         )
 }

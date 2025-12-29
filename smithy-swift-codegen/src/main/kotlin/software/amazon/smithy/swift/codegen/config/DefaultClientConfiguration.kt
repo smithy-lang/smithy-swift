@@ -52,9 +52,13 @@ class DefaultClientConfiguration : ClientConfiguration {
                 name = "addInterceptorProvider",
                 isMutating = true,
                 renderBody = { writer -> writer.write("self.interceptorProviders.append(provider)") },
-                parameters = listOf(
-                    software.amazon.smithy.swift.codegen.lang.FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.InterceptorProvider),
-                ),
+                parameters =
+                    listOf(
+                        software.amazon.smithy.swift.codegen.lang.FunctionParameter.NoLabel(
+                            "provider",
+                            ClientRuntimeTypes.Core.InterceptorProvider,
+                        ),
+                    ),
             ),
         )
 }
