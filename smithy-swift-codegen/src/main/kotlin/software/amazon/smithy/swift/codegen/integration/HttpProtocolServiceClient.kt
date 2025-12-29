@@ -118,10 +118,6 @@ open class HttpProtocolServiceClient(
                 .map { writer.format("\$N", it) }
                 .joinToString(" & ")
 
-        // Add explicit imports for protocol types used in arrays
-        writer.addImport(ClientRuntimeTypes.Core.InterceptorProvider)
-        writer.addImport(ClientRuntimeTypes.Core.HttpInterceptorProvider)
-
         writer.openBlock(
             "public struct \$LConfiguration: \$L, Sendable {",
             "}",
