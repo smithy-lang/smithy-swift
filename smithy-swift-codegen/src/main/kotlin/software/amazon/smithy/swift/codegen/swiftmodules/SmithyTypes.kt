@@ -16,7 +16,7 @@ object SmithyTypes {
     val AttributeKey = runtimeSymbol("AttributeKey", SwiftDeclaration.STRUCT)
     val ClientError = runtimeSymbol("ClientError", SwiftDeclaration.ENUM)
     val Context = runtimeSymbol("Context", SwiftDeclaration.CLASS)
-    val ContextBuilder = runtimeSymbol("ContextBuilder", SwiftDeclaration.CLASS)
+    val ContextBuilder = runtimeSymbol("ContextBuilder", null)
     val Document = runtimeSymbol("Document", SwiftDeclaration.STRUCT)
     val LogAgent = runtimeSymbol("LogAgent", SwiftDeclaration.PROTOCOL)
     val RequestMessageSerializer = runtimeSymbol("RequestMessageSerializer", SwiftDeclaration.PROTOCOL)

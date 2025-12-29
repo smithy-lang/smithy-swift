@@ -7,9 +7,7 @@ package software.amazon.smithy.swift.codegen.config
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.lang.AccessModifier
 import software.amazon.smithy.swift.codegen.lang.Function
-import software.amazon.smithy.swift.codegen.lang.FunctionParameter
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesAPITypes
@@ -45,7 +43,6 @@ class DefaultClientConfiguration : ClientConfiguration {
                 "interceptorProviders",
                 ClientRuntimeTypes.Composite.InterceptorProviders,
                 { "[]" },
-                accessModifier = AccessModifier.PublicPrivateSet,
             ),
         )
 
@@ -53,10 +50,14 @@ class DefaultClientConfiguration : ClientConfiguration {
         setOf(
             Function(
                 name = "addInterceptorProvider",
+                isMutating = true,
                 renderBody = { writer -> writer.write("self.interceptorProviders.append(provider)") },
                 parameters =
                     listOf(
-                        FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.InterceptorProvider),
+                        software.amazon.smithy.swift.codegen.lang.FunctionParameter.NoLabel(
+                            "provider",
+                            ClientRuntimeTypes.Core.InterceptorProvider,
+                        ),
                     ),
             ),
         )

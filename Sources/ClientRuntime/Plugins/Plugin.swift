@@ -6,5 +6,5 @@
 //
 
 public protocol Plugin {
-    func configureClient(clientConfiguration: ClientConfiguration) async throws
+    func configureClient(clientConfiguration: ClientConfiguration) async throws -> ClientConfiguration
 }

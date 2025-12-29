@@ -7,9 +7,7 @@ package software.amazon.smithy.swift.codegen.config
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.lang.AccessModifier
 import software.amazon.smithy.swift.codegen.lang.Function
-import software.amazon.smithy.swift.codegen.lang.FunctionParameter
 import software.amazon.smithy.swift.codegen.model.toGeneric
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
@@ -52,7 +50,6 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
                 "httpInterceptorProviders",
                 ClientRuntimeTypes.Composite.HttpInterceptorProviders,
                 { "[]" },
-                accessModifier = AccessModifier.PublicPrivateSet,
             ),
             ConfigProperty(
                 "bearerTokenIdentityResolver",
@@ -70,11 +67,15 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
     override fun getMethods(ctx: ProtocolGenerator.GenerationContext): Set<Function> =
         setOf(
             Function(
-                name = "addInterceptorProvider",
+                name = "addHttpInterceptorProvider",
+                isMutating = true,
                 renderBody = { writer -> writer.write("self.httpInterceptorProviders.append(provider)") },
                 parameters =
                     listOf(
-                        FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.HttpInterceptorProvider),
+                        software.amazon.smithy.swift.codegen.lang.FunctionParameter.NoLabel(
+                            "provider",
+                            ClientRuntimeTypes.Core.HttpInterceptorProvider,
+                        ),
                     ),
             ),
         )

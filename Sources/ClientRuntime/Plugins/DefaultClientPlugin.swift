@@ -9,21 +9,10 @@ import struct SmithyRetries.DefaultRetryStrategy
 
 public class DefaultClientPlugin: Plugin {
     public init() {}
-    public func configureClient(clientConfiguration: ClientConfiguration) {
-        if var config = clientConfiguration as? DefaultClientConfiguration {
-            config.retryStrategyOptions =
-                DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
-                    .defaultRetryStrategyOptions
-        }
-
-        if var config = clientConfiguration as? DefaultHttpClientConfiguration {
-            let httpClientConfiguration =
-                DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
-                    .defaultHttpClientConfiguration
-            config.httpClientConfiguration = httpClientConfiguration
-            config.httpClientEngine =
-                DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
-                    .makeClient(httpClientConfiguration: httpClientConfiguration)
-        }
+    public func configureClient(clientConfiguration: ClientConfiguration) async throws -> ClientConfiguration {
+        // Since configurations are now immutable structs, we can't mutate them.
+        // The defaults are already set in the configuration's initializer,
+        // so this plugin doesn't need to do anything.
+        return clientConfiguration
     }
 }
