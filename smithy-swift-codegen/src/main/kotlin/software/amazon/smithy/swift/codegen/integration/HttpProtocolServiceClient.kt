@@ -163,7 +163,10 @@ open class HttpProtocolServiceClient(
 
     open fun overrideConfigProperties(properties: List<ConfigProperty>): List<ConfigProperty> = properties
 
-    private fun renderEmptyAsynchronousConfigInitializer(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
+    private fun renderEmptyAsynchronousConfigInitializer(
+        serviceSymbol: Symbol,
+        properties: List<ConfigProperty>,
+    ) {
         // Only render if there are async properties
         if (properties.none { it.default?.isAsync == true }) return
 
@@ -210,7 +213,10 @@ open class HttpProtocolServiceClient(
         val serviceSymbol: Symbol,
     ) : CodeSection
 
-    private fun renderSynchronousConfigInitializer(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
+    private fun renderSynchronousConfigInitializer(
+        serviceSymbol: Symbol,
+        properties: List<ConfigProperty>,
+    ) {
         writer.openBlock("public init(", ") throws {") {
             properties.forEach { property ->
                 writer.write("\$L: \$N = nil,", property.name, property.type.toOptional())
@@ -232,7 +238,10 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
 
-    private fun renderAsynchronousConfigInitializer(serviceSymbol: Symbol, properties: List<ConfigProperty>) {
+    private fun renderAsynchronousConfigInitializer(
+        serviceSymbol: Symbol,
+        properties: List<ConfigProperty>,
+    ) {
         if (properties.none { it.default?.isAsync == true }) return
 
         writer.openBlock("public init(", ") async throws {") {

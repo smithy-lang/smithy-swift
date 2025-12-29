@@ -16,15 +16,87 @@ class HttpProtocolClientGeneratorTests {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
         val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
-        // Verify struct instead of class
-        contents.shouldContain("public struct RestJsonProtocolClientConfiguration:")
-        // Verify Sendable without @unchecked
-        contents.shouldContain(", Sendable {")
-        // Verify immutable properties (let instead of var)
-        contents.shouldContain("public let telemetryProvider: ClientRuntime.TelemetryProvider")
-        contents.shouldContain("public let httpClientEngine: SmithyHTTPAPI.HTTPClient")
-        // Verify no private init (structs don't need it)
-        contents.shouldContain("public init(")
+        val expected = """
+public class RestJsonProtocolClient: ClientRuntime.Client {
+    public static let clientName = "RestJsonProtocolClient"
+    public static let version = "2019-12-16"
+    let client: ClientRuntime.SdkHttpClient
+    let config: RestJsonProtocolClient.RestJsonProtocolClientConfiguration
+    let serviceName = "Rest Json Protocol"
+
+    public required init(config: RestJsonProtocolClient.RestJsonProtocolClientConfiguration) {
+        client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
+        self.config = config
+    }
+
+    public convenience init() throws {
+        let config = try RestJsonProtocolClient.RestJsonProtocolClientConfiguration()
+        self.init(config: config)
+    }
+
+}
+
+extension RestJsonProtocolClient {
+
+    public struct RestJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration, Sendable {
+        public let telemetryProvider: ClientRuntime.TelemetryProvider
+        public let retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
+        public let clientLogMode: ClientRuntime.ClientLogMode
+        public let endpoint: Swift.String?
+        public let idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
+        public let interceptorProviders: [ClientRuntime.InterceptorProvider]
+        public let httpClientEngine: SmithyHTTPAPI.HTTPClient
+        public let httpClientConfiguration: ClientRuntime.HttpClientConfiguration
+        public let authSchemes: SmithyHTTPAuthAPI.AuthSchemes?
+        public let authSchemePreference: [String]?
+        public let authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver
+        public let httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]
+        public let bearerTokenIdentityResolver: any SmithyIdentity.BearerTokenIdentityResolver
+
+        public init(
+            telemetryProvider: ClientRuntime.TelemetryProvider? = nil,
+            retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil,
+            clientLogMode: ClientRuntime.ClientLogMode? = nil,
+            endpoint: Swift.String? = nil,
+            idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator? = nil,
+            interceptorProviders: [ClientRuntime.InterceptorProvider]? = nil,
+            httpClientEngine: SmithyHTTPAPI.HTTPClient? = nil,
+            httpClientConfiguration: ClientRuntime.HttpClientConfiguration? = nil,
+            authSchemes: SmithyHTTPAuthAPI.AuthSchemes? = nil,
+            authSchemePreference: [String]? = nil,
+            authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver? = nil,
+            httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]? = nil,
+            bearerTokenIdentityResolver: (any SmithyIdentity.BearerTokenIdentityResolver)? = nil
+        ) throws {
+            self.telemetryProvider = telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider
+            self.retryStrategyOptions = retryStrategyOptions ?? ClientRuntime.ClientConfigurationDefaults.defaultRetryStrategyOptions
+            self.clientLogMode = clientLogMode ?? ClientRuntime.ClientConfigurationDefaults.defaultClientLogMode
+            self.endpoint = endpoint
+            self.idempotencyTokenGenerator = idempotencyTokenGenerator ?? ClientRuntime.ClientConfigurationDefaults.defaultIdempotencyTokenGenerator
+            self.interceptorProviders = interceptorProviders ?? []
+            self.httpClientEngine = httpClientEngine ?? ClientRuntime.ClientConfigurationDefaults.makeClient(httpClientConfiguration: httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration)
+            self.httpClientConfiguration = httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration
+            self.authSchemes = authSchemes ?? []
+            self.authSchemePreference = authSchemePreference ?? nil
+            self.authSchemeResolver = authSchemeResolver ?? ClientRuntime.ClientConfigurationDefaults.defaultAuthSchemeResolver
+            self.httpInterceptorProviders = httpInterceptorProviders ?? []
+            self.bearerTokenIdentityResolver = bearerTokenIdentityResolver ?? SmithyIdentity.StaticBearerTokenIdentityResolver(token: SmithyIdentity.BearerTokenIdentity(token: ""))
+        }
+
+        public var partitionID: String? {
+            return ""
+        }
+
+    }
+
+    public static func builder() -> ClientRuntime.ClientBuilder<RestJsonProtocolClient> {
+        return ClientRuntime.ClientBuilder<RestJsonProtocolClient>(defaultPlugins: [
+            ClientRuntime.DefaultClientPlugin()
+        ])
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expected)
     }
 
     @Test
