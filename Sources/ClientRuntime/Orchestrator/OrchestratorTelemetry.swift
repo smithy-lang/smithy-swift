@@ -13,7 +13,7 @@ import enum SmithyHTTPAPI.SmithyHTTPAPIKeys
 /// Container for Orchestrator telemetry, including configurable attributes and names.
 ///
 /// Note: This is intended to be used within generated code, not directly.
-public class OrchestratorTelemetry {
+public final class OrchestratorTelemetry: Sendable {
     internal let contextManager: any TelemetryContextManager
     internal let tracerProvider: any TracerProvider
 

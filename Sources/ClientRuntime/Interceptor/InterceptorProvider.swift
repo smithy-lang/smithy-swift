@@ -12,7 +12,7 @@ import protocol Smithy.ResponseMessage
 ///
 /// This can be used to create `Interceptor`s that are generic on their Request/Response/Attributes
 /// types, when you don't have access to the exact types until later.
-public protocol InterceptorProvider {
+public protocol InterceptorProvider: Sendable {
 
     /// Creates an instance of an `Interceptor` implementation, specialized on the given
     /// `RequestType` and `ResponseType`

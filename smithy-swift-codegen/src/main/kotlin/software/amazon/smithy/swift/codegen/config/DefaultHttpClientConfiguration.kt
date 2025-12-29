@@ -52,7 +52,6 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
                 "httpInterceptorProviders",
                 ClientRuntimeTypes.Composite.HttpInterceptorProviders,
                 { "[]" },
-                accessModifier = AccessModifier.PublicPrivateSet,
             ),
             ConfigProperty(
                 "bearerTokenIdentityResolver",
@@ -67,15 +66,5 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
             ),
         )
 
-    override fun getMethods(ctx: ProtocolGenerator.GenerationContext): Set<Function> =
-        setOf(
-            Function(
-                name = "addInterceptorProvider",
-                renderBody = { writer -> writer.write("self.httpInterceptorProviders.append(provider)") },
-                parameters =
-                    listOf(
-                        FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.HttpInterceptorProvider),
-                    ),
-            ),
-        )
+    override fun getMethods(ctx: ProtocolGenerator.GenerationContext): Set<Function> = emptySet()
 }

@@ -11,7 +11,7 @@ import class SmithyHTTPAPI.HTTPResponse
 /// Provides implementations of `HttpInterceptor`.
 ///
 /// For the generic counterpart, see `InterceptorProvider`.
-public protocol HttpInterceptorProvider {
+public protocol HttpInterceptorProvider: Sendable {
 
     /// Creates an instance of an `HttpInterceptor` implementation.
     ///
