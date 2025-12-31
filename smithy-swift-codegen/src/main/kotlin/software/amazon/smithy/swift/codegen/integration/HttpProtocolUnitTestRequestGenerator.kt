@@ -102,7 +102,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
     }
 
     private fun renderClientBlock(test: HttpRequestTestCase) {
-        val clientName = "${ctx.settings.sdkId}Client"
+        val clientName = "${ctx.settings.clientName}Client"
         val region = "us-west-2"
 
         writer.openBlock("let config = try await \$L.Config(", ")", clientName) {

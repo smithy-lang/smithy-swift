@@ -67,7 +67,7 @@ public struct SymbolProvider {
                 let orig = shape.id.name
                 let first = orig.first?.uppercased() ?? ""
                 let capitalized = "\(first)\(orig.dropFirst())"
-                return try "\(serviceName)ClientTypes.\(capitalized)"
+                return try "\(modelNamespace).\(capitalized)"
             }
         case .list, .set:
             guard let listShape = shape as? ListShape else {
@@ -101,7 +101,10 @@ public struct SymbolProvider {
             return "Foundation.Data"
         case .timestamp:
             return "Foundation.Date"
-        case .document, .member, .service, .operation, .resource:
+        case .service:
+            let serviceShape = shape as! ServiceShape
+            return "\(serviceShape.sdkId)Client".toUpperCamelCase()
+        case .document, .member, .operation, .resource:
             throw SymbolProviderError("Cannot provide Swift symbol for shape type \(shape.type)")
         }
     }
@@ -116,6 +119,12 @@ public struct SymbolProvider {
     public func enumCaseName(shapeID: ShapeID) throws -> String {
         try propertyName(shapeID: shapeID).toLowerCamelCase().lowercased()
     }
+
+    private var modelNamespace: String {
+        get throws {
+            try swiftType(shape: service).appending("Types")
+        }
+    }
 }
 
 private extension String {
@@ -124,6 +133,12 @@ private extension String {
         let words = splitOnWordBoundaries() // Split into words
         let firstWord = words.first!.lowercased() // make first word lowercase
         return firstWord + words.dropFirst().joined() // join lowercased first word to remainder
+    }
+
+    func toUpperCamelCase() -> String {
+        let words = splitOnWordBoundaries() // Split into words
+        let firstLetter = words.first!.first!.uppercased() // make first letter uppercase
+        return firstLetter + words.joined().dropFirst() // join uppercased first letter to remainder
     }
 
     func splitOnWordBoundaries() -> [String] {

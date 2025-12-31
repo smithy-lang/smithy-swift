@@ -46,7 +46,7 @@ class RpcV2CborProtocolGenerator(
         super.addProtocolSpecificMiddleware(ctx, operation)
 
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
-        operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider, true))
+        operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx, true))
 
         val hasEventStreamResponse = ctx.model.expectShape(operation.outputShape).hasTrait<StreamingTrait>()
         val hasEventStreamRequest = ctx.model.expectShape(operation.inputShape).hasTrait<StreamingTrait>()

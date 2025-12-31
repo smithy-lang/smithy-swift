@@ -12,6 +12,12 @@ import struct SmithyCodegenCore.CodeGenerator
 @main
 struct SmithyCodegenCLI: AsyncParsableCommand {
 
+    @Argument(help: "The shape ID of the service to be code-generated.  Must exist in the model file.")
+    var service: String
+
+    @Argument(help: "The sdkId value from the smithy code generator")
+    var settingsSdkId: String
+
     @Argument(help: "The full or relative path to read the JSON AST model input file.")
     var modelPath: String
 
@@ -52,6 +58,8 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
 
         // Use resolved file URLs to run code generator
         try CodeGenerator(
+            service: service,
+            settingsSdkId: settingsSdkId,
             modelFileURL: modelFileURL,
             schemasFileURL: schemasFileURL,
             serializeFileURL: serializeFileURL,

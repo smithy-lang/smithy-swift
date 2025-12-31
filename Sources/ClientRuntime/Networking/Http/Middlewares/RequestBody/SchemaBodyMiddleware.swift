@@ -12,7 +12,7 @@ import protocol SmithySerialization.Codec
 import protocol SmithySerialization.SerializableShape
 
 @_spi(SmithyReadWrite)
-public struct SchemaBodyMiddleware<OperationStackInput: SerializableShape, OperationStackOutput> {
+public struct SchemaBodyMiddleware<OperationStackInput: SerializableShape> {
     public let id: Swift.String = "BodyMiddleware"
     let codec: any Codec
 

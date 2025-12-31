@@ -22,19 +22,20 @@ package struct DeserializeCodegen {
         let structsAndUnions = ctx.model.allShapesSorted.filter { $0.type == .structure || $0.type == .union }
         for shape in structsAndUnions {
             let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
+            let varName = shape.type == .structure ? "structure" : "union"
             try writer.openBlock("extension \(swiftType): SmithySerialization.DeserializableStruct {", "}") { writer in
                 writer.write("")
                 let consumerType = "SmithySerialization.ReadStructConsumer<Self>"
                 try writer.openBlock(
                     "public static var readConsumer: \(consumerType) {", "}") { writer in
-                    try writer.openBlock("{ memberSchema, structure, deserializer in", "}") { writer in
+                    try writer.openBlock("{ memberSchema, \(varName), deserializer in", "}") { writer in
                         try writer.openBlock("switch memberSchema.index {", "}") { writer in
                             writer.dedent()
                             for (index, member) in members(of: shape).enumerated() {
                                 writer.write("case \(index):")
                                 writer.indent()
                                 try writeDeserializeCall(
-                                    ctx: ctx, writer: writer, shape: shape, member: member, index: index, schemaRef: "memberSchema"
+                                    ctx: ctx, writer: writer, shape: shape, member: member, index: index, varName: varName, schemaRef: "memberSchema"
                                 )
                                 writer.dedent()
                             }
@@ -61,20 +62,20 @@ package struct DeserializeCodegen {
     }
 
     private func writeDeserializeCall(
-        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int, schemaRef: String? = nil
+        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int, varName: String, schemaRef: String? = nil
     ) throws {
         let schemaVarName = try schemaRef ?? "\(shape.schemaVarName).members[\(index)]"
-        switch member.target.type {
+        switch try member.target.type {
         case .structure:
             try writeStructureDeserializeCall(
-                ctx: ctx, writer: writer, shape: shape, member: member, index: index, initializer: "()", schemaVarName: schemaVarName
+                ctx: ctx, writer: writer, shape: shape, member: member, index: index, initializer: "()", varName: varName, schemaVarName: schemaVarName
             )
         case .union:
             try writeStructureDeserializeCall(
-                ctx: ctx, writer: writer, shape: shape, member: member, index: index, initializer: ".sdkUnknown(\"\")", schemaVarName: schemaVarName
+                ctx: ctx, writer: writer, shape: shape, member: member, index: index, initializer: ".sdkUnknown(\"\")", varName: varName, schemaVarName: schemaVarName
             )
         case .list, .set:
-            guard let listShape = member.target as? ListShape else {
+            guard let listShape = try member.target as? ListShape else {
                 throw SymbolProviderError("Shape has type .list but is not a ListShape")
             }
             let listSwiftType = try ctx.symbolProvider.swiftType(shape: listShape)
@@ -83,11 +84,11 @@ package struct DeserializeCodegen {
                 "try deserializer.readList(\(schemaVarName), &value) { deserializer in",
                 "}"
             ) { writer in
-                try writeDeserializeCall(ctx: ctx, writer: writer, shape: listShape, member: listShape.member, index: 0)
+                try writeDeserializeCall(ctx: ctx, writer: writer, shape: listShape, member: listShape.member, index: 0, varName: varName)
             }
-            try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
+            try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member, varName: varName)
         case .map:
-            guard let mapShape = member.target as? MapShape else {
+            guard let mapShape = try member.target as? MapShape else {
                 throw SymbolProviderError("Shape has type .map but is not a MapShape")
             }
             let mapSwiftType = try ctx.symbolProvider.swiftType(shape: mapShape)
@@ -97,9 +98,9 @@ package struct DeserializeCodegen {
                 "try deserializer.readMap(\(schemaVarName), &value) { deserializer in",
                 "}"
             ) { writer in
-                try writeDeserializeCall(ctx: ctx, writer: writer, shape: mapShape, member: mapShape.value, index: 1)
+                try writeDeserializeCall(ctx: ctx, writer: writer, shape: mapShape, member: mapShape.value, index: 1, varName: varName)
             }
-            try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
+            try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member, varName: varName)
         default:
             let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
             let methodName = try member.target.deserializeMethodName
@@ -115,20 +116,20 @@ package struct DeserializeCodegen {
     }
 
     private func writeStructureDeserializeCall(
-        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int, initializer: String, schemaVarName: String
+        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, index: Int, initializer: String, varName: String, schemaVarName: String
     ) throws {
-        let target = member.target
+        let target = try member.target
         let propertySwiftType = try ctx.symbolProvider.swiftType(shape: target)
         writer.write("var value = \(propertySwiftType)\(initializer)")
         writer.write("try deserializer.readStruct(\(schemaVarName), &value)")
-        try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
+        try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member, varName: varName)
     }
 
     private func writeAssignment(
-        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape
+        ctx: GenerationContext, writer: SwiftWriter, shape: Shape, member: MemberShape, varName: String
     ) throws {
         // Only the "composite types" need to have an assignment written.
-        guard [.structure, .union, .list, .set, .map].contains(member.target.type) else { return }
+        guard try [.structure, .union, .list, .set, .map].contains(member.target.type) else { return }
 
         // The assignment being written is based on the shape enclosing the member.
         switch shape.type {
@@ -137,11 +138,11 @@ package struct DeserializeCodegen {
             // making the appropriate adjustment for an error.
             let properties = shape.hasTrait(.init("smithy.api", "error")) ? "properties." : ""
             let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
-            writer.write("structure.\(properties)\(propertyName) = value")
+            writer.write("\(varName).\(properties)\(propertyName) = value")
         case .union:
             // For a union member, write the value to the appropriate union case
             let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
-            writer.write("structure = .\(enumCaseName)(value)")
+            writer.write("\(varName) = .\(enumCaseName)(value)")
         case .list, .set, .map:
             // For a collection member, return it to the caller since this is being written
             // into a consumer block that returns the collection element.

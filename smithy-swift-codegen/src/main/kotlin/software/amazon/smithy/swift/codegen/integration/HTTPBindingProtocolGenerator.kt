@@ -430,7 +430,7 @@ abstract class HTTPBindingProtocolGenerator(
                 operation,
                 ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)),
             )
-            operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx))
             operationMiddleware.appendMiddleware(
                 operation,
                 ContentLengthMiddleware(

@@ -37,6 +37,7 @@ object ClientRuntimeTypes {
         val SignerMiddleware = runtimeSymbol("SignerMiddleware", SwiftDeclaration.STRUCT)
         val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware", SwiftDeclaration.STRUCT)
         val BodyMiddleware = runtimeSymbol("BodyMiddleware", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
+        val SchemaBodyMiddleware = runtimeSymbol("SchemaBodyMiddleware", SwiftDeclaration.STRUCT)
         val PayloadBodyMiddleware = runtimeSymbol("PayloadBodyMiddleware", SwiftDeclaration.STRUCT)
         val EventStreamBodyMiddleware = runtimeSymbol("EventStreamBodyMiddleware", SwiftDeclaration.STRUCT)
         val BlobStreamBodyMiddleware = runtimeSymbol("BlobStreamBodyMiddleware", SwiftDeclaration.STRUCT)

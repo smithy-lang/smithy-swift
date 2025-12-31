@@ -25,8 +25,9 @@ package struct SmithySchemaCodegen {
                 try $0.hasTrait(try .init("smithy.api#input")) ||
                 $0.hasTrait(try .init("smithy.api#output")) ||
                 $0.hasTrait(try .init("smithy.api#error"))}
-            .map { [$0] + $0.descendants }
+            .map { try [$0] + $0.descendants }
             .flatMap { $0 }
+            .filter { $0.type != .member }
             .filter { $0.id.namespace != "smithy.api" }
         let sortedShapes = Array(Set(shapes)).sorted { $0.id.id.lowercased() < $1.id.id.lowercased() }
         writer.write("// Number of schemas: \(sortedShapes.count)")
@@ -64,7 +65,7 @@ package struct SmithySchemaCodegen {
                     }
                 }
             }
-            if let target = (shape as? MemberShape)?.target {
+            if let target = try (shape as? MemberShape)?.target {
                 writer.write(try "target: \(target.schemaVarName),")
             }
             if let index {

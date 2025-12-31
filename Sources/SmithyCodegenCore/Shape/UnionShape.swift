@@ -22,7 +22,9 @@ public class UnionShape: Shape, HasMembers {
         return memberIDs.map { model.shapes[$0]! as! MemberShape } // swiftlint:disable:this force_cast
     }
 
-    override func candidates(for shape: Shape) -> [Shape] {
-        members.map { $0.target }
+    override var candidates: [Shape] {
+        get throws {
+            members
+        }
     }
 }

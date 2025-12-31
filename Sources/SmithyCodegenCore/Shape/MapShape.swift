@@ -30,7 +30,9 @@ public class MapShape: Shape, HasMembers {
         return [key, value]
     }
 
-    override func candidates(for shape: Shape) -> [Shape] {
-        members.map { $0.target }
+    override var candidates: [Shape] {
+        get throws {
+            members
+        }
     }
 }

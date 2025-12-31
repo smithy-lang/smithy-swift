@@ -51,7 +51,7 @@ open class SmokeTestGenerator(
     /**
      * Override this method for vendor-specific & customized service names.
      */
-    open fun getServiceName(): String = ctx.settings.sdkId.toUpperCamelCase()
+    open fun getServiceName(): String = ctx.settings.clientName
 
     /**
      * Returns map of operation shape IDs to smoke test cases to generate for that operation.
@@ -289,7 +289,7 @@ open class SmokeTestGenerator(
         writer.write("}")
     }
 
-    open fun getClientName(): String = ctx.settings.sdkId.toUpperCamelCase() + "Client"
+    open fun getClientName(): String = ctx.settings.clientName + "Client"
 
     /**
      * Default behavior is no-op; override this method for vendor-specific behavior.
