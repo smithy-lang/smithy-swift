@@ -19,12 +19,22 @@ public class StructureShape: Shape, HasMembers {
     }
 
     public var members: [MemberShape] {
-        return memberIDs.map { model.shapes[$0]! as! MemberShape } // swiftlint:disable:this force_cast
+        get throws {
+            try memberIDs.map { memberID in
+                guard let shape = model.shapes[memberID] else {
+                    throw ModelError("shape does not exist for memberID \(memberID)")
+                }
+                guard let member = shape as? MemberShape else {
+                    throw ModelError("Shape \(memberID) is not a member shape")
+                }
+                return member
+            }
+        }
     }
 
     override var candidates: [Shape] {
         get throws {
-            members
+            try members
         }
     }
 }

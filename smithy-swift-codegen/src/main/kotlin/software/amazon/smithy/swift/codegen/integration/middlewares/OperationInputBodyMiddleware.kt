@@ -4,8 +4,6 @@ import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.DocumentShape
 import software.amazon.smithy.model.shapes.EnumShape

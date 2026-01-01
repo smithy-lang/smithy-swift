@@ -21,7 +21,6 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
-import software.amazon.smithy.swift.codegen.model.expectShape
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.sdkId
 import java.util.logging.Logger

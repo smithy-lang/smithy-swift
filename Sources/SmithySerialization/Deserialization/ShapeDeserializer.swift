@@ -13,8 +13,8 @@ import protocol Smithy.SmithyDocument
 public protocol ShapeDeserializer {
     func readBoolean(_ schema: Smithy.Schema) throws -> Bool
     func readBlob(_ schema: Smithy.Schema) throws -> Data
-    func readByte(_ schema: Smithy.Schema) throws -> UInt8
-    func readShort(_ schema: Smithy.Schema) throws -> UInt16
+    func readByte(_ schema: Smithy.Schema) throws -> Int8
+    func readShort(_ schema: Smithy.Schema) throws -> Int16
     func readInteger(_ schema: Smithy.Schema) throws -> Int
     func readLong(_ schema: Smithy.Schema) throws -> Int
     func readFloat(_ schema: Smithy.Schema) throws -> Float

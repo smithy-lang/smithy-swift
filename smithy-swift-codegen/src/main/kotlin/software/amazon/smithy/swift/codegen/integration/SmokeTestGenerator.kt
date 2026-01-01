@@ -15,7 +15,6 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
-import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import kotlin.jvm.optionals.getOrNull
 
 open class SmokeTestGenerator(

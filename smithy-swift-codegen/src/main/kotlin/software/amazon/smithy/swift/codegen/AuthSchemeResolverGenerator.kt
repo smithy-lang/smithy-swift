@@ -22,8 +22,8 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.sdkId
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
-import java.util.Locale
 
 class AuthSchemeResolverGenerator {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
@@ -300,7 +300,9 @@ class AuthSchemeResolverGenerator {
                 SmithyHTTPAuthAPITypes.AuthSchemeResolverParams,
             ) {
                 if (usesRulesBasedAuthResolver(ctx)) {
-                    write("return try Default${ctx.settings.clientNamePreservingService + AUTH_SCHEME_RESOLVER}().constructParameters(context: context)")
+                    write(
+                        "return try Default${ctx.settings.clientNamePreservingService + AUTH_SCHEME_RESOLVER}().constructParameters(context: context)",
+                    )
                 } else {
                     openBlock("guard let opName = context.getOperation() else {", "}") {
                         write(
@@ -326,7 +328,7 @@ class AuthSchemeResolverGenerator {
 
         // Utility function for checking if a service relies on endpoint resolver for auth scheme resolution
         fun usesRulesBasedAuthResolver(ctx: ProtocolGenerator.GenerationContext): Boolean =
-            listOf("s3", "eventbridge", "cloudfront keyvaluestore", "sesv2").contains(ctx.settings.sdkId.lowercase(Locale.US))
+            listOf("S3", "EventBridge", "CloudFront KeyValueStore", "SESv2").contains(ctx.settings.sdkId)
 
         fun getServiceSpecificAuthSchemeResolverName(ctx: ProtocolGenerator.GenerationContext): Symbol =
             buildSymbol {

@@ -29,11 +29,11 @@ struct Deserializer: ShapeDeserializer {
         Data()
     }
     
-    func readByte(_ schema: Smithy.Schema) throws -> UInt8 {
+    func readByte(_ schema: Smithy.Schema) throws -> Int8 {
         0
     }
     
-    func readShort(_ schema: Smithy.Schema) throws -> UInt16 {
+    func readShort(_ schema: Smithy.Schema) throws -> Int16 {
         0
     }
     

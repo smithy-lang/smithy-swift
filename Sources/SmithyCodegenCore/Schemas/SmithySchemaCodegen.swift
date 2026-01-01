@@ -57,7 +57,7 @@ package struct SmithySchemaCodegen {
                     }
                 }
             }
-            let members = (shape as? HasMembers)?.members ?? []
+            let members = try (shape as? HasMembers)?.members ?? []
             if !members.isEmpty {
                 try writer.openBlock("members: [", "],") { writer in
                     for (index, member) in members.enumerated() {

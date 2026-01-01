@@ -31,7 +31,7 @@ package struct DeserializeCodegen {
                     try writer.openBlock("{ memberSchema, \(varName), deserializer in", "}") { writer in
                         try writer.openBlock("switch memberSchema.index {", "}") { writer in
                             writer.dedent()
-                            for (index, member) in members(of: shape).enumerated() {
+                            for (index, member) in try members(of: shape).enumerated() {
                                 writer.write("case \(index):")
                                 writer.indent()
                                 try writeDeserializeCall(
@@ -151,8 +151,8 @@ package struct DeserializeCodegen {
         }
     }
 
-    private func members(of shape: Shape) -> [MemberShape] {
+    private func members(of shape: Shape) throws -> [MemberShape] {
         guard let hasMembers = shape as? HasMembers else { return [] }
-        return hasMembers.members
+        return try hasMembers.members
     }
 }

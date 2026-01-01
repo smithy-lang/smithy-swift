@@ -16,9 +16,9 @@ extension Model {
         }
 
         // Filter out only shapes that are the identified service and its descendants
-        let shapeIDsForService = try ([service] + service.descendants).map { $0.id }
-        let shapesForService = shapes.filter { shapeIDsForService.contains($0.key) }
-        let newModel = Model(version: self.version, metadata: self.metadata, shapes: shapesForService)
+        let shapesForService = try ([service] + service.descendants)
+        let shapeDict = Dictionary(uniqueKeysWithValues: shapesForService.map { ($0.id, $0) })
+        let newModel = Model(version: self.version, metadata: self.metadata, shapes: shapeDict)
         return (newModel, service)
     }
 }

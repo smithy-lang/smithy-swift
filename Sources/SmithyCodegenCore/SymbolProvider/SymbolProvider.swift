@@ -37,32 +37,38 @@ public struct SymbolProvider {
     private var inputTraitID = ShapeID("smithy.api", "input")
     private var outputTraitID = ShapeID("smithy.api", "output")
     private var errorTraitID = ShapeID("smithy.api", "error")
-    private var operationNameTraitID = ShapeID("swift.synthetic", "operationName")
+    private var inputOperationNameTraitID = ShapeID("swift.synthetic", "inputOperationName")
+    private var outputOperationNameTraitID = ShapeID("swift.synthetic", "outputOperationName")
 
     public func swiftType(shape: Shape) throws -> String {
         switch shape.type {
         case .structure, .union, .enum, .intEnum:
-            if case .string(let name) = shape.getTrait(operationNameTraitID), shape.hasTrait(inputTraitID) {
+            if case .string(let name) = shape.getTrait(inputOperationNameTraitID), shape.hasTrait(inputTraitID) {
                 return "\(name)Input"
             } else if shape.hasTrait(inputTraitID) {
                 guard let operation = model.shapes.values
                     .filter({ $0.type == .operation })
                     .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
-                    .first(where: { $0.inputShapeID == shape.id })
+                    .first(where: { $0.inputID == shape.id })
                 else { throw SymbolProviderError("Operation for input \(shape.id) not found") }
                 return "\(operation.id.name)Input"
-            } else if
-                case .string(let name) = shape.getTrait(operationNameTraitID), shape.hasTrait(outputTraitID) {
+            } else if case .string(let name) = shape.getTrait(outputOperationNameTraitID), shape.hasTrait(outputTraitID) {
                 return "\(name)Output"
             } else if shape.hasTrait(outputTraitID) {
                 guard let operation = model.shapes.values
                     .filter({ $0.type == .operation })
                     .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
-                    .first(where: { $0.outputShapeID == shape.id })
+                    .first(where: { $0.outputID == shape.id })
                 else { throw SymbolProviderError("Operation for output \(shape.id) not found") }
                 return "\(operation.id.name)Output"
             } else if shape.hasTrait(errorTraitID) {
                 return shape.id.name
+            } else if shape.type == .intEnum {
+                // The NestedShapeTransformer in main codegen inadvertently excludes intEnum
+                // so it is not namespaced here.
+                let orig = shape.id.name
+                let first = orig.first?.uppercased() ?? ""
+                return "\(first)\(orig.dropFirst())"
             } else {
                 let orig = shape.id.name
                 let first = orig.first?.uppercased() ?? ""

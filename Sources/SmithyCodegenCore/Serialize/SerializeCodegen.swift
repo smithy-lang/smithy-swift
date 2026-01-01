@@ -31,7 +31,7 @@ package struct SerializeCodegen {
                 ) { writer in
                     try writer.openBlock("{ memberSchema, \(varName), serializer in", "}") { writer in
                         writer.write("switch memberSchema.index {")
-                        for (index, member) in members(of: shape).enumerated() {
+                        for (index, member) in try members(of: shape).enumerated() {
                             writer.write("case \(index):")
                             writer.indent()
                             if shape.type == .structure {
@@ -88,8 +88,8 @@ package struct SerializeCodegen {
         }
     }
 
-    private func members(of shape: Shape) -> [MemberShape] {
+    private func members(of shape: Shape) throws -> [MemberShape] {
         guard let hasMembers = shape as? HasMembers else { return [] }
-        return hasMembers.members
+        return try hasMembers.members
     }
 }

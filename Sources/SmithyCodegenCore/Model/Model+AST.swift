@@ -107,8 +107,9 @@ extension Model {
             let shape = OperationShape(
                 id: shapeID,
                 traits: traits,
-                input: try astShape.input?.id,
-                output: try astShape.output?.id
+                inputID: try astShape.input?.id,
+                outputID: try astShape.output?.id,
+                errorIDs: try astShape.errors?.map { try $0.id } ?? []
             )
             return (shapeID, shape)
         case .structure:
