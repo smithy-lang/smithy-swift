@@ -15,7 +15,7 @@ public class MapShape: Shape, HasMembers {
 
     public init(id: ShapeID, traits: [ShapeID: Node], memberIDs: [ShapeID]) {
         self.memberIDs = memberIDs
-        super.init(id: id, type: .list, traits: traits)
+        super.init(id: id, type: .map, traits: traits)
     }
 
     public var key: MemberShape {
@@ -30,7 +30,9 @@ public class MapShape: Shape, HasMembers {
         return [key, value]
     }
 
-    override func candidates(for shape: Shape) -> [Shape] {
-        members.map { $0.target }
+    override var candidates: [Shape] {
+        get throws {
+            members
+        }
     }
 }

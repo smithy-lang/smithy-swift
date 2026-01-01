@@ -4,8 +4,6 @@ import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.DocumentShape
 import software.amazon.smithy.model.shapes.EnumShape
@@ -19,6 +17,7 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
@@ -31,8 +30,7 @@ import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class OperationInputBodyMiddleware(
-    val model: Model,
-    val symbolProvider: SymbolProvider,
+    val ctx: ProtocolGenerator.GenerationContext,
     private val alwaysSendBody: Boolean = false,
 ) : MiddlewareRenderable {
     override val name = "OperationInputBodyMiddleware"
@@ -54,9 +52,9 @@ class OperationInputBodyMiddleware(
     ) {
         val writingClosureUtils = WritingClosureUtils(ctx, writer)
         val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol)
-        val inputShape = MiddlewareShapeUtils.inputShape(model, op)
-        val inputSymbol = symbolProvider.toSymbol(inputShape)
-        val outputSymbol = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
+        val inputShape = MiddlewareShapeUtils.inputShape(ctx.model, op)
+        val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
+        val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
         val writerSymbol = ctx.service.writerSymbol
         var payloadShape = inputShape
         var keyPath = "\\.self"
@@ -187,11 +185,12 @@ class OperationInputBodyMiddleware(
                 defaultBody,
             )
         } else {
-            addBodyMiddleware(writer, inputSymbol, outputSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure)
+            addBodyMiddleware(ctx, writer, inputSymbol, outputSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure)
         }
     }
 
     private fun addBodyMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         inputSymbol: Symbol,
         outputSymbol: Symbol,
@@ -199,15 +198,23 @@ class OperationInputBodyMiddleware(
         rootNodeInfo: String,
         payloadWritingClosure: String,
     ) {
-        writer.write(
-            "\$N<\$N, \$N, \$N>(rootNodeInfo: \$L, inputWritingClosure: \$L)",
-            ClientRuntimeTypes.Middleware.BodyMiddleware,
-            inputSymbol,
-            outputSymbol,
-            writerSymbol,
-            rootNodeInfo,
-            payloadWritingClosure,
-        )
+        if (SerdeUtils.useSchemaBased(ctx)) {
+            writer.write(
+                "\$N<\$N>(codec: codec)",
+                ClientRuntimeTypes.Middleware.SchemaBodyMiddleware,
+                inputSymbol,
+            )
+        } else {
+            writer.write(
+                "\$N<\$N, \$N, \$N>(rootNodeInfo: \$L, inputWritingClosure: \$L)",
+                ClientRuntimeTypes.Middleware.BodyMiddleware,
+                inputSymbol,
+                outputSymbol,
+                writerSymbol,
+                rootNodeInfo,
+                payloadWritingClosure,
+            )
+        }
     }
 
     private fun addPayloadBodyMiddleware(

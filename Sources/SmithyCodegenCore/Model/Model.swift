@@ -19,6 +19,11 @@ public class Model {
         self.shapes = shapes
     }
 
+    var allShapesSorted: [Shape] {
+        let allShapes = shapes.values
+        return allShapes.sorted { $0.id.id.lowercased() < $1.id.id.lowercased() }
+    }
+
     func expectShape(id: ShapeID) throws -> Shape {
         guard let shape = shapes[id] else {
             throw ModelError("ShapeID \(id) was expected in model but not found")

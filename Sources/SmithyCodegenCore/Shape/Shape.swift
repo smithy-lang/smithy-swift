@@ -37,22 +37,25 @@ public class Shape {
     }
 
     public var descendants: Set<Shape> {
-        var c = Set<Shape>()
-        descendants(&c)
-        return c
-    }
-
-    private func descendants(_ descendants: inout Set<Shape>) {
-        let shapes = candidates(for: self)
-        for shape in shapes {
-            if descendants.contains(shape) { continue }
-            descendants.insert(shape)
-            shape.descendants(&descendants)
+        get throws {
+            var c = Set<Shape>()
+            try descendants(&c)
+            return c
         }
     }
 
-    func candidates(for shape: Shape) -> [Shape] {
-        [] // default.  May be overridden by Shape subclasses.
+    private func descendants(_ descendants: inout Set<Shape>) throws {
+        for shape in try candidates {
+            if descendants.contains(shape) { continue }
+            descendants.insert(shape)
+            try shape.descendants(&descendants)
+        }
+    }
+
+    var candidates: [Shape] {
+        get throws {
+            [] // default.  May be overridden by Shape subclasses.
+        }
     }
 }
 

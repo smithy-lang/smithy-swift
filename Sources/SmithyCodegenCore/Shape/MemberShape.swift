@@ -18,6 +18,17 @@ public class MemberShape: Shape {
     }
 
     public var target: Shape {
-        return model.shapes[targetID] ?? Shape.prelude[targetID]!
+        get throws {
+            guard let target = model.shapes[targetID] ?? Shape.prelude[targetID] else {
+                throw ModelError("Shape \(targetID) does not exist")
+            }
+            return target
+        }
+    }
+
+    override var candidates: [Shape] {
+        get throws {
+            [try target]
+        }
     }
 }

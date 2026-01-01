@@ -79,7 +79,6 @@ class SwiftSymbolProvider(
     val swiftSettings: SwiftSettings,
 ) : SymbolProvider,
     ShapeVisitor<Symbol> {
-    private val sdkId = swiftSettings.sdkId
     private val service: ServiceShape? =
         try {
             swiftSettings.getService(model)
@@ -253,7 +252,7 @@ class SwiftSymbolProvider(
             .build()
 
     override fun serviceShape(shape: ServiceShape): Symbol {
-        val name = sdkId.clientName()
+        val name = swiftSettings.clientName
         return createSymbolBuilder(shape, "${name}Client", SwiftDeclaration.CLASS)
             .definitionFile(formatModuleName(name))
             .build()

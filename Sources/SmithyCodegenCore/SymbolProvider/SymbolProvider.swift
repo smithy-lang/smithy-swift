@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Locale
 import struct Foundation.NSRange
 import class Foundation.NSRegularExpression
 import struct Smithy.ShapeID
@@ -36,34 +37,85 @@ public struct SymbolProvider {
     private var inputTraitID = ShapeID("smithy.api", "input")
     private var outputTraitID = ShapeID("smithy.api", "output")
     private var errorTraitID = ShapeID("smithy.api", "error")
-    private var operationNameTraitID = ShapeID("swift.synthetic", "operationName")
+    private var inputOperationNameTraitID = ShapeID("swift.synthetic", "inputOperationName")
+    private var outputOperationNameTraitID = ShapeID("swift.synthetic", "outputOperationName")
 
     public func swiftType(shape: Shape) throws -> String {
-        if case .string(let name) = shape.getTrait(operationNameTraitID), shape.hasTrait(inputTraitID) {
-            return "\(name)Input"
-        } else if shape.hasTrait(inputTraitID) {
-            guard let operation = model.shapes.values
-                .filter({ $0.type == .operation })
-                .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
-                .first(where: { $0.inputShapeID == shape.id })
-            else { throw SymbolProviderError("Operation for input \(shape.id) not found") }
-            return "\(operation.id.name)Input"
-        } else if
-            case .string(let name) = shape.getTrait(operationNameTraitID), shape.hasTrait(outputTraitID) {
-            return "\(name)Output"
-        } else if shape.hasTrait(outputTraitID) {
-            guard let operation = model.shapes.values
-                .filter({ $0.type == .operation })
-                .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
-                .first(where: { $0.outputShapeID == shape.id })
-            else { throw SymbolProviderError("Operation for output \(shape.id) not found") }
-            return "\(operation.id.name)Output"
-        } else if shape.hasTrait(errorTraitID) {
-            return shape.id.name
-        } else {
-            return try "\(serviceName)ClientTypes.\(shape.id.name)"
+        switch shape.type {
+        case .structure, .union, .enum, .intEnum:
+            if case .string(let name) = shape.getTrait(inputOperationNameTraitID), shape.hasTrait(inputTraitID) {
+                return "\(name)Input"
+            } else if shape.hasTrait(inputTraitID) {
+                guard let operation = model.shapes.values
+                    .filter({ $0.type == .operation })
+                    .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
+                    .first(where: { $0.inputID == shape.id })
+                else { throw SymbolProviderError("Operation for input \(shape.id) not found") }
+                return "\(operation.id.name)Input"
+            } else if case .string(let name) = shape.getTrait(outputOperationNameTraitID), shape.hasTrait(outputTraitID) {
+                return "\(name)Output"
+            } else if shape.hasTrait(outputTraitID) {
+                guard let operation = model.shapes.values
+                    .filter({ $0.type == .operation })
+                    .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
+                    .first(where: { $0.outputID == shape.id })
+                else { throw SymbolProviderError("Operation for output \(shape.id) not found") }
+                return "\(operation.id.name)Output"
+            } else if shape.hasTrait(errorTraitID) {
+                return shape.id.name
+            } else if shape.type == .intEnum {
+                // The NestedShapeTransformer in main codegen inadvertently excludes intEnum
+                // so it is not namespaced here.
+                let orig = shape.id.name
+                let first = orig.first?.uppercased() ?? ""
+                return "\(first)\(orig.dropFirst())"
+            } else {
+                let orig = shape.id.name
+                let first = orig.first?.uppercased() ?? ""
+                let capitalized = "\(first)\(orig.dropFirst())"
+                return try "\(modelNamespace).\(capitalized)"
+            }
+        case .list, .set:
+            guard let listShape = shape as? ListShape else {
+                throw SymbolProviderError("Shape has type .list but is not a ListShape")
+            }
+            let elementType = try swiftType(shape: listShape.member.target)
+            return "[\(elementType)]"
+        case .map:
+            guard let mapShape = shape as? MapShape else {
+                throw SymbolProviderError("Shape has type .map but is not a MapShape")
+            }
+            let valueType = try swiftType(shape: mapShape.value.target)
+            return "[Swift.String: \(valueType)]"
+        case .string:
+            return "Swift.String"
+        case .boolean:
+            return "Swift.Bool"
+        case .byte:
+            return "Swift.Int8"
+        case .short:
+            return "Swift.Int16"
+        case .integer, .long:
+            return "Swift.Int"
+        case .bigInteger:
+            return "Swift.Int64"
+        case .float:
+            return "Swift.Float"
+        case .double, .bigDecimal:
+            return "Swift.Double"
+        case .blob:
+            return "Foundation.Data"
+        case .timestamp:
+            return "Foundation.Date"
+        case .service:
+            let serviceShape = shape as! ServiceShape
+            return "\(serviceShape.sdkId)Client".toUpperCamelCase()
+        case .document, .member, .operation, .resource:
+            throw SymbolProviderError("Cannot provide Swift symbol for shape type \(shape.type)")
         }
     }
+
+    static let locale = Locale(identifier: "en_US_POSIX")
 
     public func propertyName(shapeID: ShapeID) throws -> String {
         guard let member = shapeID.member else { throw SymbolProviderError("Shape ID has no member name") }
@@ -73,6 +125,12 @@ public struct SymbolProvider {
     public func enumCaseName(shapeID: ShapeID) throws -> String {
         try propertyName(shapeID: shapeID).toLowerCamelCase().lowercased()
     }
+
+    private var modelNamespace: String {
+        get throws {
+            try swiftType(shape: service).appending("Types")
+        }
+    }
 }
 
 private extension String {
@@ -81,6 +139,12 @@ private extension String {
         let words = splitOnWordBoundaries() // Split into words
         let firstWord = words.first!.lowercased() // make first word lowercase
         return firstWord + words.dropFirst().joined() // join lowercased first word to remainder
+    }
+
+    func toUpperCamelCase() -> String {
+        let words = splitOnWordBoundaries() // Split into words
+        let firstLetter = words.first!.first!.uppercased() // make first letter uppercase
+        return firstLetter + words.joined().dropFirst() // join uppercased first letter to remainder
     }
 
     func splitOnWordBoundaries() -> [String] {

@@ -1,0 +1,53 @@
+//
+// Copyright Amazon.com Inc. or its affiliates.
+// All Rights Reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+import struct Foundation.Data
+import struct Foundation.Date
+import class Smithy.Schema
+import protocol Smithy.SmithyDocument
+
+public protocol ShapeDeserializer {
+    func readBoolean(_ schema: Smithy.Schema) throws -> Bool
+    func readBlob(_ schema: Smithy.Schema) throws -> Data
+    func readByte(_ schema: Smithy.Schema) throws -> Int8
+    func readShort(_ schema: Smithy.Schema) throws -> Int16
+    func readInteger(_ schema: Smithy.Schema) throws -> Int
+    func readLong(_ schema: Smithy.Schema) throws -> Int
+    func readFloat(_ schema: Smithy.Schema) throws -> Float
+    func readDouble(_ schema: Smithy.Schema) throws -> Double
+    func readBigInteger(_ schema: Smithy.Schema) throws -> Int64
+    func readBigDecimal(_ schema: Smithy.Schema) throws -> Double
+    func readString(_ schema: Smithy.Schema) throws -> String
+    func readDocument() throws -> any Smithy.SmithyDocument
+    func readTimestamp(_ schema: Smithy.Schema) throws -> Date
+
+    // Used to implement parsing sparse lists and maps.
+    func isNull() throws -> Bool
+
+    func readStruct<T: DeserializableStruct>(_ schema: Smithy.Schema, _ value: inout T) throws
+
+    func readList<Element>(
+        _ schema: Smithy.Schema, _ list: inout [Element], _ consumer: ReadValueConsumer<Element>
+    ) throws
+
+    func readMap<Value>(
+        _ schema: Smithy.Schema, _ map: inout [String: Value], _ consumer: ReadValueConsumer<Value>
+    ) throws
+
+    var containerSize: Int { get }
+}
+
+public extension ShapeDeserializer {
+
+    func readEnum<Enum: RawRepresentable>(_ schema: Smithy.Schema) throws -> Enum where Enum.RawValue == String {
+        try Enum(rawValue: readString(schema))!
+    }
+
+    func readIntEnum<Enum: RawRepresentable>(_ schema: Smithy.Schema) throws -> Enum where Enum.RawValue == Int {
+        try Enum(rawValue: readInteger(schema))!
+    }
+}

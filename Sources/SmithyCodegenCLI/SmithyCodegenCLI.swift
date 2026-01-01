@@ -12,14 +12,23 @@ import struct SmithyCodegenCore.CodeGenerator
 @main
 struct SmithyCodegenCLI: AsyncParsableCommand {
 
-    @Argument(help: "The full or relative path to the JSON model file.")
+    @Argument(help: "The shape ID of the service to be code-generated.  Must exist in the model file.")
+    var service: String
+
+    @Argument(help: "The sdkId value from the smithy code generator")
+    var settingsSdkId: String
+
+    @Argument(help: "The full or relative path to read the JSON AST model input file.")
     var modelPath: String
 
-    @Option(help: "The full or relative path to write the schemas output file.")
+    @Option(help: "The full or relative path to write the Schemas output file.")
     var schemasPath: String?
 
-    @Option(help: "The full or relative path to write the struct consumers output file.")
-    var structConsumersPath: String?
+    @Option(help: "The full or relative path to write the Serialize output file.")
+    var serializePath: String?
+
+    @Option(help: "The full or relative path to write the Deserialize output file.")
+    var deserializePath: String?
 
     func run() async throws {
         let currentWorkingDirectoryFileURL = currentWorkingDirectoryFileURL()
@@ -35,10 +44,26 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
         // If --schemas-path was supplied, create the schema file URL
         let schemasFileURL = resolve(paramName: "--schemas-path", path: schemasPath)
 
+        // If --serialize-path was supplied, create the Serialize file URL
+        let serializeFileURL = resolve(
+            paramName: "--serialize-path",
+            path: serializePath
+        )
+
+        // If --deserialize-path was supplied, create the Deserialize file URL
+        let deserializeFileURL = resolve(
+            paramName: "--deserialize-path",
+            path: deserializePath
+        )
+
         // Use resolved file URLs to run code generator
         try CodeGenerator(
+            service: service,
+            settingsSdkId: settingsSdkId,
             modelFileURL: modelFileURL,
-            schemasFileURL: schemasFileURL
+            schemasFileURL: schemasFileURL,
+            serializeFileURL: serializeFileURL,
+            deserializeFileURL: deserializeFileURL
         ).run()
     }
 

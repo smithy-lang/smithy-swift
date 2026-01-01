@@ -15,7 +15,7 @@ extension Model {
     /// Compared to the AST model, this model has custom shape types, members are included in the main body of shapes
     /// along with other shape types, and all Shape IDs are fully-qualified
     /// (i.e. members have the enclosing shape's namespace & name, along with their own member name.)
-    /// - Parameter astModel: The JSON AST model to be created.
+    /// - Parameter astModel: The JSON AST model to load into the `Model` being created.
     convenience init(astModel: ASTModel) throws {
         // Get all of the members from the AST model, create pairs of ShapeID & MemberShape
         let idToMemberShapePairs = try astModel.shapes
@@ -34,10 +34,6 @@ extension Model {
 
         // self is now initialized, set all of the Shapes with references back to this model
         self.shapes.values.forEach { $0.model = self }
-
-        // Verify that there is exactly one Service
-        let services = self.shapes.values.filter { $0.type == .service }
-        guard services.count == 1 else { throw ModelError("Model has \(services.count) services") }
     }
 
     private static func memberShapePairs(id: String, astShape: ASTShape) throws -> [(ShapeID, MemberShape)] {
@@ -89,15 +85,31 @@ extension Model {
             let shape = ServiceShape(
                 id: shapeID,
                 traits: traits,
+                operationIDs: try astShape.operations?.map { try $0.id } ?? [],
+                resourceIDs: try astShape.resources?.map { try $0.id } ?? [],
                 errorIDs: try astShape.errors?.map { try $0.id } ?? []
+            )
+            return (shapeID, shape)
+        case .resource:
+            let shape = ResourceShape(
+                id: shapeID,
+                traits: traits,
+                operationIDs: try astShape.operations?.map { try $0.id } ?? [],
+                createID: try astShape.create?.id,
+                putID: try astShape.put?.id,
+                readID: try astShape.read?.id,
+                updateID: try astShape.update?.id,
+                deleteID: try astShape.delete?.id,
+                listID: try astShape.list?.id
             )
             return (shapeID, shape)
         case .operation:
             let shape = OperationShape(
                 id: shapeID,
                 traits: traits,
-                input: try astShape.input?.id,
-                output: try astShape.output?.id
+                inputID: try astShape.input?.id,
+                outputID: try astShape.output?.id,
+                errorIDs: try astShape.errors?.map { try $0.id } ?? []
             )
             return (shapeID, shape)
         case .structure:
