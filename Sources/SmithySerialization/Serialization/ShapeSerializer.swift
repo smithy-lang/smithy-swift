@@ -65,7 +65,7 @@ public extension ShapeSerializer {
             if let element {
                 try consumer(element, serializer)
             } else {
-                try serializer.writeNull(schema.members[0])
+                try serializer.writeNull(schema.resolveTarget.member)
             }
         }
     }
@@ -82,7 +82,7 @@ public extension ShapeSerializer {
             if let element {
                 try consumer(element, serializer)
             } else {
-                try serializer.writeNull(schema.members[1])
+                try serializer.writeNull(schema.resolveTarget.value)
             }
         }
     }
@@ -140,5 +140,20 @@ public extension ShapeSerializer {
 
     func writeEventStream<E: SerializableStruct>(_ schema: Schema, _ value: AsyncThrowingStream<E, any Error>) throws {
         // by default, do nothing
+    }
+}
+
+extension Schema {
+
+    var resolveMember: Schema? {
+        type == .member ? self : nil
+    }
+
+    var resolveTarget: Schema {
+        if let target {
+            return target
+        } else {
+            return self
+        }
     }
 }

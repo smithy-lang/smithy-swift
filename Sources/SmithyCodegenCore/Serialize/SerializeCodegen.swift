@@ -37,7 +37,11 @@ package struct SerializeCodegen {
                             if shape.type == .structure {
                                 let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
                                 let properties = shape.hasTrait(.init("smithy.api", "error")) ? "properties." : ""
-                                writer.write("guard let value = \(varName).\(properties)\(propertyName) else { break }")
+                                if try NullableIndex().isNonOptional(member) {
+                                    writer.write("let value = \(varName).\(properties)\(propertyName)")
+                                } else {
+                                    writer.write("guard let value = \(varName).\(properties)\(propertyName) else { break }")
+                                }
                                 try writeSerializeCall(
                                     writer: writer, shape: shape, member: member, accessor: "members[\(index)]"
                                 )

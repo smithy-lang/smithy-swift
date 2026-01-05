@@ -53,7 +53,7 @@ public struct ShapeID: Hashable, Sendable {
         }
     }
 
-    public init(id: ShapeID, member: String) {
+    public init(id: ShapeID, member: String?) {
         self.namespace = id.namespace
         self.name = id.name
         self.member = member

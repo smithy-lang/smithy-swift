@@ -17,10 +17,20 @@ public class MemberShape: Shape {
         super.init(id: id, type: .member, traits: traits)
     }
 
+    public var container: Shape {
+        get throws {
+            let containerID = ShapeID(id: id, member: nil)
+            guard let container = model.shapes[containerID] else {
+                throw ModelError("Member \(id): container \(containerID) does not exist")
+            }
+            return container
+        }
+    }
+
     public var target: Shape {
         get throws {
             guard let target = model.shapes[targetID] ?? Shape.prelude[targetID] else {
-                throw ModelError("Shape \(targetID) does not exist")
+                throw ModelError("Member \(id): target \(targetID) does not exist")
             }
             return target
         }
