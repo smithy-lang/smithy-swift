@@ -38,10 +38,11 @@ public class OperationShape: Shape {
         model.shapes[outputID] as! StructureShape
     }
 
-    override var candidates: [Shape] {
-        get throws {
-            try [_input, _output] + errorIDs.map { try model.expectShape(id: $0) }
-        }
+    override func candidates(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+        let inputOrNone = try includeInput ? [_input] : []
+        let outputOrNone = try includeOutput ? [_output] : []
+        let errorsOrNone = try includeOutput ? errorIDs.map { try model.expectShape(id: $0) } : []
+        return inputOrNone + outputOrNone + errorsOrNone
     }
 
     private var _input: StructureShape {

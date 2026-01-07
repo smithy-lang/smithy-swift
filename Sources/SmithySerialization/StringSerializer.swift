@@ -27,7 +27,7 @@ public class StringSerializer: ShapeSerializer {
         self.key = key
     }
 
-    public func writeStruct<S: SerializableStruct>(_ schema: Smithy.Schema, _ value: S) throws {
+    public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
         try writeValue(schema) {
             let structSerializer = StringSerializer()
             let structMembers = schema.target?.members ?? schema.members
@@ -43,7 +43,7 @@ public class StringSerializer: ShapeSerializer {
         }
     }
 
-    public func writeList<Element>(_ schema: Smithy.Schema, _ value: [Element], _ consumer: WriteValueConsumer<Element>) throws {
+    public func writeList<E>(_ schema: Schema, _ value: [E], _ consumer: WriteValueConsumer<E>) throws {
         try writeValue(schema) {
             let listSerializer = StringSerializer()
             let elementSchema = schema.target?.members[0] ?? schema.members[0]
@@ -58,7 +58,7 @@ public class StringSerializer: ShapeSerializer {
         }
     }
 
-    public func writeMap<Value>(_ schema: Smithy.Schema, _ value: [String: Value], _ consumer: WriteValueConsumer<Value>) throws {
+    public func writeMap<V>(_ schema: Schema, _ value: [String: V], _ consumer: WriteValueConsumer<V>) throws {
         try writeValue(schema) {
             let mapSerializer = StringSerializer()
             let valueSchema = schema.target?.members[1] ?? schema.members[1]
@@ -73,60 +73,60 @@ public class StringSerializer: ShapeSerializer {
         }
     }
 
-    public func writeBoolean(_ schema: Smithy.Schema, _ value: Bool) throws {
+    public func writeBoolean(_ schema: Schema, _ value: Bool) throws {
         writeValue(schema) { "\(value)" }
     }
 
-    public func writeByte(_ schema: Smithy.Schema, _ value: Int8) throws {
+    public func writeByte(_ schema: Schema, _ value: Int8) throws {
         writeValue(schema) { "\(value)" }
     }
 
-    public func writeShort(_ schema: Smithy.Schema, _ value: Int16) throws {
+    public func writeShort(_ schema: Schema, _ value: Int16) throws {
         writeValue(schema) { "\(value)" }
     }
 
-    public func writeInteger(_ schema: Smithy.Schema, _ value: Int) throws {
+    public func writeInteger(_ schema: Schema, _ value: Int) throws {
         writeValue(schema) { "\(value)" }
     }
 
-    public func writeLong(_ schema: Smithy.Schema, _ value: Int) throws {
+    public func writeLong(_ schema: Schema, _ value: Int) throws {
         writeValue(schema) { "\(value)" }
     }
 
-    public func writeFloat(_ schema: Smithy.Schema, _ value: Float) throws {
+    public func writeFloat(_ schema: Schema, _ value: Float) throws {
         writeValue(schema) { "\(value)" }
     }
 
-    public func writeDouble(_ schema: Smithy.Schema, _ value: Double) throws {
+    public func writeDouble(_ schema: Schema, _ value: Double) throws {
         writeValue(schema) { "\(value)" }
     }
 
-    public func writeBigInteger(_ schema: Smithy.Schema, _ value: Int64) throws {
+    public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
         writeValue(schema) { "\(value)" }
     }
 
-    public func writeBigDecimal(_ schema: Smithy.Schema, _ value: Double) throws {
+    public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
         writeValue(schema) { "\(value)" }
     }
 
-    public func writeString(_ schema: Smithy.Schema, _ value: String) throws {
+    public func writeString(_ schema: Schema, _ value: String) throws {
         writeValue(schema) { "\"\(value)\"" }
     }
 
-    public func writeBlob(_ schema: Smithy.Schema, _ value: Data) throws {
+    public func writeBlob(_ schema: Schema, _ value: Data) throws {
         writeValue(schema) { "<\(value.count) bytes>" }
     }
 
-    public func writeTimestamp(_ schema: Smithy.Schema, _ value: Date) throws {
+    public func writeTimestamp(_ schema: Schema, _ value: Date) throws {
         let df = ISO8601DateFormatter()
         writeValue(schema) { df.string(from: value) }
     }
 
-    public func writeNull(_ schema: Smithy.Schema) throws {
+    public func writeNull(_ schema: Schema) throws {
         writeValue(schema) { "nil" }
     }
 
-    private func writeValue(_ schema: Smithy.Schema, _ value: () throws -> String) rethrows {
+    private func writeValue(_ schema: Schema, _ value: () throws -> String) rethrows {
         if isFirstElement {
             isFirstElement = false
         } else {
@@ -143,7 +143,7 @@ public class StringSerializer: ShapeSerializer {
     }
 }
 
-extension Smithy.Schema {
+private extension Schema {
 
     var isSensitive: Bool {
         let sensitive = ShapeID("smithy.api", "sensitive")

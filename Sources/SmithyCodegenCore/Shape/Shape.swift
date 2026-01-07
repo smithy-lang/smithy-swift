@@ -39,23 +39,37 @@ public class Shape {
     public var descendants: Set<Shape> {
         get throws {
             var c = Set<Shape>()
-            try descendants(&c)
+            try descendants(descendants: &c, includeInput: true, includeOutput: true)
             return c
         }
     }
 
-    private func descendants(_ descendants: inout Set<Shape>) throws {
-        for shape in try candidates {
-            if descendants.contains(shape) { continue }
-            descendants.insert(shape)
-            try shape.descendants(&descendants)
+    public var inputDescendants: Set<Shape> {
+        get throws {
+            var c = Set<Shape>()
+            try descendants(descendants: &c, includeInput: true, includeOutput: false)
+            return c
         }
     }
 
-    var candidates: [Shape] {
+    public var outputDescendants: Set<Shape> {
         get throws {
-            [] // default.  May be overridden by Shape subclasses.
+            var c = Set<Shape>()
+            try descendants(descendants: &c, includeInput: false, includeOutput: true)
+            return c
         }
+    }
+
+    private func descendants(descendants: inout Set<Shape>, includeInput: Bool, includeOutput: Bool) throws {
+        for shape in try candidates(includeInput: includeInput, includeOutput: includeOutput) {
+            if descendants.contains(shape) { continue }
+            descendants.insert(shape)
+            try shape.descendants(descendants: &descendants, includeInput: includeInput, includeOutput: includeOutput)
+        }
+    }
+
+    func candidates(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+        [] // default.  May be overridden by Shape subclasses.
     }
 }
 

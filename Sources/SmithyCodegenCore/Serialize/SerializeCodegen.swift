@@ -18,9 +18,13 @@ package struct SerializeCodegen {
         writer.write("import typealias SmithySerialization.WriteStructConsumer")
         writer.write("")
 
-        let structsAndUnions = ctx.model.allShapesSorted.filter { $0.type == .structure || $0.type == .union }
-        for shape in structsAndUnions {
-            let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
+        let service = try ctx.model.expectShape(id: ctx.serviceID) as! ServiceShape
+        let inputStructsAndUnions = try service
+            .inputDescendants
+            .filter { $0.type == .structure || $0.type == .union }
+            .sorted { $0.id.id.lowercased() < $1.id.id.lowercased() }
+        for shape in inputStructsAndUnions {
+            let swiftType = try ctx.symbolProvider.inputSwiftType(shape: shape)
             let varName = shape.type == .structure ? "structure" : "union"
             try writer.openBlock("extension \(swiftType): SmithySerialization.SerializableStruct {", "}") { writer in
                 writer.write("")
@@ -70,8 +74,10 @@ package struct SerializeCodegen {
         case .list:
             let listShape = try member.target as! ListShape // swiftlint:disable:this force_cast
             let schemaVarName = try shape.schemaVarName
+            let isSparse = listShape.hasTrait(.init("smithy.api", "sparse"))
+            let methodName = isSparse ? "writeSparseList" : "writeList"
             try writer.openBlock(
-                "try serializer.writeList(\(schemaVarName).\(accessor), value) { value, serializer in",
+                "try serializer.\(methodName)(\(schemaVarName).\(accessor), value) { value, serializer in",
                 "}"
             ) { writer in
                 try writeSerializeCall(writer: writer, shape: listShape, member: listShape.member, accessor: "member")
@@ -79,8 +85,10 @@ package struct SerializeCodegen {
         case .map:
             let mapShape = try member.target as! MapShape // swiftlint:disable:this force_cast
             let schemaVarName = try shape.schemaVarName
+            let isSparse = mapShape.hasTrait(.init("smithy.api", "sparse"))
+            let methodName = isSparse ? "writeSparseMap" : "writeMap"
             try writer.openBlock(
-                "try serializer.writeMap(\(schemaVarName).\(accessor), value) { value, serializer in",
+                "try serializer.\(methodName)(\(schemaVarName).\(accessor), value) { value, serializer in",
                 "}"
             ) { writer in
                 try writeSerializeCall(writer: writer, shape: mapShape, member: mapShape.value, accessor: "value")

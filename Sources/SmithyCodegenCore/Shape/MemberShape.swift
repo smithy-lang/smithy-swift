@@ -36,9 +36,7 @@ public class MemberShape: Shape {
         }
     }
 
-    override var candidates: [Shape] {
-        get throws {
-            [try target]
-        }
+    override func candidates(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+        [try target]
     }
 }

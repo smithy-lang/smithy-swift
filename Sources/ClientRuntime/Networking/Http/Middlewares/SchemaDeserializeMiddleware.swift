@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.DateFormatter
 import struct Foundation.Locale
@@ -50,8 +51,8 @@ extension SchemaDeserializeMiddleware: ResponseMessageDeserializer {
 
         let copiedResponse = response
         if (200..<300).contains(response.statusCode.rawValue) {
-            let deserializer = try codec.makeDeserializer()
-            // TODO: wire up response stream to deserializer here
+            let bodyData = try await copiedResponse.body.readData() ?? Data()
+            let deserializer = try codec.makeDeserializer(data: bodyData)
             return try OperationStackOutput.deserialize(deserializer)
         } else {
             // if the response is a stream, we need to cache the stream so that it can be read again

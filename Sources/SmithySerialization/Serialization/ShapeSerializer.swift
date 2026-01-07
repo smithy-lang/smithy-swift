@@ -55,12 +55,12 @@ public extension ShapeSerializer {
     
     /// Write a sparse list.
     ///
-    /// The compiler will resolve to this `writeList` overload when a list's element type is optional.  No need to reference the `@sparse` trait.
+    /// Generated code will call this method when the list has the sparse trait.
     /// - Parameters:
-    ///   - schema: The list schema.
+    ///   - schema: The member schema targeting the list.
     ///   - value: The sparse list to be written.
     ///   - consumer: The `WriteValueConsumer` for the non-optional element type.
-    func writeList<E>(_ schema: Schema, _ value: [E?], _ consumer: WriteValueConsumer<E>) throws {
+    func writeSparseList<E>(_ schema: Schema, _ value: [E?], _ consumer: WriteValueConsumer<E>) throws {
         try writeList(schema, value) { element, serializer in
             if let element {
                 try consumer(element, serializer)
@@ -72,12 +72,12 @@ public extension ShapeSerializer {
     
     /// Write a sparse map.
     ///
-    /// The compiler will resolve to this `writeMap` overload when a map's value type is optional.  No need to reference the `@sparse` trait.
+    /// Generated code will call this method when the map has the sparse trait.
     /// - Parameters:
-    ///   - schema: The map schema.
+    ///   - schema: The member schema targeting the map.
     ///   - value: The sparse map to be written.
     ///   - consumer: The `WriteValueConsumer` for the non-optional element type.
-    func writeMap<V>(_ schema: Schema, _ value: [String: V?], _ consumer: WriteValueConsumer<V>) throws {
+    func writeSparseMap<V>(_ schema: Schema, _ value: [String: V?], _ consumer: WriteValueConsumer<V>) throws {
         try writeMap(schema, value) { element, serializer in
             if let element {
                 try consumer(element, serializer)

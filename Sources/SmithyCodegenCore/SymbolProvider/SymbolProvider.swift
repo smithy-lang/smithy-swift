@@ -40,28 +40,47 @@ public struct SymbolProvider {
     private var inputOperationNameTraitID = ShapeID("swift.synthetic", "inputOperationName")
     private var outputOperationNameTraitID = ShapeID("swift.synthetic", "outputOperationName")
 
+    public func inputSwiftType(shape: Shape) throws -> String {
+        guard shape.type == .structure else {
+            return try swiftType(shape: shape)
+        }
+        if case .string(let name) = shape.getTrait(inputOperationNameTraitID), shape.hasTrait(inputTraitID) {
+            return "\(name)Input"
+        } else if shape.hasTrait(inputTraitID) {
+            guard let operation = model.shapes.values
+                .filter({ $0.type == .operation })
+                .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
+                .first(where: { $0.inputID == shape.id })
+            else { throw SymbolProviderError("Operation for input \(shape.id) not found") }
+            return "\(operation.id.name)Input"
+        } else {
+            return try swiftType(shape: shape)
+        }
+    }
+
+    public func outputSwiftType(shape: Shape) throws -> String {
+        guard shape.type == .structure else {
+            return try swiftType(shape: shape)
+        }
+
+        if case .string(let name) = shape.getTrait(outputOperationNameTraitID), shape.hasTrait(outputTraitID) {
+            return "\(name)Output"
+        } else if shape.hasTrait(outputTraitID) {
+            guard let operation = model.shapes.values
+                .filter({ $0.type == .operation })
+                .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
+                .first(where: { $0.outputID == shape.id })
+            else { throw SymbolProviderError("Operation for output \(shape.id) not found") }
+            return "\(operation.id.name)Output"
+        } else {
+            return try swiftType(shape: shape)
+        }
+    }
+
     public func swiftType(shape: Shape) throws -> String {
         switch shape.type {
         case .structure, .union, .enum, .intEnum:
-            if case .string(let name) = shape.getTrait(inputOperationNameTraitID), shape.hasTrait(inputTraitID) {
-                return "\(name)Input"
-            } else if shape.hasTrait(inputTraitID) {
-                guard let operation = model.shapes.values
-                    .filter({ $0.type == .operation })
-                    .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
-                    .first(where: { $0.inputID == shape.id })
-                else { throw SymbolProviderError("Operation for input \(shape.id) not found") }
-                return "\(operation.id.name)Input"
-            } else if case .string(let name) = shape.getTrait(outputOperationNameTraitID), shape.hasTrait(outputTraitID) {
-                return "\(name)Output"
-            } else if shape.hasTrait(outputTraitID) {
-                guard let operation = model.shapes.values
-                    .filter({ $0.type == .operation })
-                    .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
-                    .first(where: { $0.outputID == shape.id })
-                else { throw SymbolProviderError("Operation for output \(shape.id) not found") }
-                return "\(operation.id.name)Output"
-            } else if shape.hasTrait(errorTraitID) {
+            if shape.hasTrait(errorTraitID) {
                 return shape.id.name
             } else if shape.type == .intEnum {
                 // The NestedShapeTransformer in main codegen inadvertently excludes intEnum
@@ -80,13 +99,15 @@ public struct SymbolProvider {
                 throw SymbolProviderError("Shape has type .list but is not a ListShape")
             }
             let elementType = try swiftType(shape: listShape.member.target)
-            return "[\(elementType)]"
+            let opt = try NullableIndex().isNonOptional(listShape.member) ? "" : "?"
+            return "[\(elementType)\(opt)]"
         case .map:
             guard let mapShape = shape as? MapShape else {
                 throw SymbolProviderError("Shape has type .map but is not a MapShape")
             }
             let valueType = try swiftType(shape: mapShape.value.target)
-            return "[Swift.String: \(valueType)]"
+            let opt = try NullableIndex().isNonOptional(mapShape.value) ? "" : "?"
+            return "[Swift.String: \(valueType)\(opt)]"
         case .string:
             return "Swift.String"
         case .boolean:

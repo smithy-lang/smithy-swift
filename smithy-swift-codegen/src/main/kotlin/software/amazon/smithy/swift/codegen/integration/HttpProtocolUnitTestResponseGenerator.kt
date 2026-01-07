@@ -15,6 +15,7 @@ import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.hasStreamingMember
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
@@ -23,7 +24,10 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestW
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyCBORTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import java.util.Base64
 
 /**
@@ -164,8 +168,15 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
     }
 
     private fun renderActualOutput(outputStruct: Symbol) {
-        val responseClosure = ResponseClosureUtils(ctx, writer, operation).render()
-        writer.write("let actual: \$N = try await \$L(httpResponse)", outputStruct, responseClosure)
+        if (SerdeUtils.useSchemaBased(ctx)) {
+            writer.write("let codec = \$N()", SmithyCBORTypes.Codec)
+            writer.write("let httpResponseData = try await httpResponse.body.readData() ?? \$N()", FoundationTypes.Data)
+            writer.write("let deserializer = try codec.makeDeserializer(data: httpResponseData)")
+            writer.write("let actual = try \$N.deserialize(deserializer)", outputStruct)
+        } else {
+            val responseClosure = ResponseClosureUtils(ctx, writer, operation).render()
+            writer.write("let actual: \$N = try await \$L(httpResponse)", outputStruct, responseClosure)
+        }
     }
 
     protected fun renderExpectedOutput(

@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
 import protocol SmithySerialization.Codec
 import protocol SmithySerialization.ShapeSerializer
 import protocol SmithySerialization.ShapeDeserializer
@@ -17,7 +18,7 @@ public struct Codec: SmithySerialization.Codec {
         try Serializer()
     }
 
-    public func makeDeserializer() throws -> any ShapeDeserializer {
-        try Deserializer()
+    public func makeDeserializer(data: Data) throws -> any ShapeDeserializer {
+        try Deserializer(data: data)
     }
 }

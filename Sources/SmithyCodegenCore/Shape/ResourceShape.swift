@@ -38,10 +38,8 @@ public class ResourceShape: Shape {
         super.init(id: id, type: .resource, traits: traits)
     }
 
-    override var candidates: [Shape] {
-        get throws {
-            let allOps = [createID, putID, readID, updateID, deleteID, listID].compactMap { $0 } + operationIDs
-            return allOps.compactMap { model.shapes[$0] }
-        }
+    override func candidates(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+        let allOps = [createID, putID, readID, updateID, deleteID, listID].compactMap { $0 } + operationIDs
+        return allOps.compactMap { model.shapes[$0] }
     }
 }

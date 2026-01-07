@@ -32,10 +32,10 @@ class DeserializeMiddleware(
         writer: SwiftWriter,
         op: OperationShape,
     ) {
-//        if (SerdeUtils.useSchemaBased(ctx)) {
-//            renderSchemaBasedMiddlewareInit(ctx, writer, op)
-//            return
-//        }
+        if (SerdeUtils.useSchemaBased(ctx)) {
+            renderSchemaBasedMiddlewareInit(ctx, writer, op)
+            return
+        }
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val httpResponseClosure = ResponseClosureUtils(ctx, writer, op).render()
         val httpResponseErrorClosure = ResponseErrorClosureUtils(ctx, writer, op).render()

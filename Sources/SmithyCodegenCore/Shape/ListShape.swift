@@ -27,9 +27,7 @@ public class ListShape: Shape, HasMembers {
         [member]
     }
 
-    override var candidates: [Shape] {
-        get throws {
-            members
-        }
+    override func candidates(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+        members
     }
 }

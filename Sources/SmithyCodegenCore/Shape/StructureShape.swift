@@ -32,9 +32,7 @@ public class StructureShape: Shape, HasMembers {
         }
     }
 
-    override var candidates: [Shape] {
-        get throws {
-            try members
-        }
+    override func candidates(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+        try members
     }
 }

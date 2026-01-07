@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Foundation.Data
+
 public protocol Codec {
     func makeSerializer() throws -> any ShapeSerializer
-    func makeDeserializer() throws -> any ShapeDeserializer
+    func makeDeserializer(data: Data) throws -> any ShapeDeserializer
 }

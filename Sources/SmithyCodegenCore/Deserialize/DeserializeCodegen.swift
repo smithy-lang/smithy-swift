@@ -9,6 +9,14 @@ package struct DeserializeCodegen {
 
     package init() {}
 
+    private func schemaNotDefinedBySerialize(shape: Shape, inputShapes: Set<Shape>) throws -> Bool {
+        if let inputShape = inputShapes.first(where: { $0.id == shape.id }) {
+            return inputShape.hasTrait(.init("smithy.api", "input"))
+        } else {
+            return true
+        }
+    }
+
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import Foundation")
@@ -19,12 +27,23 @@ package struct DeserializeCodegen {
         writer.write("import protocol SmithySerialization.ShapeDeserializer")
         writer.write("")
 
-        let structsAndUnions = ctx.model.allShapesSorted.filter { $0.type == .structure || $0.type == .union }
-        for shape in structsAndUnions {
-            let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
+        let service = try ctx.model.expectShape(id: ctx.serviceID) as! ServiceShape
+        let outputStructsAndUnions = try service
+            .outputDescendants
+            .filter { $0.type == .structure || $0.type == .union }
+            .sorted { $0.id.id.lowercased() < $1.id.id.lowercased() }
+        let inputStructsAndUnions = try service
+            .inputDescendants
+            .filter { $0.type == .structure || $0.type == .union }
+        for shape in outputStructsAndUnions {
+            let swiftType = try ctx.symbolProvider.outputSwiftType(shape: shape)
             let varName = shape.type == .structure ? "structure" : "union"
             try writer.openBlock("extension \(swiftType): SmithySerialization.DeserializableStruct {", "}") { writer in
                 writer.write("")
+                if try schemaNotDefinedBySerialize(shape: shape, inputShapes: inputStructsAndUnions) {
+                    writer.write("public static var schema: Smithy.Schema { \(try shape.schemaVarName) }")
+                    writer.write("")
+                }
                 let consumerType = "SmithySerialization.ReadStructConsumer<Self>"
                 try writer.openBlock(
                     "public static var readConsumer: \(consumerType) {", "}") { writer in
@@ -79,12 +98,14 @@ package struct DeserializeCodegen {
                 throw SymbolProviderError("Shape has type .list but is not a ListShape")
             }
             let listSwiftType = try ctx.symbolProvider.swiftType(shape: listShape)
+            let isSparse = listShape.hasTrait(.init("smithy.api", "sparse"))
+            let methodName = isSparse ? "readSparseList" : "readList"
             writer.write("var value = \(listSwiftType)()")
             try writer.openBlock(
-                "try deserializer.readList(\(schemaVarName), &value) { deserializer in",
+                "try deserializer.\(methodName)(\(schemaVarName), &value) { deserializer in",
                 "}"
             ) { writer in
-                try writeDeserializeCall(ctx: ctx, writer: writer, shape: listShape, member: listShape.member, index: 0, varName: varName)
+                try writeDeserializeCall(ctx: ctx, writer: writer, shape: listShape, member: listShape.member, index: 0, varName: varName, schemaRef: "\(schemaVarName).target!.member")
             }
             try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member, varName: varName)
         case .map:
@@ -92,13 +113,14 @@ package struct DeserializeCodegen {
                 throw SymbolProviderError("Shape has type .map but is not a MapShape")
             }
             let mapSwiftType = try ctx.symbolProvider.swiftType(shape: mapShape)
+            let isSparse = mapShape.hasTrait(.init("smithy.api", "sparse"))
+            let methodName = isSparse ? "readSparseMap" : "readMap"
             writer.write("var value = \(mapSwiftType)()")
-            let schemaVarName = try shape.schemaVarName
             try writer.openBlock(
-                "try deserializer.readMap(\(schemaVarName), &value) { deserializer in",
+                "try deserializer.\(methodName)(\(schemaVarName), &value) { deserializer in",
                 "}"
             ) { writer in
-                try writeDeserializeCall(ctx: ctx, writer: writer, shape: mapShape, member: mapShape.value, index: 1, varName: varName)
+                try writeDeserializeCall(ctx: ctx, writer: writer, shape: mapShape, member: mapShape.value, index: 1, varName: varName, schemaRef: "\(schemaVarName).target!.value")
             }
             try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member, varName: varName)
         default:
