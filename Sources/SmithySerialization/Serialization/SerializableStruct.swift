@@ -11,12 +11,10 @@ public protocol SerializableStruct: SerializableShape, CustomDebugStringConverti
 
 public extension SerializableStruct {
 
-    func serialize(_ serializer: any ShapeSerializer) throws {
-        try serializer.writeStruct(Self.schema, self)
-    }
-
     var debugDescription: String {
         let serializer = StringSerializer()
+        // Safe to try! here because StringSerializer never throws
+        // swiftlint:disable:next force_try
         try! serialize(serializer)
         return serializer.string
     }

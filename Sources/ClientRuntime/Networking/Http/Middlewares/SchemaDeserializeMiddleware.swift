@@ -14,10 +14,10 @@ import struct Foundation.TimeZone
 import struct Foundation.UUID
 import class Smithy.Context
 import protocol Smithy.ResponseMessageDeserializer
-import protocol SmithySerialization.Codec
-import protocol SmithySerialization.DeserializableShape
 import SmithyHTTPAPI
 @_spi(SmithyReadWrite) import SmithyReadWrite
+import protocol SmithySerialization.Codec
+import protocol SmithySerialization.DeserializableShape
 
 @_spi(SmithyReadWrite)
 public struct SchemaDeserializeMiddleware<OperationStackOutput: DeserializableShape> {

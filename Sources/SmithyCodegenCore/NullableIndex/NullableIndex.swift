@@ -9,7 +9,7 @@ import struct Smithy.ShapeID
 import enum Smithy.ShapeType
 
 struct NullableIndex {
-    
+
     /// Determines whether a structure member should be rendered as non-optional.
     /// - Parameter memberShape: The member for which optionality is being determined
     /// - Returns: `true` if the member should be non-optional, `false` otherwise

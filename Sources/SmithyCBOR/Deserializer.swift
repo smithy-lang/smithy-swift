@@ -5,23 +5,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import AwsCommonRuntimeKit
+import class AwsCommonRuntimeKit.CBORDecoder
 import struct Foundation.Data
 import struct Foundation.Date
-import class Smithy.Schema
 @_spi(SmithyDocumentImpl) import struct Smithy.BigDecimalDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.BigIntegerDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.BlobDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.BooleanDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.ListDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.NullDocument
+import class Smithy.Schema
+import protocol Smithy.SmithyDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.StringDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.StringMapDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.TimestampDocument
-import protocol Smithy.SmithyDocument
+import protocol SmithySerialization.DeserializableStruct
 import typealias SmithySerialization.ReadStructConsumer
 import typealias SmithySerialization.ReadValueConsumer
-import protocol SmithySerialization.DeserializableStruct
 import protocol SmithySerialization.ShapeDeserializer
 
 struct Deserializer: ShapeDeserializer {
@@ -33,7 +33,7 @@ struct Deserializer: ShapeDeserializer {
         self.decoder = try CBORDecoder(data: Array(resolvedData), rollupCollections: false)
     }
 
-    func readBoolean(_ schema: Smithy.Schema) throws -> Bool {
+    func readBoolean(_ schema: Schema) throws -> Bool {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -44,8 +44,8 @@ struct Deserializer: ShapeDeserializer {
         }
         return value
     }
-    
-    func readBlob(_ schema: Smithy.Schema) throws -> Data {
+
+    func readBlob(_ schema: Schema) throws -> Data {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -56,8 +56,8 @@ struct Deserializer: ShapeDeserializer {
         }
         return value
     }
-    
-    func readByte(_ schema: Smithy.Schema) throws -> Int8 {
+
+    func readByte(_ schema: Schema) throws -> Int8 {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -72,8 +72,8 @@ struct Deserializer: ShapeDeserializer {
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
     }
-    
-    func readShort(_ schema: Smithy.Schema) throws -> Int16 {
+
+    func readShort(_ schema: Schema) throws -> Int16 {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -88,8 +88,8 @@ struct Deserializer: ShapeDeserializer {
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
     }
-    
-    func readInteger(_ schema: Smithy.Schema) throws -> Int {
+
+    func readInteger(_ schema: Schema) throws -> Int {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -104,8 +104,8 @@ struct Deserializer: ShapeDeserializer {
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
     }
-    
-    func readLong(_ schema: Smithy.Schema) throws -> Int {
+
+    func readLong(_ schema: Schema) throws -> Int {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -120,8 +120,8 @@ struct Deserializer: ShapeDeserializer {
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
     }
-    
-    func readFloat(_ schema: Smithy.Schema) throws -> Float {
+
+    func readFloat(_ schema: Schema) throws -> Float {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -132,8 +132,8 @@ struct Deserializer: ShapeDeserializer {
         }
         return Float(value)
     }
-    
-    func readDouble(_ schema: Smithy.Schema) throws -> Double {
+
+    func readDouble(_ schema: Schema) throws -> Double {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -144,8 +144,8 @@ struct Deserializer: ShapeDeserializer {
         }
         return value
     }
-    
-    func readBigInteger(_ schema: Smithy.Schema) throws -> Int64 {
+
+    func readBigInteger(_ schema: Schema) throws -> Int64 {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -160,8 +160,8 @@ struct Deserializer: ShapeDeserializer {
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
     }
-    
-    func readBigDecimal(_ schema: Smithy.Schema) throws -> Double {
+
+    func readBigDecimal(_ schema: Schema) throws -> Double {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -172,8 +172,8 @@ struct Deserializer: ShapeDeserializer {
         }
         return value
     }
-    
-    func readString(_ schema: Smithy.Schema) throws -> String {
+
+    func readString(_ schema: Schema) throws -> String {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -184,8 +184,8 @@ struct Deserializer: ShapeDeserializer {
         }
         return value
     }
-    
-    func readDocument() throws -> any Smithy.SmithyDocument {
+
+    func readDocument() throws -> any SmithyDocument {
         guard decoder.hasNext() else {
             throw CBORDecoderError("document ended unexpectedly")
         }
@@ -249,8 +249,8 @@ struct Deserializer: ShapeDeserializer {
             throw CBORDecoderError("document has unhandled CBOR element \(next)")
         }
     }
-    
-    func readTimestamp(_ schema: Smithy.Schema) throws -> Date {
+
+    func readTimestamp(_ schema: Schema) throws -> Date {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -261,12 +261,12 @@ struct Deserializer: ShapeDeserializer {
         }
         return value
     }
-    
+
     func isNull() throws -> Bool {
         try decoder.isNull()
     }
 
-    func readNull<T>(_ schema: Smithy.Schema) throws -> T? {
+    func readNull<T>(_ schema: Schema) throws -> T? {
         let next = try decoder.popNext()
         guard case .null = next else {
             throw CBORDecoderError("member \(schema.id) expected .null but got \(next) instead")
@@ -274,10 +274,7 @@ struct Deserializer: ShapeDeserializer {
         return nil
     }
 
-    func readStruct<T: SmithySerialization.DeserializableStruct>(
-        _ schema: Smithy.Schema,
-        _ value: inout T
-    ) throws {
+    func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
         let structureSchema: Schema
         switch schema.type {
         case .structure, .union:
@@ -305,7 +302,7 @@ struct Deserializer: ShapeDeserializer {
                     throw CBORDecoderError("struct \(schema.id) expected text, received \(next)")
                 }
                 do {
-                    if let member = structureSchema.members.first { $0.id.member == memberName } {
+                    if let member = structureSchema.members.first(where: { $0.id.member == memberName }) {
                         try T.readConsumer(member, &value, self)
                     } else {
                         try skipValue()
@@ -329,7 +326,7 @@ struct Deserializer: ShapeDeserializer {
                 }
 
                 do {
-                    if let member = structureSchema.members.first { $0.id.member == memberName } {
+                    if let member = structureSchema.members.first(where: { $0.id.member == memberName }) {
                         try T.readConsumer(member, &value, self)
                     } else {
                         try skipValue()
@@ -373,11 +370,7 @@ struct Deserializer: ShapeDeserializer {
         }
     }
 
-    func readList<Element>(
-        _ schema: Smithy.Schema,
-        _ list: inout [Element],
-        _ consumer: SmithySerialization.ReadValueConsumer<Element>
-    ) throws {
+    func readList<E>(_ schema: Schema, _ list: inout [E], _ consumer: ReadValueConsumer<E>) throws {
         guard decoder.hasNext() else {
             throw CBORDecoderError("List \(schema.id) ended unexpectedly")
         }
@@ -388,7 +381,6 @@ struct Deserializer: ShapeDeserializer {
             guard decoder.hasNext() else {
                 throw CBORDecoderError("List \(schema.id) ended unexpectedly")
             }
-            var next = start
             while try !decoder.isIndefBreak() {
                 do {
                     let nextElement = try consumer(self)
@@ -416,11 +408,7 @@ struct Deserializer: ShapeDeserializer {
         }
     }
 
-    func readMap<Value>(
-        _ schema: Smithy.Schema,
-        _ map: inout [String : Value],
-        _ consumer: SmithySerialization.ReadValueConsumer<Value>
-    ) throws {
+    func readMap<V>( _ schema: Schema, _ map: inout [String: V], _ consumer: ReadValueConsumer<V>) throws {
         guard decoder.hasNext() else {
             throw CBORDecoderError("Map \(schema.id) ended unexpectedly")
         }
@@ -465,6 +453,7 @@ struct Deserializer: ShapeDeserializer {
         }
     }
 
+    /// Container size is not implemented & returns unknown size, even for definite CBOR maps & arrays
     var containerSize: Int = -1
 
     private func nullCheck() throws {

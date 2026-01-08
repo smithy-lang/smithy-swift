@@ -18,7 +18,11 @@ package struct SerializeCodegen {
         writer.write("import typealias SmithySerialization.WriteStructConsumer")
         writer.write("")
 
-        let service = try ctx.model.expectShape(id: ctx.serviceID) as! ServiceShape
+        // Get the service
+        guard let service = try ctx.model.expectShape(id: ctx.serviceID) as? ServiceShape else {
+            throw ModelError("Service \"\(ctx.serviceID)\" not found in model")
+        }
+
         let inputStructsAndUnions = try service
             .inputDescendants
             .filter { $0.type == .structure || $0.type == .union }
@@ -28,7 +32,13 @@ package struct SerializeCodegen {
             let varName = shape.type == .structure ? "structure" : "union"
             try writer.openBlock("extension \(swiftType): SmithySerialization.SerializableStruct {", "}") { writer in
                 writer.write("")
-                writer.write("public static var schema: Smithy.Schema { \(try shape.schemaVarName) }")
+                try writer.openBlock(
+                    "public func serialize(_ serializer: any SmithySerialization.ShapeSerializer) throws {",
+                    "}"
+                ) { writer in
+                    let schemaVarName = try shape.schemaVarName
+                    writer.write("try serializer.writeStruct(\(schemaVarName), self)")
+                }
                 writer.write("")
                 try writer.openBlock(
                     "public static var writeConsumer: SmithySerialization.WriteStructConsumer<Self> {", "}"
@@ -44,16 +54,18 @@ package struct SerializeCodegen {
                                 if try NullableIndex().isNonOptional(member) {
                                     writer.write("let value = \(varName).\(properties)\(propertyName)")
                                 } else {
-                                    writer.write("guard let value = \(varName).\(properties)\(propertyName) else { break }")
+                                    writer.write(
+                                        "guard let value = \(varName).\(properties)\(propertyName) else { break }"
+                                    )
                                 }
                                 try writeSerializeCall(
-                                    writer: writer, shape: shape, member: member, accessor: "members[\(index)]"
+                                    writer: writer, shape: shape, member: member, schemaVarName: "memberSchema"
                                 )
                             } else { // shape is a union
                                 let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
                                 writer.write("guard case .\(enumCaseName)(let value) = \(varName) else { break }")
                                 try writeSerializeCall(
-                                    writer: writer, shape: shape, member: member, accessor: "members[\(index)]"
+                                    writer: writer, shape: shape, member: member, schemaVarName: "memberSchema"
                                 )
                             }
                             writer.dedent()
@@ -69,34 +81,46 @@ package struct SerializeCodegen {
         return writer.finalize()
     }
 
-    private func writeSerializeCall(writer: SwiftWriter, shape: Shape, member: MemberShape, accessor: String) throws {
+    private func writeSerializeCall(
+        writer: SwiftWriter,
+        shape: Shape,
+        member: MemberShape,
+        schemaVarName: String
+    ) throws {
         switch try member.target.type {
         case .list:
             let listShape = try member.target as! ListShape // swiftlint:disable:this force_cast
-            let schemaVarName = try shape.schemaVarName
             let isSparse = listShape.hasTrait(.init("smithy.api", "sparse"))
             let methodName = isSparse ? "writeSparseList" : "writeList"
             try writer.openBlock(
-                "try serializer.\(methodName)(\(schemaVarName).\(accessor), value) { value, serializer in",
+                "try serializer.\(methodName)(\(schemaVarName), value) { value, serializer in",
                 "}"
             ) { writer in
-                try writeSerializeCall(writer: writer, shape: listShape, member: listShape.member, accessor: "member")
+                try writeSerializeCall(
+                    writer: writer,
+                    shape: listShape,
+                    member: listShape.member,
+                    schemaVarName: "\(schemaVarName).target!.member"
+                )
             }
         case .map:
             let mapShape = try member.target as! MapShape // swiftlint:disable:this force_cast
-            let schemaVarName = try shape.schemaVarName
             let isSparse = mapShape.hasTrait(.init("smithy.api", "sparse"))
             let methodName = isSparse ? "writeSparseMap" : "writeMap"
             try writer.openBlock(
-                "try serializer.\(methodName)(\(schemaVarName).\(accessor), value) { value, serializer in",
+                "try serializer.\(methodName)(\(schemaVarName), value) { value, serializer in",
                 "}"
             ) { writer in
-                try writeSerializeCall(writer: writer, shape: mapShape, member: mapShape.value, accessor: "value")
+                try writeSerializeCall(
+                    writer: writer,
+                    shape: mapShape,
+                    member: mapShape.value,
+                    schemaVarName: "\(schemaVarName).target!.value"
+                )
             }
         default:
             let methodName = try member.target.serializeMethodName
-            let schemaVarName = try shape.schemaVarName
-            writer.write("try serializer.\(methodName)(\(schemaVarName).\(accessor), value)")
+            writer.write("try serializer.\(methodName)(\(schemaVarName), value)")
         }
     }
 

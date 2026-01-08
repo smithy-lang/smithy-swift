@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import AwsCommonRuntimeKit
+import class AwsCommonRuntimeKit.CBOREncoder
 import struct Foundation.Data
 import struct Foundation.Date
 import class Smithy.Schema
-import protocol SmithySerialization.ShapeSerializer
 import protocol SmithySerialization.SerializableStruct
+import protocol SmithySerialization.ShapeSerializer
 import typealias SmithySerialization.WriteValueConsumer
 
 public final class Serializer: ShapeSerializer {
@@ -26,7 +26,7 @@ public final class Serializer: ShapeSerializer {
         self.encoder = encoder
     }
 
-    public func writeStruct<S: SerializableStruct>(_ schema: Smithy.Schema, _ value: S) throws {
+    public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
         writeMember()
         encoder.encode(.indef_map_start)
         let members = schema.target?.members ?? schema.members
@@ -36,7 +36,7 @@ public final class Serializer: ShapeSerializer {
         }
         encoder.encode(.indef_break)
     }
-    
+
     public func writeList<E>(_ schema: Schema, _ value: [E], _ consumer: WriteValueConsumer<E>) throws {
         writeMember()
         encoder.encode(.array_start(value.count))
@@ -45,7 +45,7 @@ public final class Serializer: ShapeSerializer {
             try consumer(element, elementEncoder)
         }
     }
-    
+
     public func writeMap<V>(_ schema: Schema, _ value: [String: V], _ consumer: WriteValueConsumer<V>) throws {
         writeMember()
         encoder.encode(.map_start(value.count))
@@ -55,72 +55,72 @@ public final class Serializer: ShapeSerializer {
             try consumer(value, valueEncoder)
         }
     }
-    
-    public func writeBoolean(_ schema: Smithy.Schema, _ value: Bool) throws {
+
+    public func writeBoolean(_ schema: Schema, _ value: Bool) throws {
         writeMember()
         encoder.encode(.bool(value))
     }
-    
-    public func writeByte(_ schema: Smithy.Schema, _ value: Int8) throws {
+
+    public func writeByte(_ schema: Schema, _ value: Int8) throws {
         writeMember()
         encoder.encode(.int(Int64(value)))
     }
-    
-    public func writeShort(_ schema: Smithy.Schema, _ value: Int16) throws {
+
+    public func writeShort(_ schema: Schema, _ value: Int16) throws {
         writeMember()
         encoder.encode(.int(Int64(value)))
     }
-    
-    public func writeInteger(_ schema: Smithy.Schema, _ value: Int) throws {
+
+    public func writeInteger(_ schema: Schema, _ value: Int) throws {
         writeMember()
         encoder.encode(.int(Int64(value)))
     }
-    
-    public func writeLong(_ schema: Smithy.Schema, _ value: Int) throws {
+
+    public func writeLong(_ schema: Schema, _ value: Int) throws {
         writeMember()
         encoder.encode(.int(Int64(value)))
     }
-    
-    public func writeFloat(_ schema: Smithy.Schema, _ value: Float) throws {
+
+    public func writeFloat(_ schema: Schema, _ value: Float) throws {
         writeMember()
         encoder.encode(.double(Double(value)))
     }
-    
-    public func writeDouble(_ schema: Smithy.Schema, _ value: Double) throws {
+
+    public func writeDouble(_ schema: Schema, _ value: Double) throws {
         writeMember()
         encoder.encode(.double(value))
     }
-    
-    public func writeBigInteger(_ schema: Smithy.Schema, _ value: Int64) throws {
+
+    public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
         writeMember()
         encoder.encode(.int(value))
     }
-    
-    public func writeBigDecimal(_ schema: Smithy.Schema, _ value: Double) throws {
+
+    public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
         writeMember()
         encoder.encode(.double(value))
     }
-    
-    public func writeString(_ schema: Smithy.Schema, _ value: String) throws {
+
+    public func writeString(_ schema: Schema, _ value: String) throws {
         writeMember()
         encoder.encode(.text(value))
     }
-    
-    public func writeBlob(_ schema: Smithy.Schema, _ value: Data) throws {
+
+    public func writeBlob(_ schema: Schema, _ value: Data) throws {
         writeMember()
         encoder.encode(.bytes(value))
     }
-    
-    public func writeTimestamp(_ schema: Smithy.Schema, _ value: Date) throws {
+
+    public func writeTimestamp(_ schema: Schema, _ value: Date) throws {
         writeMember()
         encoder.encode(.date(value))
     }
-    
-    public func writeNull(_ schema: Smithy.Schema) throws {
+
+    public func writeNull(_ schema: Schema) throws {
         writeMember()
         encoder.encode(.null)
     }
-    
+
     public var data: Data {
         Data(encoder.getEncoded())
     }

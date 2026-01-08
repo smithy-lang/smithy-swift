@@ -7,4 +7,4 @@
 
 import class Smithy.Schema
 
-public typealias ReadStructConsumer<T> = (Smithy.Schema, inout T, any ShapeDeserializer) throws -> Void
+public typealias ReadStructConsumer<T> = (Schema, inout T, any ShapeDeserializer) throws -> Void

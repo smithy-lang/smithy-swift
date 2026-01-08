@@ -9,7 +9,7 @@ class SerdeUtils {
             // This fun is temporary; it will be eliminated when all services/protocols are moved to schema-based
             // Right now this function only returns true for the 2 live rpcv2Cbor-based services
             // and the CBOR protocol test suites.
-            listOf("ARC Region switch", "CloudWatch", "SageMaker").contains(ctx.service.sdkId)
-                    || ctx.settings.moduleName.startsWith("RPCV2CBOR")
+            listOf("ARC Region switch", "CloudWatch", "SageMaker").contains(ctx.service.sdkId) ||
+                ctx.settings.moduleName.startsWith("RPCV2CBOR")
     }
 }

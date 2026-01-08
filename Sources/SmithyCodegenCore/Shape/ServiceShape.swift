@@ -14,7 +14,13 @@ public class ServiceShape: Shape {
     let resourceIDs: [ShapeID]
     let errorIDs: [ShapeID]
 
-    public init(id: ShapeID, traits: [ShapeID: Node], operationIDs: [ShapeID], resourceIDs: [ShapeID], errorIDs: [ShapeID]) {
+    public init(
+        id: ShapeID,
+        traits: [ShapeID: Node],
+        operationIDs: [ShapeID],
+        resourceIDs: [ShapeID],
+        errorIDs: [ShapeID]
+    ) {
         self.operationIDs = operationIDs
         self.resourceIDs = resourceIDs
         self.errorIDs = errorIDs

@@ -36,7 +36,7 @@ public protocol ShapeSerializer {
 }
 
 public extension ShapeSerializer {
-    
+
     /// Writes a Smithy enum.
     /// - Parameters:
     ///   - schema: The schema for the Smithy Enum.
@@ -52,7 +52,7 @@ public extension ShapeSerializer {
     func writeIntEnum<T: RawRepresentable>(_ schema: Schema, _ value: T) throws where T.RawValue == Int {
         try writeInteger(schema, value.rawValue)
     }
-    
+
     /// Write a sparse list.
     ///
     /// Generated code will call this method when the list has the sparse trait.
@@ -69,7 +69,7 @@ public extension ShapeSerializer {
             }
         }
     }
-    
+
     /// Write a sparse map.
     ///
     /// Generated code will call this method when the map has the sparse trait.
@@ -86,7 +86,7 @@ public extension ShapeSerializer {
             }
         }
     }
-    
+
     /// Write a Smithy document.
     ///
     /// Based on the type of the document, the contents are written using the appropriate `write...` method for its contents.

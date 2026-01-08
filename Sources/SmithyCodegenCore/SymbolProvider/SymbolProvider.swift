@@ -129,7 +129,9 @@ public struct SymbolProvider {
         case .timestamp:
             return "Foundation.Date"
         case .service:
-            let serviceShape = shape as! ServiceShape
+            guard let serviceShape = shape as? ServiceShape else {
+                throw SymbolProviderError("Shape has type .service but is not a ServiceShape")
+            }
             return "\(serviceShape.sdkId)Client".toUpperCamelCase()
         case .document, .member, .operation, .resource:
             throw SymbolProviderError("Cannot provide Swift symbol for shape type \(shape.type)")

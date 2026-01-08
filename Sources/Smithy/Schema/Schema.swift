@@ -65,7 +65,7 @@ public final class Schema: Sendable {
         self._target = target
         self.index = index
     }
-    
+
     /// Returns the member for a List's element.
     ///
     /// Only access this property on a schema of type `.list`.

@@ -22,7 +22,8 @@ public class OperationShape: Shape {
             self.inputID = Self._syntheticInputID(operationID: id)
         }
         if let outputID {
-            self.outputID = outputID == .init("smithy.api", "Unit") ? Self._syntheticOutputID(operationID: id) : outputID
+            self.outputID =
+                outputID == .init("smithy.api", "Unit") ? Self._syntheticOutputID(operationID: id) : outputID
         } else {
             self.outputID = Self._syntheticOutputID(operationID: id)
         }
@@ -31,11 +32,21 @@ public class OperationShape: Shape {
     }
 
     public var input: StructureShape {
-        model.shapes[inputID] as! StructureShape
+        get throws {
+            guard let structureShape = model.shapes[inputID] as? StructureShape else {
+                throw ModelError("Operation \"\(id)\" input is not a StructureShape")
+            }
+            return structureShape
+        }
     }
 
     public var output: StructureShape {
-        model.shapes[outputID] as! StructureShape
+        get throws {
+            guard let structureShape = model.shapes[outputID] as? StructureShape else {
+                throw ModelError("Operation \"\(id)\" output is not a StructureShape")
+            }
+            return structureShape
+        }
     }
 
     override func candidates(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
@@ -51,11 +62,13 @@ public class OperationShape: Shape {
                 guard let input = model.shapes[inputID] as? StructureShape else {
                     throw ModelError("Operation \"\(id)\" does not have input shape \"\(inputID)\"")
                 }
-                let newInput = StructureShape(id: input.id, traits: input.traits.adding(inputTraits), memberIDs: input.memberIDs)
+                let newInput =
+                    StructureShape(id: input.id, traits: input.traits.adding(inputTraits), memberIDs: input.memberIDs)
                 newInput.model = self.model
                 return newInput
             } else {
-                let newInput = StructureShape(id: Self._syntheticInputID(operationID: id), traits: inputTraits, memberIDs: [])
+                let newInput =
+                    StructureShape(id: Self._syntheticInputID(operationID: id), traits: inputTraits, memberIDs: [])
                 newInput.model = self.model
                 return newInput
             }
@@ -79,11 +92,16 @@ public class OperationShape: Shape {
                 guard let output = model.shapes[outputID] as? StructureShape else {
                     throw ModelError("Operation \"\(id)\" does not have output shape \"\(outputID)\"")
                 }
-                let newOutput = StructureShape(id: output.id, traits: output.traits.adding(outputTraits), memberIDs: output.memberIDs)
+                let newOutput = StructureShape(
+                    id: output.id,
+                    traits: output.traits.adding(outputTraits),
+                    memberIDs: output.memberIDs
+                )
                 newOutput.model = self.model
                 return newOutput
             } else {
-                let newOutput = StructureShape(id: Self._syntheticOutputID(operationID: id), traits: outputTraits, memberIDs: [])
+                let newOutput =
+                    StructureShape(id: Self._syntheticOutputID(operationID: id), traits: outputTraits, memberIDs: [])
                 newOutput.model = self.model
                 return newOutput
             }
@@ -105,6 +123,6 @@ public class OperationShape: Shape {
 private extension [ShapeID: Node] {
 
     func adding(_ additions: [ShapeID: Node]) -> [ShapeID: Node] {
-        self.merging(additions) { old, new in new }
+        self.merging(additions) { _, new in new }
     }
 }

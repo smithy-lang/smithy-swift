@@ -27,7 +27,6 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyCBORTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import java.util.Base64
 
 /**

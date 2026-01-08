@@ -11,6 +11,9 @@ import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 
 public protocol ShapeDeserializer {
+    func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws
+    func readList<E>(_ schema: Schema, _ list: inout [E], _ consumer: ReadValueConsumer<E>) throws
+    func readMap<V>(_ schema: Schema, _ map: inout [String: V], _ consumer: ReadValueConsumer<V>) throws
     func readBoolean(_ schema: Schema) throws -> Bool
     func readBlob(_ schema: Schema) throws -> Data
     func readByte(_ schema: Schema) throws -> Int8
@@ -24,39 +27,22 @@ public protocol ShapeDeserializer {
     func readString(_ schema: Schema) throws -> String
     func readDocument() throws -> any SmithyDocument
     func readTimestamp(_ schema: Schema) throws -> Date
-
-    // Used to implement parsing sparse lists and maps.
-    func isNull() throws -> Bool
     func readNull<T>(_ schema: Schema) throws -> T?
-
-    func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws
-
-    func readList<E>(_ schema: Schema, _ list: inout [E], _ consumer: ReadValueConsumer<E>) throws
-
-    func readMap<V>(_ schema: Schema, _ map: inout [String: V], _ consumer: ReadValueConsumer<V>) throws
-
+    func isNull() throws -> Bool
     var containerSize: Int { get }
 }
 
 public extension ShapeDeserializer {
 
-    func readEnum<Enum: RawRepresentable>(
-        _ schema: Schema
-    ) throws -> Enum where Enum.RawValue == String {
+    func readEnum<Enum: RawRepresentable>(_ schema: Schema) throws -> Enum where Enum.RawValue == String {
         try Enum(rawValue: readString(schema))!
     }
 
-    func readIntEnum<IntEnum: RawRepresentable>(
-        _ schema: Schema
-    ) throws -> IntEnum where IntEnum.RawValue == Int {
+    func readIntEnum<IntEnum: RawRepresentable>(_ schema: Schema) throws -> IntEnum where IntEnum.RawValue == Int {
         try IntEnum(rawValue: readInteger(schema))!
     }
 
-    func readSparseList<Element>(
-        _ schema: Schema,
-        _ list: inout [Element?],
-        _ consumer: ReadValueConsumer<Element>
-    ) throws {
+    func readSparseList<E>(_ schema: Schema, _ list: inout [E?], _ consumer: ReadValueConsumer<E>) throws {
         try readList(schema, &list) { deserializer in
             if try deserializer.isNull() {
                 return try deserializer.readNull(schema.resolveTarget.member)
@@ -66,11 +52,7 @@ public extension ShapeDeserializer {
         }
     }
 
-    func readSparseMap<Value>(
-        _ schema: Schema,
-        _ map: inout [String : Value?],
-        _ consumer: ReadValueConsumer<Value>
-    ) throws {
+    func readSparseMap<V>(_ schema: Schema, _ map: inout [String: V?], _ consumer: ReadValueConsumer<V>) throws {
         try readMap(schema, &map) { deserializer in
             if try deserializer.isNull() {
                 return try deserializer.readNull(schema.resolveTarget.value)

@@ -7,8 +7,8 @@
 
 import struct Foundation.Data
 import protocol SmithySerialization.Codec
-import protocol SmithySerialization.ShapeSerializer
 import protocol SmithySerialization.ShapeDeserializer
+import protocol SmithySerialization.ShapeSerializer
 
 public struct Codec: SmithySerialization.Codec {
 
