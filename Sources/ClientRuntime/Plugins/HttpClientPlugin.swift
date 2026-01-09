@@ -27,10 +27,11 @@ public class DefaultHttpClientPlugin: Plugin {
         )
     }
 
-    public func configureClient(clientConfiguration: ClientConfiguration) async throws -> ClientConfiguration {
-        // Since configurations are now immutable structs, we can't mutate them.
-        // The HTTP client configuration and engine are already set in the configuration's initializer,
-        // so this plugin doesn't need to do anything.
-        return clientConfiguration
+    public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
+        if var config = clientConfiguration as? any DefaultHttpClientConfiguration {
+            config.httpClientConfiguration = self.httpClientConfiguration
+            config.httpClientEngine = self.httpClient
+            clientConfiguration = config as! ClientConfiguration
+        }
     }
 }

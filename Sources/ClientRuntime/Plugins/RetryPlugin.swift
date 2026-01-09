@@ -15,10 +15,10 @@ public class RetryPlugin: Plugin {
         self.retryStrategyOptions = retryStrategyOptions
     }
 
-    public func configureClient(clientConfiguration: ClientConfiguration) async throws -> ClientConfiguration {
-        // Since configurations are now immutable structs, we can't mutate them.
-        // The retry strategy options are already set in the configuration's initializer,
-        // so this plugin doesn't need to do anything.
-        return clientConfiguration
+    public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
+        if var config = clientConfiguration as? any DefaultClientConfiguration {
+            config.retryStrategyOptions = self.retryStrategyOptions
+            clientConfiguration = config as! ClientConfiguration
+        }
     }
 }

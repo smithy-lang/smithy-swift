@@ -27,17 +27,16 @@ public class ClientBuilder<ClientType: Client> {
     }
 
     func resolve(plugins: [any Plugin]) async throws -> ClientType.Config {
-        var clientConfiguration = try await ClientType.Config()
+        var clientConfiguration: any ClientConfiguration = try await ClientType.Config()
         for plugin in plugins {
-            let configuredClient = try await plugin.configureClient(clientConfiguration: clientConfiguration)
-            guard let typedConfig = configuredClient as? ClientType.Config else {
-                throw ClientBuilderError.incompatibleConfigurationType(
-                    expected: String(describing: ClientType.Config.self),
-                    received: String(describing: type(of: configuredClient))
-                )
-            }
-            clientConfiguration = typedConfig
+            try await plugin.configureClient(clientConfiguration: &clientConfiguration)
         }
-        return clientConfiguration
+        guard let typedConfig = clientConfiguration as? ClientType.Config else {
+            throw ClientBuilderError.incompatibleConfigurationType(
+                expected: String(describing: ClientType.Config.self),
+                received: String(describing: type(of: clientConfiguration))
+            )
+        }
+        return typedConfig
     }
 }

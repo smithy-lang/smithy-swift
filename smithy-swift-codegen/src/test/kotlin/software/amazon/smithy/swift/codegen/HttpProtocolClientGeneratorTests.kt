@@ -38,20 +38,20 @@ public final class RestJsonProtocolClient: ClientRuntime.Client {
 
 extension RestJsonProtocolClient {
 
-    public struct RestJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration, Sendable {
+    public struct RestJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration, Swift.Sendable {
         public var telemetryProvider: ClientRuntime.TelemetryProvider
         public var retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
         public var clientLogMode: ClientRuntime.ClientLogMode
         public var endpoint: Swift.String?
         public var idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator
-        public var interceptorProviders: [ClientRuntime.InterceptorProvider]
         public var httpClientEngine: SmithyHTTPAPI.HTTPClient
         public var httpClientConfiguration: ClientRuntime.HttpClientConfiguration
         public var authSchemes: SmithyHTTPAuthAPI.AuthSchemes?
         public var authSchemePreference: [String]?
         public var authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver
-        public var httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]
         public var bearerTokenIdentityResolver: any SmithyIdentity.BearerTokenIdentityResolver
+        public var interceptorProviders: [ClientRuntime.InterceptorProvider]
+        public var httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]
 
         public init(
             telemetryProvider: ClientRuntime.TelemetryProvider? = nil,
@@ -59,28 +59,46 @@ extension RestJsonProtocolClient {
             clientLogMode: ClientRuntime.ClientLogMode? = nil,
             endpoint: Swift.String? = nil,
             idempotencyTokenGenerator: ClientRuntime.IdempotencyTokenGenerator? = nil,
-            interceptorProviders: [ClientRuntime.InterceptorProvider]? = nil,
             httpClientEngine: SmithyHTTPAPI.HTTPClient? = nil,
             httpClientConfiguration: ClientRuntime.HttpClientConfiguration? = nil,
             authSchemes: SmithyHTTPAuthAPI.AuthSchemes? = nil,
             authSchemePreference: [String]? = nil,
             authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver? = nil,
-            httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]? = nil,
-            bearerTokenIdentityResolver: (any SmithyIdentity.BearerTokenIdentityResolver)? = nil
+            bearerTokenIdentityResolver: (any SmithyIdentity.BearerTokenIdentityResolver)? = nil,
+            interceptorProviders: [ClientRuntime.InterceptorProvider]? = nil,
+            httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]? = nil
         ) throws {
             self.telemetryProvider = telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider
             self.retryStrategyOptions = retryStrategyOptions ?? ClientRuntime.ClientConfigurationDefaults.defaultRetryStrategyOptions
             self.clientLogMode = clientLogMode ?? ClientRuntime.ClientConfigurationDefaults.defaultClientLogMode
             self.endpoint = endpoint
             self.idempotencyTokenGenerator = idempotencyTokenGenerator ?? ClientRuntime.ClientConfigurationDefaults.defaultIdempotencyTokenGenerator
-            self.interceptorProviders = interceptorProviders ?? []
             self.httpClientEngine = httpClientEngine ?? ClientRuntime.ClientConfigurationDefaults.makeClient(httpClientConfiguration: httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration)
             self.httpClientConfiguration = httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration
             self.authSchemes = authSchemes ?? []
             self.authSchemePreference = authSchemePreference ?? nil
             self.authSchemeResolver = authSchemeResolver ?? ClientRuntime.ClientConfigurationDefaults.defaultAuthSchemeResolver
-            self.httpInterceptorProviders = httpInterceptorProviders ?? []
             self.bearerTokenIdentityResolver = bearerTokenIdentityResolver ?? SmithyIdentity.StaticBearerTokenIdentityResolver(token: SmithyIdentity.BearerTokenIdentity(token: ""))
+            self.interceptorProviders = interceptorProviders ?? []
+            self.httpInterceptorProviders = httpInterceptorProviders ?? []
+        }
+
+        public init() async throws {
+            try await self.init(
+                telemetryProvider: nil,
+                retryStrategyOptions: nil,
+                clientLogMode: nil,
+                endpoint: nil,
+                idempotencyTokenGenerator: nil,
+                httpClientEngine: nil,
+                httpClientConfiguration: nil,
+                authSchemes: nil,
+                authSchemePreference: nil,
+                authSchemeResolver: nil,
+                bearerTokenIdentityResolver: nil,
+                interceptorProviders: nil,
+                httpInterceptorProviders: nil
+            )
         }
 
         public var partitionID: String? {

@@ -8,6 +8,7 @@ package software.amazon.smithy.swift.codegen.config
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.lang.Function
+import software.amazon.smithy.swift.codegen.lang.FunctionParameter
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesAPITypes
@@ -39,26 +40,8 @@ class DefaultClientConfiguration : ClientConfiguration {
                 ClientRuntimeTypes.Core.IdempotencyTokenGenerator,
                 { it.format("\$N.defaultIdempotencyTokenGenerator", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
             ),
-            ConfigProperty(
-                "interceptorProviders",
-                ClientRuntimeTypes.Composite.InterceptorProviders,
-                { "[]" },
-            ),
         )
 
     override fun getMethods(ctx: ProtocolGenerator.GenerationContext): Set<Function> =
-        setOf(
-            Function(
-                name = "addInterceptorProvider",
-                isMutating = true,
-                renderBody = { writer -> writer.write("self.interceptorProviders.append(provider)") },
-                parameters =
-                    listOf(
-                        software.amazon.smithy.swift.codegen.lang.FunctionParameter.NoLabel(
-                            "provider",
-                            ClientRuntimeTypes.Core.InterceptorProvider,
-                        ),
-                    ),
-            ),
-        )
+        setOf()
 }

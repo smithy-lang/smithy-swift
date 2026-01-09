@@ -12,6 +12,7 @@ import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlu
 import software.amazon.smithy.swift.codegen.model.renderSwiftType
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.CodeSection
 
@@ -119,10 +120,11 @@ open class HttpProtocolServiceClient(
                 .joinToString(" & ")
 
         writer.openBlock(
-            "public struct \$LConfiguration: \$L, Sendable {",
+            "public struct \$LConfiguration: \$L, \$N {",
             "}",
             serviceConfig.clientName.toUpperCamelCase(),
             clientConfigurationProtocols,
+            SwiftTypes.Protocols.Sendable,
         ) {
             val clientConfigs = ctx.integrations.flatMap { it.clientConfigurations(ctx) }
             val properties: List<ConfigProperty> =
@@ -163,9 +165,6 @@ open class HttpProtocolServiceClient(
         serviceSymbol: Symbol,
         properties: List<ConfigProperty>,
     ) {
-        // Only render if there are async properties
-        if (properties.none { it.default?.isAsync == true }) return
-
         writer.openBlock("public init() async throws {", "}") {
             // Call the parameterized async initializer with all nil parameters
             // This delegates to the async initializer which properly handles async defaults

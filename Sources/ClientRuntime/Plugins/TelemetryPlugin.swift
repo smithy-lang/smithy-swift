@@ -28,11 +28,11 @@ public class TelemetryPlugin: Plugin {
         )
     }
 
-    public func configureClient(clientConfiguration: ClientConfiguration) async throws -> ClientConfiguration {
-        // Since configurations are now immutable structs, we can't mutate them.
-        // The telemetry provider is already set in the configuration's initializer,
-        // so this plugin doesn't need to do anything.
-        return clientConfiguration
+    public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
+        if var config = clientConfiguration as? any DefaultClientConfiguration {
+            config.telemetryProvider = self.telemetryProvider
+            clientConfiguration = config as! ClientConfiguration
+        }
     }
 }
 
