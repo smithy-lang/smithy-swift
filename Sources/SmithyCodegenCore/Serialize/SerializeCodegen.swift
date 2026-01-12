@@ -82,9 +82,12 @@ package struct SerializeCodegen {
         member: MemberShape,
         schemaVarName: String
     ) throws {
-        switch try member.target.type {
-        case .list:
-            let listShape = try member.target as! ListShape // swiftlint:disable:this force_cast
+        let target = try member.target
+        switch target.type {
+        case .list, .set:
+            guard let listShape = target as? ListShape else {
+                throw ModelError("Shape \(target.id) is type .\(target.type) but not a ListShape")
+            }
             let isSparse = listShape.hasTrait(.init("smithy.api", "sparse"))
             let methodName = isSparse ? "writeSparseList" : "writeList"
             try writer.openBlock(
@@ -99,7 +102,9 @@ package struct SerializeCodegen {
                 )
             }
         case .map:
-            let mapShape = try member.target as! MapShape // swiftlint:disable:this force_cast
+            guard let mapShape = target as? MapShape else {
+                throw ModelError("Shape \(target.id) is type .map but not a MapShape")
+            }
             let isSparse = mapShape.hasTrait(.init("smithy.api", "sparse"))
             let methodName = isSparse ? "writeSparseMap" : "writeMap"
             try writer.openBlock(
@@ -114,7 +119,7 @@ package struct SerializeCodegen {
                 )
             }
         default:
-            let methodName = try member.target.serializeMethodName
+            let methodName = try target.serializeMethodName
             writer.write("try serializer.\(methodName)(\(schemaVarName), value)")
         }
     }

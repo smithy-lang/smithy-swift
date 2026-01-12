@@ -24,7 +24,7 @@ public class EnumShape: Shape, HasMembers {
         }
     }
 
-    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
-        try members
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
+        try Set(members)
     }
 }

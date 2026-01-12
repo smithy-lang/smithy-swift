@@ -32,23 +32,51 @@ public class Model {
     }
 
     func expectServiceShape(id: ShapeID) throws -> ServiceShape {
-        guard let serviceShape = try expectShape(id: id) as? ServiceShape else {
+        guard let shape = try expectShape(id: id) as? ServiceShape else {
             throw ModelError("ShapeID \(id) is not a ServiceShape")
         }
-        return serviceShape
+        return shape
+    }
+
+    func expectResourceShape(id: ShapeID) throws -> ResourceShape {
+        guard let shape = try expectShape(id: id) as? ResourceShape else {
+            throw ModelError("ShapeID \(id) is not a ResourceShape")
+        }
+        return shape
+    }
+
+    func expectOperationShape(id: ShapeID) throws -> OperationShape {
+        guard let shape = try expectShape(id: id) as? OperationShape else {
+            throw ModelError("ShapeID \(id) is not a OperationShape")
+        }
+        return shape
     }
 
     func expectStructureShape(id: ShapeID) throws -> StructureShape {
-        guard let structureShape = try expectShape(id: id) as? StructureShape else {
+        guard let shape = try expectShape(id: id) as? StructureShape else {
             throw ModelError("ShapeID \(id) is not a StructureShape")
         }
-        return structureShape
+        return shape
+    }
+
+    func expectListShape(id: ShapeID) throws -> ListShape {
+        guard let shape = try expectShape(id: id) as? ListShape else {
+            throw ModelError("ShapeID \(id) is not a ListShape")
+        }
+        return shape
+    }
+
+    func expectMapShape(id: ShapeID) throws -> MapShape {
+        guard let shape = try expectShape(id: id) as? MapShape else {
+            throw ModelError("ShapeID \(id) is not a MapShape")
+        }
+        return shape
     }
 
     func expectMemberShape(id: ShapeID) throws -> MemberShape {
-        guard let memberShape = try expectShape(id: id) as? MemberShape else {
+        guard let shape = try expectShape(id: id) as? MemberShape else {
             throw ModelError("ShapeID \(id) is not a MemberShape")
         }
-        return memberShape
+        return shape
     }
 }

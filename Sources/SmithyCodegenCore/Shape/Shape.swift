@@ -71,9 +71,16 @@ public class Shape: HasShapeID {
             )
         }
     }
-
-    func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
-        [] // none by default.  May be overridden by Shape subclasses.
+    
+    /// Returns shapes that this shape refers to.
+    ///
+    /// Used to build a set of shapes for code generation purposes.
+    /// - Parameters:
+    ///   - includeInput: Whether to include shapes that are associated with input
+    ///   - includeOutput: Whether to include shapes that are associated with input
+    /// - Returns: A set of shapes that this shape refers to.
+    func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
+        [] // none by default.  Must be overridden by Shape subclasses that refer to descendant shape types.
     }
 }
 

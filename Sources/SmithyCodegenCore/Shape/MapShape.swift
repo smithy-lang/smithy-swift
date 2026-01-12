@@ -19,18 +19,24 @@ public class MapShape: Shape, HasMembers {
     }
 
     public var key: MemberShape {
-        model.shapes[.init(id: id, member: "key")]! as! MemberShape // swiftlint:disable:this force_cast
+        get throws {
+            try model.expectMemberShape(id: .init(id: id, member: "key"))
+        }
     }
 
     public var value: MemberShape {
-        model.shapes[.init(id: id, member: "value")]! as! MemberShape // swiftlint:disable:this force_cast
+        get throws {
+            try model.expectMemberShape(id: .init(id: id, member: "value"))
+        }
     }
 
     public var members: [MemberShape] {
-        return [key, value]
+        get throws {
+            try [key, value]
+        }
     }
 
-    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
-        members
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
+        try Set(members)
     }
 }

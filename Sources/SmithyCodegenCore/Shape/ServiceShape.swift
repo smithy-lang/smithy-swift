@@ -28,15 +28,21 @@ public class ServiceShape: Shape {
     }
 
     public var operations: [OperationShape] {
-        operationIDs.compactMap { model.shapes[$0] as? OperationShape }
+        get throws {
+            try operationIDs.compactMap { try model.expectOperationShape(id: $0) }
+        }
     }
 
     public var resources: [ResourceShape] {
-        resourceIDs.compactMap { model.shapes[$0] as? ResourceShape }
+        get throws {
+            try resourceIDs.compactMap { try model.expectResourceShape(id: $0) }
+        }
     }
 
     public var errors: [StructureShape] {
-        errorIDs.compactMap { model.shapes[$0] as? StructureShape }
+        get throws {
+            try errorIDs.compactMap { try model.expectStructureShape(id: $0) }
+        }
     }
 
     public var sdkId: String {
@@ -53,11 +59,11 @@ public class ServiceShape: Shape {
         return sdkId
     }
 
-    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
         if includeOutput {
-            return errors + operations + resources
+            try Set(errors + operations + resources)
         } else {
-            return operations + resources
+            try Set(operations + resources)
         }
     }
 }

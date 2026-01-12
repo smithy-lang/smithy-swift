@@ -19,15 +19,18 @@ public class ListShape: Shape, HasMembers {
     }
 
     public var member: MemberShape {
-        // swiftlint:disable:next force_cast
-        model.shapes[.init(id: id, member: "member")]! as! MemberShape
+        get throws {
+            try model.expectMemberShape(id: .init(id: id, member: "member"))
+        }
     }
 
     public var members: [MemberShape] {
-        [member]
+        get throws {
+            try [member]
+        }
     }
 
-    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
-        members
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
+        try Set(members)
     }
 }

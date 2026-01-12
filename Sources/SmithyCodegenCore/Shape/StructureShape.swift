@@ -20,19 +20,11 @@ public class StructureShape: Shape, HasMembers {
 
     public var members: [MemberShape] {
         get throws {
-            try memberIDs.map { memberID in
-                guard let shape = model.shapes[memberID] else {
-                    throw ModelError("shape does not exist for memberID \(memberID)")
-                }
-                guard let member = shape as? MemberShape else {
-                    throw ModelError("Shape \(memberID) is not a member shape")
-                }
-                return member
-            }
+            try memberIDs.map { try model.expectMemberShape(id: $0) }
         }
     }
 
-    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
-        try members
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
+        try Set(members)
     }
 }

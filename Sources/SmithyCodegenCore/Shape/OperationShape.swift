@@ -40,10 +40,10 @@ public class OperationShape: Shape {
         }
     }
 
-    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
         let inputOrNone = try includeInput ? [input] : []
         let outputOrNone = try includeOutput ? [output] : []
         let errorsOrNone = try includeOutput ? errorIDs.map { try model.expectShape(id: $0) } : []
-        return inputOrNone + outputOrNone + errorsOrNone
+        return Set(inputOrNone + outputOrNone + errorsOrNone)
     }
 }

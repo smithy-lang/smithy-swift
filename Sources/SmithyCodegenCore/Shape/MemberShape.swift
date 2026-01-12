@@ -36,7 +36,7 @@ public class MemberShape: Shape {
         }
     }
 
-    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
         guard targetID.namespace != "smithy.api" else { return [] }
         return [try target]
     }
