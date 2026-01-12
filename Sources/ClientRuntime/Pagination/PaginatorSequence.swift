@@ -45,7 +45,7 @@ public struct PaginatorSequence<OperationStackInput: PaginateToken, OperationSta
                     } else {
                         shouldUsePaginationToken = true
                     }
-                    
+
                     if shouldUsePaginationToken {
                         self.input = input.usingPaginationToken(token)
                     }

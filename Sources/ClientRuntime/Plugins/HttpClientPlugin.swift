@@ -32,7 +32,9 @@ public class DefaultHttpClientPlugin: Plugin {
             config.httpClientConfiguration = self.httpClientConfiguration
             config.httpClientEngine = self.httpClient
             guard let updatedConfig = config as? ClientConfiguration else {
-                throw ClientError.dataNotFound("Failed to cast DefaultHttpClientConfiguration back to ClientConfiguration")
+                throw ClientError.dataNotFound(
+                    "Failed to cast DefaultHttpClientConfiguration back to ClientConfiguration"
+                )
             }
             clientConfiguration = updatedConfig
         }

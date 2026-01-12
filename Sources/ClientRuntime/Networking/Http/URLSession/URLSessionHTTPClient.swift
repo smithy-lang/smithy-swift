@@ -48,8 +48,8 @@ import class SmithyStreams.BufferedStream
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
 ///
-/// This client is usable on all Swift platforms that support both the `URLSession` library and Objective-C interoperability features
-/// (these are generally the Apple platforms.)
+/// This client is usable on all Swift platforms that support both the `URLSession` library and
+/// Objective-C interoperability features (these are generally the Apple platforms.)
 ///
 /// Use of this client is recommended on all Apple platforms, and is required on Apple Watch ( see
 /// [TN3135: Low-level networking on watchOS](https://developer.apple.com/documentation/technotes/tn3135-low-level-networking-on-watchos)
@@ -107,7 +107,8 @@ public final class URLSessionHTTPClient: HTTPClient, @unchecked Sendable {
         /// `urlSession(_:task:didCompleteWithError)` for this connection.
         var error: Error?
 
-        /// A response stream that streams the response back to the caller.  Data is buffered in-memory until read by the caller.
+        /// A response stream that streams the response back to the caller.  Data is buffered
+        /// in-memory until read by the caller.
         let responseStream = BufferedStream()
 
         /// Creates a new connection object

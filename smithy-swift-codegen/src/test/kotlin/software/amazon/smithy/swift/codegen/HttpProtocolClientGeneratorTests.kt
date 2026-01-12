@@ -50,8 +50,8 @@ extension RestJsonProtocolClient {
         public var authSchemePreference: [String]?
         public var authSchemeResolver: SmithyHTTPAuthAPI.AuthSchemeResolver
         public var bearerTokenIdentityResolver: any SmithyIdentity.BearerTokenIdentityResolver
-        public var interceptorProviders: [ClientRuntime.InterceptorProvider]
-        public var httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]
+        public private(set) var interceptorProviders: [ClientRuntime.InterceptorProvider]
+        public private(set) var httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]
 
         public init(
             telemetryProvider: ClientRuntime.TelemetryProvider? = nil,
@@ -107,6 +107,10 @@ extension RestJsonProtocolClient {
 
         public mutating func addInterceptorProvider(_ provider: ClientRuntime.InterceptorProvider) {
             self.interceptorProviders.append(provider)
+        }
+
+        public mutating func addInterceptorProvider(_ provider: ClientRuntime.HttpInterceptorProvider) {
+            self.httpInterceptorProviders.append(provider)
         }
 
     }

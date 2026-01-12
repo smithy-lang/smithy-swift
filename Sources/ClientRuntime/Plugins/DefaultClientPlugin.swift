@@ -15,7 +15,9 @@ public class DefaultClientPlugin: Plugin {
                 DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
                     .defaultRetryStrategyOptions
             guard let updatedConfig = config as? ClientConfiguration else {
-                throw ClientError.dataNotFound("Failed to cast DefaultClientConfiguration back to ClientConfiguration")
+                throw ClientError.dataNotFound(
+                    "Failed to cast DefaultClientConfiguration back to ClientConfiguration"
+                )
             }
             clientConfiguration = updatedConfig
         }
@@ -29,7 +31,9 @@ public class DefaultClientPlugin: Plugin {
                 DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
                     .makeClient(httpClientConfiguration: httpClientConfiguration)
             guard let updatedConfig = config as? ClientConfiguration else {
-                throw ClientError.dataNotFound("Failed to cast DefaultHttpClientConfiguration back to ClientConfiguration")
+                throw ClientError.dataNotFound(
+                    "Failed to cast DefaultHttpClientConfiguration back to ClientConfiguration"
+                )
             }
             clientConfiguration = updatedConfig
         }

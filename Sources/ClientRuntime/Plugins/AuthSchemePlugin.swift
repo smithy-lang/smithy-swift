@@ -30,7 +30,9 @@ public class AuthSchemePlugin: Plugin {
                 config.authSchemeResolver = self.authSchemeResolver!
             }
             guard let updatedConfig = config as? ClientConfiguration else {
-                throw ClientError.dataNotFound("Failed to cast DefaultHttpClientConfiguration back to ClientConfiguration")
+                throw ClientError.dataNotFound(
+                    "Failed to cast DefaultHttpClientConfiguration back to ClientConfiguration"
+                )
             }
             clientConfiguration = updatedConfig
         }
