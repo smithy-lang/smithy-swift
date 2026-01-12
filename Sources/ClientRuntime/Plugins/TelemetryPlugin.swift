@@ -29,13 +29,9 @@ public class TelemetryPlugin: Plugin {
     }
 
     public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
-        if var config = clientConfiguration as? any DefaultClientConfiguration {
-            config.telemetryProvider = self.telemetryProvider
-            guard let updatedConfig = config as? ClientConfiguration else {
-                throw ClientError.dataNotFound("Failed to cast DefaultClientConfiguration back to ClientConfiguration")
-            }
-            clientConfiguration = updatedConfig
-        }
+        guard var config = clientConfiguration as? any DefaultClientConfiguration else { return }
+        config.telemetryProvider = self.telemetryProvider
+        clientConfiguration = config
     }
 }
 

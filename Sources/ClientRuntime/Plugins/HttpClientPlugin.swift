@@ -28,15 +28,9 @@ public class DefaultHttpClientPlugin: Plugin {
     }
 
     public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
-        if var config = clientConfiguration as? any DefaultHttpClientConfiguration {
-            config.httpClientConfiguration = self.httpClientConfiguration
-            config.httpClientEngine = self.httpClient
-            guard let updatedConfig = config as? ClientConfiguration else {
-                throw ClientError.dataNotFound(
-                    "Failed to cast DefaultHttpClientConfiguration back to ClientConfiguration"
-                )
-            }
-            clientConfiguration = updatedConfig
-        }
+        guard var config = clientConfiguration as? any DefaultHttpClientConfiguration else { return }
+        config.httpClientConfiguration = self.httpClientConfiguration
+        config.httpClientEngine = self.httpClient
+        clientConfiguration = config
     }
 }

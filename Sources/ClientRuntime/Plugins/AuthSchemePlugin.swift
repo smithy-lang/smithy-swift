@@ -22,19 +22,13 @@ public class AuthSchemePlugin: Plugin {
     }
 
     public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
-        if var config = clientConfiguration as? any DefaultHttpClientConfiguration {
-            if self.authSchemes != nil {
-                config.authSchemes = self.authSchemes!
-            }
-            if self.authSchemeResolver != nil {
-                config.authSchemeResolver = self.authSchemeResolver!
-            }
-            guard let updatedConfig = config as? ClientConfiguration else {
-                throw ClientError.dataNotFound(
-                    "Failed to cast DefaultHttpClientConfiguration back to ClientConfiguration"
-                )
-            }
-            clientConfiguration = updatedConfig
+        guard var config = clientConfiguration as? any DefaultHttpClientConfiguration else { return }
+        if self.authSchemes != nil {
+            config.authSchemes = self.authSchemes!
         }
+        if self.authSchemeResolver != nil {
+            config.authSchemeResolver = self.authSchemeResolver!
+        }
+        clientConfiguration = config
     }
 }
