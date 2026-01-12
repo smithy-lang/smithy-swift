@@ -24,16 +24,16 @@ import typealias SmithySerialization.ReadStructConsumer
 import typealias SmithySerialization.ReadValueConsumer
 import protocol SmithySerialization.ShapeDeserializer
 
-struct Deserializer: ShapeDeserializer {
+public struct Deserializer: ShapeDeserializer {
     let decoder: CBORDecoder
 
-    init(data: Data) throws {
+    public init(data: Data) throws {
         // Substitute an empty map if data is empty
         let resolvedData = data.isEmpty ? Data([0xBF, 0xFF]) : data
         self.decoder = try CBORDecoder(data: Array(resolvedData), rollupCollections: false)
     }
 
-    func readBoolean(_ schema: Schema) throws -> Bool {
+    public func readBoolean(_ schema: Schema) throws -> Bool {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -45,7 +45,7 @@ struct Deserializer: ShapeDeserializer {
         return value
     }
 
-    func readBlob(_ schema: Schema) throws -> Data {
+    public func readBlob(_ schema: Schema) throws -> Data {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -57,7 +57,7 @@ struct Deserializer: ShapeDeserializer {
         return value
     }
 
-    func readByte(_ schema: Schema) throws -> Int8 {
+    public func readByte(_ schema: Schema) throws -> Int8 {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -73,7 +73,7 @@ struct Deserializer: ShapeDeserializer {
         }
     }
 
-    func readShort(_ schema: Schema) throws -> Int16 {
+    public func readShort(_ schema: Schema) throws -> Int16 {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -89,7 +89,7 @@ struct Deserializer: ShapeDeserializer {
         }
     }
 
-    func readInteger(_ schema: Schema) throws -> Int {
+    public func readInteger(_ schema: Schema) throws -> Int {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -105,7 +105,7 @@ struct Deserializer: ShapeDeserializer {
         }
     }
 
-    func readLong(_ schema: Schema) throws -> Int {
+    public func readLong(_ schema: Schema) throws -> Int {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -121,7 +121,7 @@ struct Deserializer: ShapeDeserializer {
         }
     }
 
-    func readFloat(_ schema: Schema) throws -> Float {
+    public func readFloat(_ schema: Schema) throws -> Float {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -133,7 +133,7 @@ struct Deserializer: ShapeDeserializer {
         return Float(value)
     }
 
-    func readDouble(_ schema: Schema) throws -> Double {
+    public func readDouble(_ schema: Schema) throws -> Double {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -145,7 +145,7 @@ struct Deserializer: ShapeDeserializer {
         return value
     }
 
-    func readBigInteger(_ schema: Schema) throws -> Int64 {
+    public func readBigInteger(_ schema: Schema) throws -> Int64 {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -161,7 +161,7 @@ struct Deserializer: ShapeDeserializer {
         }
     }
 
-    func readBigDecimal(_ schema: Schema) throws -> Double {
+    public func readBigDecimal(_ schema: Schema) throws -> Double {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -173,7 +173,7 @@ struct Deserializer: ShapeDeserializer {
         return value
     }
 
-    func readString(_ schema: Schema) throws -> String {
+    public func readString(_ schema: Schema) throws -> String {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -185,7 +185,7 @@ struct Deserializer: ShapeDeserializer {
         return value
     }
 
-    func readDocument() throws -> any SmithyDocument {
+    public func readDocument() throws -> any SmithyDocument {
         guard decoder.hasNext() else {
             throw CBORDecoderError("document ended unexpectedly")
         }
@@ -250,7 +250,7 @@ struct Deserializer: ShapeDeserializer {
         }
     }
 
-    func readTimestamp(_ schema: Schema) throws -> Date {
+    public func readTimestamp(_ schema: Schema) throws -> Date {
         guard decoder.hasNext() else {
             throw CBORDecoderError("member \(schema.id) ended unexpectedly")
         }
@@ -262,11 +262,11 @@ struct Deserializer: ShapeDeserializer {
         return value
     }
 
-    func isNull() throws -> Bool {
+    public func isNull() throws -> Bool {
         try decoder.isNull()
     }
 
-    func readNull<T>(_ schema: Schema) throws -> T? {
+    public func readNull<T>(_ schema: Schema) throws -> T? {
         let next = try decoder.popNext()
         guard case .null = next else {
             throw CBORDecoderError("member \(schema.id) expected .null but got \(next) instead")
@@ -274,7 +274,7 @@ struct Deserializer: ShapeDeserializer {
         return nil
     }
 
-    func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
+    public func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
         let structureSchema: Schema
         switch schema.type {
         case .structure, .union:
@@ -370,7 +370,7 @@ struct Deserializer: ShapeDeserializer {
         }
     }
 
-    func readList<E>(_ schema: Schema, _ list: inout [E], _ consumer: ReadValueConsumer<E>) throws {
+    public func readList<E>(_ schema: Schema, _ list: inout [E], _ consumer: ReadValueConsumer<E>) throws {
         guard decoder.hasNext() else {
             throw CBORDecoderError("List \(schema.id) ended unexpectedly")
         }
@@ -408,7 +408,7 @@ struct Deserializer: ShapeDeserializer {
         }
     }
 
-    func readMap<V>( _ schema: Schema, _ map: inout [String: V], _ consumer: ReadValueConsumer<V>) throws {
+    public func readMap<V>( _ schema: Schema, _ map: inout [String: V], _ consumer: ReadValueConsumer<V>) throws {
         guard decoder.hasNext() else {
             throw CBORDecoderError("Map \(schema.id) ended unexpectedly")
         }
@@ -454,7 +454,7 @@ struct Deserializer: ShapeDeserializer {
     }
 
     /// Container size is not implemented & returns unknown size, even for definite CBOR maps & arrays
-    var containerSize: Int = -1
+    public var containerSize: Int = -1
 
     private func nullCheck() throws {
         if try decoder.isNull() {

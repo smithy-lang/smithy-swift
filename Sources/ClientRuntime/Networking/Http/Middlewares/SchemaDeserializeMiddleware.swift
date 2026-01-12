@@ -15,53 +15,47 @@ import struct Foundation.UUID
 import class Smithy.Context
 import protocol Smithy.ResponseMessageDeserializer
 import SmithyHTTPAPI
-@_spi(SmithyReadWrite) import SmithyReadWrite
-import protocol SmithySerialization.Codec
-import protocol SmithySerialization.DeserializableShape
+import protocol SmithySerialization.ClientProtocol
+import struct SmithySerialization.Operation
+import protocol SmithySerialization.DeserializableStruct
+import protocol SmithySerialization.SerializableStruct
 
 @_spi(SmithyReadWrite)
-public struct SchemaDeserializeMiddleware<OperationStackOutput: DeserializableShape> {
+public struct SchemaDeserializeMiddleware<Input: SerializableStruct, Output: DeserializableStruct, CP: ClientProtocol> where CP.ResponseType == HTTPResponse {
     public var id: String = "Deserialize"
-    let codec: any Codec
-    let wireResponseErrorClosure: WireResponseErrorClosure<HTTPResponse>
+    let operation: Operation<Input, Output>
+    let clientProtocol: CP
 
-    public init(
-        _ codec: any Codec,
-        _ wireResponseErrorClosure: @escaping WireResponseErrorClosure<HTTPResponse>
-    ) {
-        self.codec = codec
-        self.wireResponseErrorClosure = wireResponseErrorClosure
+    public init(_ operation: Operation<Input, Output>, _ clientProtocol: CP) {
+        self.operation = operation
+        self.clientProtocol = clientProtocol
     }
 }
 
 extension SchemaDeserializeMiddleware: ResponseMessageDeserializer {
-    public func deserialize(
-        response: HTTPResponse,
-        attributes: Context
-    ) async throws -> OperationStackOutput {
+
+    public func deserialize(response: CP.ResponseType, attributes: Context) async throws -> Output {
         if let responseDateString = response.headers.value(for: "Date") {
             let estimatedSkew = getEstimatedSkew(now: Date(), responseDateString: responseDateString)
             attributes.estimatedSkew = estimatedSkew
         }
 
-        // check if the response body was effected by a previous middleware
+        // check if the response body was affected by a previous middleware
         if let contextBody = attributes.httpResponse?.body {
             response.body = contextBody
         }
 
-        let copiedResponse = response
-        if (200..<300).contains(response.statusCode.rawValue) {
-            let bodyData = try await copiedResponse.body.readData() ?? Data()
-            let deserializer = try codec.makeDeserializer(data: bodyData)
-            return try OperationStackOutput.deserialize(deserializer)
-        } else {
-            // if the response is a stream, we need to cache the stream so that it can be read again
-            // error deserialization reads the stream multiple times to first deserialize the protocol error
-            // eg. [RestJSONError](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Core/AWSClientRuntime/Protocols/RestJSON/RestJSONError.swift#L38,
-            // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
-            let bodyData = try await copiedResponse.body.readData()
-            copiedResponse.body = .data(bodyData)
-            throw try await wireResponseErrorClosure(copiedResponse)
+        // if the response is an error and the response body is a stream, we need to cache the stream so
+        // that it can be read again.
+        //
+        // error deserialization reads the stream multiple times to first deserialize the protocol error
+        // eg. [RestJSONError](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Core/AWSClientRuntime/Protocols/RestJSON/RestJSONError.swift#L38,
+        // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
+        if response.statusCode.rawValue > 299 {
+            let bodyData = try await response.body.readData()
+            response.body = .data(bodyData)
         }
+
+        return try await clientProtocol.deserializeResponse(operation: operation, context: attributes, response: response)
     }
 }

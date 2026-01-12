@@ -9,7 +9,7 @@ import enum Smithy.Node
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
 
-public class Shape {
+public class Shape: HasShapeID {
     public let id: ShapeID
     public let type: ShapeType
     public let traits: [ShapeID: Node]
@@ -61,15 +61,19 @@ public class Shape {
     }
 
     private func descendants(descendants: inout Set<Shape>, includeInput: Bool, includeOutput: Bool) throws {
-        for shape in try candidates(includeInput: includeInput, includeOutput: includeOutput) {
+        for shape in try immediateDescendants(includeInput: includeInput, includeOutput: includeOutput) {
             if descendants.contains(shape) { continue }
             descendants.insert(shape)
-            try shape.descendants(descendants: &descendants, includeInput: includeInput, includeOutput: includeOutput)
+            try shape.descendants(
+                descendants: &descendants,
+                includeInput: includeInput,
+                includeOutput: includeOutput
+            )
         }
     }
 
-    func candidates(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
-        [] // default.  May be overridden by Shape subclasses.
+    func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+        [] // none by default.  May be overridden by Shape subclasses.
     }
 }
 

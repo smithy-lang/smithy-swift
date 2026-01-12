@@ -31,9 +31,6 @@ extension Model {
 
         // Initialize the properties of self
         self.init(version: astModel.smithy, metadata: astModel.metadata, shapes: shapes)
-
-        // self is now initialized, set all of the Shapes with references back to this model
-        self.shapes.values.forEach { $0.model = self }
     }
 
     private static func memberShapePairs(id: String, astShape: ASTShape) throws -> [(ShapeID, MemberShape)] {

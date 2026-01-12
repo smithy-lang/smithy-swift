@@ -55,13 +55,10 @@ class DeserializeMiddleware(
         op: OperationShape,
     ) {
         val output = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
-        val httpResponseErrorClosure = ResponseErrorClosureUtils(ctx, writer, op).render()
 
         writer.write(
-            "\$N<\$N>(codec, \$L)",
+            "\$N(operation, clientProtocol)",
             ClientRuntimeTypes.Middleware.SchemaDeserializeMiddleware,
-            output,
-            httpResponseErrorClosure,
         )
     }
 }

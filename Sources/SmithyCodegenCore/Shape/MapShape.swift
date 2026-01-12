@@ -30,7 +30,7 @@ public class MapShape: Shape, HasMembers {
         return [key, value]
     }
 
-    override func candidates(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
         members
     }
 }

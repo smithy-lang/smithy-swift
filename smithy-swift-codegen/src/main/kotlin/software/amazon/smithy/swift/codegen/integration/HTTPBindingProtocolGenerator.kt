@@ -58,6 +58,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.SignerMiddle
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionDecodeGenerator
@@ -139,7 +140,7 @@ abstract class HTTPBindingProtocolGenerator(
     override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpError
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
-//        if (SerdeUtils.useSchemaBased(ctx)) return // temporary condition
+        val usesSchemaBased = SerdeUtils.useSchemaBased(ctx) // temporary condition
         // render conformance to HttpRequestBinding for all input shapes
         val inputShapesWithHttpBindings: MutableSet<ShapeId> = mutableSetOf()
         for (operation in getHttpBindingOperations(ctx)) {
@@ -172,6 +173,7 @@ abstract class HTTPBindingProtocolGenerator(
                     .name(symbolName)
                     .build()
             val httpBodyMembers = httpBodyMembers(ctx, shape)
+            if (usesSchemaBased) { return }
             if (httpBodyMembers.isNotEmpty() || shouldRenderEncodableConformance) {
                 ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                     writer.openBlock(
@@ -208,8 +210,8 @@ abstract class HTTPBindingProtocolGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
     ) {
-//        if (SerdeUtils.useSchemaBased(ctx)) return // temporary condition
-        if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) {
+        val usesSchemaBased = SerdeUtils.useSchemaBased(ctx) // temporary condition
+        if (!shape.hasTrait<NeedsReaderTrait>() && !(shape.hasTrait<NeedsWriterTrait>() && !usesSchemaBased)) {
             return
         }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
@@ -228,8 +230,7 @@ abstract class HTTPBindingProtocolGenerator(
                     is StructureShape -> {
                         // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
                         val httpBodyMembers = members.filter { it.isInHttpBody() }
-                        val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
-                        if (shape.hasTrait<NeedsWriterTrait>()) {
+                        if (shape.hasTrait<NeedsWriterTrait>() && !usesSchemaBased) {
                             writer.write("")
                             renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer)
                         }
@@ -239,7 +240,7 @@ abstract class HTTPBindingProtocolGenerator(
                         }
                     }
                     is UnionShape -> {
-                        if (shape.hasTrait<NeedsWriterTrait>()) {
+                        if (shape.hasTrait<NeedsWriterTrait>() && !usesSchemaBased) {
                             writer.write("")
                             UnionEncodeGenerator(ctx, shape, members, writer).render()
                         }

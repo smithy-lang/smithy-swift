@@ -6,9 +6,10 @@
 //
 
 import struct Smithy.ShapeID
+import enum Smithy.ShapeType
 import let SmithySerialization.permittedTraitIDs
 
-package struct SmithySchemaCodegen {
+package struct SchemasCodegen {
 
     package init() {}
 
@@ -18,21 +19,19 @@ package struct SmithySchemaCodegen {
         writer.write("import enum Smithy.Prelude")
         writer.write("")
 
-        // Write schemas for all inputs & outputs and their descendants.
-        let shapes = try ctx.model.shapes.values
-            .filter { $0.type == .structure }
-            .filter {
-                try $0.hasTrait(try .init("smithy.api#input")) ||
-                $0.hasTrait(try .init("smithy.api#output")) ||
-                $0.hasTrait(try .init("smithy.api#error"))}
-            .map { try [$0] + $0.descendants }
-            .flatMap { $0 }
-            .filter { $0.type != .member }
+        // Get all operations, sorted
+        let sortedOperationShapes = ctx.model.allShapesSorted
+            .filter { $0.type == .operation }
+
+        // Get the rest of the shapes, sorted
+        let sortedModelShapes: [Shape] = ctx.model.allShapesSorted
+            .filter { ![ShapeType.service, .resource, .operation, .member].contains($0.type) }
             .filter { $0.id.namespace != "smithy.api" }
-        let sortedShapes = Array(Set(shapes)).sorted { $0.id.id.lowercased() < $1.id.id.lowercased() }
-        writer.write("// Number of schemas: \(sortedShapes.count)")
-        writer.write("")
-        for shape in sortedShapes {
+
+        // Combine shapes in order: service, operations sorted, models sorted
+        let allShapes = [ctx.service] + sortedOperationShapes + sortedModelShapes
+
+        for shape in allShapes {
             try writer.openBlock("public var \(shape.schemaVarName): Smithy.Schema {", "}") { writer in
                 try writeSchema(writer: writer, shape: shape)
                 writer.unwrite(",")
@@ -47,7 +46,7 @@ package struct SmithySchemaCodegen {
         try writer.openBlock(".init(", "),") { writer in
             writer.write("id: \(shape.id.rendered),")
             writer.write("type: .\(shape.type),")
-            let relevantTraitIDs = shape.traits.keys.filter { permittedTraitIDs.contains($0.id) }
+            let relevantTraitIDs = shape.traits.keys.filter { permittedTraitIDs.contains($0.absoluteID) }
             let traitIDs = Array(relevantTraitIDs).sorted()
             if !traitIDs.isEmpty {
                 writer.openBlock("traits: [", "],") { writer in

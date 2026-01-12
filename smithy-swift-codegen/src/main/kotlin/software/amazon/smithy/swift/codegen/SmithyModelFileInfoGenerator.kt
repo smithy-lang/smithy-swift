@@ -10,11 +10,9 @@ class SmithyModelFileInfoGenerator(
         ctx.writerDelegator().useFileWriter(filename) { writer ->
             val service = ctx.settings.service
             val path = ctx.settings.modelPath
-            val settingsSdkId = ctx.settings.sdkId
             writer.openBlock("{", "}") {
                 writer.write("\"service\": \"$service\",")
-                writer.write("\"path\": \"$path\",")
-                writer.write("\"settingsSdkId\": \"$settingsSdkId\"")
+                writer.write("\"path\": \"$path\"")
             }
         }
     }

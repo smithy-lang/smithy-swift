@@ -27,7 +27,7 @@ public class ListShape: Shape, HasMembers {
         [member]
     }
 
-    override func candidates(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
         members
     }
 }

@@ -15,9 +15,6 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
     @Argument(help: "The shape ID of the service to be code-generated.  Must exist in the model file.")
     var service: String
 
-    @Argument(help: "The sdkId value from the smithy code generator")
-    var settingsSdkId: String
-
     @Argument(help: "The full or relative path to read the JSON AST model input file.")
     var modelPath: String
 
@@ -29,6 +26,12 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
 
     @Option(help: "The full or relative path to write the Deserialize output file.")
     var deserializePath: String?
+
+    @Option(help: "The full or relative path to write the TypeRegistry output file.")
+    var typeRegistryPath: String?
+
+    @Option(help: "The full or relative path to write the Operations output file.")
+    var operationsPath: String?
 
     func run() async throws {
         let currentWorkingDirectoryFileURL = currentWorkingDirectoryFileURL()
@@ -56,14 +59,27 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
             path: deserializePath
         )
 
+        // If --type-registry-path was supplied, create the TypeRegistry file URL
+        let typeRegistryFileURL = resolve(
+            paramName: "--type-registry-path",
+            path: typeRegistryPath
+        )
+
+        // If --operations-path was supplied, create the Operations file URL
+        let operationsFileURL = resolve(
+            paramName: "--operations-path",
+            path: operationsPath
+        )
+
         // Use resolved file URLs to run code generator
         try CodeGenerator(
             service: service,
-            settingsSdkId: settingsSdkId,
             modelFileURL: modelFileURL,
             schemasFileURL: schemasFileURL,
             serializeFileURL: serializeFileURL,
-            deserializeFileURL: deserializeFileURL
+            deserializeFileURL: deserializeFileURL,
+            typeRegistryFileURL: typeRegistryFileURL,
+            operationsFileURL: operationsFileURL
         ).run()
     }
 

@@ -11,7 +11,6 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 object SmithyCBORTypes {
     val Writer = runtimeSymbol("Writer", SwiftDeclaration.CLASS, listOf(SmithyReadWriteTypes.SmithyWriter), listOf("SmithyReadWrite"))
     val Reader = runtimeSymbol("Reader", SwiftDeclaration.CLASS, listOf(SmithyReadWriteTypes.SmithyReader), listOf("SmithyReadWrite"))
-    val Codec = runtimeSymbol("Codec", SwiftDeclaration.STRUCT)
 }
 
 private fun runtimeSymbol(

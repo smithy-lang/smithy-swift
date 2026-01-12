@@ -37,61 +37,21 @@ public struct SymbolProvider {
     private var inputTraitID = ShapeID("smithy.api", "input")
     private var outputTraitID = ShapeID("smithy.api", "output")
     private var errorTraitID = ShapeID("smithy.api", "error")
-    private var inputOperationNameTraitID = ShapeID("swift.synthetic", "inputOperationName")
-    private var outputOperationNameTraitID = ShapeID("swift.synthetic", "outputOperationName")
-
-    public func inputSwiftType(shape: Shape) throws -> String {
-        guard shape.type == .structure else {
-            return try swiftType(shape: shape)
-        }
-        if case .string(let name) = shape.getTrait(inputOperationNameTraitID), shape.hasTrait(inputTraitID) {
-            return "\(name)Input"
-        } else if shape.hasTrait(inputTraitID) {
-            guard let operation = model.shapes.values
-                .filter({ $0.type == .operation })
-                .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
-                .first(where: { $0.inputID == shape.id })
-            else { throw SymbolProviderError("Operation for input \(shape.id) not found") }
-            return "\(operation.id.name)Input"
-        } else {
-            return try swiftType(shape: shape)
-        }
-    }
-
-    public func outputSwiftType(shape: Shape) throws -> String {
-        guard shape.type == .structure else {
-            return try swiftType(shape: shape)
-        }
-
-        if case .string(let name) = shape.getTrait(outputOperationNameTraitID), shape.hasTrait(outputTraitID) {
-            return "\(name)Output"
-        } else if shape.hasTrait(outputTraitID) {
-            guard let operation = model.shapes.values
-                .filter({ $0.type == .operation })
-                .map({ $0 as! OperationShape }) // swiftlint:disable:this force_cast
-                .first(where: { $0.outputID == shape.id })
-            else { throw SymbolProviderError("Operation for output \(shape.id) not found") }
-            return "\(operation.id.name)Output"
-        } else {
-            return try swiftType(shape: shape)
-        }
-    }
 
     public func swiftType(shape: Shape) throws -> String {
         switch shape.type {
         case .structure, .union, .enum, .intEnum:
-            if shape.hasTrait(errorTraitID) {
-                return shape.id.name
+            let base = shape.id.name
+            if shape.hasTrait(inputTraitID) || shape.hasTrait(outputTraitID) || shape.hasTrait(errorTraitID) {
+                return base
             } else if shape.type == .intEnum {
                 // The NestedShapeTransformer in main codegen inadvertently excludes intEnum
-                // so it is not namespaced here.
-                let orig = shape.id.name
-                let first = orig.first?.uppercased() ?? ""
-                return "\(first)\(orig.dropFirst())"
+                // so it is not namespaced here.  All other shape types are in the namespace.
+                let first = base.first?.uppercased() ?? ""
+                return "\(first)\(base.dropFirst())"
             } else {
-                let orig = shape.id.name
-                let first = orig.first?.uppercased() ?? ""
-                let capitalized = "\(first)\(orig.dropFirst())"
+                let first = base.first?.uppercased() ?? ""
+                let capitalized = "\(first)\(base.dropFirst())"
                 return try "\(modelNamespace).\(capitalized)"
             }
         case .list, .set:
@@ -129,6 +89,7 @@ public struct SymbolProvider {
         case .timestamp:
             return "Foundation.Date"
         case .service:
+            // Returns the type name for the client
             guard let serviceShape = shape as? ServiceShape else {
                 throw SymbolProviderError("Shape has type .service but is not a ServiceShape")
             }
@@ -140,13 +101,17 @@ public struct SymbolProvider {
 
     static let locale = Locale(identifier: "en_US_POSIX")
 
+    public func operationMethodName(operation: OperationShape) throws -> String {
+        return operation.id.name.toLowerCamelCase()
+    }
+
     public func propertyName(shapeID: ShapeID) throws -> String {
         guard let member = shapeID.member else { throw SymbolProviderError("Shape ID has no member name") }
         return member.toLowerCamelCase()
     }
 
     public func enumCaseName(shapeID: ShapeID) throws -> String {
-        try propertyName(shapeID: shapeID).toLowerCamelCase().lowercased()
+        try propertyName(shapeID: shapeID).lowercased()
     }
 
     private var modelNamespace: String {

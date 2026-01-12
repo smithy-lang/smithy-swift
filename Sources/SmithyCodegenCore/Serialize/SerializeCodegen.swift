@@ -18,17 +18,12 @@ package struct SerializeCodegen {
         writer.write("import typealias SmithySerialization.WriteStructConsumer")
         writer.write("")
 
-        // Get the service
-        guard let service = try ctx.model.expectShape(id: ctx.serviceID) as? ServiceShape else {
-            throw ModelError("Service \"\(ctx.serviceID)\" not found in model")
-        }
-
-        let inputStructsAndUnions = try service
-            .inputDescendants
+        let inputStructsAndUnions = try ctx.service.inputDescendants
             .filter { $0.type == .structure || $0.type == .union }
-            .sorted { $0.id.id.lowercased() < $1.id.id.lowercased() }
+            .smithySorted()
+
         for shape in inputStructsAndUnions {
-            let swiftType = try ctx.symbolProvider.inputSwiftType(shape: shape)
+            let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
             let varName = shape.type == .structure ? "structure" : "union"
             try writer.openBlock("extension \(swiftType): SmithySerialization.SerializableStruct {", "}") { writer in
                 writer.write("")

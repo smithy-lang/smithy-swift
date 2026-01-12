@@ -9,6 +9,8 @@ import struct Foundation.Data
 import protocol SmithySerialization.Codec
 import protocol SmithySerialization.ShapeDeserializer
 import protocol SmithySerialization.ShapeSerializer
+import class SmithyCBOR.Serializer
+import struct SmithyCBOR.Deserializer
 
 public struct Codec: SmithySerialization.Codec {
 

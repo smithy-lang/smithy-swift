@@ -266,7 +266,7 @@ class StructureGenerator(
         writer.write("public static var isRetryable: \$N { \$L }", SwiftTypes.Bool, isRetryable)
         writer.write("public static var isThrottling: \$N { \$L }", SwiftTypes.Bool, isThrottling)
         writer.write("public internal(set) var httpResponse = \$N()", SmithyHTTPAPITypes.HTTPResponse)
-        writer.write("public internal(set) var message: \$T", SwiftTypes.String)
+        writer.write("public var message: \$T", SwiftTypes.String)
         writer.write("public internal(set) var requestID: \$T", SwiftTypes.String)
         writer.declareSection(AdditionalErrorMembers)
     }

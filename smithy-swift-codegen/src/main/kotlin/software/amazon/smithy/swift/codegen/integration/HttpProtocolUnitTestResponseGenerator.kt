@@ -25,6 +25,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.response
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.RPCv2CBORTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyCBORTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 import java.util.Base64
@@ -168,7 +169,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
 
     private fun renderActualOutput(outputStruct: Symbol) {
         if (SerdeUtils.useSchemaBased(ctx)) {
-            writer.write("let codec = \$N()", SmithyCBORTypes.Codec)
+            writer.write("let codec = \$N()", RPCv2CBORTypes.Codec)
             writer.write("let httpResponseData = try await httpResponse.body.readData() ?? \$N()", FoundationTypes.Data)
             writer.write("let deserializer = try codec.makeDeserializer(data: httpResponseData)")
             writer.write("let actual = try \$N.deserialize(deserializer)", outputStruct)

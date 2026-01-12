@@ -19,21 +19,16 @@ package struct DeserializeCodegen {
         writer.write("import protocol SmithySerialization.ShapeDeserializer")
         writer.write("")
 
-        // Get the service
-        guard let service = try ctx.model.expectShape(id: ctx.serviceID) as? ServiceShape else {
-            throw ModelError("Service \"\(ctx.serviceID)\" not found in model")
-        }
-
         // Get structs & unions that are part of an operation output.
         // These will all get a DeserializableShape conformance rendered.
-        let outputStructsAndUnions = try service
+        let outputStructsAndUnions = try ctx.service
             .outputDescendants
             .filter { $0.type == .structure || $0.type == .union }
-            .sorted { $0.id.id.lowercased() < $1.id.id.lowercased() }
+            .smithySorted()
 
         // Render a DeserializableStruct conformance for every struct & union.
         for shape in outputStructsAndUnions {
-            let swiftType = try ctx.symbolProvider.outputSwiftType(shape: shape)
+            let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
             let varName = shape.type == .structure ? "structure" : "union"
             try writer.openBlock("extension \(swiftType): SmithySerialization.DeserializableStruct {", "}") { writer in
                 writer.write("")
@@ -147,16 +142,21 @@ package struct DeserializeCodegen {
             }
             try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
         default:
-            let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
             let methodName = try member.target.deserializeMethodName
-            let properties = shape.hasTrait(.init("smithy.api", "error")) ? "properties." : ""
-            let lhs = switch shape.type {
+            let rhs = "try deserializer.\(methodName)(\(schemaVarName))"
+            switch shape.type {
+            case .structure:
+                let properties = shape.hasTrait(.init("smithy.api", "error")) ? "properties." : ""
+                let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
+                writer.write("structure.\(properties)\(propertyName) = \(rhs)")
+            case .union:
+                let unionCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
+                writer.write("union = .\(unionCaseName)(\(rhs))")
             case .list, .set, .map:
-                "return "
+                writer.write("return \(rhs)")
             default:
-                "structure.\(properties)\(propertyName) = "
+                throw CodegenError("Unsupported shape type \(shape.type) for rendering member deserialize")
             }
-            writer.write("\(lhs)try deserializer.\(methodName)(\(schemaVarName))")
         }
     }
 

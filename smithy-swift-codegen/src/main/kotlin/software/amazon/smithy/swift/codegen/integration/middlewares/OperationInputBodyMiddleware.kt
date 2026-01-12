@@ -200,9 +200,8 @@ class OperationInputBodyMiddleware(
     ) {
         if (SerdeUtils.useSchemaBased(ctx)) {
             writer.write(
-                "\$N<\$N>(codec: codec)",
+                "\$N(operation, clientProtocol)",
                 ClientRuntimeTypes.Middleware.SchemaBodyMiddleware,
-                inputSymbol,
             )
         } else {
             writer.write(

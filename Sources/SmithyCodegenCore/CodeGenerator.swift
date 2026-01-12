@@ -12,26 +12,29 @@ import struct Smithy.ShapeID
 
 public struct CodeGenerator {
     let service: String
-    let settingsSdkId: String
     let modelFileURL: URL
     let schemasFileURL: URL?
     let serializeFileURL: URL?
     let deserializeFileURL: URL?
+    let typeRegistryFileURL: URL?
+    let operationsFileURL: URL?
 
     public init(
         service: String,
-        settingsSdkId: String,
         modelFileURL: URL,
         schemasFileURL: URL?,
         serializeFileURL: URL?,
-        deserializeFileURL: URL?
+        deserializeFileURL: URL?,
+        typeRegistryFileURL: URL?,
+        operationsFileURL: URL?
     ) throws {
         self.service = service
-        self.settingsSdkId = settingsSdkId
         self.modelFileURL = modelFileURL
         self.schemasFileURL = schemasFileURL
         self.serializeFileURL = serializeFileURL
         self.deserializeFileURL = deserializeFileURL
+        self.typeRegistryFileURL = typeRegistryFileURL
+        self.operationsFileURL = operationsFileURL
     }
 
     public func run() throws {
@@ -50,7 +53,7 @@ public struct CodeGenerator {
 
         // If a schemas file URL was provided, generate it
         if let schemasFileURL {
-            let schemasContents = try SmithySchemaCodegen().generate(ctx: ctx)
+            let schemasContents = try SchemasCodegen().generate(ctx: ctx)
             try Data(schemasContents.utf8).write(to: schemasFileURL)
         }
 
@@ -64,6 +67,18 @@ public struct CodeGenerator {
         if let deserializeFileURL {
             let deserializeContents = try DeserializeCodegen().generate(ctx: ctx)
             try Data(deserializeContents.utf8).write(to: deserializeFileURL)
+        }
+
+        // If a TypeRegistry file URL was provided, generate it
+        if let typeRegistryFileURL {
+            let typeRegistryContents = try TypeRegistryCodegen().generate(ctx: ctx)
+            try Data(typeRegistryContents.utf8).write(to: typeRegistryFileURL)
+        }
+
+        // If an Operations file URL was provided, generate it
+        if let operationsFileURL {
+            let operationsContents = try OperationsCodegen().generate(ctx: ctx)
+            try Data(operationsContents.utf8).write(to: operationsFileURL)
         }
     }
 }

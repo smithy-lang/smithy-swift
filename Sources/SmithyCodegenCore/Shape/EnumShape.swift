@@ -19,6 +19,12 @@ public class EnumShape: Shape, HasMembers {
     }
 
     public var members: [MemberShape] {
-        return memberIDs.map { model.shapes[$0]! as! MemberShape } // swiftlint:disable:this force_cast
+        get throws {
+            try memberIDs.map { try model.expectMemberShape(id: $0) }
+        }
+    }
+
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+        try members
     }
 }

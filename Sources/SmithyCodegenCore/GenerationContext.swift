@@ -8,7 +8,7 @@
 import struct Smithy.ShapeID
 
 public struct GenerationContext {
-    public let serviceID: ShapeID
+    public let service: ServiceShape
     public let model: Model
     public let symbolProvider: SymbolProvider
 
@@ -19,9 +19,15 @@ public struct GenerationContext {
     /// - Parameter model: The ``Model`` to create the generation context from.
     /// - Throws: ``ModelError`` if the model does not contain exactly one service.
     init(serviceID: ShapeID, model: Model) throws {
-        self.serviceID = serviceID
-        let (prunedModel, service) = try model.prune(serviceID: serviceID)
-        self.model = prunedModel
-        self.symbolProvider = SymbolProvider(service: service, model: prunedModel)
+        // Perform model transformations here
+        let model2 = try model.withSynthesizedInputsOutputs()
+
+        // Finally, prune shapes out of the model that aren't referenced by the service
+        let (finalModel, service) = try model2.prune(serviceID: serviceID)
+
+        // Initialize using the final, processed model
+        self.service = service
+        self.model = finalModel
+        self.symbolProvider = SymbolProvider(service: service, model: finalModel)
     }
 }

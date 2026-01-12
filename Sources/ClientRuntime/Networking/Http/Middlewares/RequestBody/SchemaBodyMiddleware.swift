@@ -8,30 +8,31 @@
 import struct Foundation.Data
 import Smithy
 import SmithyHTTPAPI
+import protocol SmithySerialization.ClientProtocol
 import protocol SmithySerialization.Codec
-import protocol SmithySerialization.SerializableShape
+import struct SmithySerialization.Operation
+import protocol SmithySerialization.DeserializableStruct
+import protocol SmithySerialization.SerializableStruct
 
 @_spi(SmithyReadWrite)
-public struct SchemaBodyMiddleware<OperationStackInput: SerializableShape> {
+public struct SchemaBodyMiddleware<Input: SerializableStruct, Output: DeserializableStruct, CP: ClientProtocol> {
     public let id: Swift.String = "BodyMiddleware"
-    let codec: any Codec
+    let operation: Operation<Input, Output>
+    let clientProtocol: CP
 
-    public init(codec: any Codec) {
-        self.codec = codec
+    public init(_ operation: Operation<Input, Output>, _ clientProtocol: CP) {
+        self.operation = operation
+        self.clientProtocol = clientProtocol
     }
 }
 
 extension SchemaBodyMiddleware: RequestMessageSerializer {
-    public typealias InputType = OperationStackInput
-    public typealias RequestType = HTTPRequest
+    public typealias InputType = Input
+    public typealias RequestType = CP.RequestType
 
-    public func apply(input: OperationStackInput, builder: HTTPRequestBuilder, attributes: Smithy.Context) throws {
+    public func apply(input: Input, builder: RequestType.RequestBuilderType, attributes: Context) throws {
         do {
-            let serializer = try codec.makeSerializer()
-            try input.serialize(serializer)
-            let data = serializer.data
-            let body = ByteStream.data(data)
-            builder.withBody(body)
+            return try clientProtocol.serializeRequest(operation: operation, input: input, requestBuilder: builder, context: attributes)
         } catch {
             throw ClientError.serializationFailed(error.localizedDescription)
         }

@@ -51,7 +51,6 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         let service = smithyModelInfo.service
         let modelPathURL = currentWorkingDirectoryFileURL.appendingPathComponent(smithyModelInfo.path)
         let modelPath = Path(modelPathURL.path)
-        let settingsSdkId = smithyModelInfo.settingsSdkId
 
         // Construct the Schemas.swift path.
         let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
@@ -62,20 +61,33 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         // Construct the Deserialize.swift path.
         let deserializeSwiftPath = outputDirectoryPath.appending("\(name)Deserialize.swift")
 
+        // Construct the Deserialize.swift path.
+        let typeRegistrySwiftPath = outputDirectoryPath.appending("\(name)TypeRegistry.swift")
+
+        // Construct the Operations.swift path.
+        let operationsSwiftPath = outputDirectoryPath.appending("\(name)Operations.swift")
+
         // Construct the build command that invokes SmithyCodegenCLI.
         return .buildCommand(
             displayName: "Generating Swift source files from model file \(smithyModelInfo.path)",
             executable: generatorToolPath,
             arguments: [
                 service,
-                settingsSdkId,
                 modelPath,
                 "--schemas-path", schemasSwiftPath,
                 "--serialize-path", serializeSwiftPath,
                 "--deserialize-path", deserializeSwiftPath,
+                "--type-registry-path", typeRegistrySwiftPath,
+                "--operations-path", operationsSwiftPath,
             ],
             inputFiles: [inputPath, modelPath],
-            outputFiles: [schemasSwiftPath, serializeSwiftPath, deserializeSwiftPath]
+            outputFiles: [
+                schemasSwiftPath,
+                serializeSwiftPath,
+                deserializeSwiftPath,
+                typeRegistrySwiftPath,
+                operationsSwiftPath,
+            ]
         )
     }
 }
@@ -87,9 +99,4 @@ private struct SmithyModelInfo: Decodable {
 
     /// The path to the model, from the root of the target's project.  Required.
     let path: String
-
-    /// The `sdkId` field from the `SwiftSettings` in Smithy codegen.
-    ///
-    /// This is not necessarily the same value as the `sdkId` contained in the `aws.api#service` trait.
-    let settingsSdkId: String
 }

@@ -17,6 +17,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitPayload
 import software.amazon.smithy.swift.codegen.integration.httpResponse.bindingTraits.HTTPResponseTraitResponseCode
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.struct.readerSymbol
@@ -34,6 +35,7 @@ class HTTPResponseBindingOutputGenerator(
         httpBindingResolver: HttpBindingResolver,
         defaultTimestampFormat: TimestampFormatTrait.Format,
     ) {
+        if (SerdeUtils.useSchemaBased(ctx)) { return }
         if (op.output.isEmpty) {
             return
         }

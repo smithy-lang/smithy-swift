@@ -7,4 +7,4 @@
 
 import class Smithy.Schema
 
-public typealias WriteStructConsumer<Element> = (Smithy.Schema, Element, any ShapeSerializer) throws -> Void
+public typealias WriteStructConsumer<T> = (Schema, T, any ShapeSerializer) throws -> Void

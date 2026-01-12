@@ -53,7 +53,7 @@ public class ServiceShape: Shape {
         return sdkId
     }
 
-    override func candidates(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> [Shape] {
         if includeOutput {
             return errors + operations + resources
         } else {

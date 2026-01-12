@@ -13,8 +13,9 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyCBORTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.RPCv2CBORTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithySerializationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 typealias HttpMethodCallback = (OperationShape) -> String
@@ -42,7 +43,12 @@ class MiddlewareExecutionGenerator(
             renderContextAttributes(op, flowType)
         }
         if (SerdeUtils.useSchemaBased(ctx)) {
-            writer.write("let codec = \$N()", SmithyCBORTypes.Codec)
+            writer.write(
+                "let operation = \$LClient.\$LOperation",
+                ctx.settings.clientName,
+                op.toLowerCamelCase(),
+            )
+            writer.write("let clientProtocol = \$N()", RPCv2CBORTypes.ClientProtocol)
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
         writer.write(
