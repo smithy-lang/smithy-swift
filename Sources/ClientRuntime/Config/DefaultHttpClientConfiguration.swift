@@ -51,5 +51,5 @@ public protocol DefaultHttpClientConfiguration: ClientConfiguration {
     /// Adds a `HttpInterceptorProvider` that will be used to provide interceptors for all HTTP operations.
     ///
     /// - Parameter provider: The `HttpInterceptorProvider` to add.
-    func addInterceptorProvider(_ provider: HttpInterceptorProvider)
+    mutating func addInterceptorProvider(_ provider: HttpInterceptorProvider)
 }

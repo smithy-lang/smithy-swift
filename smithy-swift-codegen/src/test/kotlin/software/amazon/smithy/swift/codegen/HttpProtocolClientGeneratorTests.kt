@@ -109,10 +109,6 @@ extension RestJsonProtocolClient {
             self.interceptorProviders.append(provider)
         }
 
-        public mutating func addHttpInterceptorProvider(_ provider: ClientRuntime.HttpInterceptorProvider) {
-            self.httpInterceptorProviders.append(provider)
-        }
-
     }
 
     public static func builder() -> ClientRuntime.ClientBuilder<RestJsonProtocolClient> {
