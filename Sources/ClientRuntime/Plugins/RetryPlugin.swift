@@ -18,7 +18,10 @@ public class RetryPlugin: Plugin {
     public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
         if var config = clientConfiguration as? any DefaultClientConfiguration {
             config.retryStrategyOptions = self.retryStrategyOptions
-            clientConfiguration = config as! ClientConfiguration
+            guard let updatedConfig = config as? ClientConfiguration else {
+                throw ClientError.dataNotFound("Failed to cast DefaultClientConfiguration back to ClientConfiguration")
+            }
+            clientConfiguration = updatedConfig
         }
     }
 }

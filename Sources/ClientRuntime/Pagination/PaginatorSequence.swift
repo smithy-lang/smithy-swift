@@ -33,14 +33,22 @@ public struct PaginatorSequence<OperationStackInput: PaginateToken, OperationSta
         var token: OperationStackInput.Token?
         var isFirstPage: Bool = true
 
-        // swiftlint:disable force_cast
         public mutating func next() async throws -> OperationStackOutput? {
             while token != nil || isFirstPage {
 
-                if let token = token,
-                   (token is String && !(token as! String).isEmpty) ||
-                    (token is [String: Any] && !(token as! [String: Any]).isEmpty) {
-                    self.input = input.usingPaginationToken(token)
+                if let token = token {
+                    let shouldUsePaginationToken: Bool
+                    if let stringToken = token as? String {
+                        shouldUsePaginationToken = !stringToken.isEmpty
+                    } else if let dictToken = token as? [String: Any] {
+                        shouldUsePaginationToken = !dictToken.isEmpty
+                    } else {
+                        shouldUsePaginationToken = true
+                    }
+                    
+                    if shouldUsePaginationToken {
+                        self.input = input.usingPaginationToken(token)
+                    }
                 }
                 let output = try await sequence.paginationFunction(input)
                 isFirstPage = false
@@ -62,7 +70,6 @@ public struct PaginatorSequence<OperationStackInput: PaginateToken, OperationSta
             }
             return nil
         }
-        // swiftlint:enable force_cast
     }
 
     public func makeAsyncIterator() -> PaginationIterator {

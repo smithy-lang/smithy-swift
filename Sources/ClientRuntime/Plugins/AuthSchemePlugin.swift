@@ -29,7 +29,10 @@ public class AuthSchemePlugin: Plugin {
             if self.authSchemeResolver != nil {
                 config.authSchemeResolver = self.authSchemeResolver!
             }
-            clientConfiguration = config as! ClientConfiguration
+            guard let updatedConfig = config as? ClientConfiguration else {
+                throw ClientError.dataNotFound("Failed to cast DefaultHttpClientConfiguration back to ClientConfiguration")
+            }
+            clientConfiguration = updatedConfig
         }
     }
 }
