@@ -10,6 +10,7 @@
 /// This list can be expanded as features are added to Smithy/SDK that use them.
 public let permittedTraitIDs: Set<String> = [
     "aws.api#service",
+    "aws.protocols#awsQueryCompatible",
     "smithy.api#sparse",
     "smithy.api#input",
     "smithy.api#output",

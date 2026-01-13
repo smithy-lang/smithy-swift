@@ -16,17 +16,20 @@ import class Smithy.Context
 import protocol Smithy.ResponseMessageDeserializer
 import SmithyHTTPAPI
 import protocol SmithySerialization.ClientProtocol
-import struct SmithySerialization.Operation
 import protocol SmithySerialization.DeserializableStruct
+import struct SmithySerialization.Operation
 import protocol SmithySerialization.SerializableStruct
 
-@_spi(SmithyReadWrite)
-public struct SchemaDeserializeMiddleware<Input: SerializableStruct, Output: DeserializableStruct, CP: ClientProtocol> where CP.ResponseType == HTTPResponse {
+public struct SchemaDeserializeMiddleware<
+    Input: SerializableStruct,
+    Output: DeserializableStruct,
+    ClientProtocol: SmithySerialization.ClientProtocol
+> where ClientProtocol.ResponseType == HTTPResponse {
     public var id: String = "Deserialize"
     let operation: Operation<Input, Output>
-    let clientProtocol: CP
+    let clientProtocol: ClientProtocol
 
-    public init(_ operation: Operation<Input, Output>, _ clientProtocol: CP) {
+    public init(_ operation: Operation<Input, Output>, _ clientProtocol: ClientProtocol) {
         self.operation = operation
         self.clientProtocol = clientProtocol
     }
@@ -34,7 +37,7 @@ public struct SchemaDeserializeMiddleware<Input: SerializableStruct, Output: Des
 
 extension SchemaDeserializeMiddleware: ResponseMessageDeserializer {
 
-    public func deserialize(response: CP.ResponseType, attributes: Context) async throws -> Output {
+    public func deserialize(response: ClientProtocol.ResponseType, attributes: Context) async throws -> Output {
         if let responseDateString = response.headers.value(for: "Date") {
             let estimatedSkew = getEstimatedSkew(now: Date(), responseDateString: responseDateString)
             attributes.estimatedSkew = estimatedSkew
@@ -56,6 +59,10 @@ extension SchemaDeserializeMiddleware: ResponseMessageDeserializer {
             response.body = .data(bodyData)
         }
 
-        return try await clientProtocol.deserializeResponse(operation: operation, context: attributes, response: response)
+        return try await clientProtocol.deserializeResponse(
+            operation: operation,
+            context: attributes,
+            response: response
+        )
     }
 }

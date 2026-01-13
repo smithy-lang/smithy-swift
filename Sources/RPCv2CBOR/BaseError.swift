@@ -5,27 +5,33 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Schema
 import enum Smithy.Prelude
+import class Smithy.Schema
 import protocol SmithySerialization.DeserializableStruct
 import typealias SmithySerialization.ReadStructConsumer
 import protocol SmithySerialization.ShapeDeserializer
 
-struct RPCv2CBORBaseError: DeserializableStruct {
+@_spi(RPCv2CBOR)
+public struct BaseError {
+    public var __type: String?
+    public var message: String?
+}
 
-    static var schema: Smithy.Schema {
+extension BaseError: DeserializableStruct {
+
+    private static var schema: Smithy.Schema {
         .init(
-            id: .init("swift.synthetic", "RPCv2CBORBaseError"),
+            id: .init("swift.synthetic", "BaseError"),
             type: .structure,
             members: [
                 .init(
-                    id: .init("swift.synthetic", "RPCv2CBORBaseError", "__type"),
+                    id: .init("swift.synthetic", "BaseError", "__type"),
                     type: .member,
                     target: Prelude.stringSchema,
                     index: 0
                 ),
                 .init(
-                    id: .init("swift.synthetic", "RPCv2CBORBaseError", "message"),
+                    id: .init("swift.synthetic", "BaseError", "message"),
                     type: .member,
                     target: Prelude.stringSchema,
                     index: 1
@@ -34,7 +40,7 @@ struct RPCv2CBORBaseError: DeserializableStruct {
         )
     }
 
-    static var readConsumer: SmithySerialization.ReadStructConsumer<Self> {
+    public static var readConsumer: SmithySerialization.ReadStructConsumer<Self> {
         { memberSchema, value, deserializer in
             switch memberSchema.index {
             case 0:
@@ -47,12 +53,9 @@ struct RPCv2CBORBaseError: DeserializableStruct {
         }
     }
 
-    static func deserialize(_ deserializer: any ShapeDeserializer) throws -> Self {
+    public static func deserialize(_ deserializer: any ShapeDeserializer) throws -> Self {
         var value = Self()
         try deserializer.readStruct(Self.schema, &value)
         return value
     }
-
-    var __type: String?
-    var message: String?
 }

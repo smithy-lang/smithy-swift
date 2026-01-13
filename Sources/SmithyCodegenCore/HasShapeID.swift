@@ -12,7 +12,7 @@ public protocol HasShapeID {
 }
 
 public extension Array where Element: HasShapeID {
-    
+
     /// Sorts alphabetically by shape ID to match the ordering used by Kotlin-based codegen.
     ///
     /// The comparator on `ShapeID` implements the actual comparison logic.

@@ -7,7 +7,7 @@
 
 import struct Foundation.Data
 
-public protocol Codec {
+public protocol Codec: Sendable {
     func makeSerializer() throws -> any ShapeSerializer
     func makeDeserializer(data: Data) throws -> any ShapeDeserializer
 }

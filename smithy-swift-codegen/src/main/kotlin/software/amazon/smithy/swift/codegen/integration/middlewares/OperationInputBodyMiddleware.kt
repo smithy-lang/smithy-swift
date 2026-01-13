@@ -17,7 +17,6 @@ import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
-import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfoUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
@@ -198,22 +197,15 @@ class OperationInputBodyMiddleware(
         rootNodeInfo: String,
         payloadWritingClosure: String,
     ) {
-        if (SerdeUtils.useSchemaBased(ctx)) {
-            writer.write(
-                "\$N(operation, clientProtocol)",
-                ClientRuntimeTypes.Middleware.SchemaBodyMiddleware,
-            )
-        } else {
-            writer.write(
-                "\$N<\$N, \$N, \$N>(rootNodeInfo: \$L, inputWritingClosure: \$L)",
-                ClientRuntimeTypes.Middleware.BodyMiddleware,
-                inputSymbol,
-                outputSymbol,
-                writerSymbol,
-                rootNodeInfo,
-                payloadWritingClosure,
-            )
-        }
+        writer.write(
+            "\$N<\$N, \$N, \$N>(rootNodeInfo: \$L, inputWritingClosure: \$L)",
+            ClientRuntimeTypes.Middleware.BodyMiddleware,
+            inputSymbol,
+            outputSymbol,
+            writerSymbol,
+            rootNodeInfo,
+            payloadWritingClosure,
+        )
     }
 
     private fun addPayloadBodyMiddleware(

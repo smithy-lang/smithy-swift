@@ -1,6 +1,7 @@
 package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -23,6 +24,7 @@ typealias HttpMethodCallback = (OperationShape) -> String
 class MiddlewareExecutionGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
+    private val configuratorSymbol: Symbol,
     private val httpBindingResolver: HttpBindingResolver,
     private val httpProtocolCustomizable: HTTPProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware,
@@ -36,19 +38,12 @@ class MiddlewareExecutionGenerator(
         op: OperationShape,
         flowType: ContextAttributeCodegenFlowType = ContextAttributeCodegenFlowType.NORMAL,
     ) {
+        val isSchemaBased = SerdeUtils.useSchemaBased(ctx)
         val inputShape = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op)
         val outputShape = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op)
         writer.write("let context = \$N()", SmithyTypes.ContextBuilder)
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op, flowType)
-        }
-        if (SerdeUtils.useSchemaBased(ctx)) {
-            writer.write(
-                "let operation = \$LClient.\$LOperation",
-                ctx.settings.clientName,
-                op.toLowerCamelCase(),
-            )
-            writer.write("let clientProtocol = \$N()", RPCv2CBORTypes.ClientProtocol)
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
         writer.write(
@@ -59,6 +54,14 @@ class MiddlewareExecutionGenerator(
             SmithyHTTPAPITypes.HTTPRequest,
             SmithyHTTPAPITypes.HTTPResponse,
         )
+        if (isSchemaBased) {
+            writer.write(
+                "\$N().configure(\$LClient.\$LOperation, builder)",
+                configuratorSymbol,
+                ctx.settings.clientName,
+                op.toLowerCamelCase(),
+            )
+        }
         writer.openBlock("config.interceptorProviders.forEach { provider in", "}") {
             writer.write("builder.interceptors.add(provider.create())")
         }

@@ -71,7 +71,7 @@ public class Shape: HasShapeID {
             )
         }
     }
-    
+
     /// Returns shapes that this shape refers to.
     ///
     /// Used to build a set of shapes for code generation purposes.

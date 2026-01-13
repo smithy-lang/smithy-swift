@@ -10,11 +10,10 @@ import Smithy
 import SmithyHTTPAPI
 import protocol SmithySerialization.ClientProtocol
 import protocol SmithySerialization.Codec
-import struct SmithySerialization.Operation
 import protocol SmithySerialization.DeserializableStruct
+import struct SmithySerialization.Operation
 import protocol SmithySerialization.SerializableStruct
 
-@_spi(SmithyReadWrite)
 public struct SchemaBodyMiddleware<Input: SerializableStruct, Output: DeserializableStruct, CP: ClientProtocol> {
     public let id: Swift.String = "BodyMiddleware"
     let operation: Operation<Input, Output>
@@ -32,7 +31,12 @@ extension SchemaBodyMiddleware: RequestMessageSerializer {
 
     public func apply(input: Input, builder: RequestType.RequestBuilderType, attributes: Context) throws {
         do {
-            return try clientProtocol.serializeRequest(operation: operation, input: input, requestBuilder: builder, context: attributes)
+            return try clientProtocol.serializeRequest(
+                operation: operation,
+                input: input,
+                requestBuilder: builder,
+                context: attributes
+            )
         } catch {
             throw ClientError.serializationFailed(error.localizedDescription)
         }

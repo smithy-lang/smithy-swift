@@ -6,11 +6,11 @@
 //
 
 import struct Foundation.Data
+import struct SmithyCBOR.Deserializer
+import class SmithyCBOR.Serializer
 import protocol SmithySerialization.Codec
 import protocol SmithySerialization.ShapeDeserializer
 import protocol SmithySerialization.ShapeSerializer
-import class SmithyCBOR.Serializer
-import struct SmithyCBOR.Deserializer
 
 public struct Codec: SmithySerialization.Codec {
 

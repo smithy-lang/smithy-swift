@@ -8,10 +8,7 @@
 import class Smithy.Context
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
-import protocol Smithy.ResponseMessageDeserializer
-import class Smithy.Schema
 import struct Smithy.ShapeID
-import struct Smithy.URI
 
 public protocol ClientProtocol<RequestType, ResponseType> {
     associatedtype RequestType: RequestMessage
@@ -21,7 +18,7 @@ public protocol ClientProtocol<RequestType, ResponseType> {
     ///
     /// Example: `aws.protocols#awsJson1_0`, `smithy.protocols#rpcv2Cbor`
     var id: ShapeID { get }
-    
+
     /// The codec for this protocol.
     var codec: Codec { get }
 

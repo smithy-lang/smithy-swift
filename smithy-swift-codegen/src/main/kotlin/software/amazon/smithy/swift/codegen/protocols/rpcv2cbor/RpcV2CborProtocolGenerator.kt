@@ -20,6 +20,8 @@ import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
+import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.RPCv2CBORTypes
 
 class RpcV2CborProtocolGenerator(
     customizations: DefaultHTTPProtocolCustomizations = RpcV2CborCustomizations(),
@@ -33,6 +35,7 @@ class RpcV2CborProtocolGenerator(
     override val defaultContentType = "application/cbor"
     override val protocol: ShapeId = Rpcv2CborTrait.ID
     override val shouldRenderEncodableConformance = true
+    override var configuratorSymbol = RPCv2CBORTypes.Configurator
 
     override fun getProtocolHttpBindingResolver(
         ctx: ProtocolGenerator.GenerationContext,
@@ -45,50 +48,12 @@ class RpcV2CborProtocolGenerator(
     ) {
         super.addProtocolSpecificMiddleware(ctx, operation)
 
+        // These are performed by the schema-based rpcv2cbor configurator.  Not needed here.
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
-        operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx, true))
-
-        val hasEventStreamResponse = ctx.model.expectShape(operation.outputShape).hasTrait<StreamingTrait>()
-        val hasEventStreamRequest = ctx.model.expectShape(operation.inputShape).hasTrait<StreamingTrait>()
-
-        // Determine the value of the Accept header based on output shape
-        val acceptHeaderValue =
-            if (hasEventStreamResponse) {
-                "application/vnd.amazon.eventstream"
-            } else {
-                "application/cbor"
-            }
-
-        // Determine the value of the Content-Type header based on input shape
-        val contentTypeValue =
-            if (hasEventStreamRequest) {
-                "application/vnd.amazon.eventstream"
-            } else {
-                defaultContentType
-            }
-
-        // Middleware to set smithy-protocol and Accept headers
-        // Every request for the rpcv2Cbor protocol MUST contain a smithy-protocol header with the value of rpc-v2-cbor
-        val smithyProtocolRequestHeaderMiddleware =
-            MutateHeadersMiddleware(
-                overrideHeaders =
-                    mapOf(
-                        "smithy-protocol" to "rpc-v2-cbor",
-                        "Accept" to acceptHeaderValue,
-                    ),
-            )
-
-        operationMiddleware.appendMiddleware(operation, smithyProtocolRequestHeaderMiddleware)
-        operationMiddleware.appendMiddleware(operation, CborValidateResponseHeaderMiddleware())
-
-        if (operation.hasHttpBody(ctx)) {
-            operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, contentTypeValue, true))
-        }
-
-        // Only set Content-Length header if the request input shape doesn't have an event stream
-        if (!hasEventStreamRequest) {
-            operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, true, false, false))
-        }
+        operationMiddleware.removeMiddleware(operation, "DeserializeMiddleware")
+        operationMiddleware.removeMiddleware(operation, "OperationInputUrlPathMiddleware")
+        operationMiddleware.removeMiddleware(operation, "ContentTypeMiddleware")
+        operationMiddleware.removeMiddleware(operation, "ContentLengthMiddleware")
     }
 
     override fun httpBodyMembers(

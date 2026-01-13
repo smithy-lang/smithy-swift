@@ -8,22 +8,19 @@
 import protocol ClientRuntime.ServiceError
 import struct ClientRuntime.UnknownHTTPServiceError
 import struct Foundation.Data
+import enum Smithy.ByteStream
+import enum Smithy.ClientError
 import class Smithy.Context
-import class Smithy.Schema
 import struct Smithy.ShapeID
-import struct Smithy.URI
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
 import protocol SmithySerialization.ClientProtocol
 import protocol SmithySerialization.Codec
 import protocol SmithySerialization.DeserializableStruct
-import typealias SmithySerialization.ReadStructConsumer
-import protocol SmithySerialization.ShapeDeserializer
 import struct SmithySerialization.Operation
-import enum Smithy.ByteStream
 
-public struct ClientProtocol: SmithySerialization.ClientProtocol {
+public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
     public typealias RequestType = HTTPRequest
     public typealias ResponseType = HTTPResponse
 
@@ -33,6 +30,17 @@ public struct ClientProtocol: SmithySerialization.ClientProtocol {
     public let id = ShapeID("smithy.protocols", "rpcv2Cbor")
 
     public let codec: SmithySerialization.Codec = Codec()
+
+    public var errorCodeBlock: @Sendable (HTTPResponse) throws -> String? = { _ in nil }
+
+    public var unknownErrorBlock: @Sendable (String?, String?, HTTPResponse) -> ServiceError & Error =
+        { code, message, response in
+            UnknownHTTPServiceError(
+                httpResponse: response,
+                message: message,
+                typeName: code
+            )
+        }
 
     public init() {}
 
@@ -60,24 +68,24 @@ public struct ClientProtocol: SmithySerialization.ClientProtocol {
             return try Output.deserialize(deserializer)
         } else {
             let typeDeserializer = try codec.makeDeserializer(data: bodyData)
-            let baseError = try RPCv2CBORBaseError.deserialize(typeDeserializer)
-            let errorTypeID = try ShapeID(baseError.__type ?? "")
-            if let ErrorType = operation.errorTypeRegistry[errorTypeID] {
+            let baseError = try BaseError.deserialize(typeDeserializer)
+            let specialErrorCode = try errorCodeBlock(response)
+            let resolvedErrorCode = specialErrorCode ?? baseError.__type ?? "NoCodeFound"
+            if let ErrorType = operation.errorTypeRegistry[try ShapeID(resolvedErrorCode)] {
                 let errorDeserializer = try codec.makeDeserializer(data: bodyData)
                 let error = try ErrorType.deserialize(errorDeserializer)
-                if var httpError = error as? ServiceError {
+                if var httpError = error as? ServiceError & Error {
                     httpError.message = baseError.message
-                    throw httpError as! Error
+                    throw httpError
+                } else if let error = error as? Error {
+                    throw error
                 } else {
-                    throw error as! Error
+                    throw ClientError.invalidValue(
+                        "Modeled error does not conform to Error.  This should never happen, please file a bug."
+                    )
                 }
             } else {
-                let error = UnknownHTTPServiceError(
-                    httpResponse: response,
-                    message: baseError.message,
-                    typeName: baseError.__type
-                )
-                throw error
+                throw unknownErrorBlock(resolvedErrorCode, baseError.message, response)
             }
         }
     }

@@ -151,9 +151,11 @@ abstract class HTTPBindingProtocolGenerator(
                     continue
                 }
                 val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
-                HttpUrlPathProvider.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
-                HttpHeaderProvider.renderHeaderMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
-                HttpQueryItemProvider.renderQueryMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
+                if (!usesSchemaBased) {
+                    HttpUrlPathProvider.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
+                    HttpHeaderProvider.renderHeaderMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
+                    HttpQueryItemProvider.renderQueryMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
+                }
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
         }
@@ -190,14 +192,14 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
-//        if (SerdeUtils.useSchemaBased(ctx)) return // temporary condition
+        if (SerdeUtils.useSchemaBased(ctx)) return // temporary condition
         val httpOperations = getHttpBindingOperations(ctx)
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         httpResponseGenerator.render(ctx, httpOperations, httpBindingResolver)
     }
 
     override fun generateCodableConformanceForNestedTypes(ctx: ProtocolGenerator.GenerationContext) {
-//        if (SerdeUtils.useSchemaBased(ctx)) return // temporary condition
+        if (SerdeUtils.useSchemaBased(ctx)) return // temporary condition
         val nestedShapes =
             resolveShapesNeedingCodableConformance(ctx)
                 .filter { !it.isEventStreaming }
@@ -210,8 +212,7 @@ abstract class HTTPBindingProtocolGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
     ) {
-        val usesSchemaBased = SerdeUtils.useSchemaBased(ctx) // temporary condition
-        if (!shape.hasTrait<NeedsReaderTrait>() && !(shape.hasTrait<NeedsWriterTrait>() && !usesSchemaBased)) {
+        if (!shape.hasTrait<NeedsReaderTrait>() && !(shape.hasTrait<NeedsWriterTrait>())) {
             return
         }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
@@ -230,7 +231,7 @@ abstract class HTTPBindingProtocolGenerator(
                     is StructureShape -> {
                         // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
                         val httpBodyMembers = members.filter { it.isInHttpBody() }
-                        if (shape.hasTrait<NeedsWriterTrait>() && !usesSchemaBased) {
+                        if (shape.hasTrait<NeedsWriterTrait>()) {
                             writer.write("")
                             renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer)
                         }
@@ -240,7 +241,7 @@ abstract class HTTPBindingProtocolGenerator(
                         }
                     }
                     is UnionShape -> {
-                        if (shape.hasTrait<NeedsWriterTrait>() && !usesSchemaBased) {
+                        if (shape.hasTrait<NeedsWriterTrait>()) {
                             writer.write("")
                             UnionEncodeGenerator(ctx, shape, members, writer).render()
                         }
@@ -401,6 +402,7 @@ abstract class HTTPBindingProtocolGenerator(
             val clientGenerator =
                 httpProtocolClientGeneratorFactory.createHttpProtocolClientGenerator(
                     ctx,
+                    configuratorSymbol,
                     getProtocolHttpBindingResolver(ctx, defaultContentType),
                     writer,
                     serviceSymbol.name,
