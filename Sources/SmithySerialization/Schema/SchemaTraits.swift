@@ -11,6 +11,7 @@
 public let permittedTraitIDs: Set<String> = [
     "aws.api#service",
     "aws.protocols#awsQueryCompatible",
+    "aws.protocols#awsQueryError",
     "smithy.api#sparse",
     "smithy.api#input",
     "smithy.api#output",

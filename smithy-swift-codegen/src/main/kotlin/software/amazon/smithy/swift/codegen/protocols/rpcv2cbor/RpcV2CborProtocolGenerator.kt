@@ -5,23 +5,15 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.swift.codegen.SyntheticClone
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.MutateHeadersMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputBodyMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.getTrait
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.RPCv2CBORTypes
 
 class RpcV2CborProtocolGenerator(
     customizations: DefaultHTTPProtocolCustomizations = RpcV2CborCustomizations(),
@@ -35,7 +27,6 @@ class RpcV2CborProtocolGenerator(
     override val defaultContentType = "application/cbor"
     override val protocol: ShapeId = Rpcv2CborTrait.ID
     override val shouldRenderEncodableConformance = true
-    override var configuratorSymbol = RPCv2CBORTypes.Configurator
 
     override fun getProtocolHttpBindingResolver(
         ctx: ProtocolGenerator.GenerationContext,
@@ -53,6 +44,7 @@ class RpcV2CborProtocolGenerator(
         operationMiddleware.removeMiddleware(operation, "DeserializeMiddleware")
         operationMiddleware.removeMiddleware(operation, "OperationInputUrlPathMiddleware")
         operationMiddleware.removeMiddleware(operation, "ContentTypeMiddleware")
+        operationMiddleware.removeMiddleware(operation, "ContentLengthMiddleware")
         operationMiddleware.removeMiddleware(operation, "ContentLengthMiddleware")
     }
 

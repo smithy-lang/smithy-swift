@@ -9,6 +9,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.SwiftDependency
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseErrorClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
@@ -17,6 +18,9 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestW
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import java.util.Base64
 
 open class HttpProtocolUnitTestErrorGenerator protected constructor(
@@ -28,28 +32,49 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(
     override fun renderTestBody(test: HttpResponseTestCase) {
         outputShape?.let {
             val operationErrorType = "${operation.toUpperCamelCase()}OutputError"
-            writer.openBlock("do {", "} catch {") {
-                renderBuildHttpResponse(test)
-                writer.write("")
-                renderInitOperationError(operationErrorType)
-                writer.write("")
-                renderCompareActualAndExpectedErrors(test, it, operationErrorType)
-                writer.write("")
-            }
-            writer.indent()
-            writer.write("XCTFail(error.localizedDescription)")
-            writer.dedent()
-            writer.write("}")
+            renderBuildHttpResponse(test)
+            writer.write("")
+            renderInitOperationError(operationErrorType)
+            writer.write("")
+            renderCompareActualAndExpectedErrors(test, it)
         }
     }
 
     private fun renderInitOperationError(operationErrorType: String) {
-        val operationErrorVariableName = operationErrorType.replaceFirstChar { it.lowercase() }
+        if (SerdeUtils.useSchemaBased(ctx)) {
+            writer.write("var operationError: \$N?", SwiftTypes.Error)
+            writer.write(
+                "let clientProtocol = \$N().clientProtocol",
+                httpProtocolCustomizable.configuratorSymbol,
+            )
+            writer.write("do {")
+            writer.indent {
+                writer.write(
+                    "let operation = \$LClient.\$LOperation",
+                    ctx.settings.clientName,
+                    operation.id.name.toLowerCamelCase(),
+                )
+                writer.openBlock(
+                    "_ = try await clientProtocol.deserializeResponse(",
+                    ")",
+                ) {
+                    writer.write("operation: operation,")
+                    writer.write("context: \$N().build(),", SmithyTypes.ContextBuilder)
+                    writer.write("response: httpResponse")
+                }
+                writer.write("XCTFail(\"Operation should have thrown an error\")")
+            }
+            writer.write("} catch {")
+            writer.indent {
+                writer.write("operationError = error")
+            }
+            writer.write("}")
+            return
+        }
         val responseErrorClosure = ResponseErrorClosureUtils(ctx, writer, operation).render()
         writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
         writer.write(
-            "let \$L = try await \$L(httpResponse)",
-            operationErrorVariableName,
+            "let operationError = try await \$L(httpResponse)",
             responseErrorClosure,
         )
     }
@@ -57,12 +82,14 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(
     private fun renderCompareActualAndExpectedErrors(
         test: HttpResponseTestCase,
         errorShape: Shape,
-        operationErrorType: String,
     ) {
-        val operationErrorVariableName = operationErrorType.replaceFirstChar { it.lowercase() }
-        val errorType = symbolProvider.toSymbol(errorShape).name
+        val errorSymbol = symbolProvider.toSymbol(errorShape)
 
-        writer.openBlock("if let actual = \$L as? \$L {", "} else {", operationErrorVariableName, errorType) {
+        writer.openBlock(
+            "if let actual = operationError as? \$N {",
+            "} else {",
+            errorSymbol,
+        ) {
             renderExpectedOutput(test, errorShape)
             renderAssertions(test, errorShape)
         }

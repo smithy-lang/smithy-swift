@@ -22,6 +22,8 @@ public struct Configurator: HTTPConfigurating {
 
     public init() {}
 
+    public var clientProtocol: HTTPClientProtocol { makeHTTPClientProtocol() }
+
     // This will be modified by AWS RPCv2CBOR services to customize ClientProtocol behavior
     public var makeHTTPClientProtocol: @Sendable () -> HTTPClientProtocol = { HTTPClientProtocol() }
 

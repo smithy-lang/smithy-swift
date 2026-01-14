@@ -1,13 +1,11 @@
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 
 class SmithyHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactory {
     override fun createHttpProtocolClientGenerator(
         ctx: ProtocolGenerator.GenerationContext,
-        configuratorSymbol: Symbol,
         httpBindingResolver: HttpBindingResolver,
         writer: SwiftWriter,
         serviceName: String,
@@ -19,7 +17,6 @@ class SmithyHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFact
         return HttpProtocolClientGenerator(
             ctx,
             writer,
-            configuratorSymbol,
             config,
             httpBindingResolver,
             defaultContentType,

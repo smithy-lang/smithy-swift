@@ -8,7 +8,6 @@ package software.amazon.smithy.swift.codegen.requestandresponse
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.TestContext
 import software.amazon.smithy.swift.codegen.asSmithy
@@ -29,7 +28,6 @@ import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactory {
     override fun createHttpProtocolClientGenerator(
         ctx: ProtocolGenerator.GenerationContext,
-        configuratorSymbol: Symbol,
         httpBindingResolver: HttpBindingResolver,
         writer: SwiftWriter,
         serviceName: String,
@@ -42,7 +40,6 @@ class TestHttpProtocolClientGeneratorFactory : HttpProtocolClientGeneratorFactor
         return HttpProtocolClientGenerator(
             ctx,
             writer,
-            configuratorSymbol,
             config,
             httpBindingResolver,
             defaultContentType,

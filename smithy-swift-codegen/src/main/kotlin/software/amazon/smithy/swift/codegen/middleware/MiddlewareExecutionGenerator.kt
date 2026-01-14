@@ -1,7 +1,6 @@
 package software.amazon.smithy.swift.codegen.middleware
 
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
@@ -14,9 +13,7 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.RPCv2CBORTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithySerializationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 
 typealias HttpMethodCallback = (OperationShape) -> String
@@ -24,7 +21,6 @@ typealias HttpMethodCallback = (OperationShape) -> String
 class MiddlewareExecutionGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    private val configuratorSymbol: Symbol,
     private val httpBindingResolver: HttpBindingResolver,
     private val httpProtocolCustomizable: HTTPProtocolCustomizable,
     private val operationMiddleware: OperationMiddleware,
@@ -57,7 +53,7 @@ class MiddlewareExecutionGenerator(
         if (isSchemaBased) {
             writer.write(
                 "\$N().configure(\$LClient.\$LOperation, builder)",
-                configuratorSymbol,
+                httpProtocolCustomizable.configuratorSymbol,
                 ctx.settings.clientName,
                 op.toLowerCamelCase(),
             )

@@ -6,7 +6,6 @@ package software.amazon.smithy.swift.codegen.protocolgeneratormocks
  */
 
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.pattern.UriPattern
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
@@ -26,7 +25,6 @@ import software.amazon.smithy.swift.codegen.integration.isEventStreaming
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolClientGeneratorFactory
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class MockJsonHttpBindingResolver(
     private val context: ProtocolGenerator.GenerationContext,
@@ -57,7 +55,6 @@ class MockAWSJson11Customizations : DefaultHTTPProtocolCustomizations() {
 class MockHTTPAWSJson11ProtocolGenerator : HTTPBindingProtocolGenerator(MockAWSJson11Customizations()) {
     override val defaultContentType: String = "application/json"
     override val protocol: ShapeId = AwsJson1_1Trait.ID
-    override val configuratorSymbol: Symbol = ClientRuntimeTypes.Core.DefaultConfigurator
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext): Int {
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()

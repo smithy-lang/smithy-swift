@@ -81,9 +81,6 @@ interface ProtocolGenerator {
             return CaseUtils.toCamelCase(prefix) + getSanitizedName(protocol.name)
         }
 
-    val configuratorSymbol: Symbol
-        get() = ClientRuntimeTypes.Core.DefaultConfigurator
-
     /**
      * Symbol that should be used as the base class for generated service errors.
      * It defaults to the ServiceError available in smithy-swift's client-runtime.

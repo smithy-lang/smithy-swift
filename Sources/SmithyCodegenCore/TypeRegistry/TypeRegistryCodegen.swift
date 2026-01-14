@@ -22,14 +22,13 @@ struct TypeRegistryCodegen {
             ) { writer in
                 let allErrorShapesSorted = ctx.model.allShapesSorted
                     .filter { $0.hasTrait(.init("smithy.api", "error")) }
-                if allErrorShapesSorted.isEmpty {
-                    writer.write("[:]")
-                } else {
-                    try writer.openBlock("[", "]") { writer in
-                        try allErrorShapesSorted.forEach { errorShape in
-                            let idLiteral = ".init(\(errorShape.id.namespace.literal), \(errorShape.id.name.literal))"
+                try writer.openBlock("[", "]") { writer in
+                    try allErrorShapesSorted.forEach { errorShape in
+                        try writer.openBlock(".init(", "),") { writer in
+                            let schemaVarName = try errorShape.schemaVarName
+                            writer.write("schema: \(schemaVarName),")
                             let swiftType = try ctx.symbolProvider.swiftType(shape: errorShape)
-                            writer.write("\(idLiteral): \(swiftType).self,")
+                            writer.write("swiftType: \(swiftType).self")
                         }
                     }
                 }

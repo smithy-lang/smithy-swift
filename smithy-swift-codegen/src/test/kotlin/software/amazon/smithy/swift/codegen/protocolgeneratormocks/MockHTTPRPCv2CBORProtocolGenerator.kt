@@ -5,7 +5,6 @@ package software.amazon.smithy.swift.codegen.protocolgeneratormocks
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
@@ -19,7 +18,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequ
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolClientGeneratorFactory
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class MockRPCv2CBORProtocolCustomizations : DefaultHTTPProtocolCustomizations()
 
@@ -28,7 +26,6 @@ class MockHTTPRPCv2CBORProtocolGenerator : HTTPBindingProtocolGenerator(MockRPCv
     override val protocol: ShapeId = Rpcv2CborTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val shouldRenderEncodableConformance = false
-    override val configuratorSymbol: Symbol = ClientRuntimeTypes.Core.DefaultConfigurator
 
     override fun addProtocolSpecificMiddleware(
         ctx: ProtocolGenerator.GenerationContext,

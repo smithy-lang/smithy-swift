@@ -13,6 +13,9 @@ import struct SmithySerialization.Operation
 public protocol HTTPConfigurating {
     associatedtype RequestType = HTTPRequest
     associatedtype ResponseType = HTTPResponse
+    associatedtype ClientProtocol: SmithySerialization.ClientProtocol
+
+    var clientProtocol: ClientProtocol { get }
 
     func configure<InputType, OutputType>(
         _ operation: Operation<InputType, OutputType>,

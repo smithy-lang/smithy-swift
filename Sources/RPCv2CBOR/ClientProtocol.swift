@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import protocol ClientRuntime.HTTPError
 import protocol ClientRuntime.ServiceError
 import struct ClientRuntime.UnknownHTTPServiceError
 import struct Foundation.Data
@@ -70,20 +71,22 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
             let typeDeserializer = try codec.makeDeserializer(data: bodyData)
             let baseError = try BaseError.deserialize(typeDeserializer)
             let specialErrorCode = try errorCodeBlock(response)
-            let resolvedErrorCode = specialErrorCode ?? baseError.__type ?? "NoCodeFound"
-            if let ErrorType = operation.errorTypeRegistry[try ShapeID(resolvedErrorCode)] {
+            let resolvedErrorCode = (specialErrorCode ?? baseError.__type ?? "NoCodeFound").substringAfter("#")
+            if let entry = operation.errorTypeRegistry.codeLookup(
+                serviceSchema: operation.serviceSchema,
+                code: resolvedErrorCode
+            ) {
                 let errorDeserializer = try codec.makeDeserializer(data: bodyData)
-                let error = try ErrorType.deserialize(errorDeserializer)
-                if var httpError = error as? ServiceError & Error {
-                    httpError.message = baseError.message
-                    throw httpError
-                } else if let error = error as? Error {
-                    throw error
-                } else {
+                let error = try entry.swiftType.deserialize(errorDeserializer)
+                guard var modeledError = error as? ServiceError & HTTPError & Error else {
                     throw ClientError.invalidValue(
-                        "Modeled error does not conform to Error.  This should never happen, please file a bug."
+                        "Modeled error does not conform to ServiceError & HTTPError & Error.  " +
+                        "This should never happen, please file a bug on aws-sdk-swift."
                     )
                 }
+                modeledError.message = baseError.message
+                modeledError.httpResponse = response
+                throw modeledError
             } else {
                 throw unknownErrorBlock(resolvedErrorCode, baseError.message, response)
             }

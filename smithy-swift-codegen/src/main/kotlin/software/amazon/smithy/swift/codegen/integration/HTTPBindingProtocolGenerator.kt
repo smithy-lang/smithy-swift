@@ -23,7 +23,6 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
@@ -175,7 +174,7 @@ abstract class HTTPBindingProtocolGenerator(
                     .name(symbolName)
                     .build()
             val httpBodyMembers = httpBodyMembers(ctx, shape)
-            if (usesSchemaBased) { return }
+            if (usesSchemaBased) return
             if (httpBodyMembers.isNotEmpty() || shouldRenderEncodableConformance) {
                 ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                     writer.openBlock(
@@ -402,7 +401,6 @@ abstract class HTTPBindingProtocolGenerator(
             val clientGenerator =
                 httpProtocolClientGeneratorFactory.createHttpProtocolClientGenerator(
                     ctx,
-                    configuratorSymbol,
                     getProtocolHttpBindingResolver(ctx, defaultContentType),
                     writer,
                     serviceSymbol.name,

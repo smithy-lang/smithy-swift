@@ -6,7 +6,6 @@ package software.amazon.smithy.swift.codegen.protocolgeneratormocks
  */
 
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
@@ -20,7 +19,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResp
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolClientGeneratorFactory
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class MockRestXMLHTTPProtocolCustomizations : DefaultHTTPProtocolCustomizations()
 
@@ -29,7 +27,6 @@ class MockHTTPRestXMLProtocolGenerator : HTTPBindingProtocolGenerator(MockRestXM
     override val protocol: ShapeId = RestXmlTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val shouldRenderEncodableConformance = false
-    override val configuratorSymbol: Symbol = ClientRuntimeTypes.Core.DefaultConfigurator
 
     override fun addProtocolSpecificMiddleware(
         ctx: ProtocolGenerator.GenerationContext,

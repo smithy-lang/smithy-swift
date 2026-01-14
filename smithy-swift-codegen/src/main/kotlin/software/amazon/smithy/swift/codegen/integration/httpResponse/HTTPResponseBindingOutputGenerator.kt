@@ -35,7 +35,7 @@ class HTTPResponseBindingOutputGenerator(
         httpBindingResolver: HttpBindingResolver,
         defaultTimestampFormat: TimestampFormatTrait.Format,
     ) {
-        if (SerdeUtils.useSchemaBased(ctx)) { return }
+        if (SerdeUtils.useSchemaBased(ctx)) return
         if (op.output.isEmpty) {
             return
         }

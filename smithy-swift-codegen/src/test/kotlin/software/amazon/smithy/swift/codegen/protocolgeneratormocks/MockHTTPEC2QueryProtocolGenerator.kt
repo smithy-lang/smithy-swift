@@ -6,7 +6,6 @@ package software.amazon.smithy.swift.codegen.protocolgeneratormocks
  */
 
 import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.pattern.UriPattern
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
@@ -23,7 +22,6 @@ import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResp
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolClientGeneratorFactory
-import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class MockEC2QueryHTTPProtocolCustomizations : DefaultHTTPProtocolCustomizations()
 
@@ -47,7 +45,6 @@ class MockHTTPEC2QueryProtocolGenerator : HTTPBindingProtocolGenerator(MockEC2Qu
     override val protocol: ShapeId = Ec2QueryTrait.ID
     override val httpProtocolClientGeneratorFactory = TestHttpProtocolClientGeneratorFactory()
     override val shouldRenderEncodableConformance = true
-    override val configuratorSymbol: Symbol = ClientRuntimeTypes.Core.DefaultConfigurator
 
     override fun addProtocolSpecificMiddleware(
         ctx: ProtocolGenerator.GenerationContext,

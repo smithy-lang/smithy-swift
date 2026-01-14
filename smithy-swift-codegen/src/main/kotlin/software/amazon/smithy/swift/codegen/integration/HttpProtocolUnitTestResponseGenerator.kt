@@ -26,7 +26,6 @@ import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.RPCv2CBORTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyCBORTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 import java.util.Base64
 

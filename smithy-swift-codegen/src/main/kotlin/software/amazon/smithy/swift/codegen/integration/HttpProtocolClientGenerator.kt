@@ -20,7 +20,6 @@ import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
 open class HttpProtocolClientGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: SwiftWriter,
-    private val configuratorSymbol: Symbol,
     serviceConfig: ServiceConfig,
     private val httpBindingResolver: HttpBindingResolver,
     private val defaultContentType: String,
@@ -63,7 +62,6 @@ open class HttpProtocolClientGenerator(
                         MiddlewareExecutionGenerator(
                             ctx,
                             writer,
-                            configuratorSymbol,
                             httpBindingResolver,
                             httpProtocolCustomizable,
                             operationMiddleware,

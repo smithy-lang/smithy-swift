@@ -5,14 +5,12 @@
 
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 
 interface HttpProtocolClientGeneratorFactory {
     fun createHttpProtocolClientGenerator(
         ctx: ProtocolGenerator.GenerationContext,
-        configuratorSymbol: Symbol,
         httpBindingResolver: HttpBindingResolver,
         writer: SwiftWriter,
         serviceName: String,
