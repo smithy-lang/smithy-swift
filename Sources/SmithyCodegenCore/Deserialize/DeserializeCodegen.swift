@@ -13,7 +13,7 @@ package struct DeserializeCodegen {
         let writer = SwiftWriter()
         writer.write("import Foundation")
         writer.write("import enum Smithy.Prelude")
-        writer.write("import class Smithy.Schema")
+        writer.write("import struct Smithy.Schema")
         writer.write("import protocol SmithySerialization.DeserializableStruct")
         writer.write("import typealias SmithySerialization.ReadStructConsumer")
         writer.write("import protocol SmithySerialization.ShapeDeserializer")

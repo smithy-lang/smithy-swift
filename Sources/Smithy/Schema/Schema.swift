@@ -9,7 +9,7 @@
 ///
 /// Typically, the Schema contains only modeled info & properties that are relevant to
 /// serialization, transport bindings, and other functions performed by the SDK.
-public final class Schema: Sendable {
+public struct Schema: Sendable {
 
     /// The Smithy shape ID for the shape described by this schema.
     public let id: ShapeID

@@ -51,6 +51,10 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         requestBuilder: HTTPRequestBuilder,
         context: Context
     ) throws {
+        guard operation.inputSchema.traits[unitSubstituteTraitID] == nil else {
+            requestBuilder.withBody(.data(nil))
+            return
+        }
         let serializer = try codec.makeSerializer()
         try input.serialize(serializer)
         let data = serializer.data
@@ -93,3 +97,5 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         }
     }
 }
+
+private var unitSubstituteTraitID: ShapeID { .init("swift.synthetic", "unitSubstitute") }

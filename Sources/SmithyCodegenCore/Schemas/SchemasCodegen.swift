@@ -15,7 +15,7 @@ package struct SchemasCodegen {
 
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
-        writer.write("import class Smithy.Schema")
+        writer.write("import struct Smithy.Schema")
         writer.write("import enum Smithy.Prelude")
         writer.write("")
 
@@ -32,7 +32,7 @@ package struct SchemasCodegen {
         let allShapes = [ctx.service] + sortedOperationShapes + sortedModelShapes
 
         for shape in allShapes {
-            try writer.openBlock("public var \(shape.schemaVarName): Smithy.Schema {", "}") { writer in
+            try writer.openBlock("var \(shape.schemaVarName): Smithy.Schema {", "}") { writer in
                 try writeSchema(writer: writer, shape: shape)
                 writer.unwrite(",")
             }

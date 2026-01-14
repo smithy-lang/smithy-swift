@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import class Smithy.Schema
+import struct Smithy.Schema
 import struct Smithy.ShapeID
 
 public struct TypeRegistry {

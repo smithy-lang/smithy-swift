@@ -8,7 +8,7 @@
 import class AwsCommonRuntimeKit.CBOREncoder
 import struct Foundation.Data
 import struct Foundation.Date
-import class Smithy.Schema
+import struct Smithy.Schema
 import protocol SmithySerialization.SerializableStruct
 import protocol SmithySerialization.ShapeSerializer
 import typealias SmithySerialization.WriteValueConsumer

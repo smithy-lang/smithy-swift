@@ -22,4 +22,7 @@ public let permittedTraitIDs: Set<String> = [
     "smithy.api#default",
     "smithy.api#timestampFormat",
     "smithy.api#sensitive",
+
+    // Synthetic traits
+    "swift.synthetic#unitSubstitute",
 ]

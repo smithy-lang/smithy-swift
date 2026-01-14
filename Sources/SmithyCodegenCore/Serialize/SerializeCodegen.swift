@@ -12,7 +12,7 @@ package struct SerializeCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import enum Smithy.Prelude")
-        writer.write("import class Smithy.Schema")
+        writer.write("import struct Smithy.Schema")
         writer.write("import protocol SmithySerialization.SerializableStruct")
         writer.write("import protocol SmithySerialization.ShapeSerializer")
         writer.write("import typealias SmithySerialization.WriteStructConsumer")

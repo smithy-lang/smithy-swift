@@ -14,7 +14,7 @@ import struct Foundation.Date
 @_spi(SmithyDocumentImpl) import struct Smithy.BooleanDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.ListDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.NullDocument
-import class Smithy.Schema
+import struct Smithy.Schema
 import protocol Smithy.SmithyDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.StringDocument
 @_spi(SmithyDocumentImpl) import struct Smithy.StringMapDocument

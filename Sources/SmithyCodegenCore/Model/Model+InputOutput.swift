@@ -28,12 +28,12 @@ extension Model {
             // Get the input & output structures for this operation.  Substitute an empty
             // structure if ID is omitted or targets Unit
             let inputShape = if operation.inputID == unitShapeID {
-                StructureShape(id: unitShapeID, traits: [:], memberIDs: [])
+                StructureShape(id: unitShapeID, traits: [unitSubstituteTraitID: [:]], memberIDs: [])
             } else {
                 try expectStructureShape(id: operation.inputID)
             }
             let outputShape = if operation.outputID == unitShapeID {
-                StructureShape(id: unitShapeID, traits: [:], memberIDs: [])
+                StructureShape(id: unitShapeID, traits: [unitSubstituteTraitID: [:]], memberIDs: [])
             } else {
                 try expectStructureShape(id: operation.outputID)
             }
@@ -103,6 +103,8 @@ private var inputTraitID: ShapeID { .init("smithy.api", "input") }
 private var outputTraitID: ShapeID { .init("smithy.api", "output") }
 
 private var unitShapeID: ShapeID { .init("smithy.api", "Unit") }
+
+private var unitSubstituteTraitID: ShapeID { .init("swift.synthetic", "unitSubstitute") }
 
 private extension [ShapeID: Node] {
 

@@ -6,7 +6,7 @@
 //
 
 import enum Smithy.Prelude
-import class Smithy.Schema
+import struct Smithy.Schema
 import protocol SmithySerialization.DeserializableStruct
 import typealias SmithySerialization.ReadStructConsumer
 import protocol SmithySerialization.ShapeDeserializer

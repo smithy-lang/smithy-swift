@@ -8,7 +8,7 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.ISO8601DateFormatter
-import class Smithy.Schema
+import struct Smithy.Schema
 import struct Smithy.ShapeID
 import protocol Smithy.SmithyDocument
 

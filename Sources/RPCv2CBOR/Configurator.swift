@@ -14,6 +14,7 @@ import class ClientRuntime.OrchestratorBuilder
 import struct ClientRuntime.SchemaBodyMiddleware
 import struct ClientRuntime.SchemaDeserializeMiddleware
 import struct ClientRuntime.URLPathMiddleware
+import struct Smithy.ShapeID
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 import struct SmithySerialization.Operation
@@ -36,8 +37,12 @@ public struct Configurator: HTTPConfigurating {
         builder.serialize(SchemaBodyMiddleware(operation, clientProtocol))
         builder.deserialize(SchemaDeserializeMiddleware(operation, clientProtocol))
 
-        // Add content-type and content-length, and accept headers
-        builder.interceptors.add(ContentTypeMiddleware(contentType: "application/cbor"))
+        // Add content-type if the operation input does not target unit
+        if operation.inputSchema.traits[unitSubstituteTraitID] == nil {
+            builder.interceptors.add(ContentTypeMiddleware(contentType: "application/cbor"))
+        }
+
+        // Add content-length, and accept headers
         builder.interceptors.add(ContentLengthMiddleware()) // don't add this when event streaming
         builder.interceptors.add(MutateHeadersMiddleware(overrides: ["Accept": "application/cbor"]))
 
@@ -55,3 +60,5 @@ public struct Configurator: HTTPConfigurating {
         builder.interceptors.add(ClientRuntime.CborValidateResponseHeaderMiddleware<InputType, OutputType>())
     }
 }
+
+private var unitSubstituteTraitID: ShapeID { .init("swift.synthetic", "unitSubstitute") }

@@ -7,7 +7,7 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import class Smithy.Schema
+import struct Smithy.Schema
 import protocol Smithy.SmithyDocument
 
 public protocol ShapeDeserializer {
