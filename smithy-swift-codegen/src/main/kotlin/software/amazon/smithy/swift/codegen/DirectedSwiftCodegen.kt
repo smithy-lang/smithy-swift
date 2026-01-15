@@ -96,10 +96,10 @@ class DirectedSwiftCodegen(
 
             LOGGER.info("[${service.id}] Generating additional files")
             integrations.forEach { it.writeAdditionalFiles(context, ctx, writers) }
-        }
 
-        LOGGER.info("[${service.id}] Generating Smithy model file info")
-        SmithyModelFileInfoGenerator(context).writeSmithyModelFileInfo()
+            LOGGER.info("[${service.id}] Generating Smithy model file info")
+            SmithyModelFileInfoGenerator(ctx).writeSmithyModelFileInfo()
+        }
 
         LOGGER.info("[${service.id}] Generating package manifest file")
         PackageManifestGenerator(context).writePackageManifest(writers.dependencies)
