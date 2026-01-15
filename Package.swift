@@ -60,7 +60,7 @@ let package = Package(
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
-            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.54.2"),
+            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.56.1"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.13.0"),
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
