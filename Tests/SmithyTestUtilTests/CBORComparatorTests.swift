@@ -6,16 +6,9 @@
 //
 
 import XCTest
-@testable @_spi(SmithyReadWrite) import SmithyCBOR
 import SmithyTestUtil
 
-class ReaderTests: XCTestCase {
-
-    func test_readsNull() async throws {
-        let cborData = Data()
-        let reader = try SmithyCBOR.Reader.from(data: cborData)
-        XCTAssertEqual(reader.cborValue, .null)
-    }
+class CBORComparatorTests: XCTestCase {
 
     func test_compare_nulls() async throws {
         let cborData1 = Data()
