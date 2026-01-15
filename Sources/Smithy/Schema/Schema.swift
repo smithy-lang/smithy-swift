@@ -21,7 +21,7 @@ public struct Schema: Sendable {
     ///
     /// Not all traits for a shape will be represented in the schema;
     /// typically the Schema contains only the traits relevant to the client-side SDK.
-    public let traits: [ShapeID: Node]
+    public let traits: TraitCollection
 
     /// The member schemas for this schema, if any.
     ///
@@ -53,7 +53,7 @@ public struct Schema: Sendable {
     public init(
         id: ShapeID,
         type: ShapeType,
-        traits: [ShapeID: Node] = [:],
+        traits: TraitCollection = TraitCollection(),
         members: [Schema] = [],
         target: @Sendable @escaping @autoclosure () -> Schema? = nil,
         index: Int = -1
@@ -64,6 +64,14 @@ public struct Schema: Sendable {
         self.members = members
         self._target = target
         self.index = index
+    }
+
+    public func hasTrait<T: Trait>(_ type: T.Type) -> Bool {
+        return traits.hasTrait(T.self)
+    }
+
+    public func getTrait<T: Trait>(_ type: T.Type) throws -> T? {
+        try traits.getTrait(type)
     }
 
     /// Returns the member for a List's element.

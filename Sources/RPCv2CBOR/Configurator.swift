@@ -15,6 +15,7 @@ import struct ClientRuntime.SchemaBodyMiddleware
 import struct ClientRuntime.SchemaDeserializeMiddleware
 import struct ClientRuntime.URLPathMiddleware
 import struct Smithy.ShapeID
+import struct Smithy.TargetsUnitTrait
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 import struct SmithySerialization.Operation
@@ -38,7 +39,7 @@ public struct Configurator: HTTPConfigurating {
         builder.deserialize(SchemaDeserializeMiddleware(operation, clientProtocol))
 
         // Add content-type if the operation input does not target unit
-        if operation.inputSchema.traits[unitSubstituteTraitID] == nil {
+        if !operation.inputSchema.hasTrait(TargetsUnitTrait.self) {
             builder.interceptors.add(ContentTypeMiddleware(contentType: "application/cbor"))
         }
 

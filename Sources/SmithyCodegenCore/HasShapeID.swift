@@ -7,11 +7,11 @@
 
 import struct Smithy.ShapeID
 
-public protocol HasShapeID {
+protocol HasShapeID {
     var id: ShapeID { get }
 }
 
-public extension Array where Element: HasShapeID {
+extension Array where Element: HasShapeID {
 
     /// Sorts alphabetically by shape ID to match the ordering used by Kotlin-based codegen.
     ///
@@ -19,5 +19,12 @@ public extension Array where Element: HasShapeID {
     /// - Returns: An array of elements in sorted order
     func smithySorted() -> Self {
         sorted { $0.id < $1.id }
+    }
+}
+
+extension ShapeID: HasShapeID {
+
+    var id: ShapeID {
+        self
     }
 }

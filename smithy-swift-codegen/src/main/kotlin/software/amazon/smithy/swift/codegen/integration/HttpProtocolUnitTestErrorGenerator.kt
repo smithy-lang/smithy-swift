@@ -51,7 +51,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(
             writer.indent {
                 writer.write(
                     "let operation = \$LClient.\$LOperation",
-                    ctx.settings.clientName,
+                    ctx.settings.clientBaseName,
                     operation.id.name.toLowerCamelCase(),
                 )
                 writer.openBlock(

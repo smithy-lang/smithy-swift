@@ -8,6 +8,10 @@
 import struct Foundation.Locale
 import struct Foundation.NSRange
 import class Foundation.NSRegularExpression
+import struct Smithy.ErrorTrait
+import struct Smithy.InputTrait
+import struct Smithy.OutputTrait
+import struct Smithy.ServiceTrait
 import struct Smithy.ShapeID
 
 public struct SymbolProvider {
@@ -21,28 +25,17 @@ public struct SymbolProvider {
 
     var serviceName: String {
         get throws {
-            guard service.type == .service else {
-                throw SymbolProviderError("Called serviceName on non-service shape")
-            }
-            guard case .object(let serviceInfo) = service.getTrait(.init("aws.api", "service")) else {
-                throw SymbolProviderError("No service trait on service")
-            }
-            guard case .string(let sdkID) = serviceInfo["sdkId"] else {
-                throw SymbolProviderError("No sdkId on service trait")
-            }
-            return sdkID.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "Service", with: "")
+            return try service.sdkIdStrippingService
+                .replacingOccurrences(of: " ", with: "")
+                .replacingOccurrences(of: "Service", with: "")
         }
     }
-
-    private var inputTraitID = ShapeID("smithy.api", "input")
-    private var outputTraitID = ShapeID("smithy.api", "output")
-    private var errorTraitID = ShapeID("smithy.api", "error")
 
     public func swiftType(shape: Shape) throws -> String {
         switch shape.type {
         case .structure, .union, .enum, .intEnum:
             let base = shape.id.name
-            if shape.hasTrait(inputTraitID) || shape.hasTrait(outputTraitID) || shape.hasTrait(errorTraitID) {
+            if shape.hasTrait(InputTrait.self) || shape.hasTrait(OutputTrait.self) || shape.hasTrait(ErrorTrait.self) {
                 return base
             } else if shape.type == .intEnum {
                 // The NestedShapeTransformer in main codegen inadvertently excludes intEnum
@@ -93,7 +86,7 @@ public struct SymbolProvider {
             guard let serviceShape = shape as? ServiceShape else {
                 throw SymbolProviderError("Shape has type .service but is not a ServiceShape")
             }
-            return "\(serviceShape.sdkId)Client".toUpperCamelCase()
+            return try "\(serviceShape.clientBaseName)Client"
         case .document, .member, .operation, .resource:
             throw SymbolProviderError("Cannot provide Swift symbol for shape type \(shape.type)")
         }
@@ -121,7 +114,7 @@ public struct SymbolProvider {
     }
 }
 
-private extension String {
+extension String {
 
     func toLowerCamelCase() -> String {
         let words = splitOnWordBoundaries() // Split into words

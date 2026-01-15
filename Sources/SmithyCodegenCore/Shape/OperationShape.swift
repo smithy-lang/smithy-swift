@@ -6,8 +6,10 @@
 //
 
 import enum Smithy.Node
+import enum Smithy.Prelude
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
+import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy operations.
 public class OperationShape: Shape {
@@ -15,9 +17,9 @@ public class OperationShape: Shape {
     let outputID: ShapeID
     let errorIDs: [ShapeID]
 
-    public init(id: ShapeID, traits: [ShapeID: Node], inputID: ShapeID?, outputID: ShapeID?, errorIDs: [ShapeID]) {
-        self.inputID = inputID ?? .init("smithy.api", "Unit")
-        self.outputID = outputID ?? .init("smithy.api", "Unit")
+    public init(id: ShapeID, traits: TraitCollection, inputID: ShapeID?, outputID: ShapeID?, errorIDs: [ShapeID]) {
+        self.inputID = inputID ?? Prelude.unitSchema.id
+        self.outputID = outputID ?? Prelude.unitSchema.id
         self.errorIDs = errorIDs
         super.init(id: id, type: .operation, traits: traits)
     }

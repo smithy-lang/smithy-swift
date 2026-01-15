@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.ErrorTrait
+import struct Smithy.SparseTrait
+
 package struct SerializeCodegen {
 
     package init() {}
@@ -45,7 +48,7 @@ package struct SerializeCodegen {
                             writer.indent()
                             if shape.type == .structure {
                                 let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
-                                let properties = shape.hasTrait(.init("smithy.api", "error")) ? "properties." : ""
+                                let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""
                                 if try NullableIndex().isNonOptional(member) {
                                     writer.write("let value = \(varName).\(properties)\(propertyName)")
                                 } else {
@@ -88,7 +91,7 @@ package struct SerializeCodegen {
             guard let listShape = target as? ListShape else {
                 throw ModelError("Shape \(target.id) is type .\(target.type) but not a ListShape")
             }
-            let isSparse = listShape.hasTrait(.init("smithy.api", "sparse"))
+            let isSparse = listShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "writeSparseList" : "writeList"
             try writer.openBlock(
                 "try serializer.\(methodName)(\(schemaVarName), value) { value, serializer in",
@@ -105,7 +108,7 @@ package struct SerializeCodegen {
             guard let mapShape = target as? MapShape else {
                 throw ModelError("Shape \(target.id) is type .map but not a MapShape")
             }
-            let isSparse = mapShape.hasTrait(.init("smithy.api", "sparse"))
+            let isSparse = mapShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "writeSparseMap" : "writeMap"
             try writer.openBlock(
                 "try serializer.\(methodName)(\(schemaVarName), value) { value, serializer in",

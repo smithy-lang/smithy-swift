@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import let Smithy.allSupportedTraits
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
-import let SmithySerialization.permittedTraitIDs
 
 package struct SchemasCodegen {
 
@@ -46,12 +46,12 @@ package struct SchemasCodegen {
         try writer.openBlock(".init(", "),") { writer in
             writer.write("id: \(shape.id.rendered),")
             writer.write("type: .\(shape.type),")
-            let relevantTraitIDs = shape.traits.keys.filter { permittedTraitIDs.contains($0.absoluteID) }
-            let traitIDs = Array(relevantTraitIDs).sorted()
+            let relevantTraitIDs = shape.traits.traitDict.keys.filter { allSupportedTraits.contains($0) }
+            let traitIDs = Array(relevantTraitIDs).smithySorted()
             if !traitIDs.isEmpty {
                 writer.openBlock("traits: [", "],") { writer in
                     for traitID in traitIDs {
-                        let trait = shape.traits[traitID]!
+                        let trait = shape.traits.traitDict[traitID]!
                         writer.write("\(traitID.rendered): \(trait.rendered),")
                     }
                 }

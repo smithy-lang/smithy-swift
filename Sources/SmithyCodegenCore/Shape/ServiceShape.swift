@@ -6,7 +6,9 @@
 //
 
 import enum Smithy.Node
+import struct Smithy.ServiceTrait
 import struct Smithy.ShapeID
+import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy services.
 public class ServiceShape: Shape {
@@ -16,7 +18,7 @@ public class ServiceShape: Shape {
 
     public init(
         id: ShapeID,
-        traits: [ShapeID: Node],
+        traits: TraitCollection,
         operationIDs: [ShapeID],
         resourceIDs: [ShapeID],
         errorIDs: [ShapeID]
@@ -46,17 +48,27 @@ public class ServiceShape: Shape {
     }
 
     public var sdkId: String {
-        var sdkId = if case .object(let object) = traits[.init("aws.api", "service")],
-                       case .string(let sdkId) = object["sdkId"] {
-            sdkId
-        } else {
-            id.name
+        get throws {
+            try getTrait(ServiceTrait.self)?.sdkId ?? id.name
         }
-        let unwantedSuffix = " Service"
-        if sdkId.hasSuffix(unwantedSuffix) {
-            sdkId.removeLast(unwantedSuffix.count)
+    }
+
+    public var sdkIdStrippingService: String {
+        get throws {
+            var sdkIdStrippingService = try sdkId
+            let unwantedSuffix = " Service"
+            if sdkIdStrippingService.hasSuffix(unwantedSuffix) {
+                sdkIdStrippingService.removeLast(unwantedSuffix.count)
+            }
+            return sdkIdStrippingService
         }
-        return sdkId
+    }
+
+    public var clientBaseName: String {
+        get throws {
+            try sdkIdStrippingService.toUpperCamelCase()
+        }
+
     }
 
     override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {

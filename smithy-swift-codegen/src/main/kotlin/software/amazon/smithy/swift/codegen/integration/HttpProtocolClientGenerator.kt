@@ -45,7 +45,7 @@ open class HttpProtocolClientGenerator(
         val operationsIndex = OperationIndex.of(model)
 
         writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
-            val clientName = ctx.settings.clientName
+            val clientName = ctx.settings.clientBaseName
             operations.forEach { operation ->
                 ServiceGenerator.renderOperationDefinition(
                     clientName,

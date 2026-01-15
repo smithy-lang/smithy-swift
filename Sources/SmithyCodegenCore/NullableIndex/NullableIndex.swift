@@ -5,8 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.ClientOptionalTrait
+import struct Smithy.DefaultTrait
+import struct Smithy.InputTrait
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
+import struct Smithy.SparseTrait
 
 struct NullableIndex {
 
@@ -19,13 +23,13 @@ struct NullableIndex {
 
         // If the container is a list/set, member is nonoptional unless sparse trait is applied
         if [ShapeType.list, .set].contains(container.type), memberShape.id.member == "member" {
-            return !container.hasTrait(.init("smithy.api", "sparse"))
+            return !container.hasTrait(SparseTrait.self)
         }
 
         // If the container is a map, value is nonoptional unless sparse trait is applied
         if container.type == .map {
             if memberShape.id.member == "value" {
-                return !container.hasTrait(.init("smithy.api", "sparse"))
+                return !container.hasTrait(SparseTrait.self)
             } else {
                 // key is always non-optional
                 return true
@@ -33,12 +37,12 @@ struct NullableIndex {
         }
 
         // If the containing shape has the input trait, it's definitely optional
-        if container.hasTrait(.init("smithy.api", "input")) {
+        if container.hasTrait(InputTrait.self) {
             return false
         }
 
         // If the member has the clientOptional trait, it's definitely optional
-        if memberShape.hasTrait(.init("smithy.api", "clientOptional")) {
+        if memberShape.hasTrait(ClientOptionalTrait.self) {
             return false
         }
 
@@ -50,8 +54,8 @@ struct NullableIndex {
         guard allowedTypes.contains(target.type) else { return false }
 
         // Check if there is a default trait with a zero/false value.  If so, member is non-optional.
-        let defaultTrait = ShapeID("smithy.api", "default")
-        guard let defaultNode = memberShape.traits[defaultTrait] ?? target.traits[defaultTrait] else {
+        let defaultTrait = try memberShape.getTrait(DefaultTrait.self) ?? target.getTrait(DefaultTrait.self)
+        guard let defaultNode = defaultTrait?.node else {
             return false
         }
         if target.type == .boolean, case .boolean(let bool) = defaultNode, !bool {

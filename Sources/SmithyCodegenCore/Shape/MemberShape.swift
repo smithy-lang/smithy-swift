@@ -7,12 +7,13 @@
 
 import enum Smithy.Node
 import struct Smithy.ShapeID
+import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy members.
 public class MemberShape: Shape {
     let targetID: ShapeID
 
-    init(id: ShapeID, traits: [ShapeID: Node], targetID: ShapeID) {
+    init(id: ShapeID, traits: TraitCollection, targetID: ShapeID) {
         self.targetID = targetID
         super.init(id: id, type: .member, traits: traits)
     }

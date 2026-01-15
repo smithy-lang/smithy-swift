@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.ErrorTrait
+import struct Smithy.SparseTrait
+
 package struct DeserializeCodegen {
 
     package init() {}
@@ -104,7 +107,7 @@ package struct DeserializeCodegen {
                 throw SymbolProviderError("Shape has type .list but is not a ListShape")
             }
             let listSwiftType = try ctx.symbolProvider.swiftType(shape: listShape)
-            let isSparse = listShape.hasTrait(.init("smithy.api", "sparse"))
+            let isSparse = listShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "readSparseList" : "readList"
             writer.write("var value = \(listSwiftType)()")
             try writer.openBlock(
@@ -125,7 +128,7 @@ package struct DeserializeCodegen {
                 throw SymbolProviderError("Shape has type .map but is not a MapShape")
             }
             let mapSwiftType = try ctx.symbolProvider.swiftType(shape: mapShape)
-            let isSparse = mapShape.hasTrait(.init("smithy.api", "sparse"))
+            let isSparse = mapShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "readSparseMap" : "readMap"
             writer.write("var value = \(mapSwiftType)()")
             try writer.openBlock(
@@ -146,7 +149,7 @@ package struct DeserializeCodegen {
             let rhs = "try deserializer.\(methodName)(\(schemaVarName))"
             switch shape.type {
             case .structure:
-                let properties = shape.hasTrait(.init("smithy.api", "error")) ? "properties." : ""
+                let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""
                 let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
                 writer.write("structure.\(properties)\(propertyName) = \(rhs)")
             case .union:
@@ -189,7 +192,7 @@ package struct DeserializeCodegen {
         case .structure:
             // For a structure member, write the value to the appropriate structure property,
             // making the appropriate adjustment for an error.
-            let properties = shape.hasTrait(.init("smithy.api", "error")) ? "properties." : ""
+            let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""
             let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
             writer.write("structure.\(properties)\(propertyName) = value")
         case .union:

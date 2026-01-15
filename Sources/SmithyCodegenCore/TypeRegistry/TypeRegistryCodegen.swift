@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.ErrorTrait
+
 struct TypeRegistryCodegen {
 
     func generate(ctx: GenerationContext) throws -> String {
@@ -21,7 +23,7 @@ struct TypeRegistryCodegen {
                 ")"
             ) { writer in
                 let allErrorShapesSorted = ctx.model.allShapesSorted
-                    .filter { $0.hasTrait(.init("smithy.api", "error")) }
+                    .filter { $0.hasTrait(ErrorTrait.self) }
                 try writer.openBlock("[", "]") { writer in
                     try allErrorShapesSorted.forEach { errorShape in
                         try writer.openBlock(".init(", "),") { writer in

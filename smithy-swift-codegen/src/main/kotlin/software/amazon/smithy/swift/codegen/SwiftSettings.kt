@@ -16,7 +16,6 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
-import software.amazon.smithy.model.selector.AttributeValue.service
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
@@ -25,7 +24,6 @@ import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.sdkId
 import java.util.logging.Logger
 import kotlin.jvm.optionals.getOrNull
-import kotlin.streams.toList
 
 private const val SERVICE = "service"
 private const val MODULE_NAME = "module"
@@ -234,11 +232,11 @@ class SwiftSettings(
     val sdkIdStrippingService: String
         get() = sdkId.removeSuffix(" Service")
 
-    val clientNamePreservingService: String
+    val clientBaseNamePreservingService: String
         get() = sdkId.clientName()
 
-    val clientName: String
-        get() = sdkId.removeSuffix(" Service").clientName()
+    val clientBaseName: String
+        get() = sdkIdStrippingService.clientName()
 }
 
 class UnresolvableProtocolException(

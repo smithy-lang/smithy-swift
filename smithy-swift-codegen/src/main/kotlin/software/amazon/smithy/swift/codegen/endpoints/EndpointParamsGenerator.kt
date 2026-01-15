@@ -92,7 +92,7 @@ class EndpointParamsGenerator(
         parameters: List<Parameter>,
     ) {
         writer.apply {
-            val paramsType = ctx.settings.clientNamePreservingService + "AuthSchemeResolverParameters"
+            val paramsType = ctx.settings.clientBaseNamePreservingService + "AuthSchemeResolverParameters"
             openBlock("public init (authSchemeParams: \$L) {", "}", paramsType) {
                 parameters.forEach {
                     val memberName = it.name.toString().toLowerCamelCase()

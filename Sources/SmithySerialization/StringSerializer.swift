@@ -9,6 +9,7 @@ import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.ISO8601DateFormatter
 import struct Smithy.Schema
+import struct Smithy.SensitiveTrait
 import struct Smithy.ShapeID
 import protocol Smithy.SmithyDocument
 
@@ -146,7 +147,6 @@ public class StringSerializer: ShapeSerializer {
 private extension Schema {
 
     var isSensitive: Bool {
-        let sensitive = ShapeID("smithy.api", "sensitive")
-        return traits[sensitive] ?? target?.traits[sensitive] != nil
+        return hasTrait(SensitiveTrait.self) || target?.hasTrait(SensitiveTrait.self) ?? false
     }
 }

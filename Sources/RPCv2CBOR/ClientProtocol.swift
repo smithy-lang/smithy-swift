@@ -13,6 +13,7 @@ import enum Smithy.ByteStream
 import enum Smithy.ClientError
 import class Smithy.Context
 import struct Smithy.ShapeID
+import struct Smithy.TargetsUnitTrait
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
@@ -51,7 +52,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         requestBuilder: HTTPRequestBuilder,
         context: Context
     ) throws {
-        guard operation.inputSchema.traits[unitSubstituteTraitID] == nil else {
+        guard !operation.inputSchema.hasTrait(TargetsUnitTrait.self) else {
             requestBuilder.withBody(.data(nil))
             return
         }
@@ -76,7 +77,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
             let baseError = try BaseError.deserialize(typeDeserializer)
             let specialErrorCode = try errorCodeBlock(response)
             let resolvedErrorCode = (specialErrorCode ?? baseError.__type ?? "NoCodeFound").substringAfter("#")
-            if let entry = operation.errorTypeRegistry.codeLookup(
+            if let entry = try operation.errorTypeRegistry.codeLookup(
                 serviceSchema: operation.serviceSchema,
                 code: resolvedErrorCode
             ) {
@@ -97,5 +98,3 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         }
     }
 }
-
-private var unitSubstituteTraitID: ShapeID { .init("swift.synthetic", "unitSubstitute") }

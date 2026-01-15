@@ -5,8 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.InputTrait
 import enum Smithy.Node
+import struct Smithy.OutputTrait
+import enum Smithy.Prelude
 import struct Smithy.ShapeID
+import struct Smithy.TargetsUnitTrait
+import struct Smithy.TraitCollection
 
 extension Model {
 
@@ -27,13 +32,13 @@ extension Model {
 
             // Get the input & output structures for this operation.  Substitute an empty
             // structure if ID is omitted or targets Unit
-            let inputShape = if operation.inputID == unitShapeID {
-                StructureShape(id: unitShapeID, traits: [unitSubstituteTraitID: [:]], memberIDs: [])
+            let inputShape = if operation.inputID == Prelude.unitSchema.id {
+                StructureShape(id: Prelude.unitSchema.id, traits: [TargetsUnitTrait()], memberIDs: [])
             } else {
                 try expectStructureShape(id: operation.inputID)
             }
-            let outputShape = if operation.outputID == unitShapeID {
-                StructureShape(id: unitShapeID, traits: [unitSubstituteTraitID: [:]], memberIDs: [])
+            let outputShape = if operation.outputID == Prelude.unitSchema.id {
+                StructureShape(id: Prelude.unitSchema.id, traits: [TargetsUnitTrait()], memberIDs: [])
             } else {
                 try expectStructureShape(id: operation.outputID)
             }
@@ -41,9 +46,9 @@ extension Model {
             // Make new input and output shapes, plus their members, with the new ID
             // Add input and output traits to the input/output structures if they don't
             // have them already
-            let newInputShape = newStructure(newID: newInputShapeID, traits: inputTrait, original: inputShape)
+            let newInputShape = newStruct(newID: newInputShapeID, newTraits: [InputTrait()], original: inputShape)
             let newInputShapeMembers = try renamedMembers(newID: newInputShapeID, original: inputShape)
-            let newOutputShape = newStructure(newID: newOutputShapeID, traits: outputTrait, original: outputShape)
+            let newOutputShape = newStruct(newID: newOutputShapeID, newTraits: [OutputTrait()], original: outputShape)
             let newOutputShapeMembers = try renamedMembers(newID: newOutputShapeID, original: outputShape)
 
             // Add the new input & output and their members to the new shape dictionary.
@@ -70,10 +75,10 @@ extension Model {
         return Model(version: version, metadata: metadata, shapes: newShapes)
     }
 
-    private func newStructure(newID: ShapeID, traits: [ShapeID: Node], original: StructureShape) -> StructureShape {
+    private func newStruct(newID: ShapeID, newTraits: TraitCollection, original: StructureShape) -> StructureShape {
         StructureShape(
             id: newID,
-            traits: original.traits.adding(traits),
+            traits: original.traits.adding(newTraits),
             memberIDs: original.memberIDs.map { .init(id: newID, member: $0.member) }
         )
     }
@@ -87,28 +92,5 @@ extension Model {
                 targetID: member.targetID
             )
         }
-    }
-}
-
-private var inputTrait: [ShapeID: Node] {
-    [inputTraitID: [:]]
-}
-
-private var outputTrait: [ShapeID: Node] {
-    [outputTraitID: [:]]
-}
-
-private var inputTraitID: ShapeID { .init("smithy.api", "input") }
-
-private var outputTraitID: ShapeID { .init("smithy.api", "output") }
-
-private var unitShapeID: ShapeID { .init("smithy.api", "Unit") }
-
-private var unitSubstituteTraitID: ShapeID { .init("swift.synthetic", "unitSubstitute") }
-
-private extension [ShapeID: Node] {
-
-    func adding(_ additions: [ShapeID: Node]) -> [ShapeID: Node] {
-        self.merging(additions) { _, new in new }
     }
 }

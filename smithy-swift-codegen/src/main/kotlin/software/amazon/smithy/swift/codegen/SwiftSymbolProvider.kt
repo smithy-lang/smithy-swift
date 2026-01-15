@@ -64,7 +64,6 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
-import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
 import java.util.logging.Logger
@@ -252,7 +251,7 @@ class SwiftSymbolProvider(
             .build()
 
     override fun serviceShape(shape: ServiceShape): Symbol {
-        val name = swiftSettings.clientName
+        val name = swiftSettings.clientBaseName
         return createSymbolBuilder(shape, "${name}Client", SwiftDeclaration.CLASS)
             .definitionFile(formatModuleName(name))
             .build()

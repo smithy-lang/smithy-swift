@@ -8,29 +8,31 @@
 import enum Smithy.Node
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
+import protocol Smithy.Trait
+import struct Smithy.TraitCollection
 
 public class Shape: HasShapeID {
     public let id: ShapeID
     public let type: ShapeType
-    public let traits: [ShapeID: Node]
+    public let traits: TraitCollection
     weak var model: Model!
 
-    public init(id: ShapeID, type: ShapeType, traits: [ShapeID: Node]) {
+    public init(id: ShapeID, type: ShapeType, traits: TraitCollection) {
         self.id = id
         self.type = type
         self.traits = traits
     }
 
-    public func hasTrait(_ traitID: ShapeID) -> Bool {
-        traits[traitID] != nil
+    public func hasTrait<T: Trait>(_ type: T.Type) -> Bool {
+        traits.hasTrait(type)
     }
 
-    public func getTrait(_ traitID: ShapeID) -> Node? {
-        traits[traitID]
+    public func getTrait<T: Trait>(_ type: T.Type) throws -> T? {
+        try traits.getTrait(type)
     }
 
-    public func adding(traits newTraits: [ShapeID: Node]) -> Shape {
-        let combinedTraits = traits.merging(newTraits) { _, new in new }
+    public func adding(traits newTraits: TraitCollection) -> Shape {
+        let combinedTraits = traits.adding(newTraits)
         let new = Shape(id: id, type: type, traits: combinedTraits)
         new.model = model
         return new

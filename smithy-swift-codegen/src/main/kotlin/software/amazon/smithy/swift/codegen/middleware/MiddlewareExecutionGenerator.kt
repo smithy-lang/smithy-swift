@@ -54,7 +54,7 @@ class MiddlewareExecutionGenerator(
             writer.write(
                 "\$N().configure(\$LClient.\$LOperation, builder)",
                 httpProtocolCustomizable.configuratorSymbol,
-                ctx.settings.clientName,
+                ctx.settings.clientBaseName,
                 op.toLowerCamelCase(),
             )
         }

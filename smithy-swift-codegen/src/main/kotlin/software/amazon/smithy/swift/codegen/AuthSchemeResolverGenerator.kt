@@ -22,7 +22,6 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
-import software.amazon.smithy.swift.codegen.utils.sdkId
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 class AuthSchemeResolverGenerator {
@@ -46,7 +45,7 @@ class AuthSchemeResolverGenerator {
     ) {
         writer.apply {
             openBlock(
-                "${ctx.settings.visibility} struct ${ctx.settings.clientNamePreservingService}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$N {",
+                "${ctx.settings.visibility} struct ${ctx.settings.clientBaseNamePreservingService}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$N {",
                 "}",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolverParams,
             ) {
@@ -103,7 +102,7 @@ class AuthSchemeResolverGenerator {
                 // This is just a parent protocol that all auth scheme resolvers of a given service must conform to.
                 write("// Intentionally empty.")
                 write("// This is the parent protocol that all auth scheme resolver implementations of")
-                write("// the service ${ctx.settings.clientNamePreservingService} must conform to.")
+                write("// the service ${ctx.settings.clientBaseNamePreservingService} must conform to.")
             }
         }
     }
@@ -113,7 +112,7 @@ class AuthSchemeResolverGenerator {
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
     ) {
-        val clientName = ctx.settings.clientNamePreservingService
+        val clientName = ctx.settings.clientBaseNamePreservingService
 
         // Model-based auth scheme resolver is internal implementation detail for services that use rules based resolvers,
         //   and is used as fallback only if endpoint resolver returns no valid auth scheme(s).
@@ -160,7 +159,7 @@ class AuthSchemeResolverGenerator {
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
     ) {
-        val clientName = ctx.settings.clientNamePreservingService
+        val clientName = ctx.settings.clientBaseNamePreservingService
         val serviceParamsName = clientName + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
 
         writer.apply {
@@ -301,7 +300,7 @@ class AuthSchemeResolverGenerator {
             ) {
                 if (usesRulesBasedAuthResolver(ctx)) {
                     write(
-                        "return try Default${ctx.settings.clientNamePreservingService + AUTH_SCHEME_RESOLVER}().constructParameters(context: context)",
+                        "return try Default${ctx.settings.clientBaseNamePreservingService + AUTH_SCHEME_RESOLVER}().constructParameters(context: context)",
                     )
                 } else {
                     openBlock("guard let opName = context.getOperation() else {", "}") {
@@ -311,7 +310,7 @@ class AuthSchemeResolverGenerator {
                         )
                     }
                     writer.write("let authSchemePreference = context.getAuthSchemePreference()")
-                    val paramType = ctx.settings.clientNamePreservingService + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
+                    val paramType = ctx.settings.clientBaseNamePreservingService + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
                     if (hasSigV4) {
                         write("let opRegion = context.getRegion()")
                         write("return $paramType(authSchemePreference: authSchemePreference, operation: opName, region: opRegion)")
@@ -332,7 +331,7 @@ class AuthSchemeResolverGenerator {
 
         fun getServiceSpecificAuthSchemeResolverName(ctx: ProtocolGenerator.GenerationContext): Symbol =
             buildSymbol {
-                name = "${ctx.settings.clientNamePreservingService}$AUTH_SCHEME_RESOLVER"
+                name = "${ctx.settings.clientBaseNamePreservingService}$AUTH_SCHEME_RESOLVER"
             }
     }
 }

@@ -8,12 +8,13 @@
 import enum Smithy.Node
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
+import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy intEnums.
 public class IntEnumShape: Shape, HasMembers {
     let memberIDs: [ShapeID]
 
-    public init(id: ShapeID, traits: [ShapeID: Node], memberIDs: [ShapeID]) {
+    public init(id: ShapeID, traits: TraitCollection, memberIDs: [ShapeID]) {
         self.memberIDs = memberIDs
         super.init(id: id, type: .intEnum, traits: traits)
     }

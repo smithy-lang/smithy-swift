@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.AWSQueryCompatibleTrait
+import struct Smithy.AWSQueryErrorTrait
 import struct Smithy.Schema
 import struct Smithy.ShapeID
 
@@ -35,23 +37,18 @@ public struct TypeRegistry {
         idMap[shapeID]
     }
 
-    public func codeLookup(serviceSchema: Schema, code: String) -> Entry? {
-        let useQueryCompatibility = serviceSchema.traits[queryCompatibleTrait] != nil
-        return idMap.values.first {
-            code == Self.code(useQueryCompatibility, $0.schema)
+    public func codeLookup(serviceSchema: Schema, code: String) throws -> Entry? {
+        let useQueryCompatibility = serviceSchema.hasTrait(AWSQueryCompatibleTrait.self)
+        return try idMap.values.first {
+            try code == Self.code(useQueryCompatibility, $0.schema)
         }
     }
 
-    private static func code(_ useQueryCompatibility: Bool, _ schema: Schema) -> String {
-        if useQueryCompatibility,
-            case .object(let object) = schema.traits[queryErrorTrait],
-            case .string(let code) = object["code"] {
+    private static func code(_ useQueryCompatibility: Bool, _ schema: Schema) throws -> String {
+        if useQueryCompatibility, let code = try schema.getTrait(AWSQueryErrorTrait.self)?.code {
             code
         } else {
             schema.id.name
         }
     }
 }
-
-private let queryCompatibleTrait = ShapeID("aws.protocols", "awsQueryCompatible")
-private let queryErrorTrait = ShapeID("aws.protocols", "awsQueryError")

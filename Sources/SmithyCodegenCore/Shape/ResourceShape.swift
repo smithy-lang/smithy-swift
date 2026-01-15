@@ -7,6 +7,7 @@
 
 import enum Smithy.Node
 import struct Smithy.ShapeID
+import struct Smithy.TraitCollection
 
 public class ResourceShape: Shape {
     let operationIDs: [ShapeID]
@@ -19,7 +20,7 @@ public class ResourceShape: Shape {
 
     init(
         id: ShapeID,
-        traits: [ShapeID: Node],
+        traits: TraitCollection,
         operationIDs: [ShapeID],
         createID: ShapeID?,
         putID: ShapeID?,
