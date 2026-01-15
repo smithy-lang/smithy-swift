@@ -10,14 +10,14 @@ import struct Smithy.AWSQueryErrorTrait
 import struct Smithy.Schema
 import struct Smithy.ShapeID
 
-public struct TypeRegistry {
+public struct TypeRegistry: Sendable {
 
-    public class Entry {
-        private let _schema: () -> Schema
-        public let swiftType: DeserializableShape.Type
+    public struct Entry: Sendable {
+        private let _schema: @Sendable () -> Schema
+        public let swiftType: any DeserializableShape.Type
 
         public init(
-            schema: @escaping @autoclosure () -> Schema,
+            schema: @escaping @Sendable @autoclosure () -> Schema,
             swiftType: DeserializableShape.Type
         ) {
             self._schema = schema
