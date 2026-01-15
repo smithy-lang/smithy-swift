@@ -9,11 +9,10 @@ import protocol ClientRuntime.HTTPError
 import protocol ClientRuntime.ServiceError
 import struct ClientRuntime.UnknownHTTPServiceError
 import struct Foundation.Data
-import struct Smithy.AWSQueryCompatibleTrait
-import struct Smithy.AWSQueryErrorTrait
 import enum Smithy.ByteStream
 import enum Smithy.ClientError
 import class Smithy.Context
+import struct Smithy.Schema
 import struct Smithy.ShapeID
 import struct Smithy.TargetsUnitTrait
 import class SmithyHTTPAPI.HTTPRequest
@@ -37,6 +36,14 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
     public let codec: SmithySerialization.Codec = Codec()
 
     public var errorCodeBlock: @Sendable (HTTPResponse) throws -> String? = { _ in nil }
+
+    public var registryMatchBlock: @Sendable (Schema, String, TypeRegistry) throws -> TypeRegistry.Entry? =
+        { _, code, typeRegistry in
+            // Find an entry where the shape name is the same as the code.
+            try typeRegistry.codeLookup(code: code) { code, entry in
+                code == entry.schema.id.name
+            }
+        }
 
     public var unknownErrorBlock: @Sendable (String?, String?, HTTPResponse) -> ServiceError & Error =
         { code, message, response in
@@ -91,18 +98,19 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
 
             // Use the base error to get the error code in the error response
             let specialErrorCode = try errorCodeBlock(response)
-            let resolvedErrorCode = (specialErrorCode ?? baseError.__type ?? "NoCodeFound").substringAfter("#")
 
-            // Determine if this is a query-compatible service and pick the right type registry matcher
-            let isQueryCompatible = operation.serviceSchema.hasTrait(AWSQueryCompatibleTrait.self)
-            let matcher = isQueryCompatible ? queryMatcher(code:entry:) : nonQueryMatcher(code:entry:)
+            // Resolve the final error code to be used in matching the error to a modeled type
+            let code = (specialErrorCode ?? baseError.__type ?? "NoCodeFound").substringAfter("#")
 
-            // Attempt to locate the matching type in the registry, using the appropriate matcher
-            if let entry = try operation.errorTypeRegistry.codeLookup(code: resolvedErrorCode, matcher: matcher) {
+            // Try to find a match for the code by shape name
+            let registryEntry = try registryMatchBlock(operation.serviceSchema, code, operation.errorTypeRegistry)
+
+            // If a type registry match was found, create that type from the response
+            if let registryEntry {
 
                 // Code matched a modeled error.  Deserialize the error to the specific type specified in the code
                 let errorDeserializer = try codec.makeDeserializer(data: bodyData)
-                let error = try entry.swiftType.deserialize(errorDeserializer)
+                let error = try registryEntry.swiftType.deserialize(errorDeserializer)
 
                 // Cast the error so that we can fill its fields
                 guard var modeledError = error as? ServiceError & HTTPError & Error else {
@@ -117,17 +125,8 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
                 // Throw the error to the caller
                 throw modeledError
             } else {
-                throw unknownErrorBlock(resolvedErrorCode, baseError.message, response)
+                throw unknownErrorBlock(code, baseError.message, response)
             }
         }
-    }
-
-    private func nonQueryMatcher(code: String, entry: TypeRegistry.Entry) throws -> Bool {
-        code == entry.schema.id.name
-    }
-
-    private func queryMatcher(code: String, entry: TypeRegistry.Entry) throws -> Bool {
-        let queryErrorCode = try entry.schema.getTrait(AWSQueryErrorTrait.self)?.code ?? entry.schema.id.name
-        return code == queryErrorCode
     }
 }
