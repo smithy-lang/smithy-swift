@@ -9,7 +9,7 @@ import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 
 /// this class will implement Handler per new middleware implementation
-public class SdkHttpClient: ExecuteRequest {
+public class SdkHttpClient: ExecuteRequest, @unchecked Sendable {
 
     let engine: HTTPClient
 

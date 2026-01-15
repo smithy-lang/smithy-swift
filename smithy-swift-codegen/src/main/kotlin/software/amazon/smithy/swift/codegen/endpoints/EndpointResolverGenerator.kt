@@ -14,6 +14,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 
 /**
  * Generates a per/service endpoint resolver (internal to the generated SDK)
@@ -38,7 +39,7 @@ class EndpointResolverGenerator(
         writer: SwiftWriter,
         visibility: String,
     ) {
-        writer.openBlock("$visibility protocol \$N {", "}", EndpointTypes.EndpointResolver) {
+        writer.openBlock("$visibility protocol \$N: \$N {", "}", EndpointTypes.EndpointResolver, SwiftTypes.Protocols.Sendable) {
             writer.write("func resolve(params: EndpointParams) throws -> \$N", SmithyHTTPAPITypes.Endpoint)
         }
     }
@@ -64,7 +65,7 @@ class EndpointResolverGenerator(
             }
         }
         writer.write("")
-        writer.write("extension DefaultEndpointResolver: EndpointResolver {}")
+        writer.write("extension DefaultEndpointResolver: EndpointResolver where Params == EndpointParams {}")
     }
 
     private fun renderStaticResolver(writer: SwiftWriter) {

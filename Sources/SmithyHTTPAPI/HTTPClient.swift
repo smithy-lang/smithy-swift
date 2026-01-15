@@ -6,7 +6,7 @@
 //
 
 /// The interface for a client that can be used to perform SDK operations over HTTP.
-public protocol HTTPClient {
+public protocol HTTPClient: Sendable {
 
     /// Executes an HTTP request to perform an SDK operation.
     ///

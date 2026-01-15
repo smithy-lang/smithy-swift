@@ -22,11 +22,21 @@ public class ClientBuilder<ClientType: Client> {
         return ClientType(config: configuration)
     }
 
+    enum ClientBuilderError: Error {
+        case incompatibleConfigurationType(expected: String, received: String)
+    }
+
     func resolve(plugins: [any Plugin]) async throws -> ClientType.Config {
-        let clientConfiguration = try await ClientType.Config()
+        var clientConfiguration: any ClientConfiguration = try await ClientType.Config()
         for plugin in plugins {
-            try await plugin.configureClient(clientConfiguration: clientConfiguration)
+            try await plugin.configureClient(clientConfiguration: &clientConfiguration)
         }
-        return clientConfiguration
+        guard let typedConfig = clientConfiguration as? ClientType.Config else {
+            throw ClientBuilderError.incompatibleConfigurationType(
+                expected: String(describing: ClientType.Config.self),
+                received: String(describing: type(of: clientConfiguration))
+            )
+        }
+        return typedConfig
     }
 }

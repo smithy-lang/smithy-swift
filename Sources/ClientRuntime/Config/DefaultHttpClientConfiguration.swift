@@ -32,7 +32,8 @@ public protocol DefaultHttpClientConfiguration: ClientConfiguration {
     /// An ordered, prioritized list of auth scheme IDs that should be used for this client's requests.
     ///
     /// If no auth scheme preference is given, the first supported auth scheme defined in `authSchemes`
-    /// will be used.  If a value was not provided for `authSchemes`, then the service's first defined, supported auth scheme will be used.
+    /// will be used.  If a value was not provided for `authSchemes`, then the service's first defined,
+    /// supported auth scheme will be used.
     var authSchemePreference: [String]? { get set }
 
     /// The auth scheme resolver to use for resolving the auth scheme.
@@ -51,5 +52,5 @@ public protocol DefaultHttpClientConfiguration: ClientConfiguration {
     /// Adds a `HttpInterceptorProvider` that will be used to provide interceptors for all HTTP operations.
     ///
     /// - Parameter provider: The `HttpInterceptorProvider` to add.
-    func addInterceptorProvider(_ provider: HttpInterceptorProvider)
+    mutating func addInterceptorProvider(_ provider: HttpInterceptorProvider)
 }

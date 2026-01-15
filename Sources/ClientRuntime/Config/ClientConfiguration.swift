@@ -5,6 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public protocol ClientConfiguration {
+public protocol ClientConfiguration: Sendable {
     init() async throws
 }

@@ -20,17 +20,19 @@ data class Function(
     val accessModifier: AccessModifier = AccessModifier.Public,
     val isAsync: Boolean = false,
     val isThrowing: Boolean = false,
+    val isMutating: Boolean = false,
 ) {
     /**
      * Render this function using the given writer.
      */
     fun render(writer: SwiftWriter) {
         val renderedParameters = parameters.joinToString(", ") { it.rendered(writer) }
+        val renderedMutating = if (isMutating) "mutating " else ""
         val renderedAsync = if (isAsync) "async " else ""
         val renderedThrows = if (isThrowing) "throws " else ""
         val renderedReturnType = returnType?.let { writer.format("-> \$N ", it) } ?: ""
         writer.openBlock(
-            "${accessModifier.renderedRightPad()}func $name($renderedParameters) $renderedAsync$renderedThrows$renderedReturnType{",
+            "${accessModifier.renderedRightPad()}${renderedMutating}func $name($renderedParameters) $renderedAsync$renderedThrows$renderedReturnType{",
             "}",
         ) {
             renderBody.accept(writer)

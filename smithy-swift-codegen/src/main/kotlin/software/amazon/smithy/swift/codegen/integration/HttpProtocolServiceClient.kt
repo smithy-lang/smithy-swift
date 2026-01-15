@@ -12,6 +12,7 @@ import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlu
 import software.amazon.smithy.swift.codegen.model.renderSwiftType
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.CodeSection
 
@@ -26,7 +27,7 @@ open class HttpProtocolServiceClient(
 
     fun render(serviceSymbol: Symbol) {
         writer.openBlock(
-            "${ctx.settings.visibility} class \$L: \$N {",
+            "${ctx.settings.visibility} final class \$L: \$N {",
             "}",
             serviceSymbol.name,
             clientProtocolSymbol,
@@ -62,7 +63,7 @@ open class HttpProtocolServiceClient(
     }
 
     open fun renderConvenienceInitFunctions(serviceSymbol: Symbol) {
-        writer.openBlock("public convenience required init() throws {", "}") {
+        writer.openBlock("public convenience init() throws {", "}") {
             writer.write("let config = try \$L()", serviceConfig.typeName)
             writer.write("self.init(config: config)")
         }
@@ -119,10 +120,11 @@ open class HttpProtocolServiceClient(
                 .joinToString(" & ")
 
         writer.openBlock(
-            "public class \$LConfiguration: \$L {",
+            "public struct \$LConfiguration: \$L, \$N {",
             "}",
             serviceConfig.clientName.toUpperCamelCase(),
             clientConfigurationProtocols,
+            SwiftTypes.Protocols.Sendable,
         ) {
             val clientConfigs = ctx.integrations.flatMap { it.clientConfigurations(ctx) }
             val properties: List<ConfigProperty> =
@@ -133,13 +135,11 @@ open class HttpProtocolServiceClient(
 
             renderConfigClassVariables(serviceSymbol, properties)
 
-            renderConfigInitializer(serviceSymbol, properties)
+            renderSynchronousConfigInitializer(serviceSymbol, properties)
 
-            renderSynchronousConfigInitializer(properties)
+            renderAsynchronousConfigInitializer(serviceSymbol, properties)
 
-            renderAsynchronousConfigInitializer(properties)
-
-            renderEmptyAsynchronousConfigInitializer(properties)
+            renderEmptyAsynchronousConfigInitializer(serviceSymbol, properties)
 
             renderCustomConfigInitializer(properties)
 
@@ -161,8 +161,13 @@ open class HttpProtocolServiceClient(
 
     open fun overrideConfigProperties(properties: List<ConfigProperty>): List<ConfigProperty> = properties
 
-    private fun renderEmptyAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
-        writer.openBlock("public convenience required init() async throws {", "}") {
+    private fun renderEmptyAsynchronousConfigInitializer(
+        serviceSymbol: Symbol,
+        properties: List<ConfigProperty>,
+    ) {
+        writer.openBlock("public init() async throws {", "}") {
+            // Call the parameterized async initializer with all nil parameters
+            // This delegates to the async initializer which properly handles async defaults
             writer.openBlock("try await self.init(", ")") {
                 properties.forEach { property ->
                     writer.write("\$L: nil,", property.name)
@@ -203,29 +208,11 @@ open class HttpProtocolServiceClient(
         val serviceSymbol: Symbol,
     ) : CodeSection
 
-    private fun renderConfigInitializer(
+    private fun renderSynchronousConfigInitializer(
         serviceSymbol: Symbol,
         properties: List<ConfigProperty>,
     ) {
-        writer.openBlock("private init(", ") {") {
-            properties.forEach { property ->
-                writer.write("_ \$L: \$L,", property.name, property.type.renderSwiftType(writer))
-            }
-            writer.unwrite(",\n")
-            writer.write("")
-        }
-        writer.indent {
-            properties.forEach { property ->
-                writer.write("self.\$L = \$L", property.name, property.name)
-            }
-            writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
-        }
-        writer.write("}")
-        writer.write("")
-    }
-
-    private fun renderSynchronousConfigInitializer(properties: List<ConfigProperty>) {
-        writer.openBlock("public convenience init(", ") throws {") {
+        writer.openBlock("public init(", ") throws {") {
             properties.forEach { property ->
                 writer.write("\$L: \$N = nil,", property.name, property.type.toOptional())
             }
@@ -233,26 +220,26 @@ open class HttpProtocolServiceClient(
             writer.write("")
         }
         writer.indent {
-            writer.openBlock("self.init(", ")") {
-                properties.forEach { property ->
-                    if (property.default?.isAsync == true) {
-                        writer.write("\$L,", property.name)
-                    } else {
-                        writer.write("\$L,", property.default?.render(writer, property.name) ?: property.name)
-                    }
+            properties.forEach { property ->
+                if (property.default?.isAsync == true) {
+                    writer.write("self.\$L = \$L", property.name, property.name)
+                } else {
+                    writer.write("self.\$L = \$L", property.name, property.default?.render(writer, property.name) ?: property.name)
                 }
-                writer.unwrite(",\n")
-                writer.write("")
             }
+            writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
         }
         writer.write("}")
         writer.write("")
     }
 
-    private fun renderAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
+    private fun renderAsynchronousConfigInitializer(
+        serviceSymbol: Symbol,
+        properties: List<ConfigProperty>,
+    ) {
         if (properties.none { it.default?.isAsync == true }) return
 
-        writer.openBlock("public convenience init(", ") async throws {") {
+        writer.openBlock("public init(", ") async throws {") {
             properties.forEach { property ->
                 writer.write("\$L: \$L = nil,", property.name, property.type.toOptional().renderSwiftType(writer))
             }
@@ -260,17 +247,14 @@ open class HttpProtocolServiceClient(
             writer.write("")
         }
         writer.indent {
-            writer.openBlock("self.init(", ")") {
-                properties.forEach { property ->
-                    if (property.default?.isAsync == true) {
-                        writer.write("\$L,", property.default.render(writer))
-                    } else {
-                        writer.write("\$L,", property.default?.render(writer, property.name) ?: property.name)
-                    }
+            properties.forEach { property ->
+                if (property.default?.isAsync == true) {
+                    writer.write("self.\$L = \$L", property.name, property.default.render(writer))
+                } else {
+                    writer.write("self.\$L = \$L", property.name, property.default?.render(writer, property.name) ?: property.name)
                 }
-                writer.unwrite(",\n")
-                writer.write("")
             }
+            writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
         }
         writer.write("}")
         writer.write("")
