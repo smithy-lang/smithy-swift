@@ -195,81 +195,81 @@ public final class URLSessionHTTPClient: HTTPClient {
         }
 
         /// Handles server trust challenges by validating against a custom certificate.
-//        func didReceive(
-//            serverTrustChallenge challenge: URLAuthenticationChallenge,
-//            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
-//        ) {
-//            guard let tlsOptions = tlsOptions, tlsOptions.useSelfSignedCertificate,
-//                  let certFile = tlsOptions.certificate,
-//                  let serverTrust = challenge.protectionSpace.serverTrust else {
-//                logger.debug("Either TLSOptions not set or missing values! Using default trust store.")
-//                completionHandler(.performDefaultHandling, nil)
-//                return
-//            }
-//
-//            guard let customRoot = Bundle.main.certificate(named: certFile) else {
-//                logger.debug("Certificate not found! Using default trust store.")
-//                completionHandler(.performDefaultHandling, nil)
-//                return
-//            }
-//
-//            do {
-//                if try serverTrust.evaluateAllowing(rootCertificates: [customRoot]) {
-//                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
-//                } else {
-//                    logger.error("Trust evaluation failed, cancelling authentication challenge.")
-//                    completionHandler(.cancelAuthenticationChallenge, nil)
-//                }
-//            } catch {
-//                logger.error("Trust evaluation threw an error: \(error.localizedDescription)")
-//                completionHandler(.cancelAuthenticationChallenge, nil)
-//            }
-//        }
+        func didReceive(
+            serverTrustChallenge challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            guard let tlsOptions = tlsOptions, tlsOptions.useSelfSignedCertificate,
+                  let certFile = tlsOptions.certificate,
+                  let serverTrust = challenge.protectionSpace.serverTrust else {
+                logger.debug("Either TLSOptions not set or missing values! Using default trust store.")
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            guard let customRoot = Bundle.main.certificate(named: certFile) else {
+                logger.debug("Certificate not found! Using default trust store.")
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            do {
+                if try serverTrust.evaluateAllowing(rootCertificates: [customRoot]) {
+                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                } else {
+                    logger.error("Trust evaluation failed, cancelling authentication challenge.")
+                    completionHandler(.cancelAuthenticationChallenge, nil)
+                }
+            } catch {
+                logger.error("Trust evaluation threw an error: \(error.localizedDescription)")
+                completionHandler(.cancelAuthenticationChallenge, nil)
+            }
+        }
 
         /// Handles client identity challenges by presenting a client certificate.
-//        func didReceive(
-//            clientIdentityChallenge challenge: URLAuthenticationChallenge,
-//            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
-//        ) {
-//            guard let tlsOptions, tlsOptions.useProvidedKeystore,
-//                  let keystoreName = tlsOptions.pkcs12Path,
-//                  let keystorePasword = tlsOptions.pkcs12Password else {
-//                logger.debug("Either TLSOptions not set or missing values! Using default keystore.")
-//                completionHandler(.performDefaultHandling, nil)
-//                return
-//            }
-//
-//            guard let identity = Bundle.main.identity(named: keystoreName, password: keystorePasword) else {
-//                logger.error(
-//                    "Error accessing keystore! Ensure keystore file exists and password is correct!" +
-//                    " Using default keystore."
-//                )
-//                completionHandler(.performDefaultHandling, nil)
-//                return
-//            }
-//
-//            completionHandler(
-//                .useCredential,
-//                URLCredential(identity: identity, certificates: nil, persistence: .forSession)
-//            )
-//        }
+        func didReceive(
+            clientIdentityChallenge challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            guard let tlsOptions, tlsOptions.useProvidedKeystore,
+                  let keystoreName = tlsOptions.pkcs12Path,
+                  let keystorePasword = tlsOptions.pkcs12Password else {
+                logger.debug("Either TLSOptions not set or missing values! Using default keystore.")
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
 
-//        /// The URLSession delegate method where authentication challenges are handled.
-//        func urlSession(
-//            _ session: URLSession,
-//            task: URLSessionTask,
-//            didReceive challenge: URLAuthenticationChallenge,
-//            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
-//        ) {
-//            switch challenge.protectionSpace.authenticationMethod {
-//            case NSURLAuthenticationMethodServerTrust:
-//                self.didReceive(serverTrustChallenge: challenge, completionHandler: completionHandler)
-//            case NSURLAuthenticationMethodClientCertificate:
-//                self.didReceive(clientIdentityChallenge: challenge, completionHandler: completionHandler)
-//            default:
-//                completionHandler(.performDefaultHandling, nil)
-//            }
-//        }
+            guard let identity = Bundle.main.identity(named: keystoreName, password: keystorePasword) else {
+                logger.error(
+                    "Error accessing keystore! Ensure keystore file exists and password is correct!" +
+                    " Using default keystore."
+                )
+                completionHandler(.performDefaultHandling, nil)
+                return
+            }
+
+            completionHandler(
+                .useCredential,
+                URLCredential(identity: identity, certificates: nil, persistence: .forSession)
+            )
+        }
+
+        /// The URLSession delegate method where authentication challenges are handled.
+        func urlSession(
+            _ session: URLSession,
+            task: URLSessionTask,
+            didReceive challenge: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
+            switch challenge.protectionSpace.authenticationMethod {
+            case NSURLAuthenticationMethodServerTrust:
+                self.didReceive(serverTrustChallenge: challenge, completionHandler: completionHandler)
+            case NSURLAuthenticationMethodClientCertificate:
+                self.didReceive(clientIdentityChallenge: challenge, completionHandler: completionHandler)
+            default:
+                completionHandler(.performDefaultHandling, nil)
+            }
+        }
 
         /// Called when the initial response to a HTTP request is received.
         /// This callback is made as soon as the initial response + headers is complete.
