@@ -25,6 +25,7 @@ public struct GenerationContext {
             .withSynthesizedInputsOutputs()
             .withDeprecatedShapesRemoved()
             .withUnionsTargetingUnitAdded()
+            .optionalizeStructMembers(serviceID: serviceID)
             .prune(serviceID: serviceID)
 
         // Initialize using the final, processed model

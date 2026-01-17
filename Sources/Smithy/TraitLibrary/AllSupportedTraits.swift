@@ -10,6 +10,7 @@
 /// This list can be expanded as features are added to Smithy/SDK that use them.
 public let allSupportedTraits = Set([
     ServiceTrait.id,
+    AddedDefaultTrait.id,
     AWSQueryCompatibleTrait.id,
     AWSQueryErrorTrait.id,
     SparseTrait.id,
