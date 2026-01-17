@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.InputTrait
+import struct Smithy.UsedAsInputTrait
 import enum Smithy.Node
-import struct Smithy.OutputTrait
+import struct Smithy.UsedAsOutputTrait
 import enum Smithy.Prelude
 import struct Smithy.ShapeID
 import struct Smithy.TargetsUnitTrait
@@ -44,11 +44,12 @@ extension Model {
             }
 
             // Make new input and output shapes, plus their members, with the new ID
-            // Add input and output traits to the input/output structures if they don't
-            // have them already
-            let newInputShape = newStruct(newID: newInputShapeID, newTraits: [InputTrait()], original: inputShape)
+            // Add UsedAsInput and UsedAsOutput traits to the input/output structures
+            // These traits allow us to identify inputs/outputs by trait, but allow us to
+            // leave the Smithy input & output traits as set on the original model.
+            let newInputShape = newStruct(newID: newInputShapeID, newTraits: [UsedAsInputTrait()], original: inputShape)
             let newInputShapeMembers = try renamedMembers(newID: newInputShapeID, original: inputShape)
-            let newOutputShape = newStruct(newID: newOutputShapeID, newTraits: [OutputTrait()], original: outputShape)
+            let newOutputShape = newStruct(newID: newOutputShapeID, newTraits: [UsedAsOutputTrait()], original: outputShape)
             let newOutputShapeMembers = try renamedMembers(newID: newOutputShapeID, original: outputShape)
 
             // Add the new input & output and their members to the new shape dictionary.

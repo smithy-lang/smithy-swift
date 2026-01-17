@@ -20,4 +20,13 @@ extension String {
             .replacingOccurrences(of: "\'", with: "\\'")
         return "\"\(escaped)\""
     }
+
+    var inBackticks: String {
+        "`\(self)`"
+    }
+
+    var capitalized: String {
+        let firstChar = self.first?.uppercased() ?? ""
+        return "\(firstChar)\(self.dropFirst())"
+    }
 }

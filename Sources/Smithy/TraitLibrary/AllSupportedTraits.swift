@@ -23,3 +23,8 @@ public let allSupportedTraits = Set([
     // Synthetic traits
     TargetsUnitTrait.id,
 ])
+
+// Not used at runtime so not included here:
+// - DeprecatedTrait
+// - EnumTrait
+// - StreamingTrait

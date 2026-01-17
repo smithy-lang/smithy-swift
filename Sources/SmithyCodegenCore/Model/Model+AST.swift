@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.EnumTrait
 import enum Smithy.Node
+import enum Smithy.Prelude
 import struct Smithy.ShapeID
 import struct Smithy.TraitCollection
 
@@ -35,7 +37,7 @@ extension Model {
     }
 
     private static func memberShapePairs(id: String, astShape: ASTShape) throws -> [(ShapeID, MemberShape)] {
-        var baseMembers = (astShape.members ?? [:])
+        var baseMembers = astShape.members ?? [:]
 
         // If this AST shape is an array, add a member for its element
         if let member = astShape.member {
@@ -48,6 +50,21 @@ extension Model {
         }
         if let value = astShape.value {
             baseMembers["value"] = value
+        }
+
+        // If this shape is a string with the enum trait, add members for its trait members
+        if astShape.type == .string, let enumTraitNode = astShape.traits?[EnumTrait.id.absoluteID] {
+            let enumTrait = try EnumTrait(node: enumTraitNode)
+            let unitID = Smithy.Prelude.unitSchema.id.absoluteID
+            enumTrait.members.forEach { enumMember in
+                let name = enumMember.name ?? enumMember.value
+                let traits: [String: Node] = if enumMember.name != nil {
+                    ["smithy.api#enumValue": .string(enumMember.value)]
+                } else {
+                    [:]
+                }
+                baseMembers[name] = ASTMember(target: unitID, traits: traits)
+            }
         }
 
         // Map the AST members to ShapeID-to-MemberShape pairs & return the list of pairs
@@ -154,6 +171,17 @@ extension Model {
                 memberIDs: memberIDs(for: shapeID, memberShapes: memberShapes)
             )
             return (shapeID, shape)
+        case .string:
+            if traits.hasTrait(EnumTrait.self) {
+                let shape = EnumShape(
+                    id: shapeID,
+                    traits: traits,
+                    memberIDs: memberIDs(for: shapeID, memberShapes: memberShapes)
+                )
+                return (shapeID, shape)
+            } else {
+                fallthrough
+            }
         default:
             let shape = Shape(
                 id: shapeID,

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.ShapeID
+import struct Smithy.StreamingTrait
 
 extension Shape {
 
@@ -13,7 +13,11 @@ extension Shape {
         get throws {
             switch type {
             case .blob:
-                return "writeBlob"
+                if hasTrait(StreamingTrait.self) {
+                    return "writeDataStream"
+                } else {
+                    return "writeBlob"
+                }
             case .boolean:
                 return "writeBoolean"
             case .string:
@@ -47,7 +51,11 @@ extension Shape {
             case .map:
                 return "writeMap"
             case .structure, .union:
-                return "writeStruct"
+                if hasTrait(StreamingTrait.self) {
+                    return "writeEventStream"
+                } else {
+                    return "writeStruct"
+                }
             case .member, .service, .resource, .operation:
                 throw ModelError("Cannot serialize type \(type)")
             }

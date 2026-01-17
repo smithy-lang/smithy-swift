@@ -19,14 +19,16 @@ public struct GenerationContext {
     /// - Parameter model: The ``Model`` to create the generation context from.
     /// - Throws: ``ModelError`` if the model does not contain exactly one service.
     init(serviceID: ShapeID, model: Model) throws {
-        // Perform model transformations here
-        let model2 = try model.withSynthesizedInputsOutputs()
 
-        // Finally, prune shapes out of the model that aren't referenced by the service
-        let (finalModel, service) = try model2.prune(serviceID: serviceID)
+        // Perform model transformations here
+        let finalModel = try model
+            .withSynthesizedInputsOutputs()
+            .withDeprecatedShapesRemoved()
+            .withUnionsTargetingUnitAdded()
+            .prune(serviceID: serviceID)
 
         // Initialize using the final, processed model
-        self.service = service
+        self.service = try finalModel.expectServiceShape(id: serviceID)
         self.model = finalModel
         self.symbolProvider = SymbolProvider(service: service, model: finalModel)
     }

@@ -61,5 +61,3 @@ public struct Configurator: HTTPConfigurating {
         builder.interceptors.add(ClientRuntime.CborValidateResponseHeaderMiddleware<InputType, OutputType>())
     }
 }
-
-private var unitSubstituteTraitID: ShapeID { .init("swift.synthetic", "unitSubstitute") }

@@ -7,7 +7,7 @@ class SmithyModelFileInfoGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
 ) {
     fun writeSmithyModelFileInfo() {
-        if (!SerdeUtils.useSchemaBased(ctx)) return
+        if (ctx.settings.moduleName.startsWith("Internal")) return
         val filename = "Sources/${ctx.settings.moduleName}/smithy-model-info.json"
         ctx.delegator.useFileWriter(filename) { writer ->
             val service = ctx.settings.service

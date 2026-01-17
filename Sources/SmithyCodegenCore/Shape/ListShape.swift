@@ -19,9 +19,11 @@ public class ListShape: Shape, HasMembers {
         super.init(id: id, type: .list, traits: traits)
     }
 
+    public var memberID: ShapeID { .init(id: self.id, member: "member") }
+
     public var member: MemberShape {
         get throws {
-            try model.expectMemberShape(id: .init(id: id, member: "member"))
+            try model.expectMemberShape(id: memberID)
         }
     }
 

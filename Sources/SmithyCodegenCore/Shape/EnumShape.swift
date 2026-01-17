@@ -12,6 +12,7 @@ import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy enums.
 public class EnumShape: Shape, HasMembers {
+
     let memberIDs: [ShapeID]
 
     public init(id: ShapeID, traits: TraitCollection, memberIDs: [ShapeID]) {
@@ -27,5 +28,9 @@ public class EnumShape: Shape, HasMembers {
 
     override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
         try Set(members)
+    }
+
+    func trimmingMembers(onlyTarget: Set<Smithy.ShapeID>) -> Shape {
+        return self
     }
 }

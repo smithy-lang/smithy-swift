@@ -7,6 +7,7 @@
 
 import struct Smithy.ErrorTrait
 import struct Smithy.SparseTrait
+import struct Smithy.StreamingTrait
 
 package struct DeserializeCodegen {
 
@@ -15,6 +16,7 @@ package struct DeserializeCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import Foundation")
+        writer.write("import struct Smithy.Document")
         writer.write("import enum Smithy.Prelude")
         writer.write("import struct Smithy.Schema")
         writer.write("import protocol SmithySerialization.DeserializableStruct")
@@ -52,7 +54,10 @@ package struct DeserializeCodegen {
                     try writer.openBlock("{ memberSchema, \(varName), deserializer in", "}") { writer in
                         try writer.openBlock("switch memberSchema.index {", "}") { writer in
                             writer.dedent()
-                            for (index, member) in try members(of: shape).enumerated() {
+                            let isNonStreaming = !shape.hasTrait(StreamingTrait.self)
+                            let nonErrorMembers = try members(of: shape)
+                                .filter { try isNonStreaming || !$0.target.hasTrait(ErrorTrait.self) }
+                            for (index, member) in nonErrorMembers.enumerated() {
                                 writer.write("case \(index):")
                                 writer.indent()
                                 try writeDeserializeCall(
@@ -174,7 +179,8 @@ package struct DeserializeCodegen {
         let target = try member.target
         let propertySwiftType = try ctx.symbolProvider.swiftType(shape: target)
         writer.write("var value = \(propertySwiftType)\(initializer)")
-        writer.write("try deserializer.readStruct(\(schemaVarName), &value)")
+        let readMethodName = try target.deserializeMethodName
+        writer.write("try deserializer.\(readMethodName)(\(schemaVarName), &value)")
         try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
     }
 
@@ -190,6 +196,8 @@ package struct DeserializeCodegen {
         // The assignment being written is based on the shape enclosing the member.
         switch shape.type {
         case .structure:
+            // TODO: implement assignment for streaming
+            guard try !member.target.hasTrait(StreamingTrait.self) else { return }
             // For a structure member, write the value to the appropriate structure property,
             // making the appropriate adjustment for an error.
             let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""

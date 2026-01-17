@@ -21,10 +21,7 @@ public class MemberShape: Shape {
     public var container: Shape {
         get throws {
             let containerID = ShapeID(id: id, member: nil)
-            guard let container = model.shapes[containerID] else {
-                throw ModelError("Member \(id): container \(containerID) does not exist")
-            }
-            return container
+            return try model.expectShape(id: containerID)
         }
     }
 

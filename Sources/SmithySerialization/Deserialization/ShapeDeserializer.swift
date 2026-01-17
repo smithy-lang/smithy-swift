@@ -7,6 +7,8 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
+import enum Smithy.ByteStream
+import struct Smithy.Document
 import struct Smithy.Schema
 import protocol Smithy.SmithyDocument
 
@@ -25,9 +27,11 @@ public protocol ShapeDeserializer {
     func readBigInteger(_ schema: Schema) throws -> Int64
     func readBigDecimal(_ schema: Schema) throws -> Double
     func readString(_ schema: Schema) throws -> String
-    func readDocument() throws -> any SmithyDocument
+    func readDocument(_ schema: Schema) throws -> Smithy.Document
     func readTimestamp(_ schema: Schema) throws -> Date
     func readNull<T>(_ schema: Schema) throws -> T?
+    func readDataStream(_ schema: Schema) throws -> ByteStream
+    func readEventStream<E: DeserializableStruct>(_ schema: Schema, _ value: inout E) throws -> AsyncThrowingStream<E, any Error>
     func isNull() throws -> Bool
     var containerSize: Int { get }
 }
@@ -59,6 +63,18 @@ public extension ShapeDeserializer {
             } else {
                 return try consumer(deserializer)
             }
+        }
+    }
+
+    func readDataStream(_ schema: Schema) throws -> ByteStream {
+        // by default, do nothing
+        return ByteStream.data(nil)
+    }
+
+    func readEventStream<E: DeserializableStruct>(_ schema: Schema, _ value: inout E) throws -> AsyncThrowingStream<E, any Error> {
+        // by default, do nothing
+        return AsyncThrowingStream { continuation in
+            continuation.finish()
         }
     }
 }

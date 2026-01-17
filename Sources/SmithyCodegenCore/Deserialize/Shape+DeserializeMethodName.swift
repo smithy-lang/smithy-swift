@@ -6,6 +6,7 @@
 //
 
 import struct Smithy.ShapeID
+import struct Smithy.StreamingTrait
 
 extension Shape {
 
@@ -13,7 +14,11 @@ extension Shape {
         get throws {
             switch type {
             case .blob:
-                return "readBlob"
+                if hasTrait(StreamingTrait.self) {
+                    return "readDataStream"
+                } else {
+                    return "readBlob"
+                }
             case .boolean:
                 return "readBoolean"
             case .string:
@@ -47,7 +52,11 @@ extension Shape {
             case .map:
                 return "readMap"
             case .structure, .union:
-                return "readStruct"
+                if hasTrait(StreamingTrait.self) {
+                    return "readEventStream"
+                } else {
+                    return "readStruct"
+                }
             case .member, .service, .resource, .operation:
                 throw ModelError("Cannot serialize type \(type)")
             }

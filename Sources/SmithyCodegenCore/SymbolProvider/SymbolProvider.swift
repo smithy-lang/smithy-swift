@@ -9,8 +9,8 @@ import struct Foundation.Locale
 import struct Foundation.NSRange
 import class Foundation.NSRegularExpression
 import struct Smithy.ErrorTrait
-import struct Smithy.InputTrait
-import struct Smithy.OutputTrait
+import struct Smithy.UsedAsInputTrait
+import struct Smithy.UsedAsOutputTrait
 import struct Smithy.ServiceTrait
 import struct Smithy.ShapeID
 
@@ -35,17 +35,14 @@ public struct SymbolProvider {
         switch shape.type {
         case .structure, .union, .enum, .intEnum:
             let base = shape.id.name
-            if shape.hasTrait(InputTrait.self) || shape.hasTrait(OutputTrait.self) || shape.hasTrait(ErrorTrait.self) {
-                return base
+            if shape.isTopLevel {
+                return base.capitalized.escapingReservedWords
             } else if shape.type == .intEnum {
                 // The NestedShapeTransformer in main codegen inadvertently excludes intEnum
                 // so it is not namespaced here.  All other shape types are in the namespace.
-                let first = base.first?.uppercased() ?? ""
-                return "\(first)\(base.dropFirst())"
+                return base.capitalized.escapingReservedWords
             } else {
-                let first = base.first?.uppercased() ?? ""
-                let capitalized = "\(first)\(base.dropFirst())"
-                return try "\(modelNamespace).\(capitalized)"
+                return try "\(modelNamespace).\(base.capitalized.escapingReservedWords)"
             }
         case .list, .set:
             guard let listShape = shape as? ListShape else {
@@ -81,13 +78,15 @@ public struct SymbolProvider {
             return "Foundation.Data"
         case .timestamp:
             return "Foundation.Date"
+        case .document:
+            return "Smithy.Document"
         case .service:
             // Returns the type name for the client
             guard let serviceShape = shape as? ServiceShape else {
                 throw SymbolProviderError("Shape has type .service but is not a ServiceShape")
             }
             return try "\(serviceShape.clientBaseName)Client"
-        case .document, .member, .operation, .resource:
+        case .member, .operation, .resource:
             throw SymbolProviderError("Cannot provide Swift symbol for shape type \(shape.type)")
         }
     }
@@ -95,22 +94,29 @@ public struct SymbolProvider {
     static let locale = Locale(identifier: "en_US_POSIX")
 
     public func operationMethodName(operation: OperationShape) throws -> String {
-        return operation.id.name.toLowerCamelCase()
+        return operation.id.name.toLowerCamelCase().escapingReservedWords
     }
 
     public func propertyName(shapeID: ShapeID) throws -> String {
         guard let member = shapeID.member else { throw SymbolProviderError("Shape ID has no member name") }
-        return member.toLowerCamelCase()
+        return member.toLowerCamelCase().escapingReservedWords
     }
 
     public func enumCaseName(shapeID: ShapeID) throws -> String {
-        try propertyName(shapeID: shapeID).lowercased()
+        try propertyName(shapeID: shapeID).lowercased().escapingReservedWords
     }
 
     private var modelNamespace: String {
         get throws {
             try swiftType(shape: service).appending("Types")
         }
+    }
+}
+
+private extension Shape {
+
+    var isTopLevel: Bool {
+        hasTrait(UsedAsInputTrait.self) || hasTrait(UsedAsOutputTrait.self) || hasTrait(ErrorTrait.self)
     }
 }
 
@@ -170,7 +176,7 @@ extension String {
 private let nonAlphaNumericRegex = try! NSRegularExpression(pattern: "[^A-Za-z0-9+_]")
 private let underscoreRegex = try! NSRegularExpression(pattern: "_")
 private let smallVRegex = try! NSRegularExpression(pattern: "([^a-z]{2,})v([0-9]+)")
-private let largeVRegex = try! NSRegularExpression(pattern: "([^a-z]{2,})V([0-9]+)")
+private let largeVRegex = try! NSRegularExpression(pattern: "([^A-Z]{2,})V([0-9]+)")
 private let camelCaseSplitRegex = try! NSRegularExpression(pattern: "(?<=[a-z])(?=[A-Z]([a-zA-Z]|[0-9]))")
 private let acronymSplitRegex = try! NSRegularExpression(pattern: "([A-Z]+)([A-Z][a-z])")
 private let spaceAfterNumberRegex = try! NSRegularExpression(pattern: "([0-9])([a-zA-Z])")

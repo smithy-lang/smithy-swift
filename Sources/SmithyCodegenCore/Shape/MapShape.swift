@@ -19,15 +19,19 @@ public class MapShape: Shape, HasMembers {
         super.init(id: id, type: .map, traits: traits)
     }
 
+    public var keyID: ShapeID { .init(id: self.id, member: "key") }
+
     public var key: MemberShape {
         get throws {
-            try model.expectMemberShape(id: .init(id: id, member: "key"))
+            try model.expectMemberShape(id: keyID)
         }
     }
 
+    public var valueID: ShapeID { .init(id: self.id, member: "value") }
+
     public var value: MemberShape {
         get throws {
-            try model.expectMemberShape(id: .init(id: id, member: "value"))
+            try model.expectMemberShape(id: valueID)
         }
     }
 
