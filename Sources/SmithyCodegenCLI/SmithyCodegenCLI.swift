@@ -12,14 +12,26 @@ import struct SmithyCodegenCore.CodeGenerator
 @main
 struct SmithyCodegenCLI: AsyncParsableCommand {
 
-    @Argument(help: "The full or relative path to the JSON model file.")
+    @Argument(help: "The shape ID of the service to be code-generated.  Must exist in the model file.")
+    var service: String
+
+    @Argument(help: "The full or relative path to read the JSON AST model input file.")
     var modelPath: String
 
-    @Option(help: "The full or relative path to write the schemas output file.")
+    @Option(help: "The full or relative path to write the Schemas output file.")
     var schemasPath: String?
 
-    @Option(help: "The full or relative path to write the struct consumers output file.")
-    var structConsumersPath: String?
+    @Option(help: "The full or relative path to write the Serialize output file.")
+    var serializePath: String?
+
+    @Option(help: "The full or relative path to write the Deserialize output file.")
+    var deserializePath: String?
+
+    @Option(help: "The full or relative path to write the TypeRegistry output file.")
+    var typeRegistryPath: String?
+
+    @Option(help: "The full or relative path to write the Operations output file.")
+    var operationsPath: String?
 
     func run() async throws {
         let currentWorkingDirectoryFileURL = currentWorkingDirectoryFileURL()
@@ -35,10 +47,39 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
         // If --schemas-path was supplied, create the schema file URL
         let schemasFileURL = resolve(paramName: "--schemas-path", path: schemasPath)
 
+        // If --serialize-path was supplied, create the Serialize file URL
+        let serializeFileURL = resolve(
+            paramName: "--serialize-path",
+            path: serializePath
+        )
+
+        // If --deserialize-path was supplied, create the Deserialize file URL
+        let deserializeFileURL = resolve(
+            paramName: "--deserialize-path",
+            path: deserializePath
+        )
+
+        // If --type-registry-path was supplied, create the TypeRegistry file URL
+        let typeRegistryFileURL = resolve(
+            paramName: "--type-registry-path",
+            path: typeRegistryPath
+        )
+
+        // If --operations-path was supplied, create the Operations file URL
+        let operationsFileURL = resolve(
+            paramName: "--operations-path",
+            path: operationsPath
+        )
+
         // Use resolved file URLs to run code generator
         try CodeGenerator(
+            service: service,
             modelFileURL: modelFileURL,
-            schemasFileURL: schemasFileURL
+            schemasFileURL: schemasFileURL,
+            serializeFileURL: serializeFileURL,
+            deserializeFileURL: deserializeFileURL,
+            typeRegistryFileURL: typeRegistryFileURL,
+            operationsFileURL: operationsFileURL
         ).run()
     }
 

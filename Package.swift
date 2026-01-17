@@ -30,6 +30,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
+        .library(name: "RPCv2CBOR", targets: ["RPCv2CBOR"]),
         .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
@@ -61,7 +62,7 @@ let package = Package(
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
-            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.54.2"),
+            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.56.1"),
             .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.0.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.13.0"),
@@ -121,6 +122,7 @@ let package = Package(
                 "SmithyChecksumsAPI",
                 "SmithyChecksums",
                 "SmithyCBOR",
+                "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 // Only include these on macOS, iOS, tvOS, watchOS, and macCatalyst (visionOS and Linux are excluded)
                 .product(
@@ -285,8 +287,8 @@ let package = Package(
         .target(
             name: "SmithyCBOR",
             dependencies: [
-                "SmithyReadWrite",
-                "SmithyTimestamps",
+                "Smithy",
+                "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
             ]
         ),
@@ -311,6 +313,17 @@ let package = Package(
             name: "SmithyCodegenCore",
             dependencies: [
                 "Smithy",
+                "SmithySerialization",
+            ],
+            resources: [ .process("Resources") ]
+        ),
+        .target(
+            name: "RPCv2CBOR",
+            dependencies: [
+                "ClientRuntime",
+                "Smithy",
+                "SmithySerialization",
+                "SmithyCBOR",
             ]
         ),
         .testTarget(
@@ -399,6 +412,11 @@ let package = Package(
         .testTarget(
             name: "SmithyStreamsTests",
             dependencies: ["SmithyStreams", "Smithy"]
+        ),
+        .testTarget(
+            name: "SmithyCodegenCoreTests",
+            dependencies: ["SmithyCodegenCore"],
+            resources: [ .process("Resources") ]
         ),
     ].compactMap { $0 }
 )
