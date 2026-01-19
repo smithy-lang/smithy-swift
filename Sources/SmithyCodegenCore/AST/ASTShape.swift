@@ -9,6 +9,8 @@ import enum Smithy.Node
 
 // See https://smithy.io/2.0/spec/json-ast.html#json-ast
 // This Swift type captures fields for all AST shape types
+// Mixins are omitted because they are applied by Smithy before
+// the AST is generated.
 struct ASTShape: Decodable {
     let type: ASTType
     let traits: [String: Node]?

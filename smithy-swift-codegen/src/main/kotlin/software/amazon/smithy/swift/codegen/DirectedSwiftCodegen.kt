@@ -80,7 +80,6 @@ class DirectedSwiftCodegen(
             generateMessageMarshallable(ctx)
             generateMessageUnmarshallable(ctx)
             generateCodableConformanceForNestedTypes(ctx)
-            generateSchemas(ctx)
 
             initializeMiddleware(ctx)
 
@@ -97,6 +96,9 @@ class DirectedSwiftCodegen(
 
             LOGGER.info("[${service.id}] Generating additional files")
             integrations.forEach { it.writeAdditionalFiles(context, ctx, writers) }
+
+            LOGGER.info("[${service.id}] Generating Smithy model file info")
+            SmithyModelFileInfoGenerator(ctx).writeSmithyModelFileInfo()
         }
 
         LOGGER.info("[${service.id}] Generating package manifest file")

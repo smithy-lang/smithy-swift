@@ -8,29 +8,40 @@
 import enum Smithy.Node
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
+import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy maps.
 public class MapShape: Shape, HasMembers {
     let memberIDs: [ShapeID]
 
-    public init(id: ShapeID, traits: [ShapeID: Node], memberIDs: [ShapeID]) {
+    public init(id: ShapeID, traits: TraitCollection, memberIDs: [ShapeID]) {
         self.memberIDs = memberIDs
-        super.init(id: id, type: .list, traits: traits)
+        super.init(id: id, type: .map, traits: traits)
     }
+
+    public var keyID: ShapeID { .init(id: self.id, member: "key") }
 
     public var key: MemberShape {
-        model.shapes[.init(id: id, member: "key")]! as! MemberShape // swiftlint:disable:this force_cast
+        get throws {
+            try model.expectMemberShape(id: keyID)
+        }
     }
 
+    public var valueID: ShapeID { .init(id: self.id, member: "value") }
+
     public var value: MemberShape {
-        model.shapes[.init(id: id, member: "value")]! as! MemberShape // swiftlint:disable:this force_cast
+        get throws {
+            try model.expectMemberShape(id: valueID)
+        }
     }
 
     public var members: [MemberShape] {
-        return [key, value]
+        get throws {
+            try [key, value]
+        }
     }
 
-    override func candidates(for shape: Shape) -> [Shape] {
-        members.map { $0.target }
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
+        try Set(members)
     }
 }

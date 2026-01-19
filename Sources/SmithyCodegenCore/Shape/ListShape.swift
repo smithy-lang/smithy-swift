@@ -8,26 +8,32 @@
 import enum Smithy.Node
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
+import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy lists.
 public class ListShape: Shape, HasMembers {
     let memberIDs: [ShapeID]
 
-    public init(id: ShapeID, traits: [ShapeID: Node], memberIDs: [ShapeID]) {
+    public init(id: ShapeID, traits: TraitCollection, memberIDs: [ShapeID]) {
         self.memberIDs = memberIDs
         super.init(id: id, type: .list, traits: traits)
     }
 
+    public var memberID: ShapeID { .init(id: self.id, member: "member") }
+
     public var member: MemberShape {
-        // swiftlint:disable:next force_cast
-        model.shapes[.init(id: id, member: "member")]! as! MemberShape
+        get throws {
+            try model.expectMemberShape(id: memberID)
+        }
     }
 
     public var members: [MemberShape] {
-        [member]
+        get throws {
+            try [member]
+        }
     }
 
-    override func candidates(for shape: Shape) -> [Shape] {
-        members.map { $0.target }
+    override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
+        try Set(members)
     }
 }
