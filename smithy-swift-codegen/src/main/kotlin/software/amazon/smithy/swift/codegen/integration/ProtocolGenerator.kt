@@ -122,6 +122,8 @@ interface ProtocolGenerator {
      */
     fun generateCodableConformanceForNestedTypes(ctx: GenerationContext)
 
+    fun generateSchemas(ctx: GenerationContext)
+
     /**
      *
      * Generate unit tests for the protocol

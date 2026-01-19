@@ -57,10 +57,12 @@ let package = Package(
         .library(name: "SmithySwiftNIO", targets: ["SmithySwiftNIO"]),
         .library(name: "SmithyTelemetryAPI", targets: ["SmithyTelemetryAPI"]),
         .library(name: "SmithyHTTPClientAPI", targets: ["SmithyHTTPClientAPI"]),
+        .plugin(name: "SmithyCodeGenerator", targets: ["SmithyCodeGenerator"]),
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
             .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.56.1"),
+            .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.0.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.13.0"),
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
@@ -291,6 +293,26 @@ let package = Package(
         .target(
             name: "SmithyWaitersAPI"
         ),
+        .plugin(
+            name: "SmithyCodeGenerator",
+            capability: .buildTool(),
+            dependencies: [
+                "SmithyCodegenCLI",
+            ]
+        ),
+        .executableTarget(
+            name: "SmithyCodegenCLI",
+            dependencies: [
+                "SmithyCodegenCore",
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            ]
+        ),
+        .target(
+            name: "SmithyCodegenCore",
+            dependencies: [
+                "Smithy",
+            ]
+        ),
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: [
@@ -300,6 +322,10 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ],
             resources: [ .process("Resources") ]
+        ),
+        .testTarget(
+            name: "SmithyTests",
+            dependencies: ["Smithy"]
         ),
         .testTarget(
             name: "SmithySwiftNIOTests",
