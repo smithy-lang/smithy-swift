@@ -6,7 +6,9 @@
 //
 
 import enum Smithy.Node
+import enum Smithy.Prelude
 import struct Smithy.ShapeID
+import struct Smithy.TraitCollection
 
 extension Model {
 
@@ -15,7 +17,7 @@ extension Model {
     /// Compared to the AST model, this model has custom shape types, members are included in the main body of shapes
     /// along with other shape types, and all Shape IDs are fully-qualified
     /// (i.e. members have the enclosing shape's namespace & name, along with their own member name.)
-    /// - Parameter astModel: The JSON AST model to be created.
+    /// - Parameter astModel: The JSON AST model to load into the `Model` being created.
     convenience init(astModel: ASTModel) throws {
         // Get all of the members from the AST model, create pairs of ShapeID & MemberShape
         let idToMemberShapePairs = try astModel.shapes
@@ -31,17 +33,10 @@ extension Model {
 
         // Initialize the properties of self
         self.init(version: astModel.smithy, metadata: astModel.metadata, shapes: shapes)
-
-        // self is now initialized, set all of the Shapes with references back to this model
-        self.shapes.values.forEach { $0.model = self }
-
-        // Verify that there is exactly one Service
-        let services = self.shapes.values.filter { $0.type == .service }
-        guard services.count == 1 else { throw ModelError("Model has \(services.count) services") }
     }
 
     private static func memberShapePairs(id: String, astShape: ASTShape) throws -> [(ShapeID, MemberShape)] {
-        var baseMembers = (astShape.members ?? [:])
+        var baseMembers = astShape.members ?? [:]
 
         // If this AST shape is an array, add a member for its element
         if let member = astShape.member {
@@ -56,6 +51,21 @@ extension Model {
             baseMembers["value"] = value
         }
 
+        // If this shape is a string with the enum trait, add members for its trait members
+        if astShape.type == .string, let enumTraitNode = astShape.traits?[EnumTrait.id.absoluteID] {
+            let enumTrait = try EnumTrait(node: enumTraitNode)
+            let unitID = Smithy.Prelude.unitSchema.id.absoluteID
+            enumTrait.members.forEach { enumMember in
+                let name = enumMember.name ?? enumMember.value
+                let traits: [String: Node] = if enumMember.name != nil {
+                    ["smithy.api#enumValue": .string(enumMember.value)]
+                } else {
+                    [:]
+                }
+                baseMembers[name] = ASTMember(target: unitID, traits: traits)
+            }
+        }
+
         // Map the AST members to ShapeID-to-MemberShape pairs & return the list of pairs
         return try baseMembers.map { astMember in
             // Create a ShapeID for this member
@@ -63,7 +73,8 @@ extension Model {
 
             // Create traits for this member
             let traitPairs = try astMember.value.traits?.map { (try ShapeID($0.key), $0.value) }
-            let traits = Dictionary(uniqueKeysWithValues: traitPairs ?? [])
+            let traitDict = Dictionary(uniqueKeysWithValues: traitPairs ?? [])
+            let traits = TraitCollection(traits: traitDict)
 
             // Create a Shape ID for this member's target
             let targetID = try ShapeID(astMember.value.target)
@@ -81,7 +92,8 @@ extension Model {
 
         // Create model traits from the AST traits.
         let idToTraitPairs = try astShape.traits?.map { (try ShapeID($0.key), $0.value) } ?? []
-        let traits = Dictionary(uniqueKeysWithValues: idToTraitPairs)
+        let traitDict = Dictionary(uniqueKeysWithValues: idToTraitPairs)
+        let traits = TraitCollection(traits: traitDict)
 
         // Based on the AST shape type, create the appropriate Shape type.
         switch astShape.type {
@@ -89,15 +101,31 @@ extension Model {
             let shape = ServiceShape(
                 id: shapeID,
                 traits: traits,
+                operationIDs: try astShape.operations?.map { try $0.id } ?? [],
+                resourceIDs: try astShape.resources?.map { try $0.id } ?? [],
                 errorIDs: try astShape.errors?.map { try $0.id } ?? []
+            )
+            return (shapeID, shape)
+        case .resource:
+            let shape = ResourceShape(
+                id: shapeID,
+                traits: traits,
+                operationIDs: try astShape.operations?.map { try $0.id } ?? [],
+                createID: try astShape.create?.id,
+                putID: try astShape.put?.id,
+                readID: try astShape.read?.id,
+                updateID: try astShape.update?.id,
+                deleteID: try astShape.delete?.id,
+                listID: try astShape.list?.id
             )
             return (shapeID, shape)
         case .operation:
             let shape = OperationShape(
                 id: shapeID,
                 traits: traits,
-                input: try astShape.input?.id,
-                output: try astShape.output?.id
+                inputID: try astShape.input?.id,
+                outputID: try astShape.output?.id,
+                errorIDs: try astShape.errors?.map { try $0.id } ?? []
             )
             return (shapeID, shape)
         case .structure:
@@ -142,6 +170,17 @@ extension Model {
                 memberIDs: memberIDs(for: shapeID, memberShapes: memberShapes)
             )
             return (shapeID, shape)
+        case .string:
+            if traits.hasTrait(EnumTrait.self) {
+                let shape = EnumShape(
+                    id: shapeID,
+                    traits: traits,
+                    memberIDs: memberIDs(for: shapeID, memberShapes: memberShapes)
+                )
+                return (shapeID, shape)
+            } else {
+                fallthrough
+            }
         default:
             let shape = Shape(
                 id: shapeID,

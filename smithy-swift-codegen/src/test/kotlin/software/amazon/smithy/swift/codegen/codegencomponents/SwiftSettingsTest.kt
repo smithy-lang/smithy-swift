@@ -194,6 +194,7 @@ class SwiftSettingsTest {
             copyrightNotice = "// Test copyright",
             visibility = "public",
             internalClient = false,
+            modelPath = "/path/to/model.json",
         )
 
     private fun createServiceWithProtocols(protocols: Set<ShapeId>): ServiceShape {

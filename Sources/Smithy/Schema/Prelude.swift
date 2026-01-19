@@ -55,7 +55,7 @@ public enum Prelude {
     }
 
     public static var documentSchema: Schema {
-        Schema(id: .init("smithy.api", "PrimitiveDocument"), type: .document)
+        Schema(id: .init("smithy.api", "Document"), type: .document)
     }
 
     public static var primitiveBooleanSchema: Schema {
