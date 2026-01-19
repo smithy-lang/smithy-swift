@@ -5,10 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-struct TraitError: Error {
-    let localizedDescription: String
+public struct TraitError: Error {
+    public let localizedDescription: String
 
-    init(_ localizedDescription: String) {
+    public init(_ localizedDescription: String) {
         self.localizedDescription = localizedDescription
     }
 }

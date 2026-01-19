@@ -5,6 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import enum Smithy.Node
+import struct Smithy.ShapeID
+import protocol Smithy.Trait
+import struct Smithy.TraitError
+
 public struct DeprecatedTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "deprecated") }
 

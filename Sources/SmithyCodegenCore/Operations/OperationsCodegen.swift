@@ -37,6 +37,6 @@ struct OperationsCodegen {
                 }
             }
         }
-        return writer.finalize()
+        return writer.contents
     }
 }

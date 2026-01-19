@@ -5,8 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct UsedAsInputTrait: Trait {
-    public static var id: ShapeID { .init("swift.synthetic", "usedAsInput") }
+import enum Smithy.Node
+import struct Smithy.ShapeID
+import protocol Smithy.Trait
+
+public struct UsedAsOutputTrait: Trait {
+    public static var id: ShapeID { .init("swift.synthetic", "usedAsOutput") }
 
     public var node: Node { [:] }
 

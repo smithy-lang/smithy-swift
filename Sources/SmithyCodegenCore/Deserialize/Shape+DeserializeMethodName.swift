@@ -6,7 +6,6 @@
 //
 
 import struct Smithy.ShapeID
-import struct Smithy.StreamingTrait
 
 extension Shape {
 

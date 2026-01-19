@@ -9,12 +9,6 @@ import struct Smithy.ShapeID
 
 extension Shape {
 
-    var operationVarName: String {
-        get throws {
-            try id.varName(base: "operation")
-        }
-    }
-
     var schemaVarName: String {
         get throws {
             if id.namespace == "smithy.api" {
@@ -58,14 +52,10 @@ private extension ShapeID {
 
     var schemaVarName: String {
         get throws {
-            try varName(base: "schema")
+            guard member == nil else { throw ModelError("Assigning member schema to a var") }
+            let namespacePortion = namespace.replacingOccurrences(of: ".", with: "_")
+            let namePortion = name
+            return "schema__\(namespacePortion)__\(namePortion)"
         }
-    }
-
-    func varName(base: String) throws -> String {
-        guard member == nil else { throw ModelError("Assigning member schema to a var") }
-        let namespacePortion = namespace.replacingOccurrences(of: ".", with: "_")
-        let namePortion = name
-        return "\(base)__\(namespacePortion)__\(namePortion)"
     }
 }

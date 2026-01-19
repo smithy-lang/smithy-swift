@@ -9,6 +9,8 @@
 ///
 /// This list can be expanded as features are added to Smithy/SDK that use them.
 public let allSupportedTraits = Set([
+
+    // Traits defined in Smithy
     ServiceTrait.id,
     AddedDefaultTrait.id,
     AWSQueryCompatibleTrait.id,
@@ -24,8 +26,3 @@ public let allSupportedTraits = Set([
     // Synthetic traits
     TargetsUnitTrait.id,
 ])
-
-// Not used at runtime so not included here:
-// - DeprecatedTrait
-// - EnumTrait
-// - StreamingTrait

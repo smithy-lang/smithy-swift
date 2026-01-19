@@ -7,7 +7,6 @@
 
 import struct Smithy.ErrorTrait
 import struct Smithy.SparseTrait
-import struct Smithy.StreamingTrait
 
 package struct DeserializeCodegen {
 
@@ -78,7 +77,7 @@ package struct DeserializeCodegen {
             writer.write("")
         }
         writer.unwrite("\n")
-        return writer.finalize()
+        return writer.contents
     }
 
     private func writeDeserializeCall(

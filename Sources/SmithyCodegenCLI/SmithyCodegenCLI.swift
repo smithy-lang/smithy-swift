@@ -34,42 +34,31 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
     var operationsPath: String?
 
     func run() async throws {
+
+        let start = Date()
+
         let currentWorkingDirectoryFileURL = currentWorkingDirectoryFileURL()
-        print("Current working directory: \(currentWorkingDirectoryFileURL.path)")
 
         // Create the model file URL
         let modelFileURL = URL(fileURLWithPath: modelPath, relativeTo: currentWorkingDirectoryFileURL)
         guard FileManager.default.fileExists(atPath: modelFileURL.path) else {
             throw SmithyCodegenCLIError(localizedDescription: "no file at model path \(modelFileURL.path)")
         }
-        print("Model file path: \(modelFileURL.path)")
 
         // If --schemas-path was supplied, create the schema file URL
-        let schemasFileURL = resolve(paramName: "--schemas-path", path: schemasPath)
+        let schemasFileURL = resolve(path: schemasPath)
 
         // If --serialize-path was supplied, create the Serialize file URL
-        let serializeFileURL = resolve(
-            paramName: "--serialize-path",
-            path: serializePath
-        )
+        let serializeFileURL = resolve(path: serializePath)
 
         // If --deserialize-path was supplied, create the Deserialize file URL
-        let deserializeFileURL = resolve(
-            paramName: "--deserialize-path",
-            path: deserializePath
-        )
+        let deserializeFileURL = resolve(path: deserializePath)
 
         // If --type-registry-path was supplied, create the TypeRegistry file URL
-        let typeRegistryFileURL = resolve(
-            paramName: "--type-registry-path",
-            path: typeRegistryPath
-        )
+        let typeRegistryFileURL = resolve(path: typeRegistryPath)
 
         // If --operations-path was supplied, create the Operations file URL
-        let operationsFileURL = resolve(
-            paramName: "--operations-path",
-            path: operationsPath
-        )
+        let operationsFileURL = resolve(path: operationsPath)
 
         // Use resolved file URLs to run code generator
         try CodeGenerator(
@@ -81,6 +70,14 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
             typeRegistryFileURL: typeRegistryFileURL,
             operationsFileURL: operationsFileURL
         ).run()
+
+        let duration = Date().timeIntervalSince(start)
+        let secondsDuration = String(
+            format: "%0.2f",
+            locale: Locale(identifier: "en_US_POSIX"),
+            arguments: [duration]
+        )
+        print("Completed generating model \(modelFileURL.lastPathComponent) in \(secondsDuration) sec")
     }
 
     private func currentWorkingDirectoryFileURL() -> URL {
@@ -92,15 +89,9 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
         return URL(fileURLWithPath: currentWorkingDirectoryPath)
     }
 
-    private func resolve(paramName: String, path: String?) -> URL? {
-        if let path {
-            let fileURL = URL(fileURLWithPath: path, relativeTo: currentWorkingDirectoryFileURL())
-            print("Resolved \(paramName): \(fileURL.path)")
-            return fileURL
-        } else {
-            print("\(paramName) not provided, skipping generation")
-            return nil
-        }
+    private func resolve(path: String?) -> URL? {
+        guard let path else { return nil }
+        return URL(fileURLWithPath: path, relativeTo: currentWorkingDirectoryFileURL())
     }
 }
 

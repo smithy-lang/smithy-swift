@@ -273,6 +273,7 @@ class SwiftWriter(
         model: Model?,
         shape: Shape,
     ) {
+        return
         var deprecatedTrait: DeprecatedTrait? = null
         if (shape.getTrait(DeprecatedTrait::class.java).isPresent) {
             deprecatedTrait = shape.getTrait(DeprecatedTrait::class.java).get()

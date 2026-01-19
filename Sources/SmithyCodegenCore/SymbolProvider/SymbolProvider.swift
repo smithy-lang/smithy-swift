@@ -9,8 +9,6 @@ import struct Foundation.Locale
 import struct Foundation.NSRange
 import class Foundation.NSRegularExpression
 import struct Smithy.ErrorTrait
-import struct Smithy.UsedAsInputTrait
-import struct Smithy.UsedAsOutputTrait
 import struct Smithy.ServiceTrait
 import struct Smithy.ShapeID
 

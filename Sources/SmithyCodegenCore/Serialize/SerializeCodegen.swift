@@ -76,7 +76,7 @@ package struct SerializeCodegen {
             writer.write("")
         }
         writer.unwrite("\n")
-        return writer.finalize()
+        return writer.contents
     }
 
     private func writeSerializeCall(

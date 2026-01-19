@@ -37,13 +37,22 @@ package struct SchemasCodegen {
                 writer.unwrite(",")
             }
             writer.write("")
+
+            // If a schema has a member that targets the schema itself, we avoid a compile warning for
+            // self-reference by generating a duplicate schema var that references this schema, and we
+            // target the duplicate instead.
+            //
+            // This happens ~20 times in AWS models so it is not so frequent that the extra var will bloat
+            // service clients.
             if let hm = shape as? HasMembers, try hm.members.contains(where: { $0.targetID == shape.id }) {
-                try writer.write("var \(shape.schemaVarName)__mirror: Smithy.Schema { \(shape.schemaVarName) }")
+                try writer.openBlock("var dup_of_\(shape.schemaVarName): Smithy.Schema {", "}") { writer in
+                    try writer.write(shape.schemaVarName)
+                }
                 writer.write("")
             }
         }
         writer.unwrite("\n")
-        return writer.finalize()
+        return writer.contents
     }
 
     private func writeSchema(writer: SwiftWriter, shape: Shape, index: Int? = nil) throws {
@@ -70,8 +79,11 @@ package struct SchemasCodegen {
             }
             if let member = shape as? MemberShape {
                 let target = try member.target
-                let ext = target.id == shape.id ? "__mirror" : ""
-                writer.write(try "target: \(target.schemaVarName)\(ext),")
+
+                // If this schema's target is the same as itself, target the duplicate
+                // (see above) to avoid a self-reference compile warning.
+                let prefix = target.id == member.containerID ? "dup_of_" : ""
+                writer.write(try "target: \(prefix)\(target.schemaVarName),")
             }
             if let index {
                 writer.write("index: \(index),")

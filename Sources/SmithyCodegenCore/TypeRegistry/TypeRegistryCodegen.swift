@@ -36,6 +36,6 @@ struct TypeRegistryCodegen {
                 }
             }
         }
-        return writer.finalize()
+        return writer.contents
     }
 }

@@ -20,10 +20,11 @@ public class MemberShape: Shape {
 
     public var container: Shape {
         get throws {
-            let containerID = ShapeID(id: id, member: nil)
             return try model.expectShape(id: containerID)
         }
     }
+
+    public var containerID: ShapeID { .init(id: id, member: nil) }
 
     public var target: Shape {
         get throws {

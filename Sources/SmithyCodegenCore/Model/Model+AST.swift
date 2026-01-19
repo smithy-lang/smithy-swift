@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Smithy.EnumTrait
 import enum Smithy.Node
 import enum Smithy.Prelude
 import struct Smithy.ShapeID

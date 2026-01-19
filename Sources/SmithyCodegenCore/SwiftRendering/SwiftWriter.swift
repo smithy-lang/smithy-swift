@@ -35,9 +35,22 @@ class SwiftWriter {
     }
 
     func write(_ line: String) {
-        lines.append(String(repeating: " ", count: indentLevel) + line)
+        if line.isEmpty {
+            // Don't write whitespace to an empty line
+            lines.append("")
+        } else {
+            // Write whitespace for the indent level, then the line content
+            lines.append(String(repeating: " ", count: indentLevel) + line)
+        }
     }
-
+    
+    /// Removes previously written text.
+    ///
+    /// If the unwritten text matches the end of the last written line, then that text will be removed from that line.
+    ///
+    /// If the unwritten text is `\n`, then the entire previous line will be removed only if it is an empty line.
+    /// Otherwise, unwriting `\n` has no effect.
+    /// - Parameter text: The text to be removed from the last written text.
     func unwrite(_ text: String) {
         guard let lastIndex = lines.indices.last else { return }
         if text == "\n" && lines[lastIndex] == "" {
@@ -55,7 +68,7 @@ class SwiftWriter {
         write(closeWith)
     }
 
-    func finalize() -> String {
+    var contents: String {
         return lines.joined(separator: "\n").appending("\n")
     }
 }
