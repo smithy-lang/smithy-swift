@@ -59,7 +59,13 @@ extension Model {
                 let operationIDs = serviceShape.operationIDs.filter { trimmedShapes[$0] != nil }
                 let resourceIDs = serviceShape.resourceIDs.filter { trimmedShapes[$0] != nil }
                 let errorIDs = serviceShape.errorIDs.filter { trimmedShapes[$0] != nil }
-                return ServiceShape(id: serviceShape.id, traits: serviceShape.traits, operationIDs: operationIDs, resourceIDs: resourceIDs, errorIDs: errorIDs)
+                return ServiceShape(
+                    id: serviceShape.id,
+                    traits: serviceShape.traits,
+                    operationIDs: operationIDs,
+                    resourceIDs: resourceIDs,
+                    errorIDs: errorIDs
+                )
             case let resourceShape as ResourceShape:
                 let operationIDs = resourceShape.operationIDs.filter { trimmedShapes[$0] != nil }
                 let createID = resourceShape.createID.map { trimmedShapes[$0] != nil ? $0 : nil } ?? nil
@@ -68,10 +74,26 @@ extension Model {
                 let updateID = resourceShape.updateID.map { trimmedShapes[$0] != nil ? $0 : nil } ?? nil
                 let deleteID = resourceShape.deleteID.map { trimmedShapes[$0] != nil ? $0 : nil } ?? nil
                 let listID = resourceShape.listID.map { trimmedShapes[$0] != nil ? $0 : nil } ?? nil
-                return ResourceShape(id: resourceShape.id, traits: resourceShape.traits, operationIDs: operationIDs, createID: createID, putID: putID, readID: readID, updateID: updateID, deleteID: deleteID, listID: listID)
+                return ResourceShape(
+                    id: resourceShape.id,
+                    traits: resourceShape.traits,
+                    operationIDs: operationIDs,
+                    createID: createID,
+                    putID: putID,
+                    readID: readID,
+                    updateID: updateID,
+                    deleteID: deleteID,
+                    listID: listID
+                )
             case let operationShape as OperationShape:
                 let errorIDs = operationShape.errorIDs.filter { trimmedShapes[$0] != nil }
-                return OperationShape(id: operationShape.id, traits: operationShape.traits, inputID: operationShape.inputID, outputID: operationShape.outputID, errorIDs: errorIDs)
+                return OperationShape(
+                    id: operationShape.id,
+                    traits: operationShape.traits,
+                    inputID: operationShape.inputID,
+                    outputID: operationShape.outputID,
+                    errorIDs: errorIDs
+                )
             case let structureShape as StructureShape:
                 let memberIDs = structureShape.memberIDs.filter { trimmedShapes[$0] != nil }
                 return StructureShape(id: structureShape.id, traits: structureShape.traits, memberIDs: memberIDs)

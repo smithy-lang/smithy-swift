@@ -45,16 +45,16 @@ extension Model {
             // Add UsedAsInput and UsedAsOutput traits to the input/output structures
             // These traits allow us to identify inputs/outputs by trait, but allow us to
             // leave the Smithy input & output traits as set on the original model.
-            let newInputShape = newStruct(newID: newInputShapeID, newTraits: [UsedAsInputTrait()], original: inputShape)
+            let newInput = newStruct(newID: newInputShapeID, newTraits: [UsedAsInputTrait()], original: inputShape)
             let newInputShapeMembers = try renamedMembers(newID: newInputShapeID, original: inputShape)
-            let newOutputShape = newStruct(newID: newOutputShapeID, newTraits: [UsedAsOutputTrait()], original: outputShape)
+            let newOutput = newStruct(newID: newOutputShapeID, newTraits: [UsedAsOutputTrait()], original: outputShape)
             let newOutputShapeMembers = try renamedMembers(newID: newOutputShapeID, original: outputShape)
 
             // Add the new input & output and their members to the new shape dictionary.
             // The originals will remain and will be pruned later if they are unreferenced.
-            newShapes[newInputShape.id] = newInputShape
+            newShapes[newInput.id] = newInput
             newInputShapeMembers.forEach { newShapes[$0.id] = $0 }
-            newShapes[newOutputShape.id] = newOutputShape
+            newShapes[newOutput.id] = newOutput
             newOutputShapeMembers.forEach { newShapes[$0.id] = $0 }
 
             // Make a new operation with the new input & output IDs

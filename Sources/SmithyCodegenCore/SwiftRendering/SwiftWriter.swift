@@ -43,7 +43,7 @@ class SwiftWriter {
             lines.append(String(repeating: " ", count: indentLevel) + line)
         }
     }
-    
+
     /// Removes previously written text.
     ///
     /// If the unwritten text matches the end of the last written line, then that text will be removed from that line.

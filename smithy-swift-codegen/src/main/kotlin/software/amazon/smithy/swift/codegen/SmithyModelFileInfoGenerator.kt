@@ -1,7 +1,6 @@
 package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 
 class SmithyModelFileInfoGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
