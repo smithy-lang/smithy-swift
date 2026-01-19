@@ -37,6 +37,10 @@ package struct SchemasCodegen {
                 writer.unwrite(",")
             }
             writer.write("")
+            if let hm = shape as? HasMembers, try hm.members.contains(where: { $0.targetID == shape.id }) {
+                try writer.write("var \(shape.schemaVarName)__mirror: Smithy.Schema { \(shape.schemaVarName) }")
+                writer.write("")
+            }
         }
         writer.unwrite("\n")
         return writer.finalize()
@@ -64,8 +68,10 @@ package struct SchemasCodegen {
                     }
                 }
             }
-            if let target = try (shape as? MemberShape)?.target {
-                writer.write(try "target: \(target.schemaVarName),")
+            if let member = shape as? MemberShape {
+                let target = try member.target
+                let ext = target.id == shape.id ? "__mirror" : ""
+                writer.write(try "target: \(target.schemaVarName)\(ext),")
             }
             if let index {
                 writer.write("index: \(index),")

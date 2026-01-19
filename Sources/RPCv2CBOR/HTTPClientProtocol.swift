@@ -40,7 +40,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
     public var registryMatchBlock: @Sendable (Schema, String, TypeRegistry) throws -> TypeRegistry.Entry? =
         { _, code, typeRegistry in
             // Find an entry where the shape name is the same as the code.
-            try typeRegistry.codeLookup(code: code) { code, entry in
+            typeRegistry.codeLookup(code: code) { code, entry in
                 code == entry.schema.id.name
             }
         }

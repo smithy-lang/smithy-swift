@@ -89,22 +89,12 @@ package struct DeserializeCodegen {
         schemaVarName: String
     ) throws {
         switch try member.target.type {
-        case .structure:
+        case .structure, .union:
             try writeStructureDeserializeCall(
                 ctx: ctx,
                 writer: writer,
                 shape: shape,
                 member: member,
-                initializer: "()",
-                schemaVarName: schemaVarName
-            )
-        case .union:
-            try writeStructureDeserializeCall(
-                ctx: ctx,
-                writer: writer,
-                shape: shape,
-                member: member,
-                initializer: ".sdkUnknown(\"\")",
                 schemaVarName: schemaVarName
             )
         case .list, .set:
@@ -173,14 +163,19 @@ package struct DeserializeCodegen {
         writer: SwiftWriter,
         shape: Shape,
         member: MemberShape,
-        initializer: String,
         schemaVarName: String
     ) throws {
         let target = try member.target
         let propertySwiftType = try ctx.symbolProvider.swiftType(shape: target)
-        writer.write("var value = \(propertySwiftType)\(initializer)")
         let readMethodName = try target.deserializeMethodName
-        writer.write("try deserializer.\(readMethodName)(\(schemaVarName), &value)")
+        if target.type == .union && target.hasTrait(StreamingTrait.self) {
+            writer.write("var prototype = \(propertySwiftType).sdkUnknown(\"\")")
+            writer.write("let value = try deserializer.\(readMethodName)(\(schemaVarName), &prototype)")
+        } else {
+            let initializer = target.type == .structure ? "()" : ".sdkUnknown(\"\")"
+            writer.write("var value = \(propertySwiftType)\(initializer)")
+            writer.write("try deserializer.\(readMethodName)(\(schemaVarName), &value)")
+        }
         try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
     }
 
@@ -190,23 +185,27 @@ package struct DeserializeCodegen {
         shape: Shape,
         member: MemberShape
     ) throws {
+        let target = try member.target
         // Only the "composite types" need to have an assignment written.
-        guard try [.structure, .union, .list, .set, .map].contains(member.target.type) else { return }
+        guard [.structure, .union, .list, .set, .map].contains(target.type) else { return }
 
         // The assignment being written is based on the shape enclosing the member.
         switch shape.type {
         case .structure:
-            // TODO: implement assignment for streaming
-            guard try !member.target.hasTrait(StreamingTrait.self) else { return }
             // For a structure member, write the value to the appropriate structure property,
             // making the appropriate adjustment for an error.
             let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""
             let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
             writer.write("structure.\(properties)\(propertyName) = value")
         case .union:
-            // For a union member, write the appropriate union case to the union variable
-            let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
-            writer.write("union = .\(enumCaseName)(value)")
+            if target.hasTrait(ErrorTrait.self) && shape.hasTrait(StreamingTrait.self) {
+                // For an event stream error, throw it
+                writer.write("throw value as! Swift.Error")
+            } else {
+                // For a union member or event stream event, write the appropriate union case to the union variable
+                let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
+                writer.write("union = .\(enumCaseName)(value)")
+            }
         case .list, .set, .map:
             // For a collection member, return it to the caller since this is being written
             // into a consumer block that returns the collection element.
