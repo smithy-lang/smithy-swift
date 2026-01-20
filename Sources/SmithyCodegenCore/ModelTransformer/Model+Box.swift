@@ -26,7 +26,7 @@ extension Model {
     }
 }
 
-private var affectedServices = [
+private let affectedServices = [
     "com.amazonaws.ec2#AmazonEC2",
     "com.amazonaws.nimble#nimble",
     "com.amazonaws.amplifybackend#AmplifyBackend",
