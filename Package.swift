@@ -286,6 +286,8 @@ let package = Package(
         .target(
             name: "SmithyCBOR",
             dependencies: [
+                "SmithyReadWrite",
+                "SmithyTimestamps",
                 "Smithy",
                 "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
