@@ -16,127 +16,151 @@ import protocol Smithy.SmithyDocument
 public class StringSerializer: ShapeSerializer {
     public private(set) var string = ""
     private var isFirstElement = true
+    private var mapKey: String?
+
     private let interstitial = ", "
     private let redacted = "[REDACTED]"
-    private let key: String?
 
-    public init() {
-        self.key = nil
-    }
-
-    private init(key: String) {
-        self.key = key
-    }
+    public init() {}
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
-        try writeValue(schema) {
-            let structSerializer = StringSerializer()
-            let structMembers = schema.target?.members ?? schema.members
-            for member in structMembers {
-                try structSerializer.writeValue(member) {
-                    let serializer = StringSerializer(key: member.id.member ?? "")
-                    try S.writeConsumer(member, value, serializer)
-                    return serializer.string
-                }
-            }
-            let typeName = type(of: value)
-            return "\(typeName)(\(structSerializer.string))"
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "\(type(of: value))("
+        let structMembers = schema.target?.members ?? schema.members
+        let memberSerializer = StringSerializer()
+        for member in structMembers {
+            try S.writeConsumer(member, value, memberSerializer)
         }
+        string += memberSerializer.string
+        string += ")"
     }
 
     public func writeList<E>(_ schema: Schema, _ value: [E], _ consumer: WriteValueConsumer<E>) throws {
-        try writeValue(schema) {
-            let listSerializer = StringSerializer()
-            let elementSchema = schema.target?.members[0] ?? schema.members[0]
-            for element in value {
-                try listSerializer.writeValue(elementSchema) {
-                    let serializer = StringSerializer()
-                    try consumer(element, serializer)
-                    return serializer.string
-                }
-            }
-            return "[\(listSerializer.string)]"
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "["
+        let listSerializer = StringSerializer()
+        for element in value {
+            listSerializer.mapKey = ""
+            try consumer(element, listSerializer)
         }
+        string += listSerializer.string
+        string += "]"
     }
 
     public func writeMap<V>(_ schema: Schema, _ value: [String: V], _ consumer: WriteValueConsumer<V>) throws {
-        try writeValue(schema) {
-            let mapSerializer = StringSerializer()
-            let valueSchema = schema.target?.members[1] ?? schema.members[1]
-            for (key, value) in value {
-                try mapSerializer.writeValue(valueSchema) {
-                    let serializer = StringSerializer(key: "\"\(key)\"")
-                    try consumer(value, serializer)
-                    return serializer.string
-                }
-            }
-            return "[\(mapSerializer.string)]"
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "["
+        if value.isEmpty { string += ":" }
+        let mapSerializer = StringSerializer()
+        for (key, value) in value {
+            mapSerializer.mapKey = key
+            try consumer(value, mapSerializer)
         }
+        string += mapSerializer.string
+        string += "]"
     }
 
     public func writeBoolean(_ schema: Schema, _ value: Bool) throws {
-        writeValue(schema) { "\(value)" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "\(value)"
     }
 
     public func writeByte(_ schema: Schema, _ value: Int8) throws {
-        writeValue(schema) { "\(value)" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "\(value)"
     }
 
     public func writeShort(_ schema: Schema, _ value: Int16) throws {
-        writeValue(schema) { "\(value)" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "\(value)"
     }
 
     public func writeInteger(_ schema: Schema, _ value: Int) throws {
-        writeValue(schema) { "\(value)" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "\(value)"
     }
 
     public func writeLong(_ schema: Schema, _ value: Int) throws {
-        writeValue(schema) { "\(value)" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "\(value)"
     }
 
     public func writeFloat(_ schema: Schema, _ value: Float) throws {
-        writeValue(schema) { "\(value)" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "\(value)"
     }
 
     public func writeDouble(_ schema: Schema, _ value: Double) throws {
-        writeValue(schema) { "\(value)" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "\(value)"
     }
 
     public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
-        writeValue(schema) { "\(value)" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "\(value)"
     }
 
     public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
-        writeValue(schema) { "\(value)" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "\(value)"
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {
-        writeValue(schema) { "\"\(value)\"" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "\"\(value)\""
     }
 
     public func writeBlob(_ schema: Schema, _ value: Data) throws {
-        writeValue(schema) { "<\(value.count) bytes>" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "<\(value.count) bytes>"
     }
 
     public func writeTimestamp(_ schema: Schema, _ value: Date) throws {
-        let df = ISO8601DateFormatter()
-        writeValue(schema) { df.string(from: value) }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += ISO8601DateFormatter().string(from: value)
     }
 
     public func writeNull(_ schema: Schema) throws {
-        writeValue(schema) { "nil" }
+        writeKey(schema)
+        guard !isSensitive(schema) else { return }
+        string += "nil"
     }
 
-    private func writeValue(_ schema: Schema, _ value: () throws -> String) rethrows {
-        if isFirstElement {
-            isFirstElement = false
+    private func writeKey(_ schema: Schema) {
+        guard schema.type == .member else { return }
+        if !isFirstElement { string += interstitial }
+        isFirstElement = false
+        guard mapKey != "" else { return }
+        if let mapKey {
+            string += "\"\(mapKey)\": "
+            self.mapKey = nil
         } else {
-            string.append(interstitial)
-        }
-        if let key {
+            let key = mapKey ?? schema.id.member ?? "<no key>"
             string += "\(key): "
         }
-        string += schema.isSensitive ? redacted : try value()
+    }
+
+    private func isSensitive(_ schema: Schema) -> Bool {
+        let isSensitive = schema.isSensitive
+        if isSensitive {
+            string += redacted
+        }
+        return isSensitive
     }
 
     public var data: Data {
@@ -147,6 +171,10 @@ public class StringSerializer: ShapeSerializer {
 private extension Schema {
 
     var isSensitive: Bool {
-        return hasTrait(SensitiveTrait.self) || target?.hasTrait(SensitiveTrait.self) ?? false
+        if type == .member {
+            target!.hasTrait(SensitiveTrait.self)
+        } else {
+            hasTrait(SensitiveTrait.self)
+        }
     }
 }

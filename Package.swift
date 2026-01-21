@@ -418,5 +418,9 @@ let package = Package(
             dependencies: ["SmithyCodegenCore"],
             resources: [ .process("Resources") ]
         ),
+        .testTarget(
+            name: "SmithySerializationTests",
+            dependencies: ["SmithySerialization"],
+        ),
     ].compactMap { $0 }
 )

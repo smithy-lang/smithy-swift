@@ -14,8 +14,8 @@ import protocol Smithy.SmithyDocument
 
 public protocol ShapeDeserializer {
     func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws
-    func readList<E>(_ schema: Schema, _ list: inout [E], _ consumer: ReadValueConsumer<E>) throws
-    func readMap<V>(_ schema: Schema, _ map: inout [String: V], _ consumer: ReadValueConsumer<V>) throws
+    func readList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E]
+    func readMap<V>(_ schema: Schema, _ consumer: ReadValueConsumer<V>) throws -> [String: V]
     func readBoolean(_ schema: Schema) throws -> Bool
     func readBlob(_ schema: Schema) throws -> Data
     func readByte(_ schema: Schema) throws -> Int8
@@ -27,14 +27,11 @@ public protocol ShapeDeserializer {
     func readBigInteger(_ schema: Schema) throws -> Int64
     func readBigDecimal(_ schema: Schema) throws -> Double
     func readString(_ schema: Schema) throws -> String
-    func readDocument(_ schema: Schema) throws -> Smithy.Document
+    func readDocument(_ schema: Schema) throws -> any SmithyDocument
     func readTimestamp(_ schema: Schema) throws -> Date
     func readNull<T>(_ schema: Schema) throws -> T?
     func readDataStream(_ schema: Schema) throws -> ByteStream
-    func readEventStream<E: DeserializableStruct>(
-        _ schema: Schema,
-        _ value: inout E
-    ) throws -> AsyncThrowingStream<E, any Error>
+    func readEventStream<E: DeserializableStruct>(_ schema: Schema) throws -> AsyncThrowingStream<E, any Error>
     func isNull() throws -> Bool
     var containerSize: Int { get }
 }
@@ -49,8 +46,8 @@ public extension ShapeDeserializer {
         try IntEnum(rawValue: readInteger(schema))!
     }
 
-    func readSparseList<E>(_ schema: Schema, _ list: inout [E?], _ consumer: ReadValueConsumer<E>) throws {
-        try readList(schema, &list) { deserializer in
+    func readSparseList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E?] {
+        try readList(schema) { deserializer in
             if try deserializer.isNull() {
                 return try deserializer.readNull(schema.resolveTarget.member)
             } else {
@@ -59,8 +56,8 @@ public extension ShapeDeserializer {
         }
     }
 
-    func readSparseMap<V>(_ schema: Schema, _ map: inout [String: V?], _ consumer: ReadValueConsumer<V>) throws {
-        try readMap(schema, &map) { deserializer in
+    func readSparseMap<V>(_ schema: Schema, _ consumer: ReadValueConsumer<V>) throws -> [String: V?] {
+        try readMap(schema) { deserializer in
             if try deserializer.isNull() {
                 return try deserializer.readNull(schema.resolveTarget.value)
             } else {
@@ -74,10 +71,7 @@ public extension ShapeDeserializer {
         return ByteStream.data(nil)
     }
 
-    func readEventStream<E: DeserializableStruct>(
-        _ schema: Schema,
-        _ value: inout E
-    ) throws -> AsyncThrowingStream<E, any Error> {
+    func readEventStream<E: DeserializableStruct>(_ schema: Schema) throws -> AsyncThrowingStream<E, any Error> {
         // by default, do nothing
         return AsyncThrowingStream { continuation in
             continuation.finish()

@@ -8,21 +8,13 @@
 import class AwsCommonRuntimeKit.CBORDecoder
 import struct Foundation.Data
 import struct Foundation.Date
-@_spi(SmithyDocumentImpl) import struct Smithy.BigDecimalDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.BigIntegerDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.BlobDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.BooleanDocument
 import struct Smithy.Document
-@_spi(SmithyDocumentImpl) import struct Smithy.ListDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.NullDocument
 import struct Smithy.Schema
 import protocol Smithy.SmithyDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.StringDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.StringMapDocument
-@_spi(SmithyDocumentImpl) import struct Smithy.TimestampDocument
 import protocol SmithySerialization.DeserializableStruct
 import typealias SmithySerialization.ReadStructConsumer
 import typealias SmithySerialization.ReadValueConsumer
+import struct SmithySerialization.SerializerError
 import protocol SmithySerialization.ShapeDeserializer
 
 public struct Deserializer: ShapeDeserializer {
@@ -186,70 +178,8 @@ public struct Deserializer: ShapeDeserializer {
         return value
     }
 
-    public func readDocument(_ schema: Schema) throws -> Smithy.Document {
-        Smithy.Document(NullDocument())
-//        guard decoder.hasNext() else {
-//            throw CBORDecoderError("document ended unexpectedly")
-//        }
-//        let next = try decoder.popNext()
-//        switch next {
-//        case .array_start(let count):
-//            var list = [any SmithyDocument]()
-//            for _ in 0..<count {
-//                let element = try readDocument()
-//                list.append(element)
-//            }
-//            return ListDocument(value: list)
-//        case .indef_array_start:
-//            var list = [any SmithyDocument]()
-//            while try !decoder.isIndefBreak() {
-//                let element = try readDocument()
-//                list.append(element)
-//            }
-//            _ = try decoder.popNext()
-//            return ListDocument(value: list)
-//        case .map_start(let count):
-//            var map = [String: any SmithyDocument]()
-//            for _ in 0..<count {
-//                let next = try decoder.popNext()
-//                guard case .text(let key) = next else {
-//                    throw CBORDecoderError("unexpected non-text element in map document")
-//                }
-//                let value = try readDocument()
-//                map[key] = value
-//            }
-//            return StringMapDocument(value: map)
-//        case .indef_map_start:
-//            var map = [String: any SmithyDocument]()
-//            while try !decoder.isIndefBreak() {
-//                let next = try decoder.popNext()
-//                guard case .text(let key) = next else {
-//                    throw CBORDecoderError("unexpected non-text element in map document")
-//                }
-//                let value = try readDocument()
-//                map[key] = value
-//            }
-//            _ = try decoder.popNext()
-//            return StringMapDocument(value: map)
-//        case .bool(let value):
-//            return BooleanDocument(value: value)
-//        case .uint(let value):
-//            return BigIntegerDocument(value: Int64(value))
-//        case .int(let value):
-//            return BigIntegerDocument(value: Int64(value))
-//        case .double(let value):
-//            return BigDecimalDocument(value: value)
-//        case .text(let value):
-//            return StringDocument(value: value)
-//        case .date(let value):
-//            return TimestampDocument(value: value)
-//        case .bytes(let value):
-//            return BlobDocument(value: value)
-//        case .null:
-//            return NullDocument()
-//        case .map, .array, .indef_bytes_start, .indef_text_start, .indef_break, .tag, .undefined:
-//            throw CBORDecoderError("document has unhandled CBOR element \(next)")
-//        }
+    public func readDocument(_ schema: Schema) throws -> any SmithyDocument {
+        throw SerializerError("Document type not implemented in CBOR")
     }
 
     public func readTimestamp(_ schema: Schema) throws -> Date {
@@ -372,11 +302,12 @@ public struct Deserializer: ShapeDeserializer {
         }
     }
 
-    public func readList<E>(_ schema: Schema, _ list: inout [E], _ consumer: ReadValueConsumer<E>) throws {
+    public func readList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E] {
         guard decoder.hasNext() else {
             throw CBORDecoderError("List \(schema.id) ended unexpectedly")
         }
         try nullCheck()
+        var list = [E]()
         let start = try decoder.popNext()
         switch start {
         case .indef_array_start:
@@ -408,13 +339,15 @@ public struct Deserializer: ShapeDeserializer {
         default:
             throw CBORDecoderError("List \(schema.id) did not start with .array_start or .indef_array_start")
         }
+        return list
     }
 
-    public func readMap<V>( _ schema: Schema, _ map: inout [String: V], _ consumer: ReadValueConsumer<V>) throws {
+    public func readMap<V>( _ schema: Schema, _ consumer: ReadValueConsumer<V>) throws -> [String: V] {
         guard decoder.hasNext() else {
             throw CBORDecoderError("Map \(schema.id) ended unexpectedly")
         }
         try nullCheck()
+        var map = [String: V]()
         let start = try decoder.popNext()
         switch start {
         case .indef_map_start:
@@ -453,6 +386,7 @@ public struct Deserializer: ShapeDeserializer {
         default:
             throw CBORDecoderError("Map \(schema.id) did not start with .map_start or .indef_map_start")
         }
+        return map
     }
 
     /// Container size is not implemented & returns unknown size, even for definite CBOR maps & arrays

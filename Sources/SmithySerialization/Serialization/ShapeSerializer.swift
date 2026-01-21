@@ -25,14 +25,14 @@ public protocol ShapeSerializer {
     func writeBigInteger(_ schema: Schema, _ value: Int64) throws
     func writeBigDecimal(_ schema: Schema, _ value: Double) throws
     func writeString(_ schema: Schema, _ value: String) throws
-    func writeBlob(_ schema: Schema, _ value: Foundation.Data) throws
-    func writeTimestamp(_ schema: Schema, _ value: Foundation.Date) throws
+    func writeBlob(_ schema: Schema, _ value: Data) throws
+    func writeTimestamp(_ schema: Schema, _ value: Date) throws
     func writeDocument(_ schema: Schema, _ value: any SmithyDocument) throws
     func writeNull(_ schema: Schema) throws
     func writeDataStream(_ schema: Schema, _ value: ByteStream) throws
     func writeEventStream<E: SerializableStruct>(_ schema: Schema, _ value: AsyncThrowingStream<E, any Error>) throws
 
-    var data: Foundation.Data { get }
+    var data: Data { get }
 }
 
 public extension ShapeSerializer {
@@ -93,7 +93,7 @@ public extension ShapeSerializer {
     /// - Parameters:
     ///   - schema: The schema for the document
     ///   - value: The document to be written
-    func writeDocument(_ schema: Smithy.Schema, _ value: any Smithy.SmithyDocument) throws {
+    func writeDocument(_ schema: Schema, _ value: any SmithyDocument) throws {
         switch value.type {
         case .blob:
             try writeBlob(schema, value.asBlob())
@@ -120,14 +120,12 @@ public extension ShapeSerializer {
         case .bigInteger:
             try writeBigInteger(schema, value.asBigInteger())
         case .list, .set:
-            let list = try value.asList()
-            try writeList(schema, list) { element, serializer in
-                try serializer.writeDocument(schema.members[0], element)
+            try writeList(schema, value.asList()) { element, serializer in
+                try serializer.writeDocument(schema.member, element)
             }
         case .map:
-            let map = try value.asStringMap()
-            try writeMap(schema, map) { value, serializer in
-                try serializer.writeDocument(schema.members[1], value)
+            try writeMap(schema, value.asStringMap()) { value, serializer in
+                try serializer.writeDocument(schema.value, value)
             }
         case .document, .enum, .intEnum, .structure, .union, .member, .service, .resource, .operation:
             throw SerializerError("Unsupported or invalid document type: \(value.type)")

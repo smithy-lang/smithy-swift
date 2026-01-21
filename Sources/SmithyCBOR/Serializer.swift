@@ -9,7 +9,9 @@ import class AwsCommonRuntimeKit.CBOREncoder
 import struct Foundation.Data
 import struct Foundation.Date
 import struct Smithy.Schema
+import protocol Smithy.SmithyDocument
 import protocol SmithySerialization.SerializableStruct
+import struct SmithySerialization.SerializerError
 import protocol SmithySerialization.ShapeSerializer
 import typealias SmithySerialization.WriteValueConsumer
 
@@ -119,6 +121,10 @@ public final class Serializer: ShapeSerializer {
     public func writeNull(_ schema: Schema) throws {
         writeMember()
         encoder.encode(.null)
+    }
+
+    public func writeDocument(_ schema: Schema, _ value: any SmithyDocument) throws {
+        throw SerializerError("Document type not implemented in CBOR")
     }
 
     public var data: Data {

@@ -41,10 +41,10 @@ package struct DeserializeCodegen {
                     "public static func deserialize(_ deserializer: \(deserializerType)) throws -> Self {", "}"
                 ) { writer in
                     let initializer = shape.type == .structure ? "()" : ".sdkUnknown(\"\")"
-                    writer.write("var value = Self\(initializer)")
+                    writer.write("var \(varName) = Self\(initializer)")
                     let schemaVarName = try shape.schemaVarName
-                    writer.write("try deserializer.readStruct(\(schemaVarName), &value)")
-                    writer.write("return value")
+                    writer.write("try deserializer.readStruct(\(schemaVarName), &\(varName))")
+                    writer.write("return \(varName)")
                 }
                 writer.write("")
                 let consumerType = "SmithySerialization.ReadStructConsumer<Self>"
@@ -87,25 +87,26 @@ package struct DeserializeCodegen {
         member: MemberShape,
         schemaVarName: String
     ) throws {
+        let target = try member.target
+        let propertySwiftType = try ctx.symbolProvider.swiftType(shape: target)
         switch try member.target.type {
         case .structure, .union:
-            try writeStructureDeserializeCall(
-                ctx: ctx,
-                writer: writer,
-                shape: shape,
-                member: member,
-                schemaVarName: schemaVarName
-            )
+            let readMethodName = try target.deserializeMethodName
+            if target.type == .union && target.hasTrait(StreamingTrait.self) {
+                writer.write("let value = try deserializer.\(readMethodName)(\(schemaVarName))")
+            } else {
+                let initializer = target.type == .structure ? "()" : ".sdkUnknown(\"\")"
+                writer.write("var value = \(propertySwiftType)\(initializer)")
+                writer.write("try deserializer.\(readMethodName)(\(schemaVarName), &value)")
+            }
         case .list, .set:
-            guard let listShape = try member.target as? ListShape else {
+            guard let listShape = target as? ListShape else {
                 throw SymbolProviderError("Shape has type .list but is not a ListShape")
             }
-            let listSwiftType = try ctx.symbolProvider.swiftType(shape: listShape)
             let isSparse = listShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "readSparseList" : "readList"
-            writer.write("var value = \(listSwiftType)()")
             try writer.openBlock(
-                "try deserializer.\(methodName)(\(schemaVarName), &value) { deserializer in",
+                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { deserializer in",
                 "}"
             ) { writer in
                 try writeDeserializeCall(
@@ -116,17 +117,14 @@ package struct DeserializeCodegen {
                     schemaVarName: "\(schemaVarName).target!.member"
                 )
             }
-            try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
         case .map:
-            guard let mapShape = try member.target as? MapShape else {
+            guard let mapShape = target as? MapShape else {
                 throw SymbolProviderError("Shape has type .map but is not a MapShape")
             }
-            let mapSwiftType = try ctx.symbolProvider.swiftType(shape: mapShape)
             let isSparse = mapShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "readSparseMap" : "readMap"
-            writer.write("var value = \(mapSwiftType)()")
             try writer.openBlock(
-                "try deserializer.\(methodName)(\(schemaVarName), &value) { deserializer in",
+                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { deserializer in",
                 "}"
             ) { writer in
                 try writeDeserializeCall(
@@ -137,43 +135,9 @@ package struct DeserializeCodegen {
                     schemaVarName: "\(schemaVarName).target!.value"
                 )
             }
-            try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
         default:
-            let methodName = try member.target.deserializeMethodName
-            let rhs = "try deserializer.\(methodName)(\(schemaVarName))"
-            switch shape.type {
-            case .structure:
-                let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""
-                let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
-                writer.write("structure.\(properties)\(propertyName) = \(rhs)")
-            case .union:
-                let unionCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
-                writer.write("union = .\(unionCaseName)(\(rhs))")
-            case .list, .set, .map:
-                writer.write("return \(rhs)")
-            default:
-                throw CodegenError("Unsupported shape type \(shape.type) for rendering member deserialize")
-            }
-        }
-    }
-
-    private func writeStructureDeserializeCall(
-        ctx: GenerationContext,
-        writer: SwiftWriter,
-        shape: Shape,
-        member: MemberShape,
-        schemaVarName: String
-    ) throws {
-        let target = try member.target
-        let propertySwiftType = try ctx.symbolProvider.swiftType(shape: target)
-        let readMethodName = try target.deserializeMethodName
-        if target.type == .union && target.hasTrait(StreamingTrait.self) {
-            writer.write("var prototype = \(propertySwiftType).sdkUnknown(\"\")")
-            writer.write("let value = try deserializer.\(readMethodName)(\(schemaVarName), &prototype)")
-        } else {
-            let initializer = target.type == .structure ? "()" : ".sdkUnknown(\"\")"
-            writer.write("var value = \(propertySwiftType)\(initializer)")
-            writer.write("try deserializer.\(readMethodName)(\(schemaVarName), &value)")
+            let methodName = try target.deserializeMethodName
+            writer.write("let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName))")
         }
         try writeAssignment(ctx: ctx, writer: writer, shape: shape, member: member)
     }
@@ -185,8 +149,6 @@ package struct DeserializeCodegen {
         member: MemberShape
     ) throws {
         let target = try member.target
-        // Only the "composite types" need to have an assignment written.
-        guard [.structure, .union, .list, .set, .map].contains(target.type) else { return }
 
         // The assignment being written is based on the shape enclosing the member.
         switch shape.type {
@@ -209,7 +171,8 @@ package struct DeserializeCodegen {
             // For a collection member, return it to the caller since this is being written
             // into a consumer block that returns the collection element.
             writer.write("return value")
-        default: break
+        default:
+            throw CodegenError("Unsupported shape type \(shape.type) for rendering member deserialize")
         }
     }
 
