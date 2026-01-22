@@ -38,12 +38,14 @@ public protocol ShapeDeserializer {
 
 public extension ShapeDeserializer {
 
-    func readEnum<Enum: RawRepresentable>(_ schema: Schema) throws -> Enum where Enum.RawValue == String {
-        try Enum(rawValue: readString(schema))!
+    func readEnum<T: RawRepresentable>(_ schema: Schema) throws -> T where T.RawValue == String {
+        // Force-unwrap is safe here because generated enums & intEnums never return nil from init(rawValue:)
+        try T(rawValue: readString(schema))!
     }
 
-    func readIntEnum<IntEnum: RawRepresentable>(_ schema: Schema) throws -> IntEnum where IntEnum.RawValue == Int {
-        try IntEnum(rawValue: readInteger(schema))!
+    func readIntEnum<T: RawRepresentable>(_ schema: Schema) throws -> T where T.RawValue == Int {
+        // Force-unwrap is safe here because generated enums & intEnums never return nil from init(rawValue:)
+        try T(rawValue: readInteger(schema))!
     }
 
     func readSparseList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E?] {
