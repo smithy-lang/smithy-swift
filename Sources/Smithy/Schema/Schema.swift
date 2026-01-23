@@ -66,10 +66,16 @@ public struct Schema: Sendable {
         self.index = index
     }
 
+    /// Checks if a schema has a trait, by trait type.
+    /// - Parameter type: The trait type to be checked.
+    /// - Returns: `true` if the schema has a trait for the passed trait, `false` otherwise.
     public func hasTrait<T: Trait>(_ type: T.Type) -> Bool {
         return traits.hasTrait(T.self)
     }
 
+    /// Gets a trait from the schema.
+    /// - Parameter type: The trait to be retrieved.
+    /// - Returns: The requested trait, or `nil` if the schema doesn't have that trait.
     public func getTrait<T: Trait>(_ type: T.Type) throws -> T? {
         try traits.getTrait(type)
     }

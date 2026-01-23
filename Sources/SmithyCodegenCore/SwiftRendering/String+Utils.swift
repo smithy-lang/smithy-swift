@@ -24,22 +24,33 @@ extension String {
             .replacingOccurrences(of: "\'", with: "\\'")
         return "\"\(escaped)\""
     }
-
+    
+    /// Surrounds the string in backticks.
+    /// Used with Swift keywords that are used as identifiers.
     var inBackticks: String {
         "`\(self)`"
     }
-
+    
+    /// Capitalizes the first letter of a string.
     var capitalized: String {
         let firstChar = self.first?.uppercased() ?? ""
         return "\(firstChar)\(self.dropFirst())"
     }
-
+    
+    /// Converts the string to lower camel case.
+    ///
+    /// Follows the exact logic used in the Kotlin code generator.
+    /// - Returns: The string, in lower camel case.
     func toLowerCamelCase() -> String {
         let words = splitOnWordBoundaries() // Split into words
         let firstWord = words.first!.lowercased() // make first word lowercase
         return firstWord + words.dropFirst().joined() // join lowercased first word to remainder
     }
 
+    /// Converts the string to upper camel case.
+    ///
+    /// Follows the exact logic used in the Kotlin code generator.
+    /// - Returns: The string, in upper camel case.
     func toUpperCamelCase() -> String {
         let words = splitOnWordBoundaries() // Split into words
         let firstLetter = words.first!.first!.uppercased() // make first letter uppercase

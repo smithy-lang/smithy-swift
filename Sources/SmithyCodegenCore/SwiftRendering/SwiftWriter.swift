@@ -9,12 +9,21 @@ import class Foundation.Bundle
 import struct Foundation.Data
 import struct Foundation.URL
 
+/// A type used to write structured source code text.
+///
+/// Based heavily on the Kotlin-based code generator's `SwiftWriter` type.
 class SwiftWriter {
 
     private var lines: [String]
 
     var indentLevel = 0
 
+    // One indent/dedent will move indentation by this number of spaces.
+    let indentStep = 4
+
+    /// Creates a new ``SwiftWriter``.
+    /// - Parameter includeHeader: Whether to include the standard header at the top of the generated source content.
+    ///   The header contents are in a resource named `DefaultSwiftHeader.txt`.
     init(includeHeader: Bool = true) {
         if includeHeader {
             let defaultHeaderFileURL = Bundle.module.url(forResource: "DefaultSwiftHeader", withExtension: "txt")!
@@ -25,15 +34,19 @@ class SwiftWriter {
             self.lines = []
         }
     }
-
+    
+    /// Indents the writer by one additional step
     func indent() {
-        indentLevel += 4
+        indentLevel += indentStep
     }
 
+    /// Dedents the writer by one step
     func dedent() {
-        indentLevel -= 4
+        indentLevel -= indentStep
     }
 
+    /// Writes a line of text to the source
+    /// - Parameter line: The text to be written.
     func write(_ line: String) {
         if line.isEmpty {
             // Don't write whitespace to an empty line
@@ -59,7 +72,12 @@ class SwiftWriter {
             lines[lastIndex].removeLast(text.count)
         }
     }
-
+    
+    /// Writes a "block" of text with opening text, closing text, and an indented body between.
+    /// - Parameters:
+    ///   - openWith: The text to open the block
+    ///   - closeWith: The text to close the block
+    ///   - contents: A closure that accepts a SwiftWriter as a param, and writes the indented body of the block.
     func openBlock(_ openWith: String, _ closeWith: String, contents: (SwiftWriter) throws -> Void) rethrows {
         write(openWith)
         indent()
@@ -67,7 +85,9 @@ class SwiftWriter {
         dedent()
         write(closeWith)
     }
-
+    
+    /// Returns the entire source contents of the writer, from the header (if any) to the last line written,
+    /// with individual lines joined by newlines, suitable for writing to a Swift source file.
     var contents: String {
         return lines.joined(separator: "\n").appending("\n")
     }

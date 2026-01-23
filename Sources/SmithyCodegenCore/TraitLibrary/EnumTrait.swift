@@ -10,6 +10,10 @@ import struct Smithy.ShapeID
 import protocol Smithy.Trait
 import struct Smithy.TraitError
 
+/// See https://smithy.io/2.0/spec/constraint-traits.html#smithy-api-enum-trait
+///
+/// This trait is deprecated, and strings tagged with it are converted to `EnumShape` as part of loading the
+/// model from AST.  Therefore, it is not renered to schemas or used at runtime.
 public struct EnumTrait: Trait {
 
     public struct EnumMember {

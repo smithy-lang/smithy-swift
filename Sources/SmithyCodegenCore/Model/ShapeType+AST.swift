@@ -8,7 +8,8 @@
 import enum Smithy.ShapeType
 
 extension ASTType {
-
+    
+    /// Convenience method to convert ``ASTType`` to a ``Smithy.ShapeType``.
     var modelType: ShapeType {
         get throws {
             switch self {

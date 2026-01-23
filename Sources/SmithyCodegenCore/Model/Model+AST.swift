@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.EnumValueTrait
 import enum Smithy.Node
 import enum Smithy.Prelude
 import struct Smithy.ShapeID
@@ -17,7 +18,7 @@ extension Model {
     /// Compared to the AST model, this model has custom shape types, members are included in the main body of shapes
     /// along with other shape types, and all Shape IDs are fully-qualified
     /// (i.e. members have the enclosing shape's namespace & name, along with their own member name.)
-    /// - Parameter astModel: The JSON AST model to load into the `Model` being created.
+    /// - Parameter astModel: The JSON AST model to create a `Model` from.
     convenience init(astModel: ASTModel) throws {
         // Get all of the members from the AST model, create pairs of ShapeID & MemberShape
         let idToMemberShapePairs = try astModel.shapes
@@ -31,7 +32,7 @@ extension Model {
         // Combine all shapes (member & nonmember) into one large Dict for inclusion in the model
         let shapes = Dictionary(uniqueKeysWithValues: idToShapePairs + idToMemberShapePairs)
 
-        // Initialize the properties of self
+        // Initialize with the shape dictionary
         self.init(version: astModel.smithy, metadata: astModel.metadata, shapes: shapes)
     }
 
@@ -52,13 +53,13 @@ extension Model {
         }
 
         // If this shape is a string with the enum trait, add members for its trait members
-        if astShape.type == .string, let enumTraitNode = astShape.traits?[EnumTrait.id.absoluteID] {
+        if astShape.type == .string, let enumTraitNode = astShape.traits?[EnumTrait.id.absolute] {
             let enumTrait = try EnumTrait(node: enumTraitNode)
-            let unitID = Smithy.Prelude.unitSchema.id.absoluteID
+            let unitID = Smithy.Prelude.unitSchema.id.absolute
             enumTrait.members.forEach { enumMember in
                 let name = enumMember.name ?? enumMember.value
                 let traits: [String: Node] = if enumMember.name != nil {
-                    ["smithy.api#enumValue": .string(enumMember.value)]
+                    [EnumValueTrait.id.absolute: .string(enumMember.value)]
                 } else {
                     [:]
                 }
@@ -172,6 +173,9 @@ extension Model {
             return (shapeID, shape)
         case .string:
             if traits.hasTrait(EnumTrait.self) {
+                // The enum trait is a holdover from Smithy 1.0 and is deprecated in favor of
+                // the enum shape.
+                // If this is a String with enum trait, convert it to a EnumShape.
                 let shape = EnumShape(
                     id: shapeID,
                     traits: traits,
@@ -179,8 +183,12 @@ extension Model {
                 )
                 return (shapeID, shape)
             } else {
-                fallthrough
+                let shape = StringShape(id: shapeID, traits: traits)
+                return (shapeID, shape)
             }
+        case .integer:
+            let shape = IntegerShape(id: shapeID, traits: traits)
+            return (shapeID, shape)
         default:
             let shape = Shape(
                 id: shapeID,

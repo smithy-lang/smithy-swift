@@ -7,6 +7,9 @@
 
 import struct Smithy.ShapeID
 
+/// A protocol for types that are identified by a Shape ID.
+///
+/// Primary purpose is to facilitate sorting, filtering, etc.
 protocol HasShapeID {
     var id: ShapeID { get }
 }
@@ -24,6 +27,7 @@ extension Array where Element: HasShapeID {
 
 extension ShapeID: HasShapeID {
 
+    /// ShapeID itself is made to conform to ``HasShapeID``.
     var id: ShapeID {
         self
     }

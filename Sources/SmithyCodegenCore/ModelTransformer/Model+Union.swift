@@ -10,10 +10,11 @@ import struct Smithy.ShapeID
 
 extension Model {
 
-    // smithy-swift mistakenly creates a structure for an enum case with an associated value for a union
-    // member that targets smithy.api#Unit.  To ensure that these structures get SerializableStruct /
-    // DeserializableStruct conformance, we replace smithy.api#Unit with a structure named Unit in the
-    // union's namespace.
+    /// smithy-swift mistakenly creates a structure for an enum case with an associated value for a union
+    /// member that targets `smithy.api#Unit`.  To ensure that these structures get SerializableStruct /
+    /// DeserializableStruct conformance, we replace `smithy.api#Unit` with a structure named `Unit` in the
+    /// union's namespace.
+    /// - Returns: The transformed model.
     func withUnionsTargetingUnitAdded() throws -> Model {
         var unitSubstitute: Shape?
 

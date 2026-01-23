@@ -9,9 +9,13 @@ import struct Smithy.ClientOptionalTrait
 import struct Smithy.ShapeID
 
 extension Model {
-
+    
+    /// Adds the `clientOptional` trait to all structure members in selected services.
+    /// Reproduces the transform in [BoxServices.kt](https://github.com/awslabs/aws-sdk-swift/blob/main/codegen/smithy-aws-swift-codegen/src/main/kotlin/software/amazon/smithy/aws/swift/codegen/customization/BoxServices.kt).
+    /// - Parameter serviceID: The ShapeID for the service that is being code generated.
+    /// - Returns: The transformed model.
     func optionalizeStructMembers(serviceID: ShapeID) throws -> Model {
-        guard affectedServices.contains(serviceID.absoluteID) else { return self }
+        guard affectedServices.contains(serviceID.absolute) else { return self }
 
         let newShapes = try self.shapes.mapValues { shape in
             guard let member = shape as? MemberShape else { return shape }

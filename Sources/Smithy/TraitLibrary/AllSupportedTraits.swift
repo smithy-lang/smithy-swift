@@ -15,13 +15,14 @@ public let allSupportedTraits = Set([
     AddedDefaultTrait.id,
     AWSQueryCompatibleTrait.id,
     AWSQueryErrorTrait.id,
-    SparseTrait.id,
     ClientOptionalTrait.id,
+    DefaultTrait.id,
+    EnumValueTrait.id,
+    ErrorTrait.id,
     InputTrait.id,
     OutputTrait.id,
-    ErrorTrait.id,
-    DefaultTrait.id,
     SensitiveTrait.id,
+    SparseTrait.id,
 
     // Synthetic traits
     TargetsUnitTrait.id,

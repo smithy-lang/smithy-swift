@@ -9,8 +9,11 @@ import struct Smithy.ShapeID
 
 extension Model {
 
-    // Filters out all shapes except for the identified service and its descendants
-    // Returns the pruned model, plus the service shape that it is pruned to
+    /// Filters out all shapes except for the identified service and its direct & indirect descendants.
+    ///
+    /// This eliminates any shapes in the model that are not needed for the service being generated.
+    /// - Parameter serviceID: The ShapeID for the service that is being generated.
+    /// - Returns: The transformed model.
     func prune(serviceID: ShapeID) throws -> Model {
 
         // Get the service
@@ -22,7 +25,7 @@ extension Model {
         // Create a dictionary from the set, keyed by ShapeID
         let shapeDict = Dictionary(uniqueKeysWithValues: shapesForService.map { ($0.id, $0) })
 
-        // Create and return the model & service in a tuple
+        // Create and return the transformed model
         return Model(version: self.version, metadata: self.metadata, shapes: shapeDict)
     }
 }

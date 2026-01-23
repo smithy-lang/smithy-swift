@@ -31,19 +31,19 @@ public class ServiceShape: Shape {
 
     public var operations: [OperationShape] {
         get throws {
-            try operationIDs.compactMap { try model.expectOperationShape(id: $0) }
+            try operationIDs.map { try model.expectOperationShape(id: $0) }
         }
     }
 
     public var resources: [ResourceShape] {
         get throws {
-            try resourceIDs.compactMap { try model.expectResourceShape(id: $0) }
+            try resourceIDs.map { try model.expectResourceShape(id: $0) }
         }
     }
 
     public var errors: [StructureShape] {
         get throws {
-            try errorIDs.compactMap { try model.expectStructureShape(id: $0) }
+            try errorIDs.map { try model.expectStructureShape(id: $0) }
         }
     }
 
