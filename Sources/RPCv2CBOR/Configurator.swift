@@ -14,6 +14,7 @@ import class ClientRuntime.OrchestratorBuilder
 import struct ClientRuntime.SchemaBodyMiddleware
 import struct ClientRuntime.SchemaDeserializeMiddleware
 import struct ClientRuntime.URLPathMiddleware
+import class Smithy.ContextBuilder
 import struct Smithy.ShapeID
 import struct Smithy.TargetsUnitTrait
 import class SmithyHTTPAPI.HTTPRequest
@@ -31,33 +32,34 @@ public struct Configurator: HTTPConfigurating {
 
     public func configure<InputType, OutputType>(
         _ operation: Operation<InputType, OutputType>,
-        _ builder: OrchestratorBuilder<InputType, OutputType, HTTPRequest, HTTPResponse>
+        _ context: ContextBuilder,
+        _ orchestrator: OrchestratorBuilder<InputType, OutputType, HTTPRequest, HTTPResponse>
     ) {
         // Create a client protocol & use it to serialize / deserialize
         let clientProtocol = makeHTTPClientProtocol()
-        builder.serialize(SchemaBodyMiddleware(operation, clientProtocol))
-        builder.deserialize(SchemaDeserializeMiddleware(operation, clientProtocol))
+        orchestrator.serialize(SchemaBodyMiddleware(operation, clientProtocol))
+        orchestrator.deserialize(SchemaDeserializeMiddleware(operation, clientProtocol))
 
         // Add content-type if the operation input does not target unit
         if !operation.inputSchema.hasTrait(TargetsUnitTrait.self) {
-            builder.interceptors.add(ContentTypeMiddleware(contentType: "application/cbor"))
+            orchestrator.interceptors.add(ContentTypeMiddleware(contentType: "application/cbor"))
         }
 
         // Add content-length, and accept headers
-        builder.interceptors.add(ContentLengthMiddleware()) // don't add this when event streaming
-        builder.interceptors.add(MutateHeadersMiddleware(overrides: ["Accept": "application/cbor"]))
+        orchestrator.interceptors.add(ContentLengthMiddleware()) // don't add this when event streaming
+        orchestrator.interceptors.add(MutateHeadersMiddleware(overrides: ["Accept": "application/cbor"]))
 
         // Add the smithy-protocol header
-        builder.interceptors.add(MutateHeadersMiddleware(overrides: ["smithy-protocol": "rpc-v2-cbor"]))
+        orchestrator.interceptors.add(MutateHeadersMiddleware(overrides: ["smithy-protocol": "rpc-v2-cbor"]))
 
         // Set the URL path as required by the RPCv2CBOR spec
-        builder.interceptors.add(URLPathMiddleware { _ in
+        orchestrator.interceptors.add(URLPathMiddleware { _ in
             let serviceName = operation.serviceSchema.id.name.urlPercentEncoding()
             let operationName = operation.schema.id.name.urlPercentEncoding()
             return "/service/\(serviceName)/operation/\(operationName)"
         })
 
         // Set the validate-response header
-        builder.interceptors.add(ClientRuntime.CborValidateResponseHeaderMiddleware<InputType, OutputType>())
+        orchestrator.interceptors.add(ClientRuntime.CborValidateResponseHeaderMiddleware<InputType, OutputType>())
     }
 }

@@ -12,7 +12,7 @@ import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy intEnums.
 public class IntEnumShape: Shape, HasMembers {
-    let memberIDs: [ShapeID]
+    public let memberIDs: [ShapeID]
 
     public init(id: ShapeID, traits: TraitCollection, memberIDs: [ShapeID]) {
         self.memberIDs = memberIDs

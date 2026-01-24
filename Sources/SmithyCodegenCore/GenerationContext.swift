@@ -7,6 +7,7 @@
 
 import struct Smithy.ShapeID
 
+/// A type that provides the resources needed to perform Swift code generation.
 public struct GenerationContext {
     public let service: ServiceShape
     public let model: Model

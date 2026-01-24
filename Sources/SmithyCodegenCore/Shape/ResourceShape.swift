@@ -9,6 +9,7 @@ import enum Smithy.Node
 import struct Smithy.ShapeID
 import struct Smithy.TraitCollection
 
+/// A ``Shape`` subclass specialized for Smithy resources.
 public class ResourceShape: Shape {
     let operationIDs: [ShapeID]
     let createID: ShapeID?

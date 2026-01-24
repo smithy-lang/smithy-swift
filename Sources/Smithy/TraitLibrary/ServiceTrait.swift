@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+/// https://smithy.io/2.0/aws/aws-core.html#aws-api-service-trait
 public struct ServiceTrait: Trait {
     public static var id: ShapeID { .init("aws.api", "service") }
 

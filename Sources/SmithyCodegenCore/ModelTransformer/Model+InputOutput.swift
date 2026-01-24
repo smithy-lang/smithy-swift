@@ -13,6 +13,9 @@ import struct Smithy.TraitCollection
 
 extension Model {
 
+    /// Creates an empty structure in place of operation inputs & outputs that target `smithy.api#Unit`
+    /// or that have no target.  Applies the `TargetsUnitTrait` to these synthesized structures as well.
+    /// - Returns: The transformed model.
     func withSynthesizedInputsOutputs() throws -> Model {
 
         // Get the operations in the model
@@ -51,7 +54,7 @@ extension Model {
             let newOutputShapeMembers = try renamedMembers(newID: newOutputShapeID, original: outputShape)
 
             // Add the new input & output and their members to the new shape dictionary.
-            // The originals will remain and will be pruned later if they are unreferenced.
+            // The originals will remain and will be pruned later if they are left unreferenced.
             newShapes[newInput.id] = newInput
             newInputShapeMembers.forEach { newShapes[$0.id] = $0 }
             newShapes[newOutput.id] = newOutput

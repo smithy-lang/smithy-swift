@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+/// Used to throw errors relating to trait-related anomalies.
 public struct TraitError: Error {
     public let localizedDescription: String
 

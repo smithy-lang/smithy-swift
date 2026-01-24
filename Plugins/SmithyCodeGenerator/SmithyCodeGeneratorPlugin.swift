@@ -79,6 +79,7 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
                 "--deserialize-path", deserializeSwiftPath,
                 "--type-registry-path", typeRegistrySwiftPath,
                 "--operations-path", operationsSwiftPath,
+                "--schemas-path", schemasSwiftPath
             ],
             inputFiles: [inputPath, modelPath],
             outputFiles: [

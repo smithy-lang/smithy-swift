@@ -23,7 +23,12 @@ public class MapShape: Shape, HasMembers {
 
     public var key: MemberShape {
         get throws {
-            try model.expectMemberShape(id: keyID)
+            // A map will always have two members, and the first will always be "key".
+            let keyID = memberIDs[0]
+            guard keyID.member == "key" else {
+                throw ModelError("MapShape does not have expected Key member")
+            }
+            return try model.expectMemberShape(id: keyID)
         }
     }
 
@@ -31,13 +36,18 @@ public class MapShape: Shape, HasMembers {
 
     public var value: MemberShape {
         get throws {
-            try model.expectMemberShape(id: valueID)
+            // A map will always have two members, and the second will always be "value".
+            let valueID = memberIDs[1]
+            guard valueID.member == "value" else {
+                throw ModelError("MapShape does not have expected Value member")
+            }
+            return try model.expectMemberShape(id: valueID)
         }
     }
 
     public var members: [MemberShape] {
         get throws {
-            try [key, value]
+            try memberIDs.map { try model.expectMemberShape(id: $0) }
         }
     }
 

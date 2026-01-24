@@ -52,7 +52,7 @@ class MiddlewareExecutionGenerator(
         )
         if (isSchemaBased) {
             writer.write(
-                "\$N().configure(\$LClient.\$LOperation, builder)",
+                "\$N().configure(\$LClient.\$LOperation, context, builder)",
                 httpProtocolCustomizable.configuratorSymbol,
                 ctx.settings.clientBaseName,
                 op.toLowerCamelCase(),
@@ -74,7 +74,7 @@ class MiddlewareExecutionGenerator(
             var metricsAttributes = ${"$"}N()
             metricsAttributes.set(key: ${"$"}N.service, value: ${"$"}S)
             metricsAttributes.set(key: ${"$"}N.method, value: ${"$"}S)
-            let op = builder.attributes(context)
+            let op = builder.attributes(context.build())
                 .telemetry(${"$"}N(
                     telemetryProvider: config.telemetryProvider,
                     metricsAttributes: metricsAttributes,
@@ -121,7 +121,6 @@ class MiddlewareExecutionGenerator(
         // Add context values for config fields
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
-        writer.write("  .build()")
     }
 
     private fun resolveHttpMethod(op: OperationShape): String =

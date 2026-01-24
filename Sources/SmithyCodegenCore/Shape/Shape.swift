@@ -74,9 +74,9 @@ public class Shape: HasShapeID {
         }
     }
 
-    /// Returns shapes that this shape refers to.
+    /// Returns shapes that this shape directly refers to.
     ///
-    /// Used to build a set of shapes for code generation purposes.
+    /// Used to build a tree of shapes for code generation purposes.
     /// - Parameters:
     ///   - includeInput: Whether to include shapes that are associated with input
     ///   - includeOutput: Whether to include shapes that are associated with input
@@ -85,6 +85,9 @@ public class Shape: HasShapeID {
         [] // none by default.  Must be overridden by Shape subclasses that refer to descendant shape types.
     }
 }
+
+// Shapes should always be unique to a model by their Shape ID, so Hashable, Equatable,
+// and Comparable conformances are based on the Shape ID alone.
 
 extension Shape: Hashable {
 

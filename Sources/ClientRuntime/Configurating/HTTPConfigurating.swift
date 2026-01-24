@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class Smithy.ContextBuilder
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 import protocol SmithySerialization.ClientProtocol
@@ -19,6 +20,7 @@ public protocol HTTPConfigurating {
 
     func configure<InputType, OutputType>(
         _ operation: Operation<InputType, OutputType>,
-        _ builder: OrchestratorBuilder<InputType, OutputType, HTTPRequest, HTTPResponse>
+        _ context: ContextBuilder,
+        _ orchestrator: OrchestratorBuilder<InputType, OutputType, HTTPRequest, HTTPResponse>
     )
 }

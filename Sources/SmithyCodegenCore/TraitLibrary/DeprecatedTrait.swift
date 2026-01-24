@@ -10,6 +10,7 @@ import struct Smithy.ShapeID
 import protocol Smithy.Trait
 import struct Smithy.TraitError
 
+/// See https://smithy.io/2.0/spec/documentation-traits.html#deprecated-trait
 public struct DeprecatedTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "deprecated") }
 

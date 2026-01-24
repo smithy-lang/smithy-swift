@@ -5,30 +5,43 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
+import class Foundation.DateFormatter
+import struct Foundation.Locale
 
 extension Model {
 
+    /// Removes all shapes with the `deprecated` trait and a `since` date after `2024-09-17`, the `aws-sdk-swift`
+    /// GA date.
+    /// - Returns: The transformed model.
     func withDeprecatedShapesRemoved() throws -> Model {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
 
+        // The "cutoff date".  Shapes deprecated before this date will be removed from the model.
+        let cutoff = formatter.date(from: "2024-09-17")!
+
+        // Filter the deprecated shapes from the model.
         let nonDeprecatedShapes = try shapes.filter { (_, shape) in
+
+            // Keep this shape if it doesn't have a DeprecatedTrait with a `since` value.
             guard let since = try shape.getTrait(DeprecatedTrait.self)?.since else { return true }
 
+            // Keep this shape if the `since` value doesn't parse to a yyyy-MM-dd date.
             guard let sinceDate = formatter.date(from: since) else { return true }
 
-            let cutoff = formatter.date(from: "2024-09-17")!
-
+            // Compare dates, keep the shape if it was deprecated before the cutoff.
             return sinceDate > cutoff
         }
 
         var trimmedShapes = nonDeprecatedShapes
-        var trimmedShapesCount = 0
+        var previousTrimmedShapesCount = 0
 
+        // Now remove any members, lists, and maps that refer to deprecated shapes.
+        // We repeat this until no additional shapes are removed to ensure that nested
+        // references to deprecated shapes don't result in an inconsistent model.
         repeat {
-            trimmedShapesCount = trimmedShapes.count
+            previousTrimmedShapesCount = trimmedShapes.count
             let newTrimmedShapes = try trimmedShapes.filter { (_, shape) in
                 switch shape {
                 case let listShape as ListShape:
@@ -51,8 +64,9 @@ extension Model {
                 }
             }
             trimmedShapes = newTrimmedShapes
-        } while trimmedShapes.count != trimmedShapesCount
+        } while trimmedShapes.count != previousTrimmedShapesCount
 
+        // Finally, go through all the shapes and remove references to removed shapes.
         let finalShapes = trimmedShapes.mapValues { shape -> Shape in
             switch shape {
             case let serviceShape as ServiceShape:
@@ -111,6 +125,7 @@ extension Model {
             }
         }
 
+        // Create the transformed model, and return it to the caller.
         return Model(version: self.version, metadata: self.metadata, shapes: finalShapes)
     }
 }
