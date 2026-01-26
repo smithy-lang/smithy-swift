@@ -67,7 +67,7 @@ open class HttpProtocolServiceClient(
     open fun renderDeprecatedInitFunction() {
         writer.write(
             "@available(*, deprecated, message: \"Use init(config: \$L) instead\")",
-            serviceConfig.sendableTypeName
+            serviceConfig.sendableTypeName,
         )
         writer.openBlock("public convenience init(config: \$L) throws {", "}", serviceConfig.typeName) {
             writer.write("try self.init(config: config.toSendable())")
@@ -181,7 +181,7 @@ open class HttpProtocolServiceClient(
 
         writer.write(
             "@available(*, deprecated, message: \"Use \$LConfig instead. This class will be removed in a future version.\")",
-            serviceConfig.clientName.toUpperCamelCase()
+            serviceConfig.clientName.toUpperCamelCase(),
         )
         writer.openBlock(
             "public final class \$LConfiguration: \$L {",
@@ -228,12 +228,12 @@ open class HttpProtocolServiceClient(
         writer.openBlock(
             "public func toSendable() throws -> \$LConfig {",
             "}",
-            serviceConfig.clientName.toUpperCamelCase()
+            serviceConfig.clientName.toUpperCamelCase(),
         ) {
             writer.openBlock(
                 "return try \$LConfig(",
                 ")",
-                serviceConfig.clientName.toUpperCamelCase()
+                serviceConfig.clientName.toUpperCamelCase(),
             ) {
                 properties.forEach { property ->
                     writer.write("\$L: self.\$L,", property.name, property.name)
