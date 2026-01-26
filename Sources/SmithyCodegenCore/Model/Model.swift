@@ -13,16 +13,16 @@ public class Model {
 
     /// The Smithy version that this model conforms to.  This type supports `1.0` and `2.0`.
     public let version: String
-    
+
     /// The model metadata.
     public let metadata: Node?
-    
+
     /// All shapes in the model, keyed by their absolute ShapeID.
     public let shapes: [ShapeID: Shape]
 
     /// An array of all shapes in the model, in Smithy-sorted order.
     public let allShapesSorted: [Shape]
-    
+
     /// Creates a new model.
     ///
     /// When a ``Model`` is created from another model, the shapes are updated to point to the new model
@@ -43,7 +43,7 @@ public class Model {
         // Set the model on each shape to self.
         shapes.values.forEach { $0.model = self }
     }
-    
+
     /// Returns the shape for the passed ID.  Throws if the shape is not present.
     /// - Parameter id: The ShapeID for the shape to be retrieved.
     /// - Returns: The retrieved shape.  Throws if the shape is not found.

@@ -85,6 +85,7 @@ extension Model {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     private static func shapePair(
         id: String, astShape: ASTShape, memberShapes: [ShapeID: MemberShape]
     ) throws -> (ShapeID, Shape) {

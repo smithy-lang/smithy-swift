@@ -9,7 +9,7 @@ import class Foundation.DateFormatter
 import struct Foundation.Locale
 
 extension Model {
-    
+
     /// Removes all shapes with the `deprecated` trait and a `since` date after `2024-09-17`, the `aws-sdk-swift`
     /// GA date.
     /// - Returns: The transformed model.

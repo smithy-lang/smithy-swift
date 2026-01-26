@@ -15,7 +15,7 @@ public struct CodeGenerator {
     let service: String
     let modelFileURL: URL
     let schemasFileURL: URL?
-    
+
     /// Creates a code generator.
     /// - Parameters:
     ///   - service: The absolute shape ID of the service to be generated.  A service with this ID must exist in the model.
@@ -30,7 +30,7 @@ public struct CodeGenerator {
         self.modelFileURL = modelFileURL
         self.schemasFileURL = schemasFileURL
     }
-    
+
     /// Executes the code generator.
     ///
     /// The model is loaded and processed, then Swift source files are generated and written to the specified URL(s).

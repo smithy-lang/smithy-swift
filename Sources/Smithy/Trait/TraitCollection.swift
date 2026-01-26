@@ -17,12 +17,12 @@ public struct TraitCollection: Sendable, Hashable {
     public init(traits: [ShapeID: Node]) {
         self.traitDict = traits
     }
-    
+
     /// Whether the trait collection is empty.
     public var isEmpty: Bool {
         traitDict.isEmpty
     }
-    
+
     /// The number of traits in the collection.
     public var count: Int {
         traitDict.count
@@ -34,14 +34,14 @@ public struct TraitCollection: Sendable, Hashable {
     public func hasTrait<T: Trait>(_ type: T.Type) -> Bool {
         traitDict[T.id] != nil
     }
-    
+
     /// Checks if a trait collection has a trait, by ID.
     /// - Parameter id: The trait ID to be checked.
     /// - Returns: `true` if the collection has a trait for the passed Shape ID, `false` otherwise.
     public func hasTrait(_ id: ShapeID) -> Bool {
         traitDict[id] != nil
     }
-    
+
     /// Gets a trait from the collection.
     /// - Parameter type: The trait to be retrieved.
     /// - Returns: The requested trait, or `nil` if the collection doesn't have that trait.
@@ -49,13 +49,13 @@ public struct TraitCollection: Sendable, Hashable {
         guard let node = traitDict[T.id] else { return nil }
         return try T(node: node)
     }
-    
+
     /// Adds a new trait to the collection, overwriting an existing, matching trait.
     /// - Parameter trait: The trait to add to the collection.
     public mutating func add(_ trait: Trait) {
         traitDict[trait.id] = trait.node
     }
-    
+
     /// Combines two trait collections into a single collection.
     /// - Parameter other: The trait collection to merge.  Traits in this collection overwrite the other.
     /// - Returns: The merged ``TraitCollection``.
@@ -63,7 +63,7 @@ public struct TraitCollection: Sendable, Hashable {
         let combined = self.traitDict.merging(other.traitDict) { _, new in new }
         return TraitCollection(traits: combined)
     }
-    
+
     /// Returns a trait collection containing only this collection's traits that belong in a schema.
     public var schemaTraits: TraitCollection {
         let schemaTraitDict = traitDict.filter { (shapeID, _) in allSupportedTraits.contains(shapeID) }

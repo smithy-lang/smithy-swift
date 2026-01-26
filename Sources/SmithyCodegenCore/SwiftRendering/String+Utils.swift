@@ -24,19 +24,19 @@ extension String {
             .replacingOccurrences(of: "\'", with: "\\'")
         return "\"\(escaped)\""
     }
-    
+
     /// Surrounds the string in backticks.
     /// Used with Swift keywords that are used as identifiers.
     var inBackticks: String {
         "`\(self)`"
     }
-    
+
     /// Capitalizes the first letter of a string.
     var capitalized: String {
         let firstChar = self.first?.uppercased() ?? ""
         return "\(firstChar)\(self.dropFirst())"
     }
-    
+
     /// Converts the string to lower camel case.
     ///
     /// Follows the exact logic used in the Kotlin code generator.

@@ -12,7 +12,7 @@ import struct Smithy.TargetsUnitTrait
 import struct Smithy.TraitCollection
 
 extension Model {
-    
+
     /// Creates an empty structure in place of operation inputs & outputs that target `smithy.api#Unit`
     /// or that have no target.  Applies the `TargetsUnitTrait` to these synthesized structures as well.
     /// - Returns: The transformed model.

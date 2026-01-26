@@ -8,7 +8,7 @@
 import struct Smithy.ShapeID
 
 extension ASTReference {
-    
+
     /// Convenience accessor to create a ``ShapeID`` from an ``ASTReference``.
     var id: ShapeID {
         get throws {

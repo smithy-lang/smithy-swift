@@ -34,7 +34,7 @@ class SwiftWriter {
             self.lines = []
         }
     }
-    
+
     /// Indents the writer by one additional step
     func indent() {
         indentLevel += indentStep
@@ -72,7 +72,7 @@ class SwiftWriter {
             lines[lastIndex].removeLast(text.count)
         }
     }
-    
+
     /// Writes a "block" of text with opening text, closing text, and an indented body between.
     /// - Parameters:
     ///   - openWith: The text to open the block
@@ -85,7 +85,7 @@ class SwiftWriter {
         dedent()
         write(closeWith)
     }
-    
+
     /// Returns the entire source contents of the writer, from the header (if any) to the last line written,
     /// with individual lines joined by newlines, suitable for writing to a Swift source file.
     var contents: String {

@@ -13,7 +13,7 @@ import enum Smithy.ShapeType
 package struct SchemasCodegen {
 
     package init() {}
-    
+
     /// Generates the `Schemas.swift` file for a modeled service.
     /// - Parameter ctx: The generation context to be used for codegen.
     /// - Returns: The contents of the `Schemas.swift` source file.
@@ -119,7 +119,7 @@ package struct SchemasCodegen {
 }
 
 extension ShapeID {
-    
+
     /// Change the Shape ID into a rendered ShapeID initializer call.
     var rendered: String {
         let namespaceLiteral = namespace.literal
