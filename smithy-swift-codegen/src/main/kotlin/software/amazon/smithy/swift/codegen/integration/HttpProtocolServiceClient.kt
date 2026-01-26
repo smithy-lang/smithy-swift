@@ -35,10 +35,12 @@ open class HttpProtocolServiceClient(
             writer.write("public static let clientName = \$S", serviceSymbol.name)
             renderVersionProperty()
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
-            writer.write("let config: \$L", serviceConfig.typeName)
+            writer.write("let config: \$L", serviceConfig.sendableTypeName)
             writer.write("let serviceName = \$S", serviceName)
             writer.write("")
             renderInitFunction()
+            writer.write("")
+            renderDeprecatedInitFunction()
             writer.write("")
             renderConvenienceInitFunctions(serviceSymbol)
         }
@@ -52,7 +54,7 @@ open class HttpProtocolServiceClient(
     }
 
     open fun renderInitFunction() {
-        writer.openBlock("public required init(config: \$L) {", "}", serviceConfig.typeName) {
+        writer.openBlock("public required init(config: \$L) {", "}", serviceConfig.sendableTypeName) {
             writer.write(
                 "client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)",
                 ClientRuntimeTypes.Http.SdkHttpClient,
@@ -62,9 +64,20 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
 
+    open fun renderDeprecatedInitFunction() {
+        writer.write(
+            "@available(*, deprecated, message: \"Use init(config: \$L) instead\")",
+            serviceConfig.sendableTypeName
+        )
+        writer.openBlock("public convenience init(config: \$L) throws {", "}", serviceConfig.typeName) {
+            writer.write("try self.init(config: config.toSendable())")
+        }
+        writer.write("")
+    }
+
     open fun renderConvenienceInitFunctions(serviceSymbol: Symbol) {
         writer.openBlock("public convenience init() throws {", "}") {
-            writer.write("let config = try \$L()", serviceConfig.typeName)
+            writer.write("let config = try \$L()", serviceConfig.sendableTypeName)
             writer.write("self.init(config: config)")
         }
         writer.write("")
@@ -73,7 +86,9 @@ open class HttpProtocolServiceClient(
     fun renderClientExtension(serviceSymbol: Symbol) {
         writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
             writer.write("")
-            renderClientConfig(serviceSymbol)
+            renderClientConfigSendable(serviceSymbol)
+            writer.write("")
+            renderDeprecatedClientConfigClass(serviceSymbol)
             writer.write("")
 
             writer.openBlock(
@@ -111,7 +126,7 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
 
-    open fun renderClientConfig(serviceSymbol: Symbol) {
+    open fun renderClientConfigSendable(serviceSymbol: Symbol) {
         val clientConfigurationProtocols =
             ctx.integrations
                 .flatMap { it.clientConfigurations(ctx) }
@@ -120,7 +135,7 @@ open class HttpProtocolServiceClient(
                 .joinToString(" & ")
 
         writer.openBlock(
-            "public struct \$LConfiguration: \$L, \$N {",
+            "public struct \$LConfig: \$L, \$N {",
             "}",
             serviceConfig.clientName.toUpperCamelCase(),
             clientConfigurationProtocols,
@@ -139,7 +154,7 @@ open class HttpProtocolServiceClient(
 
             renderAsynchronousConfigInitializer(serviceSymbol, properties)
 
-            renderEmptyAsynchronousConfigInitializer(serviceSymbol, properties)
+            renderEmptyAsynchronousConfigInitializer(serviceSymbol, properties, isClass = false)
 
             renderCustomConfigInitializer(properties)
 
@@ -156,7 +171,86 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
 
+    open fun renderDeprecatedClientConfigClass(serviceSymbol: Symbol) {
+        val clientConfigurationProtocols =
+            ctx.integrations
+                .flatMap { it.clientConfigurations(ctx) }
+                .mapNotNull { it.swiftProtocolName }
+                .map { writer.format("\$N", it) }
+                .joinToString(" & ")
+
+        writer.write(
+            "@available(*, deprecated, message: \"Use \$LConfig instead. This class will be removed in a future version.\")",
+            serviceConfig.clientName.toUpperCamelCase()
+        )
+        writer.openBlock(
+            "public final class \$LConfiguration: \$L {",
+            "}",
+            serviceConfig.clientName.toUpperCamelCase(),
+            clientConfigurationProtocols,
+        ) {
+            val clientConfigs = ctx.integrations.flatMap { it.clientConfigurations(ctx) }
+            val properties: List<ConfigProperty> =
+                clientConfigs
+                    .flatMap { it.getProperties(ctx) }
+                    .let { overrideConfigProperties(it) }
+                    .sortedBy { it.accessModifier }
+
+            renderConfigClassVariables(serviceSymbol, properties)
+
+            renderSynchronousConfigInitializer(serviceSymbol, properties)
+
+            renderAsynchronousConfigInitializer(serviceSymbol, properties)
+
+            renderEmptyAsynchronousConfigInitializer(serviceSymbol, properties, isClass = true)
+
+            renderCustomConfigInitializerForDeprecatedClass(properties)
+
+            renderPartitionID()
+
+            renderToSendableMethod(properties)
+
+            // Render methods without 'mutating' keyword for class
+            clientConfigs
+                .flatMap { it.getMethods(ctx) }
+                .sortedBy { it.accessModifier }
+                .forEach { method ->
+                    // Create a copy of the method without the mutating keyword for classes
+                    val nonMutatingMethod = method.copy(isMutating = false)
+                    nonMutatingMethod.render(writer)
+                    writer.write("")
+                }
+        }
+        writer.write("")
+    }
+
+    private fun renderToSendableMethod(properties: List<ConfigProperty>) {
+        writer.openBlock(
+            "public func toSendable() throws -> \$LConfig {",
+            "}",
+            serviceConfig.clientName.toUpperCamelCase()
+        ) {
+            writer.openBlock(
+                "return try \$LConfig(",
+                ")",
+                serviceConfig.clientName.toUpperCamelCase()
+            ) {
+                properties.forEach { property ->
+                    writer.write("\$L: self.\$L,", property.name, property.name)
+                }
+                writer.unwrite(",\n")
+                writer.write("")
+            }
+        }
+        writer.write("")
+    }
+
     open fun renderCustomConfigInitializer(properties: List<ConfigProperty>) {
+    }
+
+    open fun renderCustomConfigInitializerForDeprecatedClass(properties: List<ConfigProperty>) {
+        // By default, same as the struct version
+        renderCustomConfigInitializer(properties)
     }
 
     open fun overrideConfigProperties(properties: List<ConfigProperty>): List<ConfigProperty> = properties
@@ -164,8 +258,10 @@ open class HttpProtocolServiceClient(
     private fun renderEmptyAsynchronousConfigInitializer(
         serviceSymbol: Symbol,
         properties: List<ConfigProperty>,
+        isClass: Boolean = false,
     ) {
-        writer.openBlock("public init() async throws {", "}") {
+        val convenienceKeyword = if (isClass) "convenience " else ""
+        writer.openBlock("public ${convenienceKeyword}init() async throws {", "}") {
             // Call the parameterized async initializer with all nil parameters
             // This delegates to the async initializer which properly handles async defaults
             writer.openBlock("try await self.init(", ")") {
