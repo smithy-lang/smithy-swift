@@ -12,34 +12,44 @@ import struct SmithyCodegenCore.CodeGenerator
 @main
 struct SmithyCodegenCLI: AsyncParsableCommand {
 
-    @Argument(help: "The full or relative path to the JSON model file.")
+    @Argument(help: "The shape ID of the service to be code-generated.  Must exist in the model file.")
+    var service: String
+
+    @Argument(help: "The full or relative path to read the JSON AST model input file.")
     var modelPath: String
 
-    @Option(help: "The full or relative path to write the schemas output file.")
+    @Option(help: "The full or relative path to write the Schemas output file.")
     var schemasPath: String?
 
-    @Option(help: "The full or relative path to write the struct consumers output file.")
-    var structConsumersPath: String?
-
     func run() async throws {
+
+        let start = Date()
+
         let currentWorkingDirectoryFileURL = currentWorkingDirectoryFileURL()
-        print("Current working directory: \(currentWorkingDirectoryFileURL.path)")
 
         // Create the model file URL
         let modelFileURL = URL(fileURLWithPath: modelPath, relativeTo: currentWorkingDirectoryFileURL)
         guard FileManager.default.fileExists(atPath: modelFileURL.path) else {
             throw SmithyCodegenCLIError(localizedDescription: "no file at model path \(modelFileURL.path)")
         }
-        print("Model file path: \(modelFileURL.path)")
 
         // If --schemas-path was supplied, create the schema file URL
-        let schemasFileURL = resolve(paramName: "--schemas-path", path: schemasPath)
+        let schemasFileURL = resolve(path: schemasPath)
 
         // Use resolved file URLs to run code generator
         try CodeGenerator(
+            service: service,
             modelFileURL: modelFileURL,
             schemasFileURL: schemasFileURL
         ).run()
+
+        let duration = Date().timeIntervalSince(start)
+        let secondsDuration = String(
+            format: "%0.2f",
+            locale: Locale(identifier: "en_US_POSIX"),
+            arguments: [duration]
+        )
+        print("Completed generating model \(modelFileURL.lastPathComponent) in \(secondsDuration) sec")
     }
 
     private func currentWorkingDirectoryFileURL() -> URL {
@@ -51,15 +61,9 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
         return URL(fileURLWithPath: currentWorkingDirectoryPath)
     }
 
-    private func resolve(paramName: String, path: String?) -> URL? {
-        if let path {
-            let fileURL = URL(fileURLWithPath: path, relativeTo: currentWorkingDirectoryFileURL())
-            print("Resolved \(paramName): \(fileURL.path)")
-            return fileURL
-        } else {
-            print("\(paramName) not provided, skipping generation")
-            return nil
-        }
+    private func resolve(path: String?) -> URL? {
+        guard let path else { return nil }
+        return URL(fileURLWithPath: path, relativeTo: currentWorkingDirectoryFileURL())
     }
 }
 

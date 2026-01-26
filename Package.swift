@@ -121,6 +121,7 @@ let package = Package(
                 "SmithyChecksumsAPI",
                 "SmithyChecksums",
                 "SmithyCBOR",
+                "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 // Only include these on macOS, iOS, tvOS, watchOS, and macCatalyst (visionOS and Linux are excluded)
                 .product(
@@ -287,6 +288,8 @@ let package = Package(
             dependencies: [
                 "SmithyReadWrite",
                 "SmithyTimestamps",
+                "Smithy",
+                "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
             ]
         ),
@@ -311,7 +314,9 @@ let package = Package(
             name: "SmithyCodegenCore",
             dependencies: [
                 "Smithy",
-            ]
+                "SmithySerialization",
+            ],
+            resources: [ .process("Resources") ]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
@@ -399,6 +404,11 @@ let package = Package(
         .testTarget(
             name: "SmithyStreamsTests",
             dependencies: ["SmithyStreams", "Smithy"]
+        ),
+        .testTarget(
+            name: "SmithyCodegenCoreTests",
+            dependencies: ["SmithyCodegenCore"],
+            resources: [ .process("Resources") ]
         ),
     ].compactMap { $0 }
 )

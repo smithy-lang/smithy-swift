@@ -43,13 +43,16 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
 
         let currentWorkingDirectoryFileURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 
-        // Get the smithy model path.
+        // Get the smithy-model-info.json file contents.
         let modelInfoData = try Data(contentsOf: URL(fileURLWithPath: inputPath.string))
         let smithyModelInfo = try JSONDecoder().decode(SmithyModelInfo.self, from: modelInfoData)
+
+        // Get the service ID & model path & settings sdkId from smithy-model-info.
+        let service = smithyModelInfo.service
         let modelPathURL = currentWorkingDirectoryFileURL.appendingPathComponent(smithyModelInfo.path)
         let modelPath = Path(modelPathURL.path)
 
-        // Construct the schemas.swift path.
+        // Construct the Schemas.swift path.
         let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
 
         // Construct the build command that invokes SmithyCodegenCLI.
@@ -57,17 +60,23 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
             displayName: "Generating Swift source files from model file \(smithyModelInfo.path)",
             executable: generatorToolPath,
             arguments: [
-                "--schemas-path", schemasSwiftPath,
-                modelPath
+                service,
+                modelPath,
+                "--schemas-path", schemasSwiftPath
             ],
             inputFiles: [inputPath, modelPath],
-            outputFiles: [schemasSwiftPath]
+            outputFiles: [
+                schemasSwiftPath,
+            ]
         )
     }
 }
 
 /// Codable structure for reading the contents of `smithy-model-info.json`
 private struct SmithyModelInfo: Decodable {
+    /// The shape ID of the service being generated.  Must exist in the model.
+    let service: String
+
     /// The path to the model, from the root of the target's project.  Required.
     let path: String
 }

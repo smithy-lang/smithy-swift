@@ -6,42 +6,52 @@
 //
 
 import struct Foundation.Data
-import class Foundation.FileManager
 import class Foundation.JSONDecoder
 import struct Foundation.URL
+import struct Smithy.ShapeID
 
+/// The wrapper for Swift-native code generation.
 public struct CodeGenerator {
+    let service: String
     let modelFileURL: URL
     let schemasFileURL: URL?
 
+    /// Creates a code generator.
+    /// - Parameters:
+    ///   - service: The absolute shape ID of the service to be generated.  A service with this ID must exist in the model.
+    ///   - modelFileURL: The file URL where the JSON AST model file can be accessed.
+    ///   - schemasFileURL: The file URL to which the `Schemas.swift` source file should be written.
     public init(
+        service: String,
         modelFileURL: URL,
         schemasFileURL: URL?
-    ) {
+    ) throws {
+        self.service = service
         self.modelFileURL = modelFileURL
         self.schemasFileURL = schemasFileURL
     }
 
+    /// Executes the code generator.
+    ///
+    /// The model is loaded and processed, then Swift source files are generated and written to the specified URL(s).
     public func run() throws {
         // Load the AST from the model file
         let modelData = try Data(contentsOf: modelFileURL)
         let astModel = try JSONDecoder().decode(ASTModel.self, from: modelData)
 
+        // Create the service's ShapeID
+        let serviceID = try ShapeID(service)
+
         // Create the model from the AST
         let model = try Model(astModel: astModel)
 
         // Create a generation context from the model
-        _ = try GenerationContext(model: model)
+        let ctx = try GenerationContext(serviceID: serviceID, model: model)
 
-        // Generation context will be used here in the future
-        // to generate needed files.
-
-        // This code simply writes an empty schemas file, since it is expected to exist after the
-        // code generator plugin runs.
-        //
-        // Actual code generation will be implemented here later.
+        // If a schemas file URL was provided, generate it
         if let schemasFileURL {
-            FileManager.default.createFile(atPath: schemasFileURL.path, contents: Data())
+            let schemasContents = try SchemasCodegen().generate(ctx: ctx)
+            try Data(schemasContents.utf8).write(to: schemasFileURL)
         }
     }
 }

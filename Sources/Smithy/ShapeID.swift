@@ -53,32 +53,37 @@ public struct ShapeID: Hashable, Sendable {
         }
     }
 
-    public init(id: ShapeID, member: String) {
+    public init(id: ShapeID, member: String?) {
         self.namespace = id.namespace
         self.name = id.name
         self.member = member
     }
 
-    public var id: String {
+    public var absolute: String {
+        return "\(namespace)#\(relative)"
+    }
+
+    public var relative: String {
         if let member {
-            return "\(namespace)#\(name)$\(member)"
+            return "\(name)$\(member)"
         } else {
-            return "\(namespace)#\(name)"
+            return "\(name)"
         }
     }
 }
 
 extension ShapeID: Comparable {
 
+    // This logic matches the sorting logic used by the Java-based codegen
     public static func < (lhs: ShapeID, rhs: ShapeID) -> Bool {
-        return lhs.id.lowercased() < rhs.id.lowercased()
+        lhs.absolute.lowercased() < rhs.absolute.lowercased()
     }
 }
 
 extension ShapeID: CustomStringConvertible {
 
     /// Returns the absolute Shape ID in a single, printable string.
-    public var description: String { id }
+    public var description: String { absolute }
 }
 
 public struct ShapeIDError: Error {

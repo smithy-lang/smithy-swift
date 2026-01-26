@@ -5,8 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public struct SymbolProviderError: Error {
-    let localizedDescription: String
+/// An error that is thrown for general code generation problems.
+public struct CodegenError: Error {
+    public let localizedDescription: String
 
     init(_ localizedDescription: String) {
         self.localizedDescription = localizedDescription
