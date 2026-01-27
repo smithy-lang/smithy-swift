@@ -29,6 +29,7 @@ abstract class ServiceConfig(
     val serviceName: String,
 ) {
     open val typeName: String = "${clientName.toUpperCamelCase()}.${clientName.toUpperCamelCase()}Configuration"
+    open val sendableTypeName: String = "${clientName.toUpperCamelCase()}.${clientName.toUpperCamelCase()}Config"
 
     open fun serviceSpecificConfigProperties(): List<ConfigField> = listOf()
 }

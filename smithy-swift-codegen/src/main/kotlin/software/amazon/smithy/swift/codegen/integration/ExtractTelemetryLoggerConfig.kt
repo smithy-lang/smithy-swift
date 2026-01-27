@@ -24,7 +24,7 @@ class ExtractTelemetryLoggerConfig : SwiftIntegration {
             writer: SwiftWriter,
             section: ConfigClassVariablesCustomization,
         ) {
-            writer.write("public let logger: \$N", SmithyTypes.LogAgent)
+            writer.write("public var logger: \$N", SmithyTypes.LogAgent)
             writer.write("")
         }
     }
@@ -36,7 +36,12 @@ class ExtractTelemetryLoggerConfig : SwiftIntegration {
             writer: SwiftWriter,
             section: ConfigInitializerCustomization,
         ) {
-            writer.write("self.logger = telemetryProvider.loggerProvider.getLogger(name: \$L.clientName)", section.serviceSymbol.name)
+            // Use telemetryProvider parameter if available (in parameterized initializers)
+            // Otherwise use the default telemetry provider directly
+            writer.write(
+                "self.logger = (telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider).loggerProvider.getLogger(name: \$L.clientName)",
+                section.serviceSymbol.name,
+            )
         }
     }
 }

@@ -29,7 +29,7 @@ import Glibc
 import Darwin
 #endif
 
-public class CRTClientEngine: HTTPClient {
+public class CRTClientEngine: HTTPClient, @unchecked Sendable {
     public static let noOpCrtClientEngineTelemetry = HttpTelemetry(
         httpScope: "CRTClientEngine",
         telemetryProvider: DefaultTelemetry.provider
@@ -171,7 +171,7 @@ public class CRTClientEngine: HTTPClient {
 
     public typealias StreamContinuation = CheckedContinuation<HTTPResponse, Error>
     private let telemetry: HttpTelemetry
-    private var logger: LogAgent
+    private let logger: LogAgent
     private let serialExecutor: SerialExecutor
     private let CONTENT_LENGTH_HEADER = "Content-Length"
     private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"

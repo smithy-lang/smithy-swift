@@ -37,7 +37,7 @@ public final class SwiftNIOHTTPClient: SmithyHTTPAPI.HTTPClient {
     private let telemetry: SmithyHTTPClientAPI.HttpTelemetry
 
     /// Logger for HTTP-related events.
-    private var logger: LogAgent
+    private let logger: LogAgent
 
     /// Creates a new `SwiftNIOHTTPClient`.
     ///
