@@ -246,3 +246,35 @@ jobs:
           cd aws-sdk-swift/codegen
           swift test
 
+  android-ci:
+    if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+        swift:
+          - 5.9-jammy
+          - 6.2-noble
+    container:
+      image: swift:${{ matrix.swift }}
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+    steps:
+      - name: Checkout smithy-swift
+        uses: actions/checkout@v4
+      - name: Install openssl
+        run: |
+          if [ -x "$(command -v apt)" ]; then
+            apt-get update && apt-get install -y libssl-dev
+          else
+            yum install -y openssl-devel which
+          fi
+      - name: Setup common tools
+        uses: ./.github/actions/setup-common-tools-composite-action
+      - name: Build & Run Kotlin Unit Tests
+        run: ./gradlew build
+      - name: "Test Swift Package on Android"
+        uses: skiptools/swift-android-action@v2
