@@ -30,8 +30,13 @@ public final class RestJsonProtocolClient: ClientRuntime.Client {
     }
 
     @available(*, deprecated, message: "Use init(config: RestJsonProtocolClient.RestJsonProtocolClientConfig) instead")
-    public convenience init(config: RestJsonProtocolClient.RestJsonProtocolClientConfiguration) throws {
-        try self.init(config: config.toSendable())
+    public convenience init(config: RestJsonProtocolClient.RestJsonProtocolClientConfiguration) {
+        do {
+            try self.init(config: config.toSendable())
+        } catch {
+            // This should never happen since all values are already initialized in the class
+            fatalError("Failed to convert deprecated configuration: \(error)")
+        }
     }
 
     public convenience init() throws {

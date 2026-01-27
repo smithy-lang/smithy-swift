@@ -69,8 +69,15 @@ open class HttpProtocolServiceClient(
             "@available(*, deprecated, message: \"Use init(config: \$L) instead\")",
             serviceConfig.sendableTypeName,
         )
-        writer.openBlock("public convenience init(config: \$L) throws {", "}", serviceConfig.typeName) {
-            writer.write("try self.init(config: config.toSendable())")
+        writer.openBlock("public convenience init(config: \$L) {", "}", serviceConfig.typeName) {
+            writer.openBlock("do {", "} catch {") {
+                writer.write("try self.init(config: config.toSendable())")
+            }
+            writer.indent()
+            writer.write("// This should never happen since all values are already initialized in the class")
+            writer.write("fatalError(\"Failed to convert deprecated configuration: \\(error)\")")
+            writer.dedent()
+            writer.write("}")
         }
         writer.write("")
     }
