@@ -38,6 +38,11 @@ open class HttpProtocolServiceClient(
             writer.write("let config: \$L", serviceConfig.sendableTypeName)
             writer.write("let serviceName = \$S", serviceName)
             writer.write("")
+            // Add Config typealias for backward compatibility - points to deprecated class
+            // This satisfies the Client protocol's associated type requirement
+            writer.write("@available(*, deprecated, message: \"Use \$L instead\")", serviceConfig.sendableTypeName)
+            writer.write("public typealias Config = \$L", serviceConfig.typeName)
+            writer.write("")
             renderInitFunction()
             writer.write("")
             renderDeprecatedInitFunction()
@@ -65,6 +70,8 @@ open class HttpProtocolServiceClient(
     }
 
     open fun renderDeprecatedInitFunction() {
+        // Convenience init for backward compatibility with the deprecated class
+        // The Client protocol's Config associated type is inferred from the required init, not the typealias
         writer.write(
             "@available(*, deprecated, message: \"Use init(config: \$L) instead\")",
             serviceConfig.sendableTypeName,

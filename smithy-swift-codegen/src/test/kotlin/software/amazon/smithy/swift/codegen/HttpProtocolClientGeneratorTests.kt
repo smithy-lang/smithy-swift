@@ -24,6 +24,9 @@ public final class RestJsonProtocolClient: ClientRuntime.Client {
     let config: RestJsonProtocolClient.RestJsonProtocolClientConfig
     let serviceName = "Rest Json Protocol"
 
+    @available(*, deprecated, message: "Use RestJsonProtocolClient.RestJsonProtocolClientConfig instead")
+    public typealias Config = RestJsonProtocolClient.RestJsonProtocolClientConfiguration
+
     public required init(config: RestJsonProtocolClient.RestJsonProtocolClientConfig) {
         client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
         self.config = config
