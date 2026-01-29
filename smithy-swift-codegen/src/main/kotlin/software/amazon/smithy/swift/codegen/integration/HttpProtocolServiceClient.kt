@@ -148,6 +148,9 @@ open class HttpProtocolServiceClient(
                 .map { writer.format("\$N", it) }
                 .joinToString(" & ")
 
+        writer.write("/// Client configuration for \$L", serviceConfig.clientName)
+        writer.write("///")
+        writer.write("/// Conforms to `Sendable` for safe concurrent access across threads.")
         writer.openBlock(
             "public struct \$LConfig: \$L, \$N {",
             "}",
@@ -250,6 +253,8 @@ open class HttpProtocolServiceClient(
                 serviceConfig.clientName.toUpperCamelCase(),
             ) {
                 properties.forEach { property ->
+                    // Don't wrap interceptor providers - they're already in the correct format
+                    // The struct's initializer will handle the wrapping
                     writer.write("\$L: self.\$L,", property.name, property.name)
                 }
                 writer.unwrite(",\n")
@@ -307,9 +312,33 @@ open class HttpProtocolServiceClient(
         serviceSymbol: Symbol,
         properties: List<ConfigProperty>,
     ) {
-        properties.forEach {
+        // Render normal properties
+        properties.filter { it.name != "interceptorProviders" && it.name != "httpInterceptorProviders" }.forEach {
             it.render(writer)
         }
+
+        // Render interceptor provider properties with private storage and public computed properties
+        writer.write("// Interceptor providers with Sendable-safe internal storage")
+        writer.write("private var _interceptorProviders: [\$N] = []", ClientRuntimeTypes.Core.SendableInterceptorProviderBox)
+        writer.openBlock("public var interceptorProviders: [\$N] {", "}", ClientRuntimeTypes.Core.InterceptorProvider) {
+            writer.openBlock("get {", "}") {
+                writer.write("return _interceptorProviders")
+            }
+            writer.openBlock("set {", "}") {
+                writer.write("_interceptorProviders = newValue.map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableInterceptorProviderBox)
+            }
+        }
+        writer.write("")
+        writer.write("private var _httpInterceptorProviders: [\$N] = []", ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox)
+        writer.openBlock("public var httpInterceptorProviders: [\$N] {", "}", ClientRuntimeTypes.Core.HttpInterceptorProvider) {
+            writer.openBlock("get {", "}") {
+                writer.write("return _httpInterceptorProviders")
+            }
+            writer.openBlock("set {", "}") {
+                writer.write("_httpInterceptorProviders = newValue.map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox)
+            }
+        }
+
         writer.injectSection(ConfigClassVariablesCustomization(serviceSymbol))
         writer.write("")
     }
@@ -330,13 +359,16 @@ open class HttpProtocolServiceClient(
             writer.write("")
         }
         writer.indent {
-            properties.forEach { property ->
+            properties.filter { it.name != "interceptorProviders" && it.name != "httpInterceptorProviders" }.forEach { property ->
                 if (property.default?.isAsync == true) {
                     writer.write("self.\$L = \$L", property.name, property.name)
                 } else {
                     writer.write("self.\$L = \$L", property.name, property.default?.render(writer, property.name) ?: property.name)
                 }
             }
+            // Handle interceptor providers specially - wrap them when storing
+            writer.write("self._interceptorProviders = (interceptorProviders ?? []).map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableInterceptorProviderBox)
+            writer.write("self._httpInterceptorProviders = (httpInterceptorProviders ?? []).map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox)
             writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
         }
         writer.write("}")
@@ -357,13 +389,16 @@ open class HttpProtocolServiceClient(
             writer.write("")
         }
         writer.indent {
-            properties.forEach { property ->
+            properties.filter { it.name != "interceptorProviders" && it.name != "httpInterceptorProviders" }.forEach { property ->
                 if (property.default?.isAsync == true) {
                     writer.write("self.\$L = \$L", property.name, property.default.render(writer))
                 } else {
                     writer.write("self.\$L = \$L", property.name, property.default?.render(writer, property.name) ?: property.name)
                 }
             }
+            // Handle interceptor providers specially - wrap them when storing
+            writer.write("self._interceptorProviders = (interceptorProviders ?? []).map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableInterceptorProviderBox)
+            writer.write("self._httpInterceptorProviders = (httpInterceptorProviders ?? []).map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox)
             writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
         }
         writer.write("}")

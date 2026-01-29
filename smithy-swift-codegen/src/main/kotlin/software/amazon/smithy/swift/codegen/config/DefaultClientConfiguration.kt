@@ -53,7 +53,9 @@ class DefaultClientConfiguration : ClientConfiguration {
         setOf(
             Function(
                 name = "addInterceptorProvider",
-                renderBody = { writer -> writer.write("self.interceptorProviders.append(provider)") },
+                renderBody = { writer ->
+                    writer.write("self._interceptorProviders.append(\$N(provider))", ClientRuntimeTypes.Core.SendableInterceptorProviderBox)
+                },
                 parameters =
                     listOf(
                         FunctionParameter.NoLabel("provider", ClientRuntimeTypes.Core.InterceptorProvider),
