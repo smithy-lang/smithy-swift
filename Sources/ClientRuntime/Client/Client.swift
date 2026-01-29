@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-public protocol Client {
+public protocol Client: Sendable {
     associatedtype Config: ClientConfiguration
     init(config: Config)
 }
