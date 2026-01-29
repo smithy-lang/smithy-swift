@@ -10,59 +10,47 @@ import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseErrorClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
-import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
+import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import java.util.Base64
 
 open class HttpProtocolUnitTestErrorGenerator protected constructor(
     builder: Builder,
 ) : HttpProtocolUnitTestResponseGenerator(builder) {
     val error: Shape = builder.error ?: throw CodegenException("builder did not set an error shape")
-    override val outputShape: Shape? = error
 
     override fun renderTestBody(test: HttpResponseTestCase) {
-        outputShape?.let {
-            val operationErrorType = "${operation.toUpperCamelCase()}OutputError"
-            writer.openBlock("do {", "} catch {") {
-                renderBuildHttpResponse(test)
-                writer.write("")
-                renderInitOperationError(operationErrorType)
-                writer.write("")
-                renderCompareActualAndExpectedErrors(test, it, operationErrorType)
-                writer.write("")
-            }
-            writer.indent()
-            writer.write("XCTFail(error.localizedDescription)")
-            writer.dedent()
-            writer.write("}")
-        }
+        renderBuildHttpResponse(test)
+        writer.write("")
+        renderActualOutput()
+        writer.write("")
+        renderCompareActualAndExpectedErrors(test, error)
     }
 
-    private fun renderInitOperationError(operationErrorType: String) {
-        val operationErrorVariableName = operationErrorType.replaceFirstChar { it.lowercase() }
-        val responseErrorClosure = ResponseErrorClosureUtils(ctx, writer, operation).render()
-        writer.addImport(SwiftDependency.SMITHY_READ_WRITE.target)
-        writer.write(
-            "let \$L = try await \$L(httpResponse)",
-            operationErrorVariableName,
-            responseErrorClosure,
-        )
+    override fun captureResponse() {
+        writer.write("var operationError: \$N?", SwiftTypes.Error)
+        writer.write("do {")
+        writer.indent {
+            writer.write("_ = try await client.\$L(input: input)", operation.toLowerCamelCase())
+            writer.write("XCTFail(\"Request should have failed\")")
+        }
+        writer.openBlock("} catch {", "}") {
+            writer.write("operationError = error")
+        }
     }
 
     private fun renderCompareActualAndExpectedErrors(
         test: HttpResponseTestCase,
         errorShape: Shape,
-        operationErrorType: String,
     ) {
-        val operationErrorVariableName = operationErrorType.replaceFirstChar { it.lowercase() }
         val errorType = symbolProvider.toSymbol(errorShape).name
 
-        writer.openBlock("if let actual = \$L as? \$L {", "} else {", operationErrorVariableName, errorType) {
+        writer.openBlock("if let actual = operationError as? \$L {", "} else {", errorType) {
             renderExpectedOutput(test, errorShape)
             renderAssertions(test, errorShape)
         }
