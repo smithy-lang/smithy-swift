@@ -12,7 +12,11 @@ import protocol Smithy.ResponseMessage
 ///
 /// This wrapper allows non-`Sendable` interceptor providers to be stored in `Sendable` contexts
 /// by boxing them and forwarding method calls.
-public struct SendableInterceptorProviderBox: InterceptorProvider, Sendable {
+///
+/// Note: Uses `@unchecked Sendable` because the wrapper is designed to safely encapsulate
+/// non-Sendable providers for use in concurrent contexts. The safety is ensured by the
+/// immutability of the stored provider reference.
+public struct SendableInterceptorProviderBox: InterceptorProvider, @unchecked Sendable {
     internal let _provider: any InterceptorProvider
 
     public init(_ provider: any InterceptorProvider) {

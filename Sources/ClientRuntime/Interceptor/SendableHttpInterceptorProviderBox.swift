@@ -12,7 +12,11 @@ import class SmithyHTTPAPI.HTTPResponse
 ///
 /// This wrapper allows non-`Sendable` HTTP interceptor providers to be stored in `Sendable` contexts
 /// by boxing them and forwarding method calls.
-public struct SendableHttpInterceptorProviderBox: HttpInterceptorProvider, Sendable {
+///
+/// Note: Uses `@unchecked Sendable` because the wrapper is designed to safely encapsulate
+/// non-Sendable providers for use in concurrent contexts. The safety is ensured by the
+/// immutability of the stored provider reference.
+public struct SendableHttpInterceptorProviderBox: HttpInterceptorProvider, @unchecked Sendable {
     internal let _provider: any HttpInterceptorProvider
 
     public init(_ provider: any HttpInterceptorProvider) {
