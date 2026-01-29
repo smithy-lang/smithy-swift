@@ -97,8 +97,10 @@ object ClientRuntimeTypes {
     object Composite {
         val InterceptorProviders = runtimeSymbol("[ClientRuntime.InterceptorProvider]", null, listOf(InterceptorProvider))
         val HttpInterceptorProviders = runtimeSymbol("[ClientRuntime.HttpInterceptorProvider]", null, listOf(HttpInterceptorProvider))
-        val SendableInterceptorProviderBoxes = runtimeSymbol("[ClientRuntime.SendableInterceptorProviderBox]", null, listOf(Core.SendableInterceptorProviderBox))
-        val SendableHttpInterceptorProviderBoxes = runtimeSymbol("[ClientRuntime.SendableHttpInterceptorProviderBox]", null, listOf(Core.SendableHttpInterceptorProviderBox))
+        val SendableInterceptorProviderBoxes =
+            runtimeSymbol("[ClientRuntime.SendableInterceptorProviderBox]", null, listOf(Core.SendableInterceptorProviderBox))
+        val SendableHttpInterceptorProviderBoxes =
+            runtimeSymbol("[ClientRuntime.SendableHttpInterceptorProviderBox]", null, listOf(Core.SendableHttpInterceptorProviderBox))
     }
 
     object RpcV2Cbor {

@@ -72,7 +72,10 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
             Function(
                 name = "addInterceptorProvider",
                 renderBody = { writer ->
-                    writer.write("self._httpInterceptorProviders.append(\$N(provider))", ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox)
+                    writer.write(
+                        "self._httpInterceptorProviders.append(\$N(provider))",
+                        ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox,
+                    )
                 },
                 parameters =
                     listOf(

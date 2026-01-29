@@ -335,7 +335,10 @@ open class HttpProtocolServiceClient(
                 writer.write("return _httpInterceptorProviders")
             }
             writer.openBlock("set {", "}") {
-                writer.write("_httpInterceptorProviders = newValue.map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox)
+                writer.write(
+                    "_httpInterceptorProviders = newValue.map { \$N(\$\$0) }",
+                    ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox,
+                )
             }
         }
 
@@ -367,8 +370,14 @@ open class HttpProtocolServiceClient(
                 }
             }
             // Handle interceptor providers specially - wrap them when storing
-            writer.write("self._interceptorProviders = (interceptorProviders ?? []).map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableInterceptorProviderBox)
-            writer.write("self._httpInterceptorProviders = (httpInterceptorProviders ?? []).map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox)
+            writer.write(
+                "self._interceptorProviders = (interceptorProviders ?? []).map { \$N(\$\$0) }",
+                ClientRuntimeTypes.Core.SendableInterceptorProviderBox,
+            )
+            writer.write(
+                "self._httpInterceptorProviders = (httpInterceptorProviders ?? []).map { \$N(\$\$0) }",
+                ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox,
+            )
             writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
         }
         writer.write("}")
@@ -397,8 +406,14 @@ open class HttpProtocolServiceClient(
                 }
             }
             // Handle interceptor providers specially - wrap them when storing
-            writer.write("self._interceptorProviders = (interceptorProviders ?? []).map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableInterceptorProviderBox)
-            writer.write("self._httpInterceptorProviders = (httpInterceptorProviders ?? []).map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox)
+            writer.write(
+                "self._interceptorProviders = (interceptorProviders ?? []).map { \$N(\$\$0) }",
+                ClientRuntimeTypes.Core.SendableInterceptorProviderBox,
+            )
+            writer.write(
+                "self._httpInterceptorProviders = (httpInterceptorProviders ?? []).map { \$N(\$\$0) }",
+                ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox,
+            )
             writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
         }
         writer.write("}")
