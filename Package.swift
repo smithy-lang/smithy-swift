@@ -57,7 +57,7 @@ let package = Package(
         .library(name: "SmithySwiftNIO", targets: ["SmithySwiftNIO"]),
         .library(name: "SmithyTelemetryAPI", targets: ["SmithyTelemetryAPI"]),
         .library(name: "SmithyHTTPClientAPI", targets: ["SmithyHTTPClientAPI"]),
-        .plugin(name: "SmithyCodeGenerator", targets: ["SmithyCodeGenerator"]),
+        .plugin(name: "SmithyCodeGeneratorPlugin", targets: ["SmithyCodeGeneratorPlugin"]),
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
@@ -294,7 +294,7 @@ let package = Package(
             name: "SmithyWaitersAPI"
         ),
         .plugin(
-            name: "SmithyCodeGenerator",
+            name: "SmithyCodeGeneratorPlugin",
             capability: .buildTool(),
             dependencies: [
                 "SmithyCodegenCLI",
