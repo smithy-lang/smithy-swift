@@ -7,6 +7,9 @@
 
 import enum Smithy.Node
 
+// The Node type itself is defined at ``Smithy.Node``.  That type is extended here
+// with `Decodable` conformance so it can be read directly into memory from JSON.
+// See https://smithy.io/2.0/spec/model.html#trait-node-values in the Smithy docs.
 extension Node: Decodable {
 
     public init(from decoder: any Decoder) throws {

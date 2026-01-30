@@ -8,9 +8,9 @@
 @_spi(SmithyDocumentImpl)
 public struct BigIntegerDocument: SmithyDocument {
     public var type: ShapeType { .bigInteger }
-    let value: Int
+    let value: Int64
 
-    public init(value: Int) {
+    public init(value: Int64) {
         self.value = value
     }
 
@@ -29,7 +29,7 @@ public struct BigIntegerDocument: SmithyDocument {
     }
 
     public func asInteger() throws -> Int {
-        value
+        Int(value)
     }
 
     public func asLong() throws -> Int64 {
@@ -45,7 +45,7 @@ public struct BigIntegerDocument: SmithyDocument {
     }
 
     public func asBigInteger() throws -> Int64 {
-        Int64(value)
+        value
     }
 
     public func asBigDecimal() throws -> Double {

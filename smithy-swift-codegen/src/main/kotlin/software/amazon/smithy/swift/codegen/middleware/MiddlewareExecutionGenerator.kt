@@ -8,6 +8,7 @@ import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
@@ -33,6 +34,7 @@ class MiddlewareExecutionGenerator(
         op: OperationShape,
         flowType: ContextAttributeCodegenFlowType = ContextAttributeCodegenFlowType.NORMAL,
     ) {
+        val isSchemaBased = SerdeUtils.useSchemaBased(ctx)
         val inputShape = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op)
         val outputShape = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op)
         writer.write("let context = \$N()", SmithyTypes.ContextBuilder)
@@ -48,6 +50,14 @@ class MiddlewareExecutionGenerator(
             SmithyHTTPAPITypes.HTTPRequest,
             SmithyHTTPAPITypes.HTTPResponse,
         )
+        if (isSchemaBased) {
+            writer.write(
+                "\$N().configure(\$LClient.\$LOperation, context, builder)",
+                httpProtocolCustomizable.configuratorSymbol,
+                ctx.settings.clientBaseName,
+                op.toLowerCamelCase(),
+            )
+        }
         writer.openBlock("config.interceptorProviders.forEach { provider in", "}") {
             writer.write("builder.interceptors.add(provider.create())")
         }
@@ -64,7 +74,7 @@ class MiddlewareExecutionGenerator(
             var metricsAttributes = ${"$"}N()
             metricsAttributes.set(key: ${"$"}N.service, value: ${"$"}S)
             metricsAttributes.set(key: ${"$"}N.method, value: ${"$"}S)
-            let op = builder.attributes(context)
+            let op = builder.attributes(context.build())
                 .telemetry(${"$"}N(
                     telemetryProvider: config.telemetryProvider,
                     metricsAttributes: metricsAttributes,
@@ -111,7 +121,6 @@ class MiddlewareExecutionGenerator(
         // Add context values for config fields
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
-        writer.write("  .build()")
     }
 
     private fun resolveHttpMethod(op: OperationShape): String =

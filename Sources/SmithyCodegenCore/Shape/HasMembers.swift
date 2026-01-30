@@ -7,5 +7,5 @@
 
 /// Protocol provided as a convenience to get members from Shapes that have them.
 protocol HasMembers {
-    var members: [MemberShape] { get }
+    var members: [MemberShape] { get throws }
 }
