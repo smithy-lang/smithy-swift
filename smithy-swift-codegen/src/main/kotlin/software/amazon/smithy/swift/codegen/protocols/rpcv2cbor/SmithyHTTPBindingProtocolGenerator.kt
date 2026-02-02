@@ -21,7 +21,6 @@ import software.amazon.smithy.swift.codegen.integration.SmithyHttpProtocolClient
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationEndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.getTrait
-import software.amazon.smithy.swift.codegen.testModuleName
 
 abstract class SmithyHTTPBindingProtocolGenerator(
     customizations: HTTPProtocolCustomizable,

@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+/// Used to throw errors related to a Smithy model.
 public struct ModelError: Error {
     public let localizedDescription: String
 

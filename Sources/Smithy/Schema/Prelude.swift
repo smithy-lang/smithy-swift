@@ -55,36 +55,34 @@ public enum Prelude {
     }
 
     public static var documentSchema: Schema {
-        Schema(id: .init("smithy.api", "PrimitiveDocument"), type: .document)
+        Schema(id: .init("smithy.api", "Document"), type: .document)
     }
 
     public static var primitiveBooleanSchema: Schema {
-        Schema(id: .init("smithy.api", "PrimitiveBoolean"), type: .boolean, traits: [defaultTraitID: false])
+        Schema(id: .init("smithy.api", "PrimitiveBoolean"), type: .boolean, traits: [DefaultTrait(false)])
     }
 
     public static var primitiveIntegerSchema: Schema {
-        Schema(id: .init("smithy.api", "PrimitiveInteger"), type: .integer, traits: [defaultTraitID: 0])
+        Schema(id: .init("smithy.api", "PrimitiveInteger"), type: .integer, traits: [DefaultTrait(0)])
     }
 
     public static var primitiveByteSchema: Schema {
-        Schema(id: .init("smithy.api", "PrimitiveByte"), type: .byte, traits: [defaultTraitID: 0])
+        Schema(id: .init("smithy.api", "PrimitiveByte"), type: .byte, traits: [DefaultTrait(0)])
     }
 
     public static var primitiveShortSchema: Schema {
-        Schema(id: .init("smithy.api", "PrimitiveShort"), type: .short, traits: [defaultTraitID: 0])
+        Schema(id: .init("smithy.api", "PrimitiveShort"), type: .short, traits: [DefaultTrait(0)])
     }
 
     public static var primitiveLongSchema: Schema {
-        Schema(id: .init("smithy.api", "PrimitiveLong"), type: .long, traits: [defaultTraitID: 0])
+        Schema(id: .init("smithy.api", "PrimitiveLong"), type: .long, traits: [DefaultTrait(0)])
     }
 
     public static var primitiveFloatSchema: Schema {
-        Schema(id: .init("smithy.api", "PrimitiveFloat"), type: .float, traits: [defaultTraitID: 0])
+        Schema(id: .init("smithy.api", "PrimitiveFloat"), type: .float, traits: [DefaultTrait(0.0)])
     }
 
     public static var primitiveDoubleSchema: Schema {
-        Schema(id: .init("smithy.api", "PrimitiveDouble"), type: .double, traits: [defaultTraitID: 0])
+        Schema(id: .init("smithy.api", "PrimitiveDouble"), type: .double, traits: [DefaultTrait(0.0)])
     }
 }
-
-private let defaultTraitID = ShapeID("smithy.api", "default")
