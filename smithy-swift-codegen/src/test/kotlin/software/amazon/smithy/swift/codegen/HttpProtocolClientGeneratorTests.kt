@@ -25,6 +25,7 @@ public class RestJsonProtocolClient: ClientRuntime.Client {
     let serviceName = "Rest Json Protocol"
 
     public required init(config: RestJsonProtocolClient.RestJsonProtocolClientConfiguration) {
+        ClientRuntime.initialize()
         client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
         self.config = config
     }
