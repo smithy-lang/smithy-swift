@@ -35,7 +35,27 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             return
         }
 
-        let operationError = try await GreetingWithErrorsOutputError.httpError(from:)(httpResponse)
+        let config = try await ExampleClient.Config(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = GreetingWithErrorsInput()
+
+        var operationError: Swift.Error?
+        do {
+            _ = try await client.greetingWithErrors(input: input)
+            XCTFail("Request should have failed")
+        } catch {
+            operationError = error
+        }
 
         if let actual = operationError as? ComplexError {
 
@@ -82,7 +102,27 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             return
         }
 
-        let operationError = try await GreetingWithErrorsOutputError.httpError(from:)(httpResponse)
+        let config = try await ExampleClient.Config(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = GreetingWithErrorsInput()
+
+        var operationError: Swift.Error?
+        do {
+            _ = try await client.greetingWithErrors(input: input)
+            XCTFail("Request should have failed")
+        } catch {
+            operationError = error
+        }
 
         if let actual = operationError as? ComplexError {
 

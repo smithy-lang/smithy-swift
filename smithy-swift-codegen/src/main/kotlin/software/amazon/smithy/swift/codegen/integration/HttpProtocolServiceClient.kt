@@ -52,6 +52,7 @@ open class HttpProtocolServiceClient(
 
     open fun renderInitFunction() {
         writer.openBlock("public required init(config: \$L) {", "}", serviceConfig.typeName) {
+            writer.write("\$N()", ClientRuntimeTypes.Core.initialize)
             writer.write(
                 "client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)",
                 ClientRuntimeTypes.Http.SdkHttpClient,
