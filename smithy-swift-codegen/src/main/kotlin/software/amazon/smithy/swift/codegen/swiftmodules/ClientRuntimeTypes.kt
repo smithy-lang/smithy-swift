@@ -92,6 +92,7 @@ object ClientRuntimeTypes {
         val SendableInterceptorProviderBox = runtimeSymbol("SendableInterceptorProviderBox", SwiftDeclaration.STRUCT)
         val SendableHttpInterceptorProviderBox = runtimeSymbol("SendableHttpInterceptorProviderBox", SwiftDeclaration.STRUCT)
         val SDKLoggingSystem = runtimeSymbol("SDKLoggingSystem", SwiftDeclaration.CLASS)
+        val initialize = runtimeSymbol("initialize", SwiftDeclaration.FUNC)
     }
 
     object Composite {

@@ -28,6 +28,7 @@ public final class RestJsonProtocolClient: ClientRuntime.Client {
     public typealias Config = RestJsonProtocolClient.RestJsonProtocolClientConfiguration
 
     public required init(config: RestJsonProtocolClient.RestJsonProtocolClientConfig) {
+        ClientRuntime.initialize()
         client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
         self.config = config
     }
