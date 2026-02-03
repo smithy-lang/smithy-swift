@@ -11,6 +11,7 @@ import struct Smithy.ShapeID
 public struct GenerationContext {
     public let service: ServiceShape
     public let model: Model
+    public let symbolProvider: SymbolProvider
 
     /// Creates a ``GenerationContext`` from a model.
     ///
@@ -31,5 +32,6 @@ public struct GenerationContext {
         // Initialize using the final, processed model
         self.service = try finalModel.expectServiceShape(id: serviceID)
         self.model = finalModel
+        self.symbolProvider = SymbolProvider(service: service, model: finalModel)
     }
 }

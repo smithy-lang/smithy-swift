@@ -17,8 +17,6 @@ public struct CodeGenerator {
     let schemasFileURL: URL?
     let serializeFileURL: URL?
     let deserializeFileURL: URL?
-    let typeRegistryFileURL: URL?
-    let operationsFileURL: URL?
 
     /// Creates a code generator.
     /// - Parameters:
@@ -30,17 +28,13 @@ public struct CodeGenerator {
         modelFileURL: URL,
         schemasFileURL: URL?,
         serializeFileURL: URL?,
-        deserializeFileURL: URL?,
-        typeRegistryFileURL: URL?,
-        operationsFileURL: URL?
+        deserializeFileURL: URL?
     ) throws {
         self.service = service
         self.modelFileURL = modelFileURL
         self.schemasFileURL = schemasFileURL
         self.serializeFileURL = serializeFileURL
         self.deserializeFileURL = deserializeFileURL
-        self.typeRegistryFileURL = typeRegistryFileURL
-        self.operationsFileURL = operationsFileURL
     }
 
     /// Executes the code generator.
@@ -76,18 +70,6 @@ public struct CodeGenerator {
         if let deserializeFileURL {
             let deserializeContents = try DeserializeCodegen().generate(ctx: ctx)
             try Data(deserializeContents.utf8).write(to: deserializeFileURL)
-        }
-
-        // If a TypeRegistry file URL was provided, generate it
-        if let typeRegistryFileURL {
-            let typeRegistryContents = try TypeRegistryCodegen().generate(ctx: ctx)
-            try Data(typeRegistryContents.utf8).write(to: typeRegistryFileURL)
-        }
-
-        // If an Operations file URL was provided, generate it
-        if let operationsFileURL {
-            let operationsContents = try OperationsCodegen().generate(ctx: ctx)
-            try Data(operationsContents.utf8).write(to: operationsFileURL)
         }
     }
 }

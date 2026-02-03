@@ -21,6 +21,12 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
     @Option(help: "The full or relative path to write the Schemas output file.")
     var schemasPath: String?
 
+    @Option(help: "The full or relative path to write the Serialize output file.")
+    var serializePath: String?
+
+    @Option(help: "The full or relative path to write the Deserialize output file.")
+    var deserializePath: String?
+
     func run() async throws {
 
         let start = Date()
@@ -36,11 +42,19 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
         // If --schemas-path was supplied, create the schema file URL
         let schemasFileURL = resolve(path: schemasPath)
 
+        // If --serialize-path was supplied, create the Serialize file URL
+        let serializeFileURL = resolve(path: serializePath)
+
+        // If --deserialize-path was supplied, create the Deserialize file URL
+        let deserializeFileURL = resolve(path: deserializePath)
+
         // Use resolved file URLs to run code generator
         try CodeGenerator(
             service: service,
             modelFileURL: modelFileURL,
-            schemasFileURL: schemasFileURL
+            schemasFileURL: schemasFileURL,
+            serializeFileURL: serializeFileURL,
+            deserializeFileURL: deserializeFileURL
         ).run()
 
         let duration = Date().timeIntervalSince(start)
