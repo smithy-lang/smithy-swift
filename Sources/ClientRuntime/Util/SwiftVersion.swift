@@ -8,9 +8,11 @@
 /// Returns the swift version of the compiler that is compiling this application.
 public var swiftVersion: String {
     /**
-     Unfortunately there isn't a way to grab the compiled swift programmatically and so we must resort to the compiler directives to produce a version string.
-     We are checking for quite a few versions in the future, that may never exist, in order to future proof our current SDKs. Ideally, all current SDKs should compile
-     on future Swift versions unless that Swift version introduces a breaking change.
+     Unfortunately there isn't a way to grab the compiled swift programmatically and so we must
+     resort to the compiler directives to produce a version string.
+     We are checking for quite a few versions in the future, that may never exist, in order to
+     future proof our current SDKs. Ideally, all current SDKs should compile on future Swift
+     versions unless that Swift version introduces a breaking change.
      
      TODO add handling for Swift 8.x versions when Swift 6.0 is released.
      */

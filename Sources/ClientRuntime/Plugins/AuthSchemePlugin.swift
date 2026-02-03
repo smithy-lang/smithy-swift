@@ -21,14 +21,14 @@ public class AuthSchemePlugin: Plugin {
         self.authSchemes = authSchemes
     }
 
-    public func configureClient(clientConfiguration: ClientConfiguration) {
-        if var config = clientConfiguration as? DefaultHttpClientConfiguration {
-            if self.authSchemes != nil {
-                config.authSchemes = self.authSchemes!
-            }
-            if self.authSchemeResolver != nil {
-                config.authSchemeResolver = self.authSchemeResolver!
-            }
+    public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
+        guard var config = clientConfiguration as? any DefaultHttpClientConfiguration else { return }
+        if self.authSchemes != nil {
+            config.authSchemes = self.authSchemes!
         }
+        if self.authSchemeResolver != nil {
+            config.authSchemeResolver = self.authSchemeResolver!
+        }
+        clientConfiguration = config
     }
 }

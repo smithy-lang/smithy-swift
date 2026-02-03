@@ -9,7 +9,7 @@ import struct SmithyHTTPAPI.Endpoint
 import enum SmithyHTTPAPI.EndpointPropertyValue
 import struct SmithyHTTPAPI.Headers
 
-public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding> {
+public struct DefaultEndpointResolver<Params: EndpointsRequestContextProviding>: Sendable {
 
     private let engine: ClientRuntime.EndpointsRuleEngine
 

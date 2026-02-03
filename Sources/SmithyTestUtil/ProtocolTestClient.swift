@@ -8,7 +8,7 @@ import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 import ClientRuntime
 
-public class ProtocolTestClient {
+public final class ProtocolTestClient {
     public init() {}
 }
 
