@@ -9,7 +9,7 @@ import protocol SmithyHTTPAPI.HTTPClient
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 
-public class ProtocolResponseTestClient {
+public final class ProtocolResponseTestClient {
     let httpResponse: HTTPResponse
 
     public init(httpResponse: HTTPResponse) {
