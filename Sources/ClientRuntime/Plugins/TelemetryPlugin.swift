@@ -28,10 +28,10 @@ public class TelemetryPlugin: Plugin {
         )
     }
 
-    public func configureClient(clientConfiguration: ClientConfiguration) {
-        if var config = clientConfiguration as? DefaultClientConfiguration {
-            config.telemetryProvider = self.telemetryProvider
-        }
+    public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
+        guard var config = clientConfiguration as? any DefaultClientConfiguration else { return }
+        config.telemetryProvider = self.telemetryProvider
+        clientConfiguration = config
     }
 }
 
