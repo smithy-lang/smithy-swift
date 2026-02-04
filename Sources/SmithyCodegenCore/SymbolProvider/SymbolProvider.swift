@@ -73,7 +73,11 @@ public struct SymbolProvider {
         case .double, .bigDecimal:
             return "Swift.Double"
         case .blob:
-            return "Foundation.Data"
+            if shape.hasTrait(StreamingTrait.self) {
+                return "Smithy.ByteStream"
+            } else {
+                return "Foundation.Data"
+            }
         case .timestamp:
             return "Foundation.Date"
         case .document:

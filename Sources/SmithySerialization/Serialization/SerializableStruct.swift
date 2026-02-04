@@ -5,6 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-public protocol SerializableStruct: SerializableShape, CustomDebugStringConvertible {
+public protocol SerializableStruct: SerializableShape {
     static var writeConsumer: WriteStructConsumer<Self> { get }
 }
