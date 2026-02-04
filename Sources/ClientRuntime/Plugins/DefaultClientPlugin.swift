@@ -9,14 +9,15 @@ import struct SmithyRetries.DefaultRetryStrategy
 
 public class DefaultClientPlugin: Plugin {
     public init() {}
-    public func configureClient(clientConfiguration: ClientConfiguration) {
-        if var config = clientConfiguration as? DefaultClientConfiguration {
+    public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
+        if var config = clientConfiguration as? any DefaultClientConfiguration {
             config.retryStrategyOptions =
                 DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
                     .defaultRetryStrategyOptions
+            clientConfiguration = config
         }
 
-        if var config = clientConfiguration as? DefaultHttpClientConfiguration {
+        if var config = clientConfiguration as? any DefaultHttpClientConfiguration {
             let httpClientConfiguration =
                 DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
                     .defaultHttpClientConfiguration
@@ -24,6 +25,7 @@ public class DefaultClientPlugin: Plugin {
             config.httpClientEngine =
                 DefaultSDKRuntimeConfiguration<DefaultRetryStrategy, DefaultRetryErrorInfoProvider>
                     .makeClient(httpClientConfiguration: httpClientConfiguration)
+            clientConfiguration = config
         }
     }
 }

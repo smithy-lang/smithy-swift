@@ -10,7 +10,7 @@ import struct Smithy.Attributes
 import protocol SmithyIdentityAPI.IdentityResolver
 
 /// A type that can provide credentials for authenticating with an AWS service
-public protocol AWSCredentialIdentityResolver: IdentityResolver where IdentityT == AWSCredentialIdentity {}
+public protocol AWSCredentialIdentityResolver: IdentityResolver, Sendable where IdentityT == AWSCredentialIdentity {}
 
 public extension AWSCredentialIdentityResolver {
 

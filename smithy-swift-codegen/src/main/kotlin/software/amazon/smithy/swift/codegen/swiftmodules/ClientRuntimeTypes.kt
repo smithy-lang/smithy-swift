@@ -92,6 +92,8 @@ object ClientRuntimeTypes {
         val OrchestratorBuilder = runtimeSymbol("OrchestratorBuilder", SwiftDeclaration.CLASS)
         val InterceptorProvider = runtimeSymbol("InterceptorProvider", SwiftDeclaration.PROTOCOL)
         val HttpInterceptorProvider = runtimeSymbol("HttpInterceptorProvider", SwiftDeclaration.PROTOCOL)
+        val SendableInterceptorProviderBox = runtimeSymbol("SendableInterceptorProviderBox", SwiftDeclaration.STRUCT)
+        val SendableHttpInterceptorProviderBox = runtimeSymbol("SendableHttpInterceptorProviderBox", SwiftDeclaration.STRUCT)
         val SDKLoggingSystem = runtimeSymbol("SDKLoggingSystem", SwiftDeclaration.CLASS)
         val DefaultConfigurator = runtimeSymbol("DefaultConfigurator", SwiftDeclaration.STRUCT)
         val initialize = runtimeSymbol("initialize", SwiftDeclaration.FUNC)
@@ -100,6 +102,10 @@ object ClientRuntimeTypes {
     object Composite {
         val InterceptorProviders = runtimeSymbol("[ClientRuntime.InterceptorProvider]", null, listOf(InterceptorProvider))
         val HttpInterceptorProviders = runtimeSymbol("[ClientRuntime.HttpInterceptorProvider]", null, listOf(HttpInterceptorProvider))
+        val SendableInterceptorProviderBoxes =
+            runtimeSymbol("[ClientRuntime.SendableInterceptorProviderBox]", null, listOf(Core.SendableInterceptorProviderBox))
+        val SendableHttpInterceptorProviderBoxes =
+            runtimeSymbol("[ClientRuntime.SendableHttpInterceptorProviderBox]", null, listOf(Core.SendableHttpInterceptorProviderBox))
     }
 
     object RpcV2Cbor {
