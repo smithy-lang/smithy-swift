@@ -183,7 +183,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         // - credential resolver
         // - endpoint resolver (unless the test has endpoint rules)
         // - HTTP client engine; a mock that returns the test's HTTPResponse is used
-        writer.openBlock("let config = try await \$L.Config(", ")", clientName) {
+        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
             writer.write("signingRegion: \$S,", region)
