@@ -27,10 +27,11 @@ public class DefaultHttpClientPlugin: Plugin {
         )
     }
 
-    public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
+    public func configureClient<Config: ClientConfiguration>(clientConfiguration: inout Config) async throws {
         guard var config = clientConfiguration as? any DefaultHttpClientConfiguration else { return }
         config.httpClientConfiguration = self.httpClientConfiguration
         config.httpClientEngine = self.httpClient
-        clientConfiguration = config
+        guard let modifiedConfig = config as? Config else { return }
+        clientConfiguration = modifiedConfig
     }
 }
