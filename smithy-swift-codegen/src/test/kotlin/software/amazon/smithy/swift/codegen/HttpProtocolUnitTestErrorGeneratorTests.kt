@@ -35,7 +35,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             return
         }
 
-        let config = try await ExampleClient.Config(
+        let config = try await ExampleClient.ExampleClientConfig(
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
@@ -102,7 +102,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             return
         }
 
-        let config = try await ExampleClient.Config(
+        let config = try await ExampleClient.ExampleClientConfig(
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",

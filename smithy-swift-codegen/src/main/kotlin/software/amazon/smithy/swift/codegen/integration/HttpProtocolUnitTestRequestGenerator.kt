@@ -105,7 +105,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
         val clientName = "${ctx.settings.clientBaseName}Client"
         val region = "us-west-2"
 
-        writer.openBlock("let config = try await \$L.Config(", ")", clientName) {
+        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
             writer.write("signingRegion: \$S,", region)

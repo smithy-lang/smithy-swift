@@ -35,13 +35,14 @@ open class HttpProtocolServiceClient(
             writer.write("public static let clientName = \$S", serviceSymbol.name)
             renderVersionProperty()
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
-            writer.write("let config: \$L", serviceConfig.sendableTypeName)
+            writer.write("public let config: \$L", serviceConfig.sendableTypeName)
             writer.write("let serviceName = \$S", serviceName)
             writer.write("")
             // Add Config typealias for backward compatibility - points to deprecated class
             // This satisfies the Client protocol's associated type requirement
             writer.write("@available(*, deprecated, message: \"Use \$L instead\")", serviceConfig.sendableTypeName)
             writer.write("public typealias Config = \$L", serviceConfig.typeName)
+            writer.write("public typealias Configuration = \$L", serviceConfig.sendableTypeName)
             writer.write("")
             renderInitFunction()
             writer.write("")
