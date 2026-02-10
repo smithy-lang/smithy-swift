@@ -35,25 +35,6 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
 
     public let codec: SmithySerialization.Codec = Codec()
 
-    public var errorCodeBlock: @Sendable (HTTPResponse) throws -> String? = { _ in nil }
-
-    public var registryMatchBlock: @Sendable (Schema, String, TypeRegistry) throws -> TypeRegistry.Entry? =
-        { _, code, typeRegistry in
-            // Find an entry where the shape name is the same as the code.
-            typeRegistry.codeLookup(code: code) { code, entry in
-                code == entry.schema.id.name
-            }
-        }
-
-    public var unknownErrorBlock: @Sendable (String?, String?, HTTPResponse) -> ServiceError & Error =
-        { code, message, response in
-            UnknownHTTPServiceError(
-                httpResponse: response,
-                message: message,
-                typeName: code
-            )
-        }
-
     public init() {}
 
     public func serializeRequest<Input, Output>(
@@ -96,16 +77,16 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
             let typeDeserializer = try codec.makeDeserializer(data: bodyData)
             let baseError = try BaseError.deserialize(typeDeserializer)
 
-            // Use the base error to get the error code in the error response
-            let specialErrorCode = try errorCodeBlock(response)
-
             // Resolve the final error code to be used in matching the error to a modeled type
-            let code = (specialErrorCode ?? baseError.__type ?? "NoCodeFound").substringAfter("#")
+            let code = (baseError.__type ?? "NoCodeFound").substringAfter("#")
 
-            // Try to find a match for the code by shape name
-            let registryEntry = try registryMatchBlock(operation.serviceSchema, code, operation.errorTypeRegistry)
+            // Find an entry where the shape name is the same as the code.
+            let registryEntry = operation.errorTypeRegistry.codeLookup(code: code) { code, entry in
+                code == entry.schema.id.name
+            }
 
-            // If a type registry match was found, create that type from the response
+            // If a type registry match was found, create that type from the response & throw
+            // Else create & throw an UnknownHTTPServiceError
             if let registryEntry {
 
                 // Code matched a modeled error.  Deserialize the error to the specific type specified in the code
@@ -125,7 +106,11 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
                 // Throw the error to the caller
                 throw modeledError
             } else {
-                throw unknownErrorBlock(code, baseError.message, response)
+                throw UnknownHTTPServiceError(
+                    httpResponse: response,
+                    message: baseError.message,
+                    typeName: code
+                )
             }
         }
     }

@@ -5,14 +5,19 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.swift.codegen.SyntheticClone
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.MutateHeadersMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
 class RpcV2CborProtocolGenerator(
@@ -39,13 +44,57 @@ class RpcV2CborProtocolGenerator(
     ) {
         super.addProtocolSpecificMiddleware(ctx, operation)
 
-        // These are performed by the schema-based rpcv2cbor configurator.  Not needed here.
+        // Remove these middlewares, they are handled by applying the ClientProtocol & Operation
+        // to the orchestrator
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
         operationMiddleware.removeMiddleware(operation, "DeserializeMiddleware")
+
+        // Remove this middleware as it will be handled by a RPCv2CBOR plugin
         operationMiddleware.removeMiddleware(operation, "OperationInputUrlPathMiddleware")
-        operationMiddleware.removeMiddleware(operation, "ContentTypeMiddleware")
-        operationMiddleware.removeMiddleware(operation, "ContentLengthMiddleware")
-        operationMiddleware.removeMiddleware(operation, "ContentLengthMiddleware")
+
+        val hasEventStreamResponse = ctx.model.expectShape(operation.outputShape).hasTrait<StreamingTrait>()
+        val hasEventStreamRequest = ctx.model.expectShape(operation.inputShape).hasTrait<StreamingTrait>()
+
+        // Determine the value of the Accept header based on output shape
+        val acceptHeaderValue =
+            if (hasEventStreamResponse) {
+                "application/vnd.amazon.eventstream"
+            } else {
+                "application/cbor"
+            }
+
+        // Determine the value of the Content-Type header based on input shape
+        val contentTypeValue =
+            if (hasEventStreamRequest) {
+                "application/vnd.amazon.eventstream"
+            } else {
+                defaultContentType
+            }
+
+        // Middleware to set smithy-protocol and Accept headers
+        // Every request for the rpcv2Cbor protocol MUST contain a smithy-protocol header with the value of rpc-v2-cbor
+        val smithyProtocolRequestHeaderMiddleware =
+            MutateHeadersMiddleware(
+                overrideHeaders =
+                    mapOf(
+                        "smithy-protocol" to "rpc-v2-cbor",
+                        "Accept" to acceptHeaderValue,
+                    ),
+            )
+
+        operationMiddleware.appendMiddleware(operation, smithyProtocolRequestHeaderMiddleware)
+        operationMiddleware.appendMiddleware(operation, CborValidateResponseHeaderMiddleware())
+
+        if (operation.hasHttpBody(ctx)) {
+            operationMiddleware.appendMiddleware(operation,
+                ContentTypeMiddleware(ctx.model, ctx.symbolProvider, contentTypeValue, true)
+            )
+        }
+
+        // Only set Content-Length header if the request input shape doesn't have an event stream
+        if (!hasEventStreamRequest) {
+            operationMiddleware.appendMiddleware(operation, ContentLengthMiddleware(ctx.model, true, false, false))
+        }
     }
 
     override fun httpBodyMembers(

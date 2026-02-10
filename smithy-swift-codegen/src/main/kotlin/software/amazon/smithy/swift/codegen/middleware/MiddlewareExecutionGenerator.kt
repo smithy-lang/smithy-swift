@@ -28,15 +28,30 @@ class MiddlewareExecutionGenerator(
     private val httpMethodCallback: HttpMethodCallback? = null,
 ) {
     private val symbolProvider = ctx.symbolProvider
+    private val isSchemaBased = SerdeUtils.useSchemaBased(ctx)
 
     fun render(
         serviceShape: ServiceShape,
         op: OperationShape,
         flowType: ContextAttributeCodegenFlowType = ContextAttributeCodegenFlowType.NORMAL,
     ) {
-        val isSchemaBased = SerdeUtils.useSchemaBased(ctx)
         val inputShape = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op)
         val outputShape = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op)
+        val plugins = httpProtocolCustomizable.plugins
+        if (plugins.isNotEmpty()) {
+            writer.write("var config = config")
+            val pluginInits = plugins.map { writer.format("\$N()", it.className) }
+            writer.write("let plugins = [\$L]", pluginInits.joinToString(", "))
+            writer.openBlock("for plugin in plugins {", "}") {
+                writer.write("try await plugin.configureClient(clientConfiguration: &config)")
+            }
+            writer.write("let operation = \$LClient.\$LOperation",
+                ctx.settings.clientBaseName,
+                op.toLowerCamelCase(),
+            )
+        } else {
+            // no operation
+        }
         writer.write("let context = \$N()", SmithyTypes.ContextBuilder)
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op, flowType)
@@ -51,12 +66,8 @@ class MiddlewareExecutionGenerator(
             SmithyHTTPAPITypes.HTTPResponse,
         )
         if (isSchemaBased) {
-            writer.write(
-                "\$N().configure(\$LClient.\$LOperation, context, builder)",
-                httpProtocolCustomizable.configuratorSymbol,
-                ctx.settings.clientBaseName,
-                op.toLowerCamelCase(),
-            )
+            writer.write("let clientProtocol = \$N()", httpProtocolCustomizable.clientProtocolSymbol)
+            writer.write("builder.apply(operation, clientProtocol)")
         }
         writer.openBlock("config.interceptorProviders.forEach { provider in", "}") {
             writer.write("builder.interceptors.add(provider.create())")
@@ -74,7 +85,7 @@ class MiddlewareExecutionGenerator(
             var metricsAttributes = ${"$"}N()
             metricsAttributes.set(key: ${"$"}N.service, value: ${"$"}S)
             metricsAttributes.set(key: ${"$"}N.method, value: ${"$"}S)
-            let op = builder.attributes(context.build())
+            let op = builder.attributes(context)
                 .telemetry(${"$"}N(
                     telemetryProvider: config.telemetryProvider,
                     metricsAttributes: metricsAttributes,
@@ -121,6 +132,12 @@ class MiddlewareExecutionGenerator(
         // Add context values for config fields
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
+
+        if (isSchemaBased) {
+            writer.write("  .withOperationProperties(value: operation)")
+        }
+
+        writer.write("  .build()")
     }
 
     private fun resolveHttpMethod(op: OperationShape): String =

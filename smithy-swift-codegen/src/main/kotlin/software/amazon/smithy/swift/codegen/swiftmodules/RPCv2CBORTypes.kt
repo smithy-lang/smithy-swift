@@ -5,8 +5,8 @@ import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object RPCv2CBORTypes {
-    val Codec = runtimeSymbol("Codec", SwiftDeclaration.STRUCT)
-    val Configurator = runtimeSymbol("Configurator", SwiftDeclaration.STRUCT)
+    val HTTPClientProtocol = runtimeSymbol("HTTPClientProtocol", SwiftDeclaration.STRUCT)
+    val Plugin = runtimeSymbol("Plugin", SwiftDeclaration.STRUCT)
 }
 
 private fun runtimeSymbol(

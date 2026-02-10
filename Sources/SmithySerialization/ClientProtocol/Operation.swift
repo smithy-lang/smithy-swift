@@ -27,6 +27,9 @@ public struct Operation<Input: SerializableStruct, Output: DeserializableStruct>
         self._outputSchema = outputSchema
         self._errorTypeRegistry = errorTypeRegistry
     }
+}
+
+extension Operation: OperationProperties {
 
     public var schema: Schema { _schema() }
 

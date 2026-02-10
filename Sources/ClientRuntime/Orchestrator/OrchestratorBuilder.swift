@@ -56,10 +56,12 @@ public class OrchestratorBuilder<
     }
 
     @discardableResult
-    public func apply<CP: ClientProtocol>(
-        operation: Operation<InputType, OutputType>,
-        clientProtocol: CP
-    ) -> Self where CP.RequestType == RequestType, CP.ResponseType == ResponseType, ResponseType == HTTPResponse {
+    public func apply<ClientProtocol: SmithySerialization.ClientProtocol>(
+        _ operation: Operation<InputType, OutputType>,
+        _ clientProtocol: ClientProtocol
+    ) -> Self where ClientProtocol.RequestType == RequestType,
+                    ClientProtocol.ResponseType == ResponseType,
+                    ResponseType == HTTPResponse {
         self.serialize(SchemaBodyMiddleware(operation, clientProtocol))
         self.deserialize(SchemaDeserializeMiddleware(operation, clientProtocol))
         return self
