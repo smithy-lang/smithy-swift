@@ -196,6 +196,10 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
                     writer.write("urlString: \"https://example.com\"")
                 }
             }
+            writer.write(
+                "retryStrategyOptions: \$N.make(),",
+                SmithyTestUtilTypes.ProtocolTestRetryStrategyOptions,
+            )
             writer.write("httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)")
         }
         writer.write("")
