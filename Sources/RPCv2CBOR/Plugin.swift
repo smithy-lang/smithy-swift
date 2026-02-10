@@ -12,7 +12,6 @@ import class SmithyHTTPAPI.HTTPResponse
 import protocol SmithySerialization.DeserializableStruct
 import protocol SmithySerialization.SerializableStruct
 
-
 public struct Plugin: ClientRuntime.Plugin {
 
     public init() {}

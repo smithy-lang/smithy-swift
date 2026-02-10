@@ -45,7 +45,8 @@ class MiddlewareExecutionGenerator(
             writer.openBlock("for plugin in plugins {", "}") {
                 writer.write("try await plugin.configureClient(clientConfiguration: &config)")
             }
-            writer.write("let operation = \$LClient.\$LOperation",
+            writer.write(
+                "let operation = \$LClient.\$LOperation",
                 ctx.settings.clientBaseName,
                 op.toLowerCamelCase(),
             )

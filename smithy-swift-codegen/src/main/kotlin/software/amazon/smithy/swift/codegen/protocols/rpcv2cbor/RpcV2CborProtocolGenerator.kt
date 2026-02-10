@@ -86,8 +86,9 @@ class RpcV2CborProtocolGenerator(
         operationMiddleware.appendMiddleware(operation, CborValidateResponseHeaderMiddleware())
 
         if (operation.hasHttpBody(ctx)) {
-            operationMiddleware.appendMiddleware(operation,
-                ContentTypeMiddleware(ctx.model, ctx.symbolProvider, contentTypeValue, true)
+            operationMiddleware.appendMiddleware(
+                operation,
+                ContentTypeMiddleware(ctx.model, ctx.symbolProvider, contentTypeValue, true),
             )
         }
 

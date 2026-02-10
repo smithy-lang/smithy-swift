@@ -5,11 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol SmithySerialization.ClientProtocol
-import struct SmithySerialization.Operation
 import struct Smithy.AttributeKey
 import class Smithy.Context
 import class Smithy.ContextBuilder
+import protocol SmithySerialization.ClientProtocol
+import struct SmithySerialization.Operation
 
 extension Context {
 
@@ -18,7 +18,7 @@ extension Context {
     }
 
     var clientProtocol: (any ClientProtocol)? {
-        get { get(key: clientProtocolKey) }
+        `get`(key: clientProtocolKey)
     }
 }
 

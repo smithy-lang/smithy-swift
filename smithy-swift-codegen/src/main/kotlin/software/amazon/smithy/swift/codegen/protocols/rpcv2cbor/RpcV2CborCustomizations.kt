@@ -10,7 +10,6 @@ import software.amazon.smithy.swift.codegen.integration.Plugin
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceConfig
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.swiftmodules.RPCv2CBORTypes
 
 class RpcV2CborCustomizations : DefaultHTTPProtocolCustomizations() {
     // Defaults that may need to be changed in future
