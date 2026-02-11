@@ -178,7 +178,7 @@ public struct Deserializer: ShapeDeserializer {
         return value
     }
 
-    public func readDocument(_ schema: Schema) throws -> any SmithyDocument {
+    public func readDocument(_ schema: Schema) throws -> Document {
         throw SerializerError("Document type not implemented in CBOR")
     }
 

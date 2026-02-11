@@ -16,6 +16,7 @@ package struct DeserializeCodegen {
         let writer = SwiftWriter()
         writer.write("import Foundation")
         writer.write("import struct Smithy.Document")
+        writer.write("import enum Smithy.ByteStream")
         writer.write("import enum Smithy.Prelude")
         writer.write("import struct Smithy.Schema")
         writer.write("import protocol SmithySerialization.DeserializableStruct")
@@ -93,7 +94,8 @@ package struct DeserializeCodegen {
         case .structure, .union:
             let readMethodName = try target.deserializeMethodName
             if target.type == .union && target.hasTrait(StreamingTrait.self) {
-                writer.write("let value = try deserializer.\(readMethodName)(\(schemaVarName))")
+                let type = "AsyncThrowingStream<\(propertySwiftType), any Error>"
+                writer.write("let value: \(type) = try deserializer.\(readMethodName)(\(schemaVarName))")
             } else {
                 let initializer = target.type == .structure ? "()" : ".sdkUnknown(\"\")"
                 writer.write("var value = \(propertySwiftType)\(initializer)")

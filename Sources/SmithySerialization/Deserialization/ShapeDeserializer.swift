@@ -27,7 +27,7 @@ public protocol ShapeDeserializer {
     func readBigInteger(_ schema: Schema) throws -> Int64
     func readBigDecimal(_ schema: Schema) throws -> Double
     func readString(_ schema: Schema) throws -> String
-    func readDocument(_ schema: Schema) throws -> any SmithyDocument
+    func readDocument(_ schema: Schema) throws -> Document
     func readTimestamp(_ schema: Schema) throws -> Date
     func readNull<T>(_ schema: Schema) throws -> T?
     func readDataStream(_ schema: Schema) throws -> ByteStream
