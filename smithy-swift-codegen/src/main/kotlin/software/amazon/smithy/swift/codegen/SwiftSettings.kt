@@ -127,12 +127,7 @@ class SwiftSettings(
                 )
             val visibility = config.getStringMemberOrDefault(VISIBILITY, "public")
             val internalClient = config.getBooleanMemberOrDefault(INTERNAL_CLIENT, false)
-            val operations =
-                (
-                    config
-                        .getArrayMember(OPERATIONS)
-                        .getOrElse { Node.arrayNode() }
-                ).map { it.expectStringNode().value }
+            val operations = config.getArrayMember(OPERATIONS).getOrElse { Node.arrayNode() }.map { it.expectStringNode().value }
 
             return SwiftSettings(
                 serviceId,
