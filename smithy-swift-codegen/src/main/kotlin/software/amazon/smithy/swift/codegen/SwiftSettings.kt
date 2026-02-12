@@ -14,6 +14,7 @@ import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
+import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -24,6 +25,9 @@ import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.sdkId
 import java.util.logging.Logger
 import kotlin.jvm.optionals.getOrNull
+import kotlin.collections.listOf
+import kotlin.jvm.optionals.getOrElse
+import kotlin.streams.toList
 
 private const val SERVICE = "service"
 private const val MODULE_NAME = "module"
@@ -40,6 +44,7 @@ private const val MERGE_MODELS = "mergeModels"
 private const val COPYRIGHT_NOTICE = "copyrightNotice"
 private const val VISIBILITY = "visibility"
 private const val INTERNAL_CLIENT = "internalClient"
+private const val OPERATIONS = "operations"
 private const val MODEL_PATH = "modelPath"
 
 // Prioritized list of protocols supported for code generation
@@ -68,6 +73,7 @@ class SwiftSettings(
     val copyrightNotice: String,
     val visibility: String,
     val internalClient: Boolean,
+    val operations: List<String>,
     val modelPath: String,
 ) {
     companion object {
@@ -100,6 +106,7 @@ class SwiftSettings(
                     COPYRIGHT_NOTICE,
                     VISIBILITY,
                     INTERNAL_CLIENT,
+                    OPERATIONS,
                     MODEL_PATH,
                 ),
             )
@@ -127,6 +134,7 @@ class SwiftSettings(
                 )
             val visibility = config.getStringMemberOrDefault(VISIBILITY, "public")
             val internalClient = config.getBooleanMemberOrDefault(INTERNAL_CLIENT, false)
+            val operations = config.getArrayMember(OPERATIONS).getOrElse { Node.arrayNode() }.map { it.expectStringNode().value }
             val modelPath = config.getStringMemberOrDefault(MODEL_PATH, "Sources/$moduleName/model.json")
 
             return SwiftSettings(
@@ -143,6 +151,7 @@ class SwiftSettings(
                 copyrightNotice,
                 visibility,
                 internalClient,
+                operations,
                 modelPath,
             )
         }

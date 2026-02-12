@@ -194,6 +194,7 @@ class SwiftSettingsTest {
             copyrightNotice = "// Test copyright",
             visibility = "public",
             internalClient = false,
+            emptyList(),
             modelPath = "/path/to/model.json",
         )
 
