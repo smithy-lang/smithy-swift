@@ -26,6 +26,7 @@ class SmithyModelFileInfoGenerator(
                     )
                 }
                 writer.unwrite(",\n")
+                writer.write("")
             }
         }
     }
