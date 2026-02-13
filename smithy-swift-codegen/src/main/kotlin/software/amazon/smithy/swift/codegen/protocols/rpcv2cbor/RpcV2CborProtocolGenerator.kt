@@ -12,6 +12,7 @@ import software.amazon.smithy.swift.codegen.SyntheticClone
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.protocols.core.SmithyHTTPBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.MutateHeadersMiddleware
@@ -21,14 +22,20 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 
-class RpcV2CborProtocolGenerator(
+open class RpcV2CborProtocolGenerator(
     customizations: DefaultHTTPProtocolCustomizations = RpcV2CborCustomizations(),
     operationEndpointResolverMiddlewareFactory: ((ProtocolGenerator.GenerationContext, Symbol) -> MiddlewareRenderable)? = null,
     userAgentMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null,
+    serviceErrorProtocolSymbolOverride: Symbol? = null,
+    clockSkewProviderSymbolOverride: Symbol? = null,
+    retryErrorInfoProviderSymbolOverride: Symbol? = null,
 ) : SmithyHTTPBindingProtocolGenerator(
         customizations,
         operationEndpointResolverMiddlewareFactory,
         userAgentMiddlewareFactory,
+        serviceErrorProtocolSymbolOverride,
+        clockSkewProviderSymbolOverride,
+        retryErrorInfoProviderSymbolOverride,
     ) {
     override val defaultContentType = "application/cbor"
     override val protocol: ShapeId = Rpcv2CborTrait.ID
