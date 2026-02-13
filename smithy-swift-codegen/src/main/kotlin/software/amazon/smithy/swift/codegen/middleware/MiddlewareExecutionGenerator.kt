@@ -38,10 +38,14 @@ class MiddlewareExecutionGenerator(
         val inputShape = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op)
         val outputShape = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op)
         val plugins = httpProtocolCustomizable.plugins
-        if (plugins.isNotEmpty()) {
+        if (isSchemaBased) {
             writer.write("var config = config")
             val pluginInits = plugins.map { writer.format("\$N()", it.className) }
-            writer.write("let plugins = [\$L]", pluginInits.joinToString(", "))
+            writer.write(
+                "let plugins: [any \$N] = [\$L]",
+                ClientRuntimeTypes.Core.Plugin,
+                pluginInits.joinToString(", "),
+            )
             writer.openBlock("for plugin in plugins {", "}") {
                 writer.write("try await plugin.configureClient(clientConfiguration: &config)")
             }

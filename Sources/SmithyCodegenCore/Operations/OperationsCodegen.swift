@@ -19,7 +19,7 @@ struct OperationsCodegen {
 
         let clientSymbol = try ctx.symbolProvider.swiftType(shape: ctx.service)
 
-        try writer.openBlock("public extension \(clientSymbol) {", "}") { writer in
+        try writer.openBlock("\(ctx.settings.scope) extension \(clientSymbol) {", "}") { writer in
             for operation in sortedOperations {
                 writer.write("")
                 let varName = "\(try ctx.symbolProvider.operationMethodName(operation: operation))Operation"

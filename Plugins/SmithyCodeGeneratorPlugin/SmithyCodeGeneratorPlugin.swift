@@ -47,10 +47,12 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         let modelInfoData = try Data(contentsOf: URL(fileURLWithPath: inputPath.string))
         let smithyModelInfo = try JSONDecoder().decode(SmithyModelInfo.self, from: modelInfoData)
 
-        // Get the service ID & model path & settings sdkId from smithy-model-info.
+        // Get the fields from smithy-model-info.
         let service = smithyModelInfo.service
         let modelPathURL = currentWorkingDirectoryFileURL.appendingPathComponent(smithyModelInfo.path)
         let modelPath = Path(modelPathURL.path)
+        let `internal` = smithyModelInfo.`internal` ?? false
+        let operations = (smithyModelInfo.operations ?? []).joined(separator: ",")
 
         // Construct the Schemas.swift path.
         let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
@@ -74,6 +76,8 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
             arguments: [
                 service,
                 modelPath,
+                "--internal", "\(`internal`)",
+                "--operations", operations,
                 "--schemas-path", schemasSwiftPath,
                 "--serialize-path", serializeSwiftPath,
                 "--deserialize-path", deserializeSwiftPath,
@@ -93,11 +97,17 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
     }
 }
 
-/// Codable structure for reading the contents of `smithy-model-info.json`
+/// Decodable structure for reading the contents of `smithy-model-info.json`
 private struct SmithyModelInfo: Decodable {
     /// The shape ID of the service being generated.  Must exist in the model.
     let service: String
 
     /// The path to the model, from the root of the target's project.  Required.
     let path: String
+    
+    /// Set to `true` if the client should be rendered for internal use.
+    let `internal`: Bool?
+
+    /// A list of operations to be included in the client.  If omitted or empty, all operations are included.
+    let operations: [String]?
 }

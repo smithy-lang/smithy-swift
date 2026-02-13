@@ -8,6 +8,7 @@
 import ArgumentParser
 import Foundation
 import struct SmithyCodegenCore.CodeGenerator
+import struct SmithyCodegenCore.SwiftSettings
 
 @main
 struct SmithyCodegenCLI: AsyncParsableCommand {
@@ -17,6 +18,12 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
 
     @Argument(help: "The full or relative path to read the JSON AST model input file.")
     var modelPath: String
+
+    @Option(help: "Set this to true if the client to be generated should be internal-scoped.")
+    var `internal` = false
+
+    @Option(help: "The comma-separated list of operation IDs to be included in the client.")
+    var operations: String?
 
     @Option(help: "The full or relative path to write the Schemas output file.")
     var schemasPath: String?
@@ -38,6 +45,9 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
         let start = Date()
 
         let currentWorkingDirectoryFileURL = currentWorkingDirectoryFileURL()
+
+        let operations = (operations ?? "").split(separator: ",").map(String.init)
+        let settings = try SwiftSettings(service: service, internal: `internal`, operations: operations)
 
         // Create the model file URL
         let modelFileURL = URL(fileURLWithPath: modelPath, relativeTo: currentWorkingDirectoryFileURL)
@@ -62,7 +72,7 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
 
         // Use resolved file URLs to run code generator
         try CodeGenerator(
-            service: service,
+            settings: settings,
             modelFileURL: modelFileURL,
             schemasFileURL: schemasFileURL,
             serializeFileURL: serializeFileURL,
