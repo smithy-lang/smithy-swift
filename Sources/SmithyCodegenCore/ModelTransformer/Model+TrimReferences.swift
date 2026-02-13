@@ -6,7 +6,7 @@
 //
 
 extension Model {
-    
+
     /// Deletes any references to shapes that have been removed from a model.
     ///
     /// Apply this transform after removing shapes from a model to ensure the model

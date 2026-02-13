@@ -6,7 +6,7 @@
 //
 
 extension Model {
-    
+
     /// Reduces the service's operations to those specified in SwiftSettings.
     ///
     /// If SwiftSettings has a null or empty `operations` param, all operations are retained.

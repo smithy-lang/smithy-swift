@@ -104,7 +104,7 @@ private struct SmithyModelInfo: Decodable {
 
     /// The path to the model, from the root of the target's project.  Required.
     let path: String
-    
+
     /// Set to `true` if the client should be rendered for internal use.
     let `internal`: Bool?
 
