@@ -113,6 +113,8 @@ extension Model {
                 id: shapeID,
                 traits: traits,
                 operationIDs: try astShape.operations?.map { try $0.id } ?? [],
+                collectionOperationIDs: try astShape.collectionOperations?.map { try $0.id } ?? [],
+                resourceIDs: try astShape.resources?.map { try $0.id } ?? [],
                 createID: try astShape.create?.id,
                 putID: try astShape.put?.id,
                 readID: try astShape.read?.id,

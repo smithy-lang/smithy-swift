@@ -65,6 +65,8 @@ extension Model {
                 )
             case let resourceShape as ResourceShape:
                 let operationIDs = resourceShape.operationIDs.filter { trimmedShapes[$0] != nil }
+                let collectionOperationIDs = resourceShape.collectionOperationIDs.filter { trimmedShapes[$0] != nil }
+                let resourceIDs = resourceShape.resourceIDs.filter { trimmedShapes[$0] != nil }
                 let createID = resourceShape.createID.map { trimmedShapes[$0] != nil ? $0 : nil } ?? nil
                 let putID = resourceShape.putID.map { trimmedShapes[$0] != nil ? $0 : nil } ?? nil
                 let readID = resourceShape.readID.map { trimmedShapes[$0] != nil ? $0 : nil } ?? nil
@@ -75,6 +77,8 @@ extension Model {
                     id: resourceShape.id,
                     traits: resourceShape.traits,
                     operationIDs: operationIDs,
+                    collectionOperationIDs: collectionOperationIDs,
+                    resourceIDs: resourceIDs,
                     createID: createID,
                     putID: putID,
                     readID: readID,

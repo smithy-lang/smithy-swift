@@ -554,6 +554,8 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext) {
+        val usesSchemaBased = SerdeUtils.useSchemaBased(ctx) // temporary condition
+        if (usesSchemaBased) return
         var streamingShapes = inputStreamingShapes(ctx)
         val messageMarshallableGenerator = MessageMarshallableGenerator(ctx, defaultContentType)
         streamingShapes.forEach { streamingMember ->
@@ -562,6 +564,8 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext) {
+        val usesSchemaBased = SerdeUtils.useSchemaBased(ctx) // temporary condition
+        if (usesSchemaBased) return
         var streamingShapes = outputStreamingShapes(ctx)
         val messageUnmarshallableGenerator = MessageUnmarshallableGenerator(ctx, customizations)
         streamingShapes.forEach { streamingMember ->
