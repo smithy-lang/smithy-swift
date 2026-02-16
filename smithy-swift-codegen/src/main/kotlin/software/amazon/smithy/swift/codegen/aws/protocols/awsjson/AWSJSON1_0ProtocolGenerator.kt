@@ -5,8 +5,8 @@
 
 package software.amazon.smithy.swift.codegen.aws.protocols.awsjson
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape

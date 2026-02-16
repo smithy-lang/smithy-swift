@@ -4,8 +4,8 @@
  */
 package software.amazon.smithy.swift.codegen.aws.protocols.restjson
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId

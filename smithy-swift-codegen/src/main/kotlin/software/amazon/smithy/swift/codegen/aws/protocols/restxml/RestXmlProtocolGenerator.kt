@@ -5,8 +5,8 @@
 
 package software.amazon.smithy.swift.codegen.aws.protocols.restxml
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
