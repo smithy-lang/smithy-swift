@@ -24,9 +24,9 @@ import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.sdkId
 import java.util.logging.Logger
-import kotlin.jvm.optionals.getOrNull
 import kotlin.collections.listOf
 import kotlin.jvm.optionals.getOrElse
+import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.toList
 
 private const val SERVICE = "service"
