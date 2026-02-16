@@ -7,7 +7,6 @@ package software.amazon.smithy.swift.codegen.requestandresponse.responseflow
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.swift.codegen.TestContext
 import software.amazon.smithy.swift.codegen.defaultSettings
 import software.amazon.smithy.swift.codegen.getFileContents
