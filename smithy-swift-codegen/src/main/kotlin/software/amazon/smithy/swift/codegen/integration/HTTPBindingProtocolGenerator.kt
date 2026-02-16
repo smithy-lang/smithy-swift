@@ -134,7 +134,6 @@ abstract class HTTPBindingProtocolGenerator(
 ) : ProtocolGenerator {
     @Suppress("ktlint:standard:property-naming")
     private val LOGGER = Logger.getLogger(javaClass.name)
-    private val idempotencyTokenValue = "idempotencyTokenGenerator.generateToken()"
 
     override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpError
 
@@ -202,6 +201,7 @@ abstract class HTTPBindingProtocolGenerator(
         val nestedShapes =
             resolveShapesNeedingCodableConformance(ctx)
                 .filter { !it.isEventStreaming }
+                .sorted()
         for (shape in nestedShapes) {
             renderCodableExtension(ctx, shape)
         }
@@ -556,7 +556,7 @@ abstract class HTTPBindingProtocolGenerator(
     override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext) {
         val usesSchemaBased = SerdeUtils.useSchemaBased(ctx) // temporary condition
         if (usesSchemaBased) return
-        var streamingShapes = inputStreamingShapes(ctx)
+        val streamingShapes = inputStreamingShapes(ctx)
         val messageMarshallableGenerator = MessageMarshallableGenerator(ctx, defaultContentType)
         streamingShapes.forEach { streamingMember ->
             messageMarshallableGenerator.render(streamingMember)
@@ -566,7 +566,7 @@ abstract class HTTPBindingProtocolGenerator(
     override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext) {
         val usesSchemaBased = SerdeUtils.useSchemaBased(ctx) // temporary condition
         if (usesSchemaBased) return
-        var streamingShapes = outputStreamingShapes(ctx)
+        val streamingShapes = outputStreamingShapes(ctx)
         val messageUnmarshallableGenerator = MessageUnmarshallableGenerator(ctx, customizations)
         streamingShapes.forEach { streamingMember ->
             messageUnmarshallableGenerator.render(streamingMember)
