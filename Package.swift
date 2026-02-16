@@ -420,7 +420,7 @@ let package = Package(
         ),
         .testTarget(
             name: "SmithySerializationTests",
-            dependencies: ["SmithySerialization"],
+            dependencies: ["SmithySerialization"]
         ),
     ].compactMap { $0 }
 )
