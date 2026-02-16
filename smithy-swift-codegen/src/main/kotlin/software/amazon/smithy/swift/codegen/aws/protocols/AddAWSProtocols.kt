@@ -15,13 +15,10 @@ import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.protocols.rpcv2cbor.RpcV2CborProtocolGenerator
 
 /**
- * Registers all protocol generators with default (non-AWS) customizations.
+ * Registers protocol generators with default customizations.
  *
- * This allows smithy-swift to work out of the box for any Smithy model using
- * these protocols, without requiring aws-sdk-swift. When aws-sdk-swift is on
- * the classpath, its AddProtocols integration runs at a higher priority
- * (order = -10, after this at -20) and its generators overwrite these defaults
- * via associateBy in the protocol resolution logic.
+ * Downstream modules (e.g. aws-sdk-swift) may override these by registering
+ * generators with the same protocol ShapeId at a higher order.
  */
 class AddAWSProtocols : SwiftIntegration {
     override val order: Byte = -20
