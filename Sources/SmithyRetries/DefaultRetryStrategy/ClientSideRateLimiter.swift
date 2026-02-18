@@ -58,16 +58,20 @@ actor ClientSideRateLimiter {
 
     // The following functions are built exactly as described in Retry Behavior 2.0.
 
-    func tokenBucketAcquire(amount: Double) async -> TimeInterval? {
+    func tokenBucketAcquire(amount: Double) -> TimeInterval? {
         if !enabled { return nil }
         tokenBucketRefill()
-        while amount > currentCapacity {
+        if amount <= currentCapacity {
+            currentCapacity -= amount
+            return nil
+        } else {
             let delay = (amount - currentCapacity) / fillRate
-            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-            tokenBucketRefill()
+            // Don't let capacity go negative — clamp to zero so the next
+            // caller computes its delay from the true deficit instead of
+            // an artificially deep negative value.
+            currentCapacity = 0
+            return delay
         }
-        currentCapacity -= amount
-        return nil
     }
 
     private func tokenBucketRefill() {
