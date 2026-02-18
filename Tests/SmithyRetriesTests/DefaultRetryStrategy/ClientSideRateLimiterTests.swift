@@ -89,6 +89,7 @@ final class ClientSideRateLimiterTests: XCTestCase {
 
             // End-to-end tests require updating client send rate and current time (see above) between steps.
             if testStep.measuredTXRate != nil || testStep.newTokenBucketRate != nil {
+                await subject.updateMeasuredRate()
                 await subject.updateClientSendingRate(isThrottling: testStep.response == .throttle)
             }
             if let measuredTXRate = testStep.measuredTXRate {

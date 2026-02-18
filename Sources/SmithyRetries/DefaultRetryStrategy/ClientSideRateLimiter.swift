@@ -58,20 +58,23 @@ actor ClientSideRateLimiter {
 
     // The following functions are built exactly as described in Retry Behavior 2.0.
 
-    func tokenBucketAcquire(amount: Double) -> TimeInterval? {
+    func tokenBucketAcquire(amount: Double) async -> TimeInterval? {
         if !enabled { return nil }
         tokenBucketRefill()
-        if amount <= currentCapacity {
-            currentCapacity -= amount
-            return nil
-        } else {
+        // Block until capacity is available, like Python's TokenBucket.acquire().
+        // Task.sleep suspends the actor, allowing updateClientSendingRate to
+        // run and adjust the rate while we wait.
+        while amount > currentCapacity {
             let delay = (amount - currentCapacity) / fillRate
-            // Don't let capacity go negative — clamp to zero so the next
-            // caller computes its delay from the true deficit instead of
-            // an artificially deep negative value.
-            currentCapacity = 0
-            return delay
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            tokenBucketRefill()
         }
+        // Measure the send rate at the point tokens are actually granted,
+        // not when responses complete. This prevents measuredTXRate inflation
+        // from concurrent completion bursts.
+        updateMeasuredRate()
+        currentCapacity -= amount
+        return 0.0
     }
 
     private func tokenBucketRefill() {
@@ -96,7 +99,8 @@ actor ClientSideRateLimiter {
         enabled = true
     }
 
-    private func updateMeasuredRate() {
+    // Exposed internally for use while testing.
+    func updateMeasuredRate() {
         let t = clock()
         let timeBucket = Self.floor(t * 2.0) / 2.0
         requestCount += 1
@@ -110,7 +114,6 @@ actor ClientSideRateLimiter {
 
     // Exposed internally for use while testing.
     func updateClientSendingRate(isThrottling: Bool) {
-        updateMeasuredRate()
         let calculatedRate: Double
         if isThrottling {
             let rateToUse = enabled ? min(measuredTXRate, fillRate) : measuredTXRate
