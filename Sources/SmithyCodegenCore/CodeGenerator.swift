@@ -15,6 +15,8 @@ public struct CodeGenerator {
     let service: String
     let modelFileURL: URL
     let schemasFileURL: URL?
+    let serializeFileURL: URL?
+    let deserializeFileURL: URL?
 
     /// Creates a code generator.
     /// - Parameters:
@@ -24,11 +26,15 @@ public struct CodeGenerator {
     public init(
         service: String,
         modelFileURL: URL,
-        schemasFileURL: URL?
+        schemasFileURL: URL?,
+        serializeFileURL: URL?,
+        deserializeFileURL: URL?
     ) throws {
         self.service = service
         self.modelFileURL = modelFileURL
         self.schemasFileURL = schemasFileURL
+        self.serializeFileURL = serializeFileURL
+        self.deserializeFileURL = deserializeFileURL
     }
 
     /// Executes the code generator.
@@ -52,6 +58,18 @@ public struct CodeGenerator {
         if let schemasFileURL {
             let schemasContents = try SchemasCodegen().generate(ctx: ctx)
             try Data(schemasContents.utf8).write(to: schemasFileURL)
+        }
+
+        // If a Serialize file URL was provided, generate it
+        if let serializeFileURL {
+            let serializeContents = try SerializeCodegen().generate(ctx: ctx)
+            try Data(serializeContents.utf8).write(to: serializeFileURL)
+        }
+
+        // If a Deserialize file URL was provided, generate it
+        if let deserializeFileURL {
+            let deserializeContents = try DeserializeCodegen().generate(ctx: ctx)
+            try Data(deserializeContents.utf8).write(to: deserializeFileURL)
         }
     }
 }

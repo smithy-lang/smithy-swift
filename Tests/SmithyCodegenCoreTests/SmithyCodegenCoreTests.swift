@@ -25,7 +25,9 @@ class SmithyCodegenCoreTests: XCTestCase {
         let generator = try CodeGenerator(
             service: "smithy.protocoltests.rpcv2Cbor#RpcV2Protocol",
             modelFileURL: Bundle.module.url(forResource: "smithy-rpcv2-cbor", withExtension: "json")!,
-            schemasFileURL: tempDirURL.appendingPathComponent("Schemas.swift")
+            schemasFileURL: tempDirURL.appendingPathComponent("Schemas.swift"),
+            serializeFileURL: tempDirURL.appendingPathComponent("Serialize.swift"),
+            deserializeFileURL: tempDirURL.appendingPathComponent("Deserialize.swift")
         )
         try generator.run()
     }
