@@ -24,4 +24,4 @@ public extension ContextBuilder {
     }
 }
 
-private var operationPropertiesKey = AttributeKey<any OperationProperties>(name: "OperationProperties")
+private let operationPropertiesKey = AttributeKey<any OperationProperties>(name: "OperationProperties")
