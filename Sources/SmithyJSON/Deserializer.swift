@@ -13,9 +13,6 @@ import class Foundation.JSONSerialization
 import class Foundation.NSNull
 import class Foundation.NSNumber
 @_spi(SmithyDocumentImpl) import Smithy
-import struct Smithy.Document
-import struct Smithy.Schema
-import struct Smithy.TimestampFormatTrait
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
 import protocol SmithySerialization.ShapeDeserializer
@@ -38,7 +35,7 @@ public class Deserializer: ShapeDeserializer {
         self.value = node
     }
 
-    public func readStruct<T>(_ schema: Schema, _ value: inout T) throws where T : SmithySerialization.DeserializableStruct {
+    public func readStruct<T>(_ schema: Schema, _ value: inout T) throws where T: DeserializableStruct {
         guard case .object(let object) = self.value else { throw SerializerError("Expected object") }
         let members = schema.type == .member ? schema.target!.members : schema.members
         for member in members where member.hasTrait(RequiredTrait.self) && !member.hasTrait(DefaultTrait.self) {
@@ -68,52 +65,52 @@ public class Deserializer: ShapeDeserializer {
             try T.readConsumer(memberSchema, &value, memberDeserializer)
         }
     }
-    
-    public func readList<E>(_ schema: Schema, _ consumer: (any SmithySerialization.ShapeDeserializer) throws -> E) throws -> [E] {
+
+    public func readList<E>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> E) throws -> [E] {
         guard case .list(let list) = value else { throw SerializerError("Expected list") }
         return try list.map { try consumer(Deserializer(node: $0)) }
     }
-    
-    public func readMap<V>(_ schema: Schema, _ consumer: (any SmithySerialization.ShapeDeserializer) throws -> V) throws -> [String: V] {
+
+    public func readMap<V>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> V) throws -> [String: V] {
         guard case .object(let map) = value else { throw SerializerError("Expected map") }
         return try map.mapValues { try consumer(Deserializer(node: $0)) }
     }
-    
+
     public func readBoolean(_ schema: Schema) throws -> Bool {
         guard case .bool(let bool) = value else { throw SerializerError("Expected bool") }
         return bool
     }
-    
+
     public func readBlob(_ schema: Schema) throws -> Data {
         guard case .string(let string) = value else { throw SerializerError("Expected string") }
         guard let data = Data(base64Encoded: string) else { throw SerializerError("String is not valid base64") }
         return data
     }
-    
+
     public func readByte(_ schema: Schema) throws -> Int8 {
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
         guard let byte = Int8(exactly: number.intValue) else { throw SerializerError("Number is not Int8") }
         return byte
     }
-    
+
     public func readShort(_ schema: Schema) throws -> Int16 {
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
         guard let short = Int16(exactly: number.intValue) else { throw SerializerError("Number is not Int16") }
         return short
     }
-    
+
     public func readInteger(_ schema: Schema) throws -> Int {
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
         guard let int = Int(exactly: number.intValue) else { throw SerializerError("Number is not Int") }
         return int
     }
-    
+
     public func readLong(_ schema: Schema) throws -> Int {
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
         guard let int = Int(exactly: number.int64Value) else { throw SerializerError("Number is not Int") }
         return int
     }
-    
+
     public func readFloat(_ schema: Schema) throws -> Float {
         switch value {
         case .number(let number):
@@ -133,7 +130,7 @@ public class Deserializer: ShapeDeserializer {
             throw SerializerError("Expected number, NaN, Infinity, -Infinity")
         }
     }
-    
+
     public func readDouble(_ schema: Schema) throws -> Double {
         switch value {
         case .number(let number):
@@ -153,7 +150,7 @@ public class Deserializer: ShapeDeserializer {
             throw SerializerError("Expected number, NaN, Infinity, -Infinity")
         }
     }
-    
+
     public func readBigInteger(_ schema: Schema) throws -> Int64 {
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
         guard let bigInt = Int64(exactly: number.int64Value) else { throw SerializerError("Number is not Int64") }

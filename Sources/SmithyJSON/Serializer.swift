@@ -34,7 +34,11 @@ public class Serializer: ShapeSerializer {
         self.value = .object(object)
     }
 
-    public func writeList<E>(_ schema: Schema, _ value: [E], _ consumer: (E, any ShapeSerializer) throws -> Void) throws {
+    public func writeList<E>(
+        _ schema: Schema,
+        _ value: [E],
+        _ consumer: (E, any ShapeSerializer) throws -> Void
+    ) throws {
         var list = [JSONValue]()
         for element in value {
             let elementSerializer = Serializer()
@@ -46,7 +50,11 @@ public class Serializer: ShapeSerializer {
         self.value = .list(list)
     }
 
-    public func writeMap<V>(_ schema: Schema, _ value: [String: V], _ consumer: (V, any ShapeSerializer) throws -> Void) throws {
+    public func writeMap<V>(
+        _ schema: Schema,
+        _ value: [String: V],
+        _ consumer: (V, any ShapeSerializer) throws -> Void
+    ) throws {
         var object = [String: JSONValue]()
         for (key, value) in value {
             let valueSerializer = Serializer()
