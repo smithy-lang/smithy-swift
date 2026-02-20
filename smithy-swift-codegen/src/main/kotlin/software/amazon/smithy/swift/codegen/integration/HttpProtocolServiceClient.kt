@@ -21,7 +21,7 @@ open class HttpProtocolServiceClient(
     private val writer: SwiftWriter,
     private val serviceConfig: ServiceConfig,
 ) {
-    private val serviceName: String = ctx.settings.sdkId
+    private val serviceName: String = ctx.settings.sdkIdStrippingService
 
     open val clientProtocolSymbol: Symbol = ClientRuntimeTypes.Core.Client
 

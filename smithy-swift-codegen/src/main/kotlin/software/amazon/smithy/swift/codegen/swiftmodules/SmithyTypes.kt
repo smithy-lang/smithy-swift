@@ -21,16 +21,20 @@ object SmithyTypes {
     val LogAgent = runtimeSymbol("LogAgent", SwiftDeclaration.PROTOCOL)
     val RequestMessageSerializer = runtimeSymbol("RequestMessageSerializer", SwiftDeclaration.PROTOCOL)
     val URIQueryItem = runtimeSymbol("URIQueryItem", SwiftDeclaration.STRUCT)
+    val Schema = runtimeSymbol("Schema", SwiftDeclaration.CLASS)
+    val Prelude = runtimeSymbol("Prelude", SwiftDeclaration.ENUM)
 }
 
 private fun runtimeSymbol(
     name: String,
-    declaration: SwiftDeclaration? = null,
+    declaration: SwiftDeclaration?,
+    additionalImports: List<Symbol> = emptyList(),
+    spiName: List<String> = emptyList(),
 ): Symbol =
     SwiftSymbol.make(
         name,
         declaration,
-        SwiftDependency.SMITHY,
-        emptyList(),
-        emptyList(),
+        SwiftDependency.SMITHY.takeIf { additionalImports.isEmpty() },
+        additionalImports,
+        spiName,
     )

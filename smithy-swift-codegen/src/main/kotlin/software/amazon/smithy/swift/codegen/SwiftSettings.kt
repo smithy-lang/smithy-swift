@@ -21,9 +21,12 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
+import software.amazon.smithy.swift.codegen.utils.clientName
+import software.amazon.smithy.swift.codegen.utils.sdkId
 import java.util.logging.Logger
 import kotlin.collections.listOf
 import kotlin.jvm.optionals.getOrElse
+import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.toList
 
 private const val SERVICE = "service"
@@ -42,6 +45,7 @@ private const val COPYRIGHT_NOTICE = "copyrightNotice"
 private const val VISIBILITY = "visibility"
 private const val INTERNAL_CLIENT = "internalClient"
 private const val OPERATIONS = "operations"
+private const val MODEL_PATH = "modelPath"
 
 // Prioritized list of protocols supported for code generation
 private val DEFAULT_PROTOCOL_RESOLUTION_PRIORITY =
@@ -70,6 +74,7 @@ class SwiftSettings(
     val visibility: String,
     val internalClient: Boolean,
     val operations: List<String>,
+    val modelPath: String,
 ) {
     companion object {
         private val LOGGER: Logger = Logger.getLogger(SwiftSettings::class.java.name)
@@ -102,6 +107,7 @@ class SwiftSettings(
                     VISIBILITY,
                     INTERNAL_CLIENT,
                     OPERATIONS,
+                    MODEL_PATH,
                 ),
             )
 
@@ -110,6 +116,7 @@ class SwiftSettings(
                     .getStringMember(SERVICE)
                     .map(StringNode::expectShapeId)
                     .orElseGet { inferService(model) }
+            val service = model.getShape(serviceId).getOrNull() as? ServiceShape
 
             val moduleName = config.expectStringMember(MODULE_NAME).value
             val version = config.expectStringMember(MODULE_VERSION).value
@@ -118,7 +125,7 @@ class SwiftSettings(
             val author = config.expectStringMember(AUTHOR).value
             val gitRepo = config.expectStringMember(GIT_REPO).value
             val swiftVersion = config.expectStringMember(SWIFT_VERSION).value
-            val sdkId = sanitizeSdkId(config.getStringMemberOrDefault(SDK_ID, serviceId.name))
+            val sdkId = config.getStringMemberOrDefault(SDK_ID, service?.sdkId ?: serviceId.name)
             val mergeModels = config.getBooleanMemberOrDefault(MERGE_MODELS)
             val copyrightNotice =
                 config.getStringMemberOrDefault(
@@ -128,6 +135,7 @@ class SwiftSettings(
             val visibility = config.getStringMemberOrDefault(VISIBILITY, "public")
             val internalClient = config.getBooleanMemberOrDefault(INTERNAL_CLIENT, false)
             val operations = config.getArrayMember(OPERATIONS).getOrElse { Node.arrayNode() }.map { it.expectStringNode().value }
+            val modelPath = config.getStringMemberOrDefault(MODEL_PATH, "Sources/$moduleName/model.json")
 
             return SwiftSettings(
                 serviceId,
@@ -144,10 +152,9 @@ class SwiftSettings(
                 visibility,
                 internalClient,
                 operations,
+                modelPath,
             )
         }
-
-        private fun sanitizeSdkId(sdkId: String): String = sdkId.removeSuffix(" Service")
 
         // infer the service to generate from a model
         private fun inferService(model: Model): ShapeId {
@@ -227,13 +234,20 @@ class SwiftSettings(
                 "The following protocol generators were found on the class path: $supportedProtocolTraits",
         )
     }
+
+    val testModuleName: String
+        get() = "${moduleName}Tests"
+
+    val sdkIdStrippingService: String
+        get() = sdkId.removeSuffix(" Service")
+
+    val clientBaseNamePreservingService: String
+        get() = sdkId.clientName()
+
+    val clientBaseName: String
+        get() = sdkIdStrippingService.clientName()
 }
 
 class UnresolvableProtocolException(
     message: String,
 ) : CodegenException(message)
-
-val SwiftSettings.testModuleName: String
-    get() {
-        return "${this.moduleName}Tests"
-    }
