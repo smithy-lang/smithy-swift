@@ -35,6 +35,6 @@ public struct GenerationContext {
         self.settings = settings
         self.service = try finalModel.expectServiceShape(id: settings.serviceID)
         self.model = finalModel
-        self.symbolProvider = SymbolProvider(service: service, model: finalModel)
+        self.symbolProvider = SymbolProvider(service: service, settings: settings, model: finalModel)
     }
 }

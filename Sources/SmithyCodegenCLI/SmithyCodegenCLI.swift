@@ -19,6 +19,9 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
     @Argument(help: "The full or relative path to read the JSON AST model input file.")
     var modelPath: String
 
+    @Option(help: "The sdkId used by the Smithy-based code generator")
+    var sdkId: String?
+
     @Option(help: "Set this to true if the client to be generated should be internal-scoped.")
     var `internal` = false
 
@@ -47,7 +50,12 @@ struct SmithyCodegenCLI: AsyncParsableCommand {
         let currentWorkingDirectoryFileURL = currentWorkingDirectoryFileURL()
 
         let operations = (operations ?? "").split(separator: ",").map(String.init)
-        let settings = try SwiftSettings(service: service, internal: `internal`, operations: operations)
+        let settings = try SwiftSettings(
+            service: service,
+            sdkId: sdkId,
+            internal: `internal`,
+            operations: operations
+        )
 
         // Create the model file URL
         let modelFileURL = URL(fileURLWithPath: modelPath, relativeTo: currentWorkingDirectoryFileURL)

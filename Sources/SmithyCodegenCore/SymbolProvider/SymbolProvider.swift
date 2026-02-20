@@ -14,10 +14,12 @@ import struct Smithy.ShapeID
 
 public struct SymbolProvider {
     let service: ServiceShape
+    let settings: SwiftSettings
     let model: Model
 
-    init(service: ServiceShape, model: Model) {
+    init(service: ServiceShape, settings: SwiftSettings, model: Model) {
         self.service = service
+        self.settings = settings
         self.model = model
     }
 
@@ -87,7 +89,8 @@ public struct SymbolProvider {
             guard let serviceShape = shape as? ServiceShape else {
                 throw SymbolProviderError("Shape has type .service but is not a ServiceShape")
             }
-            return try "\(serviceShape.clientBaseName)Client"
+            let base = try settings.sdkId.toUpperCamelCase() ?? serviceShape.clientBaseName
+            return try "\(base)Client"
         case .member, .operation, .resource:
             throw SymbolProviderError("Cannot provide Swift symbol for shape type \(shape.type)")
         }

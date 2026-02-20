@@ -53,7 +53,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         // Serialize the input to data.
         let serializer = try codec.makeSerializer()
         try input.serialize(serializer)
-        let data = serializer.data
+        let data = try serializer.data
 
         // Add the data to the request body.
         let body = ByteStream.data(data)

@@ -11,7 +11,7 @@
 public enum Prelude {
 
     public static var unitSchema: Schema {
-        Schema(id: .init("smithy.api", "Unit"), type: .structure)
+        Schema(id: .init("smithy.api", "Unit"), type: .structure, traits: [UnitTypeTrait()])
     }
 
     public static var booleanSchema: Schema {
@@ -54,6 +54,14 @@ public enum Prelude {
         Schema(id: .init("smithy.api", "Double"), type: .double)
     }
 
+    public static var bigIntegerSchema: Schema {
+        Schema(id: .init("smithy.api", "BigInteger"), type: .bigInteger)
+    }
+
+    public static var bigDecimalSchema: Schema {
+        Schema(id: .init("smithy.api", "BigDecimal"), type: .bigDecimal)
+    }
+
     public static var documentSchema: Schema {
         Schema(id: .init("smithy.api", "Document"), type: .document)
     }
@@ -84,5 +92,21 @@ public enum Prelude {
 
     public static var primitiveDoubleSchema: Schema {
         Schema(id: .init("smithy.api", "PrimitiveDouble"), type: .double, traits: [DefaultTrait(0.0)])
+    }
+
+    // The following schemas aren't strictly part of Smithy's prelude, but are used when deserializing a
+    // list or map contained in a Smithy document.
+
+    public static var listDocumentSchema: Schema {
+        Schema(id: .init("swift.synthetic", "ListDocument"), type: .list, members: [
+            .init(id: .init("swift.synthetic", "ListDocument", "member"), type: .document),
+        ])
+    }
+
+    public static var mapDocumentSchema: Schema {
+        Schema(id: .init("swift.synthetic", "MapDocument"), type: .list, members: [
+            .init(id: .init("swift.synthetic", "MapDocument", "key"), type: .string),
+            .init(id: .init("swift.synthetic", "MapDocument", "value"), type: .document),
+        ])
     }
 }
