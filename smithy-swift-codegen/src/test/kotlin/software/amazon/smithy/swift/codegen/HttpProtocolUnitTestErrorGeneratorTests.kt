@@ -35,13 +35,14 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             return
         }
 
-        let config = try await ExampleClient.Config(
+        let config = try await ExampleClient.ExampleClientConfig(
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
 
@@ -102,13 +103,14 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             return
         }
 
-        let config = try await ExampleClient.Config(
+        let config = try await ExampleClient.ExampleClientConfig(
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
             signingRegion: "us-west-2",
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
 

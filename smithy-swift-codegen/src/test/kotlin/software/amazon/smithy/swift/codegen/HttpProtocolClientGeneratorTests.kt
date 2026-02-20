@@ -21,11 +21,12 @@ public final class RestJsonProtocolClient: ClientRuntime.Client {
     public static let clientName = "RestJsonProtocolClient"
     public static let version = "2019-12-16"
     let client: ClientRuntime.SdkHttpClient
-    let config: RestJsonProtocolClient.RestJsonProtocolClientConfig
+    public let config: RestJsonProtocolClient.RestJsonProtocolClientConfig
     let serviceName = "Rest Json Protocol"
 
     @available(*, deprecated, message: "Use RestJsonProtocolClient.RestJsonProtocolClientConfig instead")
     public typealias Config = RestJsonProtocolClient.RestJsonProtocolClientConfiguration
+    public typealias Configuration = RestJsonProtocolClient.RestJsonProtocolClientConfig
 
     public required init(config: RestJsonProtocolClient.RestJsonProtocolClientConfig) {
         ClientRuntime.initialize()
