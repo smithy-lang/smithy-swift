@@ -7,7 +7,7 @@
 
 import struct Smithy.Schema
 
-public protocol OperationProperties {
+public protocol OperationProperties: Sendable {
     var schema: Schema { get }
     var serviceSchema: Schema { get }
     var inputSchema: Schema { get }
