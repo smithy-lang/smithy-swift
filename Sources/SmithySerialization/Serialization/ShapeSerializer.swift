@@ -95,7 +95,6 @@ public extension ShapeSerializer {
     ///   - schema: The schema for the document
     ///   - value: The document to be written
     func writeDocument(_ schema: Schema, _ value: any SmithyDocument) throws {
-//        throw SerializerError("Not implemented")
         switch value.type {
         case .blob:
             try writeBlob(Prelude.blobSchema, value.asBlob())
