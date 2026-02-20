@@ -8,18 +8,18 @@
 import struct Smithy.Schema
 
 public struct Operation<Input: SerializableStruct, Output: DeserializableStruct> {
-    private let _schema: () -> Schema
-    private let _serviceSchema: () -> Schema
-    private let _inputSchema: () -> Schema
-    private let _outputSchema: () -> Schema
-    private let _errorTypeRegistry: () -> TypeRegistry
+    private let _schema: @Sendable () -> Schema
+    private let _serviceSchema: @Sendable () -> Schema
+    private let _inputSchema: @Sendable () -> Schema
+    private let _outputSchema: @Sendable () -> Schema
+    private let _errorTypeRegistry: @Sendable () -> TypeRegistry
 
     public init(
-        schema: @autoclosure @escaping () -> Schema,
-        serviceSchema: @autoclosure @escaping () -> Schema,
-        inputSchema: @autoclosure @escaping () -> Schema,
-        outputSchema: @autoclosure @escaping () -> Schema,
-        errorTypeRegistry: @autoclosure @escaping () -> TypeRegistry
+        schema: @autoclosure @escaping @Sendable () -> Schema,
+        serviceSchema: @autoclosure @escaping @Sendable () -> Schema,
+        inputSchema: @autoclosure @escaping @Sendable () -> Schema,
+        outputSchema: @autoclosure @escaping @Sendable () -> Schema,
+        errorTypeRegistry: @autoclosure @escaping @Sendable () -> TypeRegistry
     ) {
         self._schema = schema
         self._serviceSchema = serviceSchema
