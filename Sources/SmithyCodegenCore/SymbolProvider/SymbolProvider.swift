@@ -85,12 +85,7 @@ public struct SymbolProvider {
         case .document:
             return "Smithy.Document"
         case .service:
-            // Returns the type name for the client
-            guard let serviceShape = shape as? ServiceShape else {
-                throw SymbolProviderError("Shape has type .service but is not a ServiceShape")
-            }
-            let base = try settings.sdkId.toUpperCamelCase() ?? serviceShape.clientBaseName
-            return try "\(base)Client"
+            return "\(settings.sdkId.toUpperCamelCase())Client"
         case .member, .operation, .resource:
             throw SymbolProviderError("Cannot provide Swift symbol for shape type \(shape.type)")
         }
