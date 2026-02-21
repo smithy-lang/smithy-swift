@@ -10,6 +10,7 @@ import class Smithy.Context
 import class Smithy.ContextBuilder
 import protocol SmithySerialization.ClientProtocol
 import struct SmithySerialization.Operation
+import protocol SmithySerialization.OperationProperties
 
 extension Context {
 
@@ -35,5 +36,5 @@ extension ContextBuilder {
     }
 }
 
-private let operationContextKey = AttributeKey<Any>(name: "OperationContextKey")
+private let operationContextKey = AttributeKey<any OperationProperties>(name: "OperationContextKey")
 private let clientProtocolKey = AttributeKey<any ClientProtocol>(name: "ClientProtocolKey")

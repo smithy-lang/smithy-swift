@@ -10,7 +10,7 @@ import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
 import struct Smithy.ShapeID
 
-public protocol ClientProtocol<RequestType, ResponseType> {
+public protocol ClientProtocol<RequestType, ResponseType>: Sendable {
     associatedtype RequestType: RequestMessage
     associatedtype ResponseType: ResponseMessage
 
