@@ -26,9 +26,9 @@ public struct GenerationContext {
         let finalModel = try model
             .withOperations(settings: settings)
             .withSynthesizedInputsOutputs()
-            .withDeprecatedShapesRemoved()
             .withUnionsTargetingUnitAdded()
             .optionalizeStructMembers(serviceID: settings.serviceID)
+            .withDeprecatedShapesRemoved()
             .prune(serviceID: settings.serviceID)
 
         // Initialize using the final, processed model

@@ -28,20 +28,29 @@ extension Model {
             let newTrimmedShapes = try trimmedShapes.filter { (_, shape) in
                 switch shape {
                 case let listShape as ListShape:
+                    // Keep this list if its member's target is present
                     let id = try listShape.member.targetID
                     guard id.namespace != "smithy.api" else { return true }
                     let found = trimmedShapes[id] != nil
                     return found
                 case let mapShape as MapShape:
+                    // Keep this map if its `value` member's target is present
                     let id = try mapShape.value.targetID
                     guard id.namespace != "smithy.api" else { return true }
                     let found = trimmedShapes[id] != nil
                     return found
                 case let memberShape as MemberShape:
-                    let id = memberShape.targetID
-                    guard id.namespace != "smithy.api" else { return true }
-                    let found = trimmedShapes[id] != nil
-                    return found
+                    // Check if this member's target is present, if the target is not in the prelude
+                    let targetPresent = if memberShape.targetID.namespace == "smithy.api" {
+                        true
+                    } else {
+                        trimmedShapes[memberShape.targetID] != nil
+                    }
+                    // Check if this member's container is present
+                    let containerPresent = trimmedShapes[memberShape.containerID] != nil
+
+                    // Keep this member if its container and target are both present
+                    return targetPresent && containerPresent
                 default:
                     return true
                 }
