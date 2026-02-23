@@ -28,4 +28,11 @@ public struct SwiftSettings: Sendable {
     var scope: String {
         `internal` ? "package" : "public"
     }
+
+    var serviceName: String {
+        sdkId
+            .replacingOccurrences(of: " Service", with: "")
+            .toUpperCamelCase()
+            .replacingOccurrences(of: " ", with: "")
+    }
 }

@@ -23,14 +23,6 @@ public struct SymbolProvider {
         self.model = model
     }
 
-    var serviceName: String {
-        get throws {
-            return try service.sdkIdStrippingService
-                .replacingOccurrences(of: " ", with: "")
-                .replacingOccurrences(of: "Service", with: "")
-        }
-    }
-
     public func swiftType(shape: Shape) throws -> String {
         switch shape.type {
         case .structure, .union, .enum, .intEnum:
@@ -85,7 +77,7 @@ public struct SymbolProvider {
         case .document:
             return "Smithy.Document"
         case .service:
-            return "\(settings.sdkId.toUpperCamelCase())Client"
+            return "\(settings.serviceName)Client"
         case .member, .operation, .resource:
             throw SymbolProviderError("Cannot provide Swift symbol for shape type \(shape.type)")
         }
