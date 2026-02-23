@@ -22,7 +22,7 @@ public class AwsQueryCompatibleErrorDetails {
     ///
     /// - Parameter value: The raw header value (e.g., "InvalidParameterValue;Sender")
     /// - Returns: Parsed error details if valid, `nil` if value is `nil`
-    /// - Throws: `AwsQueryCompatibleParseError` if the value is malformed, has empty code, or empty type
+    /// - Throws: `ParseError` if the value is malformed, has empty code, or empty type
     public static func parse(_ value: String?) throws -> AwsQueryCompatibleErrorDetails? {
         guard let value else {
             return nil
@@ -31,7 +31,7 @@ public class AwsQueryCompatibleErrorDetails {
     }
 }
 
-public enum AwsQueryCompatibleParseError: Error, CustomDebugStringConvertible {
+public enum ParseError: Error, CustomDebugStringConvertible {
     case malformedErrorString
     case emptyCode
     case emptyType
@@ -54,17 +54,17 @@ private func parseImpl(_ error: String) throws -> AwsQueryCompatibleErrorDetails
     let segments = error.split(separator: ";", maxSplits: 1, omittingEmptySubsequences: false)
 
     guard segments.count == 2 else {
-        throw AwsQueryCompatibleParseError.malformedErrorString
+        throw ParseError.malformedErrorString
     }
 
     let code = String(segments[0])
     let type = String(segments[1])
 
     guard !code.isEmpty else {
-        throw AwsQueryCompatibleParseError.emptyCode
+        throw ParseError.emptyCode
     }
     guard !type.isEmpty else {
-        throw AwsQueryCompatibleParseError.emptyType
+        throw ParseError.emptyType
     }
 
     return AwsQueryCompatibleErrorDetails(code: code, type: type)
