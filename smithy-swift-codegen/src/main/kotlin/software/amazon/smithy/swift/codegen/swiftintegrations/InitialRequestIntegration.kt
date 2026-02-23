@@ -26,8 +26,9 @@ class InitialRequestIntegration : SwiftIntegration {
         model: Model,
         settings: SwiftSettings,
     ): Boolean {
-        val service = settings.getService(model)
-        return service.hasTrait<AwsJson1_0Trait>() || service.hasTrait<AwsJson1_1Trait>() || service.hasTrait<Rpcv2CborTrait>()
+        return false
+//        val service = settings.getService(model)
+//        return service.hasTrait<AwsJson1_0Trait>() || service.hasTrait<AwsJson1_1Trait>() || service.hasTrait<Rpcv2CborTrait>()
     }
 
     override fun writeAdditionalFiles(
