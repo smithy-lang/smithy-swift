@@ -11,7 +11,7 @@ import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCusto
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 open class AWSJSONCustomizations : DefaultHTTPProtocolCustomizations() {
-    override val baseErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
+    override val baseErrorSymbol: Symbol = ClientRuntimeTypes.AWSJSON.AWSJSONError
 
     override val defaultTimestampFormat = TimestampFormatTrait.Format.EPOCH_SECONDS
 }

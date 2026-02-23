@@ -31,7 +31,7 @@ open class AWSQueryCustomizations : DefaultHTTPProtocolCustomizations() {
 
     override fun alwaysHasHttpBody(): Boolean = true
 
-    override val baseErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
+    override val baseErrorSymbol: Symbol = ClientRuntimeTypes.AWSQuery.AWSQueryError
 
     override val defaultTimestampFormat = TimestampFormatTrait.Format.DATE_TIME
 }

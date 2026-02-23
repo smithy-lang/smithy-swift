@@ -31,7 +31,7 @@ open class EC2QueryCustomizations : DefaultHTTPProtocolCustomizations() {
 
     override fun alwaysHasHttpBody(): Boolean = true
 
-    override val baseErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
+    override val baseErrorSymbol: Symbol = ClientRuntimeTypes.EC2Query.EC2QueryError
 
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
 }

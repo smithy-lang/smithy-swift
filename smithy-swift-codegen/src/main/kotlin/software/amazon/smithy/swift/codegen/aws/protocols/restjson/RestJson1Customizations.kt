@@ -10,5 +10,5 @@ import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCusto
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 open class RestJson1Customizations : DefaultHTTPProtocolCustomizations() {
-    override val baseErrorSymbol: Symbol = ClientRuntimeTypes.Http.UnknownHttpServiceError
+    override val baseErrorSymbol: Symbol = ClientRuntimeTypes.RestJSON.RestJSONError
 }

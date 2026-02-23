@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.isEventStreaming
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
+import software.amazon.smithy.swift.codegen.integration.middlewares.MutateHeadersMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputBodyMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
@@ -58,9 +59,10 @@ open class AWSJSON1_0ProtocolGenerator(
     ) {
         super.addProtocolSpecificMiddleware(ctx, operation)
 
-        xAmzTargetMiddlewareFactory?.let { factory ->
-            operationMiddleware.appendMiddleware(operation, factory(ctx))
-        }
+        val xAmzTargetValue = "${ctx.service.id.name}.${operation.id.name}"
+        val xAmzTargetMiddleware = xAmzTargetMiddlewareFactory?.invoke(ctx)
+            ?: MutateHeadersMiddleware(overrideHeaders = mapOf("X-Amz-Target" to xAmzTargetValue))
+        operationMiddleware.appendMiddleware(operation, xAmzTargetMiddleware)
 
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
         operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider, true))
