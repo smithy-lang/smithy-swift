@@ -60,8 +60,9 @@ open class AWSJSON1_0ProtocolGenerator(
         super.addProtocolSpecificMiddleware(ctx, operation)
 
         val xAmzTargetValue = "${ctx.service.id.name}.${operation.id.name}"
-        val xAmzTargetMiddleware = xAmzTargetMiddlewareFactory?.invoke(ctx)
-            ?: MutateHeadersMiddleware(overrideHeaders = mapOf("X-Amz-Target" to xAmzTargetValue))
+        val xAmzTargetMiddleware =
+            xAmzTargetMiddlewareFactory?.invoke(ctx)
+                ?: MutateHeadersMiddleware(overrideHeaders = mapOf("X-Amz-Target" to xAmzTargetValue))
         operationMiddleware.appendMiddleware(operation, xAmzTargetMiddleware)
 
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
