@@ -38,7 +38,7 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         in outputDirectoryPath: Path,
         with generatorToolPath: Path
     ) throws -> Command? {
-        // Skip any file that isn't the smithy-model-info.json for this service.
+        // Skip any file that isn't the swift-settings.json for this service.
         guard inputPath.lastComponent == "swift-settings.json" else { return nil }
 
         let currentWorkingDirectoryFileURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
