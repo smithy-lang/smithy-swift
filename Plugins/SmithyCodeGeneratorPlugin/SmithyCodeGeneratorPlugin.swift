@@ -70,25 +70,30 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         // Construct the Operations.swift path.
         let operationsSwiftPath = outputDirectoryPath.appending("\(name)Operations.swift")
 
+        var arguments: [any CustomStringConvertible] = [
+            service,
+            modelPath,
+            "--internal", "\(internalClient)",
+            "--sdk-id", sdkId,
+            "--schemas-path", schemasSwiftPath,
+            "--serialize-path", serializeSwiftPath,
+            "--deserialize-path", deserializeSwiftPath,
+            "--type-registry-path", typeRegistrySwiftPath,
+            "--operations-path", operationsSwiftPath,
+            "--schemas-path", schemasSwiftPath,
+            "--serialize-path", serializeSwiftPath,
+            "--deserialize-path", deserializeSwiftPath
+        ]
+
+        if !operations.isEmpty {
+            arguments.append(contentsOf: ["--operations", operations])
+        }
+
         // Construct the build command that invokes SmithyCodegenCLI.
         return .buildCommand(
             displayName: "Generating Swift source files from model file \(smithyModelInfo.modelPath)",
             executable: generatorToolPath,
-            arguments: [
-                service,
-                modelPath,
-                "--internal", "\(internalClient)",
-                "--sdk-id", sdkId,
-                "--operations", operations,
-                "--schemas-path", schemasSwiftPath,
-                "--serialize-path", serializeSwiftPath,
-                "--deserialize-path", deserializeSwiftPath,
-                "--type-registry-path", typeRegistrySwiftPath,
-                "--operations-path", operationsSwiftPath,
-                "--schemas-path", schemasSwiftPath,
-                "--serialize-path", serializeSwiftPath,
-                "--deserialize-path", deserializeSwiftPath
-            ],
+            arguments: arguments,
             inputFiles: [inputPath, modelPath],
             outputFiles: [
                 schemasSwiftPath,
