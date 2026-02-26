@@ -105,7 +105,10 @@ extension Model {
                 traits: traits,
                 operationIDs: try astShape.operations?.map { try $0.id } ?? [],
                 resourceIDs: try astShape.resources?.map { try $0.id } ?? [],
-                errorIDs: try astShape.errors?.map { try $0.id } ?? []
+                errorIDs: try astShape.errors?.map { try $0.id } ?? [],
+                renames: Dictionary(uniqueKeysWithValues: try astShape.rename?.map {
+                    (try ShapeID($0.key), $0.value)
+                } ?? [])
             )
             return (shapeID, shape)
         case .resource:

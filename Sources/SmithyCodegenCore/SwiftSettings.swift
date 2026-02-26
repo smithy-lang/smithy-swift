@@ -30,8 +30,12 @@ public struct SwiftSettings: Sendable {
     }
 
     var serviceName: String {
-        sdkId
-            .replacingOccurrences(of: " Service", with: "")
+        let serviceSuffix = " Service"
+        var deserviced = sdkId
+        if deserviced.hasSuffix(serviceSuffix) {
+            deserviced.removeLast(serviceSuffix.count)
+        }
+        return deserviced
             .toUpperCamelCase()
             .replacingOccurrences(of: " ", with: "")
     }
