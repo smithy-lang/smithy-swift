@@ -44,6 +44,12 @@ package struct SerializeCodegen {
                     try writer.openBlock("{ memberSchema, \(varName), serializer in", "}") { writer in
                         writer.write("switch memberSchema.index {")
                         for (index, member) in try members(of: shape).enumerated() {
+
+                            // Event stream errors don't have a case in the Swift union, so don't try to
+                            // serialize the error member
+                            if try shape.hasTrait(StreamingTrait.self) && member.target.hasTrait(ErrorTrait.self) {
+                                continue
+                            }
                             writer.write("case \(index):")
                             writer.indent()
                             if shape.type == .structure {

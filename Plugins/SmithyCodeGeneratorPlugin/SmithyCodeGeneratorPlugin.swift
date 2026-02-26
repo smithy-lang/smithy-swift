@@ -38,8 +38,8 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         in outputDirectoryPath: Path,
         with generatorToolPath: Path
     ) throws -> Command? {
-        // Skip any file that isn't the smithy-model-info.json for this service.
-        guard inputPath.lastComponent == "smithy-model-info.json" else { return nil }
+        // Skip any file that isn't the swift-settings.json for this service.
+        guard inputPath.lastComponent == "swift-settings.json" else { return nil }
 
         let currentWorkingDirectoryFileURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 
@@ -47,10 +47,13 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         let modelInfoData = try Data(contentsOf: URL(fileURLWithPath: inputPath.string))
         let smithyModelInfo = try JSONDecoder().decode(SmithyModelInfo.self, from: modelInfoData)
 
-        // Get the service ID & model path & settings sdkId from smithy-model-info.
+        // Get the fields from smithy-model-info.
         let service = smithyModelInfo.service
-        let modelPathURL = currentWorkingDirectoryFileURL.appendingPathComponent(smithyModelInfo.path)
+        let sdkId = smithyModelInfo.sdkId
+        let modelPathURL = currentWorkingDirectoryFileURL.appendingPathComponent(smithyModelInfo.modelPath)
         let modelPath = Path(modelPathURL.path)
+        let internalClient = smithyModelInfo.internalClient
+        let operations = smithyModelInfo.operations.joined(separator: ",")
 
         // Construct the Schemas.swift path.
         let schemasSwiftPath = outputDirectoryPath.appending("\(name)Schemas.swift")
@@ -61,32 +64,65 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         // Construct the Deserialize.swift path.
         let deserializeSwiftPath = outputDirectoryPath.appending("\(name)Deserialize.swift")
 
+        // Construct the Deserialize.swift path.
+        let typeRegistrySwiftPath = outputDirectoryPath.appending("\(name)TypeRegistry.swift")
+
+        // Construct the Operations.swift path.
+        let operationsSwiftPath = outputDirectoryPath.appending("\(name)Operations.swift")
+
+        var arguments: [any CustomStringConvertible] = [
+            service,
+            modelPath,
+            "--internal", "\(internalClient)",
+            "--sdk-id", sdkId,
+            "--schemas-path", schemasSwiftPath,
+            "--serialize-path", serializeSwiftPath,
+            "--deserialize-path", deserializeSwiftPath,
+            "--type-registry-path", typeRegistrySwiftPath,
+            "--operations-path", operationsSwiftPath,
+            "--schemas-path", schemasSwiftPath,
+            "--serialize-path", serializeSwiftPath,
+            "--deserialize-path", deserializeSwiftPath
+        ]
+
+        if !operations.isEmpty {
+            arguments.append(contentsOf: ["--operations", operations])
+        }
+
         // Construct the build command that invokes SmithyCodegenCLI.
         return .buildCommand(
-            displayName: "Generating Swift source files from model file \(smithyModelInfo.path)",
+            displayName: "Generating Swift source files from model file \(smithyModelInfo.modelPath)",
             executable: generatorToolPath,
-            arguments: [
-                service,
-                modelPath,
-                "--schemas-path", schemasSwiftPath,
-                "--serialize-path", serializeSwiftPath,
-                "--deserialize-path", deserializeSwiftPath
-            ],
+            arguments: arguments,
             inputFiles: [inputPath, modelPath],
             outputFiles: [
                 schemasSwiftPath,
                 serializeSwiftPath,
                 deserializeSwiftPath,
+                typeRegistrySwiftPath,
+                operationsSwiftPath,
             ]
         )
     }
 }
 
-/// Codable structure for reading the contents of `smithy-model-info.json`
+/// Decodable structure for reading the contents of `smithy-model-info.json`
 private struct SmithyModelInfo: Decodable {
     /// The shape ID of the service being generated.  Must exist in the model.
     let service: String
 
+    /// The name to be used for the enclosing module.
+    let module: String
+
+    /// The `sdkId` used by the Smithy-based code generator.
+    let sdkId: String
+
+    /// Set to `true` if the client should be rendered for internal use.
+    let internalClient: Bool
+
+    /// A list of operations to be included in the client.  If omitted or empty, all operations are included.
+    let operations: [String]
+
     /// The path to the model, from the root of the target's project.  Required.
-    let path: String
+    let modelPath: String
 }
