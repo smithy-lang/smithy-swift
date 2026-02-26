@@ -26,15 +26,15 @@ public struct SymbolProvider {
     public func swiftType(shape: Shape) throws -> String {
         switch shape.type {
         case .structure, .union, .enum, .intEnum:
-            let base = shape.id.name
+            let baseName = (service.renames[shape.id] ?? shape.id.name).capitalized.escapingReservedWords
             if shape.isTopLevel {
-                return base.capitalized.escapingReservedWords
+                return baseName
             } else if shape.type == .intEnum {
                 // The NestedShapeTransformer in main codegen inadvertently excludes intEnum
                 // so it is not namespaced here.  All other shape types are in the namespace.
-                return base.capitalized.escapingReservedWords
+                return baseName
             } else {
-                return try "\(modelNamespace).\(base.capitalized.escapingReservedWords)"
+                return try "\(modelNamespace).\(baseName)"
             }
         case .list, .set:
             guard let listShape = shape as? ListShape else {

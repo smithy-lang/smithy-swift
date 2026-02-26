@@ -70,7 +70,8 @@ extension Model {
                     traits: serviceShape.traits,
                     operationIDs: operationIDs,
                     resourceIDs: resourceIDs,
-                    errorIDs: errorIDs
+                    errorIDs: errorIDs,
+                    renames: serviceShape.renames
                 )
             case let resourceShape as ResourceShape:
                 let operationIDs = resourceShape.operationIDs.filter { trimmedShapes[$0] != nil }
