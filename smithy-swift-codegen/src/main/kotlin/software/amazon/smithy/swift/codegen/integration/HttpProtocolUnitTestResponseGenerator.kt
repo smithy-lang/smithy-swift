@@ -4,26 +4,31 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.HttpHeaderTrait
+import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
+import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.swift.codegen.ShapeValueGenerator
 import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.AWSProtocol
-import software.amazon.smithy.swift.codegen.integration.serde.readwrite.ResponseClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.awsProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.hasTrait
+import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
+import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTestUtilTypes
 import java.util.Base64
 
 /**
@@ -33,6 +38,14 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
     builder: Builder,
 ) : HttpProtocolUnitTestGenerator<HttpResponseTestCase>(builder) {
     override val baseTestClassName = "HttpResponseTestBase"
+
+    protected open val inputShape: Shape?
+        get() {
+            return operation.input
+                .map {
+                    model.expectShape(it)
+                }.orElse(null)
+        }
 
     protected open val outputShape: Shape?
         get() {
@@ -44,10 +57,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
 
     override fun renderTestBody(test: HttpResponseTestCase) {
         outputShape?.let {
-            val symbol = symbolProvider.toSymbol(it)
             renderBuildHttpResponse(test)
             writer.write("")
-            renderActualOutput(symbol)
+            renderActualOutput()
             writer.write("")
             renderExpectedOutput(test, it)
             writer.write("")
@@ -163,9 +175,73 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         }
     }
 
-    private fun renderActualOutput(outputStruct: Symbol) {
-        val responseClosure = ResponseClosureUtils(ctx, writer, operation).render()
-        writer.write("let actual: \$N = try await \$L(httpResponse)", outputStruct, responseClosure)
+    fun renderActualOutput() {
+        val clientName = "${ctx.settings.sdkId}Client"
+        val region = "us-west-2"
+
+        // Create a client config.  Use a dummy for:
+        // - credential resolver
+        // - endpoint resolver (unless the test has endpoint rules)
+        // - HTTP client engine; a mock that returns the test's HTTPResponse is used
+        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
+            writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
+            writer.write("region: \$S,", region)
+            writer.write("signingRegion: \$S,", region)
+            if (!ctx.service.hasTrait<EndpointRuleSetTrait>()) {
+                writer.openBlock(
+                    "endpointResolver: StaticEndpointResolver(endpoint: try \$N(",
+                    ")),",
+                    SmithyHTTPAPITypes.Endpoint,
+                ) {
+                    writer.write("urlString: \"https://example.com\"")
+                }
+            }
+            writer.write(
+                "retryStrategyOptions: \$N.make(),",
+                SmithyTestUtilTypes.ProtocolTestRetryStrategyOptions,
+            )
+            writer.write("httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)")
+        }
+        writer.write("")
+
+        // Create a client with the config
+        writer.write("let client = \$L(config: config)", clientName)
+        writer.write("")
+
+        // If input has any httpLabel-bound members, these must be filled so the request can succeed
+        val inputArgs = mutableListOf<String>()
+        for (member in inputShape?.members() ?: listOf()) {
+            if (member.hasTrait<HttpLabelTrait>()) {
+                val memberName = ctx.symbolProvider.toMemberName(member)
+                val target = model.expectShape(member.target)
+                val defaultArg =
+                    when (target.type) {
+                        ShapeType.STRING -> "\"test\""
+                        ShapeType.BOOLEAN -> "false"
+                        ShapeType.TIMESTAMP -> writer.format("\$N()", FoundationTypes.Date)
+                        else -> "0" // only other allowed types are numbers
+                    }
+                val arg = writer.format("\$L: \$L", memberName, defaultArg)
+                inputArgs.add(arg)
+            }
+        }
+
+        // Create the input, adding params if any
+        writer.write(
+            "let input = \$L(\$L)",
+            ctx.symbolProvider.toSymbol(inputShape),
+            inputArgs.joinToString(", "),
+        )
+        writer.write("")
+        captureResponse()
+        writer.write("")
+    }
+
+    open fun captureResponse() {
+        writer.write(
+            "let actual = try await client.\$L(input: input)",
+            operation.toLowerCamelCase(),
+        )
     }
 
     protected fun renderExpectedOutput(

@@ -23,7 +23,6 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.TimestampShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpPayloadTrait
@@ -134,7 +133,6 @@ abstract class HTTPBindingProtocolGenerator(
 ) : ProtocolGenerator {
     @Suppress("ktlint:standard:property-naming")
     private val LOGGER = Logger.getLogger(javaClass.name)
-    private val idempotencyTokenValue = "idempotencyTokenGenerator.generateToken()"
 
     override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpError
 
@@ -196,6 +194,7 @@ abstract class HTTPBindingProtocolGenerator(
         val nestedShapes =
             resolveShapesNeedingCodableConformance(ctx)
                 .filter { !it.isEventStreaming }
+                .sorted()
         for (shape in nestedShapes) {
             renderCodableExtension(ctx, shape)
         }
@@ -224,7 +223,6 @@ abstract class HTTPBindingProtocolGenerator(
                     is StructureShape -> {
                         // get all members sorted by name and filter out either all members with other traits OR members with the payload trait
                         val httpBodyMembers = members.filter { it.isInHttpBody() }
-                        val path = "properties.".takeIf { shape.hasTrait<ErrorTrait>() } ?: ""
                         if (shape.hasTrait<NeedsWriterTrait>()) {
                             writer.write("")
                             renderStructEncode(ctx, shape, mapOf(), httpBodyMembers, writer)
@@ -250,11 +248,11 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     private fun resolveInputShapes(ctx: ProtocolGenerator.GenerationContext): Map<Shape, Map<ShapeMetadata, Any>> {
-        var shapesInfo: MutableMap<Shape, Map<ShapeMetadata, Any>> = mutableMapOf()
+        val shapesInfo: MutableMap<Shape, Map<ShapeMetadata, Any>> = mutableMapOf()
         val operations = getHttpBindingOperations(ctx)
         for (operation in operations) {
             val inputType = ctx.model.expectShape(operation.input.get())
-            var metadata =
+            val metadata =
                 mapOf<ShapeMetadata, Any>(
                     Pair(ShapeMetadata.OPERATION_SHAPE, operation),
                     Pair(ShapeMetadata.SERVICE_VERSION, ctx.service.version),
@@ -549,7 +547,7 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext) {
-        var streamingShapes = inputStreamingShapes(ctx)
+        val streamingShapes = inputStreamingShapes(ctx)
         val messageMarshallableGenerator = MessageMarshallableGenerator(ctx, defaultContentType)
         streamingShapes.forEach { streamingMember ->
             messageMarshallableGenerator.render(streamingMember)
@@ -557,7 +555,7 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext) {
-        var streamingShapes = outputStreamingShapes(ctx)
+        val streamingShapes = outputStreamingShapes(ctx)
         val messageUnmarshallableGenerator = MessageUnmarshallableGenerator(ctx, customizations)
         streamingShapes.forEach { streamingMember ->
             messageUnmarshallableGenerator.render(streamingMember)

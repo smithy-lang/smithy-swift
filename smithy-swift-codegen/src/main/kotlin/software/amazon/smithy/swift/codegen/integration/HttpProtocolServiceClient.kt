@@ -12,6 +12,7 @@ import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlu
 import software.amazon.smithy.swift.codegen.model.renderSwiftType
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.CodeSection
 
@@ -26,7 +27,7 @@ open class HttpProtocolServiceClient(
 
     fun render(serviceSymbol: Symbol) {
         writer.openBlock(
-            "${ctx.settings.visibility} class \$L: \$N {",
+            "${ctx.settings.visibility} final class \$L: \$N {",
             "}",
             serviceSymbol.name,
             clientProtocolSymbol,
@@ -34,10 +35,18 @@ open class HttpProtocolServiceClient(
             writer.write("public static let clientName = \$S", serviceSymbol.name)
             renderVersionProperty()
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
-            writer.write("let config: \$L", serviceConfig.typeName)
+            writer.write("public let config: \$L", serviceConfig.sendableTypeName)
             writer.write("let serviceName = \$S", serviceName)
             writer.write("")
+            // Add Config typealias for backward compatibility - points to deprecated class
+            // This satisfies the Client protocol's associated type requirement
+            writer.write("@available(*, deprecated, message: \"Use \$L instead\")", serviceConfig.sendableTypeName)
+            writer.write("public typealias Config = \$L", serviceConfig.typeName)
+            writer.write("public typealias Configuration = \$L", serviceConfig.sendableTypeName)
+            writer.write("")
             renderInitFunction()
+            writer.write("")
+            renderDeprecatedInitFunction()
             writer.write("")
             renderConvenienceInitFunctions(serviceSymbol)
         }
@@ -51,7 +60,8 @@ open class HttpProtocolServiceClient(
     }
 
     open fun renderInitFunction() {
-        writer.openBlock("public required init(config: \$L) {", "}", serviceConfig.typeName) {
+        writer.openBlock("public required init(config: \$L) {", "}", serviceConfig.sendableTypeName) {
+            writer.write("\$N()", ClientRuntimeTypes.Core.initialize)
             writer.write(
                 "client = \$N(engine: config.httpClientEngine, config: config.httpClientConfiguration)",
                 ClientRuntimeTypes.Http.SdkHttpClient,
@@ -61,9 +71,29 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
 
+    open fun renderDeprecatedInitFunction() {
+        // Convenience init for backward compatibility with the deprecated class
+        // The Client protocol's Config associated type is inferred from the required init, not the typealias
+        writer.write(
+            "@available(*, deprecated, message: \"Use init(config: \$L) instead\")",
+            serviceConfig.sendableTypeName,
+        )
+        writer.openBlock("public convenience init(config: \$L) {", "}", serviceConfig.typeName) {
+            writer.openBlock("do {", "} catch {") {
+                writer.write("try self.init(config: config.toSendable())")
+            }
+            writer.indent()
+            writer.write("// This should never happen since all values are already initialized in the class")
+            writer.write("fatalError(\"Failed to convert deprecated configuration: \\(error)\")")
+            writer.dedent()
+            writer.write("}")
+        }
+        writer.write("")
+    }
+
     open fun renderConvenienceInitFunctions(serviceSymbol: Symbol) {
-        writer.openBlock("public convenience required init() throws {", "}") {
-            writer.write("let config = try \$L()", serviceConfig.typeName)
+        writer.openBlock("public convenience init() throws {", "}") {
+            writer.write("let config = try \$L()", serviceConfig.sendableTypeName)
             writer.write("self.init(config: config)")
         }
         writer.write("")
@@ -72,7 +102,9 @@ open class HttpProtocolServiceClient(
     fun renderClientExtension(serviceSymbol: Symbol) {
         writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
             writer.write("")
-            renderClientConfig(serviceSymbol)
+            renderClientConfigSendable(serviceSymbol)
+            writer.write("")
+            renderDeprecatedClientConfigClass(serviceSymbol)
             writer.write("")
 
             writer.openBlock(
@@ -110,7 +142,7 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
 
-    open fun renderClientConfig(serviceSymbol: Symbol) {
+    open fun renderClientConfigSendable(serviceSymbol: Symbol) {
         val clientConfigurationProtocols =
             ctx.integrations
                 .flatMap { it.clientConfigurations(ctx) }
@@ -118,11 +150,15 @@ open class HttpProtocolServiceClient(
                 .map { writer.format("\$N", it) }
                 .joinToString(" & ")
 
+        writer.write("/// Client configuration for \$L", serviceConfig.clientName)
+        writer.write("///")
+        writer.write("/// Conforms to `Sendable` for safe concurrent access across threads.")
         writer.openBlock(
-            "public class \$LConfiguration: \$L {",
+            "public struct \$LConfig: \$L, \$N {",
             "}",
             serviceConfig.clientName.toUpperCamelCase(),
             clientConfigurationProtocols,
+            SwiftTypes.Protocols.Sendable,
         ) {
             val clientConfigs = ctx.integrations.flatMap { it.clientConfigurations(ctx) }
             val properties: List<ConfigProperty> =
@@ -133,13 +169,11 @@ open class HttpProtocolServiceClient(
 
             renderConfigClassVariables(serviceSymbol, properties)
 
-            renderConfigInitializer(serviceSymbol, properties)
+            renderSynchronousConfigInitializer(serviceSymbol, properties)
 
-            renderSynchronousConfigInitializer(properties)
+            renderAsynchronousConfigInitializer(serviceSymbol, properties)
 
-            renderAsynchronousConfigInitializer(properties)
-
-            renderEmptyAsynchronousConfigInitializer(properties)
+            renderEmptyAsynchronousConfigInitializer(serviceSymbol, properties, isClass = false)
 
             renderCustomConfigInitializer(properties)
 
@@ -156,13 +190,101 @@ open class HttpProtocolServiceClient(
         writer.write("")
     }
 
+    open fun renderDeprecatedClientConfigClass(serviceSymbol: Symbol) {
+        val clientConfigurationProtocols =
+            ctx.integrations
+                .flatMap { it.clientConfigurations(ctx) }
+                .mapNotNull { it.swiftProtocolName }
+                .map { writer.format("\$N", it) }
+                .joinToString(" & ")
+
+        writer.write(
+            "@available(*, deprecated, message: \"Use \$LConfig instead. This class will be removed in a future version.\")",
+            serviceConfig.clientName.toUpperCamelCase(),
+        )
+        writer.openBlock(
+            "public final class \$LConfiguration: \$L {",
+            "}",
+            serviceConfig.clientName.toUpperCamelCase(),
+            clientConfigurationProtocols,
+        ) {
+            val clientConfigs = ctx.integrations.flatMap { it.clientConfigurations(ctx) }
+            val properties: List<ConfigProperty> =
+                clientConfigs
+                    .flatMap { it.getProperties(ctx) }
+                    .let { overrideConfigProperties(it) }
+                    .sortedBy { it.accessModifier }
+
+            renderConfigClassVariables(serviceSymbol, properties)
+
+            renderSynchronousConfigInitializer(serviceSymbol, properties)
+
+            renderAsynchronousConfigInitializer(serviceSymbol, properties)
+
+            renderEmptyAsynchronousConfigInitializer(serviceSymbol, properties, isClass = true)
+
+            renderCustomConfigInitializerForDeprecatedClass(properties)
+
+            renderPartitionID()
+
+            renderToSendableMethod(properties)
+
+            // Render methods without 'mutating' keyword for class
+            clientConfigs
+                .flatMap { it.getMethods(ctx) }
+                .sortedBy { it.accessModifier }
+                .forEach { method ->
+                    // Create a copy of the method without the mutating keyword for classes
+                    val nonMutatingMethod = method.copy(isMutating = false)
+                    nonMutatingMethod.render(writer)
+                    writer.write("")
+                }
+        }
+        writer.write("")
+    }
+
+    private fun renderToSendableMethod(properties: List<ConfigProperty>) {
+        writer.openBlock(
+            "public func toSendable() throws -> \$LConfig {",
+            "}",
+            serviceConfig.clientName.toUpperCamelCase(),
+        ) {
+            writer.openBlock(
+                "return try \$LConfig(",
+                ")",
+                serviceConfig.clientName.toUpperCamelCase(),
+            ) {
+                properties.forEach { property ->
+                    // Don't wrap interceptor providers - they're already in the correct format
+                    // The struct's initializer will handle the wrapping
+                    writer.write("\$L: self.\$L,", property.name, property.name)
+                }
+                writer.unwrite(",\n")
+                writer.write("")
+            }
+        }
+        writer.write("")
+    }
+
     open fun renderCustomConfigInitializer(properties: List<ConfigProperty>) {
+    }
+
+    open fun renderCustomConfigInitializerForDeprecatedClass(properties: List<ConfigProperty>) {
+        // By default, same as the struct version
+        renderCustomConfigInitializer(properties)
     }
 
     open fun overrideConfigProperties(properties: List<ConfigProperty>): List<ConfigProperty> = properties
 
-    private fun renderEmptyAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
-        writer.openBlock("public convenience required init() async throws {", "}") {
+    private fun renderEmptyAsynchronousConfigInitializer(
+        serviceSymbol: Symbol,
+        properties: List<ConfigProperty>,
+        isClass: Boolean = false,
+    ) {
+        val convenienceKeyword = if (isClass) "convenience " else ""
+        writer.openBlock("public ${convenienceKeyword}init() async throws {", "}") {
+            // Call the parameterized async initializer with all nil parameters
+            // This delegates to the async initializer which properly handles async defaults
             writer.openBlock("try await self.init(", ")") {
                 properties.forEach { property ->
                     writer.write("\$L: nil,", property.name)
@@ -192,9 +314,36 @@ open class HttpProtocolServiceClient(
         serviceSymbol: Symbol,
         properties: List<ConfigProperty>,
     ) {
-        properties.forEach {
+        // Render normal properties
+        properties.filter { it.name != "interceptorProviders" && it.name != "httpInterceptorProviders" }.forEach {
             it.render(writer)
         }
+
+        // Render interceptor provider properties with private storage and public computed properties
+        writer.write("// Interceptor providers with Sendable-safe internal storage")
+        writer.write("private var _interceptorProviders: [\$N] = []", ClientRuntimeTypes.Core.SendableInterceptorProviderBox)
+        writer.openBlock("public var interceptorProviders: [\$N] {", "}", ClientRuntimeTypes.Core.InterceptorProvider) {
+            writer.openBlock("get {", "}") {
+                writer.write("return _interceptorProviders")
+            }
+            writer.openBlock("set {", "}") {
+                writer.write("_interceptorProviders = newValue.map { \$N(\$\$0) }", ClientRuntimeTypes.Core.SendableInterceptorProviderBox)
+            }
+        }
+        writer.write("")
+        writer.write("private var _httpInterceptorProviders: [\$N] = []", ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox)
+        writer.openBlock("public var httpInterceptorProviders: [\$N] {", "}", ClientRuntimeTypes.Core.HttpInterceptorProvider) {
+            writer.openBlock("get {", "}") {
+                writer.write("return _httpInterceptorProviders")
+            }
+            writer.openBlock("set {", "}") {
+                writer.write(
+                    "_httpInterceptorProviders = newValue.map { \$N(\$\$0) }",
+                    ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox,
+                )
+            }
+        }
+
         writer.injectSection(ConfigClassVariablesCustomization(serviceSymbol))
         writer.write("")
     }
@@ -203,29 +352,11 @@ open class HttpProtocolServiceClient(
         val serviceSymbol: Symbol,
     ) : CodeSection
 
-    private fun renderConfigInitializer(
+    private fun renderSynchronousConfigInitializer(
         serviceSymbol: Symbol,
         properties: List<ConfigProperty>,
     ) {
-        writer.openBlock("private init(", ") {") {
-            properties.forEach { property ->
-                writer.write("_ \$L: \$L,", property.name, property.type.renderSwiftType(writer))
-            }
-            writer.unwrite(",\n")
-            writer.write("")
-        }
-        writer.indent {
-            properties.forEach { property ->
-                writer.write("self.\$L = \$L", property.name, property.name)
-            }
-            writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
-        }
-        writer.write("}")
-        writer.write("")
-    }
-
-    private fun renderSynchronousConfigInitializer(properties: List<ConfigProperty>) {
-        writer.openBlock("public convenience init(", ") throws {") {
+        writer.openBlock("public init(", ") throws {") {
             properties.forEach { property ->
                 writer.write("\$L: \$N = nil,", property.name, property.type.toOptional())
             }
@@ -233,26 +364,35 @@ open class HttpProtocolServiceClient(
             writer.write("")
         }
         writer.indent {
-            writer.openBlock("self.init(", ")") {
-                properties.forEach { property ->
-                    if (property.default?.isAsync == true) {
-                        writer.write("\$L,", property.name)
-                    } else {
-                        writer.write("\$L,", property.default?.render(writer, property.name) ?: property.name)
-                    }
+            properties.filter { it.name != "interceptorProviders" && it.name != "httpInterceptorProviders" }.forEach { property ->
+                if (property.default?.isAsync == true) {
+                    writer.write("self.\$L = \$L", property.name, property.name)
+                } else {
+                    writer.write("self.\$L = \$L", property.name, property.default?.render(writer, property.name) ?: property.name)
                 }
-                writer.unwrite(",\n")
-                writer.write("")
             }
+            // Handle interceptor providers specially - wrap them when storing
+            writer.write(
+                "self._interceptorProviders = (interceptorProviders ?? []).map { \$N(\$\$0) }",
+                ClientRuntimeTypes.Core.SendableInterceptorProviderBox,
+            )
+            writer.write(
+                "self._httpInterceptorProviders = (httpInterceptorProviders ?? []).map { \$N(\$\$0) }",
+                ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox,
+            )
+            writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
         }
         writer.write("}")
         writer.write("")
     }
 
-    private fun renderAsynchronousConfigInitializer(properties: List<ConfigProperty>) {
+    private fun renderAsynchronousConfigInitializer(
+        serviceSymbol: Symbol,
+        properties: List<ConfigProperty>,
+    ) {
         if (properties.none { it.default?.isAsync == true }) return
 
-        writer.openBlock("public convenience init(", ") async throws {") {
+        writer.openBlock("public init(", ") async throws {") {
             properties.forEach { property ->
                 writer.write("\$L: \$L = nil,", property.name, property.type.toOptional().renderSwiftType(writer))
             }
@@ -260,17 +400,23 @@ open class HttpProtocolServiceClient(
             writer.write("")
         }
         writer.indent {
-            writer.openBlock("self.init(", ")") {
-                properties.forEach { property ->
-                    if (property.default?.isAsync == true) {
-                        writer.write("\$L,", property.default.render(writer))
-                    } else {
-                        writer.write("\$L,", property.default?.render(writer, property.name) ?: property.name)
-                    }
+            properties.filter { it.name != "interceptorProviders" && it.name != "httpInterceptorProviders" }.forEach { property ->
+                if (property.default?.isAsync == true) {
+                    writer.write("self.\$L = \$L", property.name, property.default.render(writer))
+                } else {
+                    writer.write("self.\$L = \$L", property.name, property.default?.render(writer, property.name) ?: property.name)
                 }
-                writer.unwrite(",\n")
-                writer.write("")
             }
+            // Handle interceptor providers specially - wrap them when storing
+            writer.write(
+                "self._interceptorProviders = (interceptorProviders ?? []).map { \$N(\$\$0) }",
+                ClientRuntimeTypes.Core.SendableInterceptorProviderBox,
+            )
+            writer.write(
+                "self._httpInterceptorProviders = (httpInterceptorProviders ?? []).map { \$N(\$\$0) }",
+                ClientRuntimeTypes.Core.SendableHttpInterceptorProviderBox,
+            )
+            writer.injectSection(ConfigInitializerCustomization(serviceSymbol))
         }
         writer.write("}")
         writer.write("")

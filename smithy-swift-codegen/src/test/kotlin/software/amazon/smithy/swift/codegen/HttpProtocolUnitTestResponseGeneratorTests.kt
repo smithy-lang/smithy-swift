@@ -54,7 +54,22 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: SmokeTestOutput = try await SmokeTestOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = SmokeTestInput(label1: "test")
+
+        let actual = try await client.smokeTest(input: input)
 
         let expected = SmokeTestOutput(
             boolHeader: false,
@@ -94,7 +109,22 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: HttpPrefixHeadersOutput = try await HttpPrefixHeadersOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = HttpPrefixHeadersInput()
+
+        let actual = try await client.httpPrefixHeaders(input: input)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo",
@@ -128,7 +158,22 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: HttpPrefixHeadersOutput = try await HttpPrefixHeadersOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = HttpPrefixHeadersInput()
+
+        let actual = try await client.httpPrefixHeaders(input: input)
 
         let expected = HttpPrefixHeadersOutput(
             foo: "Foo"
@@ -164,7 +209,22 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: JsonUnionsOutput = try await JsonUnionsOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = JsonUnionsInput()
+
+        let actual = try await client.jsonUnions(input: input)
 
         let expected = JsonUnionsOutput(
             contents: MyUnion.stringvalue("foo")
@@ -210,7 +270,22 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: RecursiveShapesOutput = try await RecursiveShapesOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = RecursiveShapesInput()
+
+        let actual = try await client.recursiveShapes(input: input)
 
         let expected = RecursiveShapesOutput(
             nested: RecursiveShapesInputOutputNested1(
@@ -258,7 +333,22 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: InlineDocumentOutput = try await InlineDocumentOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = InlineDocumentInput()
+
+        let actual = try await client.inlineDocument(input: input)
 
         let expected = InlineDocumentOutput(
             documentValue: try Smithy.Document.make(from: Data(""${'"'}
@@ -298,7 +388,22 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             return
         }
 
-        let actual: InlineDocumentAsPayloadOutput = try await InlineDocumentAsPayloadOutput.httpOutput(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
+
+        let client = ExampleClient(config: config)
+
+        let input = InlineDocumentAsPayloadInput()
+
+        let actual = try await client.inlineDocumentAsPayload(input: input)
 
         let expected = InlineDocumentAsPayloadOutput(
             documentValue: try Smithy.Document.make(from: Data(""${'"'}

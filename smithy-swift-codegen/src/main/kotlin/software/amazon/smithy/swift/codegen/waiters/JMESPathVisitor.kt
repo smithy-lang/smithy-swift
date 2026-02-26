@@ -475,7 +475,12 @@ class JMESPathVisitor(
         }
     }
 
-    override fun visitOr(expression: OrExpression): JMESVariable = throw Exception("OrExpression is unsupported")
+    override fun visitOr(expression: OrExpression): JMESVariable {
+        val leftVar = expression.left!!.accept(this)
+        val rightVar = expression.right!!.accept(this)
+        val orResultVar = JMESVariable("orResult", false, boolShape)
+        return addTempVar(orResultVar, "\$L || \$L", leftVar.name, rightVar.name)
+    }
 
     // Maps a collection into a collection of a different type.
     override fun visitProjection(expression: ProjectionExpression): JMESVariable {

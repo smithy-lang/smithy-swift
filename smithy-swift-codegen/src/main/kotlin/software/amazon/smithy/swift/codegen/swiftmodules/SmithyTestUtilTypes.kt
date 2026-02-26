@@ -8,6 +8,7 @@ object SmithyTestUtilTypes {
     val TestInitializer = runtimeSymbol("TestInitializer", SwiftDeclaration.ENUM)
     val TestBaseError = runtimeSymbol("TestBaseError", SwiftDeclaration.STRUCT)
     val dummyIdentityResolver = runtimeSymbol("dummyIdentityResolver", SwiftDeclaration.FUNC)
+    val ProtocolTestRetryStrategyOptions = runtimeSymbol("ProtocolTestRetryStrategyOptions", SwiftDeclaration.ENUM)
 }
 
 private fun runtimeSymbol(

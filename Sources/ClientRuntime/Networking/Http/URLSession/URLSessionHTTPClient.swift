@@ -18,8 +18,6 @@ import class Foundation.NSRecursiveLock
 import var Foundation.NSURLAuthenticationMethodClientCertificate
 import var Foundation.NSURLAuthenticationMethodServerTrust
 import struct Foundation.TimeInterval
-import class SmithyHTTPClientAPI.HttpTelemetry
-import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 import class Foundation.URLAuthenticationChallenge
 import struct Foundation.URLComponents
 import class Foundation.URLCredential
@@ -29,7 +27,6 @@ import class Foundation.URLResponse
 import class Foundation.URLSession
 import class Foundation.URLSessionConfiguration
 import protocol Foundation.URLSessionDataDelegate
-import SmithyTelemetryAPI
 import class Foundation.URLSessionDataTask
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionTaskMetrics
@@ -44,19 +41,22 @@ import protocol SmithyHTTPAPI.HTTPClient
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 import enum SmithyHTTPAPI.HTTPStatusCode
+import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
+import class SmithyHTTPClientAPI.HttpTelemetry
 import class SmithyStreams.BufferedStream
+import SmithyTelemetryAPI
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
 ///
-/// This client is usable on all Swift platforms that support both the `URLSession` library and Objective-C interoperability features
-/// (these are generally the Apple platforms.)
+/// This client is usable on all Swift platforms that support both the `URLSession` library and
+/// Objective-C interoperability features (these are generally the Apple platforms.)
 ///
 /// Use of this client is recommended on all Apple platforms, and is required on Apple Watch ( see
 /// [TN3135: Low-level networking on watchOS](https://developer.apple.com/documentation/technotes/tn3135-low-level-networking-on-watchos)
 /// for details about allowable modes of networking on the Apple Watch platform.)
 ///
 /// On Linux platforms, we recommend using the CRT-based HTTP client for its configurability and performance.
-public final class URLSessionHTTPClient: HTTPClient {
+public final class URLSessionHTTPClient: HTTPClient, @unchecked Sendable {
     public static let noOpURLSessionHTTPClientTelemetry = HttpTelemetry(
         httpScope: "URLSessionHTTPClient",
         telemetryProvider: DefaultTelemetry.provider
@@ -107,7 +107,8 @@ public final class URLSessionHTTPClient: HTTPClient {
         /// `urlSession(_:task:didCompleteWithError)` for this connection.
         var error: Error?
 
-        /// A response stream that streams the response back to the caller.  Data is buffered in-memory until read by the caller.
+        /// A response stream that streams the response back to the caller.  Data is buffered
+        /// in-memory until read by the caller.
         let responseStream = BufferedStream()
 
         /// Creates a new connection object
@@ -406,7 +407,7 @@ public final class URLSessionHTTPClient: HTTPClient {
     private let telemetry: HttpTelemetry
 
     /// The logger for this HTTP client.
-    private var logger: LogAgent
+    private let logger: LogAgent
 
     /// The TLS options for this HTTP client.
     private let tlsConfiguration: URLSessionTLSOptions?

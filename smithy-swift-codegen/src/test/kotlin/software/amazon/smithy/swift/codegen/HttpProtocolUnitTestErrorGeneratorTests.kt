@@ -15,46 +15,62 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonComplexErrorWithNoMessage() async throws {
-        do {
-            guard let httpResponse = buildHttpResponse(
-                code: 403,
-                headers: [
-                    "Content-Type": "application/json",
-                    "X-Amzn-Errortype": "ComplexError",
-                    "X-Header": "Header"
-                ],
-                content: .data(Data(""${'"'}
-                {
-                    "TopLevel": "Top level",
-                    "Nested": {
-                        "Fooooo": "bar"
-                    }
+        guard let httpResponse = buildHttpResponse(
+            code: 403,
+            headers: [
+                "Content-Type": "application/json",
+                "X-Amzn-Errortype": "ComplexError",
+                "X-Header": "Header"
+            ],
+            content: .data(Data(""${'"'}
+            {
+                "TopLevel": "Top level",
+                "Nested": {
+                    "Fooooo": "bar"
                 }
-                ""${'"'}.utf8))
-            ) else {
-                XCTFail("Something is wrong with the created http response")
-                return
             }
+            ""${'"'}.utf8))
+        ) else {
+            XCTFail("Something is wrong with the created http response")
+            return
+        }
 
-            let greetingWithErrorsOutputError = try await GreetingWithErrorsOutputError.httpError(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
 
-            if let actual = greetingWithErrorsOutputError as? ComplexError {
+        let client = ExampleClient(config: config)
 
-                let expected = ComplexError(
-                    header: "Header",
-                    nested: ComplexNestedErrorData(
-                        foo: "bar"
-                    ),
-                    topLevel: "Top level"
-                )
-                XCTAssertEqual(actual.httpResponse.statusCode, SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
-                XCTAssertEqual(actual, expected)
-            } else {
-                XCTFail("The deserialized error type does not match expected type")
-            }
+        let input = GreetingWithErrorsInput()
 
+        var operationError: Swift.Error?
+        do {
+            _ = try await client.greetingWithErrors(input: input)
+            XCTFail("Request should have failed")
         } catch {
-            XCTFail(error.localizedDescription)
+            operationError = error
+        }
+
+        if let actual = operationError as? ComplexError {
+
+            let expected = ComplexError(
+                header: "Header",
+                nested: ComplexNestedErrorData(
+                    foo: "bar"
+                ),
+                topLevel: "Top level"
+            )
+            XCTAssertEqual(actual.httpResponse.statusCode, SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
+            XCTAssertEqual(actual, expected)
+        } else {
+            XCTFail("The deserialized error type does not match expected type")
         }
     }
 """
@@ -67,46 +83,62 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonComplexErrorWithNoMessage() async throws {
-        do {
-            guard let httpResponse = buildHttpResponse(
-                code: 403,
-                headers: [
-                    "Content-Type": "application/json",
-                    "X-Amzn-Errortype": "ComplexError",
-                    "X-Header": "Header"
-                ],
-                content: .data(Data(""${'"'}
-                {
-                    "TopLevel": "Top level",
-                    "Nested": {
-                        "Fooooo": "bar"
-                    }
+        guard let httpResponse = buildHttpResponse(
+            code: 403,
+            headers: [
+                "Content-Type": "application/json",
+                "X-Amzn-Errortype": "ComplexError",
+                "X-Header": "Header"
+            ],
+            content: .data(Data(""${'"'}
+            {
+                "TopLevel": "Top level",
+                "Nested": {
+                    "Fooooo": "bar"
                 }
-                ""${'"'}.utf8))
-            ) else {
-                XCTFail("Something is wrong with the created http response")
-                return
             }
+            ""${'"'}.utf8))
+        ) else {
+            XCTFail("Something is wrong with the created http response")
+            return
+        }
 
-            let greetingWithErrorsOutputError = try await GreetingWithErrorsOutputError.httpError(from:)(httpResponse)
+        let config = try await ExampleClient.ExampleClientConfig(
+            awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
+            region: "us-west-2",
+            signingRegion: "us-west-2",
+            endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
+                urlString: "https://example.com"
+            )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
+            httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
+        )
 
-            if let actual = greetingWithErrorsOutputError as? ComplexError {
+        let client = ExampleClient(config: config)
 
-                let expected = ComplexError(
-                    header: "Header",
-                    nested: ComplexNestedErrorData(
-                        foo: "bar"
-                    ),
-                    topLevel: "Top level"
-                )
-                XCTAssertEqual(actual.httpResponse.statusCode, SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
-                XCTAssertEqual(actual, expected)
-            } else {
-                XCTFail("The deserialized error type does not match expected type")
-            }
+        let input = GreetingWithErrorsInput()
 
+        var operationError: Swift.Error?
+        do {
+            _ = try await client.greetingWithErrors(input: input)
+            XCTFail("Request should have failed")
         } catch {
-            XCTFail(error.localizedDescription)
+            operationError = error
+        }
+
+        if let actual = operationError as? ComplexError {
+
+            let expected = ComplexError(
+                header: "Header",
+                nested: ComplexNestedErrorData(
+                    foo: "bar"
+                ),
+                topLevel: "Top level"
+            )
+            XCTAssertEqual(actual.httpResponse.statusCode, SmithyHTTPAPI.HTTPStatusCode(rawValue: 403))
+            XCTAssertEqual(actual, expected)
+        } else {
+            XCTFail("The deserialized error type does not match expected type")
         }
     }
 """

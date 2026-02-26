@@ -13,10 +13,10 @@ import protocol SmithyHTTPAuthAPI.AuthSchemeResolver
 import protocol SmithyHTTPAuthAPI.AuthSchemeResolverParameters
 import struct SmithyRetries.DefaultRetryStrategy
 import struct SmithyRetries.ExponentialBackoffStrategy
-import SmithyTelemetryAPI
 import protocol SmithyRetriesAPI.RetryErrorInfoProvider
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryStrategyOptions
+import SmithyTelemetryAPI
 
 public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: RetryStrategy,
     DefaultSDKRuntimeRetryErrorInfoProvider: RetryErrorInfoProvider> {
@@ -29,7 +29,8 @@ public struct DefaultSDKRuntimeConfiguration<DefaultSDKRuntimeRetryStrategy: Ret
 
     /// The HTTP client to use for HTTP connections.
     ///
-    /// By default, Swift SDK will set this to `CRTClientEngine` client on Linux platforms, and `URLSessionHttpClient` on Apple platforms.
+    /// By default, Swift SDK will set this to `CRTClientEngine` client on Linux platforms, and
+    /// `URLSessionHttpClient` on Apple platforms.
     public var httpClientEngine: HTTPClient
 
     /// The HTTP client configuration.
@@ -114,7 +115,8 @@ public extension DefaultSDKRuntimeConfiguration {
     /// The default idempotency token generator that returns UUIDs.
     static var defaultIdempotencyTokenGenerator: IdempotencyTokenGenerator { DefaultIdempotencyTokenGenerator() }
 
-    /// The default retry strategy options with the exponential backoff strategy & other defaults defined in `RetryStrategyOptions`.
+    /// The default retry strategy options with the exponential backoff strategy & other defaults
+    /// defined in `RetryStrategyOptions`.
     static var defaultRetryStrategyOptions: RetryStrategyOptions {
         RetryStrategyOptions(backoffStrategy: ExponentialBackoffStrategy())
     }

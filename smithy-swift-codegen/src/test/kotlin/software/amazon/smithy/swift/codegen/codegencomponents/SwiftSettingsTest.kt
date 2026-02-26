@@ -194,8 +194,7 @@ class SwiftSettingsTest {
             copyrightNotice = "// Test copyright",
             visibility = "public",
             internalClient = false,
-            generatePackageManifest = false,
-            generateDependencyJSON = true,
+            emptyList(),
         )
 
     private fun createServiceWithProtocols(protocols: Set<ShapeId>): ServiceShape {
