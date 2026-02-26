@@ -46,7 +46,7 @@ class RpcV2CborProtocolGenerator(
         super.addProtocolSpecificMiddleware(ctx, operation)
 
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
-        operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider, true))
+        operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx, true))
 
         val hasEventStreamResponse = ctx.model.expectShape(operation.outputShape).hasTrait<StreamingTrait>()
         val hasEventStreamRequest = ctx.model.expectShape(operation.inputShape).hasTrait<StreamingTrait>()
@@ -82,7 +82,10 @@ class RpcV2CborProtocolGenerator(
         operationMiddleware.appendMiddleware(operation, CborValidateResponseHeaderMiddleware())
 
         if (operation.hasHttpBody(ctx)) {
-            operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, contentTypeValue, true))
+            operationMiddleware.appendMiddleware(
+                operation,
+                ContentTypeMiddleware(ctx.model, ctx.symbolProvider, contentTypeValue, true),
+            )
         }
 
         // Only set Content-Length header if the request input shape doesn't have an event stream

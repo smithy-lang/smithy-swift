@@ -18,7 +18,7 @@ extension Model {
     /// Compared to the AST model, this model has custom shape types, members are included in the main body of shapes
     /// along with other shape types, and all Shape IDs are fully-qualified
     /// (i.e. members have the enclosing shape's namespace & name, along with their own member name.)
-    /// - Parameter astModel: The JSON AST model to create a `Model` from.
+    /// - Parameter astModel: The JSON AST model to load into the `Model` being created.
     convenience init(astModel: ASTModel) throws {
         // Get all of the members from the AST model, create pairs of ShapeID & MemberShape
         let idToMemberShapePairs = try astModel.shapes
@@ -113,6 +113,8 @@ extension Model {
                 id: shapeID,
                 traits: traits,
                 operationIDs: try astShape.operations?.map { try $0.id } ?? [],
+                collectionOperationIDs: try astShape.collectionOperations?.map { try $0.id } ?? [],
+                resourceIDs: try astShape.resources?.map { try $0.id } ?? [],
                 createID: try astShape.create?.id,
                 putID: try astShape.put?.id,
                 readID: try astShape.read?.id,

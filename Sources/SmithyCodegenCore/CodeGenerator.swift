@@ -12,11 +12,13 @@ import struct Smithy.ShapeID
 
 /// The wrapper for Swift-native code generation.
 public struct CodeGenerator {
-    let service: String
+    let settings: SwiftSettings
     let modelFileURL: URL
     let schemasFileURL: URL?
     let serializeFileURL: URL?
     let deserializeFileURL: URL?
+    let typeRegistryFileURL: URL?
+    let operationsFileURL: URL?
 
     /// Creates a code generator.
     /// - Parameters:
@@ -24,17 +26,21 @@ public struct CodeGenerator {
     ///   - modelFileURL: The file URL where the JSON AST model file can be accessed.
     ///   - schemasFileURL: The file URL to which the `Schemas.swift` source file should be written.
     public init(
-        service: String,
+        settings: SwiftSettings,
         modelFileURL: URL,
         schemasFileURL: URL?,
         serializeFileURL: URL?,
-        deserializeFileURL: URL?
+        deserializeFileURL: URL?,
+        typeRegistryFileURL: URL?,
+        operationsFileURL: URL?
     ) throws {
-        self.service = service
+        self.settings = settings
         self.modelFileURL = modelFileURL
         self.schemasFileURL = schemasFileURL
         self.serializeFileURL = serializeFileURL
         self.deserializeFileURL = deserializeFileURL
+        self.typeRegistryFileURL = typeRegistryFileURL
+        self.operationsFileURL = operationsFileURL
     }
 
     /// Executes the code generator.
@@ -45,14 +51,11 @@ public struct CodeGenerator {
         let modelData = try Data(contentsOf: modelFileURL)
         let astModel = try JSONDecoder().decode(ASTModel.self, from: modelData)
 
-        // Create the service's ShapeID
-        let serviceID = try ShapeID(service)
-
         // Create the model from the AST
         let model = try Model(astModel: astModel)
 
         // Create a generation context from the model
-        let ctx = try GenerationContext(serviceID: serviceID, model: model)
+        let ctx = try GenerationContext(settings: settings, model: model)
 
         // If a schemas file URL was provided, generate it
         if let schemasFileURL {
@@ -70,6 +73,18 @@ public struct CodeGenerator {
         if let deserializeFileURL {
             let deserializeContents = try DeserializeCodegen().generate(ctx: ctx)
             try Data(deserializeContents.utf8).write(to: deserializeFileURL)
+        }
+
+        // If a TypeRegistry file URL was provided, generate it
+        if let typeRegistryFileURL {
+            let typeRegistryContents = try TypeRegistryCodegen().generate(ctx: ctx)
+            try Data(typeRegistryContents.utf8).write(to: typeRegistryFileURL)
+        }
+
+        // If an Operations file URL was provided, generate it
+        if let operationsFileURL {
+            let operationsContents = try OperationsCodegen().generate(ctx: ctx)
+            try Data(operationsContents.utf8).write(to: operationsFileURL)
         }
     }
 }

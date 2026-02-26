@@ -14,19 +14,13 @@ import struct Smithy.ShapeID
 
 public struct SymbolProvider {
     let service: ServiceShape
+    let settings: SwiftSettings
     let model: Model
 
-    init(service: ServiceShape, model: Model) {
+    init(service: ServiceShape, settings: SwiftSettings, model: Model) {
         self.service = service
+        self.settings = settings
         self.model = model
-    }
-
-    var serviceName: String {
-        get throws {
-            return try service.sdkIdStrippingService
-                .replacingOccurrences(of: " ", with: "")
-                .replacingOccurrences(of: "Service", with: "")
-        }
     }
 
     public func swiftType(shape: Shape) throws -> String {
@@ -83,11 +77,7 @@ public struct SymbolProvider {
         case .document:
             return "Smithy.Document"
         case .service:
-            // Returns the type name for the client
-            guard let serviceShape = shape as? ServiceShape else {
-                throw SymbolProviderError("Shape has type .service but is not a ServiceShape")
-            }
-            return try "\(serviceShape.clientBaseName)Client"
+            return "\(settings.serviceName)Client"
         case .member, .operation, .resource:
             throw SymbolProviderError("Cannot provide Swift symbol for shape type \(shape.type)")
         }
