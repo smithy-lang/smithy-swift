@@ -43,9 +43,3 @@ public struct RpcV2CborError: BaseError {
         self.requestID = nil
     }
 }
-
-/// Filter additional information from error name and sanitize it
-/// Reference: https://awslabs.github.io/smithy/1.0/spec/aws/aws-restjson1-protocol.html#operation-error-serialization
-func sanitizeErrorType(_ type: String) -> String {
-    return type.substringAfter("#").substringBefore(":").trim()
-}
