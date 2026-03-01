@@ -167,36 +167,43 @@ extension TestStruct: SerializableStruct {
             .init(
                 id: .init("swift.test", "TestStruct", "publicString"),
                 type: .member,
+                containerType: .structure,
                 target: Smithy.Prelude.stringSchema,
                 index: 0
             ),
             .init(
                 id: .init("swift.test", "TestStruct", "publicList"),
                 type: .member,
+                containerType: .structure,
                 target: publicListSchema,
                 index: 1
             ),
             .init(
                 id: .init("swift.test", "TestStruct", "publicMap"),
                 type: .member,
+                containerType: .structure,
                 target: publicMapSchema,
                 index: 2
             ),
             .init(
                 id: .init("swift.test", "TestStruct", "privateString"),
                 type: .member,
+                traits: [SensitiveTrait()],
+                containerType: .structure,
                 target: privateStringSchema,
                 index: 3
             ),
             .init(
                 id: .init("swift.test", "TestStruct", "privateList"),
                 type: .member,
+                containerType: .structure,
                 target: privateListSchema,
                 index: 4
             ),
             .init(
                 id: .init("swift.test", "TestStruct", "privateMap"),
                 type: .member,
+                containerType: .structure,
                 target: privateMapSchema,
                 index: 5
             ),
@@ -223,12 +230,14 @@ extension TestStruct: SerializableStruct {
             .init(
                 id: .init("swift.test", "PublicMap", "key"),
                 type: .member,
+                containerType: .map,
                 target: Smithy.Prelude.stringSchema,
                 index: 0
             ),
             .init(
                 id: .init("swift.test", "PublicMap", "value"),
                 type: .member,
+                containerType: .map,
                 target: Smithy.Prelude.stringSchema,
                 index: 1
             )
@@ -248,6 +257,8 @@ extension TestStruct: SerializableStruct {
             .init(
                 id: .init("swift.test", "PrivateList", "member"),
                 type: .member,
+                traits: [SensitiveTrait()],
+                containerType: .list,
                 target: privateStringSchema,
                 index: 0
             )
@@ -261,12 +272,15 @@ extension TestStruct: SerializableStruct {
             .init(
                 id: .init("swift.test", "PrivateMap", "key"),
                 type: .member,
+                containerType: .map,
                 target: Smithy.Prelude.stringSchema,
                 index: 0
             ),
             .init(
                 id: .init("swift.test", "PrivateMap", "value"),
                 type: .member,
+                traits: [SensitiveTrait()],
+                containerType: .map,
                 target: privateStringSchema,
                 index: 1
             )

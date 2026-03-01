@@ -5,12 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import func CoreFoundation.CFBooleanGetTypeID
-import func CoreFoundation.CFGetTypeID
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.JSONSerialization
-import class Foundation.NSNull
 import class Foundation.NSNumber
 @_spi(SmithyDocumentImpl) import Smithy
 import protocol SmithySerialization.DeserializableStruct
@@ -27,7 +24,7 @@ public class Deserializer: ShapeDeserializer {
             return
         }
         let jsonObject = try JSONSerialization.jsonObject(with: data)
-        let node = try make(from: jsonObject)
+        let node = try JSONValue(from: jsonObject)
         self.value = node
     }
 
@@ -37,7 +34,9 @@ public class Deserializer: ShapeDeserializer {
 
     public func readStruct<T>(_ schema: Schema, _ value: inout T) throws where T: DeserializableStruct {
         guard case .object(let object) = self.value else { throw SerializerError("Expected object") }
-        let members = schema.type == .member ? schema.target!.members : schema.members
+        let members = schema.members
+
+        // Pre-fill members that have the required trait but no default with a zero/false/empty value.
         for member in members where member.hasTrait(RequiredTrait.self) && !member.hasTrait(DefaultTrait.self) {
             let deserializer: Deserializer
             switch member.target!.type {
@@ -58,9 +57,10 @@ public class Deserializer: ShapeDeserializer {
             }
             try T.readConsumer(member, &value, deserializer)
         }
-        for (key, val) in object {
+
+        // Iterate over JSON elements of object & call consumer with the appropriate member.
+        for (key, val) in object where val != .null { // skip null values in structures
             guard let memberSchema = members.first(where: { $0.id.member == key }) else { continue }
-            guard val != .null else { continue }
             let memberDeserializer = Deserializer(node: val)
             try T.readConsumer(memberSchema, &value, memberDeserializer)
         }
@@ -116,18 +116,9 @@ public class Deserializer: ShapeDeserializer {
         case .number(let number):
             return Float(number.doubleValue)
         case .string(let string):
-            switch string {
-            case "NaN":
-                return Float.nan
-            case "Infinity":
-                return Float.infinity
-            case "-Infinity":
-                return -Float.infinity
-            default:
-                throw SerializerError("Expected number, NaN, Infinity, -Infinity")
-            }
+            return try floatingPointValue(string: string)
         default:
-            throw SerializerError("Expected number, NaN, Infinity, -Infinity")
+            throw SerializerError.floatingPointError
         }
     }
 
@@ -136,18 +127,22 @@ public class Deserializer: ShapeDeserializer {
         case .number(let number):
             return number.doubleValue
         case .string(let string):
-            switch string {
-            case "NaN":
-                return Double.nan
-            case "Infinity":
-                return Double.infinity
-            case "-Infinity":
-                return -Double.infinity
-            default:
-                throw SerializerError("Expected number, NaN, Infinity, -Infinity")
-            }
+            return try floatingPointValue(string: string)
         default:
-            throw SerializerError("Expected number, NaN, Infinity, -Infinity")
+            throw SerializerError.floatingPointError
+        }
+    }
+
+    private func floatingPointValue<T: FloatingPoint>(string: String) throws -> T {
+        switch string {
+        case "NaN":
+            return T.nan
+        case "Infinity":
+            return T.infinity
+        case "-Infinity":
+            return -T.infinity
+        default:
+            throw SerializerError.floatingPointError
         }
     }
 
@@ -192,16 +187,7 @@ public class Deserializer: ShapeDeserializer {
     }
 
     public func readTimestamp(_ schema: Schema) throws -> Date {
-        let timestampFormat: TimestampFormatTrait.Format
-        if schema.type == .member {
-            let memberTraits = schema.traits
-            let memberTimestampFormat = try memberTraits.getTrait(TimestampFormatTrait.self)?.format
-            let targetTraits = schema.target!.traits
-            let targetTimestampFormat = try targetTraits.getTrait(TimestampFormatTrait.self)?.format
-            timestampFormat = memberTimestampFormat ?? targetTimestampFormat ?? .epochSeconds
-        } else {
-            timestampFormat = try schema.traits.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds
-        }
+        let timestampFormat = try schema.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds
         switch timestampFormat {
         case .dateTime:
             guard case .string(let string) = value else {
@@ -249,32 +235,6 @@ public class Deserializer: ShapeDeserializer {
 
 }
 
-/// Creates a `JSONValue` from a Swift JSON object.
-///
-/// The JSON object should obey the following:
-/// - The top level object is an NSArray or NSDictionary.
-/// - All objects are instances of NSString, NSNumber, NSArray, NSDictionary, or NSNull.
-/// - All dictionary keys are instances of NSString.
-/// - Numbers are neither NaN nor infinity.
-/// - Parameter jsonObject: The JSON object
-/// - Returns: A Smithy `Document` containing the JSON.
-private func make(from jsonObject: Any) throws -> JSONValue {
-    if let object = jsonObject as? [String: Any] {
-        return .object(try object.mapValues { try make(from: $0) })
-    } else if let array = jsonObject as? [Any] {
-        return .list(try array.map { try make(from: $0) })
-    } else if let nsNumber = jsonObject as? NSNumber {
-        // Check if the NSNumber is a boolean, else treat it as double
-        if CFGetTypeID(nsNumber) == CFBooleanGetTypeID() {
-            return .bool(nsNumber.boolValue)
-        } else {
-            return .number(nsNumber)
-        }
-    } else if let string = jsonObject as? String {
-        return .string(string)
-    } else if jsonObject is NSNull {
-        return .null
-    } else {
-        throw SerializerError("unsupported JSON object")
-    }
+extension SerializerError {
+    static var floatingPointError: Self { SerializerError("Expected number, NaN, Infinity, -Infinity") }
 }

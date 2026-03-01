@@ -24,8 +24,7 @@ public class Serializer: ShapeSerializer {
 
     public func writeStruct<S>(_ schema: Schema, _ value: S) throws where S: SerializableStruct {
         var object = [String: JSONValue]()
-        let members = schema.type == .member ? schema.target!.members : schema.members
-        for memberSchema in members {
+        for memberSchema in schema.members {
             guard let key = memberSchema.id.member else { continue }
             let memberSerializer = Serializer()
             try S.writeConsumer(memberSchema, value, memberSerializer)

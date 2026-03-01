@@ -15,6 +15,8 @@ public struct Schema: Sendable {
     public let id: ShapeID
 
     /// The type of the shape being described.
+    ///
+    /// If this Schema is a member, the type returned is that of the member's target.
     public let type: ShapeType
 
     /// A dictionary of the described shape's trait shape IDs to Nodes with trait data.
@@ -26,7 +28,13 @@ public struct Schema: Sendable {
     /// The member schemas for this schema, if any.
     ///
     /// Typically only a schema of type Structure, Union, Enum, IntEnum, List or Map will have members.
-    public let members: [Schema]
+    /// When this schema is itself a Member, it returns the target's members.
+    public var members: [Schema] {
+        _containerType != nil ? _target()!._members : _members
+    }
+
+    /// The members of this schema.
+    private let _members: [Schema]
 
     /// The target schema for this schema.  Will only be used when this is a member schema.
     public var target: Schema? {
@@ -45,6 +53,15 @@ public struct Schema: Sendable {
     /// This index is intended for use as a performance enhancement when looking up member schemas
     /// during deserialization.
     public let index: Int
+    
+    /// The member name for this schema.
+    ///
+    /// Only returns a name for structure & union members.  Collection & enumeration members return `nil`.
+    public var memberName: String? {
+        [ShapeType.structure, .union].contains(_containerType) ? id.member! : nil
+    }
+
+    private var _containerType: ShapeType?
 
     /// Creates a new Schema using the passed parameters.
     ///
@@ -55,13 +72,15 @@ public struct Schema: Sendable {
         type: ShapeType,
         traits: TraitCollection = TraitCollection(),
         members: [Schema] = [],
+        containerType: ShapeType? = nil,
         target: @Sendable @escaping @autoclosure () -> Schema? = nil,
         index: Int = -1
     ) {
         self.id = id
         self.type = type
         self.traits = traits
-        self.members = members
+        self._members = members
+        self._containerType = containerType
         self._target = target
         self.index = index
     }
