@@ -29,4 +29,8 @@ public class EnumShape: Shape, HasMembers {
     override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
         try Set(members)
     }
+
+    func trimmingMembers(onlyTarget: Set<Smithy.ShapeID>) -> Shape {
+        return self
+    }
 }

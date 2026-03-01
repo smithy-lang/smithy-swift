@@ -17,7 +17,7 @@ final class DefaultRetryErrorInfoProviderTests: XCTestCase {
     func test_returnsErrorInfoWhenErrorIsARetryableHTTPStatusCode() {
 
         struct RetryableHTTPError: Error, HTTPError {
-            let httpResponse: HTTPResponse
+            var httpResponse: HTTPResponse
 
             init(statusCode: HTTPStatusCode) {
                 self.httpResponse = HTTPResponse(headers: Headers(), statusCode: statusCode)

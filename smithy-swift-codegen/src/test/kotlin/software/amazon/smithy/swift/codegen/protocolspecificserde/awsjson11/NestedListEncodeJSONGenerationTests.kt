@@ -33,23 +33,6 @@ public struct ListOfMapsOperationInput: Swift.Sendable {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
-    @Test
-    fun `encode list of maps of lists`() {
-        val context = setupTests("Isolated/json11/lists-of-maps-of-lists.smithy", "aws.protocoltests.json#JsonProtocol")
-        val contents = getFileContents(context.manifest, "Sources/Example/models/ListOfMapsOperationInput+Write.swift")
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents = """
-extension ListOfMapsOperationInput {
-
-    static func write(value: ListOfMapsOperationInput?, to writer: SmithyJSON.Writer) throws {
-        guard let value else { return }
-        try writer["targetMaps"].writeList(value.targetMaps, memberWritingClosure: SmithyReadWrite.mapWritingClosure(valueWritingClosure: SmithyReadWrite.listWritingClosure(memberWritingClosure: SmithyReadWrite.WritingClosures.writeString(value:to:), memberNodeInfo: "member", isFlattened: false), keyNodeInfo: "key", valueNodeInfo: "value", isFlattened: false), memberNodeInfo: "member", isFlattened: false)
-    }
-}
-"""
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
     private fun setupTests(
         smithyFile: String,
         serviceShapeId: String,

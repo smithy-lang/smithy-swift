@@ -12,7 +12,7 @@ public protocol ServiceError {
     var typeName: String? { get }
 
     /// The message for this error, if one was received.
-    var message: String? { get }
+    var message: String? { get set }
 }
 
 extension ServiceError {

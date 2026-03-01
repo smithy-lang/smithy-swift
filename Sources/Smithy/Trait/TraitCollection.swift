@@ -66,7 +66,7 @@ public struct TraitCollection: Sendable, Hashable {
 
     /// Returns a trait collection containing only this collection's traits that belong in a schema.
     public var schemaTraits: TraitCollection {
-        let schemaTraitDict = traitDict.filter { (shapeID, _) in allSupportedTraits.contains(shapeID) }
+        let schemaTraitDict = traitDict.filter { (shapeID, _) in allSupportedTraitIDs.contains(shapeID) }
         return Self(traits: schemaTraitDict)
     }
 }

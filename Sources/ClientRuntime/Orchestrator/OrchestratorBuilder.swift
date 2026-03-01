@@ -13,9 +13,12 @@ import protocol Smithy.RequestMessage
 import protocol Smithy.RequestMessageSerializer
 import protocol Smithy.ResponseMessage
 import protocol Smithy.ResponseMessageDeserializer
+import class SmithyHTTPAPI.HTTPResponse
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 import struct SmithyRetriesAPI.RetryErrorInfo
 import protocol SmithyRetriesAPI.RetryStrategy
+import protocol SmithySerialization.ClientProtocol
+import struct SmithySerialization.Operation
 
 /// Builds an Orchestrator, combining runtime components, interceptors, serializers, and deserializers.
 ///
@@ -49,6 +52,18 @@ public class OrchestratorBuilder<
     @discardableResult
     public func attributes(_ attributes: Context) -> Self {
         self.attributes = attributes
+        return self
+    }
+
+    @discardableResult
+    public func apply<ClientProtocol: SmithySerialization.ClientProtocol>(
+        _ operation: Operation<InputType, OutputType>,
+        _ clientProtocol: ClientProtocol
+    ) -> Self where ClientProtocol.RequestType == RequestType,
+                    ClientProtocol.ResponseType == ResponseType,
+                    ResponseType == HTTPResponse {
+        self.serialize(SchemaBodyMiddleware(operation, clientProtocol))
+        self.deserialize(SchemaDeserializeMiddleware(operation, clientProtocol))
         return self
     }
 

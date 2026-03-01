@@ -9,19 +9,20 @@ import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object SmithyCBORTypes {
-    val Writer = runtimeSymbol("Writer", SwiftDeclaration.CLASS, listOf(SmithyReadWriteTypes.SmithyWriter))
-    val Reader = runtimeSymbol("Reader", SwiftDeclaration.CLASS, listOf(SmithyReadWriteTypes.SmithyReader))
+    val Writer = runtimeSymbol("Writer", SwiftDeclaration.CLASS, listOf(SmithyReadWriteTypes.SmithyWriter), listOf("SmithyReadWrite"))
+    val Reader = runtimeSymbol("Reader", SwiftDeclaration.CLASS, listOf(SmithyReadWriteTypes.SmithyReader), listOf("SmithyReadWrite"))
 }
 
 private fun runtimeSymbol(
     name: String,
     declaration: SwiftDeclaration,
     additionalImports: List<Symbol> = emptyList(),
+    spiNames: List<String> = emptyList(),
 ): Symbol =
     SwiftSymbol.make(
         name,
         declaration,
         SwiftDependency.SMITHY_CBOR,
         additionalImports,
-        listOf("SmithyReadWrite"),
+        spiNames,
     )

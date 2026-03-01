@@ -15,7 +15,6 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentLengthMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.MutateHeadersMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputBodyMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.model.hasTrait
@@ -45,8 +44,13 @@ class RpcV2CborProtocolGenerator(
     ) {
         super.addProtocolSpecificMiddleware(ctx, operation)
 
+        // Remove these middlewares, they are handled by applying the ClientProtocol & Operation
+        // to the orchestrator
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
-        operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider, true))
+        operationMiddleware.removeMiddleware(operation, "DeserializeMiddleware")
+
+        // Remove this middleware as it will be handled by a RPCv2CBOR plugin
+        operationMiddleware.removeMiddleware(operation, "OperationInputUrlPathMiddleware")
 
         val hasEventStreamResponse = ctx.model.expectShape(operation.outputShape).hasTrait<StreamingTrait>()
         val hasEventStreamRequest = ctx.model.expectShape(operation.inputShape).hasTrait<StreamingTrait>()
@@ -82,7 +86,10 @@ class RpcV2CborProtocolGenerator(
         operationMiddleware.appendMiddleware(operation, CborValidateResponseHeaderMiddleware())
 
         if (operation.hasHttpBody(ctx)) {
-            operationMiddleware.appendMiddleware(operation, ContentTypeMiddleware(ctx.model, ctx.symbolProvider, contentTypeValue, true))
+            operationMiddleware.appendMiddleware(
+                operation,
+                ContentTypeMiddleware(ctx.model, ctx.symbolProvider, contentTypeValue, true),
+            )
         }
 
         // Only set Content-Length header if the request input shape doesn't have an event stream

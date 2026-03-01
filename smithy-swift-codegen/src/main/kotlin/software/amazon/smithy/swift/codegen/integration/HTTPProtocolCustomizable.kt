@@ -12,6 +12,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.swift.codegen.SwiftWriter
+import software.amazon.smithy.swift.codegen.swiftmodules.RPCv2CBORTypes
 
 interface HTTPProtocolCustomizable {
     fun renderInternals(ctx: ProtocolGenerator.GenerationContext) {
@@ -48,6 +49,12 @@ interface HTTPProtocolCustomizable {
     interface ServiceErrorCustomRenderer {
         fun render(writer: SwiftWriter)
     }
+
+    val clientProtocolSymbol: Symbol
+        get() = RPCv2CBORTypes.HTTPClientProtocol
+
+    val plugins: List<Plugin>
+        get() = listOf()
 
     fun serviceErrorCustomRenderer(ctx: ProtocolGenerator.GenerationContext): ServiceErrorCustomRenderer? = null
 

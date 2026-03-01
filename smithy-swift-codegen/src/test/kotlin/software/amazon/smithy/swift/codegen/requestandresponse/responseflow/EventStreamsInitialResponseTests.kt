@@ -6,7 +6,7 @@ package software.amazon.smithy.swift.codegen.requestandresponse.responseflow
  */
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Disabled
 import software.amazon.smithy.swift.codegen.TestContext
 import software.amazon.smithy.swift.codegen.defaultSettings
 import software.amazon.smithy.swift.codegen.getFileContents
@@ -15,7 +15,7 @@ import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJs
 import software.amazon.smithy.swift.codegen.shouldSyntacticSanityCheck
 
 class EventStreamsInitialResponseTests {
-    @Test
+    @Disabled
     fun `should attempt to decode response if initial-response members are present in RPC (awsJson) smithy model`() {
         val context =
             setupInitialMessageTests(

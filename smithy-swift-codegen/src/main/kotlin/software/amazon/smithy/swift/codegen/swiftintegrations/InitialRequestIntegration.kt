@@ -1,13 +1,10 @@
 package software.amazon.smithy.swift.codegen.swiftintegrations
 
-import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
-import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.EventStreamIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.swift.codegen.SwiftDelegator
 import software.amazon.smithy.swift.codegen.SwiftSettings
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
@@ -17,7 +14,6 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.NodeInfo
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WritingClosureUtils
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.struct.writerSymbol
-import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITypes
 import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
 
@@ -26,8 +22,9 @@ class InitialRequestIntegration : SwiftIntegration {
         model: Model,
         settings: SwiftSettings,
     ): Boolean {
-        val service = settings.getService(model)
-        return service.hasTrait<AwsJson1_0Trait>() || service.hasTrait<AwsJson1_1Trait>() || service.hasTrait<Rpcv2CborTrait>()
+        return false
+//        val service = settings.getService(model)
+//        return service.hasTrait<AwsJson1_0Trait>() || service.hasTrait<AwsJson1_1Trait>() || service.hasTrait<Rpcv2CborTrait>()
     }
 
     override fun writeAdditionalFiles(

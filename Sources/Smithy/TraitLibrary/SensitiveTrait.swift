@@ -12,4 +12,6 @@ public struct SensitiveTrait: Trait {
     public var node: Node { [:] }
 
     public init(node: Node) throws {}
+
+    public init() {}
 }

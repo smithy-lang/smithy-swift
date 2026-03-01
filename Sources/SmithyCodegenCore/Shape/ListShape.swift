@@ -19,6 +19,8 @@ public class ListShape: Shape, HasMembers {
         super.init(id: id, type: .list, traits: traits)
     }
 
+    public var memberID: ShapeID { .init(id: self.id, member: "member") }
+
     public var member: MemberShape {
         get throws {
             // A list will always have one member, and it will always be "member".
