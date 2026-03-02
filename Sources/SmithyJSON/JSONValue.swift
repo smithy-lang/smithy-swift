@@ -47,7 +47,7 @@ indirect enum JSONValue: Equatable {
             throw SerializerError("unsupported JSON object")
         }
     }
-    
+
     /// Creates a JSON object suitable for serialization to JSON by `NSJSONSerialization.data()`.
     /// - Returns: The JSON object equivalent of the receiver.
     func jsonObject() -> Any {

@@ -53,7 +53,7 @@ public struct Schema: Sendable {
     /// This index is intended for use as a performance enhancement when looking up member schemas
     /// during deserialization.
     public let index: Int
-    
+
     /// The member name for this schema.
     ///
     /// Only returns a name for structure & union members.  Collection & enumeration members return `nil`.
