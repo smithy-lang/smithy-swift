@@ -65,8 +65,14 @@ open class AWSJSON1_1ProtocolGenerator(
                 ?: MutateHeadersMiddleware(overrideHeaders = mapOf("X-Amz-Target" to xAmzTargetValue))
         operationMiddleware.appendMiddleware(operation, xAmzTargetMiddleware)
 
+        // Remove these middlewares, they are handled by applying the ClientProtocol & Operation
+        // to the orchestrator
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
-        operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider, true))
+        operationMiddleware.removeMiddleware(operation, "DeserializeMiddleware")
+
+        // Remove this middleware as it will be handled by a plugin
+        operationMiddleware.removeMiddleware(operation, "OperationInputUrlPathMiddleware")
+        operationMiddleware.removeMiddleware(operation, "OperationInputQueryItemMiddleware")
 
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         operationMiddleware.removeMiddleware(operation, "ContentTypeMiddleware")
