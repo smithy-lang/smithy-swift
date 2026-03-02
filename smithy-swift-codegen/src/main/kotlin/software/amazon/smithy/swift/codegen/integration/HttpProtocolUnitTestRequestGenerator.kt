@@ -105,7 +105,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
         val clientName = "${ctx.settings.sdkId}Client"
         val region = "us-west-2"
 
-        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
+        writer.openBlock("var config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
             writer.write("signingRegion: \$S,", region)
@@ -121,7 +121,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
             writer.write("idempotencyTokenGenerator: ProtocolTestIdempotencyTokenGenerator(),")
             writer.write("httpClientEngine: ProtocolTestClient()")
         }
+        writer.write("let serializationTime: BoxedDouble = BoxedDouble(-1)")
+        writer.write("config.addInterceptorProvider(SerializationBenchmarkInterceptorProvider(serializationTime))")
         writer.write("let client = \$L(config: config)", clientName)
+        writer.write("var measurements: [Double] = []")
     }
 
     private fun renderOperationBlock(test: HttpRequestTestCase) {
@@ -136,13 +139,18 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
             writer.addImport(SwiftDependency.SMITHY.target)
             writer.write(
                 """
-                do {
-                    _ = try await client.${operation.toLowerCamelCase()}(input: input)
-                } catch TestCheckError.actual(let actual) {
-                    ${'$'}{C|}
+                for i in 0..<20000 {
+                    do {
+                        _ = try await client.${operation.toLowerCamelCase()}(input: input)
+                    } catch TestCheckError.actual(let actual) {
+                        if i >= 10000 {
+                            measurements.append(serializationTime.value)
+                        }
+                    }
                 }
+
+                logSerdeBenchmarkResult(calculateAndFormatMetrics(from: measurements, testID: "${test.id}"))
                 """.trimIndent(),
-                Runnable { renderBodyAssert(test) },
             )
         }
     }

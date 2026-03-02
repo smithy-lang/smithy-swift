@@ -217,8 +217,10 @@ public struct Orchestrator<
                 // START - smithy.client.call.serialization_duration
                 let serializeStart = Date().timeIntervalSinceReferenceDate
                 try serialize(finalizedInput, builder, context.getAttributes())
+                let serializeDuration = Date().timeIntervalSinceReferenceDate - serializeStart
+                context.getAttributes().set(key: AttributeKey<Double>(name: "SerializeDuration"), value: serializeDuration)
                 telemetry.serializationDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - serializeStart,
+                    value: serializeDuration,
                     attributes: telemetry.metricsAttributes,
                     context: telemetryContext)
                 // END - smithy.client.call.serialization_duration
@@ -434,8 +436,10 @@ public struct Orchestrator<
                 // START - smithy.client.call.deserialization_duration
                 let deserializeStart = Date().timeIntervalSinceReferenceDate
                 let output = try await deserialize(context.getResponse(), context.getAttributes())
+                let deserializeDuration = Date().timeIntervalSinceReferenceDate - deserializeStart
+                context.getAttributes().set(key: AttributeKey<Double>(name: "DeserializeDuration"), value: deserializeDuration)
                 telemetry.deserializationDuration.record(
-                    value: Date().timeIntervalSinceReferenceDate - deserializeStart,
+                    value: deserializeDuration,
                     attributes: telemetry.metricsAttributes,
                     context: telemetryContext
                 )

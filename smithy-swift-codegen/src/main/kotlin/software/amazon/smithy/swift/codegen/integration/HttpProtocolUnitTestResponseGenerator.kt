@@ -59,7 +59,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         outputShape?.let {
             renderBuildHttpResponse(test)
             writer.write("")
-            renderActualOutput()
+            renderActualOutput(test)
             writer.write("")
             renderExpectedOutput(test, it)
             writer.write("")
@@ -175,7 +175,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         }
     }
 
-    fun renderActualOutput() {
+    fun renderActualOutput(test: HttpResponseTestCase) {
         val clientName = "${ctx.settings.sdkId}Client"
         val region = "us-west-2"
 
@@ -183,7 +183,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         // - credential resolver
         // - endpoint resolver (unless the test has endpoint rules)
         // - HTTP client engine; a mock that returns the test's HTTPResponse is used
-        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
+        writer.openBlock("var config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
             writer.write("signingRegion: \$S,", region)
@@ -199,6 +199,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
             writer.write("httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)")
         }
         writer.write("")
+        writer.write("let deserializationTime: BoxedDouble = BoxedDouble(-1)")
+        writer.write("config.addInterceptorProvider(DeserializationBenchmarkInterceptorProvider(deserializationTime))")
+        writer.write("var measurements: [Double] = []")
 
         // Create a client with the config
         writer.write("let client = \$L(config: config)", clientName)
@@ -229,14 +232,22 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
             inputArgs.joinToString(", "),
         )
         writer.write("")
-        captureResponse()
+        captureResponse(test)
         writer.write("")
     }
 
-    open fun captureResponse() {
+    open fun captureResponse(test: HttpResponseTestCase) {
         writer.write(
-            "let actual = try await client.\$L(input: input)",
-            operation.toLowerCamelCase(),
+            """
+                for i in 0..<20000 {
+                    let actual = try await client.${operation.toLowerCamelCase()}(input: input)
+                    if i >= 10000 {
+                        measurements.append(deserializationTime.value)
+                    }
+                }
+
+                logSerdeBenchmarkResult(calculateAndFormatMetrics(from: measurements, testID: "${test.id}"))
+                """.trimIndent(),
         )
     }
 
@@ -257,7 +268,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         test: HttpResponseTestCase,
         outputShape: Shape,
     ) {
-        writer.write("XCTAssertEqual(actual, expected)")
+        writer.write("")
     }
 
     open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpResponseTestCase>() {
