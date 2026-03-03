@@ -15,7 +15,6 @@ class SwiftSettingsJSONGenerator(
                     .builder()
                     .withMember(SwiftSettings.SERVICE, ctx.settings.service.toString())
                     .withMember(SwiftSettings.MODULE_NAME, ctx.settings.moduleName)
-                    .withMember(SwiftSettings.MODULE_VERSION, ctx.settings.moduleVersion)
                     .withMember(SwiftSettings.SDK_ID, ctx.settings.sdkId)
                     .withMember(SwiftSettings.INTERNAL_CLIENT, ctx.settings.internalClient)
                     .withMember(SwiftSettings.OPERATIONS, ArrayNode.fromStrings(ctx.settings.operations))
