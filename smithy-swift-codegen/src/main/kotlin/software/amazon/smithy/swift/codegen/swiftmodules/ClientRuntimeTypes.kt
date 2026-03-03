@@ -104,10 +104,29 @@ object ClientRuntimeTypes {
             runtimeSymbol("[ClientRuntime.SendableHttpInterceptorProviderBox]", null, listOf(Core.SendableHttpInterceptorProviderBox))
     }
 
+    object RestJSON {
+        val RestJSONError = runtimeSymbol("RestJSONError", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
+    }
+
+    object AWSJSON {
+        val AWSJSONError = runtimeSymbol("AWSJSONError", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
+    }
+
+    object RestXML {
+        val RestXMLError = runtimeSymbol("RestXMLError", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
+    }
+
+    object AWSQuery {
+        val AWSQueryError = runtimeSymbol("AWSQueryError", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
+        val QueryCompatibleUtils = runtimeSymbol("QueryCompatibleUtils", SwiftDeclaration.ENUM, emptyList(), listOf("SmithyReadWrite"))
+    }
+
+    object EC2Query {
+        val EC2QueryError = runtimeSymbol("EC2QueryError", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
+    }
+
     object RpcV2Cbor {
         val RpcV2CborError = runtimeSymbol("RpcV2CborError", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
-        val RpcV2CborQueryCompatibleUtils =
-            runtimeSymbol("RpcV2CborQueryCompatibleUtils", SwiftDeclaration.ENUM, emptyList(), listOf("SmithyReadWrite"))
         val CborValidateResponseHeaderMiddleware = runtimeSymbol("CborValidateResponseHeaderMiddleware", SwiftDeclaration.STRUCT)
     }
 }
