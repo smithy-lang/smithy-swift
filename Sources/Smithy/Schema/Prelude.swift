@@ -104,7 +104,7 @@ public enum Prelude {
     }
 
     public static var mapDocumentSchema: Schema {
-        Schema(id: .init("swift.synthetic", "MapDocument"), type: .list, members: [
+        Schema(id: .init("swift.synthetic", "MapDocument"), type: .map, members: [
             .init(id: .init("swift.synthetic", "MapDocument", "key"), type: .string),
             .init(id: .init("swift.synthetic", "MapDocument", "value"), type: .document),
         ])
