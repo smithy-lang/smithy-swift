@@ -64,7 +64,7 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         // Construct the Deserialize.swift path.
         let deserializeSwiftPath = outputDirectoryPath.appending("\(name)Deserialize.swift")
 
-        // Construct the Deserialize.swift path.
+        // Construct the TypeRegistry.swift path.
         let typeRegistrySwiftPath = outputDirectoryPath.appending("\(name)TypeRegistry.swift")
 
         // Construct the Operations.swift path.
@@ -80,9 +80,6 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
             "--deserialize-path", deserializeSwiftPath,
             "--type-registry-path", typeRegistrySwiftPath,
             "--operations-path", operationsSwiftPath,
-            "--schemas-path", schemasSwiftPath,
-            "--serialize-path", serializeSwiftPath,
-            "--deserialize-path", deserializeSwiftPath
         ]
 
         if !operations.isEmpty {
