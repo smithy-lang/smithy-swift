@@ -5,17 +5,18 @@ import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object SmithyHTTPAuthTypes {
-    val BearerTokenAuthScheme = runtimeSymbol("BearerTokenAuthScheme", SwiftDeclaration.STRUCT)
+    val BearerTokenAuthScheme = runtimeSymbol("BearerTokenAuthScheme", SwiftDeclaration.STRUCT, listOf("SmithyHTTPAuth"))
 }
 
 private fun runtimeSymbol(
     name: String,
     declaration: SwiftDeclaration? = null,
+    spiNames: List<String> = emptyList(),
 ): Symbol =
     SwiftSymbol.make(
         name,
         declaration,
         SwiftDependency.SMITHY_HTTP_AUTH,
         emptyList(),
-        emptyList(),
+        spiNames,
     )

@@ -17,8 +17,9 @@ import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
 import enum SmithyHTTPAuthAPI.SigningAlgorithm
 
 import struct Foundation.Locale
-import class SmithyIdentity.CRTAWSCredentialIdentity
+@_spi(SmithyIdentity) import SmithyIdentity
 
+@_spi(SmithyHTTPAuth)
 extension SigningAlgorithm {
     /// Convert self to CRT SigningAlgorithmType
     /// - Returns: SigningAlgorithmType
@@ -31,6 +32,7 @@ extension SigningAlgorithm {
     }
 }
 
+@_spi(SmithyHTTPAuth)
 extension AWSSignatureType {
     public func toCRTType() -> SignatureType {
         switch self {
@@ -67,6 +69,7 @@ extension AWSSignedBodyValue {
     }
 }
 
+@_spi(SmithyHTTPAuth)
 extension AWSSigningConfig {
     public func toCRTType() throws -> SigningConfig {
         // Never include the Transfer-Encoding header in the signature,

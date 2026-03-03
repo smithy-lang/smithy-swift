@@ -10,6 +10,7 @@ import class AwsCommonRuntimeKit.CredentialsProvider
 /// A credential identity resolver that uses the input identity resolver to resolve the credentials.
 /// The provided identity resolver must conform to `AWSCredentialIdentityResolver`.
 public struct CustomAWSCredentialIdentityResolver: AWSCredentialIdentityResolvedByCRT {
+    @_spi(SmithyIdentity)
     public let crtAWSCredentialIdentityResolver: AwsCommonRuntimeKit.CredentialsProvider
 
     /// - Parameter identityResolver: An object conforming to `AWSCredentialIdentityResolver` to resolve the credentials.

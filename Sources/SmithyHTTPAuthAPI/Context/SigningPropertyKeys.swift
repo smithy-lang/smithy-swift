@@ -8,6 +8,7 @@
 import struct Foundation.TimeInterval
 import struct Smithy.AttributeKey
 
+@_spi(SmithyHTTPAuthAPI)
 public enum SigningPropertyKeys {
     public static let signingName = AttributeKey<String>(name: "SigningName")
     public static let signingRegion = AttributeKey<String>(name: "SigningRegion")

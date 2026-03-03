@@ -7,4 +7,5 @@
 
 import class AwsCommonRuntimeKit.Credentials
 
+@_spi(SmithyIdentity)
 public typealias CRTAWSCredentialIdentity = AwsCommonRuntimeKit.Credentials

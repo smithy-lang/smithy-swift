@@ -17,17 +17,18 @@ object SmithyHTTPAuthAPITypes {
     val AuthSchemes = runtimeSymbol("AuthSchemes", SwiftDeclaration.TYPEALIAS)
     val AuthSchemeResolver = runtimeSymbol("AuthSchemeResolver", SwiftDeclaration.PROTOCOL)
     val AuthSchemeResolverParams = runtimeSymbol("AuthSchemeResolverParameters", SwiftDeclaration.PROTOCOL)
-    var SigningPropertyKeys = runtimeSymbol("SigningPropertyKeys", SwiftDeclaration.ENUM)
+    var SigningPropertyKeys = runtimeSymbol("SigningPropertyKeys", SwiftDeclaration.ENUM, listOf("SmithyHTTPAuthAPI"))
 }
 
 private fun runtimeSymbol(
     name: String,
     declaration: SwiftDeclaration? = null,
+    spiNames: List<String> = emptyList(),
 ): Symbol =
     SwiftSymbol.make(
         name,
         declaration,
         SwiftDependency.SMITHY_HTTP_AUTH_API,
         emptyList(),
-        emptyList(),
+        spiNames,
     )

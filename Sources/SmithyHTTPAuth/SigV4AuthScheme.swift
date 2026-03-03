@@ -11,8 +11,9 @@ import SmithyChecksumsAPI
 import protocol SmithyHTTPAuthAPI.AuthScheme
 import enum SmithyHTTPAuthAPI.AWSSignedBodyHeader
 import protocol SmithyHTTPAuthAPI.Signer
-import enum SmithyHTTPAuthAPI.SigningPropertyKeys
+@_spi(SmithyHTTPAuthAPI) import enum SmithyHTTPAuthAPI.SigningPropertyKeys
 
+@_spi(SmithyHTTPAuth)
 public struct SigV4AuthScheme: AuthScheme {
     public let schemeID: String = "aws.auth#sigv4"
     public let signer: Signer = SigV4Signer()

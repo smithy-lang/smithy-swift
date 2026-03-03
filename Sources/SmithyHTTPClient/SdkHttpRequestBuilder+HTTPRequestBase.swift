@@ -13,6 +13,7 @@ import struct SmithyHTTPAPI.Headers
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 
+@_spi(SmithyHTTPClient)
 extension HTTPRequestBuilder {
 
     /// Update the builder with the values from the CRT request
@@ -48,6 +49,7 @@ extension HTTPRequestBuilder {
     }
 }
 
+@_spi(SmithyHTTPClient)
 extension HTTPRequestBase {
     public var signature: String? {
         let authHeader = getHeaderValue(name: "Authorization")

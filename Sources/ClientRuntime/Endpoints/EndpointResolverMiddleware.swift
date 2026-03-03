@@ -11,7 +11,7 @@ import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 import enum SmithyHTTPAuthAPI.SigningAlgorithm
-import enum SmithyHTTPAuthAPI.SigningPropertyKeys
+@_spi(SmithyHTTPAuthAPI) import enum SmithyHTTPAuthAPI.SigningPropertyKeys
 
 public struct EndpointResolverMiddleware<OperationStackOutput, Params: EndpointsRequestContextProviding> {
     public let id: Swift.String = "EndpointResolverMiddleware"

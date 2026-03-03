@@ -12,6 +12,7 @@ import SmithyTelemetryAPI
 /// Container for HTTPClient telemetry, including configurable attributes and names.
 ///
 /// Note: This is intended to be used within generated code, not directly.
+@_spi(SmithyHTTPClient)
 public class HttpTelemetry: @unchecked Sendable {
     private static var idleConnectionAttributes: Attributes {
         var attributes = Attributes()
@@ -189,11 +190,13 @@ private enum RequestState {
     fileprivate static let queued = "queued"
 }
 
+@_spi(SmithyHTTPClient)
 public enum HttpMetricsAttributesKeys {
     fileprivate static let state = AttributeKey<String>(name: "state")
     public static let serverAddress = AttributeKey<String>(name: "server.address")
 }
 
+@_spi(SmithyHTTPClient)
 public struct HttpMetricsUsage {
     public var connectionsLimit: Int = 0
     public var idleConnections: Int = 0

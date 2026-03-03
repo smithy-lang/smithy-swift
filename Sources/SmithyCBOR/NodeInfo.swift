@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SmithyReadWrite)
 public struct NodeInfo: Equatable, Comparable {
     /// The name for this CBOR node, or an empty string if none.
     public let name: String

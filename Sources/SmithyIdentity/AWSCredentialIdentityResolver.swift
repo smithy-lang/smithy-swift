@@ -12,6 +12,7 @@ import protocol SmithyIdentityAPI.IdentityResolver
 /// A type that can provide credentials for authenticating with an AWS service
 public protocol AWSCredentialIdentityResolver: IdentityResolver, Sendable where IdentityT == AWSCredentialIdentity {}
 
+@_spi(SmithyIdentity)
 public extension AWSCredentialIdentityResolver {
 
     /// Returns the underlying `AwsCommonRuntimeKit.CredentialsProvider`.
