@@ -30,6 +30,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
+        .library(name: "RPCv2CBOR", targets: ["RPCv2CBOR"]),
         .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
@@ -286,8 +287,6 @@ let package = Package(
         .target(
             name: "SmithyCBOR",
             dependencies: [
-                "SmithyReadWrite",
-                "SmithyTimestamps",
                 "Smithy",
                 "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
@@ -317,6 +316,15 @@ let package = Package(
                 "SmithySerialization",
             ],
             resources: [ .process("Resources") ]
+        ),
+        .target(
+            name: "RPCv2CBOR",
+            dependencies: [
+                "ClientRuntime",
+                "Smithy",
+                "SmithySerialization",
+                "SmithyCBOR",
+            ]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
@@ -409,6 +417,10 @@ let package = Package(
             name: "SmithyCodegenCoreTests",
             dependencies: ["SmithyCodegenCore"],
             resources: [ .process("Resources") ]
+        ),
+        .testTarget(
+            name: "SmithySerializationTests",
+            dependencies: ["SmithySerialization"]
         ),
     ].compactMap { $0 }
 )

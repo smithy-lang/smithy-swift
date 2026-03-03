@@ -44,7 +44,7 @@ class OrchestratorTests: XCTestCase {
 
     struct TestClockSkewError: ServiceError, Error {
         var typeName: String? { "TestClockSkewError" }
-        var message: String? { "" }
+        var message: String? = ""
     }
 
     struct TestError: Error, Equatable, LocalizedError {
