@@ -96,7 +96,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
             if (isCbor) {
                 // Attempt to decode Base64 data once for CBOR
                 try {
-                    val decodedBytes = Base64.getDecoder().decode(bodyContent)
+                    val decodedBytes = Base64.getDecoder().decode(bodyContent.trimEnd('\n'))
                     "Data([${decodedBytes.joinToString(", ") { byte -> "0x%02X".format(byte) }}])"
                 } catch (e: IllegalArgumentException) {
                     // Fallback to Swift Data representation for invalid Base64
