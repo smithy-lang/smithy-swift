@@ -21,8 +21,11 @@ public let allSupportedTraits = Set([
     ErrorTrait.id,
     InputTrait.id,
     OutputTrait.id,
+    RequiredTrait.id,
     SensitiveTrait.id,
     SparseTrait.id,
+    TimestampFormatTrait.id,
+    UnitTypeTrait.id, // UnitTypeTrait will only ever appear in Prelude.unitSchema
 
     // Synthetic traits
     TargetsUnitTrait.id,

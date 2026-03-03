@@ -15,17 +15,20 @@ public class ServiceShape: Shape {
     let operationIDs: [ShapeID]
     let resourceIDs: [ShapeID]
     let errorIDs: [ShapeID]
+    let renames: [ShapeID: String]
 
     public init(
         id: ShapeID,
         traits: TraitCollection,
         operationIDs: [ShapeID],
         resourceIDs: [ShapeID],
-        errorIDs: [ShapeID]
+        errorIDs: [ShapeID],
+        renames: [ShapeID: String]
     ) {
         self.operationIDs = operationIDs
         self.resourceIDs = resourceIDs
         self.errorIDs = errorIDs
+        self.renames = renames
         super.init(id: id, type: .service, traits: traits)
     }
 

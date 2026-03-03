@@ -12,6 +12,8 @@ import struct Smithy.TraitCollection
 /// A ``Shape`` subclass specialized for Smithy resources.
 public class ResourceShape: Shape {
     let operationIDs: [ShapeID]
+    let collectionOperationIDs: [ShapeID]
+    let resourceIDs: [ShapeID]
     let createID: ShapeID?
     let putID: ShapeID?
     let readID: ShapeID?
@@ -23,6 +25,8 @@ public class ResourceShape: Shape {
         id: ShapeID,
         traits: TraitCollection,
         operationIDs: [ShapeID],
+        collectionOperationIDs: [ShapeID],
+        resourceIDs: [ShapeID],
         createID: ShapeID?,
         putID: ShapeID?,
         readID: ShapeID?,
@@ -31,6 +35,8 @@ public class ResourceShape: Shape {
         listID: ShapeID?
     ) {
         self.operationIDs = operationIDs
+        self.collectionOperationIDs = collectionOperationIDs
+        self.resourceIDs = resourceIDs
         self.createID = createID
         self.putID = putID
         self.readID = readID
@@ -41,7 +47,8 @@ public class ResourceShape: Shape {
     }
 
     override func immediateDescendants(includeInput: Bool, includeOutput: Bool) throws -> Set<Shape> {
-        let allOps = [createID, putID, readID, updateID, deleteID, listID].compactMap { $0 } + operationIDs
+        let crudIDs = [createID, putID, readID, updateID, deleteID, listID].compactMap { $0 }
+        let allOps = crudIDs + operationIDs + collectionOperationIDs + resourceIDs
         return try Set(allOps.map { try model.expectShape(id: $0) })
     }
 }

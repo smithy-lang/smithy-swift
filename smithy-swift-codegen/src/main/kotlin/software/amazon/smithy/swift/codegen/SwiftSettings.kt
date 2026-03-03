@@ -29,24 +29,6 @@ import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 import kotlin.streams.toList
 
-private const val SERVICE = "service"
-private const val MODULE_NAME = "module"
-private const val MODULE_VERSION = "moduleVersion"
-private const val MODULE_DESCRIPTION = "moduleDescription"
-private const val AUTHOR = "author"
-private const val HOMEPAGE = "homepage"
-
-// If SDK_ID is not provided by the service model, the value of sdkId defaults to the Service's shape id name.
-private const val SDK_ID = "sdkId"
-private const val GIT_REPO = "gitRepo"
-private const val SWIFT_VERSION = "swiftVersion"
-private const val MERGE_MODELS = "mergeModels"
-private const val COPYRIGHT_NOTICE = "copyrightNotice"
-private const val VISIBILITY = "visibility"
-private const val INTERNAL_CLIENT = "internalClient"
-private const val OPERATIONS = "operations"
-private const val MODEL_PATH = "modelPath"
-
 // Prioritized list of protocols supported for code generation
 private val DEFAULT_PROTOCOL_RESOLUTION_PRIORITY =
     listOf<ShapeId>(
@@ -77,6 +59,24 @@ class SwiftSettings(
     val modelPath: String,
 ) {
     companion object {
+        const val SERVICE = "service"
+        const val MODULE_NAME = "module"
+        const val MODULE_VERSION = "moduleVersion"
+        const val MODULE_DESCRIPTION = "moduleDescription"
+        const val AUTHOR = "author"
+        const val HOMEPAGE = "homepage"
+
+        // If SDK_ID is not provided by the service model, the value of sdkId defaults to the Service's shape id name.
+        const val SDK_ID = "sdkId"
+        const val GIT_REPO = "gitRepo"
+        const val SWIFT_VERSION = "swiftVersion"
+        const val MERGE_MODELS = "mergeModels"
+        const val COPYRIGHT_NOTICE = "copyrightNotice"
+        const val VISIBILITY = "visibility"
+        const val INTERNAL_CLIENT = "internalClient"
+        const val OPERATIONS = "operations"
+        const val MODEL_PATH = "modelPath"
+
         private val LOGGER: Logger = Logger.getLogger(SwiftSettings::class.java.name)
 
         /**
