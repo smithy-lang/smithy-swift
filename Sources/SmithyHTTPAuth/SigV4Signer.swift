@@ -24,7 +24,7 @@ import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
 import protocol SmithyHTTPAuthAPI.Signer
 import enum SmithyHTTPAuthAPI.SigningAlgorithm
 import struct SmithyHTTPAuthAPI.SigningFlags
-@_spi(SmithyHTTPAuthAPI) import enum SmithyHTTPAuthAPI.SigningPropertyKeys
+import enum SmithyHTTPAuthAPI.SigningPropertyKeys
 @_spi(SmithyHTTPClient) import SmithyHTTPClient
 import struct SmithyIdentity.AWSCredentialIdentity
 import protocol SmithyIdentity.AWSCredentialIdentityResolver

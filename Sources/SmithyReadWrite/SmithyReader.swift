@@ -207,7 +207,6 @@ public extension SmithyReader {
     }
 }
 
-@_spi(SmithyReadWrite)
 public enum ReaderError: Error {
     case requiredValueNotPresent
     case invalidType(String)

@@ -10,7 +10,6 @@ import class Smithy.Context
 import protocol SmithyHTTPAuthAPI.AuthScheme
 import protocol SmithyHTTPAuthAPI.Signer
 
-@_spi(SmithyHTTPAuth)
 public struct BearerTokenAuthScheme: AuthScheme {
     public let schemeID: String = "smithy.api#httpBearerAuth"
     public var signer: Signer = BearerTokenSigner()

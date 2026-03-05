@@ -76,7 +76,6 @@ public extension SmithyWriter {
     }
 }
 
-@_spi(SmithyReadWrite)
 public enum WriterError: Error {
     case invalidType(String)
 }

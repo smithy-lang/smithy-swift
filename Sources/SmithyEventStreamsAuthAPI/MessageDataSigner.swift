@@ -25,7 +25,6 @@ public protocol MessageDataSigner: Sendable {
     ) async throws -> SigningResult<Message>
 }
 
-@_spi(SmithyEventStreamsAuth)
 public struct SigningResult<T: Sendable>: Sendable {
     public let output: T
     public let signature: String

@@ -17,7 +17,6 @@ import struct SmithyIdentity.AWSCredentialIdentity
 import protocol SmithyIdentity.AWSCredentialIdentityResolver
 @_spi(SmithyIdentity) import class SmithyIdentity.CRTAWSCredentialIdentity
 
-@_spi(SmithyHTTPAuth)
 public struct AWSSigningConfig: Sendable {
     public let credentials: AWSCredentialIdentity?
     public let awsCredentialIdentityResolver: (any AWSCredentialIdentityResolver)?
