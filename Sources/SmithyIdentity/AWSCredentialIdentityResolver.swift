@@ -23,6 +23,9 @@ public extension AWSCredentialIdentityResolver {
         ?? CustomAWSCredentialIdentityResolver(self)
         return providerSourcedByCRT.crtAWSCredentialIdentityResolver
     }
+}
+
+public extension AWSCredentialIdentityResolver {
 
     func getIdentity(identityProperties: Attributes? = nil) async throws -> AWSCredentialIdentity {
         let crtAWSCredentialIdentity = try await self.getCRTAWSCredentialIdentityResolver().getCredentials()
