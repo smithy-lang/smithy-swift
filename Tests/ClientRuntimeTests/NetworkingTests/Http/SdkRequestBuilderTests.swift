@@ -5,6 +5,7 @@
 
 import struct Smithy.URIQueryItem
 import SmithyHTTPAPI
+@_spi(SmithyHTTPClient) import SmithyHTTPClient
 import XCTest
 import AwsCommonRuntimeKit
 @testable import ClientRuntime

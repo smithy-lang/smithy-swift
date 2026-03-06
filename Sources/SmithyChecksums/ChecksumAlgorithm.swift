@@ -20,7 +20,6 @@ public enum UnknownChecksumError: Error {
     case notSupported(checksum: String)
 }
 
-@_spi(SmithyChecksums)
 extension ChecksumAlgorithm {
 
     public static func from(string: String) -> (ChecksumAlgorithm)? {
@@ -124,7 +123,6 @@ extension UInt64 {
     }
 }
 
-@_spi(SmithyChecksums)
 extension HashResult {
 
     // Convert a HashResult to a hexadecimal String

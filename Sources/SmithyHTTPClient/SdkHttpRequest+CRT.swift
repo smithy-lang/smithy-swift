@@ -8,7 +8,7 @@
 import AwsCommonRuntimeKit
 import struct Smithy.URI
 import class SmithyHTTPAPI.HTTPRequest
-import class SmithyStreams.StreamableHttpBody
+@_spi(SmithyStreams) import class SmithyStreams.StreamableHttpBody
 
 @_spi(SmithyHTTPClient)
 extension HTTPRequest {
