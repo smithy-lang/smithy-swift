@@ -189,6 +189,7 @@ private enum RequestState {
     fileprivate static let queued = "queued"
 }
 
+@_spi(SmithyHTTPClient)
 public enum HttpMetricsAttributesKeys {
     fileprivate static let state = AttributeKey<String>(name: "state")
     public static let serverAddress = AttributeKey<String>(name: "server.address")

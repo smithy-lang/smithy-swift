@@ -8,7 +8,7 @@
 import AwsCommonRuntimeKit
 import struct Smithy.Attributes
 import enum Smithy.ByteStream
-import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
+@_spi(SmithyHTTPClient) import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 import class SmithyHTTPClientAPI.HttpTelemetry
 
 extension HTTP2Stream {

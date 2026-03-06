@@ -15,7 +15,7 @@ import enum SmithyHTTPAuthAPI.SigningAlgorithm
 import struct SmithyHTTPAuthAPI.SigningFlags
 import struct SmithyIdentity.AWSCredentialIdentity
 import protocol SmithyIdentity.AWSCredentialIdentityResolver
-import class SmithyIdentity.CRTAWSCredentialIdentity
+@_spi(SmithyIdentity) import class SmithyIdentity.CRTAWSCredentialIdentity
 
 public struct AWSSigningConfig: Sendable {
     public let credentials: AWSCredentialIdentity?

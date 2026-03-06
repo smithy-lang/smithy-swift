@@ -7,7 +7,7 @@
 
 import enum Smithy.ByteStream
 import protocol Smithy.Stream
-import class SmithyChecksums.ValidatingBufferedStream
+@_spi(SmithyChecksums) import class SmithyChecksums.ValidatingBufferedStream
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import class SmithyStreams.BufferedStream
 

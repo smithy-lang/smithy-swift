@@ -22,7 +22,7 @@ import class Foundation.Timer
 import struct Smithy.Attributes
 import protocol Smithy.LogAgent
 import protocol Smithy.ReadableStream
-import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
+@_spi(SmithyHTTPClient) import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 import class SmithyHTTPClientAPI.HttpTelemetry
 
 /// Reads data from a smithy-swift native `ReadableStream` and streams the data through to a Foundation `InputStream`.

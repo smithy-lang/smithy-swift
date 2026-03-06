@@ -25,7 +25,7 @@ import protocol SmithyHTTPAuthAPI.Signer
 import enum SmithyHTTPAuthAPI.SigningAlgorithm
 import struct SmithyHTTPAuthAPI.SigningFlags
 import enum SmithyHTTPAuthAPI.SigningPropertyKeys
-import SmithyHTTPClient
+@_spi(SmithyHTTPClient) import SmithyHTTPClient
 import struct SmithyIdentity.AWSCredentialIdentity
 import protocol SmithyIdentity.AWSCredentialIdentityResolver
 import protocol SmithyIdentityAPI.Identity
