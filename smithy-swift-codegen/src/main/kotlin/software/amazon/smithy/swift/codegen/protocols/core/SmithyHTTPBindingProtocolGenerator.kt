@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.swift.codegen.protocols.rpcv2cbor
+package software.amazon.smithy.swift.codegen.protocols.core
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.OperationShape
@@ -27,8 +27,21 @@ abstract class SmithyHTTPBindingProtocolGenerator(
     customizations: HTTPProtocolCustomizable,
     private val operationEndpointResolverMiddlewareFactory: ((ProtocolGenerator.GenerationContext, Symbol) -> MiddlewareRenderable)? = null,
     private val userAgentMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null,
+    serviceErrorProtocolSymbolOverride: Symbol? = null,
+    clockSkewProviderSymbolOverride: Symbol? = null,
+    retryErrorInfoProviderSymbolOverride: Symbol? = null,
 ) : HTTPBindingProtocolGenerator(customizations) {
     override val httpProtocolClientGeneratorFactory = SmithyHttpProtocolClientGeneratorFactory()
+
+    init {
+        serviceErrorProtocolSymbolOverride?.let { serviceErrorProtocolSymbol = it }
+    }
+
+    override val clockSkewProviderSymbol: Symbol =
+        clockSkewProviderSymbolOverride ?: ProtocolGenerator.DefaultClockSkewProviderSymbol
+
+    override val retryErrorInfoProviderSymbol: Symbol =
+        retryErrorInfoProviderSymbolOverride ?: ProtocolGenerator.DefaultRetryErrorInfoProviderSymbol
 
     val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
     val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
