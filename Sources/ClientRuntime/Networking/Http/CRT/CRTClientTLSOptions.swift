@@ -7,6 +7,7 @@
 
 import AwsCommonRuntimeKit
 import Smithy
+import SmithyHTTPClientAPI
 
 public struct CRTClientTLSOptions: TLSConfiguration, Sendable {
 
@@ -25,6 +26,9 @@ public struct CRTClientTLSOptions: TLSConfiguration, Sendable {
     /// Optional PKCS#12 password
     public var pkcs12Password: String?
 
+    /// Optional Minimum TLS version
+    public var minimumTLSVersion: SmithyHTTPClientAPI.TLSVersion?
+
     /// Information is provided to use custom trust store
     public var useSelfSignedCertificate: Bool {
         return certificateDir != nil && certificate != nil
@@ -41,13 +45,15 @@ public struct CRTClientTLSOptions: TLSConfiguration, Sendable {
         certificate: String? = nil, // .cer
         pkcs12Path: String? = nil, // .p12 PEM
         pkcs12Password: String? = nil,
-        privateKey: String? = nil
+        privateKey: String? = nil,
+        minimumTLSVersion: SmithyHTTPClientAPI.TLSVersion? = nil
     ) {
         self.certificateDir = certificateDir
         self.certificate = certificate
         self.pkcs12Path = pkcs12Path
         self.pkcs12Password = pkcs12Password
         self.privateKey = privateKey
+        self.minimumTLSVersion = minimumTLSVersion
     }
 }
 
@@ -80,6 +86,20 @@ extension CRTClientTLSOptions {
 
             if self.useSelfSignedCertificate, let certPath = certificateDir, let certFilename = certificate {
                 try tlsOptions.overrideDefaultTrustStore(caPath: certPath, caFile: certFilename)
+            }
+            
+            // Set minimum TLS version if specified
+            if let minVersion = minimumTLSVersion {
+                switch minVersion {
+                case .tls10:
+                    tlsOptions.setMinimumTLSVersion(AwsCommonRuntimeKit.TLSVersion.TLSv1)
+                case .tls11:
+                    tlsOptions.setMinimumTLSVersion(AwsCommonRuntimeKit.TLSVersion.TLSv1_1)
+                case .tls12:
+                    tlsOptions.setMinimumTLSVersion(AwsCommonRuntimeKit.TLSVersion.TLSv1_2)
+                case .tls13:
+                    tlsOptions.setMinimumTLSVersion(AwsCommonRuntimeKit.TLSVersion.TLSv1_3)
+                }
             }
 
             tlsContext = try TLSContext(options: tlsOptions, mode: .client)

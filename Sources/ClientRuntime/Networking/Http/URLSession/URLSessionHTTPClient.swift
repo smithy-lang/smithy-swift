@@ -447,6 +447,20 @@ public final class URLSessionHTTPClient: HTTPClient, @unchecked Sendable {
         self.connectionTimeout = httpClientConfiguration.connectTimeout ?? 60.0
         var urlsessionConfiguration = URLSessionConfiguration.default
         urlsessionConfiguration = URLSessionConfiguration.from(httpClientConfiguration: httpClientConfiguration)
+
+        if let tlsConfig = tlsConfiguration, let minVersion = tlsConfig.minimumTLSVersion {
+            switch minVersion {
+            case .tls10:
+                urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv10
+            case .tls11:
+                urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv11
+            case .tls12:
+                urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv12
+            case .tls13:
+                urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv13
+            }
+        }
+
         self.session = SessionType.init(configuration: urlsessionConfiguration, delegate: delegate, delegateQueue: nil)
     }
 
