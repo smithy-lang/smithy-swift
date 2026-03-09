@@ -33,4 +33,34 @@ class CRTClientTLSOptionsTests: XCTestCase {
         XCTAssertEqual(tls12.minimumTLSVersion, .tls12)
         XCTAssertEqual(tls13.minimumTLSVersion, .tls13)
     }
+    
+    func testResolveContextSucceedsWithMinimumTLSVersion() {
+        let tlsOptions = CRTClientTLSOptions(minimumTLSVersion: .tls12)
+        
+        // The resolveContext() method should succeed without throwing
+        let context = tlsOptions.resolveContext()
+        
+        // Verify a context was created
+        XCTAssertNotNil(context)
+    }
+
+    func testResolveContextSucceedsWithAllTLSVersions() {
+        let versions: [SmithyHTTPClientAPI.TLSVersion] = [.tls10, .tls11, .tls12, .tls13]
+        
+        for version in versions {
+            let tlsOptions = CRTClientTLSOptions(minimumTLSVersion: version)
+            let context = tlsOptions.resolveContext()
+            
+            XCTAssertNotNil(context, "Failed to create context for TLS version: \(version)")
+        }
+    }
+
+    func testResolveContextSucceedsWithoutMinimumTLSVersion() {
+        let tlsOptions = CRTClientTLSOptions()
+        
+        let context = tlsOptions.resolveContext()
+        
+        XCTAssertNotNil(context)
+    }
+
 }
