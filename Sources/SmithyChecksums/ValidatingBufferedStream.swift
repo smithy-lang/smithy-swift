@@ -12,6 +12,7 @@ import protocol SmithyChecksumsAPI.Checksum
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import class SmithyStreams.BufferedStream
 
+@_spi(SmithyChecksums)
 public class ValidatingBufferedStream: @unchecked Sendable {
     private var stream: BufferedStream
     private var checksumAlgorithm: ChecksumAlgorithm

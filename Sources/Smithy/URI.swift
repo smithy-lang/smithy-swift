@@ -232,7 +232,7 @@ extension String {
         return decoded != nil && decoded != self
     }
 
-    public func percentEncodePathIncludingSemicolon() -> String {
+    func percentEncodePathIncludingSemicolon() -> String {
         let allowed =
         // swiftlint:disable force_cast
             (CharacterSet.urlPathAllowed as NSCharacterSet).mutableCopy() as! NSMutableCharacterSet
@@ -241,24 +241,24 @@ extension String {
         return self.addingPercentEncoding(withAllowedCharacters: allowed as CharacterSet)!
     }
 
-    public func percentEncodeQuery() -> String {
+    func percentEncodeQuery() -> String {
         return self.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed as CharacterSet)!
     }
 }
 
 extension Array where Element == URIQueryItem {
-    public var queryString: String? {
+    var queryString: String? {
         if self.isEmpty {
             return nil
         }
         return self.map { [$0.name, $0.value].compactMap { $0 }.joined(separator: "=") }.joined(separator: "&")
     }
 
-    public func toURLQueryItems() -> [URLQueryItem] {
+    func toURLQueryItems() -> [URLQueryItem] {
         return self.map { URLQueryItem(name: $0.name, value: $0.value) }
     }
 
-    public func containsPercentEncode() -> Bool {
+    func containsPercentEncode() -> Bool {
         return self.contains { item in
             return item.name.isPercentEncoded || (item.value?.isPercentEncoded ?? false)
         }
@@ -266,7 +266,7 @@ extension Array where Element == URIQueryItem {
 }
 
 extension Array where Element == URLQueryItem {
-    public func containsPercentEncode() -> Bool {
+    func containsPercentEncode() -> Bool {
         return self.contains { item in
             return item.name.isPercentEncoded || (item.value?.isPercentEncoded ?? false)
         }

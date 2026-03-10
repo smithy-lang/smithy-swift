@@ -11,8 +11,9 @@ import Smithy
 import protocol SmithyChecksumsAPI.Checksum
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import struct SmithyHTTPAPI.Headers
-import SmithyHTTPClient
+@_spi(SmithyHTTPClient) import SmithyHTTPClient
 
+@_spi(SmithyChecksums)
 public class ChunkedReader {
     private var stream: ReadableStream
     private var signingConfig: SigningConfig

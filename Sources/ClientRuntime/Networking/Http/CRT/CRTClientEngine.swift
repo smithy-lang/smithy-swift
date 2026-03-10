@@ -11,7 +11,7 @@ import protocol Smithy.LogAgent
 import enum Smithy.StreamError
 import struct Smithy.SwiftLogger
 import enum Smithy.URIScheme
-import class SmithyChecksums.ChunkedStream
+@_spi(SmithyChecksums) import class SmithyChecksums.ChunkedStream
 import enum SmithyHTTPAPI.ALPNProtocol
 import struct SmithyHTTPAPI.Endpoint
 import struct SmithyHTTPAPI.Headers
@@ -19,7 +19,8 @@ import protocol SmithyHTTPAPI.HTTPClient
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 import enum SmithyHTTPAPI.HTTPStatusCode
-import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
+@_spi(SmithyHTTPClient) import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
+@_spi(SmithyHTTPClient) import SmithyHTTPClient
 import class SmithyHTTPClientAPI.HttpTelemetry
 import class SmithyStreams.BufferedStream
 import SmithyTelemetryAPI
