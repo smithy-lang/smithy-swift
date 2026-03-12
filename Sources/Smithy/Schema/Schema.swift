@@ -23,11 +23,16 @@ public struct Schema: Sendable {
     ///
     /// Not all traits for a shape will be represented in the schema;
     /// typically the Schema contains only the traits relevant to the client-side SDK.
+    ///
+    /// If this Schema is a member, then these traits come "pre-resolved" by merging
+    /// those of the member with those of its target; merging logic is provided per-trait.
     public let traits: TraitCollection
 
     /// The member schemas for this schema, if any.
     ///
     /// Typically only a schema of type Structure, Union, Enum, IntEnum, List or Map will have members.
+    /// For other schema types, this property is an empty array.
+    ///
     /// When this schema is itself a Member, it returns the target's members.
     public var members: [Schema] {
         _containerType != nil ? _target()!._members : _members

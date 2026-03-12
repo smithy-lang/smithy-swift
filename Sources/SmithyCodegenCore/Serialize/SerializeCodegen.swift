@@ -7,6 +7,7 @@
 
 import struct Smithy.ErrorTrait
 import struct Smithy.SparseTrait
+import struct Smithy.StreamingTrait
 
 package struct SerializeCodegen {
 

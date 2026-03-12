@@ -130,6 +130,14 @@ public class StringSerializer: ShapeSerializer {
         string += "nil"
     }
 
+    public func writeEventStream<E: SerializableStruct>(
+        _ schema: Schema,
+        _ value: AsyncThrowingStream<E, any Error>
+    ) throws {
+        guard !isSensitive(schema) else { return }
+        string += "<event stream>"
+    }
+
     private func isSensitive(_ schema: Schema) -> Bool {
         if !isFirstElement { string += interstitial }
         isFirstElement = false

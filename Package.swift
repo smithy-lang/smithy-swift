@@ -235,6 +235,7 @@ let package = Package(
             name: "SmithyEventStreams",
             dependencies: [
                 "Smithy",
+                "SmithySerialization",
                 "SmithyEventStreamsAPI",
                 "SmithyEventStreamsAuthAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")

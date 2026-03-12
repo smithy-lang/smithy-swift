@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import struct Smithy.StreamingTrait
+
 extension Shape {
 
     var serializeMethodName: String {
