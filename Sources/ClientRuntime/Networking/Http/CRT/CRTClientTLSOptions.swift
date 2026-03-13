@@ -87,7 +87,6 @@ extension CRTClientTLSOptions {
             if self.useSelfSignedCertificate, let certPath = certificateDir, let certFilename = certificate {
                 try tlsOptions.overrideDefaultTrustStore(caPath: certPath, caFile: certFilename)
             }
-            
             // Set minimum TLS version if specified
             if let minVersion = minimumTLSVersion {
                 switch minVersion {
