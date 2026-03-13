@@ -40,8 +40,8 @@ open class EC2QueryProtocolGenerator(
 
     override fun getProtocolHttpBindingResolver(
         ctx: ProtocolGenerator.GenerationContext,
-        contentType: String,
-    ): HttpBindingResolver = FormURLHttpBindingResolver(ctx, contentType)
+        defaultContentType: String,
+    ): HttpBindingResolver = FormURLHttpBindingResolver(ctx, defaultContentType)
 
     override val shouldRenderEncodableConformance = true
     override val protocolTestsToIgnore =
