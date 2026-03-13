@@ -23,7 +23,7 @@ import software.amazon.smithy.swift.codegen.protocols.core.SmithyHTTPBindingProt
 
 @Suppress("ktlint:standard:class-naming")
 open class AWSJSON1_0ProtocolGenerator(
-    customizations: DefaultHTTPProtocolCustomizations = AWSJSONCustomizations(),
+    customizations: DefaultHTTPProtocolCustomizations = AWSJSONCustomizations("1_0"),
     operationEndpointResolverMiddlewareFactory: ((ProtocolGenerator.GenerationContext, Symbol) -> MiddlewareRenderable)? = null,
     userAgentMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null,
     private val xAmzTargetMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null,

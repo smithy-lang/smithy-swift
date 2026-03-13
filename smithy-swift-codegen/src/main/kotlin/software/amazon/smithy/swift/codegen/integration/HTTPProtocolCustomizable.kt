@@ -50,8 +50,9 @@ interface HTTPProtocolCustomizable {
         fun render(writer: SwiftWriter)
     }
 
-    val clientProtocolSymbol: Symbol
-        get() = RPCv2CBORTypes.HTTPClientProtocol
+    fun renderClientProtocol(writer: SwiftWriter): String {
+        TODO("Not yet implemented")
+    }
 
     val plugins: List<Plugin>
         get() = listOf()

@@ -47,23 +47,20 @@ public class OrchestratorBuilder<
 
     public init() {}
 
+    public convenience init<ClientProtocol: SmithySerialization.ClientProtocol>(
+        _ operation: Operation<InputType, OutputType>,
+        _ clientProtocol: ClientProtocol
+    ) where ClientProtocol.RequestType == RequestType, ClientProtocol.ResponseType == ResponseType {
+        self.init()
+        self.serialize(SchemaBodyMiddleware(operation, clientProtocol))
+        self.deserialize(SchemaDeserializeMiddleware(operation, clientProtocol))
+    }
+
     /// - Parameter attributes: Attributes the orchestrator will provide to runtime components
     /// - Returns: Builder
     @discardableResult
     public func attributes(_ attributes: Context) -> Self {
         self.attributes = attributes
-        return self
-    }
-
-    @discardableResult
-    public func apply<ClientProtocol: SmithySerialization.ClientProtocol>(
-        _ operation: Operation<InputType, OutputType>,
-        _ clientProtocol: ClientProtocol
-    ) -> Self where ClientProtocol.RequestType == RequestType,
-                    ClientProtocol.ResponseType == ResponseType,
-                    ResponseType == HTTPResponse {
-        self.serialize(SchemaBodyMiddleware(operation, clientProtocol))
-        self.deserialize(SchemaDeserializeMiddleware(operation, clientProtocol))
         return self
     }
 

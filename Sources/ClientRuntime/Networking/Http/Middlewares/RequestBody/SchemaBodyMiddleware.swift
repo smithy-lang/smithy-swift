@@ -7,7 +7,6 @@
 
 import struct Foundation.Data
 import Smithy
-import SmithyHTTPAPI
 import protocol SmithySerialization.ClientProtocol
 import protocol SmithySerialization.Codec
 import protocol SmithySerialization.DeserializableStruct

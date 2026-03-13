@@ -62,17 +62,24 @@ class MiddlewareExecutionGenerator(
             renderContextAttributes(op, flowType)
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
-        writer.write(
-            "let builder = \$N<\$N, \$N, \$N, \$N>()",
-            ClientRuntimeTypes.Core.OrchestratorBuilder,
-            inputShape,
-            outputShape,
-            SmithyHTTPAPITypes.HTTPRequest,
-            SmithyHTTPAPITypes.HTTPResponse,
-        )
         if (isSchemaBased) {
-            writer.write("let clientProtocol = \$N()", httpProtocolCustomizable.clientProtocolSymbol)
-            writer.write("builder.apply(operation, clientProtocol)")
+            writer.write(
+                "let clientProtocol = \$L",
+                httpProtocolCustomizable.renderClientProtocol(writer),
+            )
+            writer.write(
+                "let builder = \$N(operation, clientProtocol)",
+                ClientRuntimeTypes.Core.OrchestratorBuilder,
+            )
+        } else {
+            writer.write(
+                "let builder = \$N<\$N, \$N, \$N, \$N>()",
+                ClientRuntimeTypes.Core.OrchestratorBuilder,
+                inputShape,
+                outputShape,
+                SmithyHTTPAPITypes.HTTPRequest,
+                SmithyHTTPAPITypes.HTTPResponse,
+            )
         }
         writer.openBlock("config.interceptorProviders.forEach { provider in", "}") {
             writer.write("builder.interceptors.add(provider.create())")
