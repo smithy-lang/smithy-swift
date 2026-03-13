@@ -5,10 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import class ClientRuntime.AwsQueryCompatibleErrorDetails
 import protocol ClientRuntime.HTTPError
 import protocol ClientRuntime.ServiceError
 import struct ClientRuntime.UnknownHTTPServiceError
 import struct Foundation.Data
+import struct Smithy.AWSQueryCompatibleTrait
+import struct Smithy.AWSQueryErrorTrait
 import enum Smithy.ByteStream
 import enum Smithy.ClientError
 import class Smithy.Context
@@ -77,12 +80,26 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
             let typeDeserializer = try codec.makeDeserializer(data: bodyData)
             let baseError = try BaseError.deserialize(typeDeserializer)
 
-            // Resolve the final error code to be used in matching the error to a modeled type
-            let code = (baseError.__type ?? "NoCodeFound").substringAfter("#")
+            // Use the base error to get the error code in the error response
+            let headerValue = response.headers.value(for: "x-amzn-query-error")
+            let specialErrorCode = try AwsQueryCompatibleErrorDetails.parse(headerValue)?.code
 
-            // Find an entry where the shape name is the same as the code.
-            let registryEntry = operation.errorTypeRegistry.codeLookup(code: code) { code, entry in
+            // Resolve the final error code to be used in matching the error to a modeled type
+            let code = (specialErrorCode ?? baseError.__type ?? "NoCodeFound").substringAfter("#")
+
+            // Try to find a match for the code by shape name
+            let registryEntry: TypeRegistry.Entry?
+            if let match = operation.errorTypeRegistry.codeLookup(code: code, matcher: { code, entry in
                 code == entry.schema.id.name
+            }) {
+                // Code matched on shape name, return the match
+                registryEntry = match
+            } else if operation.serviceSchema.hasTrait(AWSQueryCompatibleTrait.self) {
+                // If unable to match on shape name and this is a query-compatible service,
+                // try to match on the name in the AWSQueryError trait
+                registryEntry = try operation.errorTypeRegistry.codeLookup(code: code, matcher: Self.queryErrorMatcher(code:entry:))
+            } else {
+                registryEntry = nil
             }
 
             // If a type registry match was found, create that type from the response & throw
@@ -113,5 +130,10 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
                 )
             }
         }
+    }
+
+    private static func queryErrorMatcher(code: String, entry: TypeRegistry.Entry) throws -> Bool {
+        let queryErrorCode = try entry.schema.getTrait(AWSQueryErrorTrait.self)?.code
+        return code == queryErrorCode
     }
 }
