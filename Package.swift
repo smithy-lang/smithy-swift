@@ -31,6 +31,8 @@ let package = Package(
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
         .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
+        .library(name: "AWSJSON", targets: ["AWSJSON"]),
+        .library(name: "RPCv2CBOR", targets: ["RPCv2CBOR"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
@@ -234,6 +236,7 @@ let package = Package(
             name: "SmithyEventStreams",
             dependencies: [
                 "Smithy",
+                "SmithySerialization",
                 "SmithyEventStreamsAPI",
                 "SmithyEventStreamsAuthAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
@@ -264,8 +267,6 @@ let package = Package(
         .target(
             name: "SmithyCBOR",
             dependencies: [
-                "SmithyReadWrite",
-                "SmithyTimestamps",
                 "Smithy",
                 "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
@@ -295,6 +296,24 @@ let package = Package(
                 "SmithySerialization",
             ],
             resources: [ .process("Resources") ]
+        ),
+        .target(
+            name: "AWSJSON",
+            dependencies: [
+                "ClientRuntime",
+                "Smithy",
+                "SmithySerialization",
+                "SmithyJSON",
+            ]
+        ),
+        .target(
+            name: "RPCv2CBOR",
+            dependencies: [
+                "ClientRuntime",
+                "Smithy",
+                "SmithySerialization",
+                "SmithyCBOR",
+            ]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
@@ -387,6 +406,10 @@ let package = Package(
             name: "SmithyCodegenCoreTests",
             dependencies: ["SmithyCodegenCore"],
             resources: [ .process("Resources") ]
+        ),
+        .testTarget(
+            name: "SmithySerializationTests",
+            dependencies: ["SmithySerialization"]
         ),
     ].compactMap { $0 }
 )

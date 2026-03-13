@@ -7,6 +7,7 @@
 
 import struct Smithy.ErrorTrait
 import struct Smithy.SparseTrait
+import struct Smithy.StreamingTrait
 
 package struct DeserializeCodegen {
 
@@ -54,10 +55,7 @@ package struct DeserializeCodegen {
                     try writer.openBlock("{ memberSchema, \(varName), deserializer in", "}") { writer in
                         try writer.openBlock("switch memberSchema.index {", "}") { writer in
                             writer.dedent()
-                            let isNonStreaming = !shape.hasTrait(StreamingTrait.self)
-                            let nonErrorMembers = try members(of: shape)
-                                .filter { try isNonStreaming || !$0.target.hasTrait(ErrorTrait.self) }
-                            for (index, member) in nonErrorMembers.enumerated() {
+                            for (index, member) in try members(of: shape).enumerated() {
                                 writer.write("case \(index):")
                                 writer.indent()
                                 try writeDeserializeCall(
@@ -69,7 +67,14 @@ package struct DeserializeCodegen {
                                 )
                                 writer.dedent()
                             }
-                            writer.write("default: break")
+                            if shape.type == .union {
+                                writer.write("default:")
+                                writer.indent()
+                                writer.write("union = try .sdkUnknown(deserializer.readString(memberSchema))")
+                                writer.dedent()
+                            } else {
+                                writer.write("default: break")
+                            }
                             writer.indent()
                         }
                     }
