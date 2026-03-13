@@ -57,10 +57,12 @@ let package = Package(
         .library(name: "SmithySwiftNIO", targets: ["SmithySwiftNIO"]),
         .library(name: "SmithyTelemetryAPI", targets: ["SmithyTelemetryAPI"]),
         .library(name: "SmithyHTTPClientAPI", targets: ["SmithyHTTPClientAPI"]),
+        .plugin(name: "SmithyCodeGeneratorPlugin", targets: ["SmithyCodeGeneratorPlugin"]),
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
             .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.58.1"),
+            .package(url: "https://github.com/apple/swift-argument-parser.git", exact: "1.6.2"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
         ]
@@ -118,6 +120,7 @@ let package = Package(
                 "SmithyChecksumsAPI",
                 "SmithyChecksums",
                 "SmithyCBOR",
+                "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ],
             resources: [
@@ -263,11 +266,35 @@ let package = Package(
             dependencies: [
                 "SmithyReadWrite",
                 "SmithyTimestamps",
+                "Smithy",
+                "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
             ]
         ),
         .target(
             name: "SmithyWaitersAPI"
+        ),
+        .plugin(
+            name: "SmithyCodeGeneratorPlugin",
+            capability: .buildTool(),
+            dependencies: [
+                "SmithyCodegenCLI",
+            ]
+        ),
+        .executableTarget(
+            name: "SmithyCodegenCLI",
+            dependencies: [
+                "SmithyCodegenCore",
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            ]
+        ),
+        .target(
+            name: "SmithyCodegenCore",
+            dependencies: [
+                "Smithy",
+                "SmithySerialization",
+            ],
+            resources: [ .process("Resources") ]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
@@ -278,6 +305,10 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ],
             resources: [ .process("Resources") ]
+        ),
+        .testTarget(
+            name: "SmithyTests",
+            dependencies: ["Smithy"]
         ),
         .testTarget(
             name: "SmithySwiftNIOTests",
@@ -351,6 +382,11 @@ let package = Package(
         .testTarget(
             name: "SmithyStreamsTests",
             dependencies: ["SmithyStreams", "Smithy"]
+        ),
+        .testTarget(
+            name: "SmithyCodegenCoreTests",
+            dependencies: ["SmithyCodegenCore"],
+            resources: [ .process("Resources") ]
         ),
     ].compactMap { $0 }
 )
