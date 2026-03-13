@@ -27,6 +27,6 @@ public struct Plugin: ClientRuntime.Plugin {
 struct URLPathInterceptorProvider: HttpInterceptorProvider {
 
     func create<InputType, OutputType>() -> any Interceptor<InputType, OutputType, HTTPRequest, HTTPResponse> {
-        ClientRuntime.URLPathMiddleware<InputType, OutputType>() { _ in "/" }
+        ClientRuntime.URLPathMiddleware<InputType, OutputType> { _ in "/" }
     }
 }

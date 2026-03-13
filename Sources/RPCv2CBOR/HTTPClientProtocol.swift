@@ -97,7 +97,10 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
             } else if operation.serviceSchema.hasTrait(AWSQueryCompatibleTrait.self) {
                 // If unable to match on shape name and this is a query-compatible service,
                 // try to match on the name in the AWSQueryError trait
-                registryEntry = try operation.errorTypeRegistry.codeLookup(code: code, matcher: Self.queryErrorMatcher(code:entry:))
+                registryEntry = try operation.errorTypeRegistry.codeLookup(
+                    code: code,
+                    matcher: Self.queryErrorMatcher(code:entry:)
+                )
             } else {
                 registryEntry = nil
             }

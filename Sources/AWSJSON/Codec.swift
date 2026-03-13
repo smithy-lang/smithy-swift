@@ -17,10 +17,9 @@ struct Codec: SmithySerialization.Codec {
     func makeSerializer() throws -> any ShapeSerializer {
         SmithyJSON.Serializer()
     }
-    
+
     func makeDeserializer(data: Data) throws -> any ShapeDeserializer {
         try SmithyJSON.Deserializer(data: data)
     }
-    
 
 }

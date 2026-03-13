@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import protocol ClientRuntime.ServiceError
 import protocol ClientRuntime.HTTPError
+import protocol ClientRuntime.ServiceError
 import struct ClientRuntime.UnknownHTTPServiceError
 import struct Foundation.Data
 import enum Smithy.ClientError
@@ -35,7 +35,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
 
     public let version: Version
 
-    public var id: ShapeID { try! .init("aws.protocols#awsJson\(version.rawValue)") }
+    public var id: ShapeID { .init("aws.protocols", "awsJson\(version.rawValue)") }
 
     public var codec: any SmithySerialization.Codec { Codec() }
 
@@ -73,7 +73,10 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
             let data = try await response.body.readData() ?? Data()
             let deserializer = try codec.makeDeserializer(data: data)
             let baseError = try BaseError.deserialize(deserializer)
-            let code = baseError.__type ?? baseError.code ?? response.headers.value(for: "X-Amzn-Errortype") ?? "<NoCodeFound>"
+            let code = baseError.__type
+                ?? baseError.code
+                ?? response.headers.value(for: "X-Amzn-Errortype")
+                ?? "<NoCodeFound>"
             let strippedCode = String(code.split(separator: ":").first!.split(separator: "#").last!)
             if let entry = operation.errorTypeRegistry.codeLookup(code: strippedCode, matcher: { code, entry in
                 entry.schema.id.name == code
@@ -103,6 +106,6 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
 extension HTTPResponse {
 
     var isEventStream: Bool {
-        headers.value(for: "Content-Type") == "application/vnd.amazon.eventstream"
+        headers.value(for: "Content-Type").contains("application/vnd.amazon.eventstream")
     }
 }

@@ -19,7 +19,6 @@ open class AWSJSONCustomizations(
 
     override val defaultTimestampFormat = TimestampFormatTrait.Format.EPOCH_SECONDS
 
-    override fun renderClientProtocol(writer: SwiftWriter): String {
-        return writer.format("\$N(version: .v$version)", AWSJSONTypes.HTTPClientProtocol)
-    }
+    override fun renderClientProtocol(writer: SwiftWriter): String =
+        writer.format("\$N(version: .v$version)", AWSJSONTypes.HTTPClientProtocol)
 }
