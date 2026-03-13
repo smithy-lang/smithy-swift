@@ -26,6 +26,9 @@ public struct SwiftNIOHTTPClientTLSOptions: SmithyHTTPClientAPI.TLSConfiguration
     /// Optional PKCS#12 password
     public var pkcs12Password: String?
 
+    /// Optional Minimum TLS version
+    public var minimumTLSVersion: SmithyHTTPClientAPI.TLSVersion?
+
     /// Information is provided to use custom trust store
     public var useSelfSignedCertificate: Bool {
         return certificate != nil || certificateDir != nil
@@ -42,12 +45,14 @@ public struct SwiftNIOHTTPClientTLSOptions: SmithyHTTPClientAPI.TLSConfiguration
         certificateDir: String? = nil,
         privateKey: String? = nil,
         pkcs12Path: String? = nil,
-        pkcs12Password: String? = nil
+        pkcs12Password: String? = nil,
+        minimumTLSVersion: SmithyHTTPClientAPI.TLSVersion? = nil
     ) {
         self.certificate = certificate
         self.certificateDir = certificateDir
         self.privateKey = privateKey
         self.pkcs12Path = pkcs12Path
         self.pkcs12Password = pkcs12Password
+        self.minimumTLSVersion = minimumTLSVersion
     }
 }
