@@ -450,10 +450,10 @@ public final class URLSessionHTTPClient: HTTPClient, @unchecked Sendable {
 
         if let tlsConfig = tlsConfiguration, let minVersion = tlsConfig.minimumTLSVersion {
             switch minVersion {
-            case .tls10:
-                urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv10
-            case .tls11:
-                urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv11
+            case .tls10,
+                 .tls11:
+                 // Enforce a secure minimum; do not allow TLS 1.0 or 1.1, they have been deprecated.
+                urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv12
             case .tls12:
                 urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv12
             case .tls13:
