@@ -106,6 +106,6 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
 extension HTTPResponse {
 
     var isEventStream: Bool {
-        headers.value(for: "Content-Type").contains("application/vnd.amazon.eventstream")
+        headers.value(for: "Content-Type")?.contains("application/vnd.amazon.eventstream") ?? false
     }
 }

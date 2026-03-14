@@ -4,7 +4,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
-object AWSJSONTypes {
+object SmithyRPCv2CBORTypes {
     val HTTPClientProtocol = runtimeSymbol("HTTPClientProtocol", SwiftDeclaration.STRUCT)
     val Plugin = runtimeSymbol("Plugin", SwiftDeclaration.STRUCT)
 }
@@ -18,7 +18,7 @@ private fun runtimeSymbol(
     SwiftSymbol.make(
         name,
         declaration,
-        SwiftDependency.AWSJSON,
+        SwiftDependency.SMITHY_RPCV2CBOR,
         additionalImports,
         spiName,
     )
