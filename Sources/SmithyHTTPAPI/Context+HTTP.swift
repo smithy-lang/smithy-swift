@@ -75,6 +75,11 @@ extension Context {
         set { set(key: signingRegionKey, value: newValue) }
     }
 
+    public var sigV4aSigningRegionSet: [String]? {
+        get { get(key: sigV4aSigningRegionSetKey) }
+        set { set(key: sigV4aSigningRegionSetKey, value: newValue) }
+    }
+
     public func hasUnsignedPayloadTrait() -> Bool {
         return get(key: SmithyHTTPAPIKeys.hasUnsignedPayloadTrait) ?? false
     }
@@ -175,6 +180,12 @@ extension ContextBuilder {
     }
 
     @discardableResult
+    public func withSigV4aSigningRegionSet(value: [String]?) -> Self {
+        self.attributes.set(key: sigV4aSigningRegionSetKey, value: value)
+        return self
+    }
+
+    @discardableResult
     public func withUnsignedPayloadTrait(value: Bool) -> Self {
         self.attributes.set(key: SmithyHTTPAPIKeys.hasUnsignedPayloadTrait, value: value)
         return self
@@ -206,4 +217,5 @@ private let partitionIDKey = AttributeKey<String>(name: "PartitionIDKey")
 private let pathKey = AttributeKey<String>(name: "PathKey")
 private let signingNameKey = AttributeKey<String>(name: "SigningNameKey")
 private let signingRegionKey = AttributeKey<String>(name: "SigningRegionKey")
+private let sigV4aSigningRegionSetKey = AttributeKey<[String]>(name: "SigV4aSigningRegionSetKey")
 private let expirationKey = AttributeKey<TimeInterval>(name: "ExpirationKey")

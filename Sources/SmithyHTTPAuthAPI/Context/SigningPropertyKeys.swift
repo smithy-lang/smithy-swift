@@ -11,6 +11,7 @@ import struct Smithy.AttributeKey
 public enum SigningPropertyKeys {
     public static let signingName = AttributeKey<String>(name: "SigningName")
     public static let signingRegion = AttributeKey<String>(name: "SigningRegion")
+    public static let sigV4aSigningRegionSet = AttributeKey<[String]>(name: "SigV4aSigningRegionSet")
     // Keys used to store/retrieve AWSSigningConfig fields in/from signingProperties passed to AWSSigV4Signer
     public static let bidirectionalStreaming = AttributeKey<Bool>(name: "BidirectionalStreaming")
     public static let checksum = AttributeKey<String>(name: "checksum")
