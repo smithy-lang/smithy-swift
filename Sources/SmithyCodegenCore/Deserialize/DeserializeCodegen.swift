@@ -168,7 +168,7 @@ package struct DeserializeCodegen {
         case .union:
             if target.hasTrait(ErrorTrait.self) && shape.hasTrait(StreamingTrait.self) {
                 // For an event stream error, throw it
-                writer.write("throw value as! Swift.Error")
+                writer.write("throw value")
             } else {
                 // For a union member or event stream event, write the appropriate union case to the union variable
                 let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
