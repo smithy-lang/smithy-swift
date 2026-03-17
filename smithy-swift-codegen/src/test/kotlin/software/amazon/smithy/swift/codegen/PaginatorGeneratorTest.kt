@@ -185,8 +185,10 @@ class PaginatorGeneratorTest {
         contents.shouldContainOnlyOnce(expected)
     }
 
-    private fun setupAwsJson11Tests(smithyFile: String, serviceShapeId: String): TestContext =
-        setupTests(smithyFile, serviceShapeId, MockHTTPAWSJson11ProtocolGenerator())
+    private fun setupAwsJson11Tests(
+        smithyFile: String,
+        serviceShapeId: String,
+    ): TestContext = setupTests(smithyFile, serviceShapeId, MockHTTPAWSJson11ProtocolGenerator())
 
     private fun setupTests(
         smithyFile: String,
