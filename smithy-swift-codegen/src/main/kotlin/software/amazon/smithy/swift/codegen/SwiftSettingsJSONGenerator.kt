@@ -23,11 +23,11 @@ class SwiftSettingsJSONGenerator(
                     .withMember(SwiftSettings.OPERATIONS, ArrayNode.fromStrings(ctx.settings.operations))
                     .withOptionalMember(
                         SwiftSettings.MODEL_PATH,
-                        ctx.settings.modelPath?.let {
-                            Optional.of(StringNode.from(it))
-                        } ?: Optional.empty(),
+                        ctx.settings.modelPath.toOptionalStringNode(),
                     ).build()
             writer.write(Node.prettyPrintJson(node))
         }
     }
 }
+
+private fun String?.toOptionalStringNode(): Optional<StringNode> = this?.let { Optional.of(StringNode.from(it)) } ?: Optional.empty()
