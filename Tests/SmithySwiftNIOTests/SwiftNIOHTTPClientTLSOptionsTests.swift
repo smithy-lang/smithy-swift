@@ -62,4 +62,47 @@ class SwiftNIOHTTPClientTLSOptionsTests: XCTestCase {
         XCTAssertTrue(tlsOptions.useSelfSignedCertificate)
         XCTAssertTrue(tlsOptions.useProvidedKeystore)
     }
+    
+    func testMinimumTLSVersionInitialization() {
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions(minimumTLSVersion: .tls12)
+        XCTAssertEqual(tlsOptions.minimumTLSVersion, .tls12)
+    }
+
+    func testMinimumTLSVersionDefaultsToNil() {
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions()
+        XCTAssertNil(tlsOptions.minimumTLSVersion)
+    }
+
+    func testMinimumTLSVersionTLS10AppliedToConfiguration() throws {
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions(minimumTLSVersion: .tls10)
+        let config = try tlsOptions.makeNIOSSLConfiguration()
+        XCTAssertEqual(config.minimumTLSVersion, .tlsv1)
+    }
+
+    func testMinimumTLSVersionTLS11AppliedToConfiguration() throws {
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions(minimumTLSVersion: .tls11)
+        let config = try tlsOptions.makeNIOSSLConfiguration()
+        XCTAssertEqual(config.minimumTLSVersion, .tlsv11)
+    }
+
+    func testMinimumTLSVersionTLS12AppliedToConfiguration() throws {
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions(minimumTLSVersion: .tls12)
+        let config = try tlsOptions.makeNIOSSLConfiguration()
+        XCTAssertEqual(config.minimumTLSVersion, .tlsv12)
+    }
+
+    func testMinimumTLSVersionTLS13AppliedToConfiguration() throws {
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions(minimumTLSVersion: .tls13)
+        let config = try tlsOptions.makeNIOSSLConfiguration()
+        XCTAssertEqual(config.minimumTLSVersion, .tlsv13)
+    }
+
+    func testMinimumTLSVersionNotSetWhenNil() throws {
+        let tlsOptions = SwiftNIOHTTPClientTLSOptions()
+        let config = try tlsOptions.makeNIOSSLConfiguration()
+        // When nil, it should use the default from makeClientConfiguration()
+        // The default is typically TLS 1.2, but we just verify it doesn't crash
+        XCTAssertNotNil(config.minimumTLSVersion)
+    }
+
 }

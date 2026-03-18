@@ -28,6 +28,9 @@ Package.resolved
 **/xcuserdata
 **/*.xcuserdata
 xcuserdata
+**/xcshareddata
+**/*.xcshareddata
+xcshareddata
 
 # Codegen build products
 build/
