@@ -54,10 +54,7 @@ package struct DeserializeCodegen {
                     try writer.openBlock("{ memberSchema, \(varName), deserializer in", "}") { writer in
                         try writer.openBlock("switch memberSchema.index {", "}") { writer in
                             writer.dedent()
-                            let isNonStreaming = !shape.hasTrait(StreamingTrait.self)
-                            let nonErrorMembers = try members(of: shape)
-                                .filter { try isNonStreaming || !$0.target.hasTrait(ErrorTrait.self) }
-                            for (index, member) in nonErrorMembers.enumerated() {
+                            for (index, member) in try members(of: shape).enumerated() {
                                 writer.write("case \(index):")
                                 writer.indent()
                                 try writeDeserializeCall(
@@ -69,7 +66,14 @@ package struct DeserializeCodegen {
                                 )
                                 writer.dedent()
                             }
-                            writer.write("default: break")
+                            if shape.type == .union {
+                                writer.write("default:")
+                                writer.indent()
+                                writer.write("union = try .sdkUnknown(deserializer.readString(memberSchema))")
+                                writer.dedent()
+                            } else {
+                                writer.write("default: break")
+                            }
                             writer.indent()
                         }
                     }
@@ -163,7 +167,7 @@ package struct DeserializeCodegen {
         case .union:
             if target.hasTrait(ErrorTrait.self) && shape.hasTrait(StreamingTrait.self) {
                 // For an event stream error, throw it
-                writer.write("throw value as! Swift.Error")
+                writer.write("throw value")
             } else {
                 // For a union member or event stream event, write the appropriate union case to the union variable
                 let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)

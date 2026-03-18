@@ -26,6 +26,8 @@ object ClientRuntimeTypes {
         val ContentTypeMiddleware = runtimeSymbol("ContentTypeMiddleware", SwiftDeclaration.STRUCT)
         val ContentMD5Middleware = runtimeSymbol("ContentMD5Middleware", SwiftDeclaration.STRUCT)
         val DeserializeMiddleware = runtimeSymbol("DeserializeMiddleware", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
+        val SchemaDeserializeMiddleware =
+            runtimeSymbol("SchemaDeserializeMiddleware", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeadersMiddleware", SwiftDeclaration.STRUCT)
         val URLHostMiddleware = runtimeSymbol("URLHostMiddleware", SwiftDeclaration.STRUCT)
         val URLPathMiddleware = runtimeSymbol("URLPathMiddleware", SwiftDeclaration.STRUCT)
@@ -36,6 +38,7 @@ object ClientRuntimeTypes {
         val SignerMiddleware = runtimeSymbol("SignerMiddleware", SwiftDeclaration.STRUCT)
         val AuthSchemeMiddleware = runtimeSymbol("AuthSchemeMiddleware", SwiftDeclaration.STRUCT)
         val BodyMiddleware = runtimeSymbol("BodyMiddleware", SwiftDeclaration.STRUCT, emptyList(), listOf("SmithyReadWrite"))
+        val SchemaBodyMiddleware = runtimeSymbol("SchemaBodyMiddleware", SwiftDeclaration.STRUCT)
         val PayloadBodyMiddleware = runtimeSymbol("PayloadBodyMiddleware", SwiftDeclaration.STRUCT)
         val EventStreamBodyMiddleware = runtimeSymbol("EventStreamBodyMiddleware", SwiftDeclaration.STRUCT)
         val BlobStreamBodyMiddleware = runtimeSymbol("BlobStreamBodyMiddleware", SwiftDeclaration.STRUCT)
@@ -92,6 +95,7 @@ object ClientRuntimeTypes {
         val SendableInterceptorProviderBox = runtimeSymbol("SendableInterceptorProviderBox", SwiftDeclaration.STRUCT)
         val SendableHttpInterceptorProviderBox = runtimeSymbol("SendableHttpInterceptorProviderBox", SwiftDeclaration.STRUCT)
         val SDKLoggingSystem = runtimeSymbol("SDKLoggingSystem", SwiftDeclaration.CLASS)
+        val DefaultConfigurator = runtimeSymbol("DefaultConfigurator", SwiftDeclaration.STRUCT)
         val initialize = runtimeSymbol("initialize", SwiftDeclaration.FUNC)
     }
 
