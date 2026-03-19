@@ -15,18 +15,31 @@ public struct Schema: Sendable {
     public let id: ShapeID
 
     /// The type of the shape being described.
+    ///
+    /// If this Schema is a member, the type returned is that of the member's target.
     public let type: ShapeType
 
     /// A dictionary of the described shape's trait shape IDs to Nodes with trait data.
     ///
     /// Not all traits for a shape will be represented in the schema;
     /// typically the Schema contains only the traits relevant to the client-side SDK.
+    ///
+    /// If this Schema is a member, then these traits come "pre-resolved" by merging
+    /// those of the member with those of its target; merging logic is provided per-trait.
     public let traits: TraitCollection
 
     /// The member schemas for this schema, if any.
     ///
     /// Typically only a schema of type Structure, Union, Enum, IntEnum, List or Map will have members.
-    public let members: [Schema]
+    /// For other schema types, this property is an empty array.
+    ///
+    /// When this schema is itself a Member, it returns the target's members.
+    public var members: [Schema] {
+        _containerType != nil ? _target()!._members : _members
+    }
+
+    /// The members of this schema.
+    private let _members: [Schema]
 
     /// The target schema for this schema.  Will only be used when this is a member schema.
     public var target: Schema? {
@@ -46,6 +59,15 @@ public struct Schema: Sendable {
     /// during deserialization.
     public let index: Int
 
+    /// The member name for this schema.
+    ///
+    /// Only returns a name for structure & union members.  Collection & enumeration members return `nil`.
+    public var memberName: String? {
+        [ShapeType.structure, .union].contains(_containerType) ? id.member! : nil
+    }
+
+    private var _containerType: ShapeType?
+
     /// Creates a new Schema using the passed parameters.
     ///
     /// No validation is performed on the parameters since calls to this initializer
@@ -55,13 +77,15 @@ public struct Schema: Sendable {
         type: ShapeType,
         traits: TraitCollection = TraitCollection(),
         members: [Schema] = [],
+        containerType: ShapeType? = nil,
         target: @Sendable @escaping @autoclosure () -> Schema? = nil,
         index: Int = -1
     ) {
         self.id = id
         self.type = type
         self.traits = traits
-        self.members = members
+        self._members = members
+        self._containerType = containerType
         self._target = target
         self.index = index
     }
