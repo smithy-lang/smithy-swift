@@ -45,7 +45,6 @@ class SwiftDependency(
             )
         val CLIENT_RUNTIME = smithySwiftDependency("ClientRuntime")
         val SMITHY = smithySwiftDependency("Smithy")
-        val SMITHY_SERIALIZATION = smithySwiftDependency("SmithySerialization")
         val SMITHY_IDENTITY = smithySwiftDependency("SmithyIdentity")
         val SMITHY_RETRIES_API = smithySwiftDependency("SmithyRetriesAPI")
         val SMITHY_RETRIES = smithySwiftDependency("SmithyRetries")
@@ -62,7 +61,6 @@ class SwiftDependency(
         val SMITHY_JSON = smithySwiftDependency("SmithyJSON")
         val SMITHY_FORM_URL = smithySwiftDependency("SmithyFormURL")
         val SMITHY_WAITERS_API = smithySwiftDependency("SmithyWaitersAPI")
-        val SMITHY_CBOR = smithySwiftDependency("SmithyCBOR")
         val SMITHY_AWSJSON = smithySwiftDependency("SmithyAWSJSON")
         val SMITHY_RPCV2CBOR = smithySwiftDependency("SmithyRPCv2CBOR")
 
