@@ -12,5 +12,5 @@ import class SmithyHTTPAPI.HTTPResponse
 public protocol HTTPError {
 
     /// The HTTP/HTTPS response that resulted in this error.
-    var httpResponse: HTTPResponse { get }
+    var httpResponse: HTTPResponse { get set }
 }
