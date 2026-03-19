@@ -21,8 +21,6 @@ object SmithyTypes {
     val LogAgent = runtimeSymbol("LogAgent", SwiftDeclaration.PROTOCOL)
     val RequestMessageSerializer = runtimeSymbol("RequestMessageSerializer", SwiftDeclaration.PROTOCOL)
     val URIQueryItem = runtimeSymbol("URIQueryItem", SwiftDeclaration.STRUCT)
-    val Schema = runtimeSymbol("Schema", SwiftDeclaration.CLASS)
-    val Prelude = runtimeSymbol("Prelude", SwiftDeclaration.ENUM)
 }
 
 private fun runtimeSymbol(

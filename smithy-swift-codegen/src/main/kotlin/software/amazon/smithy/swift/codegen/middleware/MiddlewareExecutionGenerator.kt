@@ -8,6 +8,7 @@ import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.MiddlewareShapeUtils
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftFunctionParameterIndent
@@ -27,6 +28,7 @@ class MiddlewareExecutionGenerator(
     private val httpMethodCallback: HttpMethodCallback? = null,
 ) {
     private val symbolProvider = ctx.symbolProvider
+    private val isSchemaBased = SerdeUtils.useSchemaBased(ctx)
 
     fun render(
         serviceShape: ServiceShape,
@@ -35,19 +37,50 @@ class MiddlewareExecutionGenerator(
     ) {
         val inputShape = MiddlewareShapeUtils.inputSymbol(symbolProvider, ctx.model, op)
         val outputShape = MiddlewareShapeUtils.outputSymbol(symbolProvider, ctx.model, op)
+        val plugins = httpProtocolCustomizable.plugins
+        if (isSchemaBased) {
+            writer.write("var config = config")
+            val pluginInits = plugins.map { writer.format("\$N()", it.className) }
+            writer.write(
+                "let plugins: [any \$N] = [\$L]",
+                ClientRuntimeTypes.Core.Plugin,
+                pluginInits.joinToString(", "),
+            )
+            writer.openBlock("for plugin in plugins {", "}") {
+                writer.write("try await plugin.configureClient(clientConfiguration: &config)")
+            }
+            writer.write(
+                "let operation = \$LClient.\$LOperation",
+                ctx.settings.clientBaseName,
+                op.toLowerCamelCase(),
+            )
+        } else {
+            // no operation
+        }
         writer.write("let context = \$N()", SmithyTypes.ContextBuilder)
         writer.swiftFunctionParameterIndent {
             renderContextAttributes(op, flowType)
         }
         httpProtocolCustomizable.renderEventStreamAttributes(ctx, writer, op)
-        writer.write(
-            "let builder = \$N<\$N, \$N, \$N, \$N>()",
-            ClientRuntimeTypes.Core.OrchestratorBuilder,
-            inputShape,
-            outputShape,
-            SmithyHTTPAPITypes.HTTPRequest,
-            SmithyHTTPAPITypes.HTTPResponse,
-        )
+        if (isSchemaBased) {
+            writer.write(
+                "let clientProtocol = \$L",
+                httpProtocolCustomizable.renderClientProtocol(writer),
+            )
+            writer.write(
+                "let builder = \$N(operation, clientProtocol)",
+                ClientRuntimeTypes.Core.OrchestratorBuilder,
+            )
+        } else {
+            writer.write(
+                "let builder = \$N<\$N, \$N, \$N, \$N>()",
+                ClientRuntimeTypes.Core.OrchestratorBuilder,
+                inputShape,
+                outputShape,
+                SmithyHTTPAPITypes.HTTPRequest,
+                SmithyHTTPAPITypes.HTTPResponse,
+            )
+        }
         writer.openBlock("config.interceptorProviders.forEach { provider in", "}") {
             writer.write("builder.interceptors.add(provider.create())")
         }
@@ -111,6 +144,11 @@ class MiddlewareExecutionGenerator(
         // Add context values for config fields
         val serviceShape = ctx.service
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
+
+        if (isSchemaBased) {
+            writer.write("  .withOperationProperties(value: operation)")
+        }
+
         writer.write("  .build()")
     }
 
