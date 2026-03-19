@@ -9,11 +9,13 @@ import protocol SmithyChecksumsAPI.Checksum
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import enum SmithyChecksumsAPI.HashResult
 
+@_spi(SmithyChecksums)
 public enum HashError: Error {
     case invalidInput
     case hashingFailed(reason: String)
 }
 
+@_spi(SmithyChecksums)
 public enum UnknownChecksumError: Error {
     case notSupported(checksum: String)
 }
@@ -70,6 +72,7 @@ extension ChecksumAlgorithm {
     }
 }
 
+@_spi(SmithyChecksums)
 extension ChecksumAlgorithm: Comparable {
     /*
      * Priority-order for validating checksum = [ CRC32C, CRC32, CRC64NVME, SHA1, SHA256 ]
@@ -86,6 +89,7 @@ extension ChecksumAlgorithm: Comparable {
     }
 }
 
+@_spi(SmithyChecksums)
 extension [ChecksumAlgorithm] {
     public func getPriorityOrderValidationList() -> [ChecksumAlgorithm] {
         // Filter out .md5 if present and then sort the remaining hash functions
@@ -93,6 +97,7 @@ extension [ChecksumAlgorithm] {
     }
 }
 
+@_spi(SmithyChecksums)
 extension UInt32 {
     public func toBase64EncodedString() -> String {
         // Create a Data instance from the UInt32 value
@@ -105,6 +110,7 @@ extension UInt32 {
     }
 }
 
+@_spi(SmithyChecksums)
 extension UInt64 {
     public func toBase64EncodedString() -> String {
         // Create a Data instance from the UInt64 value

@@ -9,7 +9,7 @@ import struct Smithy.AttributeKey
 import class Smithy.Context
 import class Smithy.ContextBuilder
 
-public let flowTypeKey = AttributeKey<FlowType>(name: "FlowType")
+private let flowTypeKey = AttributeKey<FlowType>(name: "FlowType")
 
 extension Context {
     public func getFlowType() -> FlowType {

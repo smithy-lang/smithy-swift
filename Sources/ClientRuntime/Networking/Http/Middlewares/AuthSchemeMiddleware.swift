@@ -10,7 +10,7 @@ import struct Smithy.Attributes
 import enum Smithy.ClientError
 import class Smithy.Context
 import class SmithyHTTPAPI.HTTPRequestBuilder
-import struct SmithyHTTPAuth.DefaultIdentityResolverConfiguration
+@_spi(SmithyHTTPAuth) import struct SmithyHTTPAuth.DefaultIdentityResolverConfiguration
 import protocol SmithyHTTPAuthAPI.AuthScheme
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 

@@ -6,7 +6,7 @@
 //
 
 import enum SmithyEventStreamsAPI.EventStreamError
-import class SmithyEventStreams.DefaultMessageDecoder
+@_spi(SmithyEventStreams) import class SmithyEventStreams.DefaultMessageDecoder
 import XCTest
 
 final class DefaultMessageDecoderTests: XCTestCase {
