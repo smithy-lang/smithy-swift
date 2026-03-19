@@ -19,7 +19,6 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestW
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.isError
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyCBORTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyFormURLTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyJSONTypes
 
