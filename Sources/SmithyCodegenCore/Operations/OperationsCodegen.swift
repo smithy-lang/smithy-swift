@@ -32,7 +32,9 @@ struct OperationsCodegen {
                         writer.write("serviceSchema: \(try ctx.service.schemaVarName),")
                         writer.write("inputSchema: \(try operation.input.schemaVarName),")
                         writer.write("outputSchema: \(try operation.output.schemaVarName),")
-                        writer.write("errorTypeRegistry: \(clientSymbol).errorTypeRegistry")
+                        let operationName = try ctx.symbolProvider.operationMethodName(operation: operation)
+                        let registryName = "\(operationName)ErrorTypeRegistry"
+                        writer.write("errorTypeRegistry: \(clientSymbol).\(registryName)")
                     }
                 }
             }

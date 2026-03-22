@@ -76,37 +76,39 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         } else {
             // Since HTTP code was not 2xx or 3xx, treat response as an error.
 
-            // Deserialize the rpcv2cbor "base error" to determine the error code.
+            // Get the error type registry for this operation
+            let errorTypeRegistry = operation.errorTypeRegistry
+
+            // Attempt to parse basic error fields (__type, message) from error response body.
             let typeDeserializer = try codec.makeDeserializer(data: bodyData)
             let baseError = try BaseError.deserialize(typeDeserializer)
 
-            // Use the base error to get the error code in the error response
-            let headerValue = response.headers.value(for: "x-amzn-query-error")
-            let specialErrorCode = try AwsQueryCompatibleErrorDetails.parse(headerValue)?.code
-
-            // Resolve the final error code to be used in matching the error to a modeled type
-            let code = (specialErrorCode ?? baseError.__type ?? "NoCodeFound").substringAfter("#")
-
-            // Try to find a match for the code by shape name
+            // Try to find an error code, and a matching registry entry for the code.
             let registryEntry: TypeRegistry.Entry?
-            if let match = operation.errorTypeRegistry.codeLookup(code: code, matcher: { code, entry in
-                code == entry.schema.id.name
-            }) {
-                // Code matched on shape name, return the match
-                registryEntry = match
-            } else if operation.serviceSchema.hasTrait(AWSQueryCompatibleTrait.self) {
-                // If unable to match on shape name and this is a query-compatible service,
-                // try to match on the name in the AWSQueryError trait
-                registryEntry = try operation.errorTypeRegistry.codeLookup(
-                    code: code,
-                    matcher: Self.queryErrorMatcher(code:entry:)
-                )
+            let code: String?
+
+            if let queryCompatibleErrorCode = try response.queryCompatibleErrorCode(for: operation) {
+                // This is a query-compatible service providing a query-compatible error code.
+                registryEntry = try errorTypeRegistry.find { entry in
+                    // Try to match x-amzn-query-error on the name in the AWSQueryError trait, else on a shape name.
+                    // This matches previous error matching behavior; see ErrorShapeName.kt
+                    let queryErrorCode = try entry.schema.getTrait(AWSQueryErrorTrait.self)?.code
+                    let shapeName = entry.schema.id.name
+                    return queryCompatibleErrorCode == queryErrorCode ?? shapeName
+                }
+                code = queryCompatibleErrorCode
+            } else if let codeFromType = baseError.__type?.substringAfter("#") {
+                // Resolve the final error code to be used in matching the error to a modeled type
+                registryEntry = errorTypeRegistry.find { entry in
+                     entry.schema.id.name == codeFromType
+                }
+                code = codeFromType
             } else {
                 registryEntry = nil
+                code = nil
             }
 
             // If a type registry match was found, create that type from the response & throw
-            // Else create & throw an UnknownHTTPServiceError
             if let registryEntry {
 
                 // Code matched a modeled error.  Deserialize the error to the specific type specified in the code
@@ -126,6 +128,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
                 // Throw the error to the caller
                 throw modeledError
             } else {
+                // If no type registry match was found, create & throw an UnknownHTTPServiceError
                 throw UnknownHTTPServiceError(
                     httpResponse: response,
                     message: baseError.message,
@@ -134,9 +137,13 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
             }
         }
     }
+}
 
-    private static func queryErrorMatcher(code: String, entry: TypeRegistry.Entry) throws -> Bool {
-        let queryErrorCode = try entry.schema.getTrait(AWSQueryErrorTrait.self)?.code
-        return code == queryErrorCode
+extension HTTPResponse {
+
+    func queryCompatibleErrorCode<Input, Output>(for operation: Operation<Input, Output>) throws -> String? {
+        guard operation.serviceSchema.hasTrait(AWSQueryCompatibleTrait.self) else { return nil }
+        let headerValue = headers.value(for: "x-amzn-query-error")
+        return try AwsQueryCompatibleErrorDetails.parse(headerValue)?.code
     }
 }
