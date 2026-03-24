@@ -85,5 +85,5 @@ public class ContextBuilder {
 }
 
 enum AttributeKeys {
-    public static let logger = AttributeKey<LogAgent>(name: "Logger")
+    static let logger = AttributeKey<LogAgent>(name: "Logger")
 }

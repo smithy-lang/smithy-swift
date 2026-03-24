@@ -8,7 +8,7 @@ import class Foundation.DateFormatter
 import struct Foundation.Locale
 import struct Foundation.TimeZone
 
-public typealias DateFormatter = Foundation.DateFormatter
+typealias DateFormatter = Foundation.DateFormatter
 
 @_spi(SmithyTimestamps)
 extension DateFormatter {

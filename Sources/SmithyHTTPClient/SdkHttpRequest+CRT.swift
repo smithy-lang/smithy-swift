@@ -8,8 +8,9 @@
 import AwsCommonRuntimeKit
 import struct Smithy.URI
 import class SmithyHTTPAPI.HTTPRequest
-import class SmithyStreams.StreamableHttpBody
+@_spi(SmithyStreams) import class SmithyStreams.StreamableHttpBody
 
+@_spi(SmithyHTTPClient)
 extension HTTPRequest {
 
     public func toHttpRequest() throws -> AwsCommonRuntimeKit.HTTPRequest {
@@ -40,6 +41,7 @@ extension HTTPRequest {
     }
 }
 
+@_spi(SmithyHTTPClient)
 extension HTTPRequest {
 
     public var isChunked: Bool {

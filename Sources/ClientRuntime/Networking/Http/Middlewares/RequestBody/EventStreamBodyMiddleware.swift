@@ -8,7 +8,7 @@
 import struct Foundation.Data
 import class Smithy.Context
 import protocol Smithy.RequestMessageSerializer
-import SmithyEventStreams
+@_spi(SmithyEventStreams) import SmithyEventStreams
 import SmithyEventStreamsAPI
 import SmithyEventStreamsAuthAPI
 import SmithyHTTPAPI
