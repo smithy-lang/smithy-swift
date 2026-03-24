@@ -50,7 +50,11 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
         // Get the fields from smithy-model-info.
         let service = smithyModelInfo.service
         let sdkId = smithyModelInfo.sdkId
-        let modelPathURL = currentWorkingDirectoryFileURL.appendingPathComponent(smithyModelInfo.modelPath)
+        let modelPathURL = if let modelPath = smithyModelInfo.modelPath {
+            currentWorkingDirectoryFileURL.appendingPathComponent(modelPath)
+        } else {
+            URL(fileURLWithPath: inputPath.removingLastComponent().appending(["model.json"]).string)
+        }
         let modelPath = Path(modelPathURL.path)
         let internalClient = smithyModelInfo.internalClient
         let operations = smithyModelInfo.operations.joined(separator: ",")
@@ -88,7 +92,7 @@ struct SmithyCodeGeneratorPlugin: BuildToolPlugin {
 
         // Construct the build command that invokes SmithyCodegenCLI.
         return .buildCommand(
-            displayName: "Generating Swift source files from model file \(smithyModelInfo.modelPath)",
+            displayName: "Generating Swift source files from model file \(modelPath)",
             executable: generatorToolPath,
             arguments: arguments,
             inputFiles: [inputPath, modelPath],
@@ -120,6 +124,6 @@ private struct SmithyModelInfo: Decodable {
     /// A list of operations to be included in the client.  If omitted or empty, all operations are included.
     let operations: [String]
 
-    /// The path to the model, from the root of the target's project.  Required.
-    let modelPath: String
+    /// The path to the model, from the root of the target's project.
+    let modelPath: String?
 }

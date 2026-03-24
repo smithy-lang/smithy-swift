@@ -56,7 +56,7 @@ class SwiftSettings(
     val visibility: String,
     val internalClient: Boolean,
     val operations: List<String>,
-    val modelPath: String,
+    val modelPath: String?,
 ) {
     companion object {
         const val SERVICE = "service"
@@ -135,7 +135,7 @@ class SwiftSettings(
             val visibility = config.getStringMemberOrDefault(VISIBILITY, "public")
             val internalClient = config.getBooleanMemberOrDefault(INTERNAL_CLIENT, false)
             val operations = config.getArrayMember(OPERATIONS).getOrElse { Node.arrayNode() }.map { it.expectStringNode().value }
-            val modelPath = config.getStringMemberOrDefault(MODEL_PATH, "Sources/$moduleName/model.json")
+            val modelPath = config.getStringMember(MODEL_PATH).getOrNull()?.toString()
 
             return SwiftSettings(
                 serviceId,

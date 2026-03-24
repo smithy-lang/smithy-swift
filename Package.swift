@@ -31,6 +31,7 @@ let package = Package(
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
         .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
+        .library(name: "SmithyRPCv2CBOR", targets: ["SmithyRPCv2CBOR"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
@@ -234,6 +235,7 @@ let package = Package(
             name: "SmithyEventStreams",
             dependencies: [
                 "Smithy",
+                "SmithySerialization",
                 "SmithyEventStreamsAPI",
                 "SmithyEventStreamsAuthAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
@@ -264,8 +266,6 @@ let package = Package(
         .target(
             name: "SmithyCBOR",
             dependencies: [
-                "SmithyReadWrite",
-                "SmithyTimestamps",
                 "Smithy",
                 "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
@@ -296,6 +296,15 @@ let package = Package(
             ],
             resources: [ .process("Resources") ]
         ),
+        .target(
+            name: "SmithyRPCv2CBOR",
+            dependencies: [
+                "ClientRuntime",
+                "Smithy",
+                "SmithySerialization",
+                "SmithyCBOR",
+            ]
+        ),
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: [
@@ -316,10 +325,6 @@ let package = Package(
                 "SmithySwiftNIO",
                 "SmithyTestUtil",
             ]
-        ),
-        .testTarget(
-            name: "SmithyCBORTests",
-            dependencies: ["SmithyCBOR", "ClientRuntime", "SmithyTestUtil"]
         ),
         .testTarget(
             name: "SmithyHTTPClientTests",
