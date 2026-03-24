@@ -25,17 +25,13 @@ public struct TypeRegistry: Sendable {
         public var schema: Schema { _schema() }
     }
 
-    private let idMap: [ShapeID: Entry]
+    private let entries: [Entry]
 
     public init(_ entries: [Entry]) {
-        self.idMap = Dictionary(uniqueKeysWithValues: entries.map { ($0.schema.id, $0) })
+        self.entries = entries
     }
 
-    public subscript(shapeID: ShapeID) -> Entry? {
-        idMap[shapeID]
-    }
-
-    public func codeLookup(code: String, matcher: (String, Entry) throws -> Bool) rethrows -> Entry? {
-        try idMap.values.first { try matcher(code, $0) }
+    public func find(matcher: (Entry) throws -> Bool) rethrows -> Entry? {
+        try entries.first { try matcher($0) }
     }
 }

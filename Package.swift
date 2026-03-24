@@ -337,10 +337,6 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "SmithyCBORTests",
-            dependencies: ["SmithyCBOR", "ClientRuntime", "SmithyTestUtil"]
-        ),
-        .testTarget(
             name: "SmithyHTTPClientTests",
             dependencies: [
                 "SmithyHTTPClient",

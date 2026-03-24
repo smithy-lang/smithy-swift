@@ -45,6 +45,7 @@ class SwiftDependency(
             )
         val CLIENT_RUNTIME = smithySwiftDependency("ClientRuntime")
         val SMITHY = smithySwiftDependency("Smithy")
+        val SMITHY_SERIALIZATION = smithySwiftDependency("SmithySerialization")
         val SMITHY_IDENTITY = smithySwiftDependency("SmithyIdentity")
         val SMITHY_RETRIES_API = smithySwiftDependency("SmithyRetriesAPI")
         val SMITHY_RETRIES = smithySwiftDependency("SmithyRetries")
