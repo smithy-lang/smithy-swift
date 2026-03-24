@@ -78,8 +78,8 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
                 ?? response.headers.value(for: "X-Amzn-Errortype")
                 ?? "<NoCodeFound>"
             let strippedCode = String(code.split(separator: ":").first!.split(separator: "#").last!)
-            if let entry = operation.errorTypeRegistry.codeLookup(code: strippedCode, matcher: { code, entry in
-                entry.schema.id.name == code
+            if let entry = operation.errorTypeRegistry.find(matcher: { entry in
+                entry.schema.id.name == strippedCode
             }) {
                 let deserializer = try codec.makeDeserializer(data: data)
                 let error = try entry.swiftType.deserialize(deserializer)
