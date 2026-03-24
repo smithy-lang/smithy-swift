@@ -26,5 +26,5 @@ private fun runtimeSymbol(
         declaration,
         SwiftDependency.SMITHY_EVENT_STREAMS,
         emptyList(),
-        emptyList(),
+        listOf("SmithyEventStreams"),
     )
