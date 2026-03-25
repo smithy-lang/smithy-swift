@@ -25,6 +25,7 @@ import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvert
 import software.amazon.smithy.swift.codegen.integration.CustomDebugStringConvertibleGenerator.Companion.isSensitive
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import java.util.logging.Logger
 
@@ -121,9 +122,11 @@ class DirectedSwiftCodegen(
             StructureGenerator(model, symbolProvider, writer, shape, settings, protocolGenerator?.serviceErrorProtocolSymbol).render()
         }
 
-        if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.isSensitive(model) }) {
-            writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
-                CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape, model).render()
+        if (!SerdeUtils.useSchemaBased(settings, model)) {
+            if (shape.hasTrait<SensitiveTrait>() || shape.members().any { it.isSensitive(model) }) {
+                writers.useShapeExtensionWriter(shape, "CustomDebugStringConvertible") { writer: SwiftWriter ->
+                    CustomDebugStringConvertibleGenerator(symbolProvider, writer, shape, model).render()
+                }
             }
         }
     }
