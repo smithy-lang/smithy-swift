@@ -14,7 +14,7 @@ public protocol RetryBackoffStrategy: Sendable {
     /// maximum value for a fixed-width integer. In the case of an overflow, return the maximum valid representable value.
     func computeNextBackoffDelay(attempt: Int) -> TimeInterval
 
-    /// Retries SEP 2.1: Computes backoff with a variable base multiplier `x`.
+    /// Computes backoff with a variable base multiplier `x`.
     /// - Parameters:
     ///   - attempt: The zero-based retry attempt number.
     ///   - baseMultiplier: The `x` multiplier in `t_i = x * r^i`, in seconds.

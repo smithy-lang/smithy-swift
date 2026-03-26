@@ -16,7 +16,7 @@ import SmithyTestUtil
 @testable import SmithyRetries
 @testable import ClientRuntime
 
-// This test class reproduces the "Standard Mode" test cases derived from Retries SEP 2.1
+// This test class reproduces the "Standard Mode" retry test cases
 final class RetryIntegrationTests: XCTestCase {
     private let partitionID = "partition"
 
@@ -59,7 +59,7 @@ final class RetryIntegrationTests: XCTestCase {
         next.quota = await quota
     }
 
-    // MARK: - SEP 2.1 Standard mode tests
+    // MARK: - Standard mode tests
     // Non-throttling errors use RETRY_COST=14, backoff multiplier x=0.05
     // With random=1.0: delays are 0.05, 0.1, 0.2, 0.4, ...
 
@@ -84,7 +84,7 @@ final class RetryIntegrationTests: XCTestCase {
     }
 
     func test_case3() async throws {
-        // SEP 2.1: RETRY_COST=14, so need at least 14 tokens for first retry
+        // RETRY_COST=14, so need at least 14 tokens for first retry
         await setUp(availableCapacity: 14, maxCapacity: 500, maxRetriesBase: 2, maxBackoff: 20.0)
         next.testSteps = [
             TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 0, delay: 0.05),

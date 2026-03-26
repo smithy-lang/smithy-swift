@@ -17,13 +17,13 @@ final actor RetryQuota {
     /// The quota's available capacity may never exceed this number.
     static var initialRetryTokens: Int { 500 }
 
-    /// Retries SEP 2.1: The number of tokens to be removed for a non-throttling retry.
+    /// The number of tokens to be removed for a non-throttling retry.
     static var retryCost: Int { 14 }
 
     /// The number of tokens to be added to the available number for a request that does not need a retry.
     static var noRetryIncrement: Int { 1 }
 
-    /// Retries SEP 2.1: The number of tokens to be removed for a retry of a throttling error.
+    /// The number of tokens to be removed for a retry of a throttling error.
     static var throttlingRetryCost: Int { 5 }
 
     /// The maximum number of tokens this quota will hold.  Same as initial capacity.
@@ -59,7 +59,7 @@ final actor RetryQuota {
         )
     }
 
-    /// Retries SEP 2.1: Deducts the proper number of tokens from available & returns them.
+    /// Deducts the proper number of tokens from available & returns them.
     /// Uses `throttlingRetryCost` for throttling errors, `retryCost` for all others.
     /// - Parameter isThrottling: `true` if the error is a throttling error, `false` otherwise.
     /// - Returns: The number of tokens deducted, or `nil` if insufficient tokens were available.

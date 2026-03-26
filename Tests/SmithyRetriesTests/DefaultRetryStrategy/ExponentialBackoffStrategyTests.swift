@@ -41,7 +41,7 @@ final class ExponentialBackoffStrategyTests: XCTestCase {
         XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 7), 20.0)
     }
 
-    // MARK: - SEP 2.1: Variable base multiplier
+    // MARK: - Variable base multiplier
 
     func test_backoffWithMultiplier_nonThrottling() {
         // x=0.05: delays are 0.05, 0.1, 0.2, 0.4, 0.8, 1.6, ...

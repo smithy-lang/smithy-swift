@@ -38,7 +38,7 @@ public struct DefaultRetryStrategy: RetryStrategy {
         return DefaultRetryToken(quota: quota)
     }
 
-    /// Retries SEP 2.1: Computes the base multiplier `x` for exponential backoff.
+    /// Computes the base multiplier `x` for exponential backoff.
     static func baseMultiplier(for errorInfo: RetryErrorInfo) -> TimeInterval {
         if errorInfo.errorType == .throttling {
             return 1.0
@@ -54,7 +54,7 @@ public struct DefaultRetryStrategy: RetryStrategy {
 
         let backoffDelay: TimeInterval
         if let retryAfterHint = errorInfo.retryAfterHint {
-            // Retries SEP 2.1: Apply bounds to x-amz-retry-after value
+            // Apply bounds to x-amz-retry-after value
             // Minimum: t_i (exponential backoff), Maximum: 5 + t_i
             backoffDelay = min(max(retryAfterHint, exponentialBackoff), 5.0 + exponentialBackoff)
         } else {

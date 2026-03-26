@@ -109,7 +109,7 @@ public class OrchestratorBuilder<
         return self
     }
 
-    /// Retries SEP 2.1: Provider that returns a backoff delay for long-polling operations
+    /// Provider that returns a backoff delay for long-polling operations
     /// when the retry token bucket is empty. Parameters: (context, errorInfo, attemptCount).
     /// Returns the backoff delay if the operation is long-polling, nil otherwise.
     @discardableResult

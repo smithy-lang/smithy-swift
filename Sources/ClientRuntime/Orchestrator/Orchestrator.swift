@@ -307,7 +307,7 @@ public struct Orchestrator<
             do {
                 try await strategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
             } catch {
-                // Retries SEP 2.1: Long-polling operations back off even when token bucket is empty
+                // Long-polling operations back off even when token bucket is empty
                 if let provider = longPollingBackoffProvider,
                    let delay = await provider(context.getAttributes(), errorInfo, attemptCount) {
                     try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000.0))

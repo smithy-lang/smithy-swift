@@ -23,7 +23,7 @@ public struct RetryErrorInfo: Equatable {
     /// Whether this error is a network timeout error.
     public var isTimeout: Bool
 
-    /// Retries SEP 2.1: The base multiplier `x` (in seconds) for exponential backoff.
+    /// The base multiplier `x` (in seconds) for exponential backoff.
     /// When nil, the retry strategy uses its default multiplier based on error type.
     public var backoffMultiplier: TimeInterval?
 
