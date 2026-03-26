@@ -9,8 +9,14 @@ import Foundation
 import XCTest
 @testable import ClientRuntime
 import SmithyHTTPClientAPI
+import AwsCommonRuntimeKit
 
 class CRTClientTLSOptionsTests: XCTestCase {
+    
+    override func setUp() {
+        super.setUp()
+        CommonRuntimeKit.initialize()
+    }
     
     func testMinimumTLSVersionInitialization() {
         let tlsOptions = CRTClientTLSOptions(minimumTLSVersion: .tls12)

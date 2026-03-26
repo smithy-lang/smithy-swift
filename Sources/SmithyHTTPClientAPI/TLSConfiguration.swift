@@ -32,8 +32,8 @@ public protocol TLSConfiguration: Sendable {
 }
 
 public enum TLSVersion: String, Sendable {
-    case tls10 = "TLSv1.0"
-    case tls11 = "TLSv1.1"
-    case tls12 = "TLSv1.2"
-    case tls13 = "TLSv1.3"
+    case tls10 = "TLSv1_0"
+    case tls11 = "TLSv1_1"
+    case tls12 = "TLSv1_2"
+    case tls13 = "TLSv1_3"
 }

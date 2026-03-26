@@ -453,6 +453,7 @@ public final class URLSessionHTTPClient: HTTPClient, @unchecked Sendable {
             case .tls10,
                  .tls11:
                  // Enforce a secure minimum; do not allow TLS 1.0 or 1.1, they have been deprecated.
+                logger.error("The value for `minimumTLSVersion` (\(minVersion)) is not supported. Falling back to TLS 1.2.")
                 urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv12
             case .tls12:
                 urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv12
