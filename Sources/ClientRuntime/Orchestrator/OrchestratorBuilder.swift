@@ -35,6 +35,7 @@ public class OrchestratorBuilder<
     internal var deserialize: ((ResponseType, Context) async throws -> OutputType)?
     internal var retryStrategy: (any RetryStrategy)?
     internal var retryErrorInfoProvider: ((Error) -> RetryErrorInfo?)?
+    internal var longPollingBackoffProvider: ((Context, RetryErrorInfo, Int) async -> TimeInterval?)?
     internal var clockSkewProvider: (ClockSkewProvider<RequestType, ResponseType>)?
     internal var telemetry: OrchestratorTelemetry?
     internal var selectAuthScheme: SelectAuthScheme?
@@ -105,6 +106,17 @@ public class OrchestratorBuilder<
     @discardableResult
     public func retryErrorInfoProvider(_ retryErrorInfoProvider: @escaping (Error) -> RetryErrorInfo?) -> Self {
         self.retryErrorInfoProvider = retryErrorInfoProvider
+        return self
+    }
+
+    /// Retries SEP 2.1: Provider that returns a backoff delay for long-polling operations
+    /// when the retry token bucket is empty. Parameters: (context, errorInfo, attemptCount).
+    /// Returns the backoff delay if the operation is long-polling, nil otherwise.
+    @discardableResult
+    public func longPollingBackoffProvider(
+        _ provider: @escaping (Context, RetryErrorInfo, Int) async -> TimeInterval?
+    ) -> Self {
+        self.longPollingBackoffProvider = provider
         return self
     }
 

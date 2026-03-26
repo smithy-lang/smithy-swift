@@ -17,14 +17,14 @@ final actor RetryQuota {
     /// The quota's available capacity may never exceed this number.
     static var initialRetryTokens: Int { 500 }
 
-    /// The number of tokens to be removed for a standard (i.e. non-timeout) retry.
-    static var retryCost: Int { 5 }
+    /// Retries SEP 2.1: The number of tokens to be removed for a non-throttling retry.
+    static var retryCost: Int { 14 }
 
     /// The number of tokens to be added to the available number for a request that does not need a retry.
     static var noRetryIncrement: Int { 1 }
 
-    /// The number of tokens to be removed for a retry of a timeout error.
-    static var timeoutRetryCost: Int { 10 }
+    /// Retries SEP 2.1: The number of tokens to be removed for a retry of a throttling error.
+    static var throttlingRetryCost: Int { 5 }
 
     /// The maximum number of tokens this quota will hold.  Same as initial capacity.
     var maxCapacity: Int
@@ -40,10 +40,6 @@ final actor RetryQuota {
 
     /// Creates a new quota, optionally with reduced available capacity (used for testing.)
     /// `maxCapacity` cannot be set less than available.
-    /// - Parameters:
-    ///   - availableCapacity: The number of tokens in this quota at creation.
-    ///   - maxCapacity: <#maxCapacity description#>
-    ///   - rateLimitingMode: <#rateLimitingMode description#>
     init(
         availableCapacity: Int,
         maxCapacity: Int,
@@ -55,7 +51,6 @@ final actor RetryQuota {
     }
 
     /// Creates a new quota with settings from the passed options.
-    /// - Parameter options: The retry strategy options from which to configure this retry quota
     init(options: RetryStrategyOptions) {
         self.init(
             availableCapacity: options.availableCapacity,
@@ -64,21 +59,18 @@ final actor RetryQuota {
         )
     }
 
-    /// Deducts the proper number of tokens from available & returns them.
-    /// If the number of tokens needed aren't available, `nil` is returned.
-    /// - Parameter isTimeout: `true` if the retry being deducted is a timeout error, `false` otherwise.
-    /// - Returns: The number of tokens deducted from available capacity, or `nil` if insufficient tokens were available.
-    func hasRetryQuota(isTimeout: Bool) -> Int? {
-        let capacityAmount = isTimeout ? Self.timeoutRetryCost : Self.retryCost
+    /// Retries SEP 2.1: Deducts the proper number of tokens from available & returns them.
+    /// Uses `throttlingRetryCost` for throttling errors, `retryCost` for all others.
+    /// - Parameter isThrottling: `true` if the error is a throttling error, `false` otherwise.
+    /// - Returns: The number of tokens deducted, or `nil` if insufficient tokens were available.
+    func hasRetryQuota(isThrottling: Bool) -> Int? {
+        let capacityAmount = isThrottling ? Self.throttlingRetryCost : Self.retryCost
         if capacityAmount > availableCapacity { return nil }
         availableCapacity -= capacityAmount
         return capacityAmount
     }
 
     /// Returns tokens to available capacity after a request is successfully completed.
-    /// - Parameters:
-    ///   - isSuccess: `true` if the request was completed successfully, `false` otherwise.
-    ///   - capacityAmount: The number to be added back to capacity.  Will be `nil` when no retry was needed.
     func retryQuotaRelease(isSuccess: Bool, capacityAmount: Int?) {
         guard isSuccess else { return }
         availableCapacity += capacityAmount ?? Self.noRetryIncrement

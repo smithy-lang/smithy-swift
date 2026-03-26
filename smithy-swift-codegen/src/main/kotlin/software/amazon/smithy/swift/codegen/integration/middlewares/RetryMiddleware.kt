@@ -18,6 +18,8 @@ class RetryMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
     val retryErrorInfoProviderSymbol: Symbol,
+    val retryErrorInfoProviderExpressionFactory: ((ProtocolGenerator.GenerationContext) -> String)? = null,
+    val longPollingBackoffExpression: String? = null,
 ) : MiddlewareRenderable {
     override val name = "RetryMiddleware"
 
@@ -28,6 +30,14 @@ class RetryMiddleware(
         operationStackName: String,
     ) {
         writer.write("builder.retryStrategy(\$N(options: config.retryStrategyOptions))", SmithyRetriesTypes.DefaultRetryStrategy)
-        writer.write("builder.retryErrorInfoProvider(\$N.errorInfo(for:))", retryErrorInfoProviderSymbol)
+        val expression = retryErrorInfoProviderExpressionFactory?.invoke(ctx)
+        if (expression != null) {
+            writer.write("builder.retryErrorInfoProvider($expression)")
+        } else {
+            writer.write("builder.retryErrorInfoProvider(\$N.errorInfo(for:))", retryErrorInfoProviderSymbol)
+        }
+        if (longPollingBackoffExpression != null) {
+            writer.write("builder.longPollingBackoffProvider($longPollingBackoffExpression)")
+        }
     }
 }

@@ -77,6 +77,7 @@ public struct Orchestrator<
     private let deserialize: (ResponseType, Context) async throws -> OutputType
     private let retryStrategy: (any RetryStrategy)?
     private let retryErrorInfoProvider: (Error) -> RetryErrorInfo?
+    private let longPollingBackoffProvider: ((Context, RetryErrorInfo, Int) async -> TimeInterval?)?
     private let clockSkewProvider: ClockSkewProvider<RequestType, ResponseType>
     private let telemetry: OrchestratorTelemetry
     private let selectAuthScheme: SelectAuthScheme
@@ -91,6 +92,7 @@ public struct Orchestrator<
         self.deserialize = builder.deserialize!
         self.retryStrategy = builder.retryStrategy
         self.telemetry = builder.telemetry!
+        self.longPollingBackoffProvider = builder.longPollingBackoffProvider
 
         if let retryErrorInfoProvider = builder.retryErrorInfoProvider {
             self.retryErrorInfoProvider = retryErrorInfoProvider
@@ -305,6 +307,11 @@ public struct Orchestrator<
             do {
                 try await strategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
             } catch {
+                // Retries SEP 2.1: Long-polling operations back off even when token bucket is empty
+                if let provider = longPollingBackoffProvider,
+                   let delay = await provider(context.getAttributes(), errorInfo, attemptCount) {
+                    try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000.0))
+                }
                 return
             }
 
