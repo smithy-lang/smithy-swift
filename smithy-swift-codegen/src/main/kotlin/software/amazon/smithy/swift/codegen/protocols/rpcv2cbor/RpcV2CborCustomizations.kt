@@ -41,6 +41,5 @@ class RpcV2CborCustomizations : DefaultHTTPProtocolCustomizations() {
 
     override val plugins: List<Plugin> = listOf(RPCv2CBORPlugin())
 
-    override fun renderClientProtocol(writer: SwiftWriter): String =
-        writer.format("\$N()", SmithyRPCv2CBORTypes.HTTPClientProtocol)
+    override fun renderClientProtocol(writer: SwiftWriter): String = writer.format("\$N()", SmithyRPCv2CBORTypes.HTTPClientProtocol)
 }
