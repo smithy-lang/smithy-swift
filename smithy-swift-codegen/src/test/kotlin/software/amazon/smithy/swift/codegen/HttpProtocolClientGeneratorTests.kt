@@ -57,6 +57,8 @@ extension AwsJsonProtocolClient {
     ///
     /// Conforms to `Sendable` for safe concurrent access across threads.
     public struct AwsJsonProtocolClientConfig: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration, Swift.Sendable {
+        public var awsCredentialIdentityResolver: any SmithyIdentity.AWSCredentialIdentityResolver
+        public var endpointResolver: EndpointResolver
         public var telemetryProvider: ClientRuntime.TelemetryProvider
         public var retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
         public var clientLogMode: ClientRuntime.ClientLogMode
@@ -90,6 +92,8 @@ extension AwsJsonProtocolClient {
         }
 
         public init(
+            awsCredentialIdentityResolver: (any SmithyIdentity.AWSCredentialIdentityResolver)? = nil,
+            endpointResolver: EndpointResolver? = nil,
             telemetryProvider: ClientRuntime.TelemetryProvider? = nil,
             retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil,
             clientLogMode: ClientRuntime.ClientLogMode? = nil,
@@ -104,6 +108,8 @@ extension AwsJsonProtocolClient {
             interceptorProviders: [ClientRuntime.InterceptorProvider]? = nil,
             httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]? = nil
         ) throws {
+            self.awsCredentialIdentityResolver = awsCredentialIdentityResolver ?? SmithyIdentity.StaticAWSCredentialIdentityResolver()
+            self.endpointResolver = try endpointResolver ?? DefaultEndpointResolver()
             self.telemetryProvider = telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider
             self.retryStrategyOptions = retryStrategyOptions ?? ClientRuntime.ClientConfigurationDefaults.defaultRetryStrategyOptions
             self.clientLogMode = clientLogMode ?? ClientRuntime.ClientConfigurationDefaults.defaultClientLogMode
@@ -121,6 +127,8 @@ extension AwsJsonProtocolClient {
 
         public init() async throws {
             try await self.init(
+                awsCredentialIdentityResolver: nil,
+                endpointResolver: nil,
                 telemetryProvider: nil,
                 retryStrategyOptions: nil,
                 clientLogMode: nil,
@@ -153,6 +161,8 @@ extension AwsJsonProtocolClient {
 
     @available(*, deprecated, message: "Use AwsJsonProtocolClientConfig instead. This class will be removed in a future version.")
     public final class AwsJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration {
+        public var awsCredentialIdentityResolver: any SmithyIdentity.AWSCredentialIdentityResolver
+        public var endpointResolver: EndpointResolver
         public var telemetryProvider: ClientRuntime.TelemetryProvider
         public var retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
         public var clientLogMode: ClientRuntime.ClientLogMode
@@ -186,6 +196,8 @@ extension AwsJsonProtocolClient {
         }
 
         public init(
+            awsCredentialIdentityResolver: (any SmithyIdentity.AWSCredentialIdentityResolver)? = nil,
+            endpointResolver: EndpointResolver? = nil,
             telemetryProvider: ClientRuntime.TelemetryProvider? = nil,
             retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil,
             clientLogMode: ClientRuntime.ClientLogMode? = nil,
@@ -200,6 +212,8 @@ extension AwsJsonProtocolClient {
             interceptorProviders: [ClientRuntime.InterceptorProvider]? = nil,
             httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]? = nil
         ) throws {
+            self.awsCredentialIdentityResolver = awsCredentialIdentityResolver ?? SmithyIdentity.StaticAWSCredentialIdentityResolver()
+            self.endpointResolver = try endpointResolver ?? DefaultEndpointResolver()
             self.telemetryProvider = telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider
             self.retryStrategyOptions = retryStrategyOptions ?? ClientRuntime.ClientConfigurationDefaults.defaultRetryStrategyOptions
             self.clientLogMode = clientLogMode ?? ClientRuntime.ClientConfigurationDefaults.defaultClientLogMode
@@ -217,6 +231,8 @@ extension AwsJsonProtocolClient {
 
         public convenience init() async throws {
             try await self.init(
+                awsCredentialIdentityResolver: nil,
+                endpointResolver: nil,
                 telemetryProvider: nil,
                 retryStrategyOptions: nil,
                 clientLogMode: nil,
@@ -239,6 +255,8 @@ extension AwsJsonProtocolClient {
 
         public func toSendable() throws -> AwsJsonProtocolClientConfig {
             return try AwsJsonProtocolClientConfig(
+                awsCredentialIdentityResolver: self.awsCredentialIdentityResolver,
+                endpointResolver: self.endpointResolver,
                 telemetryProvider: self.telemetryProvider,
                 retryStrategyOptions: self.retryStrategyOptions,
                 clientLogMode: self.clientLogMode,
@@ -287,6 +305,7 @@ extension AwsJsonProtocolClient {
                       .withOperation(value: "getStatus")
                       .withUnsignedPayloadTrait(value: false)
                       .withSmithyDefaultConfig(config)
+                      .withOperationProperties(value: operation)
                       .build()
 """
         contents.shouldContainOnlyOnce(expectedFragment)
@@ -307,14 +326,22 @@ extension AwsJsonProtocolClient {
         contents.shouldSyntacticSanityCheck()
         val expected = """
     public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutput {
+        var config = config
+        let plugins: [any ClientRuntime.Plugin] = []
+        for plugin in plugins {
+            try await plugin.configureClient(clientConfiguration: &config)
+        }
+        let operation = AwsJsonProtocolClient.allocateWidgetOperation
         let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "allocateWidget")
                       .withUnsignedPayloadTrait(value: false)
                       .withSmithyDefaultConfig(config)
+                      .withOperationProperties(value: operation)
                       .build()
-        let builder = ClientRuntime.OrchestratorBuilder<AllocateWidgetInput, AllocateWidgetOutput, SmithyHTTPAPI.HTTPRequest, SmithyHTTPAPI.HTTPResponse>()
+        let clientProtocol = SmithyAWSJSON.HTTPClientProtocol(version: .v1_1)
+        let builder = ClientRuntime.OrchestratorBuilder(operation, clientProtocol)
         config.interceptorProviders.forEach { provider in
             builder.interceptors.add(provider.create())
         }

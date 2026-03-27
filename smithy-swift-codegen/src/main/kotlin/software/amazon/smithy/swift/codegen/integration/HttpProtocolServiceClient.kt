@@ -161,11 +161,17 @@ open class HttpProtocolServiceClient(
             SwiftTypes.Protocols.Sendable,
         ) {
             val clientConfigs = ctx.integrations.flatMap { it.clientConfigurations(ctx) }
+            val configNames = mutableSetOf<String>()
             val properties: List<ConfigProperty> =
                 clientConfigs
                     .flatMap { it.getProperties(ctx) }
                     .let { overrideConfigProperties(it) }
                     .sortedBy { it.accessModifier }
+                    .filter {
+                        val predicate = !configNames.contains(it.name)
+                        configNames.add(it.name)
+                        predicate
+                    }
 
             renderConfigClassVariables(serviceSymbol, properties)
 
@@ -209,11 +215,17 @@ open class HttpProtocolServiceClient(
             clientConfigurationProtocols,
         ) {
             val clientConfigs = ctx.integrations.flatMap { it.clientConfigurations(ctx) }
+            val configNames = mutableSetOf<String>()
             val properties: List<ConfigProperty> =
                 clientConfigs
                     .flatMap { it.getProperties(ctx) }
                     .let { overrideConfigProperties(it) }
                     .sortedBy { it.accessModifier }
+                    .filter {
+                        val predicate = !configNames.contains(it.name)
+                        configNames.add(it.name)
+                        predicate
+                    }
 
             renderConfigClassVariables(serviceSymbol, properties)
 

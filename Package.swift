@@ -31,6 +31,7 @@ let package = Package(
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
         .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
+        .library(name: "SmithyAWSJSON", targets: ["SmithyAWSJSON"]),
         .library(name: "SmithyRPCv2CBOR", targets: ["SmithyRPCv2CBOR"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
@@ -52,7 +53,6 @@ let package = Package(
         .library(name: "SmithyStreams", targets: ["SmithyStreams"]),
         .library(name: "SmithyChecksumsAPI", targets: ["SmithyChecksumsAPI"]),
         .library(name: "SmithyChecksums", targets: ["SmithyChecksums"]),
-        .library(name: "SmithyCBOR", targets: ["SmithyCBOR"]),
         .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
         .library(name: "SmithySwiftNIO", targets: ["SmithySwiftNIO"]),
@@ -63,7 +63,7 @@ let package = Package(
     dependencies: {
         var dependencies: [Package.Dependency] = [
             .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.58.1"),
-            .package(url: "https://github.com/apple/swift-argument-parser.git", exact: "1.6.2"),
+            .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
         ]
@@ -297,6 +297,15 @@ let package = Package(
             resources: [ .process("Resources") ]
         ),
         .target(
+            name: "SmithyAWSJSON",
+            dependencies: [
+                "ClientRuntime",
+                "Smithy",
+                "SmithySerialization",
+                "SmithyJSON",
+            ]
+        ),
+        .target(
             name: "SmithyRPCv2CBOR",
             dependencies: [
                 "ClientRuntime",
@@ -392,6 +401,24 @@ let package = Package(
             name: "SmithyCodegenCoreTests",
             dependencies: ["SmithyCodegenCore"],
             resources: [ .process("Resources") ]
+        ),
+        .target(
+            name: "RPCv2CBORTestSDK",
+            dependencies: [
+                "ClientRuntime",
+                "SmithyHTTPAPI",
+                "SmithyHTTPAuthAPI",
+                "SmithyIdentity",
+                "SmithyRPCv2CBOR",
+                "SmithyRetries",
+                "SmithyRetriesAPI",
+            ],
+            path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/Sources/RPCv2CBORTestSDK",
+            plugins: ["SmithyCodeGeneratorPlugin"]
+        ),
+        .testTarget(
+            name: "SmithySerializationTests",
+            dependencies: ["SmithySerialization", "RPCv2CBORTestSDK"]
         ),
     ].compactMap { $0 }
 )
