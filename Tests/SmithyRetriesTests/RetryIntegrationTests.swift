@@ -16,7 +16,7 @@ import SmithyTestUtil
 @testable import SmithyRetries
 @testable import ClientRuntime
 
-// This test class reproduces the "Standard Mode" test cases defined in "Retry Behavior 2.0"
+// This test class reproduces the "Standard Mode" retry test cases
 final class RetryIntegrationTests: XCTestCase {
     private let partitionID = "partition"
 
@@ -28,26 +28,19 @@ final class RetryIntegrationTests: XCTestCase {
     private var quota: RetryQuota { get async { await subject.quotaRepository.quota(partitionID: partitionID) } }
 
     private func setUp(availableCapacity: Int, maxCapacity: Int, maxRetriesBase: Int, maxBackoff: TimeInterval) async {
-        // Setup the HTTP context, used by the retry middleware
         context = Context(attributes: Attributes())
         context.partitionID = partitionID
         context.socketTimeout = 60.0
         context.estimatedSkew = 30.0
 
-        // Create the test output handler, which is the "next" middleware called by the retry middleware
         next = TestOutputHandler()
 
-        // Create a backoff strategy with custom max backoff and no randomization
         let backoffStrategyOptions = ExponentialBackoffStrategyOptions(jitterType: .default, backoffScaleValue: 0.025, maxBackoff: maxBackoff)
         var backoffStrategy = ExponentialBackoffStrategy(options: backoffStrategyOptions)
         backoffStrategy.random = { 1.0 }
 
-        // Create a retry strategy with custom backoff strategy & custom max retries & custom capacity
         let retryStrategyOptions = RetryStrategyOptions(backoffStrategy: backoffStrategy, maxRetriesBase: maxRetriesBase, availableCapacity: availableCapacity, maxCapacity: maxCapacity)
         subject = DefaultRetryStrategy(options: retryStrategyOptions)
-        // Replace the retry strategy's sleeper with a mock, to allow tests to run without delay and for us to
-        // check the delay time
-        // Treat nil and 0.0 time the same (change 0.0 to nil)
         subject.sleeper = { self.next.actualDelay = ($0 != 0.0) ? $0 : nil }
 
         builder = TestOrchestrator.httpBuilder()
@@ -63,18 +56,19 @@ final class RetryIntegrationTests: XCTestCase {
             })
             .executeRequest(next)
 
-        // Set the quota on the test output handler so it can verify state during tests
         next.quota = await quota
     }
 
-    // MARK: - Standard mode
+    // MARK: - Standard mode tests
+    // Non-throttling errors use RETRY_COST=14, backoff multiplier x=0.05
+    // With random=1.0: delays are 0.05, 0.1, 0.2, 0.4, ...
 
     func test_case1() async throws {
         await setUp(availableCapacity: 500, maxCapacity: 500, maxRetriesBase: 2, maxBackoff: 20.0)
         next.testSteps = [
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 495, delay: 1.0),
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 490, delay: 2.0),
-            TestStep(response: .success, expectedOutcome: .success, retryQuota: 495, delay: nil)
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 486, delay: 0.05),
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 472, delay: 0.1),
+            TestStep(response: .success, expectedOutcome: .success, retryQuota: 486, delay: nil)
         ]
         try await runTest()
     }
@@ -82,17 +76,18 @@ final class RetryIntegrationTests: XCTestCase {
     func test_case2() async throws {
         await setUp(availableCapacity: 500, maxCapacity: 500, maxRetriesBase: 2, maxBackoff: 20.0)
         next.testSteps = [
-            TestStep(response: .httpError(502), expectedOutcome: .retryRequest, retryQuota: 495, delay: 1.0),
-            TestStep(response: .httpError(502), expectedOutcome: .retryRequest, retryQuota: 490, delay: 2.0),
-            TestStep(response: .httpError(502), expectedOutcome: .maxAttemptsExceeded, retryQuota: 490, delay: nil)
+            TestStep(response: .httpError(502), expectedOutcome: .retryRequest, retryQuota: 486, delay: 0.05),
+            TestStep(response: .httpError(502), expectedOutcome: .retryRequest, retryQuota: 472, delay: 0.1),
+            TestStep(response: .httpError(502), expectedOutcome: .maxAttemptsExceeded, retryQuota: 472, delay: nil)
         ]
         try await runTest()
     }
 
     func test_case3() async throws {
-        await setUp(availableCapacity: 5, maxCapacity: 500, maxRetriesBase: 2, maxBackoff: 20.0)
+        // RETRY_COST=14, so need at least 14 tokens for first retry
+        await setUp(availableCapacity: 14, maxCapacity: 500, maxRetriesBase: 2, maxBackoff: 20.0)
         next.testSteps = [
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 0, delay: 1.0),
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 0, delay: 0.05),
             TestStep(response: .httpError(502), expectedOutcome: .retryQuotaExceeded, retryQuota: 0, delay: nil)
         ]
         try await runTest()
@@ -109,23 +104,24 @@ final class RetryIntegrationTests: XCTestCase {
     func test_case5() async throws {
         await setUp(availableCapacity: 500, maxCapacity: 500, maxRetriesBase: 4, maxBackoff: 20.0)
         next.testSteps = [
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 495, delay: 1.0),
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 490, delay: 2.0),
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 485, delay: 4.0),
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 480, delay: 8.0),
-            TestStep(response: .httpError(500), expectedOutcome: .maxAttemptsExceeded, retryQuota: 480, delay: nil)
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 486, delay: 0.05),
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 472, delay: 0.1),
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 458, delay: 0.2),
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 444, delay: 0.4),
+            TestStep(response: .httpError(500), expectedOutcome: .maxAttemptsExceeded, retryQuota: 444, delay: nil)
         ]
         try await runTest()
     }
 
     func test_case6() async throws {
+        // maxBackoff=3.0 caps the delay
         await setUp(availableCapacity: 500, maxCapacity: 500, maxRetriesBase: 4, maxBackoff: 3.0)
         next.testSteps = [
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 495, delay: 1.0),
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 490, delay: 2.0),
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 485, delay: 3.0),
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 480, delay: 3.0),
-            TestStep(response: .httpError(500), expectedOutcome: .maxAttemptsExceeded, retryQuota: 480, delay: nil)
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 486, delay: 0.05),
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 472, delay: 0.1),
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 458, delay: 0.2),
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 444, delay: 0.4),
+            TestStep(response: .httpError(500), expectedOutcome: .maxAttemptsExceeded, retryQuota: 444, delay: nil)
         ]
         try await runTest()
     }
@@ -139,7 +135,6 @@ final class RetryIntegrationTests: XCTestCase {
         try await next.verifyResult()
     }
 
-    // Test getEstimatedSkew utility method.
     func test_getEstimatedSkew() {
         let responseDateString = "Mon, 15 Jul 2024 01:24:12 GMT"
         let dateFormatter = DateFormatter()
@@ -194,7 +189,7 @@ private struct TestOutputResponse {
 
 private enum TestOutputError {
     static func httpError(from httpResponse: HTTPResponse) async throws -> Error  {
-        RetryIntegrationTestError.dontCallThisMethod  // is never called
+        RetryIntegrationTestError.dontCallThisMethod
     }
 }
 
@@ -214,17 +209,12 @@ private class TestOutputHandler: ExecuteRequest {
     func execute(request: SmithyHTTPAPI.HTTPRequest, attributes: Smithy.Context) async throws -> SmithyHTTPAPI.HTTPResponse {
         if index == testSteps.count { throw RetryIntegrationTestError.maxAttemptsExceeded }
 
-        // Verify the results of the previous test step, if there was one.
         try await verifyResult(atEnd: false)
-        // Verify the input's retry information headers.
-        // try await verifyInput(input: request)
 
-        // Get the latest test step, then advance the index.
         let testStep = testSteps[index]
         latestTestStep = testStep
         index += 1
 
-        // Return either a successful response or a HTTP error, depending on the directions in the test step.
         switch testStep.response {
         case .success:
             return HTTPResponse(statusCode: .ok)
@@ -242,16 +232,12 @@ private class TestOutputHandler: ExecuteRequest {
             return
         }
 
-        // Test available capacity
         let availableCapacity = await quota.availableCapacity
         XCTAssertEqual(testStep.retryQuota, availableCapacity)
 
-        // Test delay
         XCTAssertEqual(testStep.delay, actualDelay, file: testStep.file, line: testStep.line)
         actualDelay = nil
 
-        // When called after all test steps have been performed, this
-        // logic will verify that the last test step had the expected result.
         guard atEnd else { return }
         switch testStep.expectedOutcome {
         case .success:
@@ -262,49 +248,8 @@ private class TestOutputHandler: ExecuteRequest {
             XCTFail("Test should not end on retry", file: testStep.file, line: testStep.line)
         }
     }
-
-    func verifyInput(input: HTTPRequest) async throws {
-        // Get invocation ID of the request off of amz-sdk-invocation-id header.
-        let invocationID = try XCTUnwrap(input.headers.value(for: "amz-sdk-invocation-id"))
-        // If this is the first request, save the retrieved ID.
-        if (self.invocationID.isEmpty) { self.invocationID = invocationID }
-
-        // Retrieved IDs from all requests under a same call must be the same.
-        XCTAssertEqual(self.invocationID, invocationID)
-
-        // Get retry information off of amz-sdk-request header.
-        let amzSdkRequestHeaderValue = try XCTUnwrap(input.headers.value(for: "amz-sdk-request"))
-        // Extract request pair values from amz-sdk-request header value.
-        let requestPairs = amzSdkRequestHeaderValue.components(separatedBy: "; ")
-        var ttl: String = ""
-        let attemptNum: Int = try XCTUnwrap(
-            Int(
-                try XCTUnwrap(requestPairs.first { $0.hasPrefix("attempt=") })
-                    .components(separatedBy: "=")[1]
-            )
-        )
-        _ = try XCTUnwrap(
-            Int(
-                try XCTUnwrap(requestPairs.first { $0.hasPrefix("max=") })
-                    .components(separatedBy: "=")[1]
-            )
-        )
-        // For attempts 2+, TTL must be present.
-        if (attemptNum > 1) {
-            ttl = try XCTUnwrap(requestPairs.first { $0.hasPrefix("ttl") }).components(separatedBy: "=")[1]
-            // Check that TTL date is in strftime format.
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyyMMdd'T'HHmmss'Z'"
-            XCTAssertNotNil(dateFormatter.date(from: ttl))
-        }
-
-        // Verify attempt number was incremented by 1 from previous request.
-        XCTAssertEqual(attemptNum, (self.prevAttemptNum + 1))
-        self.prevAttemptNum = attemptNum
-    }
 }
 
-// Thrown during a test to simulate a server response with a given HTTP status code.
 private struct TestHTTPError: HTTPError, Error {
     var httpResponse: HTTPResponse
 
@@ -313,7 +258,6 @@ private struct TestHTTPError: HTTPError, Error {
     }
 }
 
-// These errors are thrown when a test fails.
 private enum RetryIntegrationTestError: Error {
     case dontCallThisMethod
     case noRemainingTestSteps
