@@ -34,7 +34,12 @@ public struct RetryErrorInfo: Equatable {
         self.backoffMultiplier = nil
     }
 
-    public init(errorType: RetryErrorType, retryAfterHint: TimeInterval?, isTimeout: Bool, backoffMultiplier: TimeInterval?) {
+    public init(
+        errorType: RetryErrorType,
+        retryAfterHint: TimeInterval?,
+        isTimeout: Bool,
+        backoffMultiplier: TimeInterval?
+    ) {
         self.errorType = errorType
         self.retryAfterHint = retryAfterHint
         self.isTimeout = isTimeout
