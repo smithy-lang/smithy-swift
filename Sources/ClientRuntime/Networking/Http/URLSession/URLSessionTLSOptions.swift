@@ -5,6 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+import SmithyHTTPClientAPI
+
 public struct URLSessionTLSOptions: TLSConfiguration, Sendable {
 
     /// Filename of the turst certificate file in main bundle (.cer)
@@ -22,6 +24,9 @@ public struct URLSessionTLSOptions: TLSConfiguration, Sendable {
     /// Optional PKCS#12 password
     public var pkcs12Password: String?
 
+    /// Optional Minimum TLS version
+    public var minimumTLSVersion: TLSVersion?
+
     /// Information is provided to use custom trust store
     public var useSelfSignedCertificate: Bool {
         return certificate != nil
@@ -35,10 +40,12 @@ public struct URLSessionTLSOptions: TLSConfiguration, Sendable {
     public init(
         certificate: String? = nil, // .cer
         pkcs12Path: String? = nil, // .p12
-        pkcs12Password: String? = nil
+        pkcs12Password: String? = nil,
+        minimumTLSVersion: TLSVersion? = nil
     ) {
         self.certificate = certificate
         self.pkcs12Path = pkcs12Path
         self.pkcs12Password = pkcs12Password
+        self.minimumTLSVersion = minimumTLSVersion
     }
 }

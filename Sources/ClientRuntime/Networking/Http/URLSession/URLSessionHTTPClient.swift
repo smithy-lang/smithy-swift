@@ -448,6 +448,21 @@ public final class URLSessionHTTPClient: HTTPClient, @unchecked Sendable {
         self.connectionTimeout = httpClientConfiguration.connectTimeout ?? 60.0
         var urlsessionConfiguration = URLSessionConfiguration.default
         urlsessionConfiguration = URLSessionConfiguration.from(httpClientConfiguration: httpClientConfiguration)
+
+        if let tlsConfig = tlsConfiguration, let minVersion = tlsConfig.minimumTLSVersion {
+            switch minVersion {
+            case .tls10,
+                 .tls11:
+                 // Enforce a secure minimum; do not allow TLS 1.0 or 1.1, they have been deprecated.
+                logger.error("This `minimumTLSVersion` (\(minVersion)) is not supported. Falling back to TLS 1.2.")
+                urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv12
+            case .tls12:
+                urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv12
+            case .tls13:
+                urlsessionConfiguration.tlsMinimumSupportedProtocolVersion = .TLSv13
+            }
+        }
+
         self.session = SessionType.init(configuration: urlsessionConfiguration, delegate: delegate, delegateQueue: nil)
     }
 

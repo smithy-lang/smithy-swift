@@ -26,4 +26,14 @@ public protocol TLSConfiguration: Sendable {
 
     // Optional PKCS#12 password
     var pkcs12Password: String? { get set }
+
+    // Optional Minimum TLS Version
+    var minimumTLSVersion: TLSVersion? { get set }
+}
+
+public enum TLSVersion: String, Sendable {
+    case tls10 = "TLSv1_0"
+    case tls11 = "TLSv1_1"
+    case tls12 = "TLSv1_2"
+    case tls13 = "TLSv1_3"
 }

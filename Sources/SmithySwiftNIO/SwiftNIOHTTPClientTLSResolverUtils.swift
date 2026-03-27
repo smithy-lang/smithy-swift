@@ -44,6 +44,19 @@ extension SwiftNIOHTTPClientTLSOptions {
             }
         }
 
+        if let minVersion = minimumTLSVersion {
+            switch minVersion {
+            case .tls10:
+                tlsConfig.minimumTLSVersion = .tlsv1
+            case .tls11:
+                tlsConfig.minimumTLSVersion = .tlsv11
+            case .tls12:
+                tlsConfig.minimumTLSVersion = .tlsv12
+            case .tls13:
+                tlsConfig.minimumTLSVersion = .tlsv13
+            }
+        }
+
         return tlsConfig
     }
 }
