@@ -402,9 +402,23 @@ let package = Package(
             dependencies: ["SmithyCodegenCore"],
             resources: [ .process("Resources") ]
         ),
+        .target(
+            name: "RPCv2CBORTestSDK",
+            dependencies: [
+                "ClientRuntime",
+                "SmithyHTTPAPI",
+                "SmithyHTTPAuthAPI",
+                "SmithyIdentity",
+                "SmithyRPCv2CBOR",
+                "SmithyRetries",
+                "SmithyRetriesAPI",
+            ],
+            path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/Sources/RPCv2CBORTestSDK",
+            plugins: ["SmithyCodeGeneratorPlugin"]
+        ),
         .testTarget(
             name: "SmithySerializationTests",
-            dependencies: ["SmithySerialization"]
+            dependencies: ["SmithySerialization", "RPCv2CBORTestSDK"]
         ),
     ].compactMap { $0 }
 )

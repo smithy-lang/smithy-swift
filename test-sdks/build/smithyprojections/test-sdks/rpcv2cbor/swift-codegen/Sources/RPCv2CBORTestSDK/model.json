@@ -1,0 +1,151 @@
+{
+    "smithy": "2.0",
+    "shapes": {
+        "smithy.protocols#StringList": {
+            "type": "list",
+            "member": {
+                "target": "smithy.api#String"
+            },
+            "traits": {
+                "smithy.api#documentation": "A list of String shapes.",
+                "smithy.api#private": {}
+            }
+        },
+        "smithy.protocols#rpcv2Cbor": {
+            "type": "structure",
+            "members": {
+                "http": {
+                    "target": "smithy.protocols#StringList",
+                    "traits": {
+                        "smithy.api#documentation": "Priority ordered list of supported HTTP protocol versions."
+                    }
+                },
+                "eventStreamHttp": {
+                    "target": "smithy.protocols#StringList",
+                    "traits": {
+                        "smithy.api#documentation": "Priority ordered list of supported HTTP protocol versions\nthat are required when using event streams."
+                    }
+                }
+            },
+            "traits": {
+                "smithy.api#documentation": "An RPC-based protocol that serializes CBOR payloads.",
+                "smithy.api#protocolDefinition": {
+                    "traits": [
+                        "smithy.api#cors",
+                        "smithy.api#endpoint",
+                        "smithy.api#hostLabel",
+                        "smithy.api#httpError"
+                    ]
+                },
+                "smithy.api#trait": {
+                    "selector": "service"
+                },
+                "smithy.api#traitValidators": {
+                    "rpcv2Cbor.NoDocuments": {
+                        "selector": "service ~> member :test(> document)",
+                        "message": "This protocol does not support document types in most possible scenarios.",
+                        "severity": "DANGER"
+                    }
+                }
+            }
+        },
+        "smithy.swift.tests#GetWidget": {
+            "type": "operation",
+            "input": {
+                "target": "smithy.swift.tests#GetWidgetInput"
+            },
+            "output": {
+                "target": "smithy.swift.tests#GetWidgetOutput"
+            }
+        },
+        "smithy.swift.tests#GetWidgetInput": {
+            "type": "structure",
+            "members": {
+                "sensitiveType": {
+                    "target": "smithy.swift.tests#SensitiveType"
+                }
+            },
+            "traits": {
+                "smithy.api#input": {}
+            }
+        },
+        "smithy.swift.tests#GetWidgetOutput": {
+            "type": "structure",
+            "members": {},
+            "traits": {
+                "smithy.api#output": {}
+            }
+        },
+        "smithy.swift.tests#PrivateList": {
+            "type": "list",
+            "member": {
+                "target": "smithy.swift.tests#PrivateString"
+            }
+        },
+        "smithy.swift.tests#PrivateMap": {
+            "type": "map",
+            "key": {
+                "target": "smithy.api#String"
+            },
+            "value": {
+                "target": "smithy.swift.tests#PrivateString"
+            }
+        },
+        "smithy.swift.tests#PrivateString": {
+            "type": "string",
+            "traits": {
+                "smithy.api#sensitive": {}
+            }
+        },
+        "smithy.swift.tests#PublicList": {
+            "type": "list",
+            "member": {
+                "target": "smithy.api#String"
+            }
+        },
+        "smithy.swift.tests#PublicMap": {
+            "type": "map",
+            "key": {
+                "target": "smithy.api#String"
+            },
+            "value": {
+                "target": "smithy.api#String"
+            }
+        },
+        "smithy.swift.tests#RPCv2CBORService": {
+            "type": "service",
+            "version": "2022-11-30",
+            "operations": [
+                {
+                    "target": "smithy.swift.tests#GetWidget"
+                }
+            ],
+            "traits": {
+                "smithy.protocols#rpcv2Cbor": {}
+            }
+        },
+        "smithy.swift.tests#SensitiveType": {
+            "type": "structure",
+            "members": {
+                "publicString": {
+                    "target": "smithy.api#String"
+                },
+                "publicList": {
+                    "target": "smithy.swift.tests#PublicList"
+                },
+                "publicMap": {
+                    "target": "smithy.swift.tests#PublicMap"
+                },
+                "privateString": {
+                    "target": "smithy.swift.tests#PrivateString"
+                },
+                "privateList": {
+                    "target": "smithy.swift.tests#PrivateList"
+                },
+                "privateMap": {
+                    "target": "smithy.swift.tests#PrivateMap"
+                }
+            }
+        }
+    }
+}

@@ -10,6 +10,7 @@ import software.amazon.smithy.swift.codegen.integration.Plugin
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceConfig
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRPCv2CBORTypes
 
 class RpcV2CborCustomizations : DefaultHTTPProtocolCustomizations() {
     // Defaults that may need to be changed in future
@@ -39,4 +40,7 @@ class RpcV2CborCustomizations : DefaultHTTPProtocolCustomizations() {
     override val defaultTimestampFormat = TimestampFormatTrait.Format.UNKNOWN
 
     override val plugins: List<Plugin> = listOf(RPCv2CBORPlugin())
+
+    override fun renderClientProtocol(writer: SwiftWriter): String =
+        writer.format("\$N()", SmithyRPCv2CBORTypes.HTTPClientProtocol)
 }

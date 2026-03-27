@@ -1,0 +1,7 @@
+{
+    "service": "smithy.swift.tests#RPCv2CBORService",
+    "module": "RPCv2CBORTestSDK",
+    "sdkId": "RPCv2CBORService",
+    "internalClient": false,
+    "operations": []
+}
