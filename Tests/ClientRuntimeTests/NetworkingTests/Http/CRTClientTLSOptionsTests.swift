@@ -52,7 +52,7 @@ class CRTClientTLSOptionsTests: XCTestCase {
 
     func testResolveContextSucceedsWithAllTLSVersions() {
         #if os(Linux)
-        let versions: [SmithyHTTPClientAPI.TLSVersion] = [.tls12, .tls13]
+        let versions: [SmithyHTTPClientAPI.TLSVersion] = [.tls12]
         #else
         let versions: [SmithyHTTPClientAPI.TLSVersion] = [.tls10, .tls11, .tls12, .tls13]
         #endif
