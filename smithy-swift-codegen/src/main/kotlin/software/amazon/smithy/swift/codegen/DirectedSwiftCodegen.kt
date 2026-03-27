@@ -96,6 +96,9 @@ class DirectedSwiftCodegen(
 
             LOGGER.info("[${service.id}] Generating additional files")
             integrations.forEach { it.writeAdditionalFiles(context, ctx, writers) }
+
+            LOGGER.info("[${service.id}] Generating swift-settings.json")
+            SwiftSettingsJSONGenerator(ctx).render()
         }
 
         LOGGER.info("[${service.id}] Generating package manifest file")

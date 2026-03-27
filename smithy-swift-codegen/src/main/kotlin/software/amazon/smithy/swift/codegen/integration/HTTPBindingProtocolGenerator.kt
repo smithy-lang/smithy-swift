@@ -57,6 +57,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.SignerMiddle
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpHeaderProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpQueryItemProvider
 import software.amazon.smithy.swift.codegen.integration.middlewares.providers.HttpUrlPathProvider
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructDecodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.struct.StructEncodeGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.union.UnionDecodeGenerator
@@ -137,6 +138,7 @@ abstract class HTTPBindingProtocolGenerator(
     override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpError
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
+        val usesSchemaBased = SerdeUtils.useSchemaBased(ctx) // temporary condition
         // render conformance to HttpRequestBinding for all input shapes
         val inputShapesWithHttpBindings: MutableSet<ShapeId> = mutableSetOf()
         for (operation in getHttpBindingOperations(ctx)) {
@@ -147,9 +149,11 @@ abstract class HTTPBindingProtocolGenerator(
                     continue
                 }
                 val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
-                HttpUrlPathProvider.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
-                HttpHeaderProvider.renderHeaderMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
-                HttpQueryItemProvider.renderQueryMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
+                if (!usesSchemaBased) {
+                    HttpUrlPathProvider.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
+                    HttpHeaderProvider.renderHeaderMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
+                    HttpQueryItemProvider.renderQueryMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
+                }
                 inputShapesWithHttpBindings.add(inputShapeId)
             }
         }
@@ -169,6 +173,7 @@ abstract class HTTPBindingProtocolGenerator(
                     .name(symbolName)
                     .build()
             val httpBodyMembers = httpBodyMembers(ctx, shape)
+            if (usesSchemaBased) return
             if (httpBodyMembers.isNotEmpty() || shouldRenderEncodableConformance) {
                 ctx.delegator.useShapeWriter(encodeSymbol) { writer ->
                     writer.openBlock(
@@ -185,12 +190,14 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
+        if (SerdeUtils.useSchemaBased(ctx)) return // temporary condition
         val httpOperations = getHttpBindingOperations(ctx)
         val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         httpResponseGenerator.render(ctx, httpOperations, httpBindingResolver)
     }
 
     override fun generateCodableConformanceForNestedTypes(ctx: ProtocolGenerator.GenerationContext) {
+        if (SerdeUtils.useSchemaBased(ctx)) return // temporary condition
         val nestedShapes =
             resolveShapesNeedingCodableConformance(ctx)
                 .filter { !it.isEventStreaming }
@@ -204,7 +211,7 @@ abstract class HTTPBindingProtocolGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
     ) {
-        if (!shape.hasTrait<NeedsReaderTrait>() && !shape.hasTrait<NeedsWriterTrait>()) {
+        if (!shape.hasTrait<NeedsReaderTrait>() && !(shape.hasTrait<NeedsWriterTrait>())) {
             return
         }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
@@ -424,7 +431,7 @@ abstract class HTTPBindingProtocolGenerator(
                 operation,
                 ContentTypeMiddleware(ctx.model, ctx.symbolProvider, resolver.determineRequestContentType(operation)),
             )
-            operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider))
+            operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx))
             operationMiddleware.appendMiddleware(
                 operation,
                 ContentLengthMiddleware(
@@ -547,6 +554,8 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateMessageMarshallable(ctx: ProtocolGenerator.GenerationContext) {
+        val usesSchemaBased = SerdeUtils.useSchemaBased(ctx) // temporary condition
+        if (usesSchemaBased) return
         val streamingShapes = inputStreamingShapes(ctx)
         val messageMarshallableGenerator = MessageMarshallableGenerator(ctx, defaultContentType)
         streamingShapes.forEach { streamingMember ->
@@ -555,6 +564,8 @@ abstract class HTTPBindingProtocolGenerator(
     }
 
     override fun generateMessageUnmarshallable(ctx: ProtocolGenerator.GenerationContext) {
+        val usesSchemaBased = SerdeUtils.useSchemaBased(ctx) // temporary condition
+        if (usesSchemaBased) return
         val streamingShapes = outputStreamingShapes(ctx)
         val messageUnmarshallableGenerator = MessageUnmarshallableGenerator(ctx, customizations)
         streamingShapes.forEach { streamingMember ->

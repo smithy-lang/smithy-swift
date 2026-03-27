@@ -66,7 +66,7 @@ open class AWSJSON1_1ProtocolGenerator(
         operationMiddleware.appendMiddleware(operation, xAmzTargetMiddleware)
 
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
-        operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx.model, ctx.symbolProvider, true))
+        operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx, true))
 
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         operationMiddleware.removeMiddleware(operation, "ContentTypeMiddleware")
