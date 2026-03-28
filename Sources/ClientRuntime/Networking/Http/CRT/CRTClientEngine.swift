@@ -19,8 +19,8 @@ import protocol SmithyHTTPAPI.HTTPClient
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 import enum SmithyHTTPAPI.HTTPStatusCode
-@_spi(SmithyHTTPClient) import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 @_spi(SmithyHTTPClient) import SmithyHTTPClient
+@_spi(SmithyHTTPClient) import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 import class SmithyHTTPClientAPI.HttpTelemetry
 import class SmithyStreams.BufferedStream
 import SmithyTelemetryAPI
