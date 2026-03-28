@@ -43,6 +43,11 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
             // NSURLErrorTimedOut =             -1001
             // "The request timed out."
             return .init(errorType: .transient, retryAfterHint: nil, isTimeout: true)
+        } else if (error as NSError).domain == NSURLErrorDomain, (error as NSError).code == -1200 {
+            // Domain == "NSURLErrorDomain"
+            // NSURLErrorSecureConnectionFailed = -1200
+            // "A TLS error caused the secure connection to fail."
+            return .init(errorType: .transient, retryAfterHint: nil, isTimeout: false)
         } else if let crtError = error as? CommonRunTimeError,
                   case .crtError(let crtErrorStruct) = crtError,
                   crtErrorStruct.code == 1051 {
