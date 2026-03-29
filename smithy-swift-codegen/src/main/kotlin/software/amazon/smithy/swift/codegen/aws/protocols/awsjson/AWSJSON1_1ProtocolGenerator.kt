@@ -17,14 +17,13 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.isEventStreaming
 import software.amazon.smithy.swift.codegen.integration.middlewares.ContentTypeMiddleware
 import software.amazon.smithy.swift.codegen.integration.middlewares.MutateHeadersMiddleware
-import software.amazon.smithy.swift.codegen.integration.middlewares.OperationInputBodyMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 import software.amazon.smithy.swift.codegen.protocols.core.SmithyHTTPBindingProtocolGenerator
 
 @Suppress("ktlint:standard:class-naming")
 open class AWSJSON1_1ProtocolGenerator(
-    customizations: DefaultHTTPProtocolCustomizations = AWSJSONCustomizations(),
+    customizations: DefaultHTTPProtocolCustomizations = AWSJSONCustomizations("1_1"),
     operationEndpointResolverMiddlewareFactory: ((ProtocolGenerator.GenerationContext, Symbol) -> MiddlewareRenderable)? = null,
     userAgentMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null,
     private val xAmzTargetMiddlewareFactory: ((ProtocolGenerator.GenerationContext) -> MiddlewareRenderable)? = null,
@@ -65,8 +64,14 @@ open class AWSJSON1_1ProtocolGenerator(
                 ?: MutateHeadersMiddleware(overrideHeaders = mapOf("X-Amz-Target" to xAmzTargetValue))
         operationMiddleware.appendMiddleware(operation, xAmzTargetMiddleware)
 
+        // Remove these middlewares, they are handled by applying the ClientProtocol & Operation
+        // to the orchestrator
         operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
-        operationMiddleware.appendMiddleware(operation, OperationInputBodyMiddleware(ctx, true))
+        operationMiddleware.removeMiddleware(operation, "DeserializeMiddleware")
+
+        // Remove this middleware as it will be handled by a plugin
+        operationMiddleware.removeMiddleware(operation, "OperationInputUrlPathMiddleware")
+        operationMiddleware.removeMiddleware(operation, "OperationInputQueryItemMiddleware")
 
         val resolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
         operationMiddleware.removeMiddleware(operation, "ContentTypeMiddleware")
