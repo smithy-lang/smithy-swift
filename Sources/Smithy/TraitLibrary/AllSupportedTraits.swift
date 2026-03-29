@@ -24,11 +24,14 @@ private let allSupportedTraitTypes: [ShapeID: any Trait.Type] = [
     DefaultTrait.id: DefaultTrait.self,
     EnumValueTrait.id: EnumValueTrait.self,
     ErrorTrait.id: ErrorTrait.self,
+    EventHeaderTrait.id: EventHeaderTrait.self,
+    EventPayloadTrait.id: EventPayloadTrait.self,
     InputTrait.id: InputTrait.self,
     OutputTrait.id: OutputTrait.self,
     RequiredTrait.id: RequiredTrait.self,
     SensitiveTrait.id: SensitiveTrait.self,
     SparseTrait.id: SparseTrait.self,
+    StreamingTrait.id: StreamingTrait.self,
     TimestampFormatTrait.id: TimestampFormatTrait.self,
     UnitTypeTrait.id: UnitTypeTrait.self, // UnitTypeTrait will only ever appear in Prelude.unitSchema
 

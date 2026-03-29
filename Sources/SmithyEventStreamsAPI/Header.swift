@@ -36,3 +36,20 @@ public enum HeaderValue: Equatable, Sendable {
     case timestamp(Date)
     case uuid(UUID)
 }
+
+public extension HeaderValue {
+
+    var type: String {
+        switch self {
+        case .bool: "bool"
+        case .byte: "byte"
+        case .int16: "int16"
+        case .int32: "int32"
+        case .int64: "int64"
+        case .byteArray: "byteArray"
+        case .string: "string"
+        case .timestamp: "timestamp"
+        case .uuid: "uuid"
+        }
+    }
+}

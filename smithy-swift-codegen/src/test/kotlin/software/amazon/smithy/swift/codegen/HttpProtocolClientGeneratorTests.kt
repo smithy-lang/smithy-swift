@@ -287,6 +287,7 @@ extension AwsJsonProtocolClient {
                       .withOperation(value: "getStatus")
                       .withUnsignedPayloadTrait(value: false)
                       .withSmithyDefaultConfig(config)
+                      .withOperationProperties(value: operation)
                       .build()
 """
         contents.shouldContainOnlyOnce(expectedFragment)
@@ -307,14 +308,22 @@ extension AwsJsonProtocolClient {
         contents.shouldSyntacticSanityCheck()
         val expected = """
     public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutput {
+        var config = config
+        let plugins: [any ClientRuntime.Plugin] = []
+        for plugin in plugins {
+            try await plugin.configureClient(clientConfiguration: &config)
+        }
+        let operation = AwsJsonProtocolClient.allocateWidgetOperation
         let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "allocateWidget")
                       .withUnsignedPayloadTrait(value: false)
                       .withSmithyDefaultConfig(config)
+                      .withOperationProperties(value: operation)
                       .build()
-        let builder = ClientRuntime.OrchestratorBuilder<AllocateWidgetInput, AllocateWidgetOutput, SmithyHTTPAPI.HTTPRequest, SmithyHTTPAPI.HTTPResponse>()
+        let clientProtocol = SmithyAWSJSON.HTTPClientProtocol(version: .v1_1)
+        let builder = ClientRuntime.OrchestratorBuilder(operation, clientProtocol)
         config.interceptorProviders.forEach { provider in
             builder.interceptors.add(provider.create())
         }
