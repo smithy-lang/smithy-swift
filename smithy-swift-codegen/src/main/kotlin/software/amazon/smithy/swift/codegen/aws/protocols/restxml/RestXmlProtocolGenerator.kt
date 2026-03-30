@@ -8,6 +8,7 @@ package software.amazon.smithy.swift.codegen.aws.protocols.restxml
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
@@ -48,6 +49,17 @@ open class RestXmlProtocolGenerator(
             "S3PreservesEmbeddedDotSegmentInUriLabel",
             "S3PreservesLeadingDotSegmentInUriLabel",
         )
+
+    override fun addProtocolSpecificMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        operation: OperationShape,
+    ) {
+        super.addProtocolSpecificMiddleware(ctx, operation)
+
+        // Remove these middlewares as they are handled by the schema-based ClientProtocol & Operation
+        operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
+        operationMiddleware.removeMiddleware(operation, "DeserializeMiddleware")
+    }
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
         super.generateDeserializers(ctx)
