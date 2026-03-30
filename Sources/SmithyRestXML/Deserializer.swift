@@ -229,7 +229,7 @@ public struct Deserializer: ShapeDeserializer {
     // MARK: - Private
 
     private func xmlElementName(for schema: Schema) -> String {
-        (try? schema.getTrait(XmlNameTrait.self))?.value ?? schema.memberName ?? schema.id.name
+        (try? schema.getTrait(XmlNameTrait.self))?.value ?? schema.memberName ?? schema.id.member ?? schema.id.name
     }
 }
 

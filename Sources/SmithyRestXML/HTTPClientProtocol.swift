@@ -15,7 +15,6 @@ import class Smithy.Context
 import struct Smithy.Schema
 import struct Smithy.ShapeID
 import struct Smithy.TargetsUnitTrait
-import struct Smithy.XmlNameTrait
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse

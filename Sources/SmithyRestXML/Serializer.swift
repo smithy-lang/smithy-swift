@@ -161,7 +161,7 @@ public final class Serializer: ShapeSerializer {
     // MARK: - Private
 
     private func xmlElementName(for schema: Schema) -> String {
-        (try? schema.getTrait(XmlNameTrait.self))?.value ?? schema.memberName ?? schema.id.name
+        (try? schema.getTrait(XmlNameTrait.self))?.value ?? schema.memberName ?? schema.id.member ?? schema.id.name
     }
 
     private func xmlNamespaceAttr(for schema: Schema) -> String {

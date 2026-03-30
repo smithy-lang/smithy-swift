@@ -29,18 +29,21 @@ extension BaseError: DeserializableStruct {
                 .init(
                     id: .init("swift.synthetic", "RestXMLBaseError", "Code"),
                     type: .member,
+                    containerType: .structure,
                     target: Prelude.stringSchema,
                     index: 0
                 ),
                 .init(
                     id: .init("swift.synthetic", "RestXMLBaseError", "Message"),
                     type: .member,
+                    containerType: .structure,
                     target: Prelude.stringSchema,
                     index: 1
                 ),
                 .init(
                     id: .init("swift.synthetic", "RestXMLBaseError", "RequestId"),
                     type: .member,
+                    containerType: .structure,
                     target: Prelude.stringSchema,
                     index: 2
                 ),
