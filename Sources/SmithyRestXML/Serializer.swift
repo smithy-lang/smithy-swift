@@ -173,16 +173,9 @@ public final class Serializer: ShapeSerializer {
     }
 
     private func writeScalar(schema: Schema, string: String) {
-        if schema.hasTrait(XmlAttributeTrait.self) {
-            // Attributes are handled during struct writing; this is a fallback
-            writeMemberOpen(schema: schema)
-            xmlParts.append(string)
-            writeMemberClose(schema: schema)
-        } else {
-            writeMemberOpen(schema: schema)
-            xmlParts.append(string)
-            writeMemberClose(schema: schema)
-        }
+        writeMemberOpen(schema: schema)
+        xmlParts.append(string)
+        writeMemberClose(schema: schema)
     }
 
     private func writeMemberOpen(schema: Schema) {
