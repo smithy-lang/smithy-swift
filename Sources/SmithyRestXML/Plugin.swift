@@ -17,7 +17,5 @@ public struct Plugin: ClientRuntime.Plugin {
     public init() {}
 
     public func configureClient<Config: ClientConfiguration>(clientConfiguration: inout Config) async throws {
-        // RestXML plugin currently has no additional configuration to apply.
-        // URL path and other HTTP bindings are handled by code-generated middlewares.
     }
 }

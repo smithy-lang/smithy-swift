@@ -29,7 +29,6 @@ public struct Deserializer: ShapeDeserializer {
     public init(data: Data) throws {
         if data.isEmpty {
             self.reader = try Reader.from(data: Data("<empty/>".utf8))
-            // Mark as empty by using a sentinel
         } else {
             self.reader = try Reader.from(data: data)
         }
@@ -42,8 +41,6 @@ public struct Deserializer: ShapeDeserializer {
     private func targetSchema(_ schema: Schema) -> Schema {
         schema.target ?? schema
     }
-
-    // MARK: - ShapeDeserializer
 
     public func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
         let structSchema: Schema
@@ -179,7 +176,6 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     public func readBigInteger(_ schema: Schema) throws -> Int64 {
-        // Reader doesn't have Int64 readIfPresent, read as String and convert
         guard let str: String = try reader.readIfPresent(), let value = Int64(str) else {
             throw XMLDeserializerError("Expected Int64 for \(schema.id)")
         }
@@ -225,8 +221,6 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     public var containerSize: Int { reader.children.count }
-
-    // MARK: - Private
 
     private func xmlElementName(for schema: Schema) -> String {
         (try? schema.getTrait(XmlNameTrait.self))?.value ?? schema.memberName ?? schema.id.member ?? schema.id.name

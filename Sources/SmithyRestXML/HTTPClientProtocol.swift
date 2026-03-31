@@ -69,12 +69,10 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         } else {
             let errorTypeRegistry = operation.errorTypeRegistry
 
-            // Parse the error response. RestXML errors are wrapped in <ErrorResponse><Error>...</Error></ErrorResponse>
-            // unless noErrorWrapping is true.
+            // Parse error response; RestXML errors may be wrapped in <Error> element
             let errorDeserializer = try Deserializer(data: bodyData)
             let errorReader = errorDeserializer.reader
 
-            // Navigate to the <Error> element if wrapping is present
             let baseErrorDeserializer: Deserializer
             if noErrorWrapping {
                 baseErrorDeserializer = errorDeserializer
@@ -98,7 +96,6 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
             }
 
             if let registryEntry {
-                // Re-deserialize the error body into the specific error type
                 let specificDeserializer: Deserializer
                 if noErrorWrapping {
                     specificDeserializer = errorDeserializer

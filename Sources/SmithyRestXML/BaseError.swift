@@ -20,7 +20,6 @@ public struct BaseError {
 
 extension BaseError: DeserializableStruct {
 
-    /// Schema for the `<Error>` wrapper element in RestXML error responses.
     private static var errorSchema: Smithy.Schema {
         .init(
             id: .init("swift.synthetic", "RestXMLBaseError"),
