@@ -27,8 +27,6 @@ public final class Serializer: ShapeSerializer {
 
     public init() {}
 
-    // MARK: - ShapeSerializer conformance
-
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
         let elementName = xmlElementName(for: schema)
         let nsAttr = xmlNamespaceAttr(for: schema)
@@ -157,8 +155,6 @@ public final class Serializer: ShapeSerializer {
     public var data: Data {
         Data(xmlParts.joined().utf8)
     }
-
-    // MARK: - Private methods
 
     private func xmlElementName(for schema: Schema) -> String {
         (try? schema.getTrait(XmlNameTrait.self))?.value ?? schema.memberName ?? schema.id.member ?? schema.id.name
