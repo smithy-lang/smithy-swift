@@ -18,13 +18,13 @@ import struct Smithy.TargetsUnitTrait
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
-@_spi(SmithyReadWrite) import class SmithyXML.Reader
-@_spi(SmithyReadWrite) import struct SmithyXML.NodeInfo
 import protocol SmithySerialization.ClientProtocol
 import protocol SmithySerialization.Codec
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.Operation
 import struct SmithySerialization.TypeRegistry
+@_spi(SmithyReadWrite) import struct SmithyXML.NodeInfo
+@_spi(SmithyReadWrite) import class SmithyXML.Reader
 
 public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
     public typealias RequestType = HTTPRequest

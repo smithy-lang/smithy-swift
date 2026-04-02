@@ -9,20 +9,20 @@ import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
 import struct Smithy.Schema
+import protocol Smithy.SmithyDocument
 import struct Smithy.TimestampFormatTrait
 import struct Smithy.XmlAttributeTrait
 import struct Smithy.XmlFlattenedTrait
-import struct Smithy.XmlNameTrait
 import struct Smithy.XmlNamespaceTrait
-import protocol Smithy.SmithyDocument
+import struct Smithy.XmlNameTrait
 import protocol SmithySerialization.SerializableStruct
 import struct SmithySerialization.SerializerError
 import protocol SmithySerialization.ShapeSerializer
 import typealias SmithySerialization.WriteValueConsumer
-@_spi(SmithyReadWrite) import class SmithyXML.Writer
-@_spi(SmithyReadWrite) import struct SmithyXML.NodeInfo
-@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
+@_spi(SmithyReadWrite) import struct SmithyXML.NodeInfo
+@_spi(SmithyReadWrite) import class SmithyXML.Writer
 
 public final class Serializer: ShapeSerializer {
     private var rootWriter: Writer?
@@ -134,7 +134,9 @@ private final class MemberSerializer: ShapeSerializer {
     func writeLong(_ schema: Schema, _ value: Int) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
     func writeFloat(_ schema: Schema, _ value: Float) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
     func writeDouble(_ schema: Schema, _ value: Double) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeBigInteger(_ schema: Schema, _ value: Int64) throws { try parent[xmlNodeInfo(for: schema)].write(String(value)) }
+    func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+        try parent[xmlNodeInfo(for: schema)].write(String(value))
+    }
     func writeBigDecimal(_ schema: Schema, _ value: Double) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
     func writeString(_ schema: Schema, _ value: String) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
     func writeBlob(_ schema: Schema, _ value: Data) throws { try parent[xmlNodeInfo(for: schema)].write(value) }

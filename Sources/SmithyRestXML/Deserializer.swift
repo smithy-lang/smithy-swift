@@ -18,10 +18,10 @@ import typealias SmithySerialization.ReadStructConsumer
 import typealias SmithySerialization.ReadValueConsumer
 import struct SmithySerialization.SerializerError
 import protocol SmithySerialization.ShapeDeserializer
-@_spi(SmithyReadWrite) import class SmithyXML.Reader
-@_spi(SmithyReadWrite) import struct SmithyXML.NodeInfo
-@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
+@_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
+@_spi(SmithyReadWrite) import struct SmithyXML.NodeInfo
+@_spi(SmithyReadWrite) import class SmithyXML.Reader
 
 public struct Deserializer: ShapeDeserializer {
     let reader: Reader
