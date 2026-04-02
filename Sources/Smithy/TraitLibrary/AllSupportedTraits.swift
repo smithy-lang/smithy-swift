@@ -31,6 +31,10 @@ private let allSupportedTraitTypes: [ShapeID: any Trait.Type] = [
     SparseTrait.id: SparseTrait.self,
     TimestampFormatTrait.id: TimestampFormatTrait.self,
     UnitTypeTrait.id: UnitTypeTrait.self, // UnitTypeTrait will only ever appear in Prelude.unitSchema
+    XmlAttributeTrait.id: XmlAttributeTrait.self,
+    XmlFlattenedTrait.id: XmlFlattenedTrait.self,
+    XmlNameTrait.id: XmlNameTrait.self,
+    XmlNamespaceTrait.id: XmlNamespaceTrait.self,
 
     // Synthetic traits
     TargetsUnitTrait.id: TargetsUnitTrait.self,

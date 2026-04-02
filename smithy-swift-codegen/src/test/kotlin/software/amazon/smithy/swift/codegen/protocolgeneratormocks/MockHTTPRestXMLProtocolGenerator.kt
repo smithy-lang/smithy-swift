@@ -10,17 +10,25 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolTestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestErrorGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestRequestGenerator
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolUnitTestResponseGenerator
+import software.amazon.smithy.swift.codegen.integration.Plugin
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.isInHttpBody
 import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolClientGeneratorFactory
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRestXMLTypes
 
-class MockRestXMLHTTPProtocolCustomizations : DefaultHTTPProtocolCustomizations()
+class MockRestXMLHTTPProtocolCustomizations : DefaultHTTPProtocolCustomizations() {
+    override fun renderClientProtocol(writer: SwiftWriter): String =
+        writer.format("\$N()", SmithyRestXMLTypes.HTTPClientProtocol)
+
+    override val plugins: List<Plugin> = listOf()
+}
 
 class MockHTTPRestXMLProtocolGenerator : HTTPBindingProtocolGenerator(MockRestXMLHTTPProtocolCustomizations()) {
     override val defaultContentType: String = "application/xml"
@@ -32,7 +40,9 @@ class MockHTTPRestXMLProtocolGenerator : HTTPBindingProtocolGenerator(MockRestXM
         ctx: ProtocolGenerator.GenerationContext,
         operation: OperationShape,
     ) {
-        // Intentionally empty
+        // Remove middlewares handled by schema-based ClientProtocol
+        operationMiddleware.removeMiddleware(operation, "OperationInputBodyMiddleware")
+        operationMiddleware.removeMiddleware(operation, "DeserializeMiddleware")
     }
 
     override fun addUserAgentMiddleware(
