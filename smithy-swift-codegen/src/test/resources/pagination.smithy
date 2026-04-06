@@ -1,8 +1,8 @@
 namespace com.test
 
-use aws.protocols#restXml
+use aws.protocols#restJson1
 
-@restXml
+@restJson1
 service Lambda {
     operations: [ListFunctions, ListFunctions2, ListFunctions3]
 }

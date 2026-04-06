@@ -1,9 +1,9 @@
 namespace com.test
 
 use smithy.waiters#waitable
-use aws.protocols#restXml
+use aws.protocols#restJson1
 
-@restXml
+@restJson1
 service TestHasNoWaiters {
     operations: [NoWaiting]
 }
