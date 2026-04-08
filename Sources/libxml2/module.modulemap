@@ -1,5 +1,4 @@
 module libxml2 {
-    header "libxml2.h"
     header "shim.h"
     link "xml2"
     export *
