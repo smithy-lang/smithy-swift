@@ -128,7 +128,7 @@ jobs:
       - name: Checkout aws-sdk-swift with composite action
         uses: ./smithy-swift/.github/actions/checkout-aws-sdk-swift-composite-action
         with:
-          AUTOMATION_USER_SSH_PRIVATE_KEY: ${{ secrets.AUTOMATION_USER_SSH_PRIVATE_KEY }}
+          STAGING_PARTNER_REPO_PRIVATE_DEPLOY_KEY: ${{ secrets.STAGING_PARTNER_REPO_PRIVATE_DEPLOY_KEY }}
           STAGING_PARTNER_REPO: ${{ secrets.STAGING_PARTNER_REPO }}
       - name: Setup common tools
         uses: ./smithy-swift/.github/actions/setup-common-tools-composite-action
@@ -223,7 +223,7 @@ jobs:
       - name: Checkout aws-sdk-swift with composite action
         uses: ./smithy-swift/.github/actions/checkout-aws-sdk-swift-composite-action
         with:
-          AUTOMATION_USER_SSH_PRIVATE_KEY: ${{ secrets.AUTOMATION_USER_SSH_PRIVATE_KEY }}
+          STAGING_PARTNER_REPO_PRIVATE_DEPLOY_KEY: ${{ secrets.STAGING_PARTNER_REPO_PRIVATE_DEPLOY_KEY }}
           STAGING_PARTNER_REPO: ${{ secrets.STAGING_PARTNER_REPO }}
       - name: Setup common tools
         uses: ./smithy-swift/.github/actions/setup-common-tools-composite-action
