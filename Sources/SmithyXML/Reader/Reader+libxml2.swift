@@ -6,7 +6,12 @@
 //
 
 import struct Foundation.Data
+#if os(Linux)
+@preconcurrency import LibXML2
+#else
 @preconcurrency import libxml2
+#endif
+
 import struct SmithySerialization.ResponseDecodingError
 
 extension Reader {

@@ -6,7 +6,11 @@
 //
 
 import struct Foundation.Data
+#if os(Linux)
+@preconcurrency import LibXML2
+#else
 @preconcurrency import libxml2
+#endif
 
 /// Extends Writer to copy its tree into libxml2, then write the tree to XML data.
 extension Writer {

@@ -6,9 +6,9 @@ import PackageDescription
 // Define libxml2 only on Linux, since it causes warnings
 // about "pkgconfig not found" on Mac
 #if os(Linux)
-let libXML2DependencyOrNil: Target.Dependency? = "libxml2"
+let libXML2DependencyOrNil: Target.Dependency? = "LibXML2"
 let libXML2TargetOrNil: Target? = Target.systemLibrary(
-    name: "libxml2",
+    name: "LibXML2",
     pkgConfig: "libxml-2.0",
     providers: [
         .apt(["libxml2 libxml2-dev"]),
