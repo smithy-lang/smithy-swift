@@ -171,6 +171,10 @@ jobs:
         swift:
           - 5.9-jammy
           - 6.3-noble
+          - 6.3-jammy
+          - 6.3-bookworm
+          - 6.3-amazonlinux2
+          - 6.3-rhel-ubi9
     container:
       image: swift:${{ matrix.swift }}
     env:
