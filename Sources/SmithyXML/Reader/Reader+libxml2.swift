@@ -5,12 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if os(Linux)
-@preconcurrency import LibXML2
+#if os(Linux) && swift(>=6.0)
 import FoundationEssentials
 #else
-@preconcurrency import libxml2
 import Foundation
+#endif
+#if os(Linux)
+@preconcurrency import LibXML2
+#else
+@preconcurrency import libxml2
 #endif
 
 import struct SmithySerialization.ResponseDecodingError

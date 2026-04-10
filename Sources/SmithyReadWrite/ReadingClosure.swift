@@ -5,8 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.Data
-import struct Foundation.Date
+#if os(Linux) && swift(>=6.0)
+import FoundationEssentials
+#else
+import Foundation
+#endif
 import struct Smithy.Document
 import protocol Smithy.SmithyDocument
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat

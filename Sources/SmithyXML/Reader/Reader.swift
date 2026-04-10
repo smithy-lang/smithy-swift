@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#if os(Linux)
+#if os(Linux) && swift(>=6.0)
 import FoundationEssentials
 #else
 import Foundation

@@ -5,7 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.Data
+#if os(Linux) && swift(>=6.0)
+import FoundationEssentials
+#else
+import Foundation
+#endif
 
 @_spi(SmithyReadWrite)
 public protocol WireDataProviding: AnyObject {
