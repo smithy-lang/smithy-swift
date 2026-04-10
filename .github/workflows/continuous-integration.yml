@@ -170,7 +170,9 @@ jobs:
           - ubuntu-24.04-arm
         swift:
           - 5.9-jammy
+          - 5.9-rhel-ubi9
           - 6.2-noble
+          - 6.3-rhel-ubi9
     container:
       image: swift:${{ matrix.swift }}
     env:
@@ -203,7 +205,9 @@ jobs:
           - ubuntu-24.04-arm
         swift:
           - 5.9-jammy
+          - 5.9-rhel-ubi9
           - 6.2-noble
+          - 6.3-rhel-ubi9
     container:
       image: swift:${{ matrix.swift }}
     env:
