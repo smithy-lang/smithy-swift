@@ -7,10 +7,10 @@
 
 #if os(Linux)
 @preconcurrency import LibXML2
-import struct FoundationEssentials.Data
+import FoundationEssentials
 #else
 @preconcurrency import libxml2
-import struct Foundation.Data
+import Foundation
 #endif
 
 import struct SmithySerialization.ResponseDecodingError

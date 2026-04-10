@@ -5,8 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import struct Foundation.Date
-import func Foundation.floor
+#if os(Linux)
+import FoundationEssentials
+#else
+import Foundation
+#endif
 
 /// Custom timestamp serialization formats
 /// https://smithy.io/2.0/spec/protocol-traits.html#smithy-api-timestampformat-trait
