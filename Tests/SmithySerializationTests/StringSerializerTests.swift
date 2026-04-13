@@ -75,21 +75,21 @@ final class StringSerializerTests: XCTestCase {
     func test_redactsStringProperty() throws {
         let subject = TestStruct(publicString: "abc", privateString: "def")
 
-        XCTAssertEqual(subject.debugDescription, "TestStruct(publicString: \"abc\", privateString: [REDACTED])")
+        XCTAssertEqual(subject.debugDescription, "TestStruct(publicString: \"abc\", privateString: [CONTENT_REDACTED])")
     }
 
     func test_redactsAPrivateList() throws {
         let subject = TestStruct(privateList: ["abc", "def", "ghi"])
 
-        XCTAssertEqual(subject.debugDescription, "TestStruct(privateList: [[REDACTED], [REDACTED], [REDACTED]])")
+        XCTAssertEqual(subject.debugDescription, "TestStruct(privateList: [[CONTENT_REDACTED], [CONTENT_REDACTED], [CONTENT_REDACTED]])")
     }
 
     func test_redactsAPrivateMap() throws {
         let subject = TestStruct(privateMap: ["x": "abc", "y": "def"])
 
         XCTAssert(
-            subject.debugDescription == "TestStruct(privateMap: [\"x\": [REDACTED], \"y\": [REDACTED]])" ||
-            subject.debugDescription == "TestStruct(privateMap: [\"y\": [REDACTED], \"x\": [REDACTED]])",
+            subject.debugDescription == "TestStruct(privateMap: [\"x\": [CONTENT_REDACTED], \"y\": [CONTENT_REDACTED]])" ||
+            subject.debugDescription == "TestStruct(privateMap: [\"y\": [CONTENT_REDACTED], \"x\": [CONTENT_REDACTED]])",
             "actual: \(subject.debugDescription)"
         )
     }
