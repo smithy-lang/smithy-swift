@@ -38,6 +38,11 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
             // NSURLErrorNetworkConnectionLost =         -1005
             // "The network connection was lost."
             return .init(errorType: .transient, retryAfterHint: nil, isTimeout: false)
+        } else if (error as NSError).domain == NSURLErrorDomain, (error as NSError).code == -1200 {
+            // Domain == "NSURLErrorDomain"
+            // NSURLErrorTimedOut =             -1200
+            // Secure connection (TLS/HTTPS) failed
+            return .init(errorType: .transient, retryAfterHint: nil, isTimeout: false)
         } else if (error as NSError).domain == NSURLErrorDomain, (error as NSError).code == -1001 {
             // Domain == "NSURLErrorDomain"
             // NSURLErrorTimedOut =             -1001
@@ -58,6 +63,11 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
                   crtErrorStruct.code == 1067 {
             // Retries CRTError(code: 1067, message: "Channel shutdown due to tls negotiation timeout", name: "AWS_IO_TLS_NEGOTIATION_TIMEOUT"))
             return .init(errorType: .transient, retryAfterHint: nil, isTimeout: true)
+        } else if let crtError = error as? CommonRunTimeError,
+                  case .crtError(let crtErrorStruct) = crtError,
+                  crtErrorStruct.code == 1029 {
+            // Retries CRTError "AWS_IO_TLS_ERROR_NEGOTIATION_FAILURE"
+            return .init(errorType: .transient, retryAfterHint: nil, isTimeout: false)
         }
         return nil
     }
