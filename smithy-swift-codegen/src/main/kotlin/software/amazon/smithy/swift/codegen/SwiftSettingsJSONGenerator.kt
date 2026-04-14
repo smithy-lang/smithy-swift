@@ -5,12 +5,15 @@ import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 import java.util.Optional
 
 class SwiftSettingsJSONGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
 ) {
     fun render() {
+        if (!SerdeUtils.useSchemaBased(ctx)) return
+
         val path = "Sources/${ctx.settings.moduleName}/swift-settings.json"
         ctx.delegator.useFileWriter(path) { writer ->
             val node =

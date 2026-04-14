@@ -62,7 +62,6 @@ class SwiftDependency(
         val SMITHY_JSON = smithySwiftDependency("SmithyJSON")
         val SMITHY_FORM_URL = smithySwiftDependency("SmithyFormURL")
         val SMITHY_WAITERS_API = smithySwiftDependency("SmithyWaitersAPI")
-        val SMITHY_CBOR = smithySwiftDependency("SmithyCBOR")
         val SMITHY_AWSJSON = smithySwiftDependency("SmithyAWSJSON")
         val SMITHY_RPCV2CBOR = smithySwiftDependency("SmithyRPCv2CBOR")
 

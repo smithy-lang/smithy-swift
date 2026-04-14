@@ -31,6 +31,7 @@ let package = Package(
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
         .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
+        .library(name: "SmithyAWSJSON", targets: ["SmithyAWSJSON"]),
         .library(name: "SmithyRPCv2CBOR", targets: ["SmithyRPCv2CBOR"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
@@ -294,6 +295,16 @@ let package = Package(
                 "SmithySerialization",
             ],
             resources: [ .process("Resources") ]
+        ),
+        .target(
+            name: "SmithyAWSJSON",
+            dependencies: [
+                "ClientRuntime",
+                "Smithy",
+                "SmithySerialization",
+                "SmithyJSON",
+                "SmithyEventStreams",
+            ]
         ),
         .target(
             name: "SmithyRPCv2CBOR",
