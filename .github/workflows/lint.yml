@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   ktlint:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
