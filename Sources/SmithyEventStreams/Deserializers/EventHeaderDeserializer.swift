@@ -92,7 +92,7 @@ struct EventHeaderDeserializer: ShapeDeserializer {
             }
             return Int16(int64)
         default:
-            throw SerializerError("Cannot convert headerValue \(header.value.type) to byte")
+            throw SerializerError("Cannot convert headerValue \(header.value.type) to short")
         }
     }
 
@@ -110,7 +110,7 @@ struct EventHeaderDeserializer: ShapeDeserializer {
             }
             return Int(int64)
         default:
-            throw SerializerError("Cannot convert headerValue \(header.value.type) to byte")
+            throw SerializerError("Cannot convert headerValue \(header.value.type) to integer")
         }
     }
 
@@ -128,7 +128,7 @@ struct EventHeaderDeserializer: ShapeDeserializer {
             }
             return Int(int64)
         default:
-            throw SerializerError("Cannot convert headerValue \(header.value.type) to byte")
+            throw SerializerError("Cannot convert headerValue \(header.value.type) to long")
         }
     }
 

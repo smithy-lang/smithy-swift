@@ -303,6 +303,7 @@ let package = Package(
                 "Smithy",
                 "SmithySerialization",
                 "SmithyJSON",
+                "SmithyEventStreams",
             ]
         ),
         .target(
