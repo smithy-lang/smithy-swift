@@ -147,7 +147,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
 
         // Strip the namespace & other metadata from code.  See:
         // https://smithy.io/2.0/aws/protocols/aws-json-1_0-protocol.html#operation-error-serialization
-        return code.substringBefore(":").substringAfter("#")
+        return code.substringAfter("#").substringBefore(":").trim()
     }
 }
 

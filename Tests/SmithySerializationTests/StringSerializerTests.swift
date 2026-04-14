@@ -77,22 +77,23 @@ final class StringSerializerTests: XCTestCase {
     func test_redactsStringProperty() throws {
         let subject = SensitiveType(privateString: "def", publicString: "abc")
 
-        XCTAssertEqual(subject.debugDescription, "SensitiveType(privateString: [REDACTED], publicString: \"abc\")")
+        XCTAssertEqual(subject.debugDescription, "SensitiveType(privateString: [CONTENT_REDACTED], publicString: \"abc\")")
     }
 
     func test_redactsAPrivateList() throws {
         let subject = SensitiveType(privateList: ["abc", "def", "ghi"])
 
-        XCTAssertEqual(subject.debugDescription, "SensitiveType(privateList: [[REDACTED], [REDACTED], [REDACTED]])")
+        XCTAssertEqual(subject.debugDescription, "SensitiveType(privateList: [[CONTENT_REDACTED], [CONTENT_REDACTED], [CONTENT_REDACTED]])")
     }
 
     func test_redactsAPrivateMap() throws {
         let subject = SensitiveType(privateMap: ["x": "abc", "y": "def"])
 
         XCTAssert(
-            subject.debugDescription == "SensitiveType(privateMap: [\"x\": [REDACTED], \"y\": [REDACTED]])" ||
-            subject.debugDescription == "SensitiveType(privateMap: [\"y\": [REDACTED], \"x\": [REDACTED]])",
+            subject.debugDescription == "SensitiveType(privateMap: [\"x\": [CONTENT_REDACTED], \"y\": [CONTENT_REDACTED]])" ||
+            subject.debugDescription == "SensitiveType(privateMap: [\"y\": [CONTENT_REDACTED], \"x\": [CONTENT_REDACTED]])",
             "actual: \(subject.debugDescription)"
         )
     }
 }
+

@@ -18,7 +18,7 @@ public class StringSerializer: ShapeSerializer {
     private var isFirstElement = true
 
     private let interstitial = ", "
-    private let redacted = "[REDACTED]"
+    private let redacted = "[CONTENT_REDACTED]"
 
     public init() {}
 

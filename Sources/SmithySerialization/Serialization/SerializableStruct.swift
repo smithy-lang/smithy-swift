@@ -20,10 +20,13 @@ public extension SerializableStruct {
     /// Fields marked with the `sensitive` trait will be written to the description as "redacted".
     var description: String {
         let serializer = StringSerializer()
-        // Safe to try! here because StringSerializer never throws
-        // swiftlint:disable:next force_try
-        try! serialize(serializer)
-        return serializer.string
+        do {
+            try serialize(serializer)
+            return serializer.string
+        } catch {
+            return "[Logging error in SerializableStruct.description, " +
+                "please file a bug at https://github.com/smithy-lang/smithy-swift]"
+        }
     }
 
     /// A written description of this type and its contents.
