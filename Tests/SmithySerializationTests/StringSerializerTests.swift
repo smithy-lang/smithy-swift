@@ -13,7 +13,7 @@ import struct Smithy.SensitiveTrait
 import enum RPCv2CBORTestSDK.RPCv2CBORServiceClientTypes
 
 final class StringSerializerTests: XCTestCase {
-    typealias SensitiveType = RPCv2CBORServiceClientTypes.SensitiveType
+    typealias TestStruct = RPCv2CBORServiceClientTypes.SensitiveType
 
     func test_writesASimpleString() throws {
         let string = "xyz"
@@ -48,25 +48,25 @@ final class StringSerializerTests: XCTestCase {
     }
 
     func test_writesAnEmptyList() throws {
-        let subject = SensitiveType(publicList: [])
+        let subject = TestStruct(publicList: [])
 
         XCTAssertEqual(subject.debugDescription, "SensitiveType(publicList: [])")
     }
 
     func test_writesAStringList() throws {
-        let subject = SensitiveType(publicList: ["abc", "def", "ghi"])
+        let subject = TestStruct(publicList: ["abc", "def", "ghi"])
 
         XCTAssertEqual(subject.debugDescription, "SensitiveType(publicList: [\"abc\", \"def\", \"ghi\"])")
     }
 
     func test_writesAnEmptyMap() throws {
-        let subject = SensitiveType(publicMap: [:])
+        let subject = TestStruct(publicMap: [:])
 
         XCTAssertEqual(subject.debugDescription, "SensitiveType(publicMap: [:])")
     }
 
     func test_writesAStringMap() throws {
-        let subject = SensitiveType(publicMap: ["x": "abc", "y": "def"])
+        let subject = TestStruct(publicMap: ["x": "abc", "y": "def"])
 
         XCTAssert(
             subject.debugDescription == "SensitiveType(publicMap: [\"x\": \"abc\", \"y\": \"def\"])" ||
@@ -75,19 +75,19 @@ final class StringSerializerTests: XCTestCase {
     }
 
     func test_redactsStringProperty() throws {
-        let subject = SensitiveType(privateString: "def", publicString: "abc")
+        let subject = TestStruct(privateString: "def", publicString: "abc")
 
         XCTAssertEqual(subject.debugDescription, "SensitiveType(privateString: [CONTENT_REDACTED], publicString: \"abc\")")
     }
 
     func test_redactsAPrivateList() throws {
-        let subject = SensitiveType(privateList: ["abc", "def", "ghi"])
+        let subject = TestStruct(privateList: ["abc", "def", "ghi"])
 
         XCTAssertEqual(subject.debugDescription, "SensitiveType(privateList: [[CONTENT_REDACTED], [CONTENT_REDACTED], [CONTENT_REDACTED]])")
     }
 
     func test_redactsAPrivateMap() throws {
-        let subject = SensitiveType(privateMap: ["x": "abc", "y": "def"])
+        let subject = TestStruct(privateMap: ["x": "abc", "y": "def"])
 
         XCTAssert(
             subject.debugDescription == "SensitiveType(privateMap: [\"x\": [CONTENT_REDACTED], \"y\": [CONTENT_REDACTED]])" ||
