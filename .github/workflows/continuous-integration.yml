@@ -6,9 +6,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 env:
   AWS_SWIFT_SDK_USE_LOCAL_DEPS: 1
 
@@ -175,6 +172,9 @@ jobs:
           - 5.9-jammy
           - 5.9-rhel-ubi9
           - 6.2-noble
+          - 6.3-noble
+          - 6.3-jammy
+          - 6.3-bookworm
           - 6.3-rhel-ubi9
     container:
       image: swift:${{ matrix.swift }}
@@ -210,6 +210,9 @@ jobs:
           - 5.9-jammy
           - 5.9-rhel-ubi9
           - 6.2-noble
+          - 6.3-noble
+          - 6.3-jammy
+          - 6.3-bookworm
           - 6.3-rhel-ubi9
     container:
       image: swift:${{ matrix.swift }}
