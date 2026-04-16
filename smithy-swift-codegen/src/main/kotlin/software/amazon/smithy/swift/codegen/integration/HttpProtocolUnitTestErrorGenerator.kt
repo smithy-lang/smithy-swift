@@ -17,6 +17,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.response
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import java.util.Base64
 
 open class HttpProtocolUnitTestErrorGenerator protected constructor(
