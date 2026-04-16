@@ -13,9 +13,9 @@ import struct SmithyRetriesAPI.RetryStrategyOptions
 /// Is shared across all requests with the same partition ID; typically this also correlates to one network connection.
 final actor RetryQuota {
 
+    // swiftlint:disable:next unused_declaration
     /// The number of tokens that a quota is created with.
     /// The quota's available capacity may never exceed this number.
-    // swiftlint:disable:next unused_declaration
     static var initialRetryTokens: Int { 500 }
 
     /// The number of tokens to be removed for a standard (i.e. non-timeout) retry.
@@ -36,8 +36,8 @@ final actor RetryQuota {
     /// The rate limiter to be used, if any.
     private var rateLimiter: ClientSideRateLimiter?
 
-    /// Sets the current capacity in this quota.  To be used for testing only.
     // swiftlint:disable:next unused_declaration
+    /// Sets the current capacity in this quota.  To be used for testing only.
     func setAvailableCapacity(_ availableCapacity: Int) { self.availableCapacity = availableCapacity }
 
     /// Creates a new quota, optionally with reduced available capacity (used for testing.)
