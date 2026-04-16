@@ -30,7 +30,7 @@ run_analyze() {
         echo "xcodebuild failed. See xcodebuild.log"
         exit 1
     }
-    # Filter out platform-specific false positives (Linux-only imports, cross-platform #error guards)
+    # Filter platform-specific compiler errors that are false positives when analyzing on macOS
     grep -v "no such module 'FoundationNetworking'" xcodebuild.log \
         | grep -v "no such module 'Glibc'" \
         | grep -v "Cannot use a an operating system we do not support" \
