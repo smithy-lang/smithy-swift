@@ -42,6 +42,7 @@ actor ClockSkewStore {
     }
 
     /// Clears all saved clock skew values.  For use during testing.
+    // swiftlint:disable:next unused_declaration
     func clear() async {
         clockSkewStorage = [:]
     }

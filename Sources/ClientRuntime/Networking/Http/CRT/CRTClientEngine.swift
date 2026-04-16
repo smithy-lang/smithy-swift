@@ -23,7 +23,6 @@ import enum SmithyHTTPAPI.HTTPStatusCode
 @_spi(SmithyHTTPClient) import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 import class SmithyHTTPClientAPI.HttpTelemetry
 import class SmithyStreams.BufferedStream
-import SmithyTelemetryAPI
 #if os(Linux)
 import Glibc
 #elseif !os(Windows)
@@ -174,9 +173,6 @@ public class CRTClientEngine: HTTPClient, @unchecked Sendable {
     private let telemetry: HttpTelemetry
     private let logger: LogAgent
     private let serialExecutor: SerialExecutor
-    private let CONTENT_LENGTH_HEADER = "Content-Length"
-    private let AWS_COMMON_RUNTIME = "AwsCommonRuntime"
-    private let DEFAULT_STREAM_WINDOW_SIZE = 16 * 1024 * 1024 // 16 MB
 
     private let windowSize: Int
     private let maxConnectionsPerEndpoint: Int

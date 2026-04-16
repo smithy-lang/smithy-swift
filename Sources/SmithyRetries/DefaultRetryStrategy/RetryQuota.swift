@@ -15,6 +15,7 @@ final actor RetryQuota {
 
     /// The number of tokens that a quota is created with.
     /// The quota's available capacity may never exceed this number.
+    // swiftlint:disable:next unused_declaration
     static var initialRetryTokens: Int { 500 }
 
     /// The number of tokens to be removed for a standard (i.e. non-timeout) retry.
@@ -36,6 +37,7 @@ final actor RetryQuota {
     private var rateLimiter: ClientSideRateLimiter?
 
     /// Sets the current capacity in this quota.  To be used for testing only.
+    // swiftlint:disable:next unused_declaration
     func setAvailableCapacity(_ availableCapacity: Int) { self.availableCapacity = availableCapacity }
 
     /// Creates a new quota, optionally with reduced available capacity (used for testing.)

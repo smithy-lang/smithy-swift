@@ -30,7 +30,6 @@ import protocol Foundation.URLSessionDataDelegate
 import class Foundation.URLSessionDataTask
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionTaskMetrics
-import Security
 import struct Smithy.Attributes
 import enum Smithy.ByteStream
 import protocol Smithy.LogAgent

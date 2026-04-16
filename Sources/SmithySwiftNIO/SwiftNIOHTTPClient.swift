@@ -11,12 +11,9 @@ import struct Foundation.URLComponents
 import struct Foundation.URLQueryItem
 import NIOCore
 import NIOHTTP1
-import NIOPosix
-import NIOSSL
 import Smithy
 import SmithyHTTPAPI
 import SmithyHTTPClientAPI
-import SmithyStreams
 import SmithyTelemetryAPI
 
 /// AsyncHTTPClient-based HTTP client implementation that conforms to SmithyHTTPAPI.HTTPClient

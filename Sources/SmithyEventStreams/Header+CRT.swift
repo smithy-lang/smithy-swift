@@ -6,7 +6,6 @@
 //
 
 import AwsCommonRuntimeKit
-import Foundation
 import struct SmithyEventStreamsAPI.Header
 import enum SmithyEventStreamsAPI.HeaderValue
 

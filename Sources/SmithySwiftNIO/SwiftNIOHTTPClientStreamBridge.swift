@@ -7,7 +7,6 @@
 
 import AsyncHTTPClient
 import Foundation
-import NIO
 import Smithy
 import SmithyStreams
 

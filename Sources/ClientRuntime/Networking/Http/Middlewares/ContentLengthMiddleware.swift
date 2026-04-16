@@ -9,8 +9,6 @@ import SmithyHTTPAPI
 public struct ContentLengthMiddleware<OperationStackInput, OperationStackOutput> {
     public let id: String = "ContentLength"
 
-    private let contentLengthHeaderName = "Content-Length"
-
     private var requiresLength: Bool?
 
     private var unsignedPayload: Bool?

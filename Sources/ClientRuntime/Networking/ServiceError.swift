@@ -18,6 +18,7 @@ public protocol ServiceError {
 extension ServiceError {
 
     /// Returns a localized description for this error, suitable for conformance with Swift `Error`.
+    // swiftlint:disable:next unused_declaration
     var localizedDescription: String {
         if let message = message {
             return message
