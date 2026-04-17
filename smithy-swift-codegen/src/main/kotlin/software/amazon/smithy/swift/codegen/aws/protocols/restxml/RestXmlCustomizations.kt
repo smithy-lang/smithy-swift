@@ -15,8 +15,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRestXMLTypes
 open class RestXmlCustomizations : DefaultHTTPProtocolCustomizations() {
     override val baseErrorSymbol: Symbol = ClientRuntimeTypes.RestXML.RestXMLError
 
-    override fun renderClientProtocol(writer: SwiftWriter): String =
-        writer.format("\$N()", SmithyRestXMLTypes.HTTPClientProtocol)
+    override fun renderClientProtocol(writer: SwiftWriter): String = writer.format("\$N()", SmithyRestXMLTypes.HTTPClientProtocol)
 
     override val plugins: List<Plugin> = listOf(RestXMLPlugin())
 }

@@ -24,8 +24,7 @@ import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolC
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRestXMLTypes
 
 class MockRestXMLHTTPProtocolCustomizations : DefaultHTTPProtocolCustomizations() {
-    override fun renderClientProtocol(writer: SwiftWriter): String =
-        writer.format("\$N()", SmithyRestXMLTypes.HTTPClientProtocol)
+    override fun renderClientProtocol(writer: SwiftWriter): String = writer.format("\$N()", SmithyRestXMLTypes.HTTPClientProtocol)
 
     override val plugins: List<Plugin> = listOf()
 }
