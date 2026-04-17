@@ -33,6 +33,7 @@ jobs:
       - name: Run swiftlint
         run: swiftlint --strict
       - name: Compile project with Xcode
+        timeout-minutes: 20
         run: xcodebuild -scheme smithy-swift-Package -destination platform=macOS > xcodebuild.log
       - name: Run swiftlint analyzer
         run: |

@@ -22,11 +22,11 @@ for arg in "$@"; do
 done
 
 run_lint() {
-    swiftlint --strict $FIX
+    swiftlint --strict ${FIX:+"$FIX"}
 }
 
 run_analyze() {
-    xcodebuild -scheme smithy-swift-Package -destination platform=macOS > xcodebuild.log 2>&1 || {
+    xcodebuild -scheme smithy-swift-Package -destination platform=macOS > xcodebuild.log || {
         echo "xcodebuild failed. See xcodebuild.log"
         exit 1
     }
@@ -35,7 +35,7 @@ run_analyze() {
         | grep -v "no such module 'Glibc'" \
         | grep -v "Cannot use a an operating system we do not support" \
         > xcodebuild-filtered.log
-    swiftlint analyze --strict --compiler-log-path xcodebuild-filtered.log $FIX
+    swiftlint analyze --strict --compiler-log-path xcodebuild-filtered.log ${FIX:+"$FIX"}
 }
 
 case "$MODE" in
