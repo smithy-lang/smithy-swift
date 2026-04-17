@@ -11,6 +11,7 @@ import class Foundation.NSRegularExpression
 import struct Smithy.ErrorTrait
 import struct Smithy.ServiceTrait
 import struct Smithy.ShapeID
+import struct Smithy.StreamingTrait
 
 public struct SymbolProvider {
     let service: ServiceShape
