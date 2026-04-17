@@ -31,8 +31,14 @@ jobs:
           which swiftlint
           swiftlint --version
       - name: Run swiftlint
-        run: swiftlint --strict --reporter github-actions-logging
+        run: swiftlint --strict
       - name: Compile project with Xcode
         run: xcodebuild -scheme smithy-swift-Package -destination platform=macOS > xcodebuild.log
       - name: Run swiftlint analyzer
-        run: swiftlint analyze --strict --reporter github-actions-logging --compiler-log-path xcodebuild.log
+        run: |
+          # Filter platform-specific compiler errors that are false positives when analyzing on macOS
+          grep -v "no such module 'FoundationNetworking'" xcodebuild.log \
+            | grep -v "no such module 'Glibc'" \
+            | grep -v "Cannot use a an operating system we do not support" \
+            > xcodebuild-filtered.log
+          swiftlint analyze --strict --compiler-log-path xcodebuild-filtered.log

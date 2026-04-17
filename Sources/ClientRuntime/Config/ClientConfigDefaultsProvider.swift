@@ -6,7 +6,6 @@
 //
 
 import protocol SmithyHTTPAPI.HTTPClient
-import SmithyIdentityAPI
 import struct SmithyRetries.DefaultRetryStrategy
 import struct SmithyRetries.ExponentialBackoffStrategy
 import struct SmithyRetriesAPI.RetryStrategyOptions

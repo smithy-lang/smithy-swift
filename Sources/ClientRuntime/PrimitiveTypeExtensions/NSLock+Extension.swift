@@ -9,13 +9,12 @@ import class Foundation.NSRecursiveLock
 
 extension NSRecursiveLock {
 
-    // swiftlint:disable:next unused_declaration
     /// Executes a closure while holding the lock.
     ///
     /// - Parameter closure: A closure to execute while holding the lock
     /// - Returns: The return value of the closure
     /// - Throws: Rethrows any error thrown by the closure.
-    func withLockingClosure<T>(_ closure: () throws -> T) rethrows -> T {
+    func withLockingClosure<T>(_ closure: () throws -> T) rethrows -> T { // swiftlint:disable:this unused_declaration
         lock()
         defer { unlock() }
         return try closure()
