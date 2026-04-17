@@ -23,11 +23,6 @@ import enum SmithyHTTPAPI.HTTPStatusCode
 @_spi(SmithyHTTPClient) import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 import class SmithyHTTPClientAPI.HttpTelemetry
 import class SmithyStreams.BufferedStream
-#if os(Linux)
-import Glibc
-#elseif !os(Windows)
-import Darwin
-#endif
 
 public class CRTClientEngine: HTTPClient, @unchecked Sendable {
     public static let noOpCrtClientEngineTelemetry = HttpTelemetry(
