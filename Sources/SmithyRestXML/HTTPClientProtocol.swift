@@ -64,7 +64,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
     ) async throws -> Output {
         let bodyData = try await response.body.readData() ?? Data()
         if (200..<300).contains(response.statusCode.rawValue) {
-            let deserializer = try codec.makeDeserializer(data: bodyData)
+            let deserializer = try Deserializer(httpResponse: response, bodyData: bodyData)
             return try Output.deserialize(deserializer)
         } else {
             let errorTypeRegistry = operation.errorTypeRegistry

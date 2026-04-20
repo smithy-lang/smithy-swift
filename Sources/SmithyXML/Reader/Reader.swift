@@ -30,6 +30,13 @@ public final class Reader: SmithyReader {
         self.nodeInfo = ""
     }
 
+    /// Creates a Reader backed by a literal string content.  Used to adapt non-XML sources
+    /// (e.g. HTTP header values) into the Reader API so existing read methods work uniformly.
+    public init(content: String) {
+        self.nodeInfo = ""
+        self.content = content
+    }
+
     /// Used to create a new XML node during reading from XML.
     /// - Parameter nodeInfo: The node info for this XML node.
     init(nodeInfo: NodeInfo) {
@@ -54,7 +61,7 @@ public final class Reader: SmithyReader {
         }
     }
 
-    func addChild(_ child: Reader) {
+    public func addChild(_ child: Reader) {
         children.append(child)
         child.parent = self
     }
