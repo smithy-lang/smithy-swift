@@ -32,10 +32,15 @@ public struct Deserializer: ShapeDeserializer {
     let reader: Reader
     let httpResponse: HTTPResponse?
     let rawBodyData: Data?
+    /// Set to true when this Deserializer's Reader holds a list of values synthesized from an
+    /// HTTP header (each Reader child wraps one comma-split element).  In that case, `readList`
+    /// should enumerate `reader.children` directly without filtering by XML element name.
+    let isHeaderList: Bool
 
     public init(data: Data) throws {
         self.httpResponse = nil
         self.rawBodyData = nil
+        self.isHeaderList = false
         if data.isEmpty {
             self.reader = Reader()
         } else {
@@ -43,15 +48,17 @@ public struct Deserializer: ShapeDeserializer {
         }
     }
 
-    init(reader: Reader, httpResponse: HTTPResponse? = nil, rawBodyData: Data? = nil) {
+    init(reader: Reader, httpResponse: HTTPResponse? = nil, rawBodyData: Data? = nil, isHeaderList: Bool = false) {
         self.reader = reader
         self.httpResponse = httpResponse
         self.rawBodyData = rawBodyData
+        self.isHeaderList = isHeaderList
     }
 
     init(httpResponse: HTTPResponse, bodyData: Data) throws {
         self.httpResponse = httpResponse
         self.rawBodyData = bodyData
+        self.isHeaderList = false
         if bodyData.isEmpty {
             self.reader = Reader()
         } else {
@@ -120,7 +127,7 @@ public struct Deserializer: ShapeDeserializer {
                 for part in splitHeaderList(headerValue) {
                     listReader.addChild(Reader(content: part))
                 }
-                return Deserializer(reader: listReader)
+                return Deserializer(reader: listReader, isHeaderList: true)
             }
             return Deserializer(reader: Reader(content: headerValue))
         }
@@ -193,6 +200,9 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     public func readList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E] {
+        if isHeaderList {
+            return try reader.children.map { try consumer(Deserializer(reader: $0)) }
+        }
         let isFlattened = schema.hasTrait(XmlFlattenedTrait.self)
         var list = [E]()
 
