@@ -28,7 +28,7 @@ public struct Deserializer: ShapeDeserializer {
 
     public init(data: Data) throws {
         if data.isEmpty {
-            self.reader = try Reader.from(data: Data("<empty/>".utf8))
+            self.reader = Reader()
         } else {
             self.reader = try Reader.from(data: data)
         }

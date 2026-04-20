@@ -26,7 +26,7 @@ public final class Reader: SmithyReader {
     // MARK: - init & deinit
 
     /// Creates an "empty" reader.  This Reader will be returned when the data cannot be parsed.
-    init() {
+    public init() {
         self.nodeInfo = ""
     }
 
