@@ -128,7 +128,8 @@ public struct Deserializer: ShapeDeserializer {
         if let prefixTrait = try member.getTrait(HttpPrefixHeadersTrait.self) {
             let prefix = prefixTrait.value
             let mapReader = Reader()
-            for (name, value) in httpResponse.headers.dictionary where name.lowercased().hasPrefix(prefix.lowercased()) {
+            let lowerPrefix = prefix.lowercased()
+            for (name, value) in httpResponse.headers.dictionary where name.lowercased().hasPrefix(lowerPrefix) {
                 let key = String(name.dropFirst(prefix.count))
                 let entry = Reader()
                 let keyReader = Reader(content: key)
