@@ -31,7 +31,7 @@ jobs:
           which swiftlint
           swiftlint --version
       - name: Run swiftlint
-        run: swiftlint --strict
+        run: swiftlint --strict --reporter github-actions-logging
       - name: Compile project with Xcode
         timeout-minutes: 20
         run: xcodebuild -scheme smithy-swift-Package -destination platform=macOS > xcodebuild.log
@@ -42,4 +42,4 @@ jobs:
             | grep -v "no such module 'Glibc'" \
             | grep -v "Cannot use a an operating system we do not support" \
             > xcodebuild-filtered.log
-          swiftlint analyze --strict --compiler-log-path xcodebuild-filtered.log
+          swiftlint analyze --strict --reporter github-actions-logging --compiler-log-path xcodebuild-filtered.log
