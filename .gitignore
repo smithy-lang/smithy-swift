@@ -34,3 +34,7 @@ build/
 
 # VS Code config files
 .vscode
+
+# swiftlint analyzer build logs
+xcodebuild.log
+xcodebuild-filtered.log

@@ -17,6 +17,7 @@ public struct AttributeKey<ValueType>: Sendable {
         return self.name
     }
 
+    // swiftlint:disable:next unused_declaration
     func toString() -> String {
         return "AttributeKey: \(name)"
     }

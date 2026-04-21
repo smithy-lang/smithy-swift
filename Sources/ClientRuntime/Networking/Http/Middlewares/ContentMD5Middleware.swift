@@ -10,8 +10,6 @@ import SmithyHTTPAPI
 public struct ContentMD5Middleware<OperationStackInput, OperationStackOutput> {
     public let id: String = "ContentMD5"
 
-    private let contentMD5HeaderName = "Content-MD5"
-
     public init() {}
 
     private func addHeaders(builder: HTTPRequestBuilder, attributes: Context) async throws {

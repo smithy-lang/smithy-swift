@@ -23,11 +23,13 @@ public class HttpTelemetry: @unchecked Sendable {
         attributes.set(key: HttpMetricsAttributesKeys.state, value: ConnectionState.acquired)
         return attributes
     }
+    // swiftlint:disable:next unused_declaration
     private static var inflightRequestsAttributes: Attributes {
         var attributes = Attributes()
         attributes.set(key: HttpMetricsAttributesKeys.state, value: RequestState.inflight)
         return attributes
     }
+    // swiftlint:disable:next unused_declaration
     private static var queuedRequestsAttributes: Attributes {
         var attributes = Attributes()
         attributes.set(key: HttpMetricsAttributesKeys.state, value: RequestState.queued)
@@ -57,6 +59,7 @@ public class HttpTelemetry: @unchecked Sendable {
     // are not Sendable & must be protected by lock.
     private let _tracerAttributes: Attributes?
 
+    // swiftlint:disable:next unused_declaration
     var tracerAttributes: Attributes? {
         lock.lock()
         defer { lock.unlock() }
@@ -73,6 +76,7 @@ public class HttpTelemetry: @unchecked Sendable {
 
     private var _httpMetricsUsage: HttpMetricsUsage
 
+    // swiftlint:disable:next unused_declaration
     var httpMetricsUsage: HttpMetricsUsage {
         lock.lock()
         defer { lock.unlock() }

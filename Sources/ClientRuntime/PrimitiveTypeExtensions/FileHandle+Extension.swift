@@ -9,6 +9,7 @@ import class Foundation.FileHandle
 
 extension FileHandle {
 
+    // swiftlint:disable:next unused_declaration
     func toByteBuffer() -> ByteBuffer {
         return ByteBuffer(data: self.readDataToEndOfFile())
     }
