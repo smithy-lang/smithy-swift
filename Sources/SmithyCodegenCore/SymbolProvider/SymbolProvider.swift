@@ -8,11 +8,16 @@
 import struct Foundation.Locale
 import struct Foundation.NSRange
 import class Foundation.NSRegularExpression
+@_spi(SchemaBasedSerde)
 import struct Smithy.ErrorTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.ServiceTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
 import struct Smithy.StreamingTrait
 
+@_spi(SchemaBasedSerde)
 public struct SymbolProvider {
     let service: ServiceShape
     let settings: SwiftSettings

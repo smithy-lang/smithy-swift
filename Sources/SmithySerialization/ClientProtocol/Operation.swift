@@ -5,8 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
 
+@_spi(SchemaBasedSerde)
 public struct Operation<Input: SerializableStruct, Output: DeserializableStruct> {
     private let _schema: @Sendable () -> Schema
     private let _serviceSchema: @Sendable () -> Schema

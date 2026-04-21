@@ -10,13 +10,19 @@ import struct Foundation.Date
 import class Foundation.JSONSerialization
 import class Foundation.NSNumber
 import struct Smithy.Document
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
+@_spi(SchemaBasedSerde)
 import struct Smithy.TimestampFormatTrait
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
+@_spi(SchemaBasedSerde)
 import struct SmithySerialization.SerializerError
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeSerializer
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
+@_spi(SchemaBasedSerde)
 public class Serializer: ShapeSerializer {
     var value: JSONValue?
 

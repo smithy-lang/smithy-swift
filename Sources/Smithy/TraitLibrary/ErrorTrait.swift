@@ -6,6 +6,7 @@
 //
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#error-trait
+@_spi(SchemaBasedSerde)
 public struct ErrorTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "error") }
 

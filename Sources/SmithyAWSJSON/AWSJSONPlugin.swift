@@ -9,8 +9,6 @@ import ClientRuntime
 import Smithy
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
-import protocol SmithySerialization.DeserializableStruct
-import protocol SmithySerialization.SerializableStruct
 
 public struct Plugin: ClientRuntime.Plugin {
 

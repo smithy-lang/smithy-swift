@@ -5,8 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import struct Smithy.ErrorTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.SparseTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.StreamingTrait
 
 package struct DeserializeCodegen {
@@ -19,9 +22,13 @@ package struct DeserializeCodegen {
         writer.write("import enum Smithy.ByteStream")
         writer.write("import struct Smithy.Document")
         writer.write("import enum Smithy.Prelude")
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import struct Smithy.Schema")
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import protocol SmithySerialization.DeserializableStruct")
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import typealias SmithySerialization.ReadStructConsumer")
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import protocol SmithySerialization.ShapeDeserializer")
         writer.write("")
 
@@ -36,6 +43,7 @@ package struct DeserializeCodegen {
         for shape in outputStructsAndUnions {
             let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
             let varName = shape.type == .structure ? "structure" : "union"
+            writer.write("@_spi(SchemaBasedSerde)")
             try writer.openBlock("extension \(swiftType): SmithySerialization.DeserializableStruct {", "}") { writer in
                 writer.write("")
                 let deserializerType = "any SmithySerialization.ShapeDeserializer"

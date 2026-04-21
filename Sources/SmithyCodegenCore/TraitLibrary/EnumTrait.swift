@@ -6,7 +6,9 @@
 //
 
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
 import protocol Smithy.Trait
 import struct Smithy.TraitError
 
@@ -14,6 +16,7 @@ import struct Smithy.TraitError
 ///
 /// This trait is deprecated, and strings tagged with it are converted to `EnumShape` as part of loading the
 /// model from AST.  Therefore, it is not renered to schemas or used at runtime.
+@_spi(SchemaBasedSerde)
 public struct EnumTrait: Trait {
 
     public struct EnumMember {

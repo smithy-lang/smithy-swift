@@ -6,6 +6,7 @@
 //
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#enumvalue-trait
+@_spi(SchemaBasedSerde)
 public struct EnumValueTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "enumValue") }
 

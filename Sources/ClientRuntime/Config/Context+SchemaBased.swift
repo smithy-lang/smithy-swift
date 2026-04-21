@@ -8,8 +8,11 @@
 import struct Smithy.AttributeKey
 import class Smithy.Context
 import class Smithy.ContextBuilder
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ClientProtocol
+@_spi(SchemaBasedSerde)
 import struct SmithySerialization.Operation
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.OperationProperties
 
 extension Context {

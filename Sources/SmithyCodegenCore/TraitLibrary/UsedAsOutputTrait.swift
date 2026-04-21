@@ -6,9 +6,12 @@
 //
 
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
 import protocol Smithy.Trait
 
+@_spi(SchemaBasedSerde)
 public struct UsedAsOutputTrait: Trait {
     public static var id: ShapeID { .init("swift.synthetic", "usedAsOutput") }
 

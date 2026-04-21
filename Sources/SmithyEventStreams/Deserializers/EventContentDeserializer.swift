@@ -8,13 +8,19 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import struct Smithy.Document
+@_spi(SchemaBasedSerde)
 import struct Smithy.EventHeaderTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.EventPayloadTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
 import struct SmithyEventStreamsAPI.Message
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 
 /// Deserializes the associated value (event or exception) from a case of a streaming union.

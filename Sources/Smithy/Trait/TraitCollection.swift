@@ -6,6 +6,7 @@
 //
 
 /// A container for traits that allows for type-safe access.
+@_spi(SchemaBasedSerde)
 public struct TraitCollection: Sendable, Hashable {
     /// The "raw" traits in this collection, as a dictionary of `Node`s keyed by trait shape ID.
     public var traitDict: [ShapeID: Node]

@@ -6,6 +6,7 @@
 //
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#clientoptional-trait
+@_spi(SchemaBasedSerde)
 public struct ClientOptionalTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "clientOptional") }
 

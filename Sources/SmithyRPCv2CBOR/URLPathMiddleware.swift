@@ -11,10 +11,15 @@ import enum Smithy.ClientError
 import class Smithy.Context
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
+@_spi(SchemaBasedSerde)
+import struct Smithy.Schema
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.OperationProperties
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 
 public struct URLPathMiddleware<InputType, OutputType, RequestType: RequestMessage, ResponseType: ResponseMessage> {

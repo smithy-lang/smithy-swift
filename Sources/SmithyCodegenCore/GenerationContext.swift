@@ -5,9 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 
 /// A type that provides the resources needed to perform Swift code generation.
+@_spi(SchemaBasedSerde)
 public struct GenerationContext {
     public let settings: SwiftSettings
     public let service: ServiceShape

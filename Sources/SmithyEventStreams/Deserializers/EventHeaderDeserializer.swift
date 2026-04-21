@@ -8,10 +8,13 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import struct Smithy.Document
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
 import struct SmithyEventStreamsAPI.Header
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 
 /// A deserializer for event stream data that is bound to event headers.

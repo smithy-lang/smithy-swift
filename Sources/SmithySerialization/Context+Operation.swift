@@ -9,6 +9,7 @@ import struct Smithy.AttributeKey
 import class Smithy.Context
 import class Smithy.ContextBuilder
 
+@_spi(SchemaBasedSerde)
 public extension Context {
 
     func getOperationProperties() -> (any OperationProperties)? {
@@ -16,6 +17,7 @@ public extension Context {
     }
 }
 
+@_spi(SchemaBasedSerde)
 public extension ContextBuilder {
 
     func withOperationProperties(value: any OperationProperties) -> Self {

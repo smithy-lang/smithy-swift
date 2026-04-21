@@ -17,7 +17,9 @@ import class SmithyHTTPAPI.HTTPResponse
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 import struct SmithyRetriesAPI.RetryErrorInfo
 import protocol SmithyRetriesAPI.RetryStrategy
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ClientProtocol
+@_spi(SchemaBasedSerde)
 import struct SmithySerialization.Operation
 
 /// Builds an Orchestrator, combining runtime components, interceptors, serializers, and deserializers.
@@ -47,6 +49,7 @@ public class OrchestratorBuilder<
 
     public init() {}
 
+    @_spi(SchemaBasedSerde)
     public convenience init<ClientProtocol: SmithySerialization.ClientProtocol>(
         _ operation: Operation<InputType, OutputType>,
         _ clientProtocol: ClientProtocol

@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import struct Smithy.ClientOptionalTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 
 extension Model {

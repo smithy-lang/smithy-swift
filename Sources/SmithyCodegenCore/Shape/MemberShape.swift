@@ -6,10 +6,13 @@
 //
 
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
 import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy members.
+@_spi(SchemaBasedSerde)
 public class MemberShape: Shape {
     let targetID: ShapeID
 
