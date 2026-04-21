@@ -10,6 +10,7 @@ import enum Smithy.Prelude
 import struct Smithy.ShapeID
 import struct Smithy.TargetsUnitTrait
 import struct Smithy.TraitCollection
+import struct Smithy.XmlNameTrait
 
 extension Model {
 
@@ -48,9 +49,21 @@ extension Model {
             // Add UsedAsInput and UsedAsOutput traits to the input/output structures
             // These traits allow us to identify inputs/outputs by trait, but allow us to
             // leave the Smithy input & output traits as set on the original model.
-            let newInput = newStruct(newID: newInputShapeID, newTraits: [UsedAsInputTrait()], original: inputShape)
+            // Also add XmlNameTrait with the original shape name so XML serialization uses
+            // the correct root element name (e.g. "SimpleScalarPropertiesRequest" not "SimpleScalarPropertiesInput").
+            var inputExtraTraits = TraitCollection()
+            inputExtraTraits.add(UsedAsInputTrait())
+            if !inputShape.hasTrait(XmlNameTrait.self) && inputShape.id != Prelude.unitSchema.id {
+                inputExtraTraits.add(try XmlNameTrait(node: .string(inputShape.id.name)))
+            }
+            var outputExtraTraits = TraitCollection()
+            outputExtraTraits.add(UsedAsOutputTrait())
+            if !outputShape.hasTrait(XmlNameTrait.self) && outputShape.id != Prelude.unitSchema.id {
+                outputExtraTraits.add(try XmlNameTrait(node: .string(outputShape.id.name)))
+            }
+            let newInput = newStruct(newID: newInputShapeID, newTraits: inputExtraTraits, original: inputShape)
             let newInputShapeMembers = try renamedMembers(newID: newInputShapeID, original: inputShape)
-            let newOutput = newStruct(newID: newOutputShapeID, newTraits: [UsedAsOutputTrait()], original: outputShape)
+            let newOutput = newStruct(newID: newOutputShapeID, newTraits: outputExtraTraits, original: outputShape)
             let newOutputShapeMembers = try renamedMembers(newID: newOutputShapeID, original: outputShape)
 
             // Add the new input & output and their members to the new shape dictionary.
