@@ -103,7 +103,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
                     let errorElement = errorReader.children.first {
                         $0.nodeInfo.name == "Error"
                     } ?? errorReader
-                    specificDeserializer = Deserializer(reader: errorElement)
+                    specificDeserializer = Deserializer(reader: errorElement, httpResponse: response)
                 }
                 let error = try registryEntry.swiftType.deserialize(specificDeserializer)
 

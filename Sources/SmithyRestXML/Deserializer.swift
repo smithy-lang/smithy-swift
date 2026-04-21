@@ -112,6 +112,9 @@ public struct Deserializer: ShapeDeserializer {
             let childReader: Reader
             if isAttribute {
                 childReader = reader[NodeInfo(elementName, location: .attribute)]
+            } else if reader.nodeInfo.name == elementName {
+                // Unwrapped output: the reader itself IS the member element (e.g. @s3UnwrappedXmlOutput)
+                childReader = reader
             } else {
                 childReader = reader[NodeInfo(elementName)]
             }
@@ -135,8 +138,10 @@ public struct Deserializer: ShapeDeserializer {
             guard let headerValue = httpResponse.headers.value(for: headerTrait.value) else { return nil }
             // For list-typed headers, split comma-separated values into children.
             if member.target?.type == .list || member.type == .list {
+                let memberTarget = member.target?.member.target ?? member.target?.member
+                let isTimestamp = memberTarget?.type == .timestamp
                 let listReader = Reader()
-                for part in splitHeaderList(headerValue) {
+                for part in splitHeaderList(headerValue, isTimestamp: isTimestamp) {
                     listReader.addChild(Reader(content: part))
                 }
                 return Deserializer(reader: listReader, isHeaderList: true, isFromHttpHeader: true)
@@ -167,14 +172,18 @@ public struct Deserializer: ShapeDeserializer {
             switch targetType {
             case .structure, .union:
                 // Structure payload: the entire body is the payload struct. Use the root reader.
+                // If the body is empty, return nil so the member stays nil.
+                guard reader.hasContent || !reader.children.isEmpty else { return nil }
                 return Deserializer(reader: reader, httpResponse: httpResponse, rawBodyData: rawBodyData)
             case .blob:
-                guard let rawBodyData else { return nil }
+                // Only return a deserializer if there's actual body data.
+                guard let rawBodyData, !rawBodyData.isEmpty else { return nil }
                 // Reader.readIfPresent() for Data expects base64. For a raw blob payload we need
                 // the bytes as-is; stash them so readBlob can return them directly.
                 return Deserializer(reader: Reader(), httpResponse: httpResponse, rawBodyData: rawBodyData)
             case .string, .enum:
-                guard let rawBodyData, let str = String(data: rawBodyData, encoding: .utf8) else { return nil }
+                guard let rawBodyData, !rawBodyData.isEmpty,
+                      let str = String(data: rawBodyData, encoding: .utf8) else { return nil }
                 return Deserializer(reader: Reader(content: str))
             default:
                 return nil
@@ -184,15 +193,24 @@ public struct Deserializer: ShapeDeserializer {
         return nil
     }
 
-    /// Splits a comma-separated HTTP header list value per RFC 7230, respecting quoted strings.
-    private func splitHeaderList(_ value: String) -> [String] {
+    /// Splits a comma-separated HTTP header list value per RFC 7230, respecting quoted strings
+    /// and HTTP date values (which contain a comma, e.g. "Mon, 16 Dec 2019 23:48:18 GMT").
+    private func splitHeaderList(_ value: String, isTimestamp: Bool = false) -> [String] {
         var result: [String] = []
         var current = ""
         var inQuotes = false
         for ch in value {
             if ch == "\"" { inQuotes.toggle(); current.append(ch); continue }
             if ch == "," && !inQuotes {
-                result.append(current.trimmingCharacters(in: .whitespaces))
+                let trimmed = current.trimmingCharacters(in: .whitespaces)
+                // HTTP dates have the form "DDD, DD MMM YYYY HH:MM:SS GMT".
+                // The day-of-week abbreviation (3 letters) is followed by a comma.
+                // Detect this: if the accumulated part is exactly 3 alpha chars, it's a partial date.
+                if isTimestamp && trimmed.count == 3 && trimmed.allSatisfy(\.isLetter) {
+                    current.append(ch)
+                    continue
+                }
+                result.append(trimmed)
                 current = ""
                 continue
             }

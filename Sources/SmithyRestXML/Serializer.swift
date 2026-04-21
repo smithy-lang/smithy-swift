@@ -11,6 +11,13 @@ import enum Smithy.ByteStream
 import struct Smithy.Schema
 import protocol Smithy.SmithyDocument
 import struct Smithy.TimestampFormatTrait
+import struct Smithy.HttpHeaderTrait
+import struct Smithy.HttpLabelTrait
+import struct Smithy.HttpPayloadTrait
+import struct Smithy.HttpPrefixHeadersTrait
+import struct Smithy.HttpQueryParamsTrait
+import struct Smithy.HttpQueryTrait
+import struct Smithy.HttpResponseCodeTrait
 import struct Smithy.XmlAttributeTrait
 import struct Smithy.XmlFlattenedTrait
 import struct Smithy.XmlNamespaceTrait
@@ -25,11 +32,18 @@ import typealias SmithySerialization.WriteValueConsumer
 @_spi(SmithyReadWrite) import class SmithyXML.Writer
 
 public final class Serializer: ShapeSerializer {
-    private var rootWriter: Writer?
+    fileprivate var rootWriter: Writer?
+    fileprivate var rawBlobData: Data?
 
     public init() {}
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
+        // If any member has @httpPayload, serialize only that member as the root element.
+        if let payloadMember = schema.members.first(where: { $0.hasTrait(HttpPayloadTrait.self) }) {
+            let payloadSerializer = PayloadMemberSerializer(parent: self)
+            try S.writeConsumer(payloadMember, value, payloadSerializer)
+            return
+        }
         let nodeInfo = xmlNodeInfo(for: schema)
         let writer: Writer
         if let rootWriter {
@@ -65,6 +79,7 @@ public final class Serializer: ShapeSerializer {
 
     public var data: Data {
         get throws {
+            if let rawBlobData { return rawBlobData }
             guard let rootWriter else { return Data() }
             return try rootWriter.data()
         }
@@ -81,6 +96,7 @@ private final class MemberSerializer: ShapeSerializer {
     }
 
     func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
+        guard !isHttpBound(schema) else { return }
         let child = parent[xmlNodeInfo(for: schema)]
         let memberSerializer = MemberSerializer(parent: child)
         for member in schema.members {
@@ -89,6 +105,7 @@ private final class MemberSerializer: ShapeSerializer {
     }
 
     func writeList<E>(_ schema: Schema, _ value: [E], _ consumer: WriteValueConsumer<E>) throws {
+        guard !isHttpBound(schema) else { return }
         let isFlattened = schema.hasTrait(XmlFlattenedTrait.self)
         if isFlattened {
             let nodeInfo = xmlNodeInfo(for: schema)
@@ -106,6 +123,7 @@ private final class MemberSerializer: ShapeSerializer {
     }
 
     func writeMap<V>(_ schema: Schema, _ value: [String: V], _ consumer: WriteValueConsumer<V>) throws {
+        guard !isHttpBound(schema) else { return }
         let isFlattened = schema.hasTrait(XmlFlattenedTrait.self)
         let mapSchema = schema.target ?? schema
         let keyNodeInfo = xmlNodeInfo(for: mapSchema.key)
@@ -127,20 +145,22 @@ private final class MemberSerializer: ShapeSerializer {
         }
     }
 
-    func writeBoolean(_ schema: Schema, _ value: Bool) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeByte(_ schema: Schema, _ value: Int8) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeShort(_ schema: Schema, _ value: Int16) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeInteger(_ schema: Schema, _ value: Int) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeLong(_ schema: Schema, _ value: Int) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeFloat(_ schema: Schema, _ value: Float) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeDouble(_ schema: Schema, _ value: Double) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeBoolean(_ schema: Schema, _ value: Bool) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeByte(_ schema: Schema, _ value: Int8) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeShort(_ schema: Schema, _ value: Int16) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeInteger(_ schema: Schema, _ value: Int) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeLong(_ schema: Schema, _ value: Int) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeFloat(_ schema: Schema, _ value: Float) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeDouble(_ schema: Schema, _ value: Double) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
     func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
+        guard !isHttpBound(schema) else { return }
         try parent[xmlNodeInfo(for: schema)].write(String(value))
     }
-    func writeBigDecimal(_ schema: Schema, _ value: Double) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeString(_ schema: Schema, _ value: String) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeBlob(_ schema: Schema, _ value: Data) throws { try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeBigDecimal(_ schema: Schema, _ value: Double) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeString(_ schema: Schema, _ value: String) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeBlob(_ schema: Schema, _ value: Data) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
     func writeTimestamp(_ schema: Schema, _ value: Date) throws {
+        guard !isHttpBound(schema) else { return }
         try parent[xmlNodeInfo(for: schema)].writeTimestamp(value, format: resolveTimestampFormat(schema))
     }
     func writeDocument(_ schema: Schema, _ value: any SmithyDocument) throws {
@@ -212,4 +232,62 @@ private func xmlNodeInfo(for schema: Schema) -> NodeInfo {
         namespaceDef = nil
     }
     return NodeInfo(name, location: location, namespaceDef: namespaceDef)
+}
+
+/// Returns true if the member schema is bound to an HTTP location other than the body.
+private func isHttpBound(_ schema: Schema) -> Bool {
+    schema.hasTrait(HttpHeaderTrait.self) ||
+    schema.hasTrait(HttpLabelTrait.self) ||
+    schema.hasTrait(HttpQueryTrait.self) ||
+    schema.hasTrait(HttpQueryParamsTrait.self) ||
+    schema.hasTrait(HttpPrefixHeadersTrait.self) ||
+    schema.hasTrait(HttpResponseCodeTrait.self)
+}
+
+/// Serializes an @httpPayload member as the root of the document.
+/// For structure/union payloads, the payload value becomes the root XML element.
+/// For blob/string payloads, the raw bytes are written directly.
+private final class PayloadMemberSerializer: ShapeSerializer {
+    let outer: Serializer
+
+    init(parent: Serializer) {
+        self.outer = parent
+    }
+
+    func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
+        // The payload member's target type becomes the root element
+        let target = schema.target ?? schema
+        let writer = Writer(nodeInfo: xmlNodeInfo(for: target))
+        outer.rootWriter = writer
+        let memberSerializer = MemberSerializer(parent: writer)
+        for member in target.members {
+            try S.writeConsumer(member, value, memberSerializer)
+        }
+    }
+
+    func writeBlob(_ schema: Schema, _ value: Data) throws {
+        // Raw blob payload — store as-is (not base64-encoded XML)
+        outer.rawBlobData = value
+    }
+
+    func writeString(_ schema: Schema, _ value: String) throws {
+        // String payload — store as UTF-8 bytes
+        outer.rawBlobData = Data(value.utf8)
+    }
+
+    func writeList<E>(_ schema: Schema, _ value: [E], _ consumer: WriteValueConsumer<E>) throws {}
+    func writeMap<V>(_ schema: Schema, _ value: [String: V], _ consumer: WriteValueConsumer<V>) throws {}
+    func writeBoolean(_ schema: Schema, _ value: Bool) throws {}
+    func writeByte(_ schema: Schema, _ value: Int8) throws {}
+    func writeShort(_ schema: Schema, _ value: Int16) throws {}
+    func writeInteger(_ schema: Schema, _ value: Int) throws {}
+    func writeLong(_ schema: Schema, _ value: Int) throws {}
+    func writeFloat(_ schema: Schema, _ value: Float) throws {}
+    func writeDouble(_ schema: Schema, _ value: Double) throws {}
+    func writeBigInteger(_ schema: Schema, _ value: Int64) throws {}
+    func writeBigDecimal(_ schema: Schema, _ value: Double) throws {}
+    func writeTimestamp(_ schema: Schema, _ value: Date) throws {}
+    func writeDocument(_ schema: Schema, _ value: any SmithyDocument) throws {}
+    func writeNull(_ schema: Schema) throws {}
+    var data: Data { get throws { Data() } }
 }
