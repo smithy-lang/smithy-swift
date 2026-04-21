@@ -36,11 +36,15 @@ public struct Deserializer: ShapeDeserializer {
     /// HTTP header (each Reader child wraps one comma-split element).  In that case, `readList`
     /// should enumerate `reader.children` directly without filtering by XML element name.
     let isHeaderList: Bool
+    /// Set to true when this Deserializer's Reader holds a value from an HTTP header.
+    /// Changes the default timestamp format from .dateTime (XML) to .httpDate (Smithy HTTP spec).
+    let isFromHttpHeader: Bool
 
     public init(data: Data) throws {
         self.httpResponse = nil
         self.rawBodyData = nil
         self.isHeaderList = false
+        self.isFromHttpHeader = false
         if data.isEmpty {
             self.reader = Reader()
         } else {
@@ -48,17 +52,25 @@ public struct Deserializer: ShapeDeserializer {
         }
     }
 
-    init(reader: Reader, httpResponse: HTTPResponse? = nil, rawBodyData: Data? = nil, isHeaderList: Bool = false) {
+    init(
+        reader: Reader,
+        httpResponse: HTTPResponse? = nil,
+        rawBodyData: Data? = nil,
+        isHeaderList: Bool = false,
+        isFromHttpHeader: Bool = false
+    ) {
         self.reader = reader
         self.httpResponse = httpResponse
         self.rawBodyData = rawBodyData
         self.isHeaderList = isHeaderList
+        self.isFromHttpHeader = isFromHttpHeader
     }
 
     init(httpResponse: HTTPResponse, bodyData: Data) throws {
         self.httpResponse = httpResponse
         self.rawBodyData = bodyData
         self.isHeaderList = false
+        self.isFromHttpHeader = false
         if bodyData.isEmpty {
             self.reader = Reader()
         } else {
@@ -127,30 +139,23 @@ public struct Deserializer: ShapeDeserializer {
                 for part in splitHeaderList(headerValue) {
                     listReader.addChild(Reader(content: part))
                 }
-                return Deserializer(reader: listReader, isHeaderList: true)
+                return Deserializer(reader: listReader, isHeaderList: true, isFromHttpHeader: true)
             }
-            return Deserializer(reader: Reader(content: headerValue))
+            return Deserializer(reader: Reader(content: headerValue), isFromHttpHeader: true)
         }
 
         if let prefixTrait = try member.getTrait(HttpPrefixHeadersTrait.self) {
             let prefix = prefixTrait.value
             let mapReader = Reader()
             let lowerPrefix = prefix.lowercased()
-            for (name, value) in httpResponse.headers.dictionary where name.lowercased().hasPrefix(lowerPrefix) {
+            for (name, values) in httpResponse.headers.dictionary where name.lowercased().hasPrefix(lowerPrefix) {
                 let key = String(name.dropFirst(prefix.count))
-                let entry = Reader()
-                let keyReader = Reader(content: key)
-                // readMap expects entries where entry[key] and entry[value] can be looked up;
-                // but our schema-based readMap for headers isn't applicable. Simpler: synthesize
-                // a flattened map by using member target schema's key/value element names.
-                // Since headers are always string-to-string(ish), directly build:
-                // For now, treat as unsupported if headers are missing \u2014 return nil to skip.
-                _ = (keyReader, entry, value)
+                let entry = Reader(nodeInfo: "entry", content: nil)
+                entry.addChild(Reader(nodeInfo: "key", content: key))
+                entry.addChild(Reader(nodeInfo: "value", content: values.joined(separator: ", ")))
+                mapReader.addChild(entry)
             }
-            _ = mapReader
-            // TODO: full prefix-headers map construction. For now returning nil means the member
-            // stays unset \u2014 which is still better than throwing "XML could not be parsed".
-            return nil
+            return Deserializer(reader: mapReader, isFromHttpHeader: true)
         }
 
         if member.hasTrait(HttpResponseCodeTrait.self) {
@@ -201,7 +206,7 @@ public struct Deserializer: ShapeDeserializer {
 
     public func readList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E] {
         if isHeaderList {
-            return try reader.children.map { try consumer(Deserializer(reader: $0)) }
+            return try reader.children.map { try consumer(Deserializer(reader: $0, isFromHttpHeader: true)) }
         }
         let isFlattened = schema.hasTrait(XmlFlattenedTrait.self)
         var list = [E]()
@@ -329,7 +334,12 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     public func readTimestamp(_ schema: Schema) throws -> Date {
-        let format = resolveTimestampFormat(schema)
+        let format: TimestampFormat
+        if (try? schema.getTrait(TimestampFormatTrait.self)) != nil {
+            format = resolveTimestampFormat(schema)
+        } else {
+            format = isFromHttpHeader ? .httpDate : .dateTime
+        }
         guard let value: Date = try reader.readTimestampIfPresent(format: format) else {
             throw XMLDeserializerError("Expected timestamp for \(schema.id)")
         }

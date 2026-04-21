@@ -37,6 +37,13 @@ public final class Reader: SmithyReader {
         self.content = content
     }
 
+    /// Creates a Reader with a given nodeInfo and text content.  Used to synthesize
+    /// Reader trees matching the shape that `readMap` / `readList` expect.
+    public init(nodeInfo: NodeInfo, content: String?) {
+        self.nodeInfo = nodeInfo
+        self.content = content
+    }
+
     /// Used to create a new XML node during reading from XML.
     /// - Parameter nodeInfo: The node info for this XML node.
     init(nodeInfo: NodeInfo) {
