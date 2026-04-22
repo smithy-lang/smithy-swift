@@ -89,8 +89,6 @@ public struct SymbolProvider {
         }
     }
 
-    static let locale = Locale(identifier: "en_US_POSIX")
-
     public func operationMethodName(operation: OperationShape) throws -> String {
         return operation.id.name.toLowerCamelCase().escapingReservedWords
     }

@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import AwsCommonRuntimeKit
 import struct Foundation.Data
 import protocol Smithy.Stream
 import protocol SmithyChecksumsAPI.Checksum
@@ -18,7 +17,6 @@ public class ValidatingBufferedStream: @unchecked Sendable {
     private var checksumAlgorithm: ChecksumAlgorithm
     private var checksum: (any Checksum)
     private var expectedChecksum: String
-    private var currentHash: UInt32 = 0
 
     public init(stream: BufferedStream, expectedChecksum: String, checksumAlgorithm: ChecksumAlgorithm) {
         self.stream = stream

@@ -8,6 +8,7 @@ import struct Foundation.Data
 import enum Smithy.ClientError
 
 extension StringProtocol where Self.Index == String.Index {
+    // swiftlint:disable:next unused_declaration
     func escape(_ characterSet: [(character: String, escapedCharacter: String)]) -> String {
         var string = String(self)
 
@@ -27,6 +28,7 @@ extension StringProtocol {
         return Self(prefix(1).uppercased() + dropFirst())!
     }
 
+    // swiftlint:disable:next unused_declaration
     mutating func capitalizeFirstLetter() {
         self = capitalizingFirstLetter()
     }
@@ -39,6 +41,7 @@ extension StringProtocol {
         return Self(prefix(1).lowercased() + dropFirst())!
     }
 
+    // swiftlint:disable:next unused_declaration
     mutating func lowercaseFirstLetter() {
         self = lowercasingFirstLetter()
     }
@@ -108,6 +111,7 @@ extension String {
 }
 
 extension String {
+    // swiftlint:disable:next unused_declaration
     func toByteBuffer() -> ByteBuffer {
         return ByteBuffer(data: self.data(using: .utf8) ?? Data())
     }

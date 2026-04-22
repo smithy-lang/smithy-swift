@@ -6,7 +6,6 @@
 //
 
 import ClientRuntime
-import Smithy
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 

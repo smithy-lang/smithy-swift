@@ -147,9 +147,12 @@ actor ClientSideRateLimiter {
     // The following functions are not described in Retry Behavior 2.0 but are
     // used to set test conditions.
 
+    // swiftlint:disable:next unused_declaration
     func setLastMaxRate(_ newValue: Double) { lastMaxRate = newValue }
 
+    // swiftlint:disable:next unused_declaration
     func setLastThrottleTime(_ newValue: Double) { lastThrottleTime = newValue }
 
+    // swiftlint:disable:next unused_declaration
     func setClock(_ newClock: @escaping () -> TimeInterval) { clock = newClock }
 }
