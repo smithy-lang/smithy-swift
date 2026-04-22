@@ -147,20 +147,50 @@ private final class MemberSerializer: ShapeSerializer {
         }
     }
 
-    func writeBoolean(_ schema: Schema, _ value: Bool) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeByte(_ schema: Schema, _ value: Int8) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeShort(_ schema: Schema, _ value: Int16) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeInteger(_ schema: Schema, _ value: Int) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeLong(_ schema: Schema, _ value: Int) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeFloat(_ schema: Schema, _ value: Float) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeDouble(_ schema: Schema, _ value: Double) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeBoolean(_ schema: Schema, _ value: Bool) throws {
+        guard !isHttpBound(schema) else { return }
+        try parent[xmlNodeInfo(for: schema)].write(value)
+    }
+    func writeByte(_ schema: Schema, _ value: Int8) throws {
+        guard !isHttpBound(schema) else { return }
+        try parent[xmlNodeInfo(for: schema)].write(value)
+    }
+    func writeShort(_ schema: Schema, _ value: Int16) throws {
+        guard !isHttpBound(schema) else { return }
+        try parent[xmlNodeInfo(for: schema)].write(value)
+    }
+    func writeInteger(_ schema: Schema, _ value: Int) throws {
+        guard !isHttpBound(schema) else { return }
+        try parent[xmlNodeInfo(for: schema)].write(value)
+    }
+    func writeLong(_ schema: Schema, _ value: Int) throws {
+        guard !isHttpBound(schema) else { return }
+        try parent[xmlNodeInfo(for: schema)].write(value)
+    }
+    func writeFloat(_ schema: Schema, _ value: Float) throws {
+        guard !isHttpBound(schema) else { return }
+        try parent[xmlNodeInfo(for: schema)].write(value)
+    }
+    func writeDouble(_ schema: Schema, _ value: Double) throws {
+        guard !isHttpBound(schema) else { return }
+        try parent[xmlNodeInfo(for: schema)].write(value)
+    }
     func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
         guard !isHttpBound(schema) else { return }
         try parent[xmlNodeInfo(for: schema)].write(String(value))
     }
-    func writeBigDecimal(_ schema: Schema, _ value: Double) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeString(_ schema: Schema, _ value: String) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
-    func writeBlob(_ schema: Schema, _ value: Data) throws { guard !isHttpBound(schema) else { return }; try parent[xmlNodeInfo(for: schema)].write(value) }
+    func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
+        guard !isHttpBound(schema) else { return }
+        try parent[xmlNodeInfo(for: schema)].write(value)
+    }
+    func writeString(_ schema: Schema, _ value: String) throws {
+        guard !isHttpBound(schema) else { return }
+        try parent[xmlNodeInfo(for: schema)].write(value)
+    }
+    func writeBlob(_ schema: Schema, _ value: Data) throws {
+        guard !isHttpBound(schema) else { return }
+        try parent[xmlNodeInfo(for: schema)].write(value)
+    }
     func writeTimestamp(_ schema: Schema, _ value: Date) throws {
         guard !isHttpBound(schema) else { return }
         try parent[xmlNodeInfo(for: schema)].writeTimestamp(value, format: resolveTimestampFormat(schema))
@@ -258,7 +288,9 @@ private final class PayloadMemberSerializer: ShapeSerializer {
 
     func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
         // Use member's own @xmlName if present; otherwise use the target shape's name/xmlName
-        let nodeInfo = schema.hasTrait(XmlNameTrait.self) ? xmlNodeInfo(for: schema) : xmlNodeInfo(for: schema.target ?? schema)
+        let nodeInfo = schema.hasTrait(XmlNameTrait.self)
+            ? xmlNodeInfo(for: schema)
+            : xmlNodeInfo(for: schema.target ?? schema)
         let writer = Writer(nodeInfo: nodeInfo)
         outer.rootWriter = writer
         let structSchema = schema.target ?? schema
