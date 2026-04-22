@@ -7,6 +7,7 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
+import enum Smithy.ByteStream
 import struct Smithy.Document
 import struct Smithy.HttpHeaderTrait
 import struct Smithy.HttpPayloadTrait
@@ -32,6 +33,7 @@ public struct Deserializer: ShapeDeserializer {
     let reader: Reader
     let httpResponse: HTTPResponse?
     let rawBodyData: Data?
+    let bodyStream: ByteStream?
     /// Set to true when this Deserializer's Reader holds a list of values synthesized from an
     /// HTTP header (each Reader child wraps one comma-split element).  In that case, `readList`
     /// should enumerate `reader.children` directly without filtering by XML element name.
@@ -43,6 +45,7 @@ public struct Deserializer: ShapeDeserializer {
     public init(data: Data) throws {
         self.httpResponse = nil
         self.rawBodyData = nil
+        self.bodyStream = nil
         self.isHeaderList = false
         self.isFromHttpHeader = false
         if data.isEmpty {
@@ -56,12 +59,14 @@ public struct Deserializer: ShapeDeserializer {
         reader: Reader,
         httpResponse: HTTPResponse? = nil,
         rawBodyData: Data? = nil,
+        bodyStream: ByteStream? = nil,
         isHeaderList: Bool = false,
         isFromHttpHeader: Bool = false
     ) {
         self.reader = reader
         self.httpResponse = httpResponse
         self.rawBodyData = rawBodyData
+        self.bodyStream = bodyStream
         self.isHeaderList = isHeaderList
         self.isFromHttpHeader = isFromHttpHeader
     }
@@ -69,6 +74,7 @@ public struct Deserializer: ShapeDeserializer {
     init(httpResponse: HTTPResponse, bodyData: Data) throws {
         self.httpResponse = httpResponse
         self.rawBodyData = bodyData
+        self.bodyStream = nil
         self.isHeaderList = false
         self.isFromHttpHeader = false
         if bodyData.isEmpty {
@@ -78,6 +84,15 @@ public struct Deserializer: ShapeDeserializer {
             // in that case we still need a Reader, so fall back to empty.
             self.reader = (try? Reader.from(data: bodyData)) ?? Reader()
         }
+    }
+
+    init(httpResponse: HTTPResponse, bodyStream: ByteStream) {
+        self.httpResponse = httpResponse
+        self.rawBodyData = nil
+        self.bodyStream = bodyStream
+        self.isHeaderList = false
+        self.isFromHttpHeader = false
+        self.reader = Reader()
     }
 
     private func targetSchema(_ schema: Schema) -> Schema {
@@ -349,6 +364,10 @@ public struct Deserializer: ShapeDeserializer {
             throw XMLDeserializerError("Expected blob for \(schema.id)")
         }
         return value
+    }
+
+    public func readDataStream(_ schema: Schema) throws -> ByteStream {
+        return bodyStream ?? .data(nil)
     }
 
     public func readTimestamp(_ schema: Schema) throws -> Date {

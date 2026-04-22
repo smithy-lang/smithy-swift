@@ -12,8 +12,10 @@ import struct Foundation.Data
 import enum Smithy.ByteStream
 import enum Smithy.ClientError
 import class Smithy.Context
+import struct Smithy.HttpPayloadTrait
 import struct Smithy.Schema
 import struct Smithy.ShapeID
+import struct Smithy.StreamingTrait
 import struct Smithy.TargetsUnitTrait
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
@@ -62,11 +64,21 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         context: Context,
         response: HTTPResponse
     ) async throws -> Output {
-        let bodyData = try await response.body.readData() ?? Data()
         if (200..<300).contains(response.statusCode.rawValue) {
+            // If the output has a streaming @httpPayload member, don't read the body into memory —
+            // pass the ByteStream directly so it can be streamed to the caller.
+            let hasStreamingPayload = operation.outputSchema.members.contains {
+                $0.hasTrait(HttpPayloadTrait.self) && ($0.target?.hasTrait(StreamingTrait.self) ?? false)
+            }
+            if hasStreamingPayload {
+                let deserializer = Deserializer(httpResponse: response, bodyStream: response.body)
+                return try Output.deserialize(deserializer)
+            }
+            let bodyData = try await response.body.readData() ?? Data()
             let deserializer = try Deserializer(httpResponse: response, bodyData: bodyData)
             return try Output.deserialize(deserializer)
         } else {
+            let bodyData = try await response.body.readData() ?? Data()
             let errorTypeRegistry = operation.errorTypeRegistry
 
             // Parse error response; RestXML errors may be wrapped in <Error> element
