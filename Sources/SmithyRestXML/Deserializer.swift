@@ -112,8 +112,8 @@ public struct Deserializer: ShapeDeserializer {
             let childReader: Reader
             if isAttribute {
                 childReader = reader[NodeInfo(elementName, location: .attribute)]
-            } else if reader.nodeInfo.name == elementName {
-                // Unwrapped output: the reader itself IS the member element (e.g. @s3UnwrappedXmlOutput)
+            } else if reader.nodeInfo.name == elementName && reader.hasContent && reader.children.isEmpty {
+                // Unwrapped output: the reader itself IS the member value (e.g. @s3UnwrappedXmlOutput leaf)
                 childReader = reader
             } else {
                 childReader = reader[NodeInfo(elementName)]
