@@ -114,6 +114,7 @@ private final class MemberSerializer: ShapeSerializer {
             }
         } else {
             let listWriter = parent[xmlNodeInfo(for: schema)]
+            listWriter.isCollection = true
             let memberSchema = (schema.target ?? schema).member
             let memberNodeInfo = xmlNodeInfo(for: memberSchema)
             for element in value {
@@ -137,6 +138,7 @@ private final class MemberSerializer: ShapeSerializer {
             }
         } else {
             let mapWriter = parent[xmlNodeInfo(for: schema)]
+            mapWriter.isCollection = true
             for (k, v) in value {
                 let entry = mapWriter[NodeInfo("entry")]
                 try entry[keyNodeInfo].write(k)
@@ -255,12 +257,13 @@ private final class PayloadMemberSerializer: ShapeSerializer {
     }
 
     func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
-        // The payload member's target type becomes the root element
-        let target = schema.target ?? schema
-        let writer = Writer(nodeInfo: xmlNodeInfo(for: target))
+        // Use member's own @xmlName if present; otherwise use the target shape's name/xmlName
+        let nodeInfo = schema.hasTrait(XmlNameTrait.self) ? xmlNodeInfo(for: schema) : xmlNodeInfo(for: schema.target ?? schema)
+        let writer = Writer(nodeInfo: nodeInfo)
         outer.rootWriter = writer
+        let structSchema = schema.target ?? schema
         let memberSerializer = MemberSerializer(parent: writer)
-        for member in target.members {
+        for member in structSchema.members {
             try S.writeConsumer(member, value, memberSerializer)
         }
     }

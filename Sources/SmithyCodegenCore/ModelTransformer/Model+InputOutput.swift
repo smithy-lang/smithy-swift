@@ -11,6 +11,7 @@ import struct Smithy.ShapeID
 import struct Smithy.TargetsUnitTrait
 import struct Smithy.TraitCollection
 import struct Smithy.XmlNameTrait
+import struct Smithy.XmlNamespaceTrait
 
 extension Model {
 
@@ -23,6 +24,11 @@ extension Model {
         let operations = shapes.values
             .filter { $0.type == .operation }
             .compactMap { $0 as? OperationShape }
+
+        // Get service-level @xmlNamespace to propagate to synthetic input shapes (for RestXML root element)
+        let serviceXmlNamespace = shapes.values
+            .first { $0.type == .service }
+            .flatMap { try? $0.traits.getTrait(XmlNamespaceTrait.self) }
 
         // Make a copy of this model's shapes to modify
         var newShapes = shapes
@@ -55,6 +61,9 @@ extension Model {
             inputExtraTraits.add(UsedAsInputTrait())
             if !inputShape.hasTrait(XmlNameTrait.self) && inputShape.id != Prelude.unitSchema.id {
                 inputExtraTraits.add(try XmlNameTrait(node: .string(inputShape.id.name)))
+            }
+            if let ns = serviceXmlNamespace, !inputShape.hasTrait(XmlNamespaceTrait.self) {
+                inputExtraTraits.add(ns)
             }
             var outputExtraTraits = TraitCollection()
             outputExtraTraits.add(UsedAsOutputTrait())
