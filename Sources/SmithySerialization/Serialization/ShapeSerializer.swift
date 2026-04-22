@@ -144,10 +144,6 @@ public extension ShapeSerializer {
 
 extension Schema {
 
-    var resolveMember: Schema? {
-        type == .member ? self : nil
-    }
-
     var resolveTarget: Schema {
         if let target {
             return target

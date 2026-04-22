@@ -94,6 +94,8 @@ public class Model {
         return shape
     }
 
+    // swiftlint:disable unused_declaration
+
     /// Returns the list for the passed ID.  Throws if the shape is not present or not a ``ListShape``.
     /// - Parameter id: The ShapeID for the list to be retrieved.
     /// - Returns: The retrieved list.  Throws if the shape is not found or not a ``ListShape``.
@@ -123,4 +125,6 @@ public class Model {
         }
         return shape
     }
+
+    // swiftlint:enable unused_declaration
 }
