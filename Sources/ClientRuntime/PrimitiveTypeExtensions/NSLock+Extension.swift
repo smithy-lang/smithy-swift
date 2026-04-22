@@ -14,7 +14,7 @@ extension NSRecursiveLock {
     /// - Parameter closure: A closure to execute while holding the lock
     /// - Returns: The return value of the closure
     /// - Throws: Rethrows any error thrown by the closure.
-    func withLockingClosure<T>(_ closure: () throws -> T) rethrows -> T {
+    func withLockingClosure<T>(_ closure: () throws -> T) rethrows -> T { // swiftlint:disable:this unused_declaration
         lock()
         defer { unlock() }
         return try closure()

@@ -241,6 +241,7 @@ extension String {
         return self.addingPercentEncoding(withAllowedCharacters: allowed as CharacterSet)!
     }
 
+    // swiftlint:disable:next unused_declaration
     func percentEncodeQuery() -> String {
         return self.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed as CharacterSet)!
     }
