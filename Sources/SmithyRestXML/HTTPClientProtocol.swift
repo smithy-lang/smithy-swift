@@ -16,8 +16,7 @@ import struct Smithy.HttpPayloadTrait
 import struct Smithy.Schema
 import struct Smithy.ShapeID
 import struct Smithy.StreamingTrait
-import struct Smithy.TargetsUnitTrait
-import class SmithyHTTPAPI.HTTPRequest
+import struct Smithy.TargetsUnitTraitimport class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
 import protocol SmithySerialization.ClientProtocol
@@ -65,17 +64,14 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         response: HTTPResponse
     ) async throws -> Output {
         if (200..<300).contains(response.statusCode.rawValue) {
-            // If the response body is a stream (not already buffered data), check whether the
-            // output has a streaming @httpPayload member. If so, pass the stream through directly
-            // without consuming it.
-            if case .stream = response.body {
-                let hasStreamingPayload = operation.outputSchema.members.contains {
-                    $0.hasTrait(HttpPayloadTrait.self) && ($0.target?.hasTrait(StreamingTrait.self) ?? false)
-                }
-                if hasStreamingPayload {
-                    let deserializer = Deserializer(httpResponse: response, bodyStream: response.body)
-                    return try Output.deserialize(deserializer)
-                }
+            // Check if the output has a streaming @httpPayload member (e.g. S3 GetObject body).
+            // If so, pass the ByteStream through without consuming it.
+            let hasStreamingPayload = operation.outputSchema.members.contains {
+                $0.hasTrait(HttpPayloadTrait.self) && ($0.target?.hasTrait(StreamingTrait.self) ?? false)
+            }
+            if hasStreamingPayload {
+                let deserializer = Deserializer(httpResponse: response, bodyStream: response.body)
+                return try Output.deserialize(deserializer)
             }
             let bodyData = try await response.body.readData() ?? Data()
             let deserializer = try Deserializer(httpResponse: response, bodyData: bodyData)
