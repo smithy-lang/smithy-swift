@@ -20,8 +20,8 @@ import protocol Smithy.SmithyDocument
 import struct Smithy.TimestampFormatTrait
 import struct Smithy.XmlAttributeTrait
 import struct Smithy.XmlFlattenedTrait
-import struct Smithy.XmlNameTrait
 import struct Smithy.XmlNamespaceTrait
+import struct Smithy.XmlNameTrait
 import protocol SmithySerialization.SerializableStruct
 import struct SmithySerialization.SerializerError
 import protocol SmithySerialization.ShapeSerializer
