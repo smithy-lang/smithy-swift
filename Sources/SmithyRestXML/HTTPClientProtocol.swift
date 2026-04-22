@@ -16,7 +16,8 @@ import struct Smithy.HttpPayloadTrait
 import struct Smithy.Schema
 import struct Smithy.ShapeID
 import struct Smithy.StreamingTrait
-import struct Smithy.TargetsUnitTraitimport class SmithyHTTPAPI.HTTPRequest
+import struct Smithy.TargetsUnitTrait
+import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
 import protocol SmithySerialization.ClientProtocol
