@@ -65,14 +65,17 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         response: HTTPResponse
     ) async throws -> Output {
         if (200..<300).contains(response.statusCode.rawValue) {
-            // If the output has a streaming @httpPayload member, don't read the body into memory —
-            // pass the ByteStream directly so it can be streamed to the caller.
-            let hasStreamingPayload = operation.outputSchema.members.contains {
-                $0.hasTrait(HttpPayloadTrait.self) && ($0.target?.hasTrait(StreamingTrait.self) ?? false)
-            }
-            if hasStreamingPayload {
-                let deserializer = Deserializer(httpResponse: response, bodyStream: response.body)
-                return try Output.deserialize(deserializer)
+            // If the response body is a stream (not already buffered data), check whether the
+            // output has a streaming @httpPayload member. If so, pass the stream through directly
+            // without consuming it.
+            if case .stream = response.body {
+                let hasStreamingPayload = operation.outputSchema.members.contains {
+                    $0.hasTrait(HttpPayloadTrait.self) && ($0.target?.hasTrait(StreamingTrait.self) ?? false)
+                }
+                if hasStreamingPayload {
+                    let deserializer = Deserializer(httpResponse: response, bodyStream: response.body)
+                    return try Output.deserialize(deserializer)
+                }
             }
             let bodyData = try await response.body.readData() ?? Data()
             let deserializer = try Deserializer(httpResponse: response, bodyData: bodyData)
