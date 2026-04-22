@@ -10,8 +10,8 @@ import enum Smithy.Prelude
 import struct Smithy.ShapeID
 import struct Smithy.TargetsUnitTrait
 import struct Smithy.TraitCollection
-import struct Smithy.XmlNameTrait
 import struct Smithy.XmlNamespaceTrait
+import struct Smithy.XmlNameTrait
 
 extension Model {
 

@@ -8,9 +8,6 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
-import struct Smithy.Schema
-import protocol Smithy.SmithyDocument
-import struct Smithy.TimestampFormatTrait
 import struct Smithy.HttpHeaderTrait
 import struct Smithy.HttpLabelTrait
 import struct Smithy.HttpPayloadTrait
@@ -18,10 +15,13 @@ import struct Smithy.HttpPrefixHeadersTrait
 import struct Smithy.HttpQueryParamsTrait
 import struct Smithy.HttpQueryTrait
 import struct Smithy.HttpResponseCodeTrait
+import struct Smithy.Schema
+import protocol Smithy.SmithyDocument
+import struct Smithy.TimestampFormatTrait
 import struct Smithy.XmlAttributeTrait
 import struct Smithy.XmlFlattenedTrait
-import struct Smithy.XmlNamespaceTrait
 import struct Smithy.XmlNameTrait
+import struct Smithy.XmlNamespaceTrait
 import protocol SmithySerialization.SerializableStruct
 import struct SmithySerialization.SerializerError
 import protocol SmithySerialization.ShapeSerializer
