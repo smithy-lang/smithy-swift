@@ -32,6 +32,8 @@ jobs:
           swiftlint --version
       - name: Run swiftlint
         run: swiftlint --strict --reporter github-actions-logging
+      - name: Generate smithy-swift test SDK
+        run: ./scripts/codegen.sh
       - name: Compile project with Xcode
         timeout-minutes: 20
         run: xcodebuild -scheme smithy-swift-Package -destination platform=macOS > xcodebuild.log
