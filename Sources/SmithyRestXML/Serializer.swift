@@ -34,6 +34,7 @@ import typealias SmithySerialization.WriteValueConsumer
 public final class Serializer: ShapeSerializer {
     fileprivate var rootWriter: Writer?
     fileprivate var rawBlobData: Data?
+    var streamingBody: ByteStream?
 
     public init() {}
 
@@ -303,6 +304,11 @@ private final class PayloadMemberSerializer: ShapeSerializer {
     func writeBlob(_ schema: Schema, _ value: Data) throws {
         // Raw blob payload — store as-is (not base64-encoded XML)
         outer.rawBlobData = value
+    }
+
+    func writeDataStream(_ schema: Schema, _ value: ByteStream) throws {
+        // Streaming blob payload — pass through as-is
+        outer.streamingBody = value
     }
 
     func writeString(_ schema: Schema, _ value: String) throws {

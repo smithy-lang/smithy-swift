@@ -52,11 +52,14 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
             return
         }
 
-        let serializer = try codec.makeSerializer()
+        let serializer = Serializer()
         try input.serialize(serializer)
-        let data = try serializer.data
-        let body = ByteStream.data(data)
-        requestBuilder.withBody(body)
+        if let streamingBody = serializer.streamingBody {
+            requestBuilder.withBody(streamingBody)
+        } else {
+            let data = try serializer.data
+            requestBuilder.withBody(.data(data))
+        }
     }
 
     public func deserializeResponse<Input, Output: DeserializableStruct>(
@@ -67,8 +70,12 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         if (200..<300).contains(response.statusCode.rawValue) {
             // Check if the output has a streaming @httpPayload member (e.g. S3 GetObject body).
             // If so, pass the ByteStream through without consuming it.
-            let hasStreamingPayload = operation.outputSchema.members.contains {
-                $0.hasTrait(HttpPayloadTrait.self) && ($0.target?.hasTrait(StreamingTrait.self) ?? false)
+            // Check both the member's own traits (which inherit from the target) and the
+            // target's traits directly, to be resilient to trait resolution differences.
+            let hasStreamingPayload = operation.outputSchema.members.contains { member in
+                guard member.hasTrait(HttpPayloadTrait.self) else { return false }
+                return member.hasTrait(StreamingTrait.self)
+                    || (member.target?.hasTrait(StreamingTrait.self) ?? false)
             }
             if hasStreamingPayload {
                 let deserializer = Deserializer(httpResponse: response, bodyStream: response.body)
