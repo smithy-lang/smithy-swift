@@ -9,11 +9,8 @@ import ClientRuntime
 import Smithy
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
-@_spi(SchemaBasedSerde)
-import protocol SmithySerialization.DeserializableStruct
-@_spi(SchemaBasedSerde)
-import protocol SmithySerialization.SerializableStruct
 
+@_spi(SchemaBasedSerde)
 public struct Plugin: ClientRuntime.Plugin {
 
     public init() {}
