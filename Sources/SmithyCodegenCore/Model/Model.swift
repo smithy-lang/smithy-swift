@@ -6,9 +6,11 @@
 //
 
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 
 /// An in-memory representation of a Smithy model, suitable for use in code generation.
+@_spi(SchemaBasedSerde)
 public class Model {
 
     /// The Smithy version that this model conforms to.  This type supports `1.0` and `2.0`.

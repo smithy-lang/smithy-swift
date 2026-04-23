@@ -8,6 +8,7 @@
 import struct Foundation.Data
 import class Foundation.JSONDecoder
 import struct Foundation.URL
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 
 /// The wrapper for Swift-native code generation.

@@ -5,9 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 
+@_spi(SchemaBasedSerde)
 public struct TypeRegistry: Sendable {
 
     public struct Entry: Sendable {

@@ -5,12 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import struct Smithy.AddedDefaultTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.ClientOptionalTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.DefaultTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.InputTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
+@_spi(SchemaBasedSerde)
 import struct Smithy.SparseTrait
 
 struct NullableIndex {

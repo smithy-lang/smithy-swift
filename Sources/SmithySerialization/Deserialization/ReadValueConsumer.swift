@@ -5,4 +5,5 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 public typealias ReadValueConsumer<V> = (any ShapeDeserializer) throws -> V

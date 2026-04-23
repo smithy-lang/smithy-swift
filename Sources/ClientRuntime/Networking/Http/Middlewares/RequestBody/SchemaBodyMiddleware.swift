@@ -7,12 +7,18 @@
 
 import struct Foundation.Data
 import Smithy
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ClientProtocol
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
+@_spi(SchemaBasedSerde)
 import struct SmithySerialization.Operation
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 
+@_spi(SchemaBasedSerde)
 public struct SchemaBodyMiddleware<Input: SerializableStruct, Output: DeserializableStruct, CP: ClientProtocol> {
     public let id: Swift.String = "BodyMiddleware"
     let operation: Operation<Input, Output>

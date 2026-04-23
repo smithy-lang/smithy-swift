@@ -10,7 +10,9 @@ import protocol ClientRuntime.HTTPError
 import protocol ClientRuntime.ServiceError
 import struct ClientRuntime.UnknownHTTPServiceError
 import struct Foundation.Data
+@_spi(SchemaBasedSerde)
 import struct Smithy.AWSQueryCompatibleTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.AWSQueryErrorTrait
 import enum Smithy.ByteStream
 import enum Smithy.ClientError
@@ -21,12 +23,18 @@ import struct Smithy.TargetsUnitTrait
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ClientProtocol
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
+@_spi(SchemaBasedSerde)
 import struct SmithySerialization.Operation
+@_spi(SchemaBasedSerde)
 import struct SmithySerialization.TypeRegistry
 
+@_spi(SchemaBasedSerde)
 public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
     public typealias RequestType = HTTPRequest
     public typealias ResponseType = HTTPResponse

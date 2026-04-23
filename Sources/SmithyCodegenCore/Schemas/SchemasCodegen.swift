@@ -5,10 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import let Smithy.allSupportedTraitIDs
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
+@_spi(SchemaBasedSerde)
 import func Smithy.traitType
 
 /// A generator for the `Schemas.swift`
@@ -21,7 +24,9 @@ package struct SchemasCodegen {
     /// - Returns: The contents of the `Schemas.swift` source file.
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import struct Smithy.Schema")
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import enum Smithy.Prelude")
         writer.write("")
 

@@ -9,12 +9,17 @@ import struct Foundation.Data
 import struct Foundation.Date
 import struct Smithy.Document
 import protocol Smithy.ResponseMessage
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
+@_spi(SchemaBasedSerde)
 import struct Smithy.StreamingTrait
 import typealias SmithyEventStreamsAPI.UnmarshalClosure
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 
 /// A deserializer that may be used to deserialize an event stream from a response.
@@ -23,6 +28,7 @@ import protocol SmithySerialization.ShapeDeserializer
 /// event stream on the output, nothing else.  If the output structure has no event stream
 /// member, it will throw an error.
 /// It will throw a "not implemented" error if deserialization of any other type is attempted.
+@_spi(SchemaBasedSerde)
 public struct EventStreamDeserializer: ShapeDeserializer {
     let codec: any Codec
     let response: ResponseMessage

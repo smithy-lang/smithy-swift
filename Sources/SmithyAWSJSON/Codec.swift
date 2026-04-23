@@ -6,10 +6,15 @@
 //
 
 import struct Foundation.Data
+@_spi(SchemaBasedSerde)
 import class SmithyJSON.Deserializer
+@_spi(SchemaBasedSerde)
 import class SmithyJSON.Serializer
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeSerializer
 
 struct Codec: SmithySerialization.Codec {

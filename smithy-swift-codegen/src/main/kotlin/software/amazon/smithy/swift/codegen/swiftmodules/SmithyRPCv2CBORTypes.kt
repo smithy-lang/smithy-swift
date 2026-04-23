@@ -13,7 +13,7 @@ private fun runtimeSymbol(
     name: String,
     declaration: SwiftDeclaration?,
     additionalImports: List<Symbol> = emptyList(),
-    spiName: List<String> = emptyList(),
+    spiName: List<String> = listOf("SchemaBasedSerde"),
 ): Symbol =
     SwiftSymbol.make(
         name,

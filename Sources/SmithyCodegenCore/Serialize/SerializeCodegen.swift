@@ -5,8 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import struct Smithy.ErrorTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.SparseTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.StreamingTrait
 
 package struct SerializeCodegen {
@@ -15,10 +18,15 @@ package struct SerializeCodegen {
 
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import enum Smithy.Prelude")
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import struct Smithy.Schema")
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import protocol SmithySerialization.SerializableStruct")
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import protocol SmithySerialization.ShapeSerializer")
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import typealias SmithySerialization.WriteStructConsumer")
         writer.write("")
 
@@ -29,6 +37,7 @@ package struct SerializeCodegen {
         for shape in inputStructsAndUnions {
             let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
             let varName = shape.type == .structure ? "structure" : "union"
+            writer.write("@_spi(SchemaBasedSerde)")
             try writer.openBlock("extension \(swiftType): SmithySerialization.SerializableStruct {", "}") { writer in
                 writer.write("")
                 try writer.openBlock(

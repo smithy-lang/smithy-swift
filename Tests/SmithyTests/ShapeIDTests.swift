@@ -6,6 +6,7 @@
 //
 
 import XCTest
+@_spi(SchemaBasedSerde)
 import Smithy
 
 class ShapeIDTests: XCTestCase {

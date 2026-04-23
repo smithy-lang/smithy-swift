@@ -10,6 +10,7 @@ struct OperationsCodegen {
     func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import Smithy")
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import SmithySerialization")
         writer.write("")
 
@@ -19,6 +20,7 @@ struct OperationsCodegen {
 
         let clientSymbol = try ctx.symbolProvider.swiftType(shape: ctx.service)
 
+        writer.write("@_spi(SchemaBasedSerde)")
         try writer.openBlock("\(ctx.settings.scope) extension \(clientSymbol) {", "}") { writer in
             for operation in sortedOperations {
                 writer.write("")

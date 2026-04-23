@@ -15,11 +15,16 @@ import struct Foundation.UUID
 import class Smithy.Context
 import protocol Smithy.ResponseMessageDeserializer
 import SmithyHTTPAPI
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ClientProtocol
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
+@_spi(SchemaBasedSerde)
 import struct SmithySerialization.Operation
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 
+@_spi(SchemaBasedSerde)
 public struct SchemaDeserializeMiddleware<
     Input: SerializableStruct,
     Output: DeserializableStruct,

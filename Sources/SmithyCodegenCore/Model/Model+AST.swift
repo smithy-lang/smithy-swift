@@ -5,10 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import struct Smithy.EnumValueTrait
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
 import struct Smithy.TraitCollection
 
 extension Model {

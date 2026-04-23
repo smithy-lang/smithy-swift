@@ -9,11 +9,15 @@ import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ClientError
 import struct Smithy.Document
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
 import struct SmithyEventStreamsAPI.Message
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 
 /// A deserializer that is used to deserialize an event stream message to an event stream union.

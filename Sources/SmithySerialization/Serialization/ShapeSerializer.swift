@@ -8,10 +8,13 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
+@_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
 import protocol Smithy.SmithyDocument
 
+@_spi(SchemaBasedSerde)
 public protocol ShapeSerializer {
     func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws
     func writeList<E>(_ schema: Schema, _ value: [E], _ consumer: WriteValueConsumer<E>) throws
@@ -36,6 +39,7 @@ public protocol ShapeSerializer {
     var data: Data { get throws }
 }
 
+@_spi(SchemaBasedSerde)
 public extension ShapeSerializer {
 
     /// Writes a Smithy enum.
@@ -142,6 +146,7 @@ public extension ShapeSerializer {
     }
 }
 
+@_spi(SchemaBasedSerde)
 extension Schema {
 
     var resolveTarget: Schema {

@@ -6,6 +6,7 @@
 //
 
 /// https://smithy.io/2.0/aws/protocols/aws-query-protocol.html#aws-protocols-awsqueryerror-trait
+@_spi(SchemaBasedSerde)
 public struct AWSQueryErrorTrait: Trait {
     public static var id: ShapeID { .init("aws.protocols", "awsQueryError") }
 
