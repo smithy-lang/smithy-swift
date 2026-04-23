@@ -191,6 +191,10 @@ public struct Deserializer: ShapeDeserializer {
                 guard reader.hasContent || !reader.children.isEmpty else { return nil }
                 return Deserializer(reader: reader, httpResponse: httpResponse, rawBodyData: rawBodyData)
             case .blob:
+                // Streaming blob payload: pass the body stream through.
+                if let bodyStream {
+                    return Deserializer(reader: Reader(), httpResponse: httpResponse, bodyStream: bodyStream)
+                }
                 // Only return a deserializer if there's actual body data.
                 guard let rawBodyData, !rawBodyData.isEmpty else { return nil }
                 // Reader.readIfPresent() for Data expects base64. For a raw blob payload we need
