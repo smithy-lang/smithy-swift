@@ -87,7 +87,6 @@ jobs:
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
     - name: Run manual build steps
-      if: matrix.build-mode == 'manual'
       run: ./scripts/codegen.sh
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
