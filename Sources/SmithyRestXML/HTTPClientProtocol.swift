@@ -110,6 +110,12 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
                 registryEntry = errorTypeRegistry.find { entry in
                     entry.schema.id.name == code
                 }
+            } else if bodyData.isEmpty && response.statusCode == .notFound {
+                // S3 customization: HEAD on nonexistent object returns 404 with empty body.
+                // Match NotFound error by name when body is empty and status is 404.
+                registryEntry = errorTypeRegistry.find { entry in
+                    entry.schema.id.name == "NotFound"
+                }
             } else {
                 registryEntry = nil
             }
