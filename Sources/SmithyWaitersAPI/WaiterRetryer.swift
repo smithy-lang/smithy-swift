@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 /// A type which tries the waited operation after a delay, then returns or throws the result.
 /// Called by the `Waiter` to make the initial request, then called again for an additional request when retry
 /// is needed.

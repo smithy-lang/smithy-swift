@@ -5,8 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-
 /// Indicates whether the fault for a modeled error is on the client or server.
 public enum ErrorFault {
 

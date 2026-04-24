@@ -5,9 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
-import Smithy
-
 public enum EndpointPropertyValue: Sendable, Equatable {
     case bool(Bool)
     case string(String)
