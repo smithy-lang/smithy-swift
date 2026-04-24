@@ -81,9 +81,14 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         response: HTTPResponse
     ) async throws -> Output {
         if (200..<300).contains(response.statusCode.rawValue) {
-            // Check if the response is an event stream (e.g. S3 SelectObjectContent).
-            // If so, use the EventStreamDeserializer which knows how to decode the stream.
-            if response.headers.value(for: "Content-Type")?.contains("application/vnd.amazon.eventstream") ?? false {
+            // Check if the output has a streaming event stream @httpPayload member
+            // (e.g. S3 SelectObjectContent). If so, use EventStreamDeserializer.
+            let hasEventStreamPayload = operation.outputSchema.members.contains { member in
+                guard member.hasTrait(HttpPayloadTrait.self) else { return false }
+                guard member.hasTrait(StreamingTrait.self) || (member.target?.hasTrait(StreamingTrait.self) ?? false) else { return false }
+                return member.type == .union
+            }
+            if hasEventStreamPayload {
                 let eventStreamDeserializer = EventStreamDeserializer(codec: codec, response: response)
                 return try Output.deserialize(eventStreamDeserializer)
             }
