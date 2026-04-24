@@ -22,7 +22,6 @@ public class ChunkedReader {
     private var hasLastChunkBeenSent = false
     private var chunk = Data()
     private var chunkBody = Data()
-    private var currentHash: UInt32 = 0
     private var emptyChunkSigned = false
     private var checksumAlgorithm: ChecksumAlgorithm?
     private var checksum: (any Checksum)?

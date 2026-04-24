@@ -8,8 +8,10 @@
 /// The trait IDs that should be copied into schemas.  Other traits are omitted for brevity.
 ///
 /// This list can be expanded as features are added to Smithy/SDK that use them.
+@_spi(SchemaBasedSerde)
 public let allSupportedTraitIDs = Set(allSupportedTraitTypes.keys)
 
+@_spi(SchemaBasedSerde)
 public func traitType(for traitID: ShapeID) -> (any Trait.Type)? {
     allSupportedTraitTypes[traitID]
 }

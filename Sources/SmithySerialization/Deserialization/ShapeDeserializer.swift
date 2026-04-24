@@ -9,9 +9,11 @@ import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
 import struct Smithy.Document
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
 import protocol Smithy.SmithyDocument
 
+@_spi(SchemaBasedSerde)
 public protocol ShapeDeserializer {
     func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws
     func readList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E]
@@ -36,6 +38,7 @@ public protocol ShapeDeserializer {
     var containerSize: Int { get }
 }
 
+@_spi(SchemaBasedSerde)
 public extension ShapeDeserializer {
 
     func readEnum<T: RawRepresentable>(_ schema: Schema) throws -> T where T.RawValue == String {

@@ -11,6 +11,7 @@
 /// be constructed from previously validated models.
 ///
 /// Shape ID is described in the Smithy 2.0 spec [here](https://smithy.io/2.0/spec/model.html#shape-id).
+@_spi(SchemaBasedSerde)
 public struct ShapeID: Hashable, Sendable {
     public let namespace: String
     public let name: String

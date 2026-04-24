@@ -8,11 +8,15 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.ISO8601DateFormatter
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
+@_spi(SchemaBasedSerde)
 import struct Smithy.SensitiveTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 import protocol Smithy.SmithyDocument
 
+@_spi(SchemaBasedSerde)
 public class StringSerializer: ShapeSerializer {
     public private(set) var string = ""
     private var isFirstElement = true

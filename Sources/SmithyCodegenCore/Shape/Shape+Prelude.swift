@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 
 extension Shape {
@@ -26,6 +28,7 @@ extension Shape {
         primitiveBoolean.id: primitiveBoolean,
         primitiveInteger.id: primitiveInteger,
         primitiveByte.id: primitiveByte,
+        primitiveShort.id: primitiveShort,
         primitiveLong.id: primitiveLong,
         primitiveFloat.id: primitiveFloat,
         primitiveDouble.id: primitiveDouble,

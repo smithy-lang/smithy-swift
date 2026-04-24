@@ -5,14 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
 
+@_spi(SchemaBasedSerde)
 public typealias WriteStructConsumer<T> = (Schema, T, any ShapeSerializer) throws -> Void
 
+@_spi(SchemaBasedSerde)
 public protocol SerializableStruct: SerializableShape, CustomStringConvertible, CustomDebugStringConvertible {
     static var writeConsumer: WriteStructConsumer<Self> { get }
 }
 
+@_spi(SchemaBasedSerde)
 public extension SerializableStruct {
 
     /// A written description of this type and its contents.

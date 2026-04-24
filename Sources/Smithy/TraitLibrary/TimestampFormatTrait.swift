@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 public struct TimestampFormatTrait: Trait {
 
     public enum Format: String {

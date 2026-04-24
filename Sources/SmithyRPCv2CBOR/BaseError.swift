@@ -5,10 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
+@_spi(SchemaBasedSerde)
 import typealias SmithySerialization.ReadStructConsumer
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 
 @_spi(RPCv2CBOR)

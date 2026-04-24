@@ -6,11 +6,15 @@
 //
 
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import struct Smithy.ServiceTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
 import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy services.
+@_spi(SchemaBasedSerde)
 public class ServiceShape: Shape {
     let operationIDs: [ShapeID]
     let resourceIDs: [ShapeID]

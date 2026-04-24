@@ -8,13 +8,18 @@
 import class AwsCommonRuntimeKit.CBOREncoder
 import struct Foundation.Data
 import struct Foundation.Date
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
 import protocol Smithy.SmithyDocument
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 import struct SmithySerialization.SerializerError
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeSerializer
+@_spi(SchemaBasedSerde)
 import typealias SmithySerialization.WriteValueConsumer
 
+@_spi(SchemaBasedSerde)
 public final class Serializer: ShapeSerializer {
     let encoder: CBOREncoder
 

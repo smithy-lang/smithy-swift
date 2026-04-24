@@ -6,9 +6,13 @@
 //
 
 import XCTest
+@_spi(SchemaBasedSerde)
 import SmithySerialization
+@_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
+@_spi(SchemaBasedSerde)
 import struct Smithy.SensitiveTrait
 import enum RPCv2CBORTestSDK.RPCv2CBORServiceClientTypes
 

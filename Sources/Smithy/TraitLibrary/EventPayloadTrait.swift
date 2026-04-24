@@ -7,6 +7,7 @@
 
 // https://smithy.io/2.0/spec/streaming.html#eventpayload-trait
 
+@_spi(SchemaBasedSerde)
 public struct EventPayloadTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "eventPayload") }
 

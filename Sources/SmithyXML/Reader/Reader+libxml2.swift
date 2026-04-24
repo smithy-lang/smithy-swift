@@ -154,6 +154,7 @@ private struct XMLError: Error {
         self.localizedDescription = localizedDescription
     }
 
+    // swiftlint:disable:next unused_declaration
     static let memoryError = XMLError("XML buffer could not be allocated")
     static let invalidNode = XMLError("XML node was invalid")
     static let invalidNodeName = XMLError("XML node name was invalid")

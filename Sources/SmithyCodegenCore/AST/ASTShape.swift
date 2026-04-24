@@ -7,6 +7,8 @@
 
 import enum Smithy.Node
 
+// swiftlint:disable unused_declaration
+
 // See https://smithy.io/2.0/spec/json-ast.html#json-ast
 // This Swift type captures fields for all AST shape types
 // Mixins are omitted because they are applied by Smithy before
@@ -35,3 +37,5 @@ struct ASTShape: Decodable {
     let input: ASTReference?
     let output: ASTReference?
 }
+
+// swiftlint:enable unused_declaration

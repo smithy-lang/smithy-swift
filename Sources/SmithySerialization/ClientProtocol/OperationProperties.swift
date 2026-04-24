@@ -5,8 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
 
+@_spi(SchemaBasedSerde)
 public protocol OperationProperties: Sendable {
     var schema: Schema { get }
     var serviceSchema: Schema { get }

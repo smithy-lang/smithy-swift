@@ -6,9 +6,11 @@
 //
 
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 
 /// An in-memory representation of a Smithy model, suitable for use in code generation.
+@_spi(SchemaBasedSerde)
 public class Model {
 
     /// The Smithy version that this model conforms to.  This type supports `1.0` and `2.0`.
@@ -94,6 +96,8 @@ public class Model {
         return shape
     }
 
+    // swiftlint:disable unused_declaration
+
     /// Returns the list for the passed ID.  Throws if the shape is not present or not a ``ListShape``.
     /// - Parameter id: The ShapeID for the list to be retrieved.
     /// - Returns: The retrieved list.  Throws if the shape is not found or not a ``ListShape``.
@@ -123,4 +127,6 @@ public class Model {
         }
         return shape
     }
+
+    // swiftlint:enable unused_declaration
 }

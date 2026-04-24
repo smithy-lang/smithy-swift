@@ -9,12 +9,16 @@ import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.JSONSerialization
 import class Foundation.NSNumber
+@_spi(SchemaBasedSerde)
 @_spi(SmithyDocumentImpl) import Smithy
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
+@_spi(SchemaBasedSerde)
 public class Deserializer: ShapeDeserializer {
     let value: JSONValue
 

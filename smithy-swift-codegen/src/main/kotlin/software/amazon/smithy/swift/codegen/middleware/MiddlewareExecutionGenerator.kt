@@ -3,6 +3,7 @@ package software.amazon.smithy.swift.codegen.middleware
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.HTTPProtocolCustomizable
 import software.amazon.smithy.swift.codegen.integration.HttpBindingResolver
@@ -146,6 +147,7 @@ class MiddlewareExecutionGenerator(
         httpProtocolCustomizable.renderContextAttributes(ctx, writer, serviceShape, op)
 
         if (isSchemaBased) {
+            writer.addImport(SwiftDependency.SMITHY_SERIALIZATION.target, false, listOf("SchemaBasedSerde"))
             writer.write("  .withOperationProperties(value: operation)")
         }
 

@@ -6,11 +6,14 @@
 //
 
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
 import protocol Smithy.Trait
 import struct Smithy.TraitError
 
 /// See https://smithy.io/2.0/spec/documentation-traits.html#deprecated-trait
+@_spi(SchemaBasedSerde)
 public struct DeprecatedTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "deprecated") }
 

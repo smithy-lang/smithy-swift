@@ -25,6 +25,7 @@ public class SdkHttpClient: ExecuteRequest, @unchecked Sendable {
         }
     }
 
+    // swiftlint:disable:next unused_declaration
     func send(request: HTTPRequest) async throws -> HTTPResponse {
         return try await engine.send(request: request)
     }

@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 import struct Smithy.ErrorTrait
 
 struct TypeRegistryCodegen {
@@ -12,6 +13,7 @@ struct TypeRegistryCodegen {
     func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
 
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import SmithySerialization")
         writer.write("")
 
@@ -24,6 +26,7 @@ struct TypeRegistryCodegen {
                 writer.write("")
                 let operationName = try ctx.symbolProvider.operationMethodName(operation: operation)
                 let type = "SmithySerialization.TypeRegistry"
+                writer.write("@_spi(SchemaBasedSerde)")
                 try writer.openBlock(
                     "public static var \(operationName)ErrorTypeRegistry: \(type) {",
                     "}"

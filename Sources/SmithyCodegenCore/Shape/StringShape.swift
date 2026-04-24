@@ -6,8 +6,10 @@
 //
 
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
+@_spi(SchemaBasedSerde)
 import struct Smithy.TraitCollection
 
 /// A ``Shape`` subclass specialized for Smithy strings.

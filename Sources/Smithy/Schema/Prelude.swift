@@ -8,6 +8,7 @@
 // Below are schemas for all model shapes defined in the Smithy 2.0 prelude.
 // Schemas for custom Smithy types may use these schemas in their definitions.
 
+@_spi(SchemaBasedSerde)
 public enum Prelude {
 
     public static var unitSchema: Schema {

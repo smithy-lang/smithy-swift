@@ -6,11 +6,15 @@
 //
 
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
+@_spi(SchemaBasedSerde)
 import protocol Smithy.Trait
+@_spi(SchemaBasedSerde)
 import struct Smithy.TraitCollection
 
+@_spi(SchemaBasedSerde)
 public class Shape: HasShapeID {
     public let id: ShapeID
     public let type: ShapeType

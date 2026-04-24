@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
+import struct Smithy.ShapeID
+
 extension Model {
 
     /// Deletes any references to shapes that have been removed from a model.

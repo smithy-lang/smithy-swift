@@ -6,9 +6,13 @@
 //
 
 import enum Smithy.Node
+@_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
 import struct Smithy.TargetsUnitTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.TraitCollection
 import struct Smithy.XmlNamespaceTrait
 import struct Smithy.XmlNameTrait
