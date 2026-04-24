@@ -118,6 +118,7 @@ private final class MemberSerializer: ShapeSerializer {
     func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
         guard !isHttpBound(schema) else { return }
         let child = parent[xmlNodeInfo(for: schema)]
+        child.isCollection = true
         let memberSerializer = MemberSerializer(parent: child)
         for member in schema.members {
             try S.writeConsumer(member, value, memberSerializer)
