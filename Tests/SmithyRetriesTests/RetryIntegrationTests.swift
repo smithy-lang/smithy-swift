@@ -59,7 +59,7 @@ final class RetryIntegrationTests: XCTestCase {
         next.quota = await quota
     }
 
-    // MARK: - Standard mode tests
+    // Standard mode tests
     // Non-throttling errors use RETRY_COST=14, backoff multiplier x=0.05
     // With random=1.0: delays are 0.05, 0.1, 0.2, 0.4, ...
 

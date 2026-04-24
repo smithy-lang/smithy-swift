@@ -153,7 +153,7 @@ final class DefaultRetryStrategyTests: XCTestCase {
         XCTAssertEqual(initialCapacity, finalCapacity)
     }
 
-    // MARK: - baseMultiplier
+    // baseMultiplier
 
     func test_baseMultiplier_throttling_is1() {
         let info = RetryErrorInfo(errorType: .throttling, retryAfterHint: nil, isTimeout: false)
@@ -170,7 +170,7 @@ final class DefaultRetryStrategyTests: XCTestCase {
         XCTAssertEqual(DefaultRetryStrategy.baseMultiplier(for: info), 0.025)
     }
 
-    // MARK: - x-amz-retry-after bounds
+    // x-amz-retry-after bounds
 
     func test_retryAfterHint_bounded_byMinimum() async throws {
         // retryAfterHint=0.01 < t_i=0.05, so delay should be 0.05

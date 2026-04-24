@@ -68,7 +68,7 @@ final class RetryQuotaTests: XCTestCase {
         XCTAssertEqual(initialCapacity, finalCapacity)
     }
 
-    // MARK: - Constant values
+    // Constant values
 
     func test_retryCost_is14() {
         XCTAssertEqual(RetryQuota.retryCost, 14)
@@ -115,7 +115,7 @@ final class RetryQuotaTests: XCTestCase {
         XCTAssertEqual(finalCapacity, expectedFinalCapacity)
     }
 
-    // MARK: - Verify quota after non-throttling retry
+    // Verify quota after non-throttling retry
 
     func test_quotaAfterOneNonThrottlingRetry_is486() async throws {
         let subject = RetryQuota(availableCapacity: 500, maxCapacity: 500)
