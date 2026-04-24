@@ -60,9 +60,7 @@ final actor RetryQuota {
     }
 
     /// Deducts the proper number of tokens from available & returns them.
-    /// Uses `throttlingRetryCost` for throttling errors, `retryCost` for all others.
-    /// - Parameter isThrottling: `true` if the error is a throttling error, `false` otherwise.
-    /// - Returns: The number of tokens deducted, or `nil` if insufficient tokens were available.
+    /// Deducts retry tokens from available capacity, or returns nil if insufficient.
     func hasRetryQuota(isThrottling: Bool) -> Int? {
         let capacityAmount = isThrottling ? Self.throttlingRetryCost : Self.retryCost
         if capacityAmount > availableCapacity { return nil }

@@ -109,9 +109,7 @@ public class OrchestratorBuilder<
         return self
     }
 
-    /// Provider that returns a backoff delay for long-polling operations
-    /// when the retry token bucket is empty. Parameters: (context, errorInfo, attemptCount).
-    /// Returns the backoff delay if the operation is long-polling, nil otherwise.
+    /// Backoff delay provider for long-polling operations when the token bucket is empty.
     @discardableResult
     public func longPollingBackoffProvider(
         _ provider: @escaping (Context, RetryErrorInfo, Int) async -> TimeInterval?
