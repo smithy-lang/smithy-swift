@@ -22,6 +22,8 @@ import struct Smithy.ShapeID
 import struct Smithy.StreamingTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.TargetsUnitTrait
+@_spi(SchemaBasedSerde)
+import struct SmithyEventStreams.EventStreamDeserializer
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
@@ -79,6 +81,12 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         response: HTTPResponse
     ) async throws -> Output {
         if (200..<300).contains(response.statusCode.rawValue) {
+            // Check if the response is an event stream (e.g. S3 SelectObjectContent).
+            // If so, use the EventStreamDeserializer which knows how to decode the stream.
+            if response.headers.value(for: "Content-Type")?.contains("application/vnd.amazon.eventstream") ?? false {
+                let eventStreamDeserializer = EventStreamDeserializer(codec: codec, response: response)
+                return try Output.deserialize(eventStreamDeserializer)
+            }
             // Check if the output has a streaming @httpPayload member (e.g. S3 GetObject body).
             // If so, pass the ByteStream through without consuming it.
             // Check both the member's own traits (which inherit from the target) and the

@@ -321,6 +321,7 @@ let package = Package(
             dependencies: [
                 "ClientRuntime",
                 "Smithy",
+                "SmithyEventStreams",
                 "SmithySerialization",
                 "SmithyXML",
                 "SmithyTimestamps",
