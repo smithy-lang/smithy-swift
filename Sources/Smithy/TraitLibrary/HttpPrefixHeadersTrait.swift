@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 public struct HttpPrefixHeadersTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "httpPrefixHeaders") }
     public let value: String

@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 public struct HttpPayloadTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "httpPayload") }
     public var node: Node { [:] }

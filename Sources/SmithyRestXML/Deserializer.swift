@@ -9,26 +9,41 @@ import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
 import struct Smithy.Document
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpHeaderTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpPayloadTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpPrefixHeadersTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpResponseCodeTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
+@_spi(SchemaBasedSerde)
 import struct Smithy.TimestampFormatTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.XmlAttributeTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.XmlFlattenedTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.XmlNameTrait
 import class SmithyHTTPAPI.HTTPResponse
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
+@_spi(SchemaBasedSerde)
 import typealias SmithySerialization.ReadStructConsumer
+@_spi(SchemaBasedSerde)
 import typealias SmithySerialization.ReadValueConsumer
+@_spi(SchemaBasedSerde)
 import struct SmithySerialization.SerializerError
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 @_spi(SmithyReadWrite) import struct SmithyXML.NodeInfo
 @_spi(SmithyReadWrite) import class SmithyXML.Reader
 
+@_spi(SchemaBasedSerde)
 public struct Deserializer: ShapeDeserializer {
     let reader: Reader
     let httpResponse: HTTPResponse?

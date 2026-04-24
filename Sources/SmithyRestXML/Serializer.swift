@@ -8,29 +8,48 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpHeaderTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpLabelTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpPayloadTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpPrefixHeadersTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpQueryParamsTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpQueryTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpResponseCodeTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
+@_spi(SchemaBasedSerde)
 import protocol Smithy.SmithyDocument
+@_spi(SchemaBasedSerde)
 import struct Smithy.TimestampFormatTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.XmlAttributeTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.XmlFlattenedTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.XmlNamespaceTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.XmlNameTrait
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
+@_spi(SchemaBasedSerde)
 import struct SmithySerialization.SerializerError
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeSerializer
+@_spi(SchemaBasedSerde)
 import typealias SmithySerialization.WriteValueConsumer
 @_spi(SmithyTimestamps) import enum SmithyTimestamps.TimestampFormat
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 @_spi(SmithyReadWrite) import struct SmithyXML.NodeInfo
 @_spi(SmithyReadWrite) import class SmithyXML.Writer
 
+@_spi(SchemaBasedSerde)
 public final class Serializer: ShapeSerializer {
     fileprivate var rootWriter: Writer?
     fileprivate var rawBlobData: Data?

@@ -12,22 +12,33 @@ import struct Foundation.Data
 import enum Smithy.ByteStream
 import enum Smithy.ClientError
 import class Smithy.Context
+@_spi(SchemaBasedSerde)
 import struct Smithy.HttpPayloadTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
+@_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
 import struct Smithy.StreamingTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.TargetsUnitTrait
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPRequestBuilder
 import class SmithyHTTPAPI.HTTPResponse
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ClientProtocol
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
+@_spi(SchemaBasedSerde)
 import struct SmithySerialization.Operation
+@_spi(SchemaBasedSerde)
 import struct SmithySerialization.TypeRegistry
 @_spi(SmithyReadWrite) import struct SmithyXML.NodeInfo
 @_spi(SmithyReadWrite) import class SmithyXML.Reader
 
+@_spi(SchemaBasedSerde)
 public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
     public typealias RequestType = HTTPRequest
     public typealias ResponseType = HTTPResponse

@@ -6,10 +6,14 @@
 //
 
 import struct Foundation.Data
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeSerializer
 
+@_spi(SchemaBasedSerde)
 public struct Codec: SmithySerialization.Codec {
 
     public init() {}

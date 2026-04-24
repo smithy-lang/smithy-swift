@@ -6,12 +6,17 @@
 //
 
 import enum Smithy.Prelude
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
+@_spi(SchemaBasedSerde)
 import typealias SmithySerialization.ReadStructConsumer
+@_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 
 @_spi(RestXML)
+@_spi(SchemaBasedSerde)
 public struct BaseError {
     public var code: String?
     public var message: String?

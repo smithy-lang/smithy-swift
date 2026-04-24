@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@_spi(SchemaBasedSerde)
 public struct XmlNamespaceTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "xmlNamespace") }
     public let uri: String
