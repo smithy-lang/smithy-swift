@@ -114,25 +114,59 @@ final class RetryIntegrationTests: XCTestCase {
     }
 
     func test_case6() async throws {
-        // maxBackoff=3.0 caps the delay
-        await setUp(availableCapacity: 500, maxCapacity: 500, maxRetriesBase: 4, maxBackoff: 3.0)
+        // maxBackoff=0.2 caps delays at 0.2
+        await setUp(availableCapacity: 500, maxCapacity: 500, maxRetriesBase: 4, maxBackoff: 0.2)
         next.testSteps = [
             TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 486, delay: 0.05),
             TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 472, delay: 0.1),
             TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 458, delay: 0.2),
-            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 444, delay: 0.4),
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 444, delay: 0.2),
             TestStep(response: .httpError(500), expectedOutcome: .maxAttemptsExceeded, retryQuota: 444, delay: nil)
         ]
         try await runTest()
     }
 
-    private func runTest() async throws {
+    // Case 7: Retry stops after quota exhaustion
+    func test_case7_quotaExhaustion() async throws {
+        await setUp(availableCapacity: 20, maxCapacity: 500, maxRetriesBase: 4, maxBackoff: 20.0)
+        next.testSteps = [
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 6, delay: 0.05),
+            TestStep(response: .httpError(502), expectedOutcome: .retryQuotaExceeded, retryQuota: 6, delay: nil)
+        ]
+        try await runTest()
+    }
+
+    // Case 8: Retry quota recovery after successful responses (multi-invocation)
+    func test_case8_quotaRecovery() async throws {
+        await setUp(availableCapacity: 30, maxCapacity: 500, maxRetriesBase: 4, maxBackoff: 20.0)
+
+        // First invocation: two retries then success, quota 30 -> 16 -> 2 -> 16 (restored)
+        next.testSteps = [
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 16, delay: 0.05),
+            TestStep(response: .httpError(502), expectedOutcome: .retryRequest, retryQuota: 2, delay: 0.1),
+            TestStep(response: .success, expectedOutcome: .success, retryQuota: 16, delay: nil)
+        ]
+        try await runInvocation()
+
+        // Second invocation: one retry then success, quota 16 -> 2 -> 16 (restored)
+        next.resetForNextInvocation(testSteps: [
+            TestStep(response: .httpError(500), expectedOutcome: .retryRequest, retryQuota: 2, delay: 0.05),
+            TestStep(response: .success, expectedOutcome: .success, retryQuota: 16, delay: nil)
+        ])
+        try await runInvocation()
+    }
+
+    private func runInvocation() async throws {
         do {
             _ = try await builder.build().execute(input: TestInput())
         } catch {
             next.finalError = error
         }
         try await next.verifyResult()
+    }
+
+    private func runTest() async throws {
+        try await runInvocation()
     }
 
     func test_getEstimatedSkew() {
@@ -205,6 +239,14 @@ private class TestOutputHandler: ExecuteRequest {
     var finalError: Error?
     var invocationID = ""
     var prevAttemptNum = 0
+
+    func resetForNextInvocation(testSteps: [TestStep]) {
+        self.testSteps = testSteps
+        self.index = 0
+        self.latestTestStep = nil
+        self.actualDelay = nil
+        self.finalError = nil
+    }
 
     func execute(request: SmithyHTTPAPI.HTTPRequest, attributes: Smithy.Context) async throws -> SmithyHTTPAPI.HTTPResponse {
         if index == testSteps.count { throw RetryIntegrationTestError.maxAttemptsExceeded }
