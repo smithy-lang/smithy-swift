@@ -190,6 +190,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
                 guard var modeledError = error as? ServiceError & HTTPError & Error else {
                     throw ClientError.invalidValue(
                         "Modeled error does not conform to ServiceError & HTTPError & Error."
+                        + " This should never happen, please file a bug on aws-sdk-swift."
                     )
                 }
                 modeledError.message = baseError.message

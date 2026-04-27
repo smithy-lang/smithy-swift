@@ -27,7 +27,7 @@ struct RawBlobDeserializer: ShapeDeserializer {
         data
     }
 
-    func readStruct<T>(_ schema: Schema, _ value: inout T) throws where T: SmithySerialization.DeserializableStruct {
+    func readStruct<T>(_ schema: Schema, _ value: inout T) throws where T: DeserializableStruct {
         throw notImplemented
     }
 
@@ -39,20 +39,62 @@ struct RawBlobDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
-    func readBoolean(_ schema: Schema) throws -> Bool { throw notImplemented }
-    func readByte(_ schema: Schema) throws -> Int8 { throw notImplemented }
-    func readShort(_ schema: Schema) throws -> Int16 { throw notImplemented }
-    func readInteger(_ schema: Schema) throws -> Int { throw notImplemented }
-    func readLong(_ schema: Schema) throws -> Int { throw notImplemented }
-    func readFloat(_ schema: Schema) throws -> Float { throw notImplemented }
-    func readDouble(_ schema: Schema) throws -> Double { throw notImplemented }
-    func readBigInteger(_ schema: Schema) throws -> Int64 { throw notImplemented }
-    func readBigDecimal(_ schema: Schema) throws -> Double { throw notImplemented }
-    func readString(_ schema: Schema) throws -> String { throw notImplemented }
-    func readDocument(_ schema: Schema) throws -> Document { throw notImplemented }
-    func readTimestamp(_ schema: Schema) throws -> Date { throw notImplemented }
-    func readNull<T>(_ schema: Schema) throws -> T? { throw notImplemented }
-    func isNull() throws -> Bool { throw notImplemented }
+    func readBoolean(_ schema: Schema) throws -> Bool {
+        throw notImplemented
+    }
+
+    func readByte(_ schema: Schema) throws -> Int8 {
+        throw notImplemented
+    }
+
+    func readShort(_ schema: Schema) throws -> Int16 {
+        throw notImplemented
+    }
+
+    func readInteger(_ schema: Schema) throws -> Int {
+        throw notImplemented
+    }
+
+    func readLong(_ schema: Schema) throws -> Int {
+        throw notImplemented
+    }
+
+    func readFloat(_ schema: Schema) throws -> Float {
+        throw notImplemented
+    }
+
+    func readDouble(_ schema: Schema) throws -> Double {
+        throw notImplemented
+    }
+
+    func readBigInteger(_ schema: Schema) throws -> Int64 {
+        throw notImplemented
+    }
+
+    func readBigDecimal(_ schema: Schema) throws -> Double {
+        throw notImplemented
+    }
+
+    func readString(_ schema: Schema) throws -> String {
+        throw notImplemented
+    }
+
+    func readDocument(_ schema: Schema) throws -> Document {
+        throw notImplemented
+    }
+
+    func readTimestamp(_ schema: Schema) throws -> Date {
+        throw notImplemented
+    }
+
+    func readNull<T>(_ schema: Schema) throws -> T? {
+        throw notImplemented
+    }
+
+    func isNull() throws -> Bool {
+        throw notImplemented
+    }
+
     var containerSize: Int { -1 }
 
     private var notImplemented: SerializerError { .init("Not implemented") }
