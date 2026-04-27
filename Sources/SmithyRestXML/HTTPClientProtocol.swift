@@ -49,8 +49,29 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
     public let codec: SmithySerialization.Codec = Codec()
     public let noErrorWrapping: Bool
 
-    public init(noErrorWrapping: Bool = false) {
+    /// Optional hook called for non-2xx responses before the generic error path.
+    /// If it returns an error, that error is thrown. If it returns nil, the generic
+    /// TypeRegistry-based error matching runs as normal.
+    /// Signature: (HTTPResponse, Data, TypeRegistry, Bool) async throws -> Error?
+    public let customErrorResolver: (
+        @Sendable (HTTPResponse, Data, TypeRegistry, Bool) async throws -> (any Error)?
+    )?
+
+    /// Optional hook called after a modeled error is deserialized from the TypeRegistry.
+    /// Allows setting additional properties (e.g. requestID2) on the error before it is thrown.
+    /// Signature: (inout ServiceError & HTTPError & Error, HTTPResponse) -> Void
+    public let errorPostProcessor: (
+        @Sendable (inout any (ServiceError & HTTPError & Error), HTTPResponse) -> Void
+    )?
+
+    public init(
+        noErrorWrapping: Bool = false,
+        customErrorResolver: (@Sendable (HTTPResponse, Data, TypeRegistry, Bool) async throws -> (any Error)?)? = nil,
+        errorPostProcessor: (@Sendable (inout any (ServiceError & HTTPError & Error), HTTPResponse) -> Void)? = nil
+    ) {
         self.noErrorWrapping = noErrorWrapping
+        self.customErrorResolver = customErrorResolver
+        self.errorPostProcessor = errorPostProcessor
     }
 
     public func serializeRequest<Input, Output>(
@@ -85,8 +106,10 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
             // (e.g. S3 SelectObjectContent). If so, use EventStreamDeserializer.
             let hasEventStreamPayload = operation.outputSchema.members.contains { member in
                 guard member.hasTrait(HttpPayloadTrait.self) else { return false }
-                guard member.hasTrait(StreamingTrait.self) || (member.target?.hasTrait(StreamingTrait.self) ?? false) else { return false }
-                return member.type == .union
+                guard member.hasTrait(StreamingTrait.self)
+                    || (member.target?.hasTrait(StreamingTrait.self) ?? false)
+                else { return false }
+                return (member.target ?? member).type == .union
             }
             if hasEventStreamPayload {
                 let eventStreamDeserializer = EventStreamDeserializer(codec: codec, response: response)
@@ -111,6 +134,14 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         } else {
             let bodyData = try await response.body.readData() ?? Data()
             let errorTypeRegistry = operation.errorTypeRegistry
+
+            // If a custom error resolver is set, try it first.
+            if let customErrorResolver,
+               let resolvedError = try await customErrorResolver(
+                response, bodyData, errorTypeRegistry, noErrorWrapping
+               ) {
+                throw resolvedError
+            }
 
             // Parse error response; RestXML errors may be wrapped in <Error> element
             let errorDeserializer = try Deserializer(data: bodyData)
@@ -163,6 +194,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
                 }
                 modeledError.message = baseError.message
                 modeledError.httpResponse = response
+                errorPostProcessor?(&modeledError, response)
                 throw modeledError
             } else {
                 throw UnknownHTTPServiceError(
