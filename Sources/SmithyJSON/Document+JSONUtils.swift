@@ -9,7 +9,6 @@ import func CoreFoundation.CFBooleanGetTypeID
 import func CoreFoundation.CFGetTypeID
 import struct Foundation.Data
 import struct Foundation.Date
-import class Foundation.DateFormatter
 import class Foundation.JSONSerialization
 import struct Foundation.Locale
 import class Foundation.NSNull
