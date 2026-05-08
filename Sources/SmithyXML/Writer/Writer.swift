@@ -29,7 +29,6 @@ public final class Writer: SmithyWriter {
     let nodeInfo: NodeInfo
     public var isCollection = false
     public var nodeInfoPath: [NodeInfo] { (parent?.nodeInfoPath ?? []) + [nodeInfo] }
-    // MARK: - init & deinit
 
     /// Used by the `DocumentWriter` to begin serialization of a model to XML.
     /// - Parameter nodeInfo: The node info for the XML node.

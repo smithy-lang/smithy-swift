@@ -49,12 +49,9 @@ public struct Deserializer: ShapeDeserializer {
     let httpResponse: HTTPResponse?
     let rawBodyData: Data?
     let bodyStream: ByteStream?
-    /// Set to true when this Deserializer's Reader holds a list of values synthesized from an
-    /// HTTP header (each Reader child wraps one comma-split element).  In that case, `readList`
-    /// should enumerate `reader.children` directly without filtering by XML element name.
+    /// Reader holds comma-split header list children rather than XML element children.
     let isHeaderList: Bool
-    /// Set to true when this Deserializer's Reader holds a value from an HTTP header.
-    /// Changes the default timestamp format from .dateTime (XML) to .httpDate (Smithy HTTP spec).
+    /// Switches the default timestamp format from `.dateTime` (XML) to `.httpDate` (HTTP spec).
     let isFromHttpHeader: Bool
 
     public init(data: Data) throws {
@@ -95,8 +92,6 @@ public struct Deserializer: ShapeDeserializer {
         if bodyData.isEmpty {
             self.reader = Reader()
         } else {
-            // Non-XML bodies (raw blob/string @httpPayload) would fail to parse here;
-            // in that case we still need a Reader, so fall back to empty.
             self.reader = (try? Reader.from(data: bodyData)) ?? Reader()
         }
     }
@@ -132,9 +127,7 @@ public struct Deserializer: ShapeDeserializer {
             if let memberDeserializer = try httpBindingDeserializer(for: member) {
                 do {
                     try T.readConsumer(member, &value, memberDeserializer)
-                } catch is DecodedNull {
-                    // skip null
-                }
+                } catch is DecodedNull {}
                 continue
             }
             let elementName = xmlElementName(for: member)
@@ -143,7 +136,7 @@ public struct Deserializer: ShapeDeserializer {
             if isAttribute {
                 childReader = reader[NodeInfo(elementName, location: .attribute)]
             } else if reader.nodeInfo.name == elementName && reader.hasContent && reader.children.isEmpty {
-                // Unwrapped output: the reader itself IS the member value (e.g. @s3UnwrappedXmlOutput leaf)
+                // @s3UnwrappedXmlOutput: leaf reader is itself the member value.
                 childReader = reader
             } else {
                 childReader = reader[NodeInfo(elementName)]
@@ -152,21 +145,16 @@ public struct Deserializer: ShapeDeserializer {
             do {
                 let memberDeserializer = Deserializer(reader: childReader)
                 try T.readConsumer(member, &value, memberDeserializer)
-            } catch is DecodedNull {
-                // skip null
-            }
+            } catch is DecodedNull {}
         }
     }
 
-    /// If `member` has an HTTP binding trait (httpHeader, httpPrefixHeaders, httpResponseCode, httpPayload)
-    /// returns a Deserializer backed by the appropriate part of the HTTP response rather than the XML body.
-    /// Returns nil for normal body-bound members (the XML path should be used).
+    /// Returns a Deserializer for HTTP-bound members; nil for body-bound.
     private func httpBindingDeserializer(for member: Schema) throws -> Deserializer? {
         guard let httpResponse else { return nil }
 
         if let headerTrait = try member.getTrait(HttpHeaderTrait.self) {
             guard let headerValue = httpResponse.headers.value(for: headerTrait.value) else { return nil }
-            // For list-typed headers, split comma-separated values into children.
             if member.target?.type == .list || member.type == .list {
                 let memberTarget = member.target?.member.target ?? member.target?.member
                 let isTimestamp = memberTarget?.type == .timestamp
@@ -201,19 +189,14 @@ public struct Deserializer: ShapeDeserializer {
             let targetType = member.target?.type ?? member.type
             switch targetType {
             case .structure, .union:
-                // Structure payload: the entire body is the payload struct. Use the root reader.
-                // If the body is empty, return nil so the member stays nil.
                 guard reader.hasContent || !reader.children.isEmpty else { return nil }
                 return Deserializer(reader: reader, httpResponse: httpResponse, rawBodyData: rawBodyData)
             case .blob:
-                // Streaming blob payload: pass the body stream through.
                 if let bodyStream {
                     return Deserializer(reader: Reader(), httpResponse: httpResponse, bodyStream: bodyStream)
                 }
-                // Only return a deserializer if there's actual body data.
                 guard let rawBodyData, !rawBodyData.isEmpty else { return nil }
-                // Reader.readIfPresent() for Data expects base64. For a raw blob payload we need
-                // the bytes as-is; stash them so readBlob can return them directly.
+                // Reader.readIfPresent(Data) decodes base64 — for a raw blob, stash and return as-is.
                 return Deserializer(reader: Reader(), httpResponse: httpResponse, rawBodyData: rawBodyData)
             case .string, .enum:
                 guard let rawBodyData, !rawBodyData.isEmpty,
@@ -237,9 +220,6 @@ public struct Deserializer: ShapeDeserializer {
             if ch == "\"" { inQuotes.toggle(); current.append(ch); continue }
             if ch == "," && !inQuotes {
                 let trimmed = current.trimmingCharacters(in: .whitespaces)
-                // HTTP dates have the form "DDD, DD MMM YYYY HH:MM:SS GMT".
-                // The day-of-week abbreviation (3 letters) is followed by a comma.
-                // Detect this: if the accumulated part is exactly 3 alpha chars, it's a partial date.
                 if isTimestamp && trimmed.count == 3 && trimmed.allSatisfy(\.isLetter) {
                     current.append(ch)
                     continue

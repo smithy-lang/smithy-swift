@@ -58,7 +58,6 @@ public final class Serializer: ShapeSerializer {
     public init() {}
 
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
-        // If any member has @httpPayload, serialize only that member as the root element.
         if let payloadMember = schema.members.first(where: { $0.hasTrait(HttpPayloadTrait.self) }) {
             let payloadSerializer = PayloadMemberSerializer(parent: self)
             try S.writeConsumer(payloadMember, value, payloadSerializer)
@@ -106,8 +105,6 @@ public final class Serializer: ShapeSerializer {
     }
 }
 
-/// Writes struct members as child elements of a parent Writer node.
-/// This is the workhorse serializer — all member writes flow through here.
 private final class MemberSerializer: ShapeSerializer {
     let parent: Writer
 
@@ -223,7 +220,6 @@ private final class MemberSerializer: ShapeSerializer {
     var data: Data { get throws { Data() } }
 }
 
-/// Writes a value directly into a Writer node (used for list/map element consumers).
 private struct ValueSerializer: ShapeSerializer {
     let writer: Writer
 
@@ -287,7 +283,6 @@ private func xmlNodeInfo(for schema: Schema) -> NodeInfo {
     return NodeInfo(name, location: location, namespaceDef: namespaceDef)
 }
 
-/// Returns true if the member schema is bound to an HTTP location other than the body.
 private func isHttpBound(_ schema: Schema) -> Bool {
     schema.hasTrait(HttpHeaderTrait.self) ||
     schema.hasTrait(HttpLabelTrait.self) ||
@@ -297,9 +292,6 @@ private func isHttpBound(_ schema: Schema) -> Bool {
     schema.hasTrait(HttpResponseCodeTrait.self)
 }
 
-/// Serializes an @httpPayload member as the root of the document.
-/// For structure/union payloads, the payload value becomes the root XML element.
-/// For blob/string payloads, the raw bytes are written directly.
 private final class PayloadMemberSerializer: ShapeSerializer {
     let outer: Serializer
 
@@ -308,7 +300,6 @@ private final class PayloadMemberSerializer: ShapeSerializer {
     }
 
     func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
-        // Use member's own @xmlName if present; otherwise use the target shape's name/xmlName
         let nodeInfo = schema.hasTrait(XmlNameTrait.self)
             ? xmlNodeInfo(for: schema)
             : xmlNodeInfo(for: schema.target ?? schema)
@@ -322,17 +313,14 @@ private final class PayloadMemberSerializer: ShapeSerializer {
     }
 
     func writeBlob(_ schema: Schema, _ value: Data) throws {
-        // Raw blob payload — store as-is (not base64-encoded XML)
         outer.rawBlobData = value
     }
 
     func writeDataStream(_ schema: Schema, _ value: ByteStream) throws {
-        // Streaming blob payload — pass through as-is
         outer.streamingBody = value
     }
 
     func writeString(_ schema: Schema, _ value: String) throws {
-        // String payload — store as UTF-8 bytes
         outer.rawBlobData = Data(value.utf8)
     }
 

@@ -33,18 +33,15 @@ struct EventContentDeserializer: ShapeDeserializer {
         // Deserialize the event payload, to the member marked with @eventPayload if it exists,
         // to the structure's members otherwise.
         if let payloadMember = schema.members.first(where: { $0.hasTrait(EventPayloadTrait.self) }) {
-            // For blob @eventPayload members, return the raw bytes directly without
-            // parsing through the codec (which would try to parse as XML/JSON).
-            if payloadMember.type == .blob {
+            // Skip codec for blob payloads — codec would parse as XML/JSON.
+            if (payloadMember.target ?? payloadMember).type == .blob {
                 let blobDeserializer = RawBlobDeserializer(data: message.payload)
                 try T.readConsumer(payloadMember, &value, blobDeserializer)
             } else {
-                // For structured @eventPayload members, use the protocol codec.
                 let payloadDeserializer = try codec.makeDeserializer(data: message.payload)
                 try T.readConsumer(payloadMember, &value, payloadDeserializer)
             }
         } else {
-            // No @eventPayload member — deserialize the whole structure from the payload.
             let payloadDeserializer = try codec.makeDeserializer(data: message.payload)
             try payloadDeserializer.readStruct(schema, &value)
         }

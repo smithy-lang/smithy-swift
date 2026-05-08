@@ -23,22 +23,18 @@ public final class Reader: SmithyReader {
     public var hasContent: Bool { content != nil }
     var content: String?
 
-    // MARK: - init & deinit
-
-    /// Creates an "empty" reader.  This Reader will be returned when the data cannot be parsed.
+    /// An empty reader, returned when data cannot be parsed.
     public init() {
         self.nodeInfo = ""
     }
 
-    /// Creates a Reader backed by a literal string content.  Used to adapt non-XML sources
-    /// (e.g. HTTP header values) into the Reader API so existing read methods work uniformly.
+    /// A Reader holding only literal text content (no element name).
     public init(content: String) {
         self.nodeInfo = ""
         self.content = content
     }
 
-    /// Creates a Reader with a given nodeInfo and text content.  Used to synthesize
-    /// Reader trees matching the shape that `readMap` / `readList` expect.
+    /// A Reader with a node name and optional text content.
     public init(nodeInfo: NodeInfo, content: String?) {
         self.nodeInfo = nodeInfo
         self.content = content

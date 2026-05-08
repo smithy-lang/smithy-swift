@@ -13,7 +13,7 @@ import struct Smithy.TimestampFormatTrait
 
 func resolveTimestampFormat(_ schema: Schema) -> TimestampFormat {
     guard let traitFormat = try? schema.getTrait(TimestampFormatTrait.self)?.format else {
-        return .dateTime // XML default
+        return .dateTime
     }
     switch traitFormat {
     case .dateTime: return .dateTime

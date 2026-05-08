@@ -16,10 +16,7 @@ import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 
-/// A minimal deserializer that returns raw bytes for blob reads.
-///
-/// Used for `@eventPayload` members of blob type, where the event payload
-/// should be returned as-is without protocol-specific parsing (e.g. XML).
+/// Returns raw bytes for blob reads; used for blob @eventPayload members.
 struct RawBlobDeserializer: ShapeDeserializer {
     let data: Data
 

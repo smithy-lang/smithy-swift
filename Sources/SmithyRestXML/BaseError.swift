@@ -15,64 +15,50 @@ import typealias SmithySerialization.ReadStructConsumer
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 
-@_spi(RestXML)
-@_spi(SchemaBasedSerde)
-public struct BaseError {
-    public var code: String?
-    public var message: String?
-    public var requestId: String?
+struct BaseError {
+    var code: String?
+    var message: String?
 }
 
 extension BaseError: DeserializableStruct {
 
-    private static var errorSchema: Smithy.Schema {
+    private static var schema: Smithy.Schema {
         .init(
-            id: .init("swift.synthetic", "RestXMLBaseError"),
+            id: .init("swift.synthetic", "BaseError"),
             type: .structure,
             members: [
                 .init(
-                    id: .init("swift.synthetic", "RestXMLBaseError", "Code"),
+                    id: .init("swift.synthetic", "BaseError", "Code"),
                     type: .member,
-                    containerType: .structure,
                     target: Prelude.stringSchema,
                     index: 0
                 ),
                 .init(
-                    id: .init("swift.synthetic", "RestXMLBaseError", "Message"),
+                    id: .init("swift.synthetic", "BaseError", "Message"),
                     type: .member,
-                    containerType: .structure,
                     target: Prelude.stringSchema,
                     index: 1
-                ),
-                .init(
-                    id: .init("swift.synthetic", "RestXMLBaseError", "RequestId"),
-                    type: .member,
-                    containerType: .structure,
-                    target: Prelude.stringSchema,
-                    index: 2
                 ),
             ]
         )
     }
 
-    public static var readConsumer: SmithySerialization.ReadStructConsumer<Self> {
+    static var readConsumer: SmithySerialization.ReadStructConsumer<Self> {
         { memberSchema, value, deserializer in
             switch memberSchema.index {
             case 0:
                 value.code = try deserializer.readString(memberSchema)
             case 1:
                 value.message = try deserializer.readString(memberSchema)
-            case 2:
-                value.requestId = try deserializer.readString(memberSchema)
             default:
                 break
             }
         }
     }
 
-    public static func deserialize(_ deserializer: any ShapeDeserializer) throws -> Self {
+    static func deserialize(_ deserializer: any ShapeDeserializer) throws -> Self {
         var value = Self()
-        try deserializer.readStruct(Self.errorSchema, &value)
+        try deserializer.readStruct(Self.schema, &value)
         return value
     }
 }

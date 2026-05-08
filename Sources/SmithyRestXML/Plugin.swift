@@ -6,13 +6,9 @@
 //
 
 import ClientRuntime
-import class SmithyHTTPAPI.HTTPRequest
-import class SmithyHTTPAPI.HTTPResponse
-@_spi(SchemaBasedSerde)
-import protocol SmithySerialization.DeserializableStruct
-@_spi(SchemaBasedSerde)
-import protocol SmithySerialization.SerializableStruct
 
+// RestXML URL paths come from per-operation @http traits, so no protocol-level
+// interceptor wiring is needed here.
 @_spi(SchemaBasedSerde)
 public struct Plugin: ClientRuntime.Plugin {
 

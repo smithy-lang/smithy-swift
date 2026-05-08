@@ -140,8 +140,7 @@ package struct SchemasCodegen {
             // Get all the trait IDs that apply to this member & sort
             let memberTraitIDs = Set(memberShape.traits.traitDict.keys)
             let targetTraitIDs = Set(try memberShape.target.traits.traitDict.keys)
-            // XmlNameTrait on a target shape changes that shape's own root element name,
-            // but does NOT change the member element name. Only the member's own @xmlName does.
+            // @xmlName on the target renames the target shape, not the member; don't inherit.
             let inheritableTargetTraitIDs = targetTraitIDs.filter { $0 != XmlNameTrait.id }
             let allTraitIDs = Array(memberTraitIDs.union(inheritableTargetTraitIDs)).smithySorted()
 

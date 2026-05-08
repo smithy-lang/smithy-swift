@@ -48,30 +48,57 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
     public let id = ShapeID("aws.protocols", "restXml")
     public let codec: SmithySerialization.Codec = Codec()
     public let noErrorWrapping: Bool
+    public let handleEmpty404: Bool
 
-    /// Optional hook called for non-2xx responses before the generic error path.
-    /// If it returns an error, that error is thrown. If it returns nil, the generic
-    /// TypeRegistry-based error matching runs as normal.
-    /// Signature: (HTTPResponse, Data, TypeRegistry, Bool) async throws -> Error?
-    public let customErrorResolver: (
+    private let customErrorResolver: (
         @Sendable (HTTPResponse, Data, TypeRegistry, Bool) async throws -> (any Error)?
     )?
 
-    /// Optional hook called after a modeled error is deserialized from the TypeRegistry.
-    /// Allows setting additional properties (e.g. requestID2) on the error before it is thrown.
-    /// Signature: (inout ServiceError & HTTPError & Error, HTTPResponse) -> Void
-    public let errorPostProcessor: (
+    private let errorPostProcessor: (
         @Sendable (inout any (ServiceError & HTTPError & Error), HTTPResponse) -> Void
     )?
 
-    public init(
-        noErrorWrapping: Bool = false,
-        customErrorResolver: (@Sendable (HTTPResponse, Data, TypeRegistry, Bool) async throws -> (any Error)?)? = nil,
-        errorPostProcessor: (@Sendable (inout any (ServiceError & HTTPError & Error), HTTPResponse) -> Void)? = nil
+    public init(noErrorWrapping: Bool = false, handleEmpty404: Bool = false) {
+        self.init(
+            noErrorWrapping: noErrorWrapping,
+            handleEmpty404: handleEmpty404,
+            customErrorResolver: nil,
+            errorPostProcessor: nil
+        )
+    }
+
+    private init(
+        noErrorWrapping: Bool,
+        handleEmpty404: Bool,
+        customErrorResolver: (@Sendable (HTTPResponse, Data, TypeRegistry, Bool) async throws -> (any Error)?)?,
+        errorPostProcessor: (@Sendable (inout any (ServiceError & HTTPError & Error), HTTPResponse) -> Void)?
     ) {
         self.noErrorWrapping = noErrorWrapping
+        self.handleEmpty404 = handleEmpty404
         self.customErrorResolver = customErrorResolver
         self.errorPostProcessor = errorPostProcessor
+    }
+
+    public func withCustomErrorResolver(
+        _ resolver: @escaping @Sendable (HTTPResponse, Data, TypeRegistry, Bool) async throws -> (any Error)?
+    ) -> HTTPClientProtocol {
+        HTTPClientProtocol(
+            noErrorWrapping: noErrorWrapping,
+            handleEmpty404: handleEmpty404,
+            customErrorResolver: resolver,
+            errorPostProcessor: errorPostProcessor
+        )
+    }
+
+    public func withErrorPostProcessor(
+        _ postProcessor: @escaping @Sendable (inout any (ServiceError & HTTPError & Error), HTTPResponse) -> Void
+    ) -> HTTPClientProtocol {
+        HTTPClientProtocol(
+            noErrorWrapping: noErrorWrapping,
+            handleEmpty404: handleEmpty404,
+            customErrorResolver: customErrorResolver,
+            errorPostProcessor: postProcessor
+        )
     }
 
     public func serializeRequest<Input, Output>(
@@ -102,8 +129,6 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
         response: HTTPResponse
     ) async throws -> Output {
         if (200..<300).contains(response.statusCode.rawValue) {
-            // Check if the output has a streaming event stream @httpPayload member
-            // (e.g. S3 SelectObjectContent). If so, use EventStreamDeserializer.
             let hasEventStreamPayload = operation.outputSchema.members.contains { member in
                 guard member.hasTrait(HttpPayloadTrait.self) else { return false }
                 guard member.hasTrait(StreamingTrait.self)
@@ -115,10 +140,6 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
                 let eventStreamDeserializer = EventStreamDeserializer(codec: codec, response: response)
                 return try Output.deserialize(eventStreamDeserializer)
             }
-            // Check if the output has a streaming @httpPayload member (e.g. S3 GetObject body).
-            // If so, pass the ByteStream through without consuming it.
-            // Check both the member's own traits (which inherit from the target) and the
-            // target's traits directly, to be resilient to trait resolution differences.
             let hasStreamingPayload = operation.outputSchema.members.contains { member in
                 guard member.hasTrait(HttpPayloadTrait.self) else { return false }
                 return member.hasTrait(StreamingTrait.self)
@@ -135,7 +156,6 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
             let bodyData = try await response.body.readData() ?? Data()
             let errorTypeRegistry = operation.errorTypeRegistry
 
-            // If a custom error resolver is set, try it first.
             if let customErrorResolver,
                let resolvedError = try await customErrorResolver(
                 response, bodyData, errorTypeRegistry, noErrorWrapping
@@ -143,8 +163,15 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
                 throw resolvedError
             }
 
-            // Parse error response; RestXML errors may be wrapped in <Error> element
-            let errorDeserializer = try Deserializer(data: bodyData)
+            // Tolerate non-XML error bodies (HTML 5xx pages, truncated responses)
+            // by surfacing UnknownHTTPServiceError instead of leaking a parse error.
+            guard let errorDeserializer = try? Deserializer(data: bodyData) else {
+                throw UnknownHTTPServiceError(
+                    httpResponse: response,
+                    message: nil,
+                    typeName: nil
+                )
+            }
             let errorReader = errorDeserializer.reader
 
             let baseErrorDeserializer: Deserializer
@@ -165,9 +192,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
                 registryEntry = errorTypeRegistry.find { entry in
                     entry.schema.id.name == code
                 }
-            } else if bodyData.isEmpty && response.statusCode == .notFound {
-                // S3 customization: HEAD on nonexistent object returns 404 with empty body.
-                // Match NotFound error by name when body is empty and status is 404.
+            } else if handleEmpty404 && bodyData.isEmpty && response.statusCode == .notFound {
                 registryEntry = errorTypeRegistry.find { entry in
                     entry.schema.id.name == "NotFound"
                 }
