@@ -61,7 +61,7 @@ jobs:
           sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
           xcode-select -p
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup common tools
         uses: ./.github/actions/setup-common-tools-composite-action
       - name: List all sims installed
@@ -125,7 +125,7 @@ jobs:
           sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
           xcode-select -p
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: smithy-swift
       - name: Checkout aws-sdk-swift with composite action
@@ -175,14 +175,12 @@ jobs:
           - 5.9-jammy
           - 5.9-rhel-ubi9
           - 6.2-noble
-          - 6.3-rhel-ubi9
+          - 6.3-amazonlinux2023
     container:
       image: swift:${{ matrix.swift }}
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install openssl
         run: |
           if [ -x "$(command -v apt)" ]; then
@@ -210,11 +208,9 @@ jobs:
           - 5.9-jammy
           - 5.9-rhel-ubi9
           - 6.2-noble
-          - 6.3-rhel-ubi9
+          - 6.3-amazonlinux2023
     container:
       image: swift:${{ matrix.swift }}
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Install openssl
         run: |
@@ -224,7 +220,7 @@ jobs:
             yum install -y openssl-devel which
           fi
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: smithy-swift
       - name: Checkout aws-sdk-swift with composite action
