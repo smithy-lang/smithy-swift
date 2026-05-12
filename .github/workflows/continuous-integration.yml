@@ -61,7 +61,7 @@ jobs:
           sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
           xcode-select -p
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup common tools
         uses: ./.github/actions/setup-common-tools-composite-action
       - name: List all sims installed
@@ -125,7 +125,7 @@ jobs:
           sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
           xcode-select -p
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: smithy-swift
       - name: Checkout aws-sdk-swift with composite action
