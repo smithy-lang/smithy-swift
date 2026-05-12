@@ -180,7 +180,7 @@ jobs:
       image: swift:${{ matrix.swift }}
     steps:
       - name: Checkout smithy-swift
-        uses: actions/checkout
+        uses: actions/checkout@v6
       - name: Install openssl
         run: |
           if [ -x "$(command -v apt)" ]; then
@@ -220,7 +220,7 @@ jobs:
             yum install -y openssl-devel which
           fi
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: smithy-swift
       - name: Checkout aws-sdk-swift with composite action
