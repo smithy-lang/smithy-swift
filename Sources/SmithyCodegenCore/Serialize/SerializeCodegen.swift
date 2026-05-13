@@ -30,11 +30,15 @@ package struct SerializeCodegen {
         writer.write("import typealias SmithySerialization.WriteStructConsumer")
         writer.write("")
 
-        let inputStructsAndUnions = try ctx.service.inputDescendants
+        // Must generate SerializableStruct conformance for all of a service's
+        // structs & unions, not just those that are serialized as part of operation
+        // inputs, so that all structs & unions get the CustomDebugStringConvertible
+        // conformance that hides sensitive data
+        let serviceStructsAndUnions = try ctx.service.descendants
             .filter { $0.type == .structure || $0.type == .union }
             .smithySorted()
 
-        for shape in inputStructsAndUnions {
+        for shape in serviceStructsAndUnions {
             let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
             let varName = shape.type == .structure ? "structure" : "union"
             writer.write("@_spi(SchemaBasedSerde)")
