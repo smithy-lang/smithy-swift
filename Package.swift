@@ -363,6 +363,10 @@ let package = Package(
             dependencies: ["SmithySerialization", "SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
         ),
         .testTarget(
+            name: "SmithyJSONPerfTests",
+            dependencies: ["SmithySerialization", "SmithyJSON", "AWSJSONTestSDK"]
+        ),
+        .testTarget(
             name: "SmithyFormURLTests",
             dependencies: ["SmithyFormURL", "ClientRuntime"]
         ),
@@ -415,6 +419,20 @@ let package = Package(
                 "SmithyRetriesAPI",
             ],
             path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/Sources/RPCv2CBORTestSDK",
+            plugins: ["SmithyCodeGeneratorPlugin"]
+        ),
+        .target(
+            name: "AWSJSONTestSDK",
+            dependencies: [
+                "ClientRuntime",
+                "SmithyHTTPAPI",
+                "SmithyHTTPAuthAPI",
+                "SmithyIdentity",
+                "SmithyAWSJSON",
+                "SmithyRetries",
+                "SmithyRetriesAPI",
+            ],
+            path: "test-sdks/build/smithyprojections/test-sdks/awsjson/swift-codegen/Sources/AWSJSONTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
         .testTarget(
