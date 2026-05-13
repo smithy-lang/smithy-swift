@@ -7,7 +7,7 @@
 
 import struct Foundation.Data
 @_spi(SchemaBasedSerde)
-import class SmithyJSON.Deserializer
+import class SmithyJSON.NewDeserializer
 @_spi(SchemaBasedSerde)
 import class SmithyJSON.Serializer
 @_spi(SchemaBasedSerde)
@@ -24,7 +24,8 @@ struct Codec: SmithySerialization.Codec {
     }
 
     func makeDeserializer(data: Data) throws -> any ShapeDeserializer {
-        try SmithyJSON.Deserializer(data: data)
+//        try SmithyJSON.Deserializer(data: data)
+        try SmithyJSON.NewDeserializer(data: data)
     }
 
 }

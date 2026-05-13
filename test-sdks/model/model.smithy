@@ -29,6 +29,31 @@ structure GetWidgetInput {
 
 @output
 structure GetWidgetOutput {
+    integerList: IntegerList
+    stringList: StringList
+    mapList: MapList
+    booleanList: BooleanList
+}
+
+list IntegerList {
+    member: Integer
+}
+
+list StringList {
+    member: String
+}
+
+list MapList {
+    member: StringToStringMap
+}
+
+map StringToStringMap {
+    key: String
+    value: String
+}
+
+list BooleanList {
+    member: Boolean
 }
 
 structure SensitiveType {
