@@ -174,7 +174,7 @@ jobs:
         swift:
           - 5.9-jammy
           - 5.9-rhel-ubi9
-          - 6.3-noble
+          - 6.3.2-noble
           - 6.3-amazonlinux2023
     container:
       image: swift:${{ matrix.swift }}
@@ -207,7 +207,7 @@ jobs:
         swift:
           - 5.9-jammy
           - 5.9-rhel-ubi9
-          - 6.3-noble
+          - 6.3.2-noble
           - 6.3-amazonlinux2023
     container:
       image: swift:${{ matrix.swift }}
