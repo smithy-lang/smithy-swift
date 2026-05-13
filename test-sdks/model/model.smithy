@@ -29,6 +29,7 @@ structure GetWidgetInput {
 
 @output
 structure GetWidgetOutput {
+    privateString: PrivateString
 }
 
 structure SensitiveType {

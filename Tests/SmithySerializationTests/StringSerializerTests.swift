@@ -14,6 +14,7 @@ import enum Smithy.Prelude
 import struct Smithy.Schema
 @_spi(SchemaBasedSerde)
 import struct Smithy.SensitiveTrait
+import struct RPCv2CBORTestSDK.GetWidgetOutput
 import enum RPCv2CBORTestSDK.RPCv2CBORServiceClientTypes
 
 final class StringSerializerTests: XCTestCase {
@@ -98,6 +99,12 @@ final class StringSerializerTests: XCTestCase {
             subject.debugDescription == "SensitiveType(privateMap: [\"y\": [CONTENT_REDACTED], \"x\": [CONTENT_REDACTED]])",
             "actual: \(subject.debugDescription)"
         )
+    }
+
+    func test_outputFieldsAreRedacted() throws {
+        let sensitiveString = "abcxyz"
+        let subject = GetWidgetOutput(privateString: sensitiveString)
+        XCTAssertFalse(String(reflecting: subject).contains(sensitiveString))
     }
 }
 
