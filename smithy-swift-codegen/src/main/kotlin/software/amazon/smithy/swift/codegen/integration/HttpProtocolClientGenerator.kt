@@ -13,6 +13,7 @@ import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareExecutionGenerator
 import software.amazon.smithy.swift.codegen.middleware.OperationMiddleware
 import software.amazon.smithy.swift.codegen.model.toUpperCamelCase
+import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -45,10 +46,10 @@ open class HttpProtocolClientGenerator(
         val operationsIndex = OperationIndex.of(model)
 
         writer.openBlock("extension \$L {", "}", serviceSymbol.name) {
-            val clientName = ctx.settings.clientBaseName
+            val serviceName = ctx.settings.sdkId.toUpperCamelCase()
             operations.forEach { operation ->
                 ServiceGenerator.renderOperationDefinition(
-                    clientName,
+                    serviceName,
                     model,
                     serviceShape,
                     symbolProvider,

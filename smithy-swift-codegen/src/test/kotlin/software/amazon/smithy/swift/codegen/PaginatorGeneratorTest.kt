@@ -12,10 +12,8 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.WriterDelegator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.swift.codegen.core.SwiftCodegenContext
-import software.amazon.smithy.swift.codegen.integration.HTTPBindingProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
-import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJson11ProtocolGenerator
 import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPRestJsonProtocolGenerator
 
 class PaginatorGeneratorTest {
@@ -98,8 +96,7 @@ class PaginatorGeneratorTest {
 
     @Test
     fun testRenderPaginatorNoItemWithMapToken() {
-        // Unlike the rest of these tests, this one uses a AwsJson service
-        val context = setupAwsJson11Tests("pagination-map.smithy", "com.test#TestService")
+        val context = setupTests("pagination-map.smithy", "com.test#TestService")
         val contents = getFileContents(context.manifest, "Sources/Test/Paginators.swift")
         val expectedCode =
             """
@@ -185,18 +182,12 @@ class PaginatorGeneratorTest {
         contents.shouldContainOnlyOnce(expected)
     }
 
-    private fun setupAwsJson11Tests(
-        smithyFile: String,
-        serviceShapeId: String,
-    ): TestContext = setupTests(smithyFile, serviceShapeId, MockHTTPAWSJson11ProtocolGenerator())
-
     private fun setupTests(
         smithyFile: String,
         serviceShapeId: String,
-        httpBindingProtocolGenerator: HTTPBindingProtocolGenerator = MockHTTPRestJsonProtocolGenerator(),
     ): TestContext {
         val context =
-            TestContext.initContextFrom(smithyFile, serviceShapeId, httpBindingProtocolGenerator) { model ->
+            TestContext.initContextFrom(smithyFile, serviceShapeId, MockHTTPRestJsonProtocolGenerator()) { model ->
                 model.defaultSettings(serviceShapeId, "Test", "2019-12-16", "Test")
             }
         context.generator.generateProtocolClient(context.generationCtx)

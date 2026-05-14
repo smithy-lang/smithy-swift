@@ -10,7 +10,6 @@ import software.amazon.smithy.swift.codegen.SwiftDeclaration
 import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object SwiftTypes {
-    val Void = builtInSymbol("Void", SwiftDeclaration.STRUCT)
     val StringList =
         SwiftSymbol.make(
             "[String]",

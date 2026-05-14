@@ -1,5 +1,6 @@
 package software.amazon.smithy.swift.codegen
 
+import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
 import software.amazon.smithy.codegen.core.Symbol
@@ -22,7 +23,9 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
+import java.util.Locale
 
 class AuthSchemeResolverGenerator {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
@@ -45,7 +48,7 @@ class AuthSchemeResolverGenerator {
     ) {
         writer.apply {
             openBlock(
-                "${ctx.settings.visibility} struct ${ctx.settings.clientBaseNamePreservingService}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$N {",
+                "${ctx.settings.visibility} struct ${getSdkId(ctx)}${SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name}: \$N {",
                 "}",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolverParams,
             ) {
@@ -102,7 +105,7 @@ class AuthSchemeResolverGenerator {
                 // This is just a parent protocol that all auth scheme resolvers of a given service must conform to.
                 write("// Intentionally empty.")
                 write("// This is the parent protocol that all auth scheme resolver implementations of")
-                write("// the service ${ctx.settings.clientBaseNamePreservingService} must conform to.")
+                write("// the service ${getSdkId(ctx)} must conform to.")
             }
         }
     }
@@ -112,16 +115,16 @@ class AuthSchemeResolverGenerator {
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
     ) {
-        val clientName = ctx.settings.clientBaseNamePreservingService
+        val sdkId = getSdkId(ctx)
 
         // Model-based auth scheme resolver is internal implementation detail for services that use rules based resolvers,
         //   and is used as fallback only if endpoint resolver returns no valid auth scheme(s).
         val usesRulesBasedResolver = usesRulesBasedAuthResolver(ctx)
         val defaultResolverName =
             if (usesRulesBasedResolver) {
-                "InternalModeled$clientName$AUTH_SCHEME_RESOLVER"
+                "InternalModeled$sdkId$AUTH_SCHEME_RESOLVER"
             } else {
-                "Default$clientName$AUTH_SCHEME_RESOLVER"
+                "Default$sdkId$AUTH_SCHEME_RESOLVER"
             }
 
         // Model-based auth scheme resolver should be private internal impl detail if service uses rules-based resolver.
@@ -132,7 +135,7 @@ class AuthSchemeResolverGenerator {
             } else {
                 accessModifier
             }
-        val serviceSpecificAuthResolverProtocol = clientName + AUTH_SCHEME_RESOLVER
+        val serviceSpecificAuthResolverProtocol = sdkId + AUTH_SCHEME_RESOLVER
 
         writer.apply {
             writer.openBlock(
@@ -159,8 +162,8 @@ class AuthSchemeResolverGenerator {
         ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
     ) {
-        val clientName = ctx.settings.clientBaseNamePreservingService
-        val serviceParamsName = clientName + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
+        val sdkId = getSdkId(ctx)
+        val serviceParamsName = sdkId + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
 
         writer.apply {
             openBlock(
@@ -299,9 +302,7 @@ class AuthSchemeResolverGenerator {
                 SmithyHTTPAuthAPITypes.AuthSchemeResolverParams,
             ) {
                 if (usesRulesBasedAuthResolver(ctx)) {
-                    write(
-                        "return try Default${ctx.settings.clientBaseNamePreservingService + AUTH_SCHEME_RESOLVER}().constructParameters(context: context)",
-                    )
+                    write("return try Default${getSdkId(ctx) + AUTH_SCHEME_RESOLVER}().constructParameters(context: context)")
                 } else {
                     openBlock("guard let opName = context.getOperation() else {", "}") {
                         write(
@@ -310,7 +311,7 @@ class AuthSchemeResolverGenerator {
                         )
                     }
                     writer.write("let authSchemePreference = context.getAuthSchemePreference()")
-                    val paramType = ctx.settings.clientBaseNamePreservingService + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
+                    val paramType = getSdkId(ctx) + SmithyHTTPAuthAPITypes.AuthSchemeResolverParams.name
                     if (hasSigV4) {
                         write("let opRegion = context.getRegion()")
                         write("return $paramType(authSchemePreference: authSchemePreference, operation: opName, region: opRegion)")
@@ -327,11 +328,23 @@ class AuthSchemeResolverGenerator {
 
         // Utility function for checking if a service relies on endpoint resolver for auth scheme resolution
         fun usesRulesBasedAuthResolver(ctx: ProtocolGenerator.GenerationContext): Boolean =
-            listOf("S3", "EventBridge", "CloudFront KeyValueStore", "SESv2").contains(ctx.settings.sdkId)
+            listOf("s3", "eventbridge", "cloudfront keyvaluestore", "sesv2").contains(ctx.settings.sdkId.lowercase(Locale.US))
+
+        // Utility function for returning sdkId from generation context
+        fun getSdkId(ctx: ProtocolGenerator.GenerationContext): String =
+            if (ctx.service.hasTrait(ServiceTrait::class.java)) {
+                ctx.service
+                    .getTrait(ServiceTrait::class.java)
+                    .get()
+                    .sdkId
+                    .clientName()
+            } else {
+                ctx.settings.sdkId.clientName()
+            }
 
         fun getServiceSpecificAuthSchemeResolverName(ctx: ProtocolGenerator.GenerationContext): Symbol =
             buildSymbol {
-                name = "${ctx.settings.clientBaseNamePreservingService}$AUTH_SCHEME_RESOLVER"
+                name = "${getSdkId(ctx)}$AUTH_SCHEME_RESOLVER"
             }
     }
 }

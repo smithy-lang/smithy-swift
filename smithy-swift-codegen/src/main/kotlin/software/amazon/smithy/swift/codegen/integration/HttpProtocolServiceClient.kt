@@ -21,7 +21,7 @@ open class HttpProtocolServiceClient(
     private val writer: SwiftWriter,
     private val serviceConfig: ServiceConfig,
 ) {
-    private val serviceName: String = ctx.settings.sdkIdStrippingService
+    private val serviceName: String = ctx.settings.sdkId
 
     open val clientProtocolSymbol: Symbol = ClientRuntimeTypes.Core.Client
 
@@ -166,7 +166,6 @@ open class HttpProtocolServiceClient(
                     .flatMap { it.getProperties(ctx) }
                     .let { overrideConfigProperties(it) }
                     .sortedBy { it.accessModifier }
-                    .distinctBy { it.name }
 
             renderConfigClassVariables(serviceSymbol, properties)
 
@@ -215,7 +214,6 @@ open class HttpProtocolServiceClient(
                     .flatMap { it.getProperties(ctx) }
                     .let { overrideConfigProperties(it) }
                     .sortedBy { it.accessModifier }
-                    .distinctBy { it.name }
 
             renderConfigClassVariables(serviceSymbol, properties)
 

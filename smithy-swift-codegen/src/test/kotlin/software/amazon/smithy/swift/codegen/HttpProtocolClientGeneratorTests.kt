@@ -8,34 +8,34 @@ package software.amazon.smithy.swift.codegen
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJson11ProtocolGenerator
+import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPRestJsonProtocolGenerator
 
 class HttpProtocolClientGeneratorTests {
     @Test
     fun `it renders client initialization block`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
-public final class AwsJsonProtocolClient: ClientRuntime.Client {
-    public static let clientName = "AwsJsonProtocolClient"
+public final class RestJsonProtocolClient: ClientRuntime.Client {
+    public static let clientName = "RestJsonProtocolClient"
     public static let version = "2019-12-16"
     let client: ClientRuntime.SdkHttpClient
-    public let config: AwsJsonProtocolClient.AwsJsonProtocolClientConfig
-    let serviceName = "AwsJson Protocol"
+    public let config: RestJsonProtocolClient.RestJsonProtocolClientConfig
+    let serviceName = "Rest Json Protocol"
 
-    @available(*, deprecated, message: "Use AwsJsonProtocolClient.AwsJsonProtocolClientConfig instead")
-    public typealias Config = AwsJsonProtocolClient.AwsJsonProtocolClientConfiguration
-    public typealias Configuration = AwsJsonProtocolClient.AwsJsonProtocolClientConfig
+    @available(*, deprecated, message: "Use RestJsonProtocolClient.RestJsonProtocolClientConfig instead")
+    public typealias Config = RestJsonProtocolClient.RestJsonProtocolClientConfiguration
+    public typealias Configuration = RestJsonProtocolClient.RestJsonProtocolClientConfig
 
-    public required init(config: AwsJsonProtocolClient.AwsJsonProtocolClientConfig) {
+    public required init(config: RestJsonProtocolClient.RestJsonProtocolClientConfig) {
         ClientRuntime.initialize()
         client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
         self.config = config
     }
 
-    @available(*, deprecated, message: "Use init(config: AwsJsonProtocolClient.AwsJsonProtocolClientConfig) instead")
-    public convenience init(config: AwsJsonProtocolClient.AwsJsonProtocolClientConfiguration) {
+    @available(*, deprecated, message: "Use init(config: RestJsonProtocolClient.RestJsonProtocolClientConfig) instead")
+    public convenience init(config: RestJsonProtocolClient.RestJsonProtocolClientConfiguration) {
         do {
             try self.init(config: config.toSendable())
         } catch {
@@ -45,20 +45,18 @@ public final class AwsJsonProtocolClient: ClientRuntime.Client {
     }
 
     public convenience init() throws {
-        let config = try AwsJsonProtocolClient.AwsJsonProtocolClientConfig()
+        let config = try RestJsonProtocolClient.RestJsonProtocolClientConfig()
         self.init(config: config)
     }
 
 }
 
-extension AwsJsonProtocolClient {
+extension RestJsonProtocolClient {
 
-    /// Client configuration for AwsJsonProtocolClient
+    /// Client configuration for RestJsonProtocolClient
     ///
     /// Conforms to `Sendable` for safe concurrent access across threads.
-    public struct AwsJsonProtocolClientConfig: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration, Swift.Sendable {
-        public var awsCredentialIdentityResolver: any SmithyIdentity.AWSCredentialIdentityResolver
-        public var endpointResolver: EndpointResolver
+    public struct RestJsonProtocolClientConfig: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration, Swift.Sendable {
         public var telemetryProvider: ClientRuntime.TelemetryProvider
         public var retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
         public var clientLogMode: ClientRuntime.ClientLogMode
@@ -92,8 +90,6 @@ extension AwsJsonProtocolClient {
         }
 
         public init(
-            awsCredentialIdentityResolver: (any SmithyIdentity.AWSCredentialIdentityResolver)? = nil,
-            endpointResolver: EndpointResolver? = nil,
             telemetryProvider: ClientRuntime.TelemetryProvider? = nil,
             retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil,
             clientLogMode: ClientRuntime.ClientLogMode? = nil,
@@ -108,8 +104,6 @@ extension AwsJsonProtocolClient {
             interceptorProviders: [ClientRuntime.InterceptorProvider]? = nil,
             httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]? = nil
         ) throws {
-            self.awsCredentialIdentityResolver = awsCredentialIdentityResolver ?? SmithyIdentity.StaticAWSCredentialIdentityResolver()
-            self.endpointResolver = try endpointResolver ?? DefaultEndpointResolver()
             self.telemetryProvider = telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider
             self.retryStrategyOptions = retryStrategyOptions ?? ClientRuntime.ClientConfigurationDefaults.defaultRetryStrategyOptions
             self.clientLogMode = clientLogMode ?? ClientRuntime.ClientConfigurationDefaults.defaultClientLogMode
@@ -127,8 +121,6 @@ extension AwsJsonProtocolClient {
 
         public init() async throws {
             try await self.init(
-                awsCredentialIdentityResolver: nil,
-                endpointResolver: nil,
                 telemetryProvider: nil,
                 retryStrategyOptions: nil,
                 clientLogMode: nil,
@@ -159,10 +151,8 @@ extension AwsJsonProtocolClient {
 
     }
 
-    @available(*, deprecated, message: "Use AwsJsonProtocolClientConfig instead. This class will be removed in a future version.")
-    public final class AwsJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration {
-        public var awsCredentialIdentityResolver: any SmithyIdentity.AWSCredentialIdentityResolver
-        public var endpointResolver: EndpointResolver
+    @available(*, deprecated, message: "Use RestJsonProtocolClientConfig instead. This class will be removed in a future version.")
+    public final class RestJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration {
         public var telemetryProvider: ClientRuntime.TelemetryProvider
         public var retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
         public var clientLogMode: ClientRuntime.ClientLogMode
@@ -196,8 +186,6 @@ extension AwsJsonProtocolClient {
         }
 
         public init(
-            awsCredentialIdentityResolver: (any SmithyIdentity.AWSCredentialIdentityResolver)? = nil,
-            endpointResolver: EndpointResolver? = nil,
             telemetryProvider: ClientRuntime.TelemetryProvider? = nil,
             retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil,
             clientLogMode: ClientRuntime.ClientLogMode? = nil,
@@ -212,8 +200,6 @@ extension AwsJsonProtocolClient {
             interceptorProviders: [ClientRuntime.InterceptorProvider]? = nil,
             httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]? = nil
         ) throws {
-            self.awsCredentialIdentityResolver = awsCredentialIdentityResolver ?? SmithyIdentity.StaticAWSCredentialIdentityResolver()
-            self.endpointResolver = try endpointResolver ?? DefaultEndpointResolver()
             self.telemetryProvider = telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider
             self.retryStrategyOptions = retryStrategyOptions ?? ClientRuntime.ClientConfigurationDefaults.defaultRetryStrategyOptions
             self.clientLogMode = clientLogMode ?? ClientRuntime.ClientConfigurationDefaults.defaultClientLogMode
@@ -231,8 +217,6 @@ extension AwsJsonProtocolClient {
 
         public convenience init() async throws {
             try await self.init(
-                awsCredentialIdentityResolver: nil,
-                endpointResolver: nil,
                 telemetryProvider: nil,
                 retryStrategyOptions: nil,
                 clientLogMode: nil,
@@ -253,10 +237,8 @@ extension AwsJsonProtocolClient {
             return ""
         }
 
-        public func toSendable() throws -> AwsJsonProtocolClientConfig {
-            return try AwsJsonProtocolClientConfig(
-                awsCredentialIdentityResolver: self.awsCredentialIdentityResolver,
-                endpointResolver: self.endpointResolver,
+        public func toSendable() throws -> RestJsonProtocolClientConfig {
+            return try RestJsonProtocolClientConfig(
                 telemetryProvider: self.telemetryProvider,
                 retryStrategyOptions: self.retryStrategyOptions,
                 clientLogMode: self.clientLogMode,
@@ -283,8 +265,8 @@ extension AwsJsonProtocolClient {
 
     }
 
-    public static func builder() -> ClientRuntime.ClientBuilder<AwsJsonProtocolClient> {
-        return ClientRuntime.ClientBuilder<AwsJsonProtocolClient>(defaultPlugins: [
+    public static func builder() -> ClientRuntime.ClientBuilder<RestJsonProtocolClient> {
+        return ClientRuntime.ClientBuilder<RestJsonProtocolClient>(defaultPlugins: [
             ClientRuntime.DefaultClientPlugin()
         ])
     }
@@ -296,7 +278,7 @@ extension AwsJsonProtocolClient {
     @Test
     fun `it renders host prefix with label in context correctly`() {
         val context = setupTests("host-prefix-operation.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
         let context = Smithy.ContextBuilder()
@@ -305,7 +287,6 @@ extension AwsJsonProtocolClient {
                       .withOperation(value: "getStatus")
                       .withUnsignedPayloadTrait(value: false)
                       .withSmithyDefaultConfig(config)
-                      .withOperationProperties(value: operation)
                       .build()
 """
         contents.shouldContainOnlyOnce(expectedFragment)
@@ -314,34 +295,26 @@ extension AwsJsonProtocolClient {
     @Test
     fun `it renders operation implementations in extension`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
-        contents.shouldContain("extension AwsJsonProtocolClient {")
+        contents.shouldContain("extension RestJsonProtocolClient {")
     }
 
     @Test
     fun `it renders an operation body`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
     public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutput {
-        var config = config
-        let plugins: [any ClientRuntime.Plugin] = []
-        for plugin in plugins {
-            try await plugin.configureClient(clientConfiguration: &config)
-        }
-        let operation = AwsJsonProtocolClient.allocateWidgetOperation
         let context = Smithy.ContextBuilder()
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "allocateWidget")
                       .withUnsignedPayloadTrait(value: false)
                       .withSmithyDefaultConfig(config)
-                      .withOperationProperties(value: operation)
                       .build()
-        let clientProtocol = SmithyAWSJSON.HTTPClientProtocol(version: .v1_1)
-        let builder = ClientRuntime.OrchestratorBuilder(operation, clientProtocol)
+        let builder = ClientRuntime.OrchestratorBuilder<AllocateWidgetInput, AllocateWidgetOutput, SmithyHTTPAPI.HTTPRequest, SmithyHTTPAPI.HTTPResponse>()
         config.interceptorProviders.forEach { provider in
             builder.interceptors.add(provider.create())
         }
@@ -362,7 +335,7 @@ extension AwsJsonProtocolClient {
         builder.applySigner(ClientRuntime.SignerMiddleware<AllocateWidgetOutput>())
         builder.selectAuthScheme(ClientRuntime.AuthSchemeMiddleware<AllocateWidgetOutput>())
         var metricsAttributes = Smithy.Attributes()
-        metricsAttributes.set(key: ClientRuntime.OrchestratorMetricsAttributesKeys.service, value: "AwsJsonProtocol")
+        metricsAttributes.set(key: ClientRuntime.OrchestratorMetricsAttributesKeys.service, value: "RestJsonProtocol")
         metricsAttributes.set(key: ClientRuntime.OrchestratorMetricsAttributesKeys.method, value: "AllocateWidget")
         let op = builder.attributes(context)
             .telemetry(ClientRuntime.OrchestratorTelemetry(
@@ -382,7 +355,7 @@ extension AwsJsonProtocolClient {
     @Test
     fun `ContentLengthMiddleware generates correctly with requiresLength false and unsignedPayload true`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             "builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(requiresLength: false, unsignedPayload: true))",
@@ -392,7 +365,7 @@ extension AwsJsonProtocolClient {
     @Test
     fun `ContentLengthMiddleware generates correctly with requiresLength true and unsignedPayload false`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             "builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(requiresLength: true, unsignedPayload: false))",
@@ -402,7 +375,7 @@ extension AwsJsonProtocolClient {
     @Test
     fun `ContentLengthMiddleware generates correctly with requiresLength true and unsignedPayload true`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "Sources/RestJson/RestJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             "builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(requiresLength: true, unsignedPayload: true))",
@@ -417,8 +390,8 @@ extension AwsJsonProtocolClient {
             TestContext.initContextFrom(
                 listOf(smithyFile),
                 serviceShapeId,
-                MockHTTPAWSJson11ProtocolGenerator(),
-                { model -> model.defaultSettings(serviceShapeId, "AwsJson", "2019-12-16", "AwsJson Protocol") },
+                MockHTTPRestJsonProtocolGenerator(),
+                { model -> model.defaultSettings(serviceShapeId, "RestJson", "2019-12-16", "Rest Json Protocol") },
                 listOf(DefaultClientConfigurationIntegration()),
             )
 

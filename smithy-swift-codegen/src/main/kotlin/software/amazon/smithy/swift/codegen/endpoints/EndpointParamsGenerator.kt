@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.clientName
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 /**
@@ -92,7 +93,7 @@ class EndpointParamsGenerator(
         parameters: List<Parameter>,
     ) {
         writer.apply {
-            val paramsType = ctx.settings.clientBaseNamePreservingService + "AuthSchemeResolverParameters"
+            val paramsType = ctx.settings.sdkId.clientName() + "AuthSchemeResolverParameters"
             openBlock("public init (authSchemeParams: \$L) {", "}", paramsType) {
                 parameters.forEach {
                     val memberName = it.name.toString().toLowerCamelCase()

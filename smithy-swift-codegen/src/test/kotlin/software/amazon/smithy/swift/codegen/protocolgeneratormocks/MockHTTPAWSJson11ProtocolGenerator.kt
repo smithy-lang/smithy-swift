@@ -25,7 +25,6 @@ import software.amazon.smithy.swift.codegen.integration.isEventStreaming
 import software.amazon.smithy.swift.codegen.integration.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.swift.codegen.model.targetOrSelf
 import software.amazon.smithy.swift.codegen.requestandresponse.TestHttpProtocolClientGeneratorFactory
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyAWSJSONTypes
 
 class MockJsonHttpBindingResolver(
     private val context: ProtocolGenerator.GenerationContext,
@@ -51,9 +50,6 @@ class MockAWSJson11Customizations : DefaultHTTPProtocolCustomizations() {
         // Not yet implemented
         return
     }
-
-    override fun renderClientProtocol(writer: SwiftWriter): String =
-        writer.format("\$N(version: .v1_1)", SmithyAWSJSONTypes.HTTPClientProtocol)
 }
 
 class MockHTTPAWSJson11ProtocolGenerator : HTTPBindingProtocolGenerator(MockAWSJson11Customizations()) {

@@ -2,7 +2,6 @@ excluded:
   - .build
   - Sources/SmithyTestUtil/*
   - Tests/*
-  - test-sdks/*
 
 analyzer_rules:
   - unused_import

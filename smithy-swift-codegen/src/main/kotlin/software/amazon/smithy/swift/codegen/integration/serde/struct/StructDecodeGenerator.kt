@@ -16,7 +16,6 @@ import software.amazon.smithy.swift.codegen.integration.serde.member.MemberShape
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyReadWriteTypes
-import software.amazon.smithy.swift.codegen.utils.sdkId
 
 open class StructDecodeGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -38,7 +37,7 @@ open class StructDecodeGenerator(
             //   as long as the struct has no properties.
             val additionalCondition =
                 "|| Mirror(reflecting: self).children.isEmpty ".takeIf {
-                    ctx.service.sdkId == "S3" && members.isEmpty()
+                    ctx.settings.sdkId == "S3" && members.isEmpty()
                 } ?: ""
             writer.write(
                 "guard reader.hasContent \$Lelse { throw \$N.requiredValueNotPresent }",

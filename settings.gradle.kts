@@ -26,6 +26,5 @@ pluginManagement {
 
 rootProject.name = "smithy-swift"
 
-include("test-sdks")
 include("smithy-swift-codegen")
 include("smithy-swift-codegen-test")
