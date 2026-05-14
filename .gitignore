@@ -31,7 +31,6 @@ xcuserdata
 
 # Codegen build products
 build/
-smithy-build.json
 
 # VS Code config files
 .vscode

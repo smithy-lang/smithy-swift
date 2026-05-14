@@ -62,7 +62,7 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
 }
 
 // Calculates & returns estimated skew.
-public func getEstimatedSkew(now: Date, responseDateString: String) -> TimeInterval {
+func getEstimatedSkew(now: Date, responseDateString: String) -> TimeInterval {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
     dateFormatter.locale = Locale(identifier: "en_US_POSIX")

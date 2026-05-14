@@ -19,6 +19,7 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestW
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.responseWireProtocol
 import software.amazon.smithy.swift.codegen.model.ShapeMetadata
 import software.amazon.smithy.swift.codegen.model.isError
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyCBORTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyFormURLTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyJSONTypes
 
@@ -70,7 +71,7 @@ val ServiceShape.writerSymbol: Symbol
         when (requestWireProtocol) {
             WireProtocol.XML -> SmithyXMLTypes.Writer
             WireProtocol.JSON -> SmithyJSONTypes.Writer
-            WireProtocol.CBOR -> throw Error("SmithyWriter not supported for CBOR, use schema-based")
+            WireProtocol.CBOR -> SmithyCBORTypes.Writer
             WireProtocol.FORM_URL -> SmithyFormURLTypes.Writer
         }
 
@@ -79,6 +80,6 @@ val ServiceShape.readerSymbol: Symbol
         when (responseWireProtocol) {
             WireProtocol.XML -> SmithyXMLTypes.Reader
             WireProtocol.JSON -> SmithyJSONTypes.Reader
-            WireProtocol.CBOR -> throw Error("SmithyWriter not supported for CBOR, use schema-based")
+            WireProtocol.CBOR -> SmithyCBORTypes.Reader
             WireProtocol.FORM_URL -> throw Exception("Reading from Form URL data not supported")
         }

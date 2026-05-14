@@ -4,6 +4,8 @@ import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.DocumentShape
 import software.amazon.smithy.model.shapes.EnumShape
@@ -29,7 +31,8 @@ import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 
 class OperationInputBodyMiddleware(
-    val ctx: ProtocolGenerator.GenerationContext,
+    val model: Model,
+    val symbolProvider: SymbolProvider,
     private val alwaysSendBody: Boolean = false,
 ) : MiddlewareRenderable {
     override val name = "OperationInputBodyMiddleware"
@@ -51,9 +54,9 @@ class OperationInputBodyMiddleware(
     ) {
         val writingClosureUtils = WritingClosureUtils(ctx, writer)
         val nodeInfoUtils = NodeInfoUtils(ctx, writer, ctx.service.requestWireProtocol)
-        val inputShape = MiddlewareShapeUtils.inputShape(ctx.model, op)
-        val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
-        val outputSymbol = MiddlewareShapeUtils.outputSymbol(ctx.symbolProvider, ctx.model, op)
+        val inputShape = MiddlewareShapeUtils.inputShape(model, op)
+        val inputSymbol = symbolProvider.toSymbol(inputShape)
+        val outputSymbol = MiddlewareShapeUtils.outputSymbol(symbolProvider, model, op)
         val writerSymbol = ctx.service.writerSymbol
         var payloadShape = inputShape
         var keyPath = "\\.self"
@@ -184,12 +187,11 @@ class OperationInputBodyMiddleware(
                 defaultBody,
             )
         } else {
-            addBodyMiddleware(ctx, writer, inputSymbol, outputSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure)
+            addBodyMiddleware(writer, inputSymbol, outputSymbol, writerSymbol, rootNodeInfo, payloadWritingClosure)
         }
     }
 
     private fun addBodyMiddleware(
-        ctx: ProtocolGenerator.GenerationContext,
         writer: SwiftWriter,
         inputSymbol: Symbol,
         outputSymbol: Symbol,
