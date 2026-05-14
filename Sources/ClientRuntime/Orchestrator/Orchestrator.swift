@@ -162,9 +162,12 @@ public struct Orchestrator<
         try await interceptors.modifyBeforeSigning(context: context)
         try await interceptors.readBeforeSigning(context: context)
 
+        // The endpoint resolver may have refined selectedAuthScheme
+        // (signingName, signingRegion). Prefer the refined version.
+        let signingScheme = context.getAttributes().selectedAuthScheme ?? selectedAuthScheme
         let signed = try await applySigner.apply(
             request: context.getRequest(),
-            selectedAuthScheme: selectedAuthScheme,
+            selectedAuthScheme: signingScheme,
             attributes: context.getAttributes()
         )
         context.updateRequest(updated: signed)
@@ -172,7 +175,6 @@ public struct Orchestrator<
         try await interceptors.readAfterSigning(context: context)
         try await interceptors.modifyBeforeTransmit(context: context)
         try await interceptors.readBeforeTransmit(context: context)
-
         return context.getRequest()
     }
 
@@ -401,11 +403,14 @@ public struct Orchestrator<
                 try await interceptors.modifyBeforeSigning(context: context)
                 try await interceptors.readBeforeSigning(context: context)
 
+                // The endpoint resolver may have refined selectedAuthScheme
+                // (signingName, signingRegion). Prefer the refined version.
+                let signingScheme = context.getAttributes().selectedAuthScheme ?? selectedAuthScheme
                 // START - smithy.client.call.auth.signing_duration
                 let signingStart = Date().timeIntervalSinceReferenceDate
                 let signed = try await applySigner.apply(
                     request: context.getRequest(),
-                    selectedAuthScheme: selectedAuthScheme,
+                    selectedAuthScheme: signingScheme,
                     attributes: context.getAttributes()
                 )
                 telemetry.signingDuration.record(
