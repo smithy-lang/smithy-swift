@@ -23,6 +23,8 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_26.4.app
       - name: Setup common tools
         uses: ./.github/actions/setup-common-tools-composite-action
+      - name: Generate test SDKs
+        run: ./scripts/codegen.sh
       - name: Build on swift-tools-version 6.0
         run: |
           swift package tools-version --set 6.0

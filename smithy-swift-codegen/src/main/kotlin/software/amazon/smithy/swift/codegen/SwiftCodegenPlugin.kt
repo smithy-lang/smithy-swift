@@ -32,14 +32,6 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
     companion object {
         private val LOGGER = Logger.getLogger(SwiftCodegenPlugin::class.java.getName())
 
-        /**
-         * Creates a Kotlin symbol provider.
-         * @param model The model to generate symbols for
-         * @param rootPackageNamespace The root package name (e.g. com.foo.bar). All symbols will be generated as part of this
-         * package (or as a child of it)
-         * @param sdkId name to use to represent client type. e.g. an sdkId of "foo" would produce a client type "FooClient".
-         * @return Returns the created provider
-         */
         fun createSymbolProvider(
             model: Model,
             swiftSettings: SwiftSettings,
@@ -98,6 +90,9 @@ class SwiftCodegenPlugin : SmithyBuildPlugin {
         codegenDirector.fileManifest(context.fileManifest)
 
         val enabledIntegrations = getEnabledIntegrations(context.model, swiftSettings)
+
+        // Write the model as JSON AST, before any preprocessing occurs
+        ModelWriter().write(context.model, context.fileManifest, swiftSettings)
 
         val resolvedModel = preprocessModel(context.model, swiftSettings, enabledIntegrations)
 

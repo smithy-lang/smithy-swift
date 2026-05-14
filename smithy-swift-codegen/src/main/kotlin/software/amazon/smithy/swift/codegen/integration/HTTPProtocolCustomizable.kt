@@ -49,6 +49,13 @@ interface HTTPProtocolCustomizable {
         fun render(writer: SwiftWriter)
     }
 
+    fun renderClientProtocol(writer: SwiftWriter): String {
+        TODO("Not yet implemented")
+    }
+
+    val plugins: List<Plugin>
+        get() = listOf()
+
     fun serviceErrorCustomRenderer(ctx: ProtocolGenerator.GenerationContext): ServiceErrorCustomRenderer? = null
 
     val endpointMiddlewareSymbol: Symbol

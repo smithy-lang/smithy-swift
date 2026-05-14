@@ -31,6 +31,8 @@ let package = Package(
     products: [
         .library(name: "Smithy", targets: ["Smithy"]),
         .library(name: "SmithySerialization", targets: ["SmithySerialization"]),
+        .library(name: "SmithyAWSJSON", targets: ["SmithyAWSJSON"]),
+        .library(name: "SmithyRPCv2CBOR", targets: ["SmithyRPCv2CBOR"]),
         .library(name: "ClientRuntime", targets: ["ClientRuntime"]),
         .library(name: "SmithyRetriesAPI", targets: ["SmithyRetriesAPI"]),
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
@@ -51,16 +53,17 @@ let package = Package(
         .library(name: "SmithyStreams", targets: ["SmithyStreams"]),
         .library(name: "SmithyChecksumsAPI", targets: ["SmithyChecksumsAPI"]),
         .library(name: "SmithyChecksums", targets: ["SmithyChecksums"]),
-        .library(name: "SmithyCBOR", targets: ["SmithyCBOR"]),
         .library(name: "SmithyWaitersAPI", targets: ["SmithyWaitersAPI"]),
         .library(name: "SmithyTestUtil", targets: ["SmithyTestUtil"]),
         .library(name: "SmithySwiftNIO", targets: ["SmithySwiftNIO"]),
         .library(name: "SmithyTelemetryAPI", targets: ["SmithyTelemetryAPI"]),
         .library(name: "SmithyHTTPClientAPI", targets: ["SmithyHTTPClientAPI"]),
+        .plugin(name: "SmithyCodeGeneratorPlugin", targets: ["SmithyCodeGeneratorPlugin"]),
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
             .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.58.1"),
+            .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
         ]
@@ -118,6 +121,7 @@ let package = Package(
                 "SmithyChecksumsAPI",
                 "SmithyChecksums",
                 "SmithyCBOR",
+                "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
             ],
             resources: [
@@ -231,6 +235,7 @@ let package = Package(
             name: "SmithyEventStreams",
             dependencies: [
                 "Smithy",
+                "SmithySerialization",
                 "SmithyEventStreamsAPI",
                 "SmithyEventStreamsAuthAPI",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
@@ -261,13 +266,54 @@ let package = Package(
         .target(
             name: "SmithyCBOR",
             dependencies: [
-                "SmithyReadWrite",
-                "SmithyTimestamps",
+                "Smithy",
+                "SmithySerialization",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
             ]
         ),
         .target(
             name: "SmithyWaitersAPI"
+        ),
+        .plugin(
+            name: "SmithyCodeGeneratorPlugin",
+            capability: .buildTool(),
+            dependencies: [
+                "SmithyCodegenCLI",
+            ]
+        ),
+        .executableTarget(
+            name: "SmithyCodegenCLI",
+            dependencies: [
+                "SmithyCodegenCore",
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            ]
+        ),
+        .target(
+            name: "SmithyCodegenCore",
+            dependencies: [
+                "Smithy",
+                "SmithySerialization",
+            ],
+            resources: [ .process("Resources") ]
+        ),
+        .target(
+            name: "SmithyAWSJSON",
+            dependencies: [
+                "ClientRuntime",
+                "Smithy",
+                "SmithySerialization",
+                "SmithyJSON",
+                "SmithyEventStreams",
+            ]
+        ),
+        .target(
+            name: "SmithyRPCv2CBOR",
+            dependencies: [
+                "ClientRuntime",
+                "Smithy",
+                "SmithySerialization",
+                "SmithyCBOR",
+            ]
         ),
         .testTarget(
             name: "ClientRuntimeTests",
@@ -280,15 +326,15 @@ let package = Package(
             resources: [ .process("Resources") ]
         ),
         .testTarget(
+            name: "SmithyTests",
+            dependencies: ["Smithy"]
+        ),
+        .testTarget(
             name: "SmithySwiftNIOTests",
             dependencies: [
                 "SmithySwiftNIO",
                 "SmithyTestUtil",
             ]
-        ),
-        .testTarget(
-            name: "SmithyCBORTests",
-            dependencies: ["SmithyCBOR", "ClientRuntime", "SmithyTestUtil"]
         ),
         .testTarget(
             name: "SmithyHTTPClientTests",
@@ -351,6 +397,29 @@ let package = Package(
         .testTarget(
             name: "SmithyStreamsTests",
             dependencies: ["SmithyStreams", "Smithy"]
+        ),
+        .testTarget(
+            name: "SmithyCodegenCoreTests",
+            dependencies: ["SmithyCodegenCore"],
+            resources: [ .process("Resources") ]
+        ),
+        .target(
+            name: "RPCv2CBORTestSDK",
+            dependencies: [
+                "ClientRuntime",
+                "SmithyHTTPAPI",
+                "SmithyHTTPAuthAPI",
+                "SmithyIdentity",
+                "SmithyRPCv2CBOR",
+                "SmithyRetries",
+                "SmithyRetriesAPI",
+            ],
+            path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/Sources/RPCv2CBORTestSDK",
+            plugins: ["SmithyCodeGeneratorPlugin"]
+        ),
+        .testTarget(
+            name: "SmithySerializationTests",
+            dependencies: ["SmithySerialization", "RPCv2CBORTestSDK"]
         ),
     ].compactMap { $0 }
 )
