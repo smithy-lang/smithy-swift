@@ -79,6 +79,13 @@ jobs:
             test 2>&1 \
             | xcbeautify
 
+  apple-ci-complete:
+    needs: apple-ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "apple-ci passed"
+
   apple-downstream:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ${{ matrix.runner }}
@@ -164,6 +171,13 @@ jobs:
             test 2>&1 \
             | xcbeautify
 
+  apple-downstream-complete:
+    needs: apple-downstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "apple-downstream passed"
+
   linux-ci:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ${{ matrix.runner }}
@@ -198,6 +212,13 @@ jobs:
         run: ./scripts/codegen.sh
       - name: Build & Run Swift Unit Tests
         run: swift test
+
+  linux-ci-complete:
+    needs: linux-ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "linux-ci passed"
 
   linux-downstream:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
@@ -252,3 +273,9 @@ jobs:
           cd aws-sdk-swift/codegen
           swift test
 
+  linux-downstream-complete:
+    needs: linux-downstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "linux-downstream passed"
