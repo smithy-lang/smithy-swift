@@ -13,9 +13,14 @@ import protocol Smithy.RequestMessage
 import protocol Smithy.RequestMessageSerializer
 import protocol Smithy.ResponseMessage
 import protocol Smithy.ResponseMessageDeserializer
+import class SmithyHTTPAPI.HTTPResponse
 import struct SmithyHTTPAuthAPI.SelectedAuthScheme
 import struct SmithyRetriesAPI.RetryErrorInfo
 import protocol SmithyRetriesAPI.RetryStrategy
+@_spi(SchemaBasedSerde)
+import protocol SmithySerialization.ClientProtocol
+@_spi(SchemaBasedSerde)
+import struct SmithySerialization.Operation
 
 /// Builds an Orchestrator, combining runtime components, interceptors, serializers, and deserializers.
 ///
@@ -43,6 +48,16 @@ public class OrchestratorBuilder<
     internal var executeRequest: (any ExecuteRequest<RequestType, ResponseType>)?
 
     public init() {}
+
+    @_spi(SchemaBasedSerde)
+    public convenience init<ClientProtocol: SmithySerialization.ClientProtocol>(
+        _ operation: Operation<InputType, OutputType>,
+        _ clientProtocol: ClientProtocol
+    ) where ClientProtocol.RequestType == RequestType, ClientProtocol.ResponseType == ResponseType {
+        self.init()
+        self.serialize(SchemaBodyMiddleware(operation, clientProtocol))
+        self.deserialize(SchemaDeserializeMiddleware(operation, clientProtocol))
+    }
 
     /// - Parameter attributes: Attributes the orchestrator will provide to runtime components
     /// - Returns: Builder
