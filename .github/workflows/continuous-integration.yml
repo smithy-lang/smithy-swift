@@ -68,6 +68,8 @@ jobs:
         run: xcrun simctl list
       - name: Build & Run smithy-swift Kotlin Unit Tests
         run: ./gradlew build
+      - name: Generate test SDKs
+        run: ./scripts/codegen.sh
       - name: Build & Run smithy-swift Swift Unit Tests
         run: |
           set -o pipefail && \
@@ -206,6 +208,8 @@ jobs:
         uses: ./.github/actions/setup-common-tools-composite-action
       - name: Build & Run Kotlin Unit Tests
         run: ./gradlew build
+      - name: Generate test SDKs
+        run: ./scripts/codegen.sh
       - name: Build & Run Swift Unit Tests
         run: swift test
 

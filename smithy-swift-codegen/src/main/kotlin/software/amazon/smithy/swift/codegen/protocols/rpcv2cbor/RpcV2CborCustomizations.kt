@@ -6,9 +6,11 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.DefaultHTTPProtocolCustomizations
 import software.amazon.smithy.swift.codegen.integration.HttpProtocolServiceClient
+import software.amazon.smithy.swift.codegen.integration.Plugin
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.ServiceConfig
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRPCv2CBORTypes
 
 class RpcV2CborCustomizations : DefaultHTTPProtocolCustomizations() {
     // Defaults that may need to be changed in future
@@ -36,4 +38,8 @@ class RpcV2CborCustomizations : DefaultHTTPProtocolCustomizations() {
     // Timestamp format is not used in RpcV2Cbor since it's a binary protocol. We seem to be missing an abstraction
     // between text-based and binary-based protocols
     override val defaultTimestampFormat = TimestampFormatTrait.Format.UNKNOWN
+
+    override val plugins: List<Plugin> = listOf(RPCv2CBORPlugin())
+
+    override fun renderClientProtocol(writer: SwiftWriter): String = writer.format("\$N()", SmithyRPCv2CBORTypes.HTTPClientProtocol)
 }

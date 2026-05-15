@@ -25,12 +25,14 @@ object SmithyTypes {
 
 private fun runtimeSymbol(
     name: String,
-    declaration: SwiftDeclaration? = null,
+    declaration: SwiftDeclaration?,
+    additionalImports: List<Symbol> = emptyList(),
+    spiName: List<String> = emptyList(),
 ): Symbol =
     SwiftSymbol.make(
         name,
         declaration,
-        SwiftDependency.SMITHY,
-        emptyList(),
-        emptyList(),
+        SwiftDependency.SMITHY.takeIf { additionalImports.isEmpty() },
+        additionalImports,
+        spiName,
     )
