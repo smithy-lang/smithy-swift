@@ -15,7 +15,6 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
-import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import kotlin.jvm.optionals.getOrNull
 
 open class SmokeTestGenerator(
@@ -51,7 +50,7 @@ open class SmokeTestGenerator(
     /**
      * Override this method for vendor-specific & customized service names.
      */
-    open fun getServiceName(): String = ctx.settings.sdkId.toUpperCamelCase()
+    open fun getServiceName(): String = ctx.settings.clientBaseName
 
     /**
      * Returns map of operation shape IDs to smoke test cases to generate for that operation.
@@ -289,7 +288,7 @@ open class SmokeTestGenerator(
         writer.write("}")
     }
 
-    open fun getClientName(): String = ctx.settings.sdkId.toUpperCamelCase() + "Client"
+    open fun getClientName(): String = ctx.settings.clientBaseName + "Client"
 
     /**
      * Default behavior is no-op; override this method for vendor-specific behavior.
