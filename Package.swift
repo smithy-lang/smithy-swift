@@ -383,6 +383,10 @@ let package = Package(
             dependencies: ["Smithy", "SmithyIdentity"]
         ),
         .testTarget(
+            name: "SmithyWaitersTests",
+            dependencies: ["Smithy", "SmithyWaitersAPI", "WaitersTestSDK"]
+        ),
+        .testTarget(
             name: "SmithyWaitersAPITests",
             dependencies: ["Smithy", "SmithyWaitersAPI"]
         ),
@@ -415,6 +419,20 @@ let package = Package(
                 "SmithyRetriesAPI",
             ],
             path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/Sources/RPCv2CBORTestSDK",
+            plugins: ["SmithyCodeGeneratorPlugin"]
+        ),
+        .target(
+            name: "WaitersTestSDK",
+            dependencies: [
+                "ClientRuntime",
+                "SmithyHTTPAPI",
+                "SmithyHTTPAuthAPI",
+                "SmithyIdentity",
+                "SmithyRPCv2CBOR",
+                "SmithyRetries",
+                "SmithyRetriesAPI",
+            ],
+            path: "test-sdks/build/smithyprojections/test-sdks/waiters/swift-codegen/Sources/WaitersTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
         .testTarget(
