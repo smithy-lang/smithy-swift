@@ -6,11 +6,13 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.core.GenerationContext
+import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
 
 class PackageManifestGenerator(
     val ctx: GenerationContext,
 ) {
     fun writePackageManifest(dependencies: List<SymbolDependency>) {
+        val usesSchemaBased = SerdeUtils.useSchemaBased(ctx.settings, ctx.model)
         ctx.writerDelegator().useFileWriter("Package.swift") { writer ->
             writer.write("// swift-tools-version: \$L", ctx.settings.swiftVersion)
             writer.write("")
@@ -48,8 +50,20 @@ class PackageManifestGenerator(
                 writer.openBlock("targets: [", "]") {
                     writer.openBlock(".target(", "),") {
                         writer.write("name: \$S,", ctx.settings.moduleName)
-                        writer.openBlock("dependencies: [", "]") {
-                            dependenciesByTarget.forEach { writeTargetDependency(writer, it) }
+                        if (usesSchemaBased) {
+                            writer.openBlock("dependencies: [", "],") {
+                                dependenciesByTarget.forEach { writeTargetDependency(writer, it) }
+                            }
+                            writer.openBlock("plugins: [", "]") {
+                                writer.openBlock(".plugin(", ")") {
+                                    writer.write("name: \"SmithyCodeGeneratorPlugin\",")
+                                    writer.write("package: \"smithy-swift\"")
+                                }
+                            }
+                        } else {
+                            writer.openBlock("dependencies: [", "]") {
+                                dependenciesByTarget.forEach { writeTargetDependency(writer, it) }
+                            }
                         }
                     }
                     writer.openBlock(".testTarget(", ")") {

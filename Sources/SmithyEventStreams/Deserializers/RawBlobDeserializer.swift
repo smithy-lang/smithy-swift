@@ -9,49 +9,23 @@ import struct Foundation.Data
 import struct Foundation.Date
 import struct Smithy.Document
 @_spi(SchemaBasedSerde)
-import struct Smithy.EventHeaderTrait
-@_spi(SchemaBasedSerde)
-import struct Smithy.EventPayloadTrait
-@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
-import struct SmithyEventStreamsAPI.Message
-@_spi(SchemaBasedSerde)
-import protocol SmithySerialization.Codec
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 
-/// Deserializes the associated value (event or exception) from a case of a streaming union.
-struct EventContentDeserializer: ShapeDeserializer {
-    let codec: any Codec
-    let message: Message
+/// Returns raw bytes for blob reads; used for blob @eventPayload members.
+struct RawBlobDeserializer: ShapeDeserializer {
+    let data: Data
 
-    func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
+    func readBlob(_ schema: Schema) throws -> Data {
+        data
+    }
 
-        // Deserialize the event payload, to the member marked with @eventPayload if it exists,
-        // to the structure's members otherwise.
-        if let payloadMember = schema.members.first(where: { $0.hasTrait(EventPayloadTrait.self) }) {
-            // Skip codec for blob payloads — codec would parse as XML/JSON.
-            if (payloadMember.target ?? payloadMember).type == .blob {
-                let blobDeserializer = RawBlobDeserializer(data: message.payload)
-                try T.readConsumer(payloadMember, &value, blobDeserializer)
-            } else {
-                let payloadDeserializer = try codec.makeDeserializer(data: message.payload)
-                try T.readConsumer(payloadMember, &value, payloadDeserializer)
-            }
-        } else {
-            let payloadDeserializer = try codec.makeDeserializer(data: message.payload)
-            try payloadDeserializer.readStruct(schema, &value)
-        }
-
-        // Attempt to match the headers in the message to members in the structure.
-        for header in message.headers {
-            guard let headerMember = schema.members.first(where: { $0.id.member == header.name }) else { continue }
-            let headerDeserializer = EventHeaderDeserializer(header: header)
-            try T.readConsumer(headerMember, &value, headerDeserializer)
-        }
+    func readStruct<T>(_ schema: Schema, _ value: inout T) throws where T: DeserializableStruct {
+        throw notImplemented
     }
 
     func readList<E>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> E) throws -> [E] {
@@ -63,10 +37,6 @@ struct EventContentDeserializer: ShapeDeserializer {
     }
 
     func readBoolean(_ schema: Schema) throws -> Bool {
-        throw notImplemented
-    }
-
-    func readBlob(_ schema: Schema) throws -> Data {
         throw notImplemented
     }
 

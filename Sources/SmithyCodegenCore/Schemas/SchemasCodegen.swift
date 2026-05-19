@@ -13,6 +13,7 @@ import struct Smithy.ShapeID
 import enum Smithy.ShapeType
 @_spi(SchemaBasedSerde)
 import func Smithy.traitType
+import struct Smithy.XmlNameTrait
 
 /// A generator for the `Schemas.swift`
 package struct SchemasCodegen {
@@ -139,7 +140,9 @@ package struct SchemasCodegen {
             // Get all the trait IDs that apply to this member & sort
             let memberTraitIDs = Set(memberShape.traits.traitDict.keys)
             let targetTraitIDs = Set(try memberShape.target.traits.traitDict.keys)
-            let allTraitIDs = Array(memberTraitIDs.union(targetTraitIDs)).smithySorted()
+            // @xmlName on the target renames the target shape, not the member; don't inherit.
+            let inheritableTargetTraitIDs = targetTraitIDs.filter { $0 != XmlNameTrait.id }
+            let allTraitIDs = Array(memberTraitIDs.union(inheritableTargetTraitIDs)).smithySorted()
 
             var pairs = [(ShapeID, Node)]()
             for traitID in allTraitIDs {

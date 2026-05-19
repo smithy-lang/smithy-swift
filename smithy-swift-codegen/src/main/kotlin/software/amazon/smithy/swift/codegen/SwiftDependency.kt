@@ -64,6 +64,7 @@ class SwiftDependency(
         val SMITHY_WAITERS_API = smithySwiftDependency("SmithyWaitersAPI")
         val SMITHY_AWSJSON = smithySwiftDependency("SmithyAWSJSON")
         val SMITHY_RPCV2CBOR = smithySwiftDependency("SmithyRPCv2CBOR")
+        val SMITHY_REST_XML = smithySwiftDependency("SmithyRestXML")
 
         fun smithySwiftDependency(name: String): SwiftDependency =
             SwiftDependency(

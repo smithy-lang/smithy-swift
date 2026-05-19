@@ -23,11 +23,21 @@ public final class Reader: SmithyReader {
     public var hasContent: Bool { content != nil }
     var content: String?
 
-    // MARK: - init & deinit
-
-    /// Creates an "empty" reader.  This Reader will be returned when the data cannot be parsed.
-    init() {
+    /// An empty reader, returned when data cannot be parsed.
+    public init() {
         self.nodeInfo = ""
+    }
+
+    /// A Reader holding only literal text content (no element name).
+    public init(content: String) {
+        self.nodeInfo = ""
+        self.content = content
+    }
+
+    /// A Reader with a node name and optional text content.
+    public init(nodeInfo: NodeInfo, content: String?) {
+        self.nodeInfo = nodeInfo
+        self.content = content
     }
 
     /// Used to create a new XML node during reading from XML.
@@ -54,7 +64,7 @@ public final class Reader: SmithyReader {
         }
     }
 
-    func addChild(_ child: Reader) {
+    public func addChild(_ child: Reader) {
         children.append(child)
         child.parent = self
     }

@@ -28,6 +28,13 @@ private let allSupportedTraitTypes: [ShapeID: any Trait.Type] = [
     ErrorTrait.id: ErrorTrait.self,
     EventHeaderTrait.id: EventHeaderTrait.self,
     EventPayloadTrait.id: EventPayloadTrait.self,
+    HttpHeaderTrait.id: HttpHeaderTrait.self,
+    HttpLabelTrait.id: HttpLabelTrait.self,
+    HttpPayloadTrait.id: HttpPayloadTrait.self,
+    HttpPrefixHeadersTrait.id: HttpPrefixHeadersTrait.self,
+    HttpQueryTrait.id: HttpQueryTrait.self,
+    HttpQueryParamsTrait.id: HttpQueryParamsTrait.self,
+    HttpResponseCodeTrait.id: HttpResponseCodeTrait.self,
     InputTrait.id: InputTrait.self,
     OutputTrait.id: OutputTrait.self,
     RequiredTrait.id: RequiredTrait.self,
@@ -36,6 +43,10 @@ private let allSupportedTraitTypes: [ShapeID: any Trait.Type] = [
     StreamingTrait.id: StreamingTrait.self,
     TimestampFormatTrait.id: TimestampFormatTrait.self,
     UnitTypeTrait.id: UnitTypeTrait.self, // UnitTypeTrait will only ever appear in Prelude.unitSchema
+    XmlAttributeTrait.id: XmlAttributeTrait.self,
+    XmlFlattenedTrait.id: XmlFlattenedTrait.self,
+    XmlNameTrait.id: XmlNameTrait.self,
+    XmlNamespaceTrait.id: XmlNamespaceTrait.self,
 
     // Synthetic traits
     TargetsUnitTrait.id: TargetsUnitTrait.self,

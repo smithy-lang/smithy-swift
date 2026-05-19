@@ -5,6 +5,7 @@
 package software.amazon.smithy.swift.codegen.integration
 
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -149,7 +150,7 @@ abstract class HTTPBindingProtocolGenerator(
                     continue
                 }
                 val httpBindingResolver = getProtocolHttpBindingResolver(ctx, defaultContentType)
-                if (!usesSchemaBased) {
+                if (!usesSchemaBased || ctx.service.hasTrait<RestXmlTrait>()) {
                     HttpUrlPathProvider.renderUrlPathMiddleware(ctx, operation, httpBindingResolver)
                     HttpHeaderProvider.renderHeaderMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
                     HttpQueryItemProvider.renderQueryMiddleware(ctx, operation, httpBindingResolver, customizations.defaultTimestampFormat)
