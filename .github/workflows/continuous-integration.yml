@@ -61,13 +61,15 @@ jobs:
           sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
           xcode-select -p
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup common tools
         uses: ./.github/actions/setup-common-tools-composite-action
       - name: List all sims installed
         run: xcrun simctl list
       - name: Build & Run smithy-swift Kotlin Unit Tests
         run: ./gradlew build
+      - name: Generate test SDKs
+        run: ./scripts/codegen.sh
       - name: Build & Run smithy-swift Swift Unit Tests
         run: |
           set -o pipefail && \
@@ -76,6 +78,13 @@ jobs:
             -destination '${{ matrix.destination }}' \
             test 2>&1 \
             | xcbeautify
+
+  apple-ci-complete:
+    needs: apple-ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "apple-ci passed"
 
   apple-downstream:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
@@ -125,7 +134,7 @@ jobs:
           sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
           xcode-select -p
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: smithy-swift
       - name: Checkout aws-sdk-swift with composite action
@@ -162,6 +171,13 @@ jobs:
             test 2>&1 \
             | xcbeautify
 
+  apple-downstream-complete:
+    needs: apple-downstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "apple-downstream passed"
+
   linux-ci:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ${{ matrix.runner }}
@@ -175,14 +191,12 @@ jobs:
           - 5.9-jammy
           - 5.9-rhel-ubi9
           - 6.2-noble
-          - 6.3-rhel-ubi9
+          - 6.3-amazonlinux2023
     container:
       image: swift:${{ matrix.swift }}
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install openssl
         run: |
           if [ -x "$(command -v apt)" ]; then
@@ -194,8 +208,17 @@ jobs:
         uses: ./.github/actions/setup-common-tools-composite-action
       - name: Build & Run Kotlin Unit Tests
         run: ./gradlew build
+      - name: Generate test SDKs
+        run: ./scripts/codegen.sh
       - name: Build & Run Swift Unit Tests
         run: swift test
+
+  linux-ci-complete:
+    needs: linux-ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "linux-ci passed"
 
   linux-downstream:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
@@ -210,11 +233,9 @@ jobs:
           - 5.9-jammy
           - 5.9-rhel-ubi9
           - 6.2-noble
-          - 6.3-rhel-ubi9
+          - 6.3-amazonlinux2023
     container:
       image: swift:${{ matrix.swift }}
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Install openssl
         run: |
@@ -224,7 +245,7 @@ jobs:
             yum install -y openssl-devel which
           fi
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: smithy-swift
       - name: Checkout aws-sdk-swift with composite action
@@ -252,3 +273,9 @@ jobs:
           cd aws-sdk-swift/codegen
           swift test
 
+  linux-downstream-complete:
+    needs: linux-downstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "linux-downstream passed"

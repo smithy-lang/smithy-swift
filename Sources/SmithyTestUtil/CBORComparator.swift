@@ -6,40 +6,26 @@
 //
 import AwsCommonRuntimeKit
 import Foundation
-@_spi(SmithyReadWrite) import SmithyCBOR
 
 public struct CBORComparator {
-    /// Returns true if the logical CBOR values represented by the `Reader` instances are equal.
+    /// Returns true if the logical CBOR values are equal.
     /// - Parameters:
     ///   - dataA: The first CBOR data object to compare.
     ///   - dataB: The second CBOR data object to compare.
     /// - Returns: Returns true if the CBOR documents are equal.
     public static func cborData(_ dataA: Data, isEqualTo dataB: Data) throws -> Bool {
-        let readerA = try Reader.from(data: dataA)
-        let readerB = try Reader.from(data: dataB)
-        return compareReaders(readerA, readerB)
+        let readerA = try CBORDecoder(data: Array(dataA))
+        let readerB = try CBORDecoder(data: Array(dataB))
+        return try compareReaders(readerA, readerB)
     }
 
-    private static func compareReaders(_ readerA: Reader, _ readerB: Reader) -> Bool {
-        if !anyCBORValuesAreEqual(readerA.cborValue, readerB.cborValue) {
-            return false
-        }
-
-        // Compare children recursively
-        let childrenA = readerA.children.sorted(by: { $0.nodeInfo < $1.nodeInfo })
-        let childrenB = readerB.children.sorted(by: { $0.nodeInfo < $1.nodeInfo })
-
-        guard childrenA.count == childrenB.count else {
-            return false
-        }
-
-        for (childA, childB) in zip(childrenA, childrenB) {
-            if childA.nodeInfo != childB.nodeInfo || !compareReaders(childA, childB) {
+    private static func compareReaders(_ readerA: CBORDecoder, _ readerB: CBORDecoder) throws -> Bool {
+        while readerA.hasNext() && readerB.hasNext() {
+            if !anyCBORValuesAreEqual(try readerA.popNext(), try readerB.popNext()) {
                 return false
             }
         }
-
-        return true
+        return !readerA.hasNext() && !readerB.hasNext()
     }
 
     fileprivate static func anyCBORValuesAreEqual(_ lhs: CBORType?, _ rhs: CBORType?) -> Bool {

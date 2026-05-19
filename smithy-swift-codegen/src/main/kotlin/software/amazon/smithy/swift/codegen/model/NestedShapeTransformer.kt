@@ -71,6 +71,8 @@ object NestedShapeTransformer {
                             .addTrait(NestedTrait())
                             .build()
                     else -> shape
+                    // INT_ENUM is not handled here, and as a result INT_ENUM based Swift types are not namespaced.
+                    // Fixing this is a breaking change but should be undertaken when possible.
                 }
             } else {
                 shape
