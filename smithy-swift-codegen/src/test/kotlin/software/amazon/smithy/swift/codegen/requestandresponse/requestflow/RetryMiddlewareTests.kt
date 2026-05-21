@@ -16,7 +16,7 @@ class RetryMiddlewareTests {
         val context = setupTests("Isolated/contentmd5checksum.smithy", "aws.protocoltests.restxml#RestXml")
         val contents = getFileContents(context.manifest, "Sources/RestXml/RestXmlProtocolClient.swift")
         val expectedContents = """
-        builder.retryStrategy(SmithyRetries.DefaultRetryStrategy(options: config.retryStrategyOptions))
+        builder.retryStrategy(self.retryStrategy)
         builder.retryErrorInfoProvider(ClientRuntime.DefaultRetryErrorInfoProvider.errorInfo(for:))
 """
         contents.shouldContainOnlyOnce(expectedContents)
