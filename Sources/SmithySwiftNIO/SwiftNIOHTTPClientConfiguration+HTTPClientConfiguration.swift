@@ -31,12 +31,23 @@ extension HTTPClient.Configuration {
                 httpClientConfiguration.maxConnections
         )
 
+        let proxy: HTTPClient.Configuration.Proxy? = httpClientConfiguration.proxy.map { p in
+            if let user = p.username, let pass = p.password {
+                return .server(
+                    host: p.host,
+                    port: p.port,
+                    authorization: .basic(credentials: "\(user):\(pass)")
+                )
+            }
+            return .server(host: p.host, port: p.port)
+        }
+
         return .init(
             tlsConfiguration: nil, // TODO
             redirectConfiguration: nil,
             timeout: timeout,
             connectionPool: pool,
-            proxy: nil,
+            proxy: proxy,
             ignoreUncleanSSLShutdown: false,
             decompression: .disabled
         )

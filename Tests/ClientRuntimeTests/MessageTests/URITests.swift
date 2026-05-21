@@ -6,7 +6,7 @@
 //
 
 import Smithy
-import func SmithyHTTPAPI.getQueryItems
+@testable import SmithyHTTPAPI
 import Foundation
 import XCTest
 @testable import ClientRuntime

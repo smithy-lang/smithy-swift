@@ -21,7 +21,7 @@ open class HttpProtocolServiceClient(
     private val writer: SwiftWriter,
     private val serviceConfig: ServiceConfig,
 ) {
-    private val serviceName: String = ctx.settings.sdkId
+    private val serviceName: String = ctx.settings.sdkIdStrippingService
 
     open val clientProtocolSymbol: Symbol = ClientRuntimeTypes.Core.Client
 
@@ -35,13 +35,14 @@ open class HttpProtocolServiceClient(
             writer.write("public static let clientName = \$S", serviceSymbol.name)
             renderVersionProperty()
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
-            writer.write("let config: \$L", serviceConfig.sendableTypeName)
+            writer.write("public let config: \$L", serviceConfig.sendableTypeName)
             writer.write("let serviceName = \$S", serviceName)
             writer.write("")
             // Add Config typealias for backward compatibility - points to deprecated class
             // This satisfies the Client protocol's associated type requirement
             writer.write("@available(*, deprecated, message: \"Use \$L instead\")", serviceConfig.sendableTypeName)
             writer.write("public typealias Config = \$L", serviceConfig.typeName)
+            writer.write("public typealias Configuration = \$L", serviceConfig.sendableTypeName)
             writer.write("")
             renderInitFunction()
             writer.write("")
@@ -165,6 +166,7 @@ open class HttpProtocolServiceClient(
                     .flatMap { it.getProperties(ctx) }
                     .let { overrideConfigProperties(it) }
                     .sortedBy { it.accessModifier }
+                    .distinctBy { it.name }
 
             renderConfigClassVariables(serviceSymbol, properties)
 
@@ -213,6 +215,7 @@ open class HttpProtocolServiceClient(
                     .flatMap { it.getProperties(ctx) }
                     .let { overrideConfigProperties(it) }
                     .sortedBy { it.accessModifier }
+                    .distinctBy { it.name }
 
             renderConfigClassVariables(serviceSymbol, properties)
 

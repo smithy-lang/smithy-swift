@@ -5,15 +5,25 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 public class ClientBuilder<ClientType: Client> {
+    private var config: ClientType.Configuration?
+    private var plugins = [any Plugin]()
 
-    private var plugins: [Plugin]
-
-    public init(defaultPlugins: [Plugin] = []) {
+    public init(defaultPlugins: [any Plugin] = []) {
         self.plugins = defaultPlugins
+    }
+
+    public func withConfig(_ config: ClientType.Configuration) -> Self {
+        self.config = config
+        return self
     }
 
     public func withPlugin(_ plugin: any Plugin) -> ClientBuilder<ClientType> {
         self.plugins.append(plugin)
+        return self
+    }
+
+    public func withPlugins(_ plugins: [any Plugin]) -> ClientBuilder<ClientType> {
+        self.plugins.append(contentsOf: plugins)
         return self
     }
 
@@ -22,21 +32,16 @@ public class ClientBuilder<ClientType: Client> {
         return ClientType(config: configuration)
     }
 
-    enum ClientBuilderError: Error {
-        case incompatibleConfigurationType(expected: String, received: String)
-    }
-
-    func resolve(plugins: [any Plugin]) async throws -> ClientType.Config {
-        var clientConfiguration: any ClientConfiguration = try await ClientType.Config()
+    private func resolve(plugins: [any Plugin]) async throws -> ClientType.Configuration {
+        var clientConfiguration: ClientType.Configuration
+        if let config {
+            clientConfiguration = config
+        } else {
+            clientConfiguration = try await ClientType.Configuration()
+        }
         for plugin in plugins {
             try await plugin.configureClient(clientConfiguration: &clientConfiguration)
         }
-        guard let typedConfig = clientConfiguration as? ClientType.Config else {
-            throw ClientBuilderError.incompatibleConfigurationType(
-                expected: String(describing: ClientType.Config.self),
-                received: String(describing: type(of: clientConfiguration))
-            )
-        }
-        return typedConfig
+        return clientConfiguration
     }
 }

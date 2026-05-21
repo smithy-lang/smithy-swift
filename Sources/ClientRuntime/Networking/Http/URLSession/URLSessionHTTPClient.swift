@@ -18,8 +18,6 @@ import class Foundation.NSRecursiveLock
 import var Foundation.NSURLAuthenticationMethodClientCertificate
 import var Foundation.NSURLAuthenticationMethodServerTrust
 import struct Foundation.TimeInterval
-import class SmithyHTTPClientAPI.HttpTelemetry
-import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 import class Foundation.URLAuthenticationChallenge
 import struct Foundation.URLComponents
 import class Foundation.URLCredential
@@ -29,11 +27,9 @@ import class Foundation.URLResponse
 import class Foundation.URLSession
 import class Foundation.URLSessionConfiguration
 import protocol Foundation.URLSessionDataDelegate
-import SmithyTelemetryAPI
 import class Foundation.URLSessionDataTask
 import class Foundation.URLSessionTask
 import class Foundation.URLSessionTaskMetrics
-import Security
 import struct Smithy.Attributes
 import enum Smithy.ByteStream
 import protocol Smithy.LogAgent
@@ -44,7 +40,11 @@ import protocol SmithyHTTPAPI.HTTPClient
 import class SmithyHTTPAPI.HTTPRequest
 import class SmithyHTTPAPI.HTTPResponse
 import enum SmithyHTTPAPI.HTTPStatusCode
+@_spi(SmithyHTTPClient) import SmithyHTTPClient
+@_spi(SmithyHTTPClient) import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
+import class SmithyHTTPClientAPI.HttpTelemetry
 import class SmithyStreams.BufferedStream
+import SmithyTelemetryAPI
 
 /// A client that can be used to make requests to AWS services using `Foundation`'s `URLSession` HTTP client.
 ///

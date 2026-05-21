@@ -74,7 +74,7 @@ extension ByteStream: CustomDebugStringConvertible {
 }
 
 public enum ByteStreamError: Error, Sendable {
-    case streamNotSeeakble
+    case streamNotSeekable
     case invalidStreamTypeForChunkedBody(String)
     case streamClosedOrEmpty
     case streamDoesNotConformToChunkedStream(String)

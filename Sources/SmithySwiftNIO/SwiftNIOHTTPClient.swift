@@ -6,18 +6,15 @@
 //
 
 import AsyncHTTPClient
-import NIOCore
-import NIOHTTP1
-import NIOPosix
-import NIOSSL
-import Smithy
-import SmithyHTTPAPI
-import SmithyHTTPClientAPI
-import SmithyStreams
-import SmithyTelemetryAPI
 import struct Foundation.Date
 import struct Foundation.URLComponents
 import struct Foundation.URLQueryItem
+import NIOCore
+import NIOHTTP1
+import Smithy
+import SmithyHTTPAPI
+import SmithyHTTPClientAPI
+import SmithyTelemetryAPI
 
 /// AsyncHTTPClient-based HTTP client implementation that conforms to SmithyHTTPAPI.HTTPClient
 /// This implementation is thread-safe and supports concurrent request execution.

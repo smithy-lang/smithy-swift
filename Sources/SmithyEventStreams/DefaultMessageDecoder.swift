@@ -16,6 +16,7 @@ import protocol SmithyEventStreamsAPI.MessageDecoder
 /// AWS implementation of `MessageDecoder` for decoding event stream messages
 /// Note: This is class because struct does not allow using `self` in closure
 ///      and we need to use `self` to access `messageBuffer` per CRT API.
+@_spi(SmithyEventStreams)
 public class DefaultMessageDecoder: MessageDecoder, @unchecked Sendable {
     private var decoder: EventStreamMessageDecoder?
     private var messageBuffer: [Message] = []

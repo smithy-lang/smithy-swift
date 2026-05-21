@@ -8,8 +8,8 @@
 import AwsCommonRuntimeKit
 import struct Smithy.Attributes
 import enum Smithy.ByteStream
+@_spi(SmithyHTTPClient) import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 import class SmithyHTTPClientAPI.HttpTelemetry
-import enum SmithyHTTPClientAPI.HttpMetricsAttributesKeys
 
 extension HTTP2Stream {
     /// Returns the recommended size, in bytes, for the data to write

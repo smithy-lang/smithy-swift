@@ -141,6 +141,10 @@ public protocol MutableOutputAfterAttempt<InputType, OutputType, RequestType, Re
     /// Mutates the operation output.
     /// - Parameter updated: The updated output.
     func updateOutput(updated: OutputType)
+
+    /// Mutates the operation error.
+    /// - Parameter updated: The updated error.
+    func updateError(updated: any Error)
 }
 
 /// Context given to interceptor hooks called after execution.
@@ -179,4 +183,8 @@ public protocol MutableOutputFinalization<InputType, OutputType, RequestType, Re
     /// Mutates the operation output.
     /// - Parameter updated: The updated output.
     func updateOutput(updated: OutputType)
+
+    /// Mutates the operation error.
+    /// - Parameter updated: The updated error.
+    func updateError(updated: any Error)
 }

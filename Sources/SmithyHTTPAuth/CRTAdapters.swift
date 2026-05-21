@@ -17,7 +17,7 @@ import enum SmithyHTTPAuthAPI.AWSSignedBodyValue
 import enum SmithyHTTPAuthAPI.SigningAlgorithm
 
 import struct Foundation.Locale
-import class SmithyIdentity.CRTAWSCredentialIdentity
+@_spi(SmithyIdentity) import class SmithyIdentity.CRTAWSCredentialIdentity
 
 extension SigningAlgorithm {
     /// Convert self to CRT SigningAlgorithmType

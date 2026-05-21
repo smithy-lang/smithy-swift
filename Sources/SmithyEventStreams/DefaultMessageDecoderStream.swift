@@ -11,6 +11,7 @@ import SmithyEventStreamsAPI
 import SmithyEventStreamsAuthAPI
 
 /// Stream adapter that decodes input data into `EventStream.Message` objects.
+@_spi(SmithyEventStreams)
 public struct DefaultMessageDecoderStream<Event: Sendable>: MessageDecoderStream, Sendable {
     public typealias Element = Event
 

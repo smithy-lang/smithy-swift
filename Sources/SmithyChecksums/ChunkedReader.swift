@@ -11,8 +11,9 @@ import Smithy
 import protocol SmithyChecksumsAPI.Checksum
 import enum SmithyChecksumsAPI.ChecksumAlgorithm
 import struct SmithyHTTPAPI.Headers
-import SmithyHTTPClient
+@_spi(SmithyHTTPClient) import SmithyHTTPClient
 
+@_spi(SmithyChecksums)
 public class ChunkedReader {
     private var stream: ReadableStream
     private var signingConfig: SigningConfig
@@ -21,7 +22,6 @@ public class ChunkedReader {
     private var hasLastChunkBeenSent = false
     private var chunk = Data()
     private var chunkBody = Data()
-    private var currentHash: UInt32 = 0
     private var emptyChunkSigned = false
     private var checksumAlgorithm: ChecksumAlgorithm?
     private var checksum: (any Checksum)?

@@ -7,6 +7,7 @@
 
 import enum Smithy.ClientError
 
+@_spi(SmithyIdentity)
 public extension AWSCredentialIdentity {
     /// Creates `AWSCredentialIdentity` from the provided `CRTAWSCredentialIdentity`.
     ///
@@ -30,6 +31,7 @@ public extension AWSCredentialIdentity {
     }
 }
 
+@_spi(SmithyIdentity)
 public extension CRTAWSCredentialIdentity {
     /// Creates `CRTAWSCredentialIdentity` from the provided `AWSCredentialIdentity`.
     convenience init(awsCredentialIdentity: AWSCredentialIdentity) throws {

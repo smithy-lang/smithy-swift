@@ -61,6 +61,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
 
@@ -115,6 +116,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
 
@@ -163,6 +165,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
 
@@ -213,6 +216,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
 
@@ -273,6 +277,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
 
@@ -335,6 +340,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
 
@@ -389,6 +395,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
+            retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
 

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import SmithyEventStreams
+@_spi(SmithyEventStreams) import SmithyEventStreams
 import XCTest
 
 final class DefaultMessageEncoderTests: XCTestCase {

@@ -23,11 +23,12 @@ object SmithyHTTPAuthAPITypes {
 private fun runtimeSymbol(
     name: String,
     declaration: SwiftDeclaration? = null,
+    spiNames: List<String> = emptyList(),
 ): Symbol =
     SwiftSymbol.make(
         name,
         declaration,
         SwiftDependency.SMITHY_HTTP_AUTH_API,
         emptyList(),
-        emptyList(),
+        spiNames,
     )

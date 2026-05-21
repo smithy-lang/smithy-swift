@@ -11,6 +11,7 @@ import SmithyEventStreamsAPI
 import SmithyEventStreamsAuthAPI
 
 /// Stream adapter that encodes input into `Data` objects.
+@_spi(SmithyEventStreams)
 public class DefaultMessageEncoderStream<Event>: MessageEncoderStream, Stream, @unchecked Sendable {
 
     let stream: AsyncThrowingStream<Event, Error>

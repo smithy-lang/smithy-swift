@@ -38,7 +38,7 @@ public extension AuthSchemeResolver {
 
     // Trim namespace prefix from scheme ID
     // Ex. aws.auth#sigv4 -> sigv4
-    func normalizedSchemeName(_ schemeID: String) -> String {
+    internal func normalizedSchemeName(_ schemeID: String) -> String {
         return schemeID.split(separator: "#").last.map(String.init) ?? schemeID
     }
 }

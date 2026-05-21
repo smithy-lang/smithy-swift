@@ -5,7 +5,7 @@
 
 import Smithy
 import SmithyHTTPAPI
-import SmithyHTTPClient
+@_spi(SmithyHTTPClient) import SmithyHTTPClient
 import XCTest
 import AwsCommonRuntimeKit
 import SmithyTestUtil

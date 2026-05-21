@@ -5,7 +5,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-import Foundation
 import struct Smithy.AttributeKey
 import enum Smithy.ClientError
 import class Smithy.Context

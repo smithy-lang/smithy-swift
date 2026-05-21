@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   AWS_SWIFT_SDK_USE_LOCAL_DEPS: 1
 
@@ -22,35 +25,35 @@ jobs:
           - macos-26
         xcode:
           - Xcode_15.2
-          - Xcode_26.0
+          - Xcode_26.4
         destination:
           - 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
-          - 'platform=iOS Simulator,OS=26.0.1,name=iPhone 17'
+          - 'platform=iOS Simulator,OS=26.4.1,name=iPhone 17'
           - 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
-          - 'platform=tvOS Simulator,OS=26.0,name=Apple TV 4K (3rd generation) (at 1080p)'
+          - 'platform=tvOS Simulator,OS=26.4,name=Apple TV 4K (3rd generation) (at 1080p)'
           - 'platform=visionOS Simulator,OS=1.0,name=Apple Vision Pro'
-          - 'platform=visionOS Simulator,OS=26.0,name=Apple Vision Pro'
+          - 'platform=visionOS Simulator,OS=26.4.1,name=Apple Vision Pro'
           - 'platform=macOS'
         exclude:
           # Don't run old macOS with new Xcode
           - runner: macos-14
-            xcode: Xcode_26.0
+            xcode: Xcode_26.4
           # Don't run new macOS with old Xcode
           - runner: macos-26
             xcode: Xcode_15.2
           # Don't run old simulators with new Xcode
           - destination: 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
-            xcode: Xcode_26.0
+            xcode: Xcode_26.4
           - destination: 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
-            xcode: Xcode_26.0
+            xcode: Xcode_26.4
           - destination: 'platform=visionOS Simulator,OS=1.0,name=Apple Vision Pro'
-            xcode: Xcode_26.0
+            xcode: Xcode_26.4
           # Don't run new simulators with old Xcode
-          - destination: 'platform=tvOS Simulator,OS=26.0,name=Apple TV 4K (3rd generation) (at 1080p)'
+          - destination: 'platform=tvOS Simulator,OS=26.4,name=Apple TV 4K (3rd generation) (at 1080p)'
             xcode: Xcode_15.2
-          - destination: 'platform=iOS Simulator,OS=26.0.1,name=iPhone 17'
+          - destination: 'platform=iOS Simulator,OS=26.4.1,name=iPhone 17'
             xcode: Xcode_15.2
-          - destination: 'platform=visionOS Simulator,OS=26.0,name=Apple Vision Pro'
+          - destination: 'platform=visionOS Simulator,OS=26.4.1,name=Apple Vision Pro'
             xcode: Xcode_15.2
     steps:
       - name: Configure Xcode
@@ -58,15 +61,16 @@ jobs:
           sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
           xcode-select -p
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup common tools
         uses: ./.github/actions/setup-common-tools-composite-action
       - name: List all sims installed
         run: xcrun simctl list
       - name: Build & Run smithy-swift Kotlin Unit Tests
         run: ./gradlew build
+      - name: Generate test SDKs
+        run: ./scripts/codegen.sh
       - name: Build & Run smithy-swift Swift Unit Tests
-        timeout-minutes: 15
         run: |
           set -o pipefail && \
           NSUnbufferedIO=YES xcodebuild \
@@ -74,6 +78,13 @@ jobs:
             -destination '${{ matrix.destination }}' \
             test 2>&1 \
             | xcbeautify
+
+  apple-ci-complete:
+    needs: apple-ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "apple-ci passed"
 
   apple-downstream:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
@@ -87,35 +98,35 @@ jobs:
           - macos-26
         xcode:
           - Xcode_15.2
-          - Xcode_26.0
+          - Xcode_26.4
         destination:
           - 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
-          - 'platform=iOS Simulator,OS=26.0.1,name=iPhone 17'
+          - 'platform=iOS Simulator,OS=26.4.1,name=iPhone 17'
           - 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
-          - 'platform=tvOS Simulator,OS=26.0,name=Apple TV 4K (3rd generation) (at 1080p)'
+          - 'platform=tvOS Simulator,OS=26.4,name=Apple TV 4K (3rd generation) (at 1080p)'
           - 'platform=visionOS Simulator,OS=1.0,name=Apple Vision Pro'
-          - 'platform=visionOS Simulator,OS=26.0,name=Apple Vision Pro'
+          - 'platform=visionOS Simulator,OS=26.4.1,name=Apple Vision Pro'
           - 'platform=macOS'
         exclude:
           # Don't run old macOS with new Xcode
           - runner: macos-14
-            xcode: Xcode_26.0
+            xcode: Xcode_26.4
           # Don't run new macOS with old Xcode
           - runner: macos-26
             xcode: Xcode_15.2
           # Don't run old simulators with new Xcode
           - destination: 'platform=tvOS Simulator,OS=17.2,name=Apple TV 4K (3rd generation) (at 1080p)'
-            xcode: Xcode_26.0
+            xcode: Xcode_26.4
           - destination: 'platform=iOS Simulator,OS=17.2,name=iPhone 15'
-            xcode: Xcode_26.0
+            xcode: Xcode_26.4
           - destination: 'platform=visionOS Simulator,OS=1.0,name=Apple Vision Pro'
-            xcode: Xcode_26.0
+            xcode: Xcode_26.4
           # Don't run new simulators with old Xcode
-          - destination: 'platform=tvOS Simulator,OS=26.0,name=Apple TV 4K (3rd generation) (at 1080p)'
+          - destination: 'platform=tvOS Simulator,OS=26.4,name=Apple TV 4K (3rd generation) (at 1080p)'
             xcode: Xcode_15.2
-          - destination: 'platform=iOS Simulator,OS=26.0.1,name=iPhone 17'
+          - destination: 'platform=iOS Simulator,OS=26.4.1,name=iPhone 17'
             xcode: Xcode_15.2
-          - destination: 'platform=visionOS Simulator,OS=26.0,name=Apple Vision Pro'
+          - destination: 'platform=visionOS Simulator,OS=26.4.1,name=Apple Vision Pro'
             xcode: Xcode_15.2
     steps:
       - name: Configure Xcode
@@ -123,13 +134,13 @@ jobs:
           sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
           xcode-select -p
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: smithy-swift
       - name: Checkout aws-sdk-swift with composite action
         uses: ./smithy-swift/.github/actions/checkout-aws-sdk-swift-composite-action
         with:
-          AUTOMATION_USER_SSH_PRIVATE_KEY: ${{ secrets.AUTOMATION_USER_SSH_PRIVATE_KEY }}
+          STAGING_PARTNER_REPO_PRIVATE_DEPLOY_KEY: ${{ secrets.STAGING_PARTNER_REPO_PRIVATE_DEPLOY_KEY }}
           STAGING_PARTNER_REPO: ${{ secrets.STAGING_PARTNER_REPO }}
       - name: Setup common tools
         uses: ./smithy-swift/.github/actions/setup-common-tools-composite-action
@@ -160,6 +171,13 @@ jobs:
             test 2>&1 \
             | xcbeautify
 
+  apple-downstream-complete:
+    needs: apple-downstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "apple-downstream passed"
+
   linux-ci:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ${{ matrix.runner }}
@@ -171,14 +189,14 @@ jobs:
           - ubuntu-24.04-arm
         swift:
           - 5.9-jammy
-          - 6.2-noble
+          - 5.9-rhel-ubi9
+          - 6.3-noble
+          - 6.3-amazonlinux2023
     container:
       image: swift:${{ matrix.swift }}
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install openssl
         run: |
           if [ -x "$(command -v apt)" ]; then
@@ -190,8 +208,17 @@ jobs:
         uses: ./.github/actions/setup-common-tools-composite-action
       - name: Build & Run Kotlin Unit Tests
         run: ./gradlew build
+      - name: Generate test SDKs
+        run: ./scripts/codegen.sh
       - name: Build & Run Swift Unit Tests
         run: swift test
+
+  linux-ci-complete:
+    needs: linux-ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "linux-ci passed"
 
   linux-downstream:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
@@ -204,11 +231,11 @@ jobs:
           - ubuntu-24.04-arm
         swift:
           - 5.9-jammy
-          - 6.2-noble
+          - 5.9-rhel-ubi9
+          - 6.3-noble
+          - 6.3-amazonlinux2023
     container:
       image: swift:${{ matrix.swift }}
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Install openssl
         run: |
@@ -218,13 +245,13 @@ jobs:
             yum install -y openssl-devel which
           fi
       - name: Checkout smithy-swift
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: smithy-swift
       - name: Checkout aws-sdk-swift with composite action
         uses: ./smithy-swift/.github/actions/checkout-aws-sdk-swift-composite-action
         with:
-          AUTOMATION_USER_SSH_PRIVATE_KEY: ${{ secrets.AUTOMATION_USER_SSH_PRIVATE_KEY }}
+          STAGING_PARTNER_REPO_PRIVATE_DEPLOY_KEY: ${{ secrets.STAGING_PARTNER_REPO_PRIVATE_DEPLOY_KEY }}
           STAGING_PARTNER_REPO: ${{ secrets.STAGING_PARTNER_REPO }}
       - name: Setup common tools
         uses: ./smithy-swift/.github/actions/setup-common-tools-composite-action
@@ -246,3 +273,9 @@ jobs:
           cd aws-sdk-swift/codegen
           swift test
 
+  linux-downstream-complete:
+    needs: linux-downstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "linux-downstream passed"

@@ -11,6 +11,7 @@ import protocol SmithyEventStreamsAPI.MessageEncoder
 
     /// Encodes a `Message` into a `Data` object
     /// to be sent over the wire.
+    @_spi(SmithyEventStreams)
     public struct DefaultMessageEncoder: MessageEncoder {
         public init() {}
 

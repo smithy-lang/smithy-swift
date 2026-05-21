@@ -1,6 +1,7 @@
 import AwsCommonRuntimeKit
 import struct SmithyHTTPAPI.Headers
 
+@_spi(SmithyHTTPClient)
 extension Headers {
     public func toHttpHeaders() -> [HTTPHeader] {
         headers.map {

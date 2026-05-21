@@ -57,5 +57,6 @@ public struct DefaultRetryStrategy: RetryStrategy {
 
     public func recordSuccess(token: DefaultRetryToken) async {
         await token.quota.retryQuotaRelease(isSuccess: true, capacityAmount: token.capacityAmount)
+        await token.quota.updateClientSendingRate(isThrottling: false)
     }
 }

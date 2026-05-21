@@ -10,6 +10,7 @@ import struct Smithy.Attributes
 import protocol SmithyHTTPAuthAPI.IdentityResolverConfiguration
 import protocol SmithyIdentityAPI.IdentityResolver
 
+@_spi(SmithyHTTPAuth)
 public struct DefaultIdentityResolverConfiguration: IdentityResolverConfiguration {
     let identityResolvers: Attributes
 

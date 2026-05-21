@@ -21,7 +21,7 @@ public class AuthSchemePlugin: Plugin {
         self.authSchemes = authSchemes
     }
 
-    public func configureClient(clientConfiguration: inout ClientConfiguration) async throws {
+    public func configureClient<Config: ClientConfiguration>(clientConfiguration: inout Config) async throws {
         guard var config = clientConfiguration as? any DefaultHttpClientConfiguration else { return }
         if self.authSchemes != nil {
             config.authSchemes = self.authSchemes!
@@ -29,6 +29,7 @@ public class AuthSchemePlugin: Plugin {
         if self.authSchemeResolver != nil {
             config.authSchemeResolver = self.authSchemeResolver!
         }
-        clientConfiguration = config
+        guard let modifiedConfig = config as? Config else { return }
+        clientConfiguration = modifiedConfig
     }
 }
