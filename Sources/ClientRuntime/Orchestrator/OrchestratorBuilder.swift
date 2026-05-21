@@ -40,6 +40,7 @@ public class OrchestratorBuilder<
     internal var deserialize: ((ResponseType, Context) async throws -> OutputType)?
     internal var retryStrategy: (any RetryStrategy)?
     internal var retryErrorInfoProvider: ((Error) -> RetryErrorInfo?)?
+    internal var longPollingBackoffProvider: ((Context, RetryErrorInfo, Int) async -> TimeInterval?)?
     internal var clockSkewProvider: (ClockSkewProvider<RequestType, ResponseType>)?
     internal var telemetry: OrchestratorTelemetry?
     internal var selectAuthScheme: SelectAuthScheme?
@@ -120,6 +121,15 @@ public class OrchestratorBuilder<
     @discardableResult
     public func retryErrorInfoProvider(_ retryErrorInfoProvider: @escaping (Error) -> RetryErrorInfo?) -> Self {
         self.retryErrorInfoProvider = retryErrorInfoProvider
+        return self
+    }
+
+    /// Backoff delay provider for long-polling operations when the token bucket is empty.
+    @discardableResult
+    public func longPollingBackoffProvider(
+        _ provider: @escaping (Context, RetryErrorInfo, Int) async -> TimeInterval?
+    ) -> Self {
+        self.longPollingBackoffProvider = provider
         return self
     }
 

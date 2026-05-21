@@ -135,6 +135,10 @@ abstract class HTTPBindingProtocolGenerator(
     @Suppress("ktlint:standard:property-naming")
     private val LOGGER = Logger.getLogger(javaClass.name)
 
+    open val retryErrorInfoProviderExpressionOverride: String? get() = null
+
+    open val longPollingBackoffExpressionOverride: String? get() = null
+
     override var serviceErrorProtocolSymbol: Symbol = ClientRuntimeTypes.Http.HttpError
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
