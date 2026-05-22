@@ -8,19 +8,11 @@
 import Foundation
 
 public struct SerdeBenchmarkReport: Codable {
-    public let lang: String
-    public let software: [[String: String]]
-    public let os: String
-    public let instance: String
-    public let precision: String
+    public let metadata: SerdeBenchmarkMetadata
     public let serdeBenchmarks: [SerdeBenchmark]
 
     public enum CodingKeys: String, CodingKey {
-        case lang
-        case software
-        case os
-        case instance
-        case precision
+        case metadata
         case serdeBenchmarks = "serde_benchmarks"
     }
 
@@ -41,32 +33,34 @@ public struct SerdeBenchmarkReport: Codable {
     }
 
     public init(
-        lang: String = "Swift",
-        software: [[String: String]] = [
-            ["swift": "6.3.2"],
-            ["smithy-swift": "0.206.0"],
+        lang: String = "swift",
+        software: [[String]] = [
+            ["swift", "6.3.2"],
+            ["smithy-swift", "0.206.0"],
         ],
         os: String = "Ubuntu 24.04 LTS (x86_64)",
         instance: String = "m7i.xlarge",
         precision: String = "-9",
         serdeBenchmarks: [SerdeBenchmark]
     ) {
-        self.lang = lang
-        self.software = software
-        self.os = os
-        self.instance = instance
-        self.precision = precision
+        self.metadata = SerdeBenchmarkMetadata(
+            lang: lang,
+            software: software,
+            os: os,
+            instance: instance,
+            precision: precision
+        )
         self.serdeBenchmarks = serdeBenchmarks
     }
 
     public func adding(serdeBenchmark: SerdeBenchmark) -> Self {
         let newSerdeBenchmarks = self.serdeBenchmarks.filter { $0.id != serdeBenchmark.id } + [serdeBenchmark]
         return SerdeBenchmarkReport(
-            lang: self.lang,
-            software: self.software,
-            os: self.os,
-            instance: self.instance,
-            precision: self.precision,
+            lang: self.metadata.lang,
+            software: self.metadata.software,
+            os: self.metadata.os,
+            instance: self.metadata.instance,
+            precision: self.metadata.precision,
             serdeBenchmarks: newSerdeBenchmarks.sorted { $0.id < $1.id }
         )
     }

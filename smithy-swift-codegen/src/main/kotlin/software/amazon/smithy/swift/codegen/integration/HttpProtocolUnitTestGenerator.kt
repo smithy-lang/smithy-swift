@@ -50,7 +50,7 @@ abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
                 writer.writeDocs(it)
             }
 
-            writer.openBlock("func test${test.id}() async throws {", "}") {
+            writer.openBlock("func test_${test.id}() async throws {", "}") {
                 renderTestBody(test)
             }
         }
