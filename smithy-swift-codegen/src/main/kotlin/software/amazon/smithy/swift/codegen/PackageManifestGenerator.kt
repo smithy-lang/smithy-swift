@@ -76,8 +76,8 @@ class PackageManifestGenerator(
     ) {
         writer.openBlock(".package(", "),") {
             val url = dependency.expectProperty("url", String::class.java)
-            writer.write("url: \$S,", url)
-            writer.write("from: \$S", dependency.version)
+//            writer.write("url: \$S,", url)
+            writer.write("path: \"../../../../../../../smithy-swift\"")
         }
     }
 

@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
-import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
@@ -186,10 +185,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         // - HTTP client engine; a mock that returns the test's HTTPResponse is used
         writer.openBlock("var config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
-            if (ctx.service.hasTrait<SigV4Trait>()) {
-                writer.write("region: \$S,", region)
-                writer.write("signingRegion: \$S,", region)
-            }
+            writer.write("region: \$S,", region)
+            writer.write("signingRegion: \$S,", region)
             if (!ctx.service.hasTrait<EndpointRuleSetTrait>()) {
                 writer.openBlock(
                     "endpointResolver: StaticEndpointResolver(endpoint: try \$N(",
