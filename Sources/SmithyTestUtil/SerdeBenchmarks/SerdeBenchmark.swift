@@ -30,7 +30,6 @@ public struct SerdeBenchmark: Codable {
 
     public init(id: String, measurements: [Double]) {
         let runCount = 10000
-        let nsecPerSec = Double(NSEC_PER_SEC)
 
         // Calcluate mean
         var sum = 0.0
@@ -61,17 +60,16 @@ public struct SerdeBenchmark: Codable {
     ) -> (p50: Int, p90: Int, p95: Int, p99: Int) {
         let sorted = measurements.sorted()
         let count = sorted.count
-        let nsPerSecond = 1_000_000_000
 
         func percentile(_ p: Double) -> Int {
             let index = p / 100.0 * Double(count - 1)
             let lower = Int(floor(index))
             let upper = Int(ceil(index))
             if lower == upper {
-                return Int(sorted[lower]) * nsPerSecond
+                return Int(sorted[lower] * nsecPerSec)
             }
             let fraction = index - Double(lower)
-            return Int(sorted[lower] * (1 - fraction) + sorted[upper] * fraction) * nsPerSecond
+            return Int((sorted[lower] * (1 - fraction) + sorted[upper] * fraction) * nsecPerSec)
         }
 
         return (
@@ -82,3 +80,5 @@ public struct SerdeBenchmark: Codable {
         )
     }
 }
+
+private let nsecPerSec = 1_000_000_000.0

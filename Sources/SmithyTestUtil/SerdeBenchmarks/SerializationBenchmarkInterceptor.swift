@@ -9,11 +9,11 @@ import Smithy
 import ClientRuntime
 import SmithyHTTPAPI
 
-class SerializationBenchmarkInterceptor<InputType, OutputType>: Interceptor {
-    typealias RequestType = HTTPRequest
-    typealias ResponseType = HTTPResponse
+public class SerializationBenchmarkInterceptor<InputType, OutputType>: Interceptor {
+    public typealias RequestType = HTTPRequest
+    public typealias ResponseType = HTTPResponse
 
-    let serializationTime: BoxedDouble
+    public let serializationTime: BoxedDouble
 
     public init(
         _ serializationTime: BoxedDouble
@@ -21,21 +21,22 @@ class SerializationBenchmarkInterceptor<InputType, OutputType>: Interceptor {
         self.serializationTime = serializationTime
     }
 
-    func readAfterSerialization(context: some AfterSerialization<InputType, RequestType>) async throws {
+    public func readAfterSerialization(context: some AfterSerialization<InputType, RequestType>) async throws {
         let serializeDuration = context.getAttributes().get(key: AttributeKey<Double>(name: "SerializeDuration"))
         serializationTime.value = serializeDuration ?? 0
     }
 }
 
-class SerializationBenchmarkInterceptorProvider: HttpInterceptorProvider {
-    let serializationTime: BoxedDouble
+public class SerializationBenchmarkInterceptorProvider: HttpInterceptorProvider {
+    public let serializationTime: BoxedDouble
 
     public init(
         _ serializationTime: BoxedDouble
     ) {
         self.serializationTime = serializationTime
     }
-  func create<InputType, OutputType>() -> any Interceptor<InputType, OutputType, HTTPRequest, HTTPResponse> {
-    return SerializationBenchmarkInterceptor(serializationTime)
-  }
+
+    public func create<InputType, OutputType>() -> any Interceptor<InputType, OutputType, HTTPRequest, HTTPResponse> {
+        return SerializationBenchmarkInterceptor(serializationTime)
+    }
 }
