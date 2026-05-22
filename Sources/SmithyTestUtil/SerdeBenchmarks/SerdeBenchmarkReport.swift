@@ -24,8 +24,7 @@ public struct SerdeBenchmarkReport: Codable {
         case serdeBenchmarks = "serde_benchmarks"
     }
 
-    public static func update(with serdeBenchmark: SerdeBenchmark) throws {
-        let path = FileManager.default.currentDirectoryPath + "/instance_results.json"
+    public static func update(at path: String, with serdeBenchmark: SerdeBenchmark) throws {
         let fileURL = URL(fileURLWithPath: path)
         let newSerdeBenchmarkReport: SerdeBenchmarkReport
         if FileManager.default.fileExists(atPath: path) {

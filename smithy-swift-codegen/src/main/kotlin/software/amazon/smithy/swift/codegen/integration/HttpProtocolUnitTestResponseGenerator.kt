@@ -250,8 +250,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
                     }
                 }
 
+                let path = FileManager.default.currentDirectoryPath + "/../../../../../../../smithy-swift/instance-results.json"
                 let serdeBenchmark = SerdeBenchmark(id: "${test.id}", measurements: measurements)
-                try SerdeBenchmarkReport.update(with: serdeBenchmark)
+                try SerdeBenchmarkReport.update(at: path, with: serdeBenchmark)
                 """.trimIndent(),
         )
     }

@@ -6,7 +6,7 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.core.GenerationContext
-import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
+import software.amazon.smithy.swift.codegen.utils.hasSerdePerformanceTests
 
 class PackageManifestGenerator(
     val ctx: GenerationContext,
@@ -52,11 +52,12 @@ class PackageManifestGenerator(
                         writer.openBlock("dependencies: [", "],") {
                             dependenciesByTarget.forEach { writeTargetDependency(writer, it) }
                         }
-                        if (SerdeUtils.useSchemaBased(ctx.settings, ctx.model)) {
-                            writer.write("plugins: [.plugin(name: \"SmithyCodeGeneratorPlugin\", package: \"smithy-swift\")]")
+                        writer.openBlock("plugins: [", "]") {
+                            writer.openBlock(".plugin(", ")") {
+                                writer.write("name: \"SmithyCodeGeneratorPlugin\",")
+                                writer.write("package: \"smithy-swift\"")
+                            }
                         }
-                        writer.unwrite(",\n")
-                        writer.write("")
                     }
                     writer.openBlock(".testTarget(", ")") {
                         writer.write("name: \$S,", ctx.settings.testModuleName)
@@ -75,9 +76,14 @@ class PackageManifestGenerator(
         dependency: SymbolDependency,
     ) {
         writer.openBlock(".package(", "),") {
-            val url = dependency.expectProperty("url", String::class.java)
-//            writer.write("url: \$S,", url)
-            writer.write("path: \"../../../../../../../smithy-swift\"")
+            if (ctx.model.serviceShapes.any { it.hasSerdePerformanceTests(ctx.model) }) {
+                // For serde performance tests, use local smithy-swift
+                writer.write("path: \"../../../../../../../smithy-swift\"")
+            } else {
+                val url = dependency.expectProperty("url", String::class.java)
+                writer.write("url: \$S,", url)
+                writer.write("exact: \$S", dependency.version)
+            }
         }
     }
 
