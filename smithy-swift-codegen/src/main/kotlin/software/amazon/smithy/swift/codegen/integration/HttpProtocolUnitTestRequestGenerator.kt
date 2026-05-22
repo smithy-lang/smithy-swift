@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.swift.codegen.integration
 
+import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
@@ -13,6 +14,7 @@ import software.amazon.smithy.swift.codegen.hasStreamingMember
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProtocol
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
+import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
@@ -107,8 +109,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
 
         writer.openBlock("var config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
-            writer.write("region: \$S,", region)
-            writer.write("signingRegion: \$S,", region)
+            if (ctx.service.hasTrait<SigV4Trait>()) {
+                writer.write("region: \$S,", region)
+                writer.write("signingRegion: \$S,", region)
+            }
             if (!ctx.service.getTrait(EndpointRuleSetTrait::class.java).isPresent) {
                 val host: String? = test.host.orElse(null)
                 val url = "https://${host ?: "example.com"}"

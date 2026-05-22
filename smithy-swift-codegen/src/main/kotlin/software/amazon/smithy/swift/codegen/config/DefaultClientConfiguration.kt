@@ -31,6 +31,20 @@ class DefaultClientConfiguration : ClientConfiguration {
                 },
             ),
             ConfigProperty(
+                "region",
+                SwiftTypes.String.toOptional(),
+                { "nil" },
+                false,
+                false,
+            ),
+            ConfigProperty(
+                "signingRegion",
+                SwiftTypes.String.toOptional(),
+                { "self.region" },
+                false,
+                false,
+            ),
+            ConfigProperty(
                 "endpointResolver",
                 EndpointTypes.EndpointResolver,
                 { it.format("DefaultEndpointResolver()") },

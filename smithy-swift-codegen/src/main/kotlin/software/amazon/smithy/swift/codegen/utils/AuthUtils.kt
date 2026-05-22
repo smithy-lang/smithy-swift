@@ -6,6 +6,7 @@ import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.config.DefaultProvider
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAuthTypes
 
 open class AuthUtils(
@@ -26,7 +27,7 @@ open class AuthUtils(
         writer: SwiftWriter,
     ): String {
         val effectiveAuthSchemes = ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service)
-        var authSchemeList = mutableListOf<String>()
+        val authSchemeList = mutableListOf(writer.format("\$N()", SmithyHTTPAuthTypes.SigV4AuthScheme))
 
         if (effectiveAuthSchemes.contains(HttpBearerAuthTrait.ID)) {
             authSchemeList += writer.format("\$N()", SmithyHTTPAuthTypes.BearerTokenAuthScheme)
