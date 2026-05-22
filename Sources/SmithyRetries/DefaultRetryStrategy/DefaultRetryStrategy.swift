@@ -12,7 +12,7 @@ import enum SmithyRetriesAPI.RetryErrorType
 import protocol SmithyRetriesAPI.RetryStrategy
 import struct SmithyRetriesAPI.RetryStrategyOptions
 
-public struct DefaultRetryStrategy: RetryStrategy {
+public struct DefaultRetryStrategy: RetryStrategy, Sendable {
     public typealias Token = DefaultRetryToken
 
     let options: RetryStrategyOptions
@@ -21,7 +21,7 @@ public struct DefaultRetryStrategy: RetryStrategy {
 
     /// Used to inject a mock during unit tests that simulates sleeping.
     /// The default `sleeper` function actually sleeps asynchronously.
-    var sleeper: (TimeInterval) async throws -> Void = { delay in
+    var sleeper: @Sendable (TimeInterval) async throws -> Void = { delay in
         guard delay > 0.0 else { return }
         try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000.0))
     }
