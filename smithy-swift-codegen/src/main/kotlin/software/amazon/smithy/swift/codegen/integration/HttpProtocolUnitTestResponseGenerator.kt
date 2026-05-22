@@ -250,7 +250,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
                     }
                 }
 
-                logSerdeBenchmarkResult(calculateAndFormatMetrics(from: measurements, testID: "${test.id}"))
+                let serdeBenchmark = SerdeBenchmark(id: "${test.id}", measurements: measurements)
+                try SerdeBenchmarkReport.update(with: serdeBenchmark)
                 """.trimIndent(),
         )
     }

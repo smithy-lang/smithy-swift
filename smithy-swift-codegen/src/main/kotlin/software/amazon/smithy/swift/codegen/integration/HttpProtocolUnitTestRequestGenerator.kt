@@ -121,7 +121,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
             writer.write("idempotencyTokenGenerator: ProtocolTestIdempotencyTokenGenerator(),")
             writer.write("httpClientEngine: ProtocolTestClient()")
         }
-        writer.write("let serializationTime: BoxedDouble = BoxedDouble(-1)")
+        writer.write("let serializationTime = BoxedDouble(-1)")
         writer.write("config.addInterceptorProvider(SerializationBenchmarkInterceptorProvider(serializationTime))")
         writer.write("let client = \$L(config: config)", clientName)
         writer.write("var measurements: [Double] = []")
@@ -142,14 +142,15 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                 for i in 0..<20000 {
                     do {
                         _ = try await client.${operation.toLowerCamelCase()}(input: input)
-                    } catch TestCheckError.actual(let actual) {
+                    } catch TestCheckError.actual {
                         if i >= 10000 {
                             measurements.append(serializationTime.value)
                         }
                     }
                 }
 
-                logSerdeBenchmarkResult(calculateAndFormatMetrics(from: measurements, testID: "${test.id}"))
+                let serdeBenchmark = SerdeBenchmark(id: "${test.id}", measurements: measurements)
+                try SerdeBenchmarkReport.update(with: serdeBenchmark)
                 """.trimIndent(),
             )
         }
