@@ -100,11 +100,11 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
                     "Data([${decodedBytes.joinToString(", ") { byte -> "0x%02X".format(byte) }}])"
                 } catch (e: IllegalArgumentException) {
                     // Fallback to Swift Data representation for invalid Base64
-                    "Data(\"\"\"\n$bodyContent\n\"\"\".utf8)"
+                    "Data(#\"\"\"\n$bodyContent\n\"\"\"#.utf8)"
                 }
             } else {
                 // Non-CBOR protocols default
-                "Data(\"\"\"\n$bodyContent\n\"\"\".utf8)"
+                "Data(#\"\"\"\n$bodyContent\n\"\"\"#.utf8)"
             }
 
         operation.output.ifPresent {

@@ -72,14 +72,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                         } catch (e: IllegalArgumentException) {
                             // Fallback to original string if decoding fails
                             writer.format(
-                                "Data(\"\"\"\n\$L\n\"\"\".utf8)",
+                                "Data(#\"\"\"\n\$L\n\"\"\"#.utf8)",
                                 test.body.get().replace("\\\"", "\\\\\""),
                             )
                         }
                     } else {
                         // Default case for non-CBOR protocols
                         writer.format(
-                            "Data(\"\"\"\n\$L\n\"\"\".utf8)",
+                            "Data(#\"\"\"\n\$L\n\"\"\"#.utf8)",
                             test.body.get().replace("\\\"", "\\\\\""),
                         )
                     }

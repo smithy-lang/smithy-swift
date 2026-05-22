@@ -126,10 +126,16 @@ public struct Deserializer: ShapeDeserializer {
         }
         try nullCheck()
         let next = try decoder.popNext()
-        guard case .double(let value) = next else {
-            throw CBORDecoderError("member \(schema.id) expected .double but got \(next) instead")
+        switch next {
+        case .double(let value):
+            return Float(value)
+        case .int(let value):
+            return Float(value)
+        case .uint(let value):
+            return Float(value)
+        default:
+            throw CBORDecoderError("member \(schema.id) expected .double, .int, or .uint but got .\(next) instead")
         }
-        return Float(value)
     }
 
     public func readDouble(_ schema: Schema) throws -> Double {
@@ -138,10 +144,16 @@ public struct Deserializer: ShapeDeserializer {
         }
         try nullCheck()
         let next = try decoder.popNext()
-        guard case .double(let value) = next else {
-            throw CBORDecoderError("member \(schema.id) expected .double but got \(next) instead")
+        switch next {
+        case .double(let value):
+            return value
+        case .int(let value):
+            return Double(value)
+        case .uint(let value):
+            return Double(value)
+        default:
+            throw CBORDecoderError("member \(schema.id) expected .double, .int, or .uint but got .\(next) instead")
         }
-        return value
     }
 
     public func readBigInteger(_ schema: Schema) throws -> Int64 {
