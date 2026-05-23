@@ -407,6 +407,14 @@ let package = Package(
             dependencies: ["SmithyCodegenCore"],
             resources: [ .process("Resources") ]
         ),
+        .testTarget(
+            name: "SmithyCBORTests",
+            dependencies: [
+                "Smithy",
+                "SmithyCBOR",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+            ]
+        ),
         .target(
             name: "RPCv2CBORTestSDK",
             dependencies: [
