@@ -31,4 +31,24 @@ final class DeserializerTests: XCTestCase {
         let decodedDouble = try subject.readDouble(Prelude.doubleSchema)
         XCTAssertEqual(decodedDouble, 4321.0)
     }
+
+    func test_double_deserializesIntAsFloat() throws {
+        let cborEncoder = try CBOREncoder()
+        cborEncoder.encode(.int(-5432))
+        let data = Data(cborEncoder.getEncoded())
+
+        let subject = try SmithyCBOR.Deserializer(data: data)
+        let decodedFloat = try subject.readFloat(Prelude.floatSchema)
+        XCTAssertEqual(decodedFloat, Float(-5432.0))
+    }
+
+    func test_double_deserializesUIntAsFloat() throws {
+        let cborEncoder = try CBOREncoder()
+        cborEncoder.encode(.uint(5432))
+        let data = Data(cborEncoder.getEncoded())
+
+        let subject = try SmithyCBOR.Deserializer(data: data)
+        let decodedFloat = try subject.readFloat(Prelude.floatSchema)
+        XCTAssertEqual(decodedFloat, Float(5432.0))
+    }
 }
