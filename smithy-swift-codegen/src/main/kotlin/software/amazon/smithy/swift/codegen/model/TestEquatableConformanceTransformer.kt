@@ -2,7 +2,6 @@ package software.amazon.smithy.swift.codegen.model
 
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.TopDownIndex
-import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
@@ -25,7 +24,8 @@ object TestEquatableConformanceTransformer {
         val index = TopDownIndex(model)
         // Modify to get operations nested within resources of a service.
         val outputsWithResponseTests =
-            index.getContainedOperations(service)
+            index
+                .getContainedOperations(service)
                 .filter { it.hasTrait<HttpResponseTestsTrait>() }
                 .map { model.expectShape(it.outputShape) as StructureShape }
 

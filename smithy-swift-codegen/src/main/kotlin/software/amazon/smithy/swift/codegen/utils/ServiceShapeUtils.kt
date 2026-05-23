@@ -11,17 +11,15 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 val ServiceShape.sdkId: String?
     get() = getTrait<ServiceTrait>()?.sdkId
 
-fun ServiceShape.hasSerdePerformanceTests(model: Model): Boolean {
-    return allOperations
+fun ServiceShape.hasSerdePerformanceTests(model: Model): Boolean =
+    allOperations
         .map { model.expectShape(it) }
         .map {
             listOf(
                 it.getTrait<HttpRequestTestsTrait>()?.testCases?.map { it.tags },
-                it.getTrait<HttpResponseTestsTrait>()?.testCases?.map { it.tags }
-            )
-                .mapNotNull { it } }
-        .flatten()
+                it.getTrait<HttpResponseTestsTrait>()?.testCases?.map { it.tags },
+            ).mapNotNull { it }
+        }.flatten()
         .flatten()
         .flatten()
         .any { it == "serde-benchmark" }
-}

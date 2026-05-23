@@ -243,17 +243,17 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
     open fun captureResponse(test: HttpResponseTestCase) {
         writer.write(
             """
-                for i in 0..<20000 {
-                    let actual = try await client.${operation.toLowerCamelCase()}(input: input)
-                    if i >= 10000 {
-                        measurements.append(deserializationTime.value)
-                    }
+            for i in 0..<20000 {
+                let actual = try await client.${operation.toLowerCamelCase()}(input: input)
+                if i >= 10000 {
+                    measurements.append(deserializationTime.value)
                 }
+            }
 
-                let path = FileManager.default.currentDirectoryPath + "/../../../../../../../smithy-swift/instance-results.json"
-                let serdeBenchmark = SerdeBenchmark(id: "${test.id}", measurements: measurements)
-                try SerdeBenchmarkReport.update(at: path, with: serdeBenchmark)
-                """.trimIndent(),
+            let path = FileManager.default.currentDirectoryPath + "/../../../../../../../smithy-swift/instance-results.json"
+            let serdeBenchmark = SerdeBenchmark(id: "${test.id}", measurements: measurements)
+            try SerdeBenchmarkReport.update(at: path, with: serdeBenchmark)
+            """.trimIndent(),
         )
     }
 
