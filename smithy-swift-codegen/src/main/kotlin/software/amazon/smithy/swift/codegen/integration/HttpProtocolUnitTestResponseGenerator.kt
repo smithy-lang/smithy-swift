@@ -183,6 +183,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         // - credential resolver
         // - endpoint resolver (unless the test has endpoint rules)
         // - HTTP client engine; a mock that returns the test's HTTPResponse is used
+        writer.write("let telemetryProvider = SerdeBenchmarkTelemetryProvider()")
         writer.openBlock("var config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
@@ -196,6 +197,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
                     writer.write("urlString: \"https://example.com\"")
                 }
             }
+            writer.write("telemetryProvider: telemetryProvider,")
             writer.write(
                 "retryStrategyOptions: \$N.make(),",
                 SmithyTestUtilTypes.ProtocolTestRetryStrategyOptions,
@@ -203,8 +205,6 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
             writer.write("httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)")
         }
         writer.write("")
-        writer.write("let deserializationTime: BoxedDouble = BoxedDouble(-1)")
-        writer.write("config.addInterceptorProvider(DeserializationBenchmarkInterceptorProvider(deserializationTime))")
         writer.write("var measurements: [Double] = []")
 
         // Create a client with the config
@@ -246,7 +246,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
             for i in 0..<20000 {
                 let actual = try await client.${operation.toLowerCamelCase()}(input: input)
                 if i >= 10000 {
-                    measurements.append(deserializationTime.value)
+                    measurements.append(telemetryProvider.responseHistogram.value)
                 }
             }
 

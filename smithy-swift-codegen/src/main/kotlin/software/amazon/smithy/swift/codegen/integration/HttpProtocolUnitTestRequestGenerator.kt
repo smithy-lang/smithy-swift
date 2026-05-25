@@ -105,6 +105,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
         val clientName = "${ctx.settings.clientBaseName}Client"
         val region = "us-west-2"
 
+        writer.write("let telemetryProvider = SerdeBenchmarkTelemetryProvider()")
         writer.openBlock("var config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
@@ -118,11 +119,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                     url,
                 )
             }
+            writer.write("telemetryProvider: telemetryProvider,")
             writer.write("idempotencyTokenGenerator: ProtocolTestIdempotencyTokenGenerator(),")
             writer.write("httpClientEngine: ProtocolTestClient()")
         }
-        writer.write("let serializationTime = BoxedDouble(-1)")
-        writer.write("config.addInterceptorProvider(SerializationBenchmarkInterceptorProvider(serializationTime))")
         writer.write("let client = \$L(config: config)", clientName)
         writer.write("var measurements: [Double] = []")
     }
@@ -144,7 +144,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                         _ = try await client.${operation.toLowerCamelCase()}(input: input)
                     } catch TestCheckError.actual {
                         if i >= 10000 {
-                            measurements.append(serializationTime.value)
+                            measurements.append(telemetryProvider.requestHistogram.value)
                         }
                     }
                 }
