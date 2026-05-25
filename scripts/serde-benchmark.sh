@@ -14,7 +14,12 @@ set -eo pipefail
 rm -rf instance-report.json
 
 # Delete all previous serde-benchmark Smithy build products
-rm -rf serde-benchmark/build
+# rm -rf serde-benchmark/build
+rm -rf serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSJSONRPC10/swift-codegen/*
+rm -rf serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSQuery/swift-codegen/*
+rm -rf serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSRestJSON/swift-codegen/*
+rm -rf serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSRestXML/swift-codegen/*
+rm -rf serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkSmithyRPCV2CBOR/swift-codegen/*
 
 # Regenerate all serde test SDKs
 ./gradlew -p serde-benchmark build

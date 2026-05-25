@@ -124,7 +124,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
             writer.write("httpClientEngine: ProtocolTestClient()")
         }
         writer.write("let client = \$L(config: config)", clientName)
-        writer.write("var measurements: [Double] = []")
     }
 
     private fun renderOperationBlock(test: HttpRequestTestCase) {
@@ -139,14 +138,30 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
             writer.addImport(SwiftDependency.SMITHY.target)
             writer.write(
                 """
-                for i in 0..<20000 {
+                let warmups = 1000
+                let minRuns = 1000
+                let maxRuns = 10000
+                let maxDuration: Foundation.TimeInterval = 30.0
+
+                var n = 0
+                var elapsedTime: Foundation.TimeInterval = 0.0
+                var measurements: [Double] = []
+
+                // Test for minRuns, no matter how long it takes
+                // Once minRuns is met, test until either maxRuns or elapsedTime is reached
+                let start = Foundation.Date()
+                while (n <= warmups + minRuns) || ((n <= warmups + maxRuns) && (elapsedTime <= maxDuration)) {
                     do {
                         _ = try await client.${operation.toLowerCamelCase()}(input: input)
                     } catch TestCheckError.actual {
-                        if i >= 10000 {
+                        if n > warmups {
                             measurements.append(telemetryProvider.requestHistogram.value)
                         }
+                    } catch {
+                        fatalError("error thrown")
                     }
+                    n += 1
+                    elapsedTime = Foundation.Date().timeIntervalSince(start)
                 }
 
                 let path = FileManager.default.currentDirectoryPath + "/../../../../../../../smithy-swift/instance-results.json"

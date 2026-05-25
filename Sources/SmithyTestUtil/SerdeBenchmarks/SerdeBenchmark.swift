@@ -29,7 +29,7 @@ public struct SerdeBenchmark: Codable {
     }
 
     public init(id: String, measurements: [Double]) {
-        let runCount = 10000
+        let runCount = measurements.count
 
         // Calcluate mean
         var sum = 0.0
