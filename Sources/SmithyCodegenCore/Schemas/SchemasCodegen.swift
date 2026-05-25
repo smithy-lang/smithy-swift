@@ -52,7 +52,8 @@ package struct SchemasCodegen {
 
             // Render a getter function for this schema, to sidestep circular reference compile errors
             // when specifying a schema's target.
-            try writer.write("func get_\(shape.schemaVarName)() -> Smithy.Schema { \(shape.schemaVarName) }")
+            // Function is private-scoped since it is only called by other schemas in this module.
+            try writer.write("private func get_\(shape.schemaVarName)() -> Smithy.Schema { \(shape.schemaVarName) }")
             writer.write("")
         }
         writer.unwrite("\n")
