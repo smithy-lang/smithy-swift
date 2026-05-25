@@ -106,7 +106,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
         val region = "us-west-2"
 
         writer.write("let telemetryProvider = SerdeBenchmarkTelemetryProvider()")
-        writer.openBlock("var config = try await \$1L.\$1LConfig(", ")", clientName) {
+        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
             writer.write("signingRegion: \$S,", region)
@@ -127,6 +127,33 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
     }
 
     private fun renderOperationBlock(test: HttpRequestTestCase) {
+        if (test.hasTag("serde-benchmark")) {
+            renderSerdeBenchmarkOperationBlock(test)
+            return
+        }
+        operation.input.ifPresent {
+            val inputShape = model.expectShape(it)
+            model = RecursiveShapeBoxer.transform(model)
+            writer
+                .writeInline("\nlet input = ")
+                .call {
+                    ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
+                }.write("")
+            writer.addImport(SwiftDependency.SMITHY.target)
+            writer.write(
+                """
+                do {
+                    _ = try await client.${operation.toLowerCamelCase()}(input: input)
+                } catch TestCheckError.actual(let actual) {
+                    ${'$'}{C|}
+                }
+                """.trimIndent(),
+                Runnable { renderBodyAssert(test) },
+            )
+        }
+    }
+
+    private fun renderSerdeBenchmarkOperationBlock(test: HttpRequestTestCase) {
         operation.input.ifPresent {
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)

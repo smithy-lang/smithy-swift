@@ -14,7 +14,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
         val contents = getTestFileContents("Tests/example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonComplexErrorWithNoMessage() async throws {
+    func test_RestJsonComplexErrorWithNoMessage() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 403,
             headers: [
@@ -35,6 +35,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             return
         }
 
+        let telemetryProvider = SerdeBenchmarkTelemetryProvider()
         let config = try await ExampleClient.ExampleClientConfig(
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
@@ -42,6 +43,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
+            telemetryProvider: telemetryProvider,
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
@@ -82,7 +84,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
         val contents = getTestFileContents("Tests/example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonComplexErrorWithNoMessage() async throws {
+    func test_RestJsonComplexErrorWithNoMessage() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 403,
             headers: [
@@ -103,6 +105,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             return
         }
 
+        let telemetryProvider = SerdeBenchmarkTelemetryProvider()
         let config = try await ExampleClient.ExampleClientConfig(
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
@@ -110,6 +113,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
+            telemetryProvider: telemetryProvider,
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )

@@ -184,7 +184,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         // - endpoint resolver (unless the test has endpoint rules)
         // - HTTP client engine; a mock that returns the test's HTTPResponse is used
         writer.write("let telemetryProvider = SerdeBenchmarkTelemetryProvider()")
-        writer.openBlock("var config = try await \$1L.\$1LConfig(", ")", clientName) {
+        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
             writer.write("signingRegion: \$S,", region)
@@ -235,12 +235,24 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
             inputArgs.joinToString(", "),
         )
         writer.write("")
-        captureResponse(test)
+        if (test.hasTag("serde-benchmark")) {
+            captureSerdeBenchmarkResponse(test)
+        } else {
+            captureResponse(test)
+        }
         writer.write("")
     }
 
     open fun captureResponse(test: HttpResponseTestCase) {
-        writer.write("""            
+        writer.write(
+            "let actual = try await client.\$L(input: input)",
+            operation.toLowerCamelCase(),
+        )
+    }
+
+    open fun captureSerdeBenchmarkResponse(test: HttpResponseTestCase) {
+        writer.write(
+            """            
             let warmups = 1000
             let minRuns = 1000
             let maxRuns = 10000
@@ -286,7 +298,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         test: HttpResponseTestCase,
         outputShape: Shape,
     ) {
-        writer.write("")
+        if (test.hasTag("serde-benchmark")) return
+        writer.write("XCTAssertEqual(actual, expected)")
     }
 
     open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpResponseTestCase>() {

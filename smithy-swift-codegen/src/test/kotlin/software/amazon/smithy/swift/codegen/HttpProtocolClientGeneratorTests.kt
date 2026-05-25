@@ -58,6 +58,8 @@ extension AwsJsonProtocolClient {
     /// Conforms to `Sendable` for safe concurrent access across threads.
     public struct AwsJsonProtocolClientConfig: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration, Swift.Sendable {
         public var awsCredentialIdentityResolver: any SmithyIdentity.AWSCredentialIdentityResolver
+        public var region: Swift.String?
+        public var signingRegion: Swift.String?
         public var endpointResolver: EndpointResolver
         public var telemetryProvider: ClientRuntime.TelemetryProvider
         public var retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
@@ -93,6 +95,8 @@ extension AwsJsonProtocolClient {
 
         public init(
             awsCredentialIdentityResolver: (any SmithyIdentity.AWSCredentialIdentityResolver)? = nil,
+            region: Swift.String? = nil,
+            signingRegion: Swift.String? = nil,
             endpointResolver: EndpointResolver? = nil,
             telemetryProvider: ClientRuntime.TelemetryProvider? = nil,
             retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil,
@@ -109,6 +113,8 @@ extension AwsJsonProtocolClient {
             httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]? = nil
         ) throws {
             self.awsCredentialIdentityResolver = awsCredentialIdentityResolver ?? SmithyIdentity.StaticAWSCredentialIdentityResolver()
+            self.region = region ?? nil
+            self.signingRegion = signingRegion ?? self.region
             self.endpointResolver = try endpointResolver ?? DefaultEndpointResolver()
             self.telemetryProvider = telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider
             self.retryStrategyOptions = retryStrategyOptions ?? ClientRuntime.ClientConfigurationDefaults.defaultRetryStrategyOptions
@@ -117,9 +123,9 @@ extension AwsJsonProtocolClient {
             self.idempotencyTokenGenerator = idempotencyTokenGenerator ?? ClientRuntime.ClientConfigurationDefaults.defaultIdempotencyTokenGenerator
             self.httpClientEngine = httpClientEngine ?? ClientRuntime.ClientConfigurationDefaults.makeClient(httpClientConfiguration: httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration)
             self.httpClientConfiguration = httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration
-            self.authSchemes = authSchemes ?? []
+            self.authSchemes = authSchemes ?? [SmithyHTTPAuth.SigV4AuthScheme()]
             self.authSchemePreference = authSchemePreference ?? nil
-            self.authSchemeResolver = authSchemeResolver ?? ClientRuntime.ClientConfigurationDefaults.defaultAuthSchemeResolver
+            self.authSchemeResolver = authSchemeResolver ?? DefaultAwsJsonProtocolAuthSchemeResolver()
             self.bearerTokenIdentityResolver = bearerTokenIdentityResolver ?? SmithyIdentity.StaticBearerTokenIdentityResolver(token: SmithyIdentity.BearerTokenIdentity(token: ""))
             self._interceptorProviders = (interceptorProviders ?? []).map { ClientRuntime.SendableInterceptorProviderBox($0) }
             self._httpInterceptorProviders = (httpInterceptorProviders ?? []).map { ClientRuntime.SendableHttpInterceptorProviderBox($0) }
@@ -128,6 +134,8 @@ extension AwsJsonProtocolClient {
         public init() async throws {
             try await self.init(
                 awsCredentialIdentityResolver: nil,
+                region: nil,
+                signingRegion: nil,
                 endpointResolver: nil,
                 telemetryProvider: nil,
                 retryStrategyOptions: nil,
@@ -146,7 +154,7 @@ extension AwsJsonProtocolClient {
         }
 
         public var partitionID: String? {
-            return ""
+            return "AwsJsonProtocol"
         }
 
         public mutating func addInterceptorProvider(_ provider: ClientRuntime.InterceptorProvider) {
@@ -162,6 +170,8 @@ extension AwsJsonProtocolClient {
     @available(*, deprecated, message: "Use AwsJsonProtocolClientConfig instead. This class will be removed in a future version.")
     public final class AwsJsonProtocolClientConfiguration: ClientRuntime.DefaultClientConfiguration & ClientRuntime.DefaultHttpClientConfiguration {
         public var awsCredentialIdentityResolver: any SmithyIdentity.AWSCredentialIdentityResolver
+        public var region: Swift.String?
+        public var signingRegion: Swift.String?
         public var endpointResolver: EndpointResolver
         public var telemetryProvider: ClientRuntime.TelemetryProvider
         public var retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions
@@ -197,6 +207,8 @@ extension AwsJsonProtocolClient {
 
         public init(
             awsCredentialIdentityResolver: (any SmithyIdentity.AWSCredentialIdentityResolver)? = nil,
+            region: Swift.String? = nil,
+            signingRegion: Swift.String? = nil,
             endpointResolver: EndpointResolver? = nil,
             telemetryProvider: ClientRuntime.TelemetryProvider? = nil,
             retryStrategyOptions: SmithyRetriesAPI.RetryStrategyOptions? = nil,
@@ -213,6 +225,8 @@ extension AwsJsonProtocolClient {
             httpInterceptorProviders: [ClientRuntime.HttpInterceptorProvider]? = nil
         ) throws {
             self.awsCredentialIdentityResolver = awsCredentialIdentityResolver ?? SmithyIdentity.StaticAWSCredentialIdentityResolver()
+            self.region = region ?? nil
+            self.signingRegion = signingRegion ?? self.region
             self.endpointResolver = try endpointResolver ?? DefaultEndpointResolver()
             self.telemetryProvider = telemetryProvider ?? ClientRuntime.DefaultTelemetry.provider
             self.retryStrategyOptions = retryStrategyOptions ?? ClientRuntime.ClientConfigurationDefaults.defaultRetryStrategyOptions
@@ -221,9 +235,9 @@ extension AwsJsonProtocolClient {
             self.idempotencyTokenGenerator = idempotencyTokenGenerator ?? ClientRuntime.ClientConfigurationDefaults.defaultIdempotencyTokenGenerator
             self.httpClientEngine = httpClientEngine ?? ClientRuntime.ClientConfigurationDefaults.makeClient(httpClientConfiguration: httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration)
             self.httpClientConfiguration = httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration
-            self.authSchemes = authSchemes ?? []
+            self.authSchemes = authSchemes ?? [SmithyHTTPAuth.SigV4AuthScheme()]
             self.authSchemePreference = authSchemePreference ?? nil
-            self.authSchemeResolver = authSchemeResolver ?? ClientRuntime.ClientConfigurationDefaults.defaultAuthSchemeResolver
+            self.authSchemeResolver = authSchemeResolver ?? DefaultAwsJsonProtocolAuthSchemeResolver()
             self.bearerTokenIdentityResolver = bearerTokenIdentityResolver ?? SmithyIdentity.StaticBearerTokenIdentityResolver(token: SmithyIdentity.BearerTokenIdentity(token: ""))
             self._interceptorProviders = (interceptorProviders ?? []).map { ClientRuntime.SendableInterceptorProviderBox($0) }
             self._httpInterceptorProviders = (httpInterceptorProviders ?? []).map { ClientRuntime.SendableHttpInterceptorProviderBox($0) }
@@ -232,6 +246,8 @@ extension AwsJsonProtocolClient {
         public convenience init() async throws {
             try await self.init(
                 awsCredentialIdentityResolver: nil,
+                region: nil,
+                signingRegion: nil,
                 endpointResolver: nil,
                 telemetryProvider: nil,
                 retryStrategyOptions: nil,
@@ -250,12 +266,14 @@ extension AwsJsonProtocolClient {
         }
 
         public var partitionID: String? {
-            return ""
+            return "AwsJsonProtocol"
         }
 
         public func toSendable() throws -> AwsJsonProtocolClientConfig {
             return try AwsJsonProtocolClientConfig(
                 awsCredentialIdentityResolver: self.awsCredentialIdentityResolver,
+                region: self.region,
+                signingRegion: self.signingRegion,
                 endpointResolver: self.endpointResolver,
                 telemetryProvider: self.telemetryProvider,
                 retryStrategyOptions: self.retryStrategyOptions,
@@ -300,6 +318,9 @@ extension AwsJsonProtocolClient {
         contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
         let context = Smithy.ContextBuilder()
+                      .withRegion(value: config.region)
+                      .withSigningRegion(value: config.signingRegion)
+                      .withIdentityResolver(value: config.awsCredentialIdentityResolver, schemeID: "aws.auth#sigv4a")
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getStatus")
@@ -333,6 +354,9 @@ extension AwsJsonProtocolClient {
         }
         let operation = AwsJsonProtocolClient.allocateWidgetOperation
         let context = Smithy.ContextBuilder()
+                      .withRegion(value: config.region)
+                      .withSigningRegion(value: config.signingRegion)
+                      .withIdentityResolver(value: config.awsCredentialIdentityResolver, schemeID: "aws.auth#sigv4a")
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "allocateWidget")
