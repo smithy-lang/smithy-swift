@@ -49,6 +49,9 @@ package struct SchemasCodegen {
                 try writeSchema(writer: writer, shape: shape, containerType: nil, index: nil)
                 writer.unwrite(",")
             }
+
+            // Render a getter function for this schema, to sidestep circular reference compile errors
+            // when specifying a schema's target.
             try writer.write("func get_\(shape.schemaVarName)() -> Smithy.Schema { \(shape.schemaVarName) }")
             writer.write("")
         }
@@ -96,6 +99,8 @@ package struct SchemasCodegen {
                     writer.write("containerType: .\(containerType),")
                 }
 
+                // When targeting prelude shape schemas, refer to them directly.  When targeting generated schemas,
+                // refer to them via the getter function to avoid a circular reference compile error.
                 let target = try member.target
                 if target.id.namespace == "smithy.api" {
                     try writer.write("target: \(member.target.schemaVarName),")
