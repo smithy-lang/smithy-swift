@@ -24,19 +24,36 @@ import protocol SmithySerialization.ShapeSerializer
 
 @_spi(SchemaBasedSerde)
 public class Serializer: ShapeSerializer {
-    var value: JSONValue?
+    private var _data: Data
+    private static let openingCurlyBrace = Character("{").utf8
+    private static let closingCurlyBrace = Character("}").utf8
+    private static let openingSquareBrace = Character("[").utf8
+    private static let closingSquareBrace = Character("]").utf8
+    private static let comma = Character(",").utf8
+    private static let colon = Character(":").utf8
+    private static let doubleQuote = Character("\"").utf8
+    private static let trueBytes = "true".utf8
+    private static let falseBytes = "false".utf8
+    private static let nullBytes = "null".utf8
 
-    public init() {}
+    public init() {
+        self._data = Data(capacity: 65536)
+    }
 
     public func writeStruct<S>(_ schema: Schema, _ value: S) throws where S: SerializableStruct {
-        var object = [String: JSONValue]()
+        _data.append(contentsOf: Self.openingCurlyBrace)
+        var needsComma = false
         for memberSchema in schema.members {
             guard let key = memberSchema.id.member else { continue }
-            let memberSerializer = Serializer()
-            try S.writeConsumer(memberSchema, value, memberSerializer)
-            object[key] = memberSerializer.value
+            if needsComma {
+                _data.append(contentsOf: Self.comma)
+            }
+            try writeString(schema.key, key)
+            _data.append(contentsOf: Self.colon)
+            try S.writeConsumer(memberSchema, value, self)
+            needsComma = true
         }
-        self.value = .object(object)
+        _data.append(contentsOf: Self.closingCurlyBrace)
     }
 
     public func writeList<E>(
@@ -44,15 +61,16 @@ public class Serializer: ShapeSerializer {
         _ value: [E],
         _ consumer: (E, any ShapeSerializer) throws -> Void
     ) throws {
-        var list = [JSONValue]()
+        _data.append(contentsOf: Self.openingSquareBrace)
+        var needsComma = false
         for element in value {
-            let elementSerializer = Serializer()
-            try consumer(element, elementSerializer)
-            if let value = elementSerializer.value {
-                list.append(value)
+            if needsComma {
+                _data.append(contentsOf: Self.comma)
             }
+            try consumer(element, self)
+            needsComma = true
         }
-        self.value = .list(list)
+        _data.append(contentsOf: Self.closingSquareBrace)
     }
 
     public func writeMap<V>(
@@ -60,57 +78,64 @@ public class Serializer: ShapeSerializer {
         _ value: [String: V],
         _ consumer: (V, any ShapeSerializer) throws -> Void
     ) throws {
-        var object = [String: JSONValue]()
+        _data.append(contentsOf: Self.openingCurlyBrace)
+        var needsComma = false
         for (key, value) in value {
-            let valueSerializer = Serializer()
-            try consumer(value, valueSerializer)
-            object[key] = valueSerializer.value
+            if needsComma {
+                _data.append(contentsOf: Self.comma)
+            }
+            try writeString(schema.key, key)
+            _data.append(contentsOf: Self.colon)
+            try consumer(value, self)
+            needsComma = true
         }
-        self.value = .object(object)
+        _data.append(contentsOf: Self.closingCurlyBrace)
     }
 
     public func writeBoolean(_ schema: Schema, _ value: Bool) throws {
-        self.value = .bool(value)
+        _data.append(contentsOf: value ? Self.trueBytes : Self.falseBytes)
     }
 
     public func writeByte(_ schema: Schema, _ value: Int8) throws {
-        self.value = .number(NSNumber(value: value))
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeShort(_ schema: Schema, _ value: Int16) throws {
-        self.value = .number(NSNumber(value: value))
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeInteger(_ schema: Schema, _ value: Int) throws {
-        self.value = .number(NSNumber(value: value))
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeLong(_ schema: Schema, _ value: Int) throws {
-        self.value = .number(NSNumber(value: value))
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeFloat(_ schema: Schema, _ value: Float) throws {
-        self.value = .number(NSNumber(value: value))
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeDouble(_ schema: Schema, _ value: Double) throws {
-        self.value = .number(NSNumber(value: value))
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
-        self.value = .number(NSNumber(value: value))
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
-        self.value = .number(NSNumber(value: value))
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {
-        self.value = .string(value)
+        _data.append(contentsOf: Self.doubleQuote)
+        _data.append(contentsOf: value.utf8)
+        _data.append(contentsOf: Self.doubleQuote)
     }
 
     public func writeBlob(_ schema: Schema, _ value: Data) throws {
-        self.value = .string(value.base64EncodedString())
+        try writeString(schema, value.base64EncodedString())
     }
 
     public func writeTimestamp(_ schema: Schema, _ value: Date) throws {
@@ -127,27 +152,27 @@ public class Serializer: ShapeSerializer {
         switch timestampFormat {
         case .dateTime:
             let dateTimeString = TimestampFormatter(format: .dateTime).string(from: value)
-            self.value = .string(dateTimeString)
+            try writeString(schema, dateTimeString)
         case .httpDate:
             let httpDateString = TimestampFormatter(format: .httpDate).string(from: value)
-            self.value = .string(httpDateString)
+            try writeString(schema, httpDateString)
         case .epochSeconds:
             let epochSecondsString = TimestampFormatter(format: .epochSeconds).string(from: value)
             guard let epochSeconds = Double(epochSecondsString) else {
                 throw SerializerError("TimestampFormatter did not return valid seconds")
             }
-            self.value = .number(NSNumber(value: epochSeconds))
+            try writeDouble(schema, epochSeconds)
         }
     }
 
     public func writeNull(_ schema: Schema) throws {
-        self.value = .null
+        _data.append(contentsOf: Self.nullBytes)
     }
 
     public var data: Data {
         get throws {
-            guard let jsonObject = value?.jsonObject() else { return Data("{}".utf8) }
-            return try JSONSerialization.data(withJSONObject: jsonObject)
+            guard !_data.isEmpty else { return Data("{}".utf8) }
+            return _data
         }
     }
 }

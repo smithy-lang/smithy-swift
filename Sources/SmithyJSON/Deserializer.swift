@@ -93,32 +93,32 @@ public class Deserializer: ShapeDeserializer {
 
     public func readByte(_ schema: Schema) throws -> Int8 {
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
-        guard let byte = Int8(exactly: number.intValue) else { throw SerializerError("Number is not Int8") }
+        guard let byte = Int8(exactly: number) else { throw SerializerError("Number is not Int8") }
         return byte
     }
 
     public func readShort(_ schema: Schema) throws -> Int16 {
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
-        guard let short = Int16(exactly: number.intValue) else { throw SerializerError("Number is not Int16") }
+        guard let short = Int16(exactly: number) else { throw SerializerError("Number is not Int16") }
         return short
     }
 
     public func readInteger(_ schema: Schema) throws -> Int {
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
-        guard let int = Int(exactly: number.intValue) else { throw SerializerError("Number is not Int") }
+        guard let int = Int(exactly: number) else { throw SerializerError("Number is not Int") }
         return int
     }
 
     public func readLong(_ schema: Schema) throws -> Int {
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
-        guard let int = Int(exactly: number.int64Value) else { throw SerializerError("Number is not Int") }
+        guard let int = Int(exactly: number) else { throw SerializerError("Number is not Int") }
         return int
     }
 
     public func readFloat(_ schema: Schema) throws -> Float {
         switch value {
         case .number(let number):
-            return Float(number.doubleValue)
+            return Float(number)
         case .string(let string):
             return try floatingPointValue(string: string)
         default:
@@ -129,7 +129,7 @@ public class Deserializer: ShapeDeserializer {
     public func readDouble(_ schema: Schema) throws -> Double {
         switch value {
         case .number(let number):
-            return number.doubleValue
+            return number
         case .string(let string):
             return try floatingPointValue(string: string)
         default:
@@ -152,7 +152,7 @@ public class Deserializer: ShapeDeserializer {
 
     public func readBigInteger(_ schema: Schema) throws -> Int64 {
         guard case .number(let number) = value else { throw SerializerError("Expected number") }
-        guard let bigInt = Int64(exactly: number.int64Value) else { throw SerializerError("Number is not Int64") }
+        guard let bigInt = Int64(exactly: number) else { throw SerializerError("Number is not Int64") }
         return bigInt
     }
 
@@ -180,7 +180,7 @@ public class Deserializer: ShapeDeserializer {
             }
             return Document(ListDocument(value: documentList))
         case .number(let number):
-            return Document(BigDecimalDocument(value: number.doubleValue))
+            return Document(BigDecimalDocument(value: number))
         case .bool(let bool):
             return Document(BooleanDocument(value: bool))
         case .string(let string):
@@ -213,7 +213,7 @@ public class Deserializer: ShapeDeserializer {
             guard case .number(let number) = value else {
                 throw SerializerError("Expected number for epochSeconds timestamp")
             }
-            return Date(timeIntervalSince1970: number.doubleValue)
+            return Date(timeIntervalSince1970: number)
         }
     }
 
