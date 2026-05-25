@@ -25,7 +25,7 @@ package struct SchemasCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import struct Smithy.Schema")
+        writer.write("import class Smithy.Schema")
         writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import enum Smithy.Prelude")
         writer.write("")
@@ -44,25 +44,13 @@ package struct SchemasCodegen {
 
         for shape in allShapes {
 
-            // Render an internal-scoped, computed var in the global namespace for this schema.
-            try writer.openBlock("var \(shape.schemaVarName): Smithy.Schema {", "}") { writer in
+            // Render an internal-scoped, stored class instance in the global namespace for this schema.
+            try writer.openBlock("let \(shape.schemaVarName) = ", "") { writer in
                 try writeSchema(writer: writer, shape: shape, containerType: nil, index: nil)
                 writer.unwrite(",")
             }
+            try writer.write("func get_\(shape.schemaVarName)() -> Smithy.Schema { \(shape.schemaVarName) }")
             writer.write("")
-
-            // If a schema has a member that targets the schema itself, we avoid a compile warning for
-            // self-reference by generating a duplicate schema var that references this schema, and we
-            // will target the duplicate instead.
-            //
-            // This happens ~20 times in AWS models so it is not so frequent that the extra var will bloat
-            // service clients.
-            if let hm = shape as? HasMembers, try hm.members.contains(where: { $0.targetID == shape.id }) {
-                try writer.openBlock("var dup_of_\(shape.schemaVarName): Smithy.Schema {", "}") { writer in
-                    try writer.write(shape.schemaVarName)
-                }
-                writer.write("")
-            }
         }
         writer.unwrite("\n")
         return writer.contents
@@ -71,7 +59,7 @@ package struct SchemasCodegen {
     private func writeSchema(writer: SwiftWriter, shape: Shape, containerType: ShapeType?, index: Int?) throws {
 
         // Open the initializer
-        try writer.openBlock(".init(", "),") { writer in
+        try writer.openBlock("{ Smithy.Schema(", ") }(),") { writer in
 
             // Write the id: and type: params.  All schemas will have this
             writer.write("id: \(shape.id.rendered),")
@@ -109,11 +97,11 @@ package struct SchemasCodegen {
                 }
 
                 let target = try member.target
-
-                // If this schema's target is the same as itself, target the duplicate
-                // (see above) to avoid a self-reference compile warning.
-                let prefix = target.id == member.containerID ? "dup_of_" : ""
-                writer.write(try "target: \(prefix)\(target.schemaVarName),")
+                if target.id.namespace == "smithy.api" {
+                    try writer.write("target: \(member.target.schemaVarName),")
+                } else {
+                    try writer.write("target: get_\(member.target.schemaVarName)(),")
+                }
             }
 
             // Write the index: param if one was passed.  Only members will have an index.
