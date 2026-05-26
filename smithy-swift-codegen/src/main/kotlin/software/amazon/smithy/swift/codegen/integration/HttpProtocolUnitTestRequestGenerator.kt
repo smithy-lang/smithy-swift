@@ -32,6 +32,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
     }
 
     private fun renderExpectedBlock(test: HttpRequestTestCase) {
+        if (test.hasTag("serde-benchmark")) return
         val resolvedHostValue = if (test.resolvedHost.isPresent && test.resolvedHost.get() != "") test.resolvedHost.get() else "example.com"
         val hostValue = if (test.host.isPresent && test.host.get() != "") test.host.get() else "example.com"
 
@@ -73,14 +74,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                             // Fallback to original string if decoding fails
                             writer.format(
                                 "Data(#\"\"\"\n\$L\n\"\"\"#.utf8)",
-                                test.body.get().replace("\\\"", "\\\\\""),
+                                test.body.get() // .replace("\\\"", "\\\\\""),
                             )
                         }
                     } else {
                         // Default case for non-CBOR protocols
                         writer.format(
                             "Data(#\"\"\"\n\$L\n\"\"\"#.utf8)",
-                            test.body.get().replace("\\\"", "\\\\\""),
+                            test.body.get() // .replace("\\\"", "\\\\\""),
                         )
                     }
 
@@ -106,7 +107,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
         val region = "us-west-2"
 
         writer.write("let telemetryProvider = SerdeBenchmarkTelemetryProvider()")
-        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
+        writer.openBlock("let config = try \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
             writer.write("signingRegion: \$S,", region)
@@ -163,39 +164,18 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }.write("")
             writer.addImport(SwiftDependency.SMITHY.target)
-            writer.write(
-                """
-                let warmups = 1000
-                let minRuns = 1000
-                let maxRuns = 10000
-                let maxDuration: Foundation.TimeInterval = 30.0
-
-                var n = 0
-                var elapsedTime: Foundation.TimeInterval = 0.0
-                var measurements: [Double] = []
-
-                // Test for minRuns, no matter how long it takes
-                // Once minRuns is met, test until either maxRuns or elapsedTime is reached
-                let start = Foundation.Date()
-                while (n <= warmups + minRuns) || ((n <= warmups + maxRuns) && (elapsedTime <= maxDuration)) {
-                    do {
-                        _ = try await client.${operation.toLowerCamelCase()}(input: input)
-                    } catch TestCheckError.actual {
-                        if n > warmups {
-                            measurements.append(telemetryProvider.requestHistogram.value)
-                        }
-                    } catch {
-                        fatalError("error thrown")
-                    }
-                    n += 1
-                    elapsedTime = Foundation.Date().timeIntervalSince(start)
-                }
-
-                let path = FileManager.default.currentDirectoryPath + "/../../../../../../../smithy-swift/instance-results.json"
-                let serdeBenchmark = SerdeBenchmark(id: "${test.id}", measurements: measurements)
-                try SerdeBenchmarkReport.update(at: path, with: serdeBenchmark)
-                """.trimIndent(),
-            )
+            writer.write("let path = FileManager.default.currentDirectoryPath + \"/../../../../../../../smithy-swift/instance-results.json\"")
+            writer.openBlock("try await SerdeBenchmarker().test(id: \"${test.id}\", type: .request, path: path, telemetryProvider: telemetryProvider) {", "}") {
+                writer.write("do {")
+                writer.indent()
+                writer.write("_ = try await client.${operation.toLowerCamelCase()}(input: input)")
+                writer.dedent()
+                writer.write("} catch TestCheckError.actual {")
+                writer.indent()
+                writer.write("// no operation")
+                writer.dedent()
+                writer.write("}")
+            }
         }
     }
 

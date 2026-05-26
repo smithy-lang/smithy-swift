@@ -26,7 +26,7 @@ open class AuthUtils(
         writer: SwiftWriter,
     ): String {
         val effectiveAuthSchemes = ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service)
-        val authSchemeList = mutableListOf(writer.format("\$N()", SmithyHTTPAuthTypes.SigV4AuthScheme))
+        val authSchemeList = mutableListOf<String>()
 
         if (effectiveAuthSchemes.contains(HttpBearerAuthTrait.ID)) {
             authSchemeList += writer.format("\$N()", SmithyHTTPAuthTypes.BearerTokenAuthScheme)

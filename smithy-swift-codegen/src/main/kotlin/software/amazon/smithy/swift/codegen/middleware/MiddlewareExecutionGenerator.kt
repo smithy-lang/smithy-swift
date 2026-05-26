@@ -125,9 +125,6 @@ class MiddlewareExecutionGenerator(
 
         // FIXME it over indents if i add another indent, come up with better way to properly indent or format for swift
 
-        writer.write("  .withRegion(value: config.region)")
-        writer.write("  .withSigningRegion(value: config.signingRegion)")
-        writer.write("  .withIdentityResolver(value: config.awsCredentialIdentityResolver, schemeID: \$S)", "aws.auth#sigv4a")
         writer.write("  .withMethod(value: .\$L)", httpMethod)
         writer.write("  .withServiceName(value: serviceName)")
         writer.write("  .withOperation(value: \$S)", op.toLowerCamelCase())

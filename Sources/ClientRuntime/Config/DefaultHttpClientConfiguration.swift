@@ -49,6 +49,10 @@ public protocol DefaultHttpClientConfiguration: ClientConfiguration {
     /// The AWS credential identity resolver to be used for AWS credentials.
     var awsCredentialIdentityResolver: any AWSCredentialIdentityResolver { get set }
 
+    var region: String? { get }
+
+    var signingRegion: String? { get }
+
     /// Adds a `HttpInterceptorProvider` that will be used to provide interceptors for all HTTP operations.
     ///
     /// - Parameter provider: The `HttpInterceptorProvider` to add.
