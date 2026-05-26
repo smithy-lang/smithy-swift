@@ -252,8 +252,12 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
 
     open fun captureSerdeBenchmarkResponse(test: HttpResponseTestCase) {
         writer.write("let path = FileManager.default.currentDirectoryPath + \"/../../../../../../../smithy-swift/instance-results.json\"")
-        writer.openBlock("try await SerdeBenchmarker().test(id: \"${test.id}\", type: .response, path: path, telemetryProvider: telemetryProvider) {", "}") {
-            writer.write("_ = try await client.${operation.toLowerCamelCase()}(input: input)")
+        writer.openBlock(
+            "try await SerdeBenchmarker().test(id: \$S, type: .response, path: path, telemetryProvider: telemetryProvider) {",
+            "}",
+            test.id,
+        ) {
+            writer.write("_ = try await client.\$L(input: input)", operation.toLowerCamelCase())
         }
     }
 

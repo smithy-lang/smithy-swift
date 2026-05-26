@@ -74,14 +74,14 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                             // Fallback to original string if decoding fails
                             writer.format(
                                 "Data(#\"\"\"\n\$L\n\"\"\"#.utf8)",
-                                test.body.get() // .replace("\\\"", "\\\\\""),
+                                test.body.get(),
                             )
                         }
                     } else {
                         // Default case for non-CBOR protocols
                         writer.format(
                             "Data(#\"\"\"\n\$L\n\"\"\"#.utf8)",
-                            test.body.get() // .replace("\\\"", "\\\\\""),
+                            test.body.get(),
                         )
                     }
 
@@ -164,8 +164,13 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }.write("")
             writer.addImport(SwiftDependency.SMITHY.target)
-            writer.write("let path = FileManager.default.currentDirectoryPath + \"/../../../../../../../smithy-swift/instance-results.json\"")
-            writer.openBlock("try await SerdeBenchmarker().test(id: \"${test.id}\", type: .request, path: path, telemetryProvider: telemetryProvider) {", "}") {
+            writer.write(
+                "let path = FileManager.default.currentDirectoryPath + \"/../../../../../../../smithy-swift/instance-results.json\"",
+            )
+            writer.openBlock(
+                "try await SerdeBenchmarker().test(id: \"${test.id}\", type: .request, path: path, telemetryProvider: telemetryProvider) {",
+                "}",
+            ) {
                 writer.write("do {")
                 writer.indent()
                 writer.write("_ = try await client.${operation.toLowerCamelCase()}(input: input)")
