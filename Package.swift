@@ -323,8 +323,14 @@ var runtimeTargets: [PackageDescription.Target] {
 }
 
 var runtimeTestTargets: [PackageDescription.Target] {
-    guard ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_UNIT_TESTS"] != nil else { return [] }
-    return [
+    let baseTests: [PackageDescription.Target] = [
+        .testTarget(
+            name: "SmithyTests",
+            dependencies: ["Smithy"]
+        ),
+    ]
+    guard ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_UNIT_TESTS"] != nil else { return baseTests }
+    return baseTests + [
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: [
@@ -334,10 +340,6 @@ var runtimeTestTargets: [PackageDescription.Target] {
                 .product(name: "Logging", package: "swift-log"),
             ],
             resources: [ .process("Resources") ]
-        ),
-        .testTarget(
-            name: "SmithyTests",
-            dependencies: ["Smithy"]
         ),
         .testTarget(
             name: "SmithySwiftNIOTests",
