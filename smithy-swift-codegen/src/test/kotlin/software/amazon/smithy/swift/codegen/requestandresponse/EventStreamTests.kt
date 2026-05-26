@@ -213,9 +213,6 @@ extension EventStreamTestClientTypes.TestStream {
         val expected = """
     public func testStreamOp(input: TestStreamOpInput) async throws -> TestStreamOpOutput {
         let context = Smithy.ContextBuilder()
-                      .withRegion(value: config.region)
-                      .withSigningRegion(value: config.signingRegion)
-                      .withIdentityResolver(value: config.awsCredentialIdentityResolver, schemeID: "aws.auth#sigv4a")
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "testStreamOp")

@@ -107,7 +107,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
         val region = "us-west-2"
 
         writer.write("let telemetryProvider = SerdeBenchmarkTelemetryProvider()")
-        writer.openBlock("let config = try \$1L.\$1LConfig(", ")", clientName) {
+        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
             writer.write("signingRegion: \$S,", region)

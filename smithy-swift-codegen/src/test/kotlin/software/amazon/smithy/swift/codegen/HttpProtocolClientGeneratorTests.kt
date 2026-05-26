@@ -123,7 +123,7 @@ extension AwsJsonProtocolClient {
             self.idempotencyTokenGenerator = idempotencyTokenGenerator ?? ClientRuntime.ClientConfigurationDefaults.defaultIdempotencyTokenGenerator
             self.httpClientEngine = httpClientEngine ?? ClientRuntime.ClientConfigurationDefaults.makeClient(httpClientConfiguration: httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration)
             self.httpClientConfiguration = httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration
-            self.authSchemes = authSchemes ?? [SmithyHTTPAuth.SigV4AuthScheme()]
+            self.authSchemes = authSchemes ?? []
             self.authSchemePreference = authSchemePreference ?? nil
             self.authSchemeResolver = authSchemeResolver ?? DefaultAwsJsonProtocolAuthSchemeResolver()
             self.bearerTokenIdentityResolver = bearerTokenIdentityResolver ?? SmithyIdentity.StaticBearerTokenIdentityResolver(token: SmithyIdentity.BearerTokenIdentity(token: ""))
@@ -235,7 +235,7 @@ extension AwsJsonProtocolClient {
             self.idempotencyTokenGenerator = idempotencyTokenGenerator ?? ClientRuntime.ClientConfigurationDefaults.defaultIdempotencyTokenGenerator
             self.httpClientEngine = httpClientEngine ?? ClientRuntime.ClientConfigurationDefaults.makeClient(httpClientConfiguration: httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration)
             self.httpClientConfiguration = httpClientConfiguration ?? ClientRuntime.ClientConfigurationDefaults.defaultHttpClientConfiguration
-            self.authSchemes = authSchemes ?? [SmithyHTTPAuth.SigV4AuthScheme()]
+            self.authSchemes = authSchemes ?? []
             self.authSchemePreference = authSchemePreference ?? nil
             self.authSchemeResolver = authSchemeResolver ?? DefaultAwsJsonProtocolAuthSchemeResolver()
             self.bearerTokenIdentityResolver = bearerTokenIdentityResolver ?? SmithyIdentity.StaticBearerTokenIdentityResolver(token: SmithyIdentity.BearerTokenIdentity(token: ""))
@@ -318,9 +318,6 @@ extension AwsJsonProtocolClient {
         contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
         let context = Smithy.ContextBuilder()
-                      .withRegion(value: config.region)
-                      .withSigningRegion(value: config.signingRegion)
-                      .withIdentityResolver(value: config.awsCredentialIdentityResolver, schemeID: "aws.auth#sigv4a")
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "getStatus")
@@ -354,9 +351,6 @@ extension AwsJsonProtocolClient {
         }
         let operation = AwsJsonProtocolClient.allocateWidgetOperation
         let context = Smithy.ContextBuilder()
-                      .withRegion(value: config.region)
-                      .withSigningRegion(value: config.signingRegion)
-                      .withIdentityResolver(value: config.awsCredentialIdentityResolver, schemeID: "aws.auth#sigv4a")
                       .withMethod(value: .post)
                       .withServiceName(value: serviceName)
                       .withOperation(value: "allocateWidget")

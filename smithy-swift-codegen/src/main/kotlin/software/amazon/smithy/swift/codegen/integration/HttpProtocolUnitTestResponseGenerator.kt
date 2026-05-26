@@ -184,7 +184,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         // - endpoint resolver (unless the test has endpoint rules)
         // - HTTP client engine; a mock that returns the test's HTTPResponse is used
         writer.write("let telemetryProvider = SerdeBenchmarkTelemetryProvider()")
-        writer.openBlock("let config = try \$1L.\$1LConfig(", ")", clientName) {
+        writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
             writer.write("signingRegion: \$S,", region)
