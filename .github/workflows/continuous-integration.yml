@@ -67,6 +67,8 @@ jobs:
         uses: ./.github/actions/setup-common-tools-composite-action
       - name: List all sims installed
         run: xcrun simctl list
+      - name: Describe Package
+        run: swift package describe
       - name: Build & Run smithy-swift Kotlin Unit Tests
         run: ./gradlew build
       - name: Generate test SDKs
@@ -149,6 +151,8 @@ jobs:
         run: ./aws-sdk-swift/scripts/ci_steps/log_tool_versions.sh
       - name: List all sims installed
         run: xcrun simctl list
+      - name: Describe Package
+        run: swift package describe
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
         run: |
           cd aws-sdk-swift
@@ -207,6 +211,8 @@ jobs:
           fi
       - name: Setup common tools
         uses: ./.github/actions/setup-common-tools-composite-action
+      - name: Describe Package
+        run: swift package describe
       - name: Build & Run Kotlin Unit Tests
         run: ./gradlew build
       - name: Generate test SDKs
@@ -256,6 +262,8 @@ jobs:
           STAGING_PARTNER_REPO: ${{ secrets.STAGING_PARTNER_REPO }}
       - name: Setup common tools
         uses: ./smithy-swift/.github/actions/setup-common-tools-composite-action
+      - name: Describe Package
+        run: swift package describe
       - name: Tools Versions
         run: ./aws-sdk-swift/scripts/ci_steps/log_tool_versions.sh
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
