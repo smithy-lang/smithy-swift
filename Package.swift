@@ -74,7 +74,11 @@ let package = Package(
         }
         return dependencies
     }(),
-    targets: [
+    targets: runtimeTargets + runtimeTestTargets
+)
+
+var runtimeTargets: [PackageDescription.Target] {
+    [
         .target(
             name: "Smithy",
             dependencies: [
@@ -315,6 +319,18 @@ let package = Package(
                 "SmithyCBOR",
             ]
         ),
+    ].compactMap { $0 }
+}
+
+var runtimeTestTargets: [PackageDescription.Target] {
+    let baseTests: [PackageDescription.Target] = [
+        .testTarget(
+            name: "SmithyTests",
+            dependencies: ["Smithy"]
+        ),
+    ]
+    guard ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_UNIT_TESTS"] != nil else { return baseTests }
+    return baseTests + [
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: [
@@ -324,10 +340,6 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ],
             resources: [ .process("Resources") ]
-        ),
-        .testTarget(
-            name: "SmithyTests",
-            dependencies: ["Smithy"]
         ),
         .testTarget(
             name: "SmithySwiftNIOTests",
@@ -439,5 +451,5 @@ let package = Package(
             name: "SmithySerializationTests",
             dependencies: ["SmithySerialization", "RPCv2CBORTestSDK"]
         ),
-    ].compactMap { $0 }
-)
+    ]
+}
