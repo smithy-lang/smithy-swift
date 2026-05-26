@@ -153,7 +153,7 @@ jobs:
       - name: List all sims installed
         run: xcrun simctl list
       - name: Describe Package
-        run: swift package describe
+        run: cd smithy-swift && swift package describe
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
         run: |
           cd aws-sdk-swift
@@ -266,7 +266,7 @@ jobs:
       - name: Setup common tools
         uses: ./smithy-swift/.github/actions/setup-common-tools-composite-action
       - name: Describe Package
-        run: swift package describe
+        run: cd smithy-swift && swift package describe
       - name: Tools Versions
         run: ./aws-sdk-swift/scripts/ci_steps/log_tool_versions.sh
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
