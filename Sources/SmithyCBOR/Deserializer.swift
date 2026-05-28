@@ -64,9 +64,11 @@ public struct Deserializer: ShapeDeserializer {
         let next = try decoder.popNext()
         switch next {
         case .int(let value):
-            return Int8(value)
+            guard let int8 = Int8(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int8") }
+            return int8
         case .uint(let value):
-            return Int8(value)
+            guard let int8 = Int8(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int8") }
+            return int8
         default:
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
@@ -80,9 +82,11 @@ public struct Deserializer: ShapeDeserializer {
         let next = try decoder.popNext()
         switch next {
         case .int(let value):
-            return Int16(value)
+            guard let int16 = Int16(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int16") }
+            return int16
         case .uint(let value):
-            return Int16(value)
+            guard let int16 = Int16(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int16") }
+            return int16
         default:
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
@@ -126,10 +130,16 @@ public struct Deserializer: ShapeDeserializer {
         }
         try nullCheck()
         let next = try decoder.popNext()
-        guard case .double(let value) = next else {
-            throw CBORDecoderError("member \(schema.id) expected .double but got \(next) instead")
+        switch next {
+        case .double(let value):
+            return Float(value)
+        case .int(let value):
+            return Float(value)
+        case .uint(let value):
+            return Float(value)
+        default:
+            throw CBORDecoderError("member \(schema.id) expected .double, .int, or .uint but got .\(next) instead")
         }
-        return Float(value)
     }
 
     public func readDouble(_ schema: Schema) throws -> Double {
@@ -138,10 +148,16 @@ public struct Deserializer: ShapeDeserializer {
         }
         try nullCheck()
         let next = try decoder.popNext()
-        guard case .double(let value) = next else {
-            throw CBORDecoderError("member \(schema.id) expected .double but got \(next) instead")
+        switch next {
+        case .double(let value):
+            return value
+        case .int(let value):
+            return Double(value)
+        case .uint(let value):
+            return Double(value)
+        default:
+            throw CBORDecoderError("member \(schema.id) expected .double, .int, or .uint but got .\(next) instead")
         }
-        return value
     }
 
     public func readBigInteger(_ schema: Schema) throws -> Int64 {
