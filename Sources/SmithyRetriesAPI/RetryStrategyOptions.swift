@@ -36,18 +36,24 @@ public struct RetryStrategyOptions: Sendable {
     /// Sets the maximum capacity for this retry strategy's quotas.
     public let maxCapacity: Int
 
-    /// Creates a new set of retry strategy options
+    /// Set from the `AWS_NEW_RETRIES_2026` env var.  When true, switches to
+    /// the 14/5 token costs, per-error backoff multipliers, bounded
+    /// x-amz-retry-after, and throttling-vs-timeout token split.
+    public let useNewRetries2026: Bool
+
     public init(
         backoffStrategy: RetryBackoffStrategy,
         maxRetriesBase: Int = 2,
         availableCapacity: Int = 500,
         maxCapacity: Int = 500,
-        rateLimitingMode: RateLimitingMode = .standard
+        rateLimitingMode: RateLimitingMode = .standard,
+        useNewRetries2026: Bool = false
     ) {
         self.backoffStrategy = backoffStrategy
         self.maxRetriesBase = maxRetriesBase
         self.availableCapacity = availableCapacity
         self.maxCapacity = maxCapacity
         self.rateLimitingMode = rateLimitingMode
+        self.useNewRetries2026 = useNewRetries2026
     }
 }

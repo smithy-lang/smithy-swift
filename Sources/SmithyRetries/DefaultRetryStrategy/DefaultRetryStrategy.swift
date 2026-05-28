@@ -46,30 +46,33 @@ public struct DefaultRetryStrategy: RetryStrategy, Sendable {
     }
 
     public func refreshRetryTokenForRetry(tokenToRenew: DefaultRetryToken, errorInfo: RetryErrorInfo) async throws {
-        let multiplier = Self.baseMultiplier(for: errorInfo)
-        let exponentialBackoff = options.backoffStrategy.computeNextBackoffDelay(
-            attempt: tokenToRenew.retryCount, baseMultiplier: multiplier
-        )
-
         let backoffDelay: TimeInterval
-        if let retryAfterHint = errorInfo.retryAfterHint {
-            // Apply bounds to x-amz-retry-after value
-            // Minimum: t_i (exponential backoff), Maximum: 5 + t_i
-            backoffDelay = min(max(retryAfterHint, exponentialBackoff), 5.0 + exponentialBackoff)
+        if options.useNewRetries2026 {
+            let multiplier = Self.baseMultiplier(for: errorInfo)
+            let exponentialBackoff = options.backoffStrategy.computeNextBackoffDelay(
+                attempt: tokenToRenew.retryCount, baseMultiplier: multiplier
+            )
+            // Bound retry-after to [t_i, 5 + t_i] of the exponential backoff.
+            if let retryAfterHint = errorInfo.retryAfterHint {
+                backoffDelay = min(max(retryAfterHint, exponentialBackoff), 5.0 + exponentialBackoff)
+            } else {
+                backoffDelay = exponentialBackoff
+            }
         } else {
-            backoffDelay = exponentialBackoff
+            backoffDelay = errorInfo.retryAfterHint ??
+                options.backoffStrategy.computeNextBackoffDelay(attempt: tokenToRenew.retryCount)
         }
 
         tokenToRenew.retryCount += 1
         if tokenToRenew.retryCount > options.maxRetriesBase {
             throw RetryError.maxAttemptsReached
         }
-        let isThrottling = errorInfo.errorType == .throttling
-        if let capacityAmount = await tokenToRenew.quota.hasRetryQuota(isThrottling: isThrottling) {
+        if let capacityAmount = await tokenToRenew.quota.hasRetryQuota(errorInfo: errorInfo) {
             tokenToRenew.capacityAmount = capacityAmount
         } else {
             throw Error.insufficientQuota
         }
+        let isThrottling = errorInfo.errorType == .throttling
         await tokenToRenew.quota.updateClientSendingRate(isThrottling: isThrottling)
         let rateLimitDelay = await tokenToRenew.quota.getRateLimitDelay()
         try await sleeper(backoffDelay + rateLimitDelay)

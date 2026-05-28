@@ -31,7 +31,9 @@ final class DefaultRetryStrategyTests: XCTestCase {
     override func setUp() {
         backoffStrategy = .init()
         backoffStrategy.random = { @Sendable () -> Double in 1.0 }
-        options = RetryStrategyOptions(backoffStrategy: backoffStrategy, maxRetriesBase: 2)
+        options = RetryStrategyOptions(
+            backoffStrategy: backoffStrategy, maxRetriesBase: 2, useNewRetries2026: true
+        )
         subject = DefaultRetryStrategy(options: options)
         mockSleeper = { self.actualDelay = $0 }
         subject.sleeper = mockSleeper

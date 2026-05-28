@@ -39,7 +39,13 @@ final class RetryIntegrationTests: XCTestCase {
         var backoffStrategy = ExponentialBackoffStrategy(options: backoffStrategyOptions)
         backoffStrategy.random = { 1.0 }
 
-        let retryStrategyOptions = RetryStrategyOptions(backoffStrategy: backoffStrategy, maxRetriesBase: maxRetriesBase, availableCapacity: availableCapacity, maxCapacity: maxCapacity)
+        let retryStrategyOptions = RetryStrategyOptions(
+            backoffStrategy: backoffStrategy,
+            maxRetriesBase: maxRetriesBase,
+            availableCapacity: availableCapacity,
+            maxCapacity: maxCapacity,
+            useNewRetries2026: true
+        )
         subject = DefaultRetryStrategy(options: retryStrategyOptions)
         subject.sleeper = { self.next.actualDelay = ($0 != 0.0) ? $0 : nil }
 
