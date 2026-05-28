@@ -64,9 +64,11 @@ public struct Deserializer: ShapeDeserializer {
         let next = try decoder.popNext()
         switch next {
         case .int(let value):
-            return Int8(value)
+            guard let int8 = Int8(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int8") }
+            return int8
         case .uint(let value):
-            return Int8(value)
+            guard let int8 = Int8(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int8") }
+            return int8
         default:
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
@@ -80,9 +82,11 @@ public struct Deserializer: ShapeDeserializer {
         let next = try decoder.popNext()
         switch next {
         case .int(let value):
-            return Int16(value)
+            guard let int16 = Int16(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int16") }
+            return int16
         case .uint(let value):
-            return Int16(value)
+            guard let int16 = Int16(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int16") }
+            return int16
         default:
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
