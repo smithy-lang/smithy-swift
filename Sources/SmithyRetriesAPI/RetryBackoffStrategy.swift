@@ -22,7 +22,10 @@ public protocol RetryBackoffStrategy: Sendable {
 }
 
 extension RetryBackoffStrategy {
-    /// Default implementation delegates to the original method, ignoring the multiplier.
+    /// Compatibility shim for conformers that pre-date the `baseMultiplier` overload.
+    /// The default implementation **drops `baseMultiplier`** and delegates to the
+    /// single-argument variant.  Custom strategies that want gate-on backoff
+    /// (per-error multipliers, max-before-jitter) MUST override this method.
     public func computeNextBackoffDelay(attempt: Int, baseMultiplier: TimeInterval) -> TimeInterval {
         computeNextBackoffDelay(attempt: attempt)
     }

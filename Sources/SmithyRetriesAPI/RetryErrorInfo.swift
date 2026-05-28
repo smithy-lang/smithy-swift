@@ -11,7 +11,7 @@ import struct Foundation.TimeInterval
 ///
 /// The `RetryErrorInfoProvider` creates an instance of this structure, which is then used by the
 /// `RetryStrategy` to determine whether & how to retry a failed attempt.
-public struct RetryErrorInfo: Equatable {
+public struct RetryErrorInfo: Equatable, Sendable {
 
     /// The general nature of the cause of this retryable error.
     public var errorType: RetryErrorType

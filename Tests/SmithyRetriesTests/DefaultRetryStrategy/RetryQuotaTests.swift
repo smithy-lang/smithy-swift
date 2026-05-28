@@ -128,7 +128,7 @@ final class RetryQuotaTests: XCTestCase {
         XCTAssertEqual(finalCapacity, 495)  // 500 - 5
     }
 
-    func test_legacyMode_subtractsRetryCostLegacyOnNonTimeout() async throws {
+    func test_legacyMode_subtractsRetryCostOnNonTimeout() async throws {
         let subject = RetryQuota(availableCapacity: 500, maxCapacity: 500)
         _ = await subject.hasRetryQuota(isThrottling: false)
         let finalCapacity = await subject.availableCapacity

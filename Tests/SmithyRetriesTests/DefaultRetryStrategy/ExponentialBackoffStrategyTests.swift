@@ -73,4 +73,12 @@ final class ExponentialBackoffStrategyTests: XCTestCase {
         subject.random = { @Sendable () -> Double in 0.5 }
         XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 5, baseMultiplier: 1.0), 10.0)
     }
+
+    func test_maxBackoff_appliedAfterJitter_singleArg() {
+        // Single-arg overload uses pre-2.1 formula: min(b * r^i, MAX_BACKOFF).
+        // With b=0.5, attempt=5: 0.5 * 32 = 16, min(16, 20) = 16.0.
+        // (Compare to max-before-jitter, which would yield 0.5 * 20 = 10.0.)
+        subject.random = { @Sendable () -> Double in 0.5 }
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 5), 16.0)
+    }
 }
