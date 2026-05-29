@@ -59,6 +59,9 @@ open class RpcV2CborProtocolGenerator(
         // Remove this middleware as it will be handled by a RPCv2CBOR plugin
         operationMiddleware.removeMiddleware(operation, "OperationInputUrlPathMiddleware")
 
+        // Remove the header middleware if installed, modeled HTTP headers are not supported in RPCv2CBOR
+        operationMiddleware.removeMiddleware(operation, "OperationInputHeadersMiddleware")
+
         val hasEventStreamResponse = ctx.model.expectShape(operation.outputShape).hasTrait<StreamingTrait>()
         val hasEventStreamRequest = ctx.model.expectShape(operation.inputShape).hasTrait<StreamingTrait>()
 
