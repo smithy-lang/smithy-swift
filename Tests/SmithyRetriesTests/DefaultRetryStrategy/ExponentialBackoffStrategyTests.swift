@@ -57,7 +57,7 @@ final class ExponentialBackoffStrategyTests: XCTestCase {
     }
 
     func test_backoffWithMultiplier_throttling() {
-        // x=1.0: same as original behavior
+        // x=1.0: throttling case
         XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 0, baseMultiplier: 1.0), 1.0)
         XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 1, baseMultiplier: 1.0), 2.0)
         XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 2, baseMultiplier: 1.0), 4.0)

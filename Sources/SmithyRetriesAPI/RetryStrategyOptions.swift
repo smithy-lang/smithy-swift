@@ -36,9 +36,8 @@ public struct RetryStrategyOptions: Sendable {
     /// Sets the maximum capacity for this retry strategy's quotas.
     public let maxCapacity: Int
 
-    /// Set from the `AWS_NEW_RETRIES_2026` env var.  When true, switches to
-    /// the 14/5 token costs, per-error backoff multipliers, bounded
-    /// x-amz-retry-after, and throttling-vs-timeout token split.
+    /// Set from the `AWS_NEW_RETRIES_2026` env var.
+    /// See `AWSRetryFeatures.isNewRetries2026Enabled` for what it enables.
     public let useNewRetries2026: Bool
 
     public init(
