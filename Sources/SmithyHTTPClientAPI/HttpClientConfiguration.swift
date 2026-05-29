@@ -48,6 +48,11 @@ public class HTTPClientConfiguration: @unchecked Sendable {
     /// Defaults to system's TLS settings if `nil`.
     public var tlsConfiguration: (any TLSConfiguration)?
 
+    /// HTTP proxy used for outbound requests.
+    ///
+    /// If `nil`, no proxy is used.
+    public var proxy: Proxy?
+
     /// HTTP Client Telemetry
     public var telemetry: HttpTelemetry?
 
@@ -65,9 +70,10 @@ public class HTTPClientConfiguration: @unchecked Sendable {
     public init(
         connectTimeout: TimeInterval? = nil,
         socketTimeout: TimeInterval = 60.0,
-        protocolType: URIScheme = .https,
+        protocolType: URIScheme? = nil,
         defaultHeaders: Headers = Headers(),
         tlsConfiguration: (any TLSConfiguration)? = nil,
+        proxy: Proxy? = nil,
         telemetry: HttpTelemetry? = nil,
         maxConnections: Int? = nil
     ) {
@@ -76,6 +82,7 @@ public class HTTPClientConfiguration: @unchecked Sendable {
         self.defaultHeaders = defaultHeaders
         self.connectTimeout = connectTimeout
         self.tlsConfiguration = tlsConfiguration
+        self.proxy = proxy
         self.telemetry = telemetry
         if let maxConnections {
             self.maxConnections = maxConnections
