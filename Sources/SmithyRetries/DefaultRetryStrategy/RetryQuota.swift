@@ -77,7 +77,7 @@ final actor RetryQuota {
         return capacityAmount
     }
 
-    func hasRetryQuota(isThrottling: Bool) -> Int? {
+    func hasRetryQuota(isThrottling: Bool) -> Int? { // swiftlint:disable:this unused_declaration
         let errorType: RetryErrorType = isThrottling ? .throttling : .transient
         return hasRetryQuota(errorInfo: RetryErrorInfo(errorType: errorType, retryAfterHint: nil, isTimeout: false))
     }
