@@ -1386,6 +1386,35 @@ class OrchestratorTests: XCTestCase {
         XCTAssertEqual(executeRequest.requestCount, 3)
     }
 
+    func test_retry_longPollingBackoffCalledWhenTokenBucketEmpty() async throws {
+        let input = TestInput(foo: "bar")
+        let trace = Trace()
+        var longPollingBackoffCalled = false
+
+        // Use a retry strategy with zero capacity so refreshRetryTokenForRetry throws
+        let options = RetryStrategyOptions(
+            backoffStrategy: ImmediateBackoffStrategy(),
+            availableCapacity: 0,
+            maxCapacity: 0
+        )
+        let orchestrator = traceOrchestrator(trace: trace)
+            .retryStrategy(DefaultRetryStrategy(options: options))
+            .retryErrorInfoProvider({ _ in
+                RetryErrorInfo(errorType: .transient, retryAfterHint: nil, isTimeout: false)
+            })
+            .longPollingBackoffProvider({ _, _, _ in
+                longPollingBackoffCalled = true
+                return 0.0  // no actual delay in test
+            })
+            .executeRequest(TraceExecuteRequest(succeedAfter: 999, trace: trace))
+        let result = await asyncResult {
+            return try await orchestrator.build().execute(input: input)
+        }
+        // Request fails because token bucket is empty, but long-polling backoff should have fired
+        XCTAssertThrowsError(try result.get())
+        XCTAssertTrue(longPollingBackoffCalled, "longPollingBackoffProvider must be called when token bucket is empty")
+    }
+
     func test_retry_doesntRetryNonSeekableStreamBody() async throws {
         let input = TestInput(foo: "bar")
         let trace = Trace()

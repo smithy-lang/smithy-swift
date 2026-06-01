@@ -425,6 +425,7 @@ var runtimeTestTargets: [PackageDescription.Target] {
                 "Smithy",
                 "SmithyCBOR",
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+                "RPCv2CBORTestSDK",
             ]
         ),
         .target(

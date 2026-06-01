@@ -23,8 +23,12 @@ import struct SmithySerialization.SerializerError
 import protocol SmithySerialization.ShapeDeserializer
 
 @_spi(SchemaBasedSerde)
-public struct Deserializer: ShapeDeserializer {
+public class Deserializer: ShapeDeserializer {
     let decoder: CBORDecoder
+
+    // Depth measurement to prevent stack overflow
+    var depth = 0
+    let maxDepth = 128
 
     public init(data: Data) throws {
         // Substitute an empty map if data is empty
@@ -229,6 +233,9 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     public func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
+        guard depth < maxDepth else { throw CBORDecoderError("Maximum recursive depth exceeded during readStruct()") }
+        depth += 1
+        defer { depth -= 1 }
         let structureSchema: Schema
         switch schema.type {
         case .structure, .union:
@@ -295,6 +302,9 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     private func skipValue() throws {
+        guard depth < maxDepth else { throw CBORDecoderError("Maximum recursive depth exceeded during skipValue()") }
+        depth += 1
+        defer { depth -= 1 }
         let next = try decoder.popNext()
         switch next {
         case .array_start(let count):
@@ -325,6 +335,9 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     public func readList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E] {
+        guard depth < maxDepth else { throw CBORDecoderError("Maximum recursive depth exceeded during readList()") }
+        depth += 1
+        defer { depth -= 1 }
         guard decoder.hasNext() else {
             throw CBORDecoderError("List \(schema.id) ended unexpectedly")
         }
@@ -365,6 +378,9 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     public func readMap<V>( _ schema: Schema, _ consumer: ReadValueConsumer<V>) throws -> [String: V] {
+        guard depth < maxDepth else { throw CBORDecoderError("Maximum recursive depth exceeded during readMap()") }
+        depth += 1
+        defer { depth -= 1 }
         guard decoder.hasNext() else {
             throw CBORDecoderError("Map \(schema.id) ended unexpectedly")
         }

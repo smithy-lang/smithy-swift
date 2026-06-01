@@ -7,7 +7,7 @@
 
 import struct Foundation.Data
 @_spi(SchemaBasedSerde)
-import struct SmithyCBOR.Deserializer
+import class SmithyCBOR.Deserializer
 @_spi(SchemaBasedSerde)
 import class SmithyCBOR.Serializer
 @_spi(SchemaBasedSerde)

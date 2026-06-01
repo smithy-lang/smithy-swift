@@ -14,7 +14,10 @@ service AWSJSONService {
 @rpcv2Cbor
 service RPCv2CBORService {
     version: "2022-11-30",
-    operations: [GetWidget]
+    operations: [
+        GetWidget,
+        Recursive,
+    ]
 }
 
 operation GetWidget {
@@ -60,4 +63,24 @@ list PrivateList {
 map PrivateMap {
     key: String
     value: PrivateString
+}
+
+operation Recursive {
+    input: RecursiveInputOutput
+    output: RecursiveInputOutput
+}
+
+structure RecursiveInputOutput {
+    nested: RecursiveInputOutput
+    nestedList: NestedList
+    nestedMap: NestedMap
+}
+
+list NestedList {
+    member: RecursiveInputOutput
+}
+
+map NestedMap {
+    key: String
+    value: RecursiveInputOutput
 }
