@@ -12,12 +12,14 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.swift.codegen.SwiftWriter
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
-import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesTypes
 
 class RetryMiddleware(
     val model: Model,
     val symbolProvider: SymbolProvider,
     val retryErrorInfoProviderSymbol: Symbol,
+    val retryErrorInfoProviderExpressionFactory: ((ProtocolGenerator.GenerationContext) -> String)? = null,
+    val longPollingBackoffExpression: String? = null,
+    val additionalImportSymbols: List<Symbol> = emptyList(),
 ) : MiddlewareRenderable {
     override val name = "RetryMiddleware"
 
@@ -27,7 +29,18 @@ class RetryMiddleware(
         op: OperationShape,
         operationStackName: String,
     ) {
-        writer.write("builder.retryStrategy(\$N(options: config.retryStrategyOptions))", SmithyRetriesTypes.DefaultRetryStrategy)
-        writer.write("builder.retryErrorInfoProvider(\$N.errorInfo(for:))", retryErrorInfoProviderSymbol)
+        additionalImportSymbols.forEach { writer.addImport(it) }
+
+        writer.write("builder.retryStrategy(self.retryStrategy)")
+        val expression = retryErrorInfoProviderExpressionFactory?.invoke(ctx)
+        if (expression != null) {
+            writer.addImport(retryErrorInfoProviderSymbol)
+            writer.write("builder.retryErrorInfoProvider($expression)")
+        } else {
+            writer.write("builder.retryErrorInfoProvider(\$N.errorInfo(for:))", retryErrorInfoProviderSymbol)
+        }
+        if (longPollingBackoffExpression != null) {
+            writer.write("builder.longPollingBackoffProvider($longPollingBackoffExpression)")
+        }
     }
 }

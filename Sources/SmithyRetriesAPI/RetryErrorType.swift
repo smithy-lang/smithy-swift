@@ -9,7 +9,7 @@
 /// an operation.
 ///
 /// The retry strategy uses this classification to decide whether and when to retry a failed attempt.
-public enum RetryErrorType: Equatable {
+public enum RetryErrorType: Equatable, Sendable {
 
     /// This is a connection level error such as a socket timeout, socket connect error, tls negotiation timeout etc...
     /// Typically these should never be applied for non-idempotent, request types since in this scenario, it’s impossible

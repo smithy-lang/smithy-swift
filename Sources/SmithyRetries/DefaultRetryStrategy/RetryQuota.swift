@@ -6,6 +6,8 @@
 //
 
 import struct Foundation.TimeInterval
+import struct SmithyRetriesAPI.RetryErrorInfo
+import enum SmithyRetriesAPI.RetryErrorType
 import struct SmithyRetriesAPI.RetryStrategyOptions
 
 /// Keeps the retry quota count for one partition ID.
@@ -17,13 +19,12 @@ final actor RetryQuota {
     /// The quota's available capacity may never exceed this number.
     static var initialRetryTokens: Int { 500 } // swiftlint:disable:this unused_declaration
 
-    /// The number of tokens to be removed for a standard (i.e. non-timeout) retry.
-    static var retryCost: Int { 5 }
+    static var retryCost: Int { 14 }
+    static var retryCostLegacy: Int { 5 }
 
-    /// The number of tokens to be added to the available number for a request that does not need a retry.
     static var noRetryIncrement: Int { 1 }
 
-    /// The number of tokens to be removed for a retry of a timeout error.
+    static var throttlingRetryCost: Int { 5 }
     static var timeoutRetryCost: Int { 10 }
 
     /// The maximum number of tokens this quota will hold.  Same as initial capacity.
@@ -35,52 +36,53 @@ final actor RetryQuota {
     /// The rate limiter to be used, if any.
     private var rateLimiter: ClientSideRateLimiter?
 
+    private let useNewRetries2026: Bool
+
     /// Sets the current capacity in this quota.  To be used for testing only.
     func setAvailableCapacity(_ availableCapacity: Int) { // swiftlint:disable:this unused_declaration
         self.availableCapacity = availableCapacity
     }
 
-    /// Creates a new quota, optionally with reduced available capacity (used for testing.)
-    /// `maxCapacity` cannot be set less than available.
-    /// - Parameters:
-    ///   - availableCapacity: The number of tokens in this quota at creation.
-    ///   - maxCapacity: <#maxCapacity description#>
-    ///   - rateLimitingMode: <#rateLimitingMode description#>
     init(
         availableCapacity: Int,
         maxCapacity: Int,
-        rateLimitingMode: RetryStrategyOptions.RateLimitingMode = .standard
+        rateLimitingMode: RetryStrategyOptions.RateLimitingMode = .standard,
+        useNewRetries2026: Bool = false
     ) {
         self.availableCapacity = availableCapacity
         self.maxCapacity = max(maxCapacity, availableCapacity)
         self.rateLimiter = rateLimitingMode == .adaptive ? ClientSideRateLimiter() : nil
+        self.useNewRetries2026 = useNewRetries2026
     }
 
-    /// Creates a new quota with settings from the passed options.
-    /// - Parameter options: The retry strategy options from which to configure this retry quota
     init(options: RetryStrategyOptions) {
         self.init(
             availableCapacity: options.availableCapacity,
             maxCapacity: options.maxCapacity,
-            rateLimitingMode: options.rateLimitingMode
+            rateLimitingMode: options.rateLimitingMode,
+            useNewRetries2026: options.useNewRetries2026
         )
     }
 
-    /// Deducts the proper number of tokens from available & returns them.
-    /// If the number of tokens needed aren't available, `nil` is returned.
-    /// - Parameter isTimeout: `true` if the retry being deducted is a timeout error, `false` otherwise.
-    /// - Returns: The number of tokens deducted from available capacity, or `nil` if insufficient tokens were available.
-    func hasRetryQuota(isTimeout: Bool) -> Int? {
-        let capacityAmount = isTimeout ? Self.timeoutRetryCost : Self.retryCost
+    func hasRetryQuota(errorInfo: RetryErrorInfo) -> Int? {
+        let capacityAmount: Int
+        if useNewRetries2026 {
+            let isThrottling = errorInfo.errorType == .throttling
+            capacityAmount = isThrottling ? Self.throttlingRetryCost : Self.retryCost
+        } else {
+            capacityAmount = errorInfo.isTimeout ? Self.timeoutRetryCost : Self.retryCostLegacy
+        }
         if capacityAmount > availableCapacity { return nil }
         availableCapacity -= capacityAmount
         return capacityAmount
     }
 
+    func hasRetryQuota(isThrottling: Bool) -> Int? { // swiftlint:disable:this unused_declaration
+        let errorType: RetryErrorType = isThrottling ? .throttling : .transient
+        return hasRetryQuota(errorInfo: RetryErrorInfo(errorType: errorType, retryAfterHint: nil, isTimeout: false))
+    }
+
     /// Returns tokens to available capacity after a request is successfully completed.
-    /// - Parameters:
-    ///   - isSuccess: `true` if the request was completed successfully, `false` otherwise.
-    ///   - capacityAmount: The number to be added back to capacity.  Will be `nil` when no retry was needed.
     func retryQuotaRelease(isSuccess: Bool, capacityAmount: Int?) {
         guard isSuccess else { return }
         availableCapacity += capacityAmount ?? Self.noRetryIncrement
