@@ -23,6 +23,7 @@ public struct SerdeBenchmarker {
         telemetryProvider: SerdeBenchmarkTelemetryProvider,
         operation: () async throws -> Void
     ) async throws {
+        // Parameters for serde benchmark repeated runs
         let warmups = 1000
         let minRuns = 1000
         let maxRuns = 10000

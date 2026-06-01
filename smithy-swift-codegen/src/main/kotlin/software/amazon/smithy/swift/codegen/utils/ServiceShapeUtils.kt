@@ -16,10 +16,9 @@ fun ServiceShape.hasSerdePerformanceTests(model: Model): Boolean =
         .map { model.expectShape(it) }
         .map {
             listOf(
-                it.getTrait<HttpRequestTestsTrait>()?.testCases?.map { it.tags },
-                it.getTrait<HttpResponseTestsTrait>()?.testCases?.map { it.tags },
-            ).mapNotNull { it }
-        }.flatten()
+                it.getTrait<HttpRequestTestsTrait>()?.testCases ?: listOf(),
+                it.getTrait<HttpResponseTestsTrait>()?.testCases ?: listOf(),
+            ).flatten()
+        }
         .flatten()
-        .flatten()
-        .any { it == "serde-benchmark" }
+        .any { it.isSerdeBenchmarkTest }

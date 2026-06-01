@@ -29,6 +29,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTestUtilTypes
+import software.amazon.smithy.swift.codegen.utils.isSerdeBenchmarkTest
 import java.util.Base64
 
 /**
@@ -183,7 +184,14 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         // - credential resolver
         // - endpoint resolver (unless the test has endpoint rules)
         // - HTTP client engine; a mock that returns the test's HTTPResponse is used
-        writer.write("let telemetryProvider = SerdeBenchmarkTelemetryProvider()")
+
+        // Create benchmark telemetry for serde benchmark tests only
+        if (test.isSerdeBenchmarkTest) {
+            writer.write(
+                "let telemetryProvider = \$N()",
+                SmithyTestUtilTypes.SerdeBenchmarkTelemetryProvider,
+            )
+        }
         writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
@@ -197,7 +205,10 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
                     writer.write("urlString: \"https://example.com\"")
                 }
             }
-            writer.write("telemetryProvider: telemetryProvider,")
+            // Install benchmark telemetry for serde benchmark tests only
+            if (test.isSerdeBenchmarkTest) {
+                writer.write("telemetryProvider: telemetryProvider,")
+            }
             writer.write(
                 "retryStrategyOptions: \$N.make(),",
                 SmithyTestUtilTypes.ProtocolTestRetryStrategyOptions,
@@ -250,11 +261,15 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         )
     }
 
-    open fun captureSerdeBenchmarkResponse(test: HttpResponseTestCase) {
-        writer.write("let path = FileManager.default.currentDirectoryPath + \"/../../../../../../../smithy-swift/instance-results.json\"")
+    fun captureSerdeBenchmarkResponse(test: HttpResponseTestCase) {
+        writer.write(
+            "let path = \$N.default.currentDirectoryPath + \"/../../../../../../../smithy-swift/instance-results.json\"",
+            FoundationTypes.FileManager,
+        )
         writer.openBlock(
-            "try await SerdeBenchmarker().test(id: \$S, type: .response, path: path, telemetryProvider: telemetryProvider) {",
+            "try await \$N().test(id: \$S, type: .response, path: path, telemetryProvider: telemetryProvider) {",
             "}",
+            SmithyTestUtilTypes.SerdeBenchmarker,
             test.id,
         ) {
             writer.write("_ = try await client.\$L(input: input)", operation.toLowerCamelCase())
