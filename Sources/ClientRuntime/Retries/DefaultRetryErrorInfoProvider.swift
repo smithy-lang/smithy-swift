@@ -68,8 +68,49 @@ public enum DefaultRetryErrorInfoProvider: RetryErrorInfoProvider, Sendable {
                   crtErrorStruct.code == 1029 {
             // Retries CRTError "AWS_IO_TLS_ERROR_NEGOTIATION_FAILURE"
             return .init(errorType: .transient, retryAfterHint: nil, isTimeout: false)
+        } else if isTransientNIOChannelError(error) {
+            // SwiftNIO connection-level errors (ioOnClosedChannel, eof, etc.)
+            return .init(errorType: .transient, retryAfterHint: nil, isTimeout: false)
+        } else if String(reflecting: type(of: error)).hasSuffix("SmithySerialization.ResponseDecodingError") {
+            // Body deserialization failed; usually mid-flight corruption that a retry can recover from.
+            return .init(errorType: .transient, retryAfterHint: nil, isTimeout: false)
         }
         return nil
+    }
+
+    /// Avoids importing NIOCore / AsyncHTTPClient by matching on the error's type name.
+    /// Most NIOCore.ChannelError and AsyncHTTPClient.HTTPClientError cases are transient
+    /// connection-level errors; we only exclude variants that are programmer errors.
+    private static func isTransientNIOChannelError(_ error: Error) -> Bool {
+        let qualifiedTypeName = String(reflecting: type(of: error))
+        let isNIOChannelError = qualifiedTypeName.hasSuffix("NIOCore.ChannelError")
+        let isHTTPClientError = qualifiedTypeName.contains("AsyncHTTPClient")
+            && qualifiedTypeName.hasSuffix("HTTPClientError")
+        guard isNIOChannelError || isHTTPClientError else { return false }
+        let description = String(describing: error)
+        let nonRetryableDescriptions = [
+            "operationUnsupported",
+            "writeMessageTooLarge",
+            "writeHostUnreachable",
+            "unknownLocalAddress",
+            "badMulticastGroupAddressFamily",
+            "badInterfaceAddressFamily",
+            "illegalMulticastAddress",
+            "unsupportedScheme",
+            "invalidURL",
+            "emptyHost",
+            "missingSocketPath",
+            "alreadyShutdown",
+            "writeAfterRequestSent",
+            "incompatibleHeaders",
+            "invalidHeaderFieldNames",
+            "invalidHeaderFieldValues",
+            "identityCodingIncorrectlyPresent",
+            "redirectLimitReached",
+            "redirectCycleDetected",
+            "uncleanShutdown",
+        ]
+        return !nonRetryableDescriptions.contains(where: { description.contains($0) })
     }
 }
 
