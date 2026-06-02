@@ -23,7 +23,7 @@ package struct DeserializeCodegen {
         writer.write("import struct Smithy.Document")
         writer.write("import enum Smithy.Prelude")
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import struct Smithy.Schema")
+        writer.write("import class Smithy.Schema")
         writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import protocol SmithySerialization.DeserializableStruct")
         writer.write("@_spi(SchemaBasedSerde)")
