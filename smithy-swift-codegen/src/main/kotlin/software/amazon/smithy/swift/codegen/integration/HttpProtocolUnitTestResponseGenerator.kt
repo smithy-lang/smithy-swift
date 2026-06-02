@@ -246,7 +246,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
             inputArgs.joinToString(", "),
         )
         writer.write("")
-        if (test.hasTag("serde-benchmark")) {
+        if (test.isSerdeBenchmarkTest) {
             captureSerdeBenchmarkResponse(test)
         } else {
             captureResponse(test)
@@ -280,7 +280,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         test: HttpResponseTestCase,
         outputShape: Shape,
     ) {
-        if (test.hasTag("serde-benchmark")) return
+        if (test.isSerdeBenchmarkTest) return
         // invoke the DSL builder for the input type
         writer
             .writeInline("\nlet expected = ")
@@ -294,7 +294,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         test: HttpResponseTestCase,
         outputShape: Shape,
     ) {
-        if (test.hasTag("serde-benchmark")) return
+        if (test.isSerdeBenchmarkTest) return
         writer.write("XCTAssertEqual(actual, expected)")
     }
 

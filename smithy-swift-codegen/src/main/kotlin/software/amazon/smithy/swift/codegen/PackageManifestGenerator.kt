@@ -22,7 +22,7 @@ class PackageManifestGenerator(
                 writer.write("name: \$S,", ctx.settings.moduleName)
 
                 writer.openBlock("platforms: [", "],") {
-                    writer.write(".macOS(.v12), .iOS(.v13)")
+                    writer.write(".macOS(.v12), .iOS(.v13), .tvOS(.v13), .watchOS(.v6)")
                 }
 
                 writer.openBlock("products: [", "],") {
@@ -53,9 +53,9 @@ class PackageManifestGenerator(
                             dependenciesByTarget.forEach { writeTargetDependency(writer, it) }
                         }
                         writer.openBlock("plugins: [", "]") {
-                            writer.openBlock(".plugin(", ")") {
-                                writer.write("name: \"SmithyCodeGeneratorPlugin\",")
-                                writer.write("package: \"smithy-swift\"")
+                            writer.openBlock(".plugin(", "),") {
+                                writer.write("name: \$S,", "SmithyCodeGeneratorPlugin")
+                                writer.write("package: \$S", "smithy-swift")
                             }
                         }
                     }
@@ -78,8 +78,9 @@ class PackageManifestGenerator(
         writer.openBlock(".package(", "),") {
             if (ctx.model.serviceShapes.any { it.hasSerdePerformanceTests(ctx.model) }) {
                 // For serde performance tests, use local smithy-swift
-                writer.write("path: \"../../../../../../../smithy-swift\"")
+                writer.write("path: \$S", "../../../../../../../smithy-swift")
             } else {
+                // For other generated clients, use stable, published smithy-swift
                 val url = dependency.expectProperty("url", String::class.java)
                 writer.write("url: \$S,", url)
                 writer.write("exact: \$S", dependency.version)

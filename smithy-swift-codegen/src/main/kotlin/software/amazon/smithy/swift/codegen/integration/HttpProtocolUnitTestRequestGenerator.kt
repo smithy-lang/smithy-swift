@@ -34,7 +34,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
     }
 
     private fun renderExpectedBlock(test: HttpRequestTestCase) {
-        if (test.hasTag("serde-benchmark")) return
+        if (test.isSerdeBenchmarkTest) return
         val resolvedHostValue = if (test.resolvedHost.isPresent && test.resolvedHost.get() != "") test.resolvedHost.get() else "example.com"
         val hostValue = if (test.host.isPresent && test.host.get() != "") test.host.get() else "example.com"
 
@@ -139,7 +139,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
     }
 
     private fun renderOperationBlock(test: HttpRequestTestCase) {
-        if (test.hasTag("serde-benchmark")) {
+        if (test.isSerdeBenchmarkTest) {
             renderSerdeBenchmarkOperationBlock(test)
             return
         }
@@ -274,7 +274,6 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                 .call {
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }.write("")
-            writer.addImport(SwiftDependency.SMITHY.target)
             writer.write(
                 "let path = \$N.default.currentDirectoryPath + \"/../../../../../../../smithy-swift/instance-results.json\"",
                 FoundationTypes.FileManager,

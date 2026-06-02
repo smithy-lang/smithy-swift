@@ -37,7 +37,12 @@ abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
          */
         fun renderTestClass(testClassName: String) {
             writer.write("")
-            writer.openBlock("class $testClassName: $baseTestClassName {", "}") {
+            writer.openBlock(
+                "class \$L: \$L {",
+                "}",
+                testClassName,
+                baseTestClassName,
+            ) {
                 testCases.forEach { renderTestFunction(it) }
             }
         }
@@ -46,10 +51,10 @@ abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
          * Write a single unit test function using the given [writer]
          */
         private fun renderTestFunction(test: T) {
+            writer.write("")
             test.documentation.ifPresent {
                 writer.writeDocs(it)
             }
-
             writer.openBlock("func test_${test.id}() async throws {", "}") {
                 renderTestBody(test)
             }
