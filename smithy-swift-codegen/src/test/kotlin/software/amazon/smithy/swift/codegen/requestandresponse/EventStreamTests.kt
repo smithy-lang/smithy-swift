@@ -252,7 +252,6 @@ extension EventStreamTestClientTypes.TestStream {
             .build()
         return try await op.execute(input: input)
     }
-}
 """
         contents.shouldContainOnlyOnce(expected)
     }
