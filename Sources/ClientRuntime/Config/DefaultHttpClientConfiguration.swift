@@ -48,7 +48,7 @@ public protocol DefaultHttpClientConfiguration: ClientConfiguration {
 
     /// The AWS credential identity resolver to be used for AWS credentials.
     var awsCredentialIdentityResolver: any AWSCredentialIdentityResolver { get set }
-    
+
     /// The region identifier to be used for sigv4 signing,
     ///
     /// May be left nil if sigv4 is not used or if region will be resolved some other way.
