@@ -31,7 +31,7 @@ class PackageManifestGeneratorTests {
         assertNotNull(packageManifest)
         val expected = """
     platforms: [
-        .macOS(.v12), .iOS(.v13)
+        .macOS(.v12), .iOS(.v13), .tvOS(.v13), .watchOS(.v6)
     ],
 """
         packageManifest.shouldContain(expected)
@@ -82,7 +82,7 @@ class PackageManifestGeneratorTests {
                 .plugin(
                     name: "SmithyCodeGeneratorPlugin",
                     package: "smithy-swift"
-                )
+                ),
             ]
         ),
         .testTarget(
