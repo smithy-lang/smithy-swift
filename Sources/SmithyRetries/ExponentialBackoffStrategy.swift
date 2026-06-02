@@ -25,7 +25,13 @@ public struct ExponentialBackoffStrategy: RetryBackoffStrategy {
         self.options = options
     }
 
+    /// `min(b * r^i, MAX_BACKOFF)` — MAX_BACKOFF applied after jitter.
     public func computeNextBackoffDelay(attempt: Int) -> TimeInterval {
         min(random() * pow(r, Double(attempt)), options.maxBackoff)
+    }
+
+    /// `b * min(x * r^i, MAX_BACKOFF)` — MAX_BACKOFF applied before jitter.
+    public func computeNextBackoffDelay(attempt: Int, baseMultiplier: TimeInterval) -> TimeInterval {
+        random() * min(baseMultiplier * pow(r, Double(attempt)), options.maxBackoff)
     }
 }
