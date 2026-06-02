@@ -23,6 +23,7 @@ public final class AwsJsonProtocolClient: ClientRuntime.Client {
     let client: ClientRuntime.SdkHttpClient
     public let config: AwsJsonProtocolClient.AwsJsonProtocolClientConfig
     let serviceName = "AwsJson Protocol"
+    let retryStrategy: SmithyRetries.DefaultRetryStrategy
 
     @available(*, deprecated, message: "Use AwsJsonProtocolClient.AwsJsonProtocolClientConfig instead")
     public typealias Config = AwsJsonProtocolClient.AwsJsonProtocolClientConfiguration
@@ -32,6 +33,7 @@ public final class AwsJsonProtocolClient: ClientRuntime.Client {
         ClientRuntime.initialize()
         client = ClientRuntime.SdkHttpClient(engine: config.httpClientEngine, config: config.httpClientConfiguration)
         self.config = config
+        self.retryStrategy = SmithyRetries.DefaultRetryStrategy(options: config.retryStrategyOptions)
     }
 
     @available(*, deprecated, message: "Use init(config: AwsJsonProtocolClient.AwsJsonProtocolClientConfig) instead")
@@ -357,7 +359,7 @@ extension AwsJsonProtocolClient {
         builder.deserialize(ClientRuntime.DeserializeMiddleware<AllocateWidgetOutput>(AllocateWidgetOutput.httpOutput(from:), AllocateWidgetOutputError.httpError(from:)))
         builder.interceptors.add(ClientRuntime.LoggerMiddleware<AllocateWidgetInput, AllocateWidgetOutput>(clientLogMode: config.clientLogMode))
         builder.clockSkewProvider(ClientRuntime.DefaultClockSkewProvider.provider())
-        builder.retryStrategy(SmithyRetries.DefaultRetryStrategy(options: config.retryStrategyOptions))
+        builder.retryStrategy(self.retryStrategy)
         builder.retryErrorInfoProvider(ClientRuntime.DefaultRetryErrorInfoProvider.errorInfo(for:))
         builder.applySigner(ClientRuntime.SignerMiddleware<AllocateWidgetOutput>())
         builder.selectAuthScheme(ClientRuntime.AuthSchemeMiddleware<AllocateWidgetOutput>())

@@ -62,7 +62,7 @@ let package = Package(
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
-            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.58.1"),
+            .package(url: "https://github.com/awslabs/aws-crt-swift.git", exact: "0.61.1"),
             .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
@@ -74,7 +74,11 @@ let package = Package(
         }
         return dependencies
     }(),
-    targets: [
+    targets: runtimeTargets + runtimeTestTargets
+)
+
+var runtimeTargets: [PackageDescription.Target] {
+    [
         .target(
             name: "Smithy",
             dependencies: [
@@ -315,6 +319,18 @@ let package = Package(
                 "SmithyCBOR",
             ]
         ),
+    ].compactMap { $0 }
+}
+
+var runtimeTestTargets: [PackageDescription.Target] {
+    let baseTests: [PackageDescription.Target] = [
+        .testTarget(
+            name: "SmithyTests",
+            dependencies: ["Smithy"]
+        ),
+    ]
+    guard ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_UNIT_TESTS"] != nil else { return baseTests }
+    return baseTests + [
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: [
@@ -324,10 +340,6 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ],
             resources: [ .process("Resources") ]
-        ),
-        .testTarget(
-            name: "SmithyTests",
-            dependencies: ["Smithy"]
         ),
         .testTarget(
             name: "SmithySwiftNIOTests",
@@ -383,6 +395,10 @@ let package = Package(
             dependencies: ["Smithy", "SmithyIdentity"]
         ),
         .testTarget(
+            name: "SmithyWaitersTests",
+            dependencies: ["Smithy", "SmithyWaitersAPI", "WaitersTestSDK"]
+        ),
+        .testTarget(
             name: "SmithyWaitersAPITests",
             dependencies: ["Smithy", "SmithyWaitersAPI"]
         ),
@@ -403,6 +419,15 @@ let package = Package(
             dependencies: ["SmithyCodegenCore"],
             resources: [ .process("Resources") ]
         ),
+        .testTarget(
+            name: "SmithyCBORTests",
+            dependencies: [
+                "Smithy",
+                "SmithyCBOR",
+                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
+                "RPCv2CBORTestSDK",
+            ]
+        ),
         .target(
             name: "RPCv2CBORTestSDK",
             dependencies: [
@@ -417,9 +442,23 @@ let package = Package(
             path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/Sources/RPCv2CBORTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
+        .target(
+            name: "WaitersTestSDK",
+            dependencies: [
+                "ClientRuntime",
+                "SmithyHTTPAPI",
+                "SmithyHTTPAuthAPI",
+                "SmithyIdentity",
+                "SmithyRPCv2CBOR",
+                "SmithyRetries",
+                "SmithyRetriesAPI",
+            ],
+            path: "test-sdks/build/smithyprojections/test-sdks/waiters/swift-codegen/Sources/WaitersTestSDK",
+            plugins: ["SmithyCodeGeneratorPlugin"]
+        ),
         .testTarget(
             name: "SmithySerializationTests",
             dependencies: ["SmithySerialization", "RPCv2CBORTestSDK"]
         ),
-    ].compactMap { $0 }
-)
+    ]
+}

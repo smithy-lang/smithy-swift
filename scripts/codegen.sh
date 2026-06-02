@@ -15,4 +15,6 @@ rm -rf test-sdks/build/smithyprojections/test-sdks/*
 ./gradlew -p test-sdks build
 
 # Delete Package.swift for test SDKs so generated files are accessible in Xcode
+rm -rf test-sdks/build/smithyprojections/test-sdks/awsjson/swift-codegen/Package.swift
 rm -rf test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/Package.swift
+rm -rf test-sdks/build/smithyprojections/test-sdks/waiters/swift-codegen/Package.swift

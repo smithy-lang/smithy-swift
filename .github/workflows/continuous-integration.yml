@@ -66,11 +66,15 @@ jobs:
         uses: ./.github/actions/setup-common-tools-composite-action
       - name: List all sims installed
         run: xcrun simctl list
+      - name: Describe Package
+        run: swift package describe
       - name: Build & Run smithy-swift Kotlin Unit Tests
         run: ./gradlew build
       - name: Generate test SDKs
         run: ./scripts/codegen.sh
       - name: Build & Run smithy-swift Swift Unit Tests
+        env:
+          AWS_SWIFT_SDK_ENABLE_UNIT_TESTS: 1
         run: |
           set -o pipefail && \
           NSUnbufferedIO=YES xcodebuild \
@@ -78,6 +82,13 @@ jobs:
             -destination '${{ matrix.destination }}' \
             test 2>&1 \
             | xcbeautify
+
+  apple-ci-complete:
+    needs: apple-ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "apple-ci passed"
 
   apple-downstream:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
@@ -141,6 +152,8 @@ jobs:
         run: ./aws-sdk-swift/scripts/ci_steps/log_tool_versions.sh
       - name: List all sims installed
         run: xcrun simctl list
+      - name: Describe Package
+        run: cd smithy-swift && swift package describe
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
         run: |
           cd aws-sdk-swift
@@ -164,6 +177,13 @@ jobs:
             test 2>&1 \
             | xcbeautify
 
+  apple-downstream-complete:
+    needs: apple-downstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "apple-downstream passed"
+
   linux-ci:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
     runs-on: ${{ matrix.runner }}
@@ -176,7 +196,7 @@ jobs:
         swift:
           - 5.9-jammy
           - 5.9-rhel-ubi9
-          - 6.2-noble
+          - 6.3-noble
           - 6.3-amazonlinux2023
     container:
       image: swift:${{ matrix.swift }}
@@ -192,12 +212,23 @@ jobs:
           fi
       - name: Setup common tools
         uses: ./.github/actions/setup-common-tools-composite-action
+      - name: Describe Package
+        run: swift package describe
       - name: Build & Run Kotlin Unit Tests
         run: ./gradlew build
       - name: Generate test SDKs
         run: ./scripts/codegen.sh
       - name: Build & Run Swift Unit Tests
+        env:
+          AWS_SWIFT_SDK_ENABLE_UNIT_TESTS: 1
         run: swift test
+
+  linux-ci-complete:
+    needs: linux-ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "linux-ci passed"
 
   linux-downstream:
     if: github.repository == 'smithy-lang/smithy-swift' || github.event_name == 'pull_request'
@@ -211,7 +242,7 @@ jobs:
         swift:
           - 5.9-jammy
           - 5.9-rhel-ubi9
-          - 6.2-noble
+          - 6.3-noble
           - 6.3-amazonlinux2023
     container:
       image: swift:${{ matrix.swift }}
@@ -234,6 +265,8 @@ jobs:
           STAGING_PARTNER_REPO: ${{ secrets.STAGING_PARTNER_REPO }}
       - name: Setup common tools
         uses: ./smithy-swift/.github/actions/setup-common-tools-composite-action
+      - name: Describe Package
+        run: cd smithy-swift && swift package describe
       - name: Tools Versions
         run: ./aws-sdk-swift/scripts/ci_steps/log_tool_versions.sh
       - name: Prepare aws-sdk-swift Protocol & Unit Tests
@@ -252,3 +285,9 @@ jobs:
           cd aws-sdk-swift/codegen
           swift test
 
+  linux-downstream-complete:
+    needs: linux-downstream
+    runs-on: ubuntu-latest
+    steps:
+      - name: Success
+        run: echo "linux-downstream passed"
