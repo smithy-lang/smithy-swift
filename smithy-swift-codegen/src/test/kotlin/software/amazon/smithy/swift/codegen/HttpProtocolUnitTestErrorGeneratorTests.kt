@@ -35,7 +35,6 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             return
         }
 
-        let telemetryProvider = SerdeBenchmarkTelemetryProvider()
         let config = try await ExampleClient.ExampleClientConfig(
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
@@ -43,7 +42,6 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
-            telemetryProvider: telemetryProvider,
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )
@@ -105,7 +103,6 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             return
         }
 
-        let telemetryProvider = SerdeBenchmarkTelemetryProvider()
         let config = try await ExampleClient.ExampleClientConfig(
             awsCredentialIdentityResolver: try SmithyTestUtil.dummyIdentityResolver(),
             region: "us-west-2",
@@ -113,7 +110,6 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
             endpointResolver: StaticEndpointResolver(endpoint: try SmithyHTTPAPI.Endpoint(
                 urlString: "https://example.com"
             )),
-            telemetryProvider: telemetryProvider,
             retryStrategyOptions: SmithyTestUtil.ProtocolTestRetryStrategyOptions.make(),
             httpClientEngine: ProtocolResponseTestClient(httpResponse: httpResponse)
         )

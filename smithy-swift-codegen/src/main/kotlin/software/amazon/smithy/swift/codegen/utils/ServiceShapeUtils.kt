@@ -19,6 +19,5 @@ fun ServiceShape.hasSerdePerformanceTests(model: Model): Boolean =
                 it.getTrait<HttpRequestTestsTrait>()?.testCases ?: listOf(),
                 it.getTrait<HttpResponseTestsTrait>()?.testCases ?: listOf(),
             ).flatten()
-        }
-        .flatten()
+        }.flatten()
         .any { it.isSerdeBenchmarkTest }
