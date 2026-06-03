@@ -57,7 +57,7 @@ class ShapeValueGeneratorTest {
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyMap"))
-        val writer = SwiftWriter("test")
+        val writer = SwiftWriter("test", moduleName = "TestModule")
 
         val params =
             Node
@@ -102,7 +102,7 @@ class ShapeValueGeneratorTest {
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val listShape = model.expectShape(ShapeId.from("foo.bar#MyList"))
-        val writer = SwiftWriter("test")
+        val writer = SwiftWriter("test", moduleName = "TestModule")
 
         val values: Array<Node> = listOf("v1", "v2", "v3").map(Node::from).toTypedArray()
         val params = Node.arrayNode(*values)
@@ -145,7 +145,7 @@ class ShapeValueGeneratorTest {
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val setShape = model.expectShape(ShapeId.from("foo.bar#MySet"))
-        val writer = SwiftWriter("test")
+        val writer = SwiftWriter("test", moduleName = "TestModule")
 
         val values: Array<Node> = listOf("v1", "v2", "v3").map(Node::from).toTypedArray()
         val params = Node.arrayNode(*values)
@@ -188,7 +188,7 @@ Set<Swift.String>(arrayLiteral:
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val setShape = model.expectShape(ShapeId.from("foo.bar#MySet"))
-        val writer = SwiftWriter("test")
+        val writer = SwiftWriter("test", moduleName = "TestModule")
 
         val values: Array<Node> = emptyArray()
         val params = Node.arrayNode(*values)
@@ -332,7 +332,7 @@ Set<Swift.String>(arrayLiteral:
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
 
         val structShape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
-        val writer = SwiftWriter("test")
+        val writer = SwiftWriter("test", moduleName = "TestModule")
 
         val params =
             Node
@@ -425,7 +425,7 @@ MyStruct(
 
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyMap"))
-        val writer = SwiftWriter("test")
+        val writer = SwiftWriter("test", moduleName = "TestModule")
 
         val params =
             Node
@@ -537,7 +537,7 @@ MyStruct(
             }
          * */
         var structShape = model.expectShape(ShapeId.from("smithy.example#RecursiveShapesInputOutputNested1"))
-        var writer = SwiftWriter("test")
+        var writer = SwiftWriter("test", moduleName = "TestModule")
         var params =
             Node
                 .objectNodeBuilder()
@@ -571,7 +571,7 @@ MyStruct(
             }
          * */
         structShape = model.expectShape(ShapeId.from("smithy.example#RecursiveShapesInputOutputNested2"))
-        writer = SwiftWriter("test")
+        writer = SwiftWriter("test", moduleName = "TestModule")
         params =
             Node
                 .objectNodeBuilder()
@@ -604,7 +604,7 @@ MyStruct(
             }
          * */
         structShape = model.expectShape(ShapeId.from("smithy.example#RecursiveShapesInputOutput"))
-        writer = SwiftWriter("test")
+        writer = SwiftWriter("test", moduleName = "TestModule")
         params =
             Node
                 .objectNodeBuilder()
@@ -669,7 +669,7 @@ MyStruct(
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, model.defaultSettings())
 
         val structShape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
-        val writer = SwiftWriter("test")
+        val writer = SwiftWriter("test", moduleName = "TestModule")
 
         val params =
             Node

@@ -35,7 +35,7 @@ class StructureGeneratorTests {
         val model = createModelWithStructureWithoutErrorTrait()
         val swiftSettings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = swiftSettings.moduleName)
         val struct = model.getShape(ShapeId.from("smithy.example#MyStruct")).get() as StructureShape
         val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
         generator.render()
@@ -139,7 +139,7 @@ public struct PrimitiveTypesInput: Swift.Sendable {
         val model = javaClass.classLoader.getResource("recursive-shape-test.smithy").asSmithy()
         val swiftSettings = model.defaultSettings()
         val provider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = swiftSettings.moduleName)
 
         for (struct in structs) {
             val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
@@ -193,7 +193,7 @@ public struct RecursiveShapesInputOutput: Swift.Sendable {
         val model = javaClass.classLoader.getResource("recursive-shape-test.smithy").asSmithy()
         val swiftSettings = model.defaultSettings()
         val provider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = swiftSettings.moduleName)
 
         for (struct in structs) {
             val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
@@ -247,7 +247,7 @@ public struct RecursiveShapesInputOutputLists: Swift.Sendable {
         val model: Model = createModelWithStructureShape(struct)
         val swiftSettings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, swiftSettings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = swiftSettings.moduleName)
         val generator = StructureGenerator(model, provider, writer, struct, swiftSettings)
         generator.renderErrors()
 

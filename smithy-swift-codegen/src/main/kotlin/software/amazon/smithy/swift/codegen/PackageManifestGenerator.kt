@@ -6,12 +6,14 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.core.GenerationContext
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 class PackageManifestGenerator(
     val ctx: GenerationContext,
 ) {
     fun writePackageManifest(dependencies: List<SymbolDependency>) {
-        ctx.writerDelegator().useFileWriter("Package.swift") { writer ->
+        val filename = SDKFileUtils(ctx.settings).rootDirFilePath("Package")
+        ctx.writerDelegator().useFileWriter(filename) { writer ->
             writer.write("// swift-tools-version: \$L", ctx.settings.swiftVersion)
             writer.write("")
             writer.write("import PackageDescription")

@@ -20,14 +20,15 @@ class PackageManifestGeneratorTests {
 
     @Test
     fun `it starts with a swift-tools-version statement`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        print(testContext.manifest.files)
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
         packageManifest.shouldStartWith("// swift-tools-version: 5.5.0")
     }
 
     @Test
     fun `it renders package manifest file with macOS and iOS platforms block`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
         val expected = """
     platforms: [
@@ -39,7 +40,7 @@ class PackageManifestGeneratorTests {
 
     @Test
     fun `it renders package manifest file with single library in product block`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
         val expected = """
     products: [
@@ -51,7 +52,7 @@ class PackageManifestGeneratorTests {
 
     @Test
     fun `it renders package manifest file with dependencies`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
         val expected = """
     dependencies: [
@@ -66,7 +67,7 @@ class PackageManifestGeneratorTests {
 
     @Test
     fun `it renders package manifest file with target and test target`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
         val expected = """
     targets: [

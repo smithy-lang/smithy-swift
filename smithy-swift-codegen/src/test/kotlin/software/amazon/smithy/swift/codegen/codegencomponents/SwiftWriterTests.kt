@@ -15,7 +15,7 @@ import software.amazon.smithy.swift.codegen.integration.SectionId
 
 class SwiftWriterTests {
     @Test fun `writes doc strings`() {
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = "TestModule")
         val docs = "This is a big doc string.\nMore."
         writer.writeDocs(docs)
         val result = writer.toString()
@@ -27,7 +27,7 @@ class SwiftWriterTests {
     }
 
     @Test fun `escapes $ in doc strings`() {
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = "TestModule")
         val docs = "This is $ valid documentation."
         writer.writeDocs(docs)
         val result = writer.toString()
@@ -46,7 +46,7 @@ class SwiftWriterTests {
 
     @Test
     fun `it handles overriding stateful sections`() {
-        val unit = SwiftWriter("MockPackage")
+        val unit = SwiftWriter("MockPackage", moduleName = "TestModule")
 
         unit.customizeSection(TestSectionId) { writer, previousValue ->
             val state = writer.getContext(TestSectionId.a)
@@ -74,7 +74,7 @@ class SwiftWriterTests {
 
     @Test
     fun `it handles nested stateful sections`() {
-        val unit = SwiftWriter("MockPackage")
+        val unit = SwiftWriter("MockPackage", moduleName = "TestModule")
 
         unit.customizeSection(TestSectionId) { writer, previousValue ->
             val state = writer.getContext(TestSectionId.a)
