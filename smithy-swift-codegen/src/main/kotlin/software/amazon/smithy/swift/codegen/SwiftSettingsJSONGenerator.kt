@@ -6,6 +6,7 @@ import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.serde.SerdeUtils
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import java.util.Optional
 
 class SwiftSettingsJSONGenerator(
@@ -14,8 +15,8 @@ class SwiftSettingsJSONGenerator(
     fun render() {
         if (!SerdeUtils.useSchemaBased(ctx)) return
 
-        val path = "${ctx.settings.moduleName}/Sources/${ctx.settings.moduleName}/swift-settings.json"
-        ctx.delegator.useFileWriter(path) { writer ->
+        val filename = SDKFileUtils(ctx.settings).sourcesDirFilePath("swift-settings", "json")
+        ctx.delegator.useFileWriter(filename) { writer ->
             val node =
                 ObjectNode
                     .builder()

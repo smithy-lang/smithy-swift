@@ -21,6 +21,7 @@ import software.amazon.smithy.swift.codegen.integration.SmithyHttpProtocolClient
 import software.amazon.smithy.swift.codegen.integration.middlewares.OperationEndpointResolverMiddleware
 import software.amazon.smithy.swift.codegen.middleware.MiddlewareRenderable
 import software.amazon.smithy.swift.codegen.model.getTrait
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 abstract class SmithyHTTPBindingProtocolGenerator(
     customizations: HTTPProtocolCustomizable,
@@ -72,9 +73,8 @@ abstract class SmithyHTTPBindingProtocolGenerator(
                 return 0
             }
 
-            ctx.delegator.useFileWriter(
-                "${ctx.settings.moduleName}/Tests/${ctx.settings.testModuleName}/EndpointResolverTest.swift",
-            ) { swiftWriter ->
+            val filename = SDKFileUtils(ctx.settings).testsDirFilePath("EndpointResolverTest")
+            ctx.delegator.useFileWriter(filename) { swiftWriter ->
                 testCount = +EndpointTestGenerator(testsTrait, ruleSet, ctx).render(swiftWriter)
             }
         }

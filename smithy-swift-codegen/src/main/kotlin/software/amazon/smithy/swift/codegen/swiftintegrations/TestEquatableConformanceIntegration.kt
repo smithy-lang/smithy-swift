@@ -16,6 +16,7 @@ import software.amazon.smithy.swift.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.swift.codegen.integration.SwiftIntegration
 import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 class TestEquatableConformanceIntegration : SwiftIntegration {
     override fun writeAdditionalFiles(
@@ -38,10 +39,11 @@ class TestEquatableConformanceIntegration : SwiftIntegration {
         delegator: SwiftDelegator,
     ) {
         val symbol = ctx.symbolProvider.toSymbol(shape)
+        val filename = SDKFileUtils(ctx.settings).testsDirFilePath("models/${symbol.name}+Equatable")
         val httpBindingSymbol =
             Symbol
                 .builder()
-                .definitionFile("${ctx.settings.moduleName}/Tests/${ctx.settings.moduleName}Tests/models/${symbol.name}+Equatable.swift")
+                .definitionFile(filename)
                 .name(symbol.name)
                 .build()
         delegator.useShapeWriter(httpBindingSymbol) { writer ->

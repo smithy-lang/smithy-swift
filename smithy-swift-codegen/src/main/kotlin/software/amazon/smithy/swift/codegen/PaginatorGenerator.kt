@@ -23,6 +23,7 @@ import software.amazon.smithy.swift.codegen.model.hasTrait
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 /**
@@ -53,7 +54,8 @@ class PaginatorGenerator : SwiftIntegration {
             return
         }
 
-        delegator.useFileWriter("${ctx.settings.moduleName}/Sources/${ctx.settings.moduleName}/Paginators.swift") { writer ->
+        val filename = SDKFileUtils(ctx.settings).sourcesDirFilePath("Paginators")
+        delegator.useFileWriter(filename) { writer ->
             paginatedOperations.forEach { paginatedOperation ->
                 val paginationInfo =
                     paginatedIndex.getPaginationInfo(service, paginatedOperation).orElse(null)

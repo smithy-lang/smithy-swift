@@ -400,7 +400,8 @@ abstract class HTTPBindingProtocolGenerator(
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
-        ctx.delegator.useFileWriter("${ctx.settings.moduleName}/Sources/${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
+        val filename = SDKFileUtils(ctx.settings).sourcesDirFilePath(symbol.name)
+        ctx.delegator.useFileWriter(filename) { writer ->
             val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
             val clientGenerator =
                 httpProtocolClientGeneratorFactory.createHttpProtocolClientGenerator(
