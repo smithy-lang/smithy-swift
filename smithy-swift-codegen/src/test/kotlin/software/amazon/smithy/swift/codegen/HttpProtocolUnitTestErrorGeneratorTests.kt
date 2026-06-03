@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGeneratorTests() {
     @Test
     fun `it creates error test for simple error with no payload`() {
-        val contents = getTestFileContents("Tests/example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonComplexErrorWithNoMessage() async throws {
@@ -79,7 +79,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
 
     @Test
     fun `it creates error test for complex error with payload`() {
-        val contents = getTestFileContents("Tests/example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func testRestJsonComplexErrorWithNoMessage() async throws {

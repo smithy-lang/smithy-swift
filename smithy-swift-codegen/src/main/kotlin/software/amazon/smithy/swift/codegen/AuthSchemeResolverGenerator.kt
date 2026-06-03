@@ -28,7 +28,7 @@ class AuthSchemeResolverGenerator {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val serviceIndex = ServiceIndex(ctx.model)
 
-        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/$AUTH_SCHEME_RESOLVER.swift") {
+        ctx.delegator.useFileWriter("${ctx.settings.moduleName}/Sources/${ctx.settings.moduleName}/$AUTH_SCHEME_RESOLVER.swift") {
             renderServiceSpecificAuthResolverParamsStruct(serviceIndex, ctx, it)
             it.write("")
             renderServiceSpecificAuthResolverProtocol(ctx, it)

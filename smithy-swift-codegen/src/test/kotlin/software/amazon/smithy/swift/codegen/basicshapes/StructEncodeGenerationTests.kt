@@ -39,20 +39,20 @@ class StructEncodeGenerationTests {
 
     @Test
     fun `it creates encodable conformance in correct file`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/SmokeTestInput+Write.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/SmokeTestInput+Write.swift"))
     }
 
     @Test
     fun `it creates encodable conformance for nested structures`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/Nested+ReadWrite.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/Nested2+ReadWrite.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/Nested3+ReadWrite.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/Nested4+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/Nested+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/Nested2+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/Nested3+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/Nested4+ReadWrite.swift"))
     }
 
     @Test
     fun `it creates smoke test request encodable conformance`() {
-        val contents = getModelFileContents("Sources/example", "SmokeTestInput+Write.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "SmokeTestInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension SmokeTestInput {
@@ -70,7 +70,7 @@ extension SmokeTestInput {
 
     @Test
     fun `it encodes nested documents with aggregate shapes`() {
-        val contents = getModelFileContents("Sources/example", "Nested4+ReadWrite.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "Nested4+ReadWrite.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension Nested4 {
@@ -99,7 +99,7 @@ extension Nested4 {
 
     @Test
     fun `it provides encodable conformance to operation inputs with timestamps`() {
-        val contents = getModelFileContents("Sources/example", "TimestampInputInput+Write.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "TimestampInputInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension TimestampInputInput {
@@ -120,7 +120,7 @@ extension TimestampInputInput {
 
     @Test
     fun `it encodes maps correctly`() {
-        val contents = getModelFileContents("Sources/example", "MapInputInput+Write.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "MapInputInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension MapInputInput {
@@ -140,7 +140,7 @@ extension MapInputInput {
 
     @Test
     fun `it encodes nested enums correctly`() {
-        val contents = getModelFileContents("Sources/example", "EnumInputInput+Write.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "EnumInputInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension EnumInputInput {
@@ -153,7 +153,7 @@ extension EnumInputInput {
 """
         contents.shouldContainOnlyOnce(expectedContents)
 
-        val contents2 = getModelFileContents("Sources/example", "NestedEnum+ReadWrite.swift", newTestContext.manifest)
+        val contents2 = getModelFileContents("example/Sources/example", "NestedEnum+ReadWrite.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents2 = """
 extension NestedEnum {
@@ -171,7 +171,7 @@ extension NestedEnum {
     fun `it encodes recursive boxed types correctly`() {
         val contents =
             getModelFileContents(
-                "Sources/example",
+                "example/Sources/example",
                 "RecursiveShapesInputOutputNested1+ReadWrite.swift",
                 newTestContext.manifest,
             )
@@ -201,7 +201,7 @@ extension RecursiveShapesInputOutputNested1 {
     fun `it encodes one side of the recursive shape`() {
         val contents =
             getModelFileContents(
-                "Sources/example",
+                "example/Sources/example",
                 "RecursiveShapesInputOutputNested2+ReadWrite.swift",
                 newTestContext.manifest,
             )
@@ -229,7 +229,7 @@ extension RecursiveShapesInputOutputNested2 {
 
     @Test
     fun `it encodes structure with sparse list`() {
-        val contents = getModelFileContents("Sources/example", "JsonListsInput+Write.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "JsonListsInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension JsonListsInput {
@@ -251,7 +251,7 @@ extension JsonListsInput {
 
     @Test
     fun `it encodes structure with sparse map`() {
-        val contents = getModelFileContents("Sources/example", "JsonMapsInput+Write.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "JsonMapsInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension JsonMapsInput {
@@ -274,7 +274,7 @@ extension JsonMapsInput {
 
     @Test
     fun `encode checks for 0 or false for primitive types`() {
-        val contents = getModelFileContents("Sources/example", "PrimitiveTypesInput+Write.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "PrimitiveTypesInput+Write.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension PrimitiveTypesInput {

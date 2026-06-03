@@ -433,7 +433,7 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderServiceSpecificPlugins() {
-        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Plugins.swift") { writer ->
+        ctx.delegator.useFileWriter("${ctx.settings.moduleName}/Sources/${ctx.settings.moduleName}/Plugins.swift") { writer ->
             ctx.integrations
                 .flatMap { it.plugins(serviceConfig) }
                 .onEach { it.render(ctx, writer) }

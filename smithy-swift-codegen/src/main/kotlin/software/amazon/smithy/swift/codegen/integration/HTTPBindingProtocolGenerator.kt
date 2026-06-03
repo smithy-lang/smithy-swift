@@ -71,7 +71,7 @@ import software.amazon.smithy.swift.codegen.model.isInputEventStream
 import software.amazon.smithy.swift.codegen.model.isOutputEventStream
 import software.amazon.smithy.swift.codegen.supportsStreamingAndIsRPC
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
-import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.utils.OptionalUtils
 import java.util.Optional
 import java.util.logging.Logger
@@ -169,7 +169,7 @@ abstract class HTTPBindingProtocolGenerator(
         for ((shape, shapeMetadata) in inputShapesWithMetadata) {
             val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
             val symbolName = symbol.name
-            val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+Write")
+            val filename = SDKFileUtils(ctx.settings).modelFilePath("$symbolName+Write")
             val encodeSymbol =
                 Symbol
                     .builder()
@@ -220,7 +220,7 @@ abstract class HTTPBindingProtocolGenerator(
         }
         val symbol: Symbol = ctx.symbolProvider.toSymbol(shape)
         val symbolName = symbol.name
-        val filename = ModelFileUtils.filename(ctx.settings, "$symbolName+ReadWrite")
+        val filename = SDKFileUtils(ctx.settings).modelFilePath("$symbolName+ReadWrite")
         val encodeSymbol =
             Symbol
                 .builder()
@@ -400,7 +400,7 @@ abstract class HTTPBindingProtocolGenerator(
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
-        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
+        ctx.delegator.useFileWriter("${ctx.settings.moduleName}/Sources/${ctx.settings.moduleName}/${symbol.name}.swift") { writer ->
             val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
             val clientGenerator =
                 httpProtocolClientGeneratorFactory.createHttpProtocolClientGenerator(

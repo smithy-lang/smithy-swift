@@ -59,7 +59,7 @@ class HttpProtocolTestGenerator(
         val requestTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempTestCases))
         if (requestTestCases.isNotEmpty()) {
             val testClassName = "${operation.toUpperCamelCase()}RequestTest"
-            val testFilename = "Tests/${ctx.settings.testModuleName}/$testClassName.swift"
+            val testFilename = "${ctx.settings.moduleName}/Tests/${ctx.settings.testModuleName}/$testClassName.swift"
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating request protocol test cases for ${operation.id}")
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
@@ -94,7 +94,7 @@ class HttpProtocolTestGenerator(
         val responseTestCases = filterProtocolTestCases(filterProtocolTestCasesByTags(tempResponseTests))
         if (responseTestCases.isNotEmpty()) {
             val testClassName = "${operation.id.name.capitalize()}ResponseTest"
-            val testFilename = "Tests/${ctx.settings.testModuleName}/$testClassName.swift"
+            val testFilename = "${ctx.settings.moduleName}/Tests/${ctx.settings.testModuleName}/$testClassName.swift"
             ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                 LOGGER.fine("Generating response protocol test cases for ${operation.id}")
                 writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)
@@ -136,7 +136,7 @@ class HttpProtocolTestGenerator(
                 // use the operation name + error name as the class name
                 val opName = operation.id.name.capitalize()
                 val testClassName = "${opName}${error.toUpperCamelCase()}Test"
-                val testFilename = "Tests/${ctx.settings.testModuleName}/${opName}ErrorTest.swift"
+                val testFilename = "${ctx.settings.moduleName}/Tests/${ctx.settings.testModuleName}/${opName}ErrorTest.swift"
                 ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                     LOGGER.fine("Generating error protocol test cases for ${operation.id}")
                     writer.addImport(SwiftDependency.CLIENT_RUNTIME.target)

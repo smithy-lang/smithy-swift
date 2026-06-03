@@ -53,7 +53,7 @@ class PaginatorGenerator : SwiftIntegration {
             return
         }
 
-        delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Paginators.swift") { writer ->
+        delegator.useFileWriter("${ctx.settings.moduleName}/Sources/${ctx.settings.moduleName}/Paginators.swift") { writer ->
             paginatedOperations.forEach { paginatedOperation ->
                 val paginationInfo =
                     paginatedIndex.getPaginationInfo(service, paginatedOperation).orElse(null)

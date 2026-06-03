@@ -151,7 +151,7 @@ public enum MyEnum: Swift.Sendable, Swift.Equatable, Swift.RawRepresentable, Swi
         SwiftCodegenPlugin().execute(context)
         val suitEnumShape =
             manifest
-                .getFileString("Sources/example/models/Suit.swift")
+                .getFileString("example/Sources/example/models/Suit.swift")
                 .get()
         Assertions.assertNotNull(suitEnumShape)
 

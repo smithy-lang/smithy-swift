@@ -14,7 +14,7 @@ class SwiftSettingsJSONGenerator(
     fun render() {
         if (!SerdeUtils.useSchemaBased(ctx)) return
 
-        val path = "Sources/${ctx.settings.moduleName}/swift-settings.json"
+        val path = "${ctx.settings.moduleName}/Sources/${ctx.settings.moduleName}/swift-settings.json"
         ctx.delegator.useFileWriter(path) { writer ->
             val node =
                 ObjectNode

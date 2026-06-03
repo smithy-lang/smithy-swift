@@ -26,7 +26,7 @@ class WaiterGenerator(
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
 
         // Open a new file Waiters.swift to hold the waiter definitions for this service
-        val waiterFilename = "Sources/${ctx.settings.moduleName}/Waiters.swift"
+        val waiterFilename = "${ctx.settings.moduleName}/Sources/${ctx.settings.moduleName}/Waiters.swift"
         delegator.useFileWriter(waiterFilename) { writer ->
             val serviceSymbol = ctx.symbolProvider.toSymbol(service)
 

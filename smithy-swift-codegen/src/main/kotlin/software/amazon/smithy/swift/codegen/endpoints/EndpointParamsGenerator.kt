@@ -29,7 +29,7 @@ class EndpointParamsGenerator(
     fun render() {
         val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
         val endpointRuleSet = ruleSetNode?.let { EndpointRuleSet.fromNode(it) }
-        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Endpoints.swift") { writer ->
+        ctx.delegator.useFileWriter("${ctx.settings.moduleName}/Sources/${ctx.settings.moduleName}/Endpoints.swift") { writer ->
             renderParams(writer, endpointRuleSet)
             writer.write("")
             renderContextExtension(writer, endpointRuleSet)

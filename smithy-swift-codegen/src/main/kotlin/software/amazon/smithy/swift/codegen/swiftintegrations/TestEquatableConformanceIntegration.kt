@@ -41,7 +41,7 @@ class TestEquatableConformanceIntegration : SwiftIntegration {
         val httpBindingSymbol =
             Symbol
                 .builder()
-                .definitionFile("Tests/${ctx.settings.moduleName}Tests/models/${symbol.name}+Equatable.swift")
+                .definitionFile("${ctx.settings.moduleName}/Tests/${ctx.settings.moduleName}Tests/models/${symbol.name}+Equatable.swift")
                 .name(symbol.name)
                 .build()
         delegator.useShapeWriter(httpBindingSymbol) { writer ->

@@ -63,7 +63,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTimestampsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
-import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 import software.amazon.smithy.utils.StringUtils.lowerCase
 import java.util.logging.Logger
@@ -303,7 +303,7 @@ class SwiftSymbolProvider(
         createSymbolBuilder(shape, typeName, declaration, boxed)
             .namespace(namespace, ".")
 
-    private fun formatModuleName(name: String): String = ModelFileUtils.filename(swiftSettings, name)
+    private fun formatModuleName(name: String): String = SDKFileUtils(swiftSettings).modelFilePath(name)
 
     /**
      * Resolve default value for a given shape and save it as a property in symbol builder if needed.

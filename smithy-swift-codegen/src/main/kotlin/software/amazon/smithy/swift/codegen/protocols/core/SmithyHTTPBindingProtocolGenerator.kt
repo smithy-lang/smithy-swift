@@ -72,7 +72,9 @@ abstract class SmithyHTTPBindingProtocolGenerator(
                 return 0
             }
 
-            ctx.delegator.useFileWriter("Tests/${ctx.settings.testModuleName}/EndpointResolverTest.swift") { swiftWriter ->
+            ctx.delegator.useFileWriter(
+                "${ctx.settings.moduleName}/Tests/${ctx.settings.testModuleName}/EndpointResolverTest.swift",
+            ) { swiftWriter ->
                 testCount = +EndpointTestGenerator(testsTrait, ruleSet, ctx).render(swiftWriter)
             }
         }

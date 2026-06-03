@@ -26,7 +26,7 @@ class EndpointResolverGenerator(
         val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
         val ruleSet = if (ruleSetNode != null) EndpointRuleSet.fromNode(ruleSetNode) else null
 
-        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Endpoints.swift") {
+        ctx.delegator.useFileWriter("${ctx.settings.moduleName}/Sources/${ctx.settings.moduleName}/Endpoints.swift") {
             renderResolverProtocol(it, ctx.settings.visibility)
             it.write("")
             renderResolver(it, ruleSet)
