@@ -3,6 +3,7 @@ excluded:
   - Sources/SmithyTestUtil/*
   - Tests/*
   - test-sdks/*
+  - Package.swift
 
 analyzer_rules:
   - unused_import
