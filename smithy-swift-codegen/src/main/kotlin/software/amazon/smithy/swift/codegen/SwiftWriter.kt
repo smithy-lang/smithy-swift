@@ -30,6 +30,7 @@ import software.amazon.smithy.swift.codegen.model.isGeneric
 import software.amazon.smithy.swift.codegen.model.isOptional
 import software.amazon.smithy.swift.codegen.model.isServiceNestedNamespace
 import java.util.function.BiFunction
+import kotlin.io.path.Path
 import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
@@ -175,7 +176,7 @@ class SwiftWriter(
         //
         // Also leave out the headers when JSON or the version file is being written,
         // as indicated by the file extension.
-        val isPackageManifest = filename == "$moduleName/Package"
+        val isPackageManifest = Path(filename).endsWith(Path("$moduleName/Package"))
         val isNonSwiftSourceFile = listOf(".json", ".version").any { filename.endsWith(it) }
         val noHeader = isPackageManifest || isNonSwiftSourceFile
         return contents.takeIf { noHeader } ?: (copyrightNotice + imports + contents)

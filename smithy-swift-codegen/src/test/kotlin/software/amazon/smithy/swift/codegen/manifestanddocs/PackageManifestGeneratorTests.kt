@@ -14,14 +14,14 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.TestContext
 import software.amazon.smithy.swift.codegen.defaultSettings
 import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJson11ProtocolGenerator
+import kotlin.io.path.Path
 
 class PackageManifestGeneratorTests {
     private val testContext = setupTests("simple-service-with-operation-and-dependency.smithy", "smithy.example#Example")
 
     @Test
     fun `it starts with a swift-tools-version statement`() {
-        print(testContext.manifest.files)
-        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString(Path("MockSDK/Package.swift")).get()
         assertNotNull(packageManifest)
         packageManifest.shouldStartWith("// swift-tools-version: 5.5.0")
     }
