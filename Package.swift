@@ -453,7 +453,7 @@ var runtimeTestTargets: [PackageDescription.Target] {
                 "SmithyRetries",
                 "SmithyRetriesAPI",
             ],
-            path: "test-sdks/build/smithyprojections/test-sdks/waiters/swift-codegen/RPCv2CBORTestSDK/Sources/WaitersTestSDK",
+            path: "test-sdks/build/smithyprojections/test-sdks/waiters/swift-codegen/WaitersTestSDK/Sources/WaitersTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
         .testTarget(
