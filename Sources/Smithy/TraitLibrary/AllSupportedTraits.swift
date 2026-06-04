@@ -29,6 +29,7 @@ private let allSupportedTraitTypes: [ShapeID: any Trait.Type] = [
     EventHeaderTrait.id: EventHeaderTrait.self,
     EventPayloadTrait.id: EventPayloadTrait.self,
     InputTrait.id: InputTrait.self,
+    JSONNameTrait.id: JSONNameTrait.self,
     OutputTrait.id: OutputTrait.self,
     RequiredTrait.id: RequiredTrait.self,
     SensitiveTrait.id: SensitiveTrait.self,
