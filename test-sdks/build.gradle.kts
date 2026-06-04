@@ -30,7 +30,7 @@ fun generateSmithyBuild(): String {
 {
   "version": "1.0",
   "projections": {
-    "rpcv2cbor": {
+    "rpcv2cbor-test-sdk": {
       "transforms": [
         {
           "name": "includeServices",
@@ -61,7 +61,7 @@ fun generateSmithyBuild(): String {
         }
       }
     },
-    "awsjson": {
+    "awsjson-test-sdk": {
       "transforms": [
         {
           "name": "includeServices",
@@ -92,7 +92,7 @@ fun generateSmithyBuild(): String {
         }
       }
     },
-    "waiters": {
+    "waiters-test-sdk": {
       "transforms": [
         {
           "name": "includeServices",
