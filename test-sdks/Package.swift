@@ -8,18 +8,10 @@ let package = Package(
         .macOS(.v12),
         .iOS(.v13),
         .tvOS(.v13),
-        .watchOS(.v6)
+        .watchOS(.v6),
     ],
     dependencies: [
         .package(name: "smithy-swift", path: ".."),
-        .package(
-            name: "AWSJSONTestSDK",
-            path: "build/smithyprojections/test-sdks/awsjson-test-sdk/swift-codegen"
-        ),
-        .package(
-            name: "RPCv2CBORTestSDK",
-            path: "build/smithyprojections/test-sdks/rpcv2cbor-test-sdk/swift-codegen"
-        ),
         .package(
             name: "WaitersTestSDK",
             path: "build/smithyprojections/test-sdks/waiters-test-sdk/swift-codegen"

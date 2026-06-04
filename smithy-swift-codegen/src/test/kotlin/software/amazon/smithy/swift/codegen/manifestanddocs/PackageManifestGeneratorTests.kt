@@ -77,6 +77,12 @@ class PackageManifestGeneratorTests {
                     name: "ClientRuntime",
                     package: "smithy-swift"
                 ),
+            ],
+            plugins: [
+                .plugin(
+                    name: "SmithyCodeGeneratorPlugin",
+                    package: "smithy-swift"
+                ),
             ]
         ),
         .testTarget(
