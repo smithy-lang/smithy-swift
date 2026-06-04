@@ -18,12 +18,15 @@ class SDKFileUtils(
     fun testsDirFilePath(
         filename: String,
         extension: String = "swift",
-    ): String = "${settings.moduleName}/Tests/${settings.moduleName}Tests/$filename.$extension"
+    ): String = "${settings.moduleName}/Tests/${settings.testModuleName}/$filename.$extension"
 
-    fun modelFilePath(filename: String): String =
+    fun modelFilePath(
+        filename: String,
+        extension: String = "swift",
+    ): String =
         if (settings.mergeModels) {
-            "${settings.moduleName}/Sources/${settings.moduleName}/Models.swift"
+            "${settings.moduleName}/Sources/${settings.moduleName}/Models.$extension"
         } else {
-            "${settings.moduleName}/Sources/${settings.moduleName}/models/$filename.swift"
+            "${settings.moduleName}/Sources/${settings.moduleName}/models/$filename.$extension"
         }
 }
