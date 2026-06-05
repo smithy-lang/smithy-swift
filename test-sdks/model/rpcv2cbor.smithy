@@ -2,16 +2,7 @@ $version: "2.0"
 
 namespace smithy.swift.tests
 
-use aws.protocols#awsJson1_0
 use smithy.protocols#rpcv2Cbor
-
-@awsJson1_0
-service AWSJSONService {
-    version: "2022-11-30"
-    operations: [
-        GetWidget
-    ]
-}
 
 @rpcv2Cbor
 service RPCv2CBORService {
