@@ -48,8 +48,14 @@ class PackageManifestGenerator(
                 writer.openBlock("targets: [", "]") {
                     writer.openBlock(".target(", "),") {
                         writer.write("name: \$S,", ctx.settings.moduleName)
-                        writer.openBlock("dependencies: [", "]") {
+                        writer.openBlock("dependencies: [", "],") {
                             dependenciesByTarget.forEach { writeTargetDependency(writer, it) }
+                        }
+                        writer.openBlock("plugins: [", "]") {
+                            writer.openBlock(".plugin(", "),") {
+                                writer.write("name: \$S,", "SmithyCodeGeneratorPlugin")
+                                writer.write("package: \$S", "smithy-swift")
+                            }
                         }
                     }
                     writer.openBlock(".testTarget(", ")") {
