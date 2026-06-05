@@ -11,6 +11,8 @@ import class Foundation.JSONSerialization
 import class Foundation.NSNumber
 import struct Smithy.Document
 @_spi(SchemaBasedSerde)
+import struct Smithy.JSONNameTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
 @_spi(SchemaBasedSerde)
 import struct Smithy.TimestampFormatTrait
@@ -23,16 +25,19 @@ import protocol SmithySerialization.ShapeSerializer
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
 @_spi(SchemaBasedSerde)
-public class Serializer: ShapeSerializer {
+public final class Serializer: ShapeSerializer {
     var value: JSONValue?
+    let usesJSONNameTrait: Bool
 
-    public init() {}
+    public init(usesJSONNameTrait: Bool) {
+        self.usesJSONNameTrait = usesJSONNameTrait
+    }
 
     public func writeStruct<S>(_ schema: Schema, _ value: S) throws where S: SerializableStruct {
         var object = [String: JSONValue]()
         for memberSchema in schema.members {
-            guard let key = memberSchema.id.member else { continue }
-            let memberSerializer = Serializer()
+            guard let key = try objectKey(for: memberSchema) else { continue }
+            let memberSerializer = Serializer(usesJSONNameTrait: usesJSONNameTrait)
             try S.writeConsumer(memberSchema, value, memberSerializer)
             object[key] = memberSerializer.value
         }
@@ -46,7 +51,7 @@ public class Serializer: ShapeSerializer {
     ) throws {
         var list = [JSONValue]()
         for element in value {
-            let elementSerializer = Serializer()
+            let elementSerializer = Serializer(usesJSONNameTrait: usesJSONNameTrait)
             try consumer(element, elementSerializer)
             if let value = elementSerializer.value {
                 list.append(value)
@@ -62,7 +67,7 @@ public class Serializer: ShapeSerializer {
     ) throws {
         var object = [String: JSONValue]()
         for (key, value) in value {
-            let valueSerializer = Serializer()
+            let valueSerializer = Serializer(usesJSONNameTrait: usesJSONNameTrait)
             try consumer(value, valueSerializer)
             object[key] = valueSerializer.value
         }
@@ -148,6 +153,16 @@ public class Serializer: ShapeSerializer {
         get throws {
             guard let jsonObject = value?.jsonObject() else { return Data("{}".utf8) }
             return try JSONSerialization.data(withJSONObject: jsonObject)
+        }
+    }
+
+    // MARK: - Private methods
+
+    private func objectKey(for memberSchema: Schema) throws -> String? {
+        return if usesJSONNameTrait, let jsonName = try memberSchema.getTrait(JSONNameTrait.self)?.name {
+            jsonName
+        } else {
+            memberSchema.id.member
         }
     }
 }

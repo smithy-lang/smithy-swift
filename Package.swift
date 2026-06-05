@@ -372,7 +372,7 @@ var runtimeTestTargets: [PackageDescription.Target] {
         ),
         .testTarget(
             name: "SmithyJSONTests",
-            dependencies: ["SmithySerialization", "SmithyJSON", "ClientRuntime", "SmithyTestUtil"]
+            dependencies: ["SmithySerialization", "SmithyJSON", "ClientRuntime", "SmithyTestUtil", "AWSJSONTestSDK"]
         ),
         .testTarget(
             name: "SmithyFormURLTests",
@@ -427,6 +427,20 @@ var runtimeTestTargets: [PackageDescription.Target] {
                 .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
                 "RPCv2CBORTestSDK",
             ]
+        ),
+        .target(
+            name: "AWSJSONTestSDK",
+            dependencies: [
+                "ClientRuntime",
+                "SmithyHTTPAPI",
+                "SmithyHTTPAuthAPI",
+                "SmithyIdentity",
+                "SmithyAWSJSON",
+                "SmithyRetries",
+                "SmithyRetriesAPI",
+            ],
+            path: "test-sdks/build/smithyprojections/test-sdks/awsjson/swift-codegen/Sources/AWSJSONTestSDK",
+            plugins: ["SmithyCodeGeneratorPlugin"]
         ),
         .target(
             name: "RPCv2CBORTestSDK",
