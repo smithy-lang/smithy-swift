@@ -7,16 +7,18 @@ use smithy.protocols#rpcv2Cbor
 
 @awsJson1_0
 service AWSJSONService {
-    version: "2022-11-30",
-    operations: [GetWidget]
+    version: "2022-11-30"
+    operations: [
+        GetWidget
+    ]
 }
 
 @rpcv2Cbor
 service RPCv2CBORService {
-    version: "2022-11-30",
+    version: "2022-11-30"
     operations: [
-        GetWidget,
-        Recursive,
+        GetWidget
+        Recursive
     ]
 }
 
