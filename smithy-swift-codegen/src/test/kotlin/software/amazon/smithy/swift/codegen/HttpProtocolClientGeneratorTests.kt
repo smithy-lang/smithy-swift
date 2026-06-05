@@ -156,7 +156,7 @@ extension AwsJsonProtocolClient {
         }
 
         public var partitionID: String? {
-            return "AwsJsonProtocol"
+            return "AwsJsonProtocol - \(region ?? "")"
         }
 
         public mutating func addInterceptorProvider(_ provider: ClientRuntime.InterceptorProvider) {
@@ -268,7 +268,7 @@ extension AwsJsonProtocolClient {
         }
 
         public var partitionID: String? {
-            return "AwsJsonProtocol"
+            return "AwsJsonProtocol - \(region ?? "")"
         }
 
         public func toSendable() throws -> AwsJsonProtocolClientConfig {

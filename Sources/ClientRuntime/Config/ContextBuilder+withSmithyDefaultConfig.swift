@@ -13,16 +13,11 @@ extension ContextBuilder {
     public func withSmithyDefaultConfig<Config: DefaultClientConfiguration & DefaultHttpClientConfiguration>(
         _ config: Config
     ) -> Smithy.ContextBuilder {
-        let authSchemes = if let configAuthSchemes = config.authSchemes, !configAuthSchemes.isEmpty {
-            configAuthSchemes
-        } else {
-            [SmithyHTTPAuth.SigV4AuthScheme()]
-        }
         return self
             .withIdempotencyTokenGenerator(value: config.idempotencyTokenGenerator)
             .withLogger(value: config.logger)
             .withPartitionID(value: config.partitionID)
-            .withAuthSchemes(value: authSchemes)
+            .withAuthSchemes(value: config.authSchemes ?? [])
             .withAuthSchemePreference(value: config.authSchemePreference)
             .withAuthSchemeResolver(value: config.authSchemeResolver)
             .withSocketTimeout(value: config.httpClientConfiguration.socketTimeout)

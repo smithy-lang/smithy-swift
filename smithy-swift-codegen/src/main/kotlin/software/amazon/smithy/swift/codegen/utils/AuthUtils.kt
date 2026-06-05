@@ -1,5 +1,6 @@
 package software.amazon.smithy.swift.codegen.utils
 
+import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
@@ -18,6 +19,8 @@ open class AuthUtils(
             isAsync = false,
         )
 
+    open val useSmithySigV4: Boolean = true
+
     fun isSupportedAuthScheme(authSchemeID: ShapeId): Boolean =
         ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service).contains(authSchemeID)
 
@@ -28,11 +31,14 @@ open class AuthUtils(
         val effectiveAuthSchemes = ServiceIndex(ctx.model).getEffectiveAuthSchemes(ctx.service)
         val authSchemeList = mutableListOf<String>()
 
+        if (useSmithySigV4 && effectiveAuthSchemes.contains(SigV4Trait.ID)) {
+            authSchemeList += writer.format("\$N()", SmithyHTTPAuthTypes.SigV4AuthScheme)
+        }
         if (effectiveAuthSchemes.contains(HttpBearerAuthTrait.ID)) {
             authSchemeList += writer.format("\$N()", SmithyHTTPAuthTypes.BearerTokenAuthScheme)
         }
 
-        return addAdditionalSchemes(writer, authSchemeList).joinToString(prefix = "[", postfix = "]")
+        return addAdditionalSchemes(writer, authSchemeList).joinToString(", ", "[", "]")
     }
 
     open fun addAdditionalSchemes(
