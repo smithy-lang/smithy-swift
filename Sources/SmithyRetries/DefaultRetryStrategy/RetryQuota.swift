@@ -89,8 +89,11 @@ final actor RetryQuota {
         availableCapacity = min(availableCapacity, maxCapacity)
     }
 
-    func getRateLimitDelay() async -> TimeInterval {
-        await rateLimiter?.tokenBucketAcquire(amount: 1.0) ?? 0.0
+    /// Attempts to take one send token. Returns `nil` if granted (or if there
+    /// is no rate limiter), or the wait time if capacity is insufficient.
+    func trySendToken() async -> TimeInterval? {
+        guard let rateLimiter else { return nil }
+        return await rateLimiter.tokenBucketTryAcquire(amount: 1.0)
     }
 
     func updateClientSendingRate(isThrottling: Bool) async {
