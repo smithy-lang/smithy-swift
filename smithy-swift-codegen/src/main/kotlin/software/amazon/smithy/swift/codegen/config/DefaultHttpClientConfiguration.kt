@@ -46,7 +46,7 @@ class DefaultHttpClientConfiguration : ClientConfiguration {
             ConfigProperty(
                 "authSchemeResolver",
                 SmithyHTTPAuthAPITypes.AuthSchemeResolver,
-                { it.format("\$N.defaultAuthSchemeResolver", ClientRuntimeTypes.Core.ClientConfigurationDefaults) },
+                { it.format("Default\$LAuthSchemeResolver()", ctx.settings.clientBaseName) },
             ),
             ConfigProperty(
                 "httpInterceptorProviders",

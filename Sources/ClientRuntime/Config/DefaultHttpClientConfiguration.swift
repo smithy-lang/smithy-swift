@@ -49,6 +49,16 @@ public protocol DefaultHttpClientConfiguration: ClientConfiguration {
     /// The AWS credential identity resolver to be used for AWS credentials.
     var awsCredentialIdentityResolver: any AWSCredentialIdentityResolver { get set }
 
+    /// The region identifier to be used for sigv4 signing,
+    ///
+    /// May be left nil if sigv4 is not used or if region will be resolved some other way.
+    var region: String? { get }
+
+    /// The signing region identifier to be used for sigv4 signing,
+    ///
+    /// May be left nil if sigv4 is not used or if signing region will be resolved some other way.
+    var signingRegion: String? { get }
+
     /// Adds a `HttpInterceptorProvider` that will be used to provide interceptors for all HTTP operations.
     ///
     /// - Parameter provider: The `HttpInterceptorProvider` to add.

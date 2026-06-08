@@ -3,6 +3,7 @@ excluded:
   - Sources/SmithyTestUtil/*
   - Tests/*
   - test-sdks/*
+  - serde-benchmark/*
 
 analyzer_rules:
   - unused_import

@@ -36,25 +36,26 @@ abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
          * Render a test class and unit tests for the specified [testCases]
          */
         fun renderTestClass(testClassName: String) {
-            writer
-                .write("")
-                .openBlock("class $testClassName: $baseTestClassName {")
-                .call {
-                    for (test in testCases) {
-                        renderTestFunction(test)
-                    }
-                }.closeBlock("}")
+            writer.write("")
+            writer.openBlock(
+                "class \$L: \$L {",
+                "}",
+                testClassName,
+                baseTestClassName,
+            ) {
+                testCases.forEach { renderTestFunction(it) }
+            }
         }
 
         /**
          * Write a single unit test function using the given [writer]
          */
         private fun renderTestFunction(test: T) {
+            writer.write("")
             test.documentation.ifPresent {
                 writer.writeDocs(it)
             }
-
-            writer.openBlock("func test${test.id}() async throws {", "}") {
+            writer.openBlock("func test_${test.id}() async throws {", "}") {
                 renderTestBody(test)
             }
         }

@@ -184,7 +184,7 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         .target(
             name: "SmithyTestUtil",
-            dependencies: ["ClientRuntime", "SmithyHTTPAPI", "SmithyIdentity", "SmithyCBOR"]
+            dependencies: ["ClientRuntime", "SmithyHTTPAPI", "SmithyIdentity", "SmithyCBOR", "SmithyTelemetryAPI"]
         ),
         .target(
             name: "SmithyIdentity",
