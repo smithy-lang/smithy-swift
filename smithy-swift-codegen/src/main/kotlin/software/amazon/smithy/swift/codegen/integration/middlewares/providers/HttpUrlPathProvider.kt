@@ -121,8 +121,10 @@ class HttpUrlPathProvider(
                     writer.openBlock("guard let $labelMemberName = value.$labelMemberName else {", "}") {
                         writer.write("return nil")
                     }
+                    resolvedURIComponents.add("\\($formattedLabel)")
+                } else {
+                    resolvedURIComponents.add("\\(value.$formattedLabel)")
                 }
-                resolvedURIComponents.add("\\($formattedLabel)")
             } else {
                 resolvedURIComponents.add(it.content)
             }
