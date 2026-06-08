@@ -4,6 +4,7 @@ namespace com.amazonaws.sdk.benchmark
 
 resource CloudWatchMetric {
     operations: [
-        PutMetricData, GetMetricData
+        PutMetricData
+        GetMetricData
     ]
 }

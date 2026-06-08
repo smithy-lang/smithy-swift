@@ -9,13 +9,21 @@ list MetricData {
 structure MetricDatum {
     @required
     MetricName: String
+
     Dimensions: Dimensions
+
     Timestamp: Timestamp
+
     Value: Double
+
     StatisticValues: StatisticSet
+
     Values: Values
+
     Counts: Counts
+
     Unit: StandardUnit
+
     StorageResolution: Integer
 }
 
@@ -28,6 +36,7 @@ structure Dimension {
     @length(min: 1, max: 255)
     @required
     Name: String
+
     @length(min: 1, max: 1024)
     @required
     Value: String
@@ -36,10 +45,13 @@ structure Dimension {
 structure StatisticSet {
     @required
     SampleCount: Double
+
     @required
     Sum: Double
+
     @required
     Minimum: Double
+
     @required
     Maximum: Double
 }

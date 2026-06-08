@@ -13,12 +13,17 @@ structure MetricDataQuery {
     Id: String
 
     MetricStat: MetricStat
+
     @length(min: 1, max: 2048)
     Expression: String
+
     Label: String
+
     ReturnData: Boolean
+
     @range(min: 1)
     Period: Integer
+
     AccountId: String
 }
 
@@ -26,12 +31,15 @@ structure MetricStat {
     @required
     @clientOptional
     Metric: Metric
+
     @required
     @clientOptional
     Period: Integer
+
     @required
     @clientOptional
     Stat: String
+
     Unit: StandardUnit
 }
 

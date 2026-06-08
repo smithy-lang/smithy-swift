@@ -2,9 +2,9 @@ $version: "2"
 
 namespace com.amazonaws.sdk.benchmark
 
-use aws.protocols#restXml
 use aws.api#service
 use aws.auth#sigv4
+use aws.protocols#restXml
 
 @title("AWS REST XML Data Plane")
 @sigv4(name: "awsrestxmldataplane")
@@ -13,6 +13,11 @@ use aws.auth#sigv4
 @service(sdkId: "RestXmlDataPlane")
 service AwsRestXmlDataPlane {
     version: "1999-12-31"
-    operations: [Healthcheck]
-    resources: [S3Object, CloudWatchMetric]
+    operations: [
+        Healthcheck
+    ]
+    resources: [
+        S3Object
+        CloudWatchMetric
+    ]
 }
