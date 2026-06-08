@@ -6,6 +6,7 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 
 object SmithyHTTPAuthTypes {
     val BearerTokenAuthScheme = runtimeSymbol("BearerTokenAuthScheme", SwiftDeclaration.STRUCT)
+    val SigV4AuthScheme = runtimeSymbol("SigV4AuthScheme", SwiftDeclaration.STRUCT)
 }
 
 private fun runtimeSymbol(

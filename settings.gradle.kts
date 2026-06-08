@@ -27,4 +27,5 @@ pluginManagement {
 rootProject.name = "smithy-swift"
 
 include("test-sdks")
+include("serde-benchmark")
 include("smithy-swift-codegen")
