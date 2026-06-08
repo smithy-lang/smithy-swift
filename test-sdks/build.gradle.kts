@@ -3,22 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-import software.amazon.smithy.gradle.tasks.SmithyBuild
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.node.Node
-
 plugins {
-    id("software.amazon.smithy").version("0.5.3")
+    java
+    id("software.amazon.smithy.gradle.smithy-base")
 }
 
 val smithyVersion: String by project
-
-buildscript {
-    val smithyVersion: String by project
-    dependencies {
-        classpath("software.amazon.smithy:smithy-cli:$smithyVersion")
-    }
-}
 
 dependencies {
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
@@ -128,20 +118,19 @@ fun generateSmithyBuild(): String {
 """
 }
 
-tasks.create<SmithyBuild>("buildSdk") {
-    addRuntimeClasspath = true
-}
-
-task("generateSmithyBuild") {
+tasks.register("generateSmithyBuild") {
     description = "generate smithy-build.json"
     doFirst {
         projectDir.resolve("smithy-build.json").writeText(generateSmithyBuild())
     }
 }
+
+tasks.named("smithyBuild") {
+    dependsOn("generateSmithyBuild")
+}
+
 tasks["jar"].enabled = false
-tasks["smithyBuildJar"].dependsOn("generateSmithyBuild")
 
 tasks["clean"].doFirst {
     delete("smithy-build.json")
 }
-

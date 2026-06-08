@@ -6,10 +6,10 @@ use smithy.protocols#rpcv2Cbor
 
 @rpcv2Cbor
 service RPCv2CBORService {
-    version: "2022-11-30",
+    version: "2022-11-30"
     operations: [
-        GetWidget,
-        Recursive,
+        GetWidget
+        Recursive
     ]
 }
 
