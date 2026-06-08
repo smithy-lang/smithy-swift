@@ -2,9 +2,9 @@ $version: "2"
 
 namespace com.amazonaws.sdk.benchmark
 
+use aws.protocols#awsQuery
 use aws.api#service
 use aws.auth#sigv4
-use aws.protocols#awsQuery
 
 @title("AWS Query Data Plane")
 @sigv4(name: "awsquerydataplane")
@@ -13,11 +13,6 @@ use aws.protocols#awsQuery
 @service(sdkId: "QueryDataPlane")
 service AwsQueryDataPlane {
     version: "1999-12-31"
-    operations: [
-        Healthcheck
-    ]
-    resources: [
-        DynamoDBItem
-        CloudWatchMetric
-    ]
+    operations: [Healthcheck]
+    resources: [DynamoDBItem, CloudWatchMetric]
 }

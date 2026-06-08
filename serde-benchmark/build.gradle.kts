@@ -8,6 +8,10 @@ plugins {
     id("software.amazon.smithy.gradle.smithy-base")
 }
 
+smithy {
+    format.set(false)
+}
+
 val smithyVersion: String by project
 
 dependencies {

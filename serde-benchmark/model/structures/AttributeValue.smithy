@@ -2,11 +2,9 @@ $version: "2"
 
 namespace com.amazonaws.sdk.benchmark
 
-@documentation(
-    """
-        The famous recursive structure from Amazon DynamoDB.
-    """
-)
+@documentation("""
+    The famous recursive structure from Amazon DynamoDB.
+""")
 union AttributeValue {
     S: String
     N: String

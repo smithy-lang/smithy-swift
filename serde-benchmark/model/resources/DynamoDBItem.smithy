@@ -4,7 +4,6 @@ namespace com.amazonaws.sdk.benchmark
 
 resource DynamoDBItem {
     operations: [
-        PutItem
-        GetItem
+        PutItem, GetItem
     ]
 }

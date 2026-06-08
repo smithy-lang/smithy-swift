@@ -4,9 +4,6 @@ namespace com.amazonaws.sdk.benchmark
 
 resource S3Object {
     operations: [
-        PutObject
-        HeadObject
-        CopyObject
-        GetObject
+        PutObject, HeadObject, CopyObject, GetObject
     ]
 }
