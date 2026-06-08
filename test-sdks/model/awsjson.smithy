@@ -6,8 +6,10 @@ use aws.protocols#awsJson1_0
 
 @awsJson1_0
 service AWSJSONService {
-    version: "2022-11-30",
-    operations: [JSONName]
+    version: "2022-11-30"
+    operations: [
+        JSONName
+    ]
 }
 
 operation JSONName {
