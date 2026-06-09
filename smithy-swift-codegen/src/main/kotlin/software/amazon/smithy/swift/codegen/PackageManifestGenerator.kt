@@ -80,7 +80,7 @@ class PackageManifestGenerator(
         writer.openBlock(".package(", "),") {
             if (ctx.model.serviceShapes.any { it.hasSerdePerformanceTests(ctx.model) }) {
                 // For serde performance tests, use local smithy-swift
-                writer.write("path: \$S", "../../../../../../../smithy-swift")
+                writer.write("path: \$S", "../../../../../../../../smithy-swift")
             } else {
                 // For other generated clients, use stable, published smithy-swift
                 val url = dependency.expectProperty("url", String::class.java)
