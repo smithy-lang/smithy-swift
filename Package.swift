@@ -439,7 +439,7 @@ var runtimeTestTargets: [PackageDescription.Target] {
                 "SmithyRetries",
                 "SmithyRetriesAPI",
             ],
-            path: "test-sdks/build/smithyprojections/test-sdks/awsjson/swift-codegen/Sources/AWSJSONTestSDK",
+            path: "test-sdks/build/smithyprojections/test-sdks/awsjson/swift-codegen/AWSJSONTestSDK/Sources/AWSJSONTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
         .target(
