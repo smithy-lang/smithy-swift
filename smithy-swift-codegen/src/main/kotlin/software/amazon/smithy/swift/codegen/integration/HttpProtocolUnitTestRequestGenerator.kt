@@ -275,7 +275,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                     ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
                 }.write("")
             writer.write(
-                "let path = \$N.default.currentDirectoryPath + \"/../../../../../../../smithy-swift/instance-results.json\"",
+                "let path = \$N.default.currentDirectoryPath + \"/../../../../../../../../smithy-swift/instance-results.json\"",
                 FoundationTypes.FileManager,
             )
             writer.openBlock(

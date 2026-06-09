@@ -17,7 +17,7 @@ class NestedListEncodeJSONGenerationTests {
     @Test
     fun `list of maps of lists`() {
         val context = setupTests("Isolated/json11/lists-of-maps-of-lists.smithy", "aws.protocoltests.json#JsonProtocol")
-        val contents = getFileContents(context.manifest, "Sources/Example/models/ListOfMapsOperationInput.swift")
+        val contents = getFileContents(context.manifest, "Example/Sources/Example/models/ListOfMapsOperationInput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 public struct ListOfMapsOperationInput: Swift.Sendable {
