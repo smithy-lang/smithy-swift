@@ -14,7 +14,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
         val contents = getTestFileContents("example/Tests/example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonComplexErrorWithNoMessage() async throws {
+    func test_RestJsonComplexErrorWithNoMessage() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 403,
             headers: [
@@ -82,7 +82,7 @@ class HttpProtocolUnitTestErrorGeneratorTests : HttpProtocolUnitTestResponseGene
         val contents = getTestFileContents("example/Tests/example", "GreetingWithErrorsErrorTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonComplexErrorWithNoMessage() async throws {
+    func test_RestJsonComplexErrorWithNoMessage() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 403,
             headers: [

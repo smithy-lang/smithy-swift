@@ -29,6 +29,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTestUtilTypes
+import software.amazon.smithy.swift.codegen.utils.isSerdeBenchmarkTest
 import java.util.Base64
 
 /**
@@ -59,7 +60,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         outputShape?.let {
             renderBuildHttpResponse(test)
             writer.write("")
-            renderActualOutput()
+            renderActualOutput(test)
             writer.write("")
             renderExpectedOutput(test, it)
             writer.write("")
@@ -96,15 +97,15 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
             if (isCbor) {
                 // Attempt to decode Base64 data once for CBOR
                 try {
-                    val decodedBytes = Base64.getDecoder().decode(bodyContent)
+                    val decodedBytes = Base64.getDecoder().decode(bodyContent.trimEnd('\n'))
                     "Data([${decodedBytes.joinToString(", ") { byte -> "0x%02X".format(byte) }}])"
                 } catch (e: IllegalArgumentException) {
                     // Fallback to Swift Data representation for invalid Base64
-                    "Data(\"\"\"\n$bodyContent\n\"\"\".utf8)"
+                    "Data(#\"\"\"\n$bodyContent\n\"\"\"#.utf8)"
                 }
             } else {
                 // Non-CBOR protocols default
-                "Data(\"\"\"\n$bodyContent\n\"\"\".utf8)"
+                "Data(#\"\"\"\n$bodyContent\n\"\"\"#.utf8)"
             }
 
         operation.output.ifPresent {
@@ -175,7 +176,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         }
     }
 
-    fun renderActualOutput() {
+    fun renderActualOutput(test: HttpResponseTestCase) {
         val clientName = "${ctx.settings.sdkId}Client"
         val region = "us-west-2"
 
@@ -183,6 +184,14 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         // - credential resolver
         // - endpoint resolver (unless the test has endpoint rules)
         // - HTTP client engine; a mock that returns the test's HTTPResponse is used
+
+        // Create benchmark telemetry for serde benchmark tests only
+        if (test.isSerdeBenchmarkTest) {
+            writer.write(
+                "let telemetryProvider = \$N()",
+                SmithyTestUtilTypes.SerdeBenchmarkTelemetryProvider,
+            )
+        }
         writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
@@ -195,6 +204,10 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
                 ) {
                     writer.write("urlString: \"https://example.com\"")
                 }
+            }
+            // Install benchmark telemetry for serde benchmark tests only
+            if (test.isSerdeBenchmarkTest) {
+                writer.write("telemetryProvider: telemetryProvider,")
             }
             writer.write(
                 "retryStrategyOptions: \$N.make(),",
@@ -233,21 +246,41 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
             inputArgs.joinToString(", "),
         )
         writer.write("")
-        captureResponse()
+        if (test.isSerdeBenchmarkTest) {
+            captureSerdeBenchmarkResponse(test)
+        } else {
+            captureResponse(test)
+        }
         writer.write("")
     }
 
-    open fun captureResponse() {
+    open fun captureResponse(test: HttpResponseTestCase) {
         writer.write(
             "let actual = try await client.\$L(input: input)",
             operation.toLowerCamelCase(),
         )
     }
 
+    fun captureSerdeBenchmarkResponse(test: HttpResponseTestCase) {
+        writer.write(
+            "let path = \$N.default.currentDirectoryPath + \"/../../../../../../../smithy-swift/instance-results.json\"",
+            FoundationTypes.FileManager,
+        )
+        writer.openBlock(
+            "try await \$N().test(id: \$S, type: .response, path: path, telemetryProvider: telemetryProvider) {",
+            "}",
+            SmithyTestUtilTypes.SerdeBenchmarker,
+            test.id,
+        ) {
+            writer.write("_ = try await client.\$L(input: input)", operation.toLowerCamelCase())
+        }
+    }
+
     protected fun renderExpectedOutput(
         test: HttpResponseTestCase,
         outputShape: Shape,
     ) {
+        if (test.isSerdeBenchmarkTest) return
         // invoke the DSL builder for the input type
         writer
             .writeInline("\nlet expected = ")
@@ -261,6 +294,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
         test: HttpResponseTestCase,
         outputShape: Shape,
     ) {
+        if (test.isSerdeBenchmarkTest) return
         writer.write("XCTAssertEqual(actual, expected)")
     }
 

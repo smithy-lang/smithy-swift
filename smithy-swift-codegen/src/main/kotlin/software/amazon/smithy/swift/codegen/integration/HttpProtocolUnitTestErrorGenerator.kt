@@ -28,12 +28,12 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(
     override fun renderTestBody(test: HttpResponseTestCase) {
         renderBuildHttpResponse(test)
         writer.write("")
-        renderActualOutput()
+        renderActualOutput(test)
         writer.write("")
         renderCompareActualAndExpectedErrors(test, error)
     }
 
-    override fun captureResponse() {
+    override fun captureResponse(test: HttpResponseTestCase) {
         writer.write("var operationError: \$N?", SwiftTypes.Error)
         writer.write("do {")
         writer.indent {
