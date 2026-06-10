@@ -134,6 +134,29 @@ public struct PrimitiveTypesInput: Swift.Sendable {
     }
 
     @Test
+    fun `it renders member-level default null as nil overriding target default`() {
+        val model = javaClass.classLoader.getResource("default-null-override-test.smithy").asSmithy()
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
+        SwiftCodegenPlugin().execute(context)
+
+        val input =
+            manifest
+                .getFileString("Sources/example/models/DefaultNullOverrideInput.swift")
+                .get()
+        Assertions.assertNotNull(input)
+        // A member with `@default: null` overrides the target shape's `@default(false)`,
+        // so it must generate `= nil`. A member that restates the target default keeps `= false`.
+        val expected = """
+    public init(
+        keepsDefault: Swift.Bool? = false,
+        overriddenToNull: Swift.Bool? = nil
+    ) {
+"""
+        input.shouldContain(expected)
+    }
+
+    @Test
     fun `it renders recursive nested shapes`() {
         val structs = createStructureContainingNestedRecursiveShape()
         val model = javaClass.classLoader.getResource("recursive-shape-test.smithy").asSmithy()

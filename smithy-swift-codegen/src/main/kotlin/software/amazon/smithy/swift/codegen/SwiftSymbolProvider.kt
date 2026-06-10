@@ -326,8 +326,14 @@ class SwiftSymbolProvider(
         if (shape.hasTrait<ClientOptionalTrait>()) return builder
         // Skip if the current shape doesn't have default trait. Otherwise, get the default value as literal string
         val defaultValueLiteral = shape.getTrait<DefaultTrait>()?.toNode()?.toString() ?: return builder
-        // If default value is "null", it is explicit notation for no default value. Return unmodified builder.
-        if (defaultValueLiteral == "null") return builder
+        // A member-level @default: null means the member has NO default value (it drops the default it
+        // would otherwise inherit from its target shape). Clear any default already copied from the reused
+        // target symbol builder so the member emits `= nil`, not the target's `= false`.
+        if (defaultValueLiteral == "null") {
+            builder.removeProperty(SymbolProperty.DEFAULT_VALUE_KEY)
+            builder.removeProperty(SymbolProperty.DEFAULT_VALUE_CLOSURE_KEY)
+            return builder
+        }
 
         // The current shape may be a member shape or a root level shape.
         val targetShape =
