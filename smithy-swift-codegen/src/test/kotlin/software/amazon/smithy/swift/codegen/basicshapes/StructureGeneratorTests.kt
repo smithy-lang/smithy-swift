@@ -145,15 +145,32 @@ public struct PrimitiveTypesInput: Swift.Sendable {
                 .getFileString("Sources/example/models/DefaultNullOverrideInput.swift")
                 .get()
         Assertions.assertNotNull(input)
-        // A member with `@default: null` overrides the target shape's `@default(false)`,
-        // so it must generate `= nil`. A member that restates the target default keeps `= false`.
-        val expected = """
+        // A member with `@default: null` drops the default it would inherit from its target
+        // shape, so it generates `= nil`; a member that restates the target default keeps `= false`.
+        input.shouldContain(
+            """
     public init(
         keepsDefault: Swift.Bool? = false,
         overriddenToNull: Swift.Bool? = nil
     ) {
-"""
-        input.shouldContain(expected)
+""",
+        )
+
+        val output =
+            manifest
+                .getFileString("Sources/example/models/DefaultNullOverrideOutput.swift")
+                .get()
+        Assertions.assertNotNull(output)
+        // The null *node* (`= null`) means no default -> `= nil`, but the string "null"
+        // (`= "null"`) is a real default and must be preserved, not mistaken for the null node.
+        output.shouldContain(
+            """
+    public init(
+        overriddenToNull: Swift.Bool? = nil,
+        stringDefaultingToNull: Swift.String? = "null"
+    ) {
+""",
+        )
     }
 
     @Test
