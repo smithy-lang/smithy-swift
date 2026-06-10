@@ -58,17 +58,17 @@ actor ClientSideRateLimiter {
 
     // The following functions are built exactly as described in Retry Behavior 2.0.
 
-    func tokenBucketAcquire(amount: Double) -> TimeInterval? {
+    /// Consumes a token and returns nil if capacity is available; otherwise
+    /// returns the wait time without consuming, so the caller can sleep and
+    /// retry. Keeps `currentCapacity` >= 0 under concurrent acquirers.
+    func tokenBucketTryAcquire(amount: Double) -> TimeInterval? {
         if !enabled { return nil }
         tokenBucketRefill()
         if amount <= currentCapacity {
             currentCapacity -= amount
             return nil
-        } else {
-            let delay = (amount - currentCapacity) / fillRate
-            currentCapacity -= amount
-            return delay
         }
+        return (amount - currentCapacity) / fillRate
     }
 
     private func tokenBucketRefill() {
@@ -155,4 +155,13 @@ actor ClientSideRateLimiter {
 
     // swiftlint:disable:next unused_declaration
     func setClock(_ newClock: @escaping () -> TimeInterval) { clock = newClock }
+
+    // swiftlint:disable:next unused_declaration
+    func setTokenBucketForTesting(fillRate: Double, capacity: Double) {
+        self.enabled = true
+        self.fillRate = fillRate
+        self.maxCapacity = fillRate
+        self.currentCapacity = capacity
+        self.lastTimestamp = clock()
+    }
 }

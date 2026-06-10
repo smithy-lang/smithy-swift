@@ -30,7 +30,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val contents = getTestFileContents("Tests/example", "SmokeTestResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testSmokeTest() async throws {
+    func test_SmokeTest() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -38,7 +38,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                 "X-Int": "1",
                 "X-String": "Hello"
             ],
-            content: .data(Data(""${'"'}
+            content: .data(Data(#""${'"'}
             {
               "payload1": "explicit string",
               "payload2": 1,
@@ -48,7 +48,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
               }
             }
 
-            ""${'"'}.utf8))
+            ""${'"'}#.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -95,7 +95,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val contents = getTestFileContents("Tests/example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonHttpPrefixHeadersPresent() async throws {
+    func test_RestJsonHttpPrefixHeadersPresent() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -146,7 +146,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val contents = getTestFileContents("Tests/example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonHttpPrefixHeadersAreNotPresent() async throws {
+    func test_RestJsonHttpPrefixHeadersAreNotPresent() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
@@ -191,19 +191,19 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val contents = getTestFileContents("Tests/example", "JsonUnionsResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonDeserializeStringUnionValue() async throws {
+    func test_RestJsonDeserializeStringUnionValue() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: .data(Data(""${'"'}
+            content: .data(Data(#""${'"'}
             {
                 "contents": {
                     "stringValue": "foo"
                 }
             }
-            ""${'"'}.utf8))
+            ""${'"'}#.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -243,13 +243,13 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val contents = getTestFileContents("Tests/example", "RecursiveShapesResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testRestJsonRecursiveShapes() async throws {
+    func test_RestJsonRecursiveShapes() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: .data(Data(""${'"'}
+            content: .data(Data(#""${'"'}
             {
                 "nested": {
                     "foo": "Foo1",
@@ -264,7 +264,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
                     }
                 }
             }
-            ""${'"'}.utf8))
+            ""${'"'}#.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -314,20 +314,20 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val contents = getTestFileContents("Tests/example", "InlineDocumentResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testInlineDocumentOutput() async throws {
+    func test_InlineDocumentOutput() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: .data(Data(""${'"'}
+            content: .data(Data(#""${'"'}
             {
                 "stringValue": "string",
                 "documentValue": {
                     "foo": "bar"
                 }
             }
-            ""${'"'}.utf8))
+            ""${'"'}#.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return
@@ -372,17 +372,17 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
         val contents = getTestFileContents("Tests/example", "InlineDocumentAsPayloadResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-    func testInlineDocumentAsPayloadInputOutput() async throws {
+    func test_InlineDocumentAsPayloadInputOutput() async throws {
         guard let httpResponse = buildHttpResponse(
             code: 200,
             headers: [
                 "Content-Type": "application/json"
             ],
-            content: .data(Data(""${'"'}
+            content: .data(Data(#""${'"'}
             {
                 "foo": "bar"
             }
-            ""${'"'}.utf8))
+            ""${'"'}#.utf8))
         ) else {
             XCTFail("Something is wrong with the created http response")
             return

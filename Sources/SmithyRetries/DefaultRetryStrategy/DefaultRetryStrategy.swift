@@ -33,9 +33,17 @@ public struct DefaultRetryStrategy: RetryStrategy, Sendable {
 
     public func acquireInitialRetryToken(tokenScope: String) async throws -> DefaultRetryToken {
         let quota = await quotaRepository.quota(partitionID: tokenScope)
-        let rateLimitDelay = await quota.getRateLimitDelay()
-        try await sleeper(rateLimitDelay)
+        try await acquireSendToken(quota: quota)
         return DefaultRetryToken(quota: quota)
+    }
+
+    /// Acquires one client-side rate-limiting send token, sleeping and
+    /// re-checking until one is granted. Returns immediately in non-adaptive
+    /// mode.
+    private func acquireSendToken(quota: RetryQuota) async throws {
+        while let wait = await quota.trySendToken() {
+            try await sleeper(wait)
+        }
     }
 
     static func baseMultiplier(for errorInfo: RetryErrorInfo) -> TimeInterval {
@@ -74,8 +82,8 @@ public struct DefaultRetryStrategy: RetryStrategy, Sendable {
         }
         let isThrottling = errorInfo.errorType == .throttling
         await tokenToRenew.quota.updateClientSendingRate(isThrottling: isThrottling)
-        let rateLimitDelay = await tokenToRenew.quota.getRateLimitDelay()
-        try await sleeper(backoffDelay + rateLimitDelay)
+        try await sleeper(backoffDelay)
+        try await acquireSendToken(quota: tokenToRenew.quota)
     }
 
     public func recordSuccess(token: DefaultRetryToken) async {

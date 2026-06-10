@@ -308,7 +308,7 @@ open class HttpProtocolServiceClient(
 
     open fun renderPartitionID() {
         writer.openBlock("public var partitionID: String? {", "}") {
-            writer.write("return \"\"")
+            writer.write("return \"${ctx.settings.clientBaseName} - \\(region ?? \"\")\"")
         }
         writer.write("")
     }
