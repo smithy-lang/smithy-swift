@@ -78,8 +78,8 @@ let package = Package(
 )
 
 var crtDependency: Package.Dependency {
-    let useLocalDeps = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_USE_LOCAL_DEPS"] != nil
-    return if useLocalDeps {
+    let useCRTFromMain = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_USE_PRERELEASE_CRT"] != nil
+    return if useCRTFromMain {
         .package(url: "https://github.com/awslabs/aws-crt-swift", branch: "main")
     } else {
         .package(url: "https://github.com/awslabs/aws-crt-swift", from: "0.63.0")
