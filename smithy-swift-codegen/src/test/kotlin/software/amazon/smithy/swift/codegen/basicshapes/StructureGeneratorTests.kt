@@ -142,7 +142,7 @@ public struct PrimitiveTypesInput: Swift.Sendable {
 
         val input =
             manifest
-                .getFileString("Sources/example/models/DefaultNullOverrideInput.swift")
+                .getFileString("example/Sources/example/models/DefaultNullOverrideInput.swift")
                 .get()
         Assertions.assertNotNull(input)
         // A member with `@default: null` drops the default it would inherit from its target
@@ -158,7 +158,7 @@ public struct PrimitiveTypesInput: Swift.Sendable {
 
         val output =
             manifest
-                .getFileString("Sources/example/models/DefaultNullOverrideOutput.swift")
+                .getFileString("example/Sources/example/models/DefaultNullOverrideOutput.swift")
                 .get()
         Assertions.assertNotNull(output)
         // The null *node* (`= null`) means no default -> `= nil`, but the string "null"
