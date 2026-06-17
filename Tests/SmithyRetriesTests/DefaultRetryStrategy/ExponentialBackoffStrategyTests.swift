@@ -15,7 +15,6 @@ final class ExponentialBackoffStrategyTests: XCTestCase {
 
     override func setUp() {
         subject = ExponentialBackoffStrategy()
-        // Randomization is disabled to allow easy, repeatable verification of basic behavior.
         subject.random = { @Sendable () -> Double in 1.0 }
     }
 
@@ -40,5 +39,46 @@ final class ExponentialBackoffStrategyTests: XCTestCase {
         XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 5), 20.0)
         XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 6), 20.0)
         XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 7), 20.0)
+    }
+
+    func test_backoffWithMultiplier_nonThrottling() {
+        // x=0.05: delays are 0.05, 0.1, 0.2, 0.4, 0.8, 1.6, ...
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 0, baseMultiplier: 0.05), 0.05)
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 1, baseMultiplier: 0.05), 0.1)
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 2, baseMultiplier: 0.05), 0.2)
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 3, baseMultiplier: 0.05), 0.4)
+    }
+
+    func test_backoffWithMultiplier_dynamoDB() {
+        // x=0.025: delays are 0.025, 0.05, 0.1, 0.2, ...
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 0, baseMultiplier: 0.025), 0.025)
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 1, baseMultiplier: 0.025), 0.05)
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 2, baseMultiplier: 0.025), 0.1)
+    }
+
+    func test_backoffWithMultiplier_throttling() {
+        // x=1.0: throttling case
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 0, baseMultiplier: 1.0), 1.0)
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 1, baseMultiplier: 1.0), 2.0)
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 2, baseMultiplier: 1.0), 4.0)
+    }
+
+    func test_backoffWithMultiplier_capsAtMaxBackoff() {
+        // x=0.05, attempt=20: 0.05 * 2^20 = 52428.8, capped at 20.0
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 20, baseMultiplier: 0.05), 20.0)
+    }
+
+    func test_maxBackoff_appliedBeforeJitter_withMultiplier() {
+        // With b=0.5, x=1.0, attempt=5: x*r^5=32, min(32, 20)=20, then 0.5*20=10.0
+        subject.random = { @Sendable () -> Double in 0.5 }
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 5, baseMultiplier: 1.0), 10.0)
+    }
+
+    func test_maxBackoff_appliedAfterJitter_singleArg() {
+        // Single-arg overload uses pre-2.1 formula: min(b * r^i, MAX_BACKOFF).
+        // With b=0.5, attempt=5: 0.5 * 32 = 16, min(16, 20) = 16.0.
+        // (Compare to max-before-jitter, which would yield 0.5 * 20 = 10.0.)
+        subject.random = { @Sendable () -> Double in 0.5 }
+        XCTAssertEqual(subject.computeNextBackoffDelay(attempt: 5), 16.0)
     }
 }

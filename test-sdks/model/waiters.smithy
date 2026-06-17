@@ -2,9 +2,9 @@ $version: "2.0"
 
 namespace aws.protocoltests.waiters
 
-use smithy.waiters#waitable
-use aws.protocols#restJson1
 use aws.api#service
+use aws.protocols#restJson1
+use smithy.waiters#waitable
 
 // A service which has a GET operation with waiters defined upon it.
 // The acceptor in each waiter serves as subject for unit testing,
@@ -13,8 +13,10 @@ use aws.api#service
 @service(sdkId: "Waiters")
 @restJson1
 service Waiters {
-    version: "2022-11-30",
-    operations: [GetWidget]
+    version: "2022-11-30"
+    operations: [
+        GetWidget
+    ]
 }
 
 @http(uri: "/widget", method: "POST")
@@ -24,9 +26,7 @@ service Waiters {
         acceptors: [
             {
                 state: "success"
-                matcher: {
-                    success: true
-                }
+                matcher: { success: true }
             }
         ]
     }
@@ -35,9 +35,7 @@ service Waiters {
         acceptors: [
             {
                 state: "success"
-                matcher: {
-                    success: false
-                }
+                matcher: { success: false }
             }
         ]
     }
@@ -46,9 +44,7 @@ service Waiters {
         acceptors: [
             {
                 state: "success"
-                matcher: {
-                    errorType: "MyError"
-                }
+                matcher: { errorType: "MyError" }
             }
         ]
     }
@@ -103,11 +99,7 @@ service Waiters {
             {
                 state: "success"
                 matcher: {
-                    output: {
-                        path: "booleanProperty"
-                        expected: "false"
-                        comparator: "booleanEquals"
-                    }
+                    output: { path: "booleanProperty", expected: "false", comparator: "booleanEquals" }
                 }
             }
         ]
@@ -193,11 +185,7 @@ service Waiters {
             {
                 state: "success"
                 matcher: {
-                    output: {
-                        path: "dataMap.*"
-                        expected: "abc"
-                        comparator: "allStringEquals"
-                    }
+                    output: { path: "dataMap.*", expected: "abc", comparator: "allStringEquals" }
                 }
             }
         ]
@@ -249,9 +237,11 @@ service Waiters {
     }
 )
 operation GetWidget {
-    input: WidgetInput,
+    input: WidgetInput
     output: WidgetOutput
-    errors: [MyError]
+    errors: [
+        MyError
+    ]
 }
 
 structure WidgetInput {
@@ -276,11 +266,11 @@ structure Grandchild {
     number: Integer
 }
 
-list StringArray{
+list StringArray {
     member: String
 }
 
-list BooleanArray{
+list BooleanArray {
     member: Boolean
 }
 

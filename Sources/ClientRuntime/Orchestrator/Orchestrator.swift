@@ -14,6 +14,7 @@ import class Smithy.Context
 import protocol Smithy.RequestMessage
 import protocol Smithy.ResponseMessage
 import SmithyHTTPAPI
+import enum SmithyRetriesAPI.RetryError
 import struct SmithyRetriesAPI.RetryErrorInfo
 import protocol SmithyRetriesAPI.RetryStrategy
 
@@ -77,6 +78,7 @@ public struct Orchestrator<
     private let deserialize: (ResponseType, Context) async throws -> OutputType
     private let retryStrategy: (any RetryStrategy)?
     private let retryErrorInfoProvider: (Error) -> RetryErrorInfo?
+    private let longPollingBackoffProvider: ((Context, RetryErrorInfo, Int) async -> TimeInterval?)?
     private let clockSkewProvider: ClockSkewProvider<RequestType, ResponseType>
     private let telemetry: OrchestratorTelemetry
     private let selectAuthScheme: SelectAuthScheme
@@ -91,6 +93,7 @@ public struct Orchestrator<
         self.deserialize = builder.deserialize!
         self.retryStrategy = builder.retryStrategy
         self.telemetry = builder.telemetry!
+        self.longPollingBackoffProvider = builder.longPollingBackoffProvider
 
         if let retryErrorInfoProvider = builder.retryErrorInfoProvider {
             self.retryErrorInfoProvider = retryErrorInfoProvider
@@ -307,6 +310,14 @@ public struct Orchestrator<
             do {
                 try await strategy.refreshRetryTokenForRetry(tokenToRenew: token, errorInfo: errorInfo)
             } catch {
+                // Long-polling operations back off when the token bucket is empty, but not when
+                // max attempts is reached — at that point the operation is done and shouldn't sleep.
+                let isMaxAttempts = (error as? RetryError) == .maxAttemptsReached
+                if !isMaxAttempts,
+                   let provider = longPollingBackoffProvider,
+                   let delay = await provider(context.getAttributes(), errorInfo, attemptCount) {
+                    try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000.0))
+                }
                 return
             }
 

@@ -134,6 +134,46 @@ public struct PrimitiveTypesInput: Swift.Sendable {
     }
 
     @Test
+    fun `it renders member-level default null as nil overriding target default`() {
+        val model = javaClass.classLoader.getResource("default-null-override-test.smithy").asSmithy()
+        val manifest = MockManifest()
+        val context = buildMockPluginContext(model, manifest, "smithy.example#Example")
+        SwiftCodegenPlugin().execute(context)
+
+        val input =
+            manifest
+                .getFileString("Sources/example/models/DefaultNullOverrideInput.swift")
+                .get()
+        Assertions.assertNotNull(input)
+        // A member with `@default: null` drops the default it would inherit from its target
+        // shape, so it generates `= nil`; a member that restates the target default keeps `= false`.
+        input.shouldContain(
+            """
+    public init(
+        keepsDefault: Swift.Bool? = false,
+        overriddenToNull: Swift.Bool? = nil
+    ) {
+""",
+        )
+
+        val output =
+            manifest
+                .getFileString("Sources/example/models/DefaultNullOverrideOutput.swift")
+                .get()
+        Assertions.assertNotNull(output)
+        // The null *node* (`= null`) means no default -> `= nil`, but the string "null"
+        // (`= "null"`) is a real default and must be preserved, not mistaken for the null node.
+        output.shouldContain(
+            """
+    public init(
+        overriddenToNull: Swift.Bool? = nil,
+        stringDefaultingToNull: Swift.String? = "null"
+    ) {
+""",
+        )
+    }
+
+    @Test
     fun `it renders recursive nested shapes`() {
         val structs = createStructureContainingNestedRecursiveShape()
         val model = javaClass.classLoader.getResource("recursive-shape-test.smithy").asSmithy()

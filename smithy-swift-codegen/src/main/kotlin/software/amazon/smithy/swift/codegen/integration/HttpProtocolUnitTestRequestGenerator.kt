@@ -14,9 +14,11 @@ import software.amazon.smithy.swift.codegen.integration.serde.readwrite.WireProt
 import software.amazon.smithy.swift.codegen.integration.serde.readwrite.requestWireProtocol
 import software.amazon.smithy.swift.codegen.model.RecursiveShapeBoxer
 import software.amazon.smithy.swift.codegen.model.toLowerCamelCase
+import software.amazon.smithy.swift.codegen.swiftmodules.FoundationTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyStreamsTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTestUtilTypes
+import software.amazon.smithy.swift.codegen.utils.isSerdeBenchmarkTest
 import java.util.Base64
 
 open class HttpProtocolUnitTestRequestGenerator protected constructor(
@@ -32,6 +34,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
     }
 
     private fun renderExpectedBlock(test: HttpRequestTestCase) {
+        if (test.isSerdeBenchmarkTest) return
         val resolvedHostValue = if (test.resolvedHost.isPresent && test.resolvedHost.get() != "") test.resolvedHost.get() else "example.com"
         val hostValue = if (test.host.isPresent && test.host.get() != "") test.host.get() else "example.com"
 
@@ -72,15 +75,15 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                         } catch (e: IllegalArgumentException) {
                             // Fallback to original string if decoding fails
                             writer.format(
-                                "Data(\"\"\"\n\$L\n\"\"\".utf8)",
-                                test.body.get().replace("\\\"", "\\\\\""),
+                                "Data(#\"\"\"\n\$L\n\"\"\"#.utf8)",
+                                test.body.get(),
                             )
                         }
                     } else {
                         // Default case for non-CBOR protocols
                         writer.format(
-                            "Data(\"\"\"\n\$L\n\"\"\".utf8)",
-                            test.body.get().replace("\\\"", "\\\\\""),
+                            "Data(#\"\"\"\n\$L\n\"\"\"#.utf8)",
+                            test.body.get(),
                         )
                     }
 
@@ -105,6 +108,13 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
         val clientName = "${ctx.settings.clientBaseName}Client"
         val region = "us-west-2"
 
+        // Create benchmark telemetry for serde benchmark tests only
+        if (test.isSerdeBenchmarkTest) {
+            writer.write(
+                "let telemetryProvider = \$N()",
+                SmithyTestUtilTypes.SerdeBenchmarkTelemetryProvider,
+            )
+        }
         writer.openBlock("let config = try await \$1L.\$1LConfig(", ")", clientName) {
             writer.write("awsCredentialIdentityResolver: try \$N(),", SmithyTestUtilTypes.dummyIdentityResolver)
             writer.write("region: \$S,", region)
@@ -118,6 +128,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
                     url,
                 )
             }
+            // Install benchmark telemetry for serde benchmark tests only
+            if (test.isSerdeBenchmarkTest) {
+                writer.write("telemetryProvider: telemetryProvider,")
+            }
             writer.write("idempotencyTokenGenerator: ProtocolTestIdempotencyTokenGenerator(),")
             writer.write("httpClientEngine: ProtocolTestClient()")
         }
@@ -125,6 +139,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
     }
 
     private fun renderOperationBlock(test: HttpRequestTestCase) {
+        if (test.isSerdeBenchmarkTest) {
+            renderSerdeBenchmarkOperationBlock(test)
+            return
+        }
         operation.input.ifPresent {
             val inputShape = model.expectShape(it)
             model = RecursiveShapeBoxer.transform(model)
@@ -245,5 +263,37 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(
 
     class Builder : HttpProtocolUnitTestGenerator.Builder<HttpRequestTestCase>() {
         override fun build(): HttpProtocolUnitTestGenerator<HttpRequestTestCase> = HttpProtocolUnitTestRequestGenerator(this)
+    }
+
+    private fun renderSerdeBenchmarkOperationBlock(test: HttpRequestTestCase) {
+        operation.input.ifPresent {
+            val inputShape = model.expectShape(it)
+            model = RecursiveShapeBoxer.transform(model)
+            writer
+                .writeInline("\nlet input = ")
+                .call {
+                    ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
+                }.write("")
+            writer.write(
+                "let path = \$N.default.currentDirectoryPath + \"/../../../../../../../smithy-swift/instance-results.json\"",
+                FoundationTypes.FileManager,
+            )
+            writer.openBlock(
+                "try await \$N().test(id: \$S, type: .request, path: path, telemetryProvider: telemetryProvider) {",
+                "}",
+                SmithyTestUtilTypes.SerdeBenchmarker,
+                test.id,
+            ) {
+                writer.write("do {")
+                writer.indent()
+                writer.write("_ = try await client.\$L(input: input)", operation.toLowerCamelCase())
+                writer.dedent()
+                writer.write("} catch \$N.actual {", SmithyTestUtilTypes.TestCheckError)
+                writer.indent()
+                writer.write("// no operation")
+                writer.dedent()
+                writer.write("}")
+            }
+        }
     }
 }

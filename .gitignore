@@ -39,3 +39,6 @@ smithy-build.json
 # swiftlint analyzer build logs
 xcodebuild.log
 xcodebuild-filtered.log
+
+# serde benchmark results
+/instance-results.json

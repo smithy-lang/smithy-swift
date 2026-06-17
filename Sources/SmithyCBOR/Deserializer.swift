@@ -23,8 +23,12 @@ import struct SmithySerialization.SerializerError
 import protocol SmithySerialization.ShapeDeserializer
 
 @_spi(SchemaBasedSerde)
-public struct Deserializer: ShapeDeserializer {
+public class Deserializer: ShapeDeserializer {
     let decoder: CBORDecoder
+
+    // Depth measurement to prevent stack overflow
+    var depth = 0
+    let maxDepth = 128
 
     public init(data: Data) throws {
         // Substitute an empty map if data is empty
@@ -64,9 +68,11 @@ public struct Deserializer: ShapeDeserializer {
         let next = try decoder.popNext()
         switch next {
         case .int(let value):
-            return Int8(value)
+            guard let int8 = Int8(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int8") }
+            return int8
         case .uint(let value):
-            return Int8(value)
+            guard let int8 = Int8(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int8") }
+            return int8
         default:
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
@@ -80,9 +86,11 @@ public struct Deserializer: ShapeDeserializer {
         let next = try decoder.popNext()
         switch next {
         case .int(let value):
-            return Int16(value)
+            guard let int16 = Int16(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int16") }
+            return int16
         case .uint(let value):
-            return Int16(value)
+            guard let int16 = Int16(exactly: value) else { throw CBORDecoderError("value \(value) overflows Int16") }
+            return int16
         default:
             throw CBORDecoderError("member \(schema.id) expected .int or .uint but got \(next) instead")
         }
@@ -126,10 +134,16 @@ public struct Deserializer: ShapeDeserializer {
         }
         try nullCheck()
         let next = try decoder.popNext()
-        guard case .double(let value) = next else {
-            throw CBORDecoderError("member \(schema.id) expected .double but got \(next) instead")
+        switch next {
+        case .double(let value):
+            return Float(value)
+        case .int(let value):
+            return Float(value)
+        case .uint(let value):
+            return Float(value)
+        default:
+            throw CBORDecoderError("member \(schema.id) expected .double, .int, or .uint but got .\(next) instead")
         }
-        return Float(value)
     }
 
     public func readDouble(_ schema: Schema) throws -> Double {
@@ -138,10 +152,16 @@ public struct Deserializer: ShapeDeserializer {
         }
         try nullCheck()
         let next = try decoder.popNext()
-        guard case .double(let value) = next else {
-            throw CBORDecoderError("member \(schema.id) expected .double but got \(next) instead")
+        switch next {
+        case .double(let value):
+            return value
+        case .int(let value):
+            return Double(value)
+        case .uint(let value):
+            return Double(value)
+        default:
+            throw CBORDecoderError("member \(schema.id) expected .double, .int, or .uint but got .\(next) instead")
         }
-        return value
     }
 
     public func readBigInteger(_ schema: Schema) throws -> Int64 {
@@ -213,6 +233,9 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     public func readStruct<T: DeserializableStruct>(_ schema: Schema, _ value: inout T) throws {
+        guard depth < maxDepth else { throw CBORDecoderError("Maximum recursive depth exceeded during readStruct()") }
+        depth += 1
+        defer { depth -= 1 }
         let structureSchema: Schema
         switch schema.type {
         case .structure, .union:
@@ -279,6 +302,9 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     private func skipValue() throws {
+        guard depth < maxDepth else { throw CBORDecoderError("Maximum recursive depth exceeded during skipValue()") }
+        depth += 1
+        defer { depth -= 1 }
         let next = try decoder.popNext()
         switch next {
         case .array_start(let count):
@@ -309,6 +335,9 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     public func readList<E>(_ schema: Schema, _ consumer: ReadValueConsumer<E>) throws -> [E] {
+        guard depth < maxDepth else { throw CBORDecoderError("Maximum recursive depth exceeded during readList()") }
+        depth += 1
+        defer { depth -= 1 }
         guard decoder.hasNext() else {
             throw CBORDecoderError("List \(schema.id) ended unexpectedly")
         }
@@ -349,6 +378,9 @@ public struct Deserializer: ShapeDeserializer {
     }
 
     public func readMap<V>( _ schema: Schema, _ consumer: ReadValueConsumer<V>) throws -> [String: V] {
+        guard depth < maxDepth else { throw CBORDecoderError("Maximum recursive depth exceeded during readMap()") }
+        depth += 1
+        defer { depth -= 1 }
         guard decoder.hasNext() else {
             throw CBORDecoderError("Map \(schema.id) ended unexpectedly")
         }

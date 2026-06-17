@@ -32,8 +32,10 @@ extension Model {
 
         for operation in operations {
             // Make new "synthetic" ShapeIDs for this operation's input & output
-            let newInputShapeID = ShapeID("swift.synthetic", "\(operation.id.name)Input")
-            let newOutputShapeID = ShapeID("swift.synthetic", "\(operation.id.name)Output")
+            // Use both the namespace and name in the new IDs, to ensure that every operation's input/output
+            // has a unique synthesized equivalent
+            let newInputShapeID = ShapeID("swift.synthetic.\(operation.id.namespace)", "\(operation.id.name)Input")
+            let newOutputShapeID = ShapeID("swift.synthetic.\(operation.id.namespace)", "\(operation.id.name)Output")
 
             // Get the input & output structures for this operation.  Substitute an empty
             // structure if ID is omitted or targets Unit

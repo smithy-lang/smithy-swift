@@ -12,6 +12,7 @@ import software.amazon.smithy.swift.codegen.integration.plugins.DefaultClientPlu
 import software.amazon.smithy.swift.codegen.model.renderSwiftType
 import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
+import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.CodeSection
@@ -37,6 +38,9 @@ open class HttpProtocolServiceClient(
             writer.write("let client: \$N", ClientRuntimeTypes.Http.SdkHttpClient)
             writer.write("public let config: \$L", serviceConfig.sendableTypeName)
             writer.write("let serviceName = \$S", serviceName)
+            // One retry strategy is shared across all operations of a client so the retry
+            // quota / token bucket persists across calls.
+            writer.write("let retryStrategy: \$N", SmithyRetriesTypes.DefaultRetryStrategy)
             writer.write("")
             // Add Config typealias for backward compatibility - points to deprecated class
             // This satisfies the Client protocol's associated type requirement
@@ -67,6 +71,10 @@ open class HttpProtocolServiceClient(
                 ClientRuntimeTypes.Http.SdkHttpClient,
             )
             writer.write("self.config = config")
+            writer.write(
+                "self.retryStrategy = \$N(options: config.retryStrategyOptions)",
+                SmithyRetriesTypes.DefaultRetryStrategy,
+            )
         }
         writer.write("")
     }
@@ -300,7 +308,7 @@ open class HttpProtocolServiceClient(
 
     open fun renderPartitionID() {
         writer.openBlock("public var partitionID: String? {", "}") {
-            writer.write("return \"\"")
+            writer.write("return \"${ctx.settings.clientBaseName} - \\(region ?? \"\")\"")
         }
         writer.write("")
     }

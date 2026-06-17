@@ -56,7 +56,14 @@ extension DeserializeMiddleware: ResponseMessageDeserializer {
             // and then the service error eg. [AccountNotFoundException](https://github.com/awslabs/aws-sdk-swift/blob/d1d18eefb7457ed27d416b372573a1f815004eb1/Sources/Services/AWSCloudTrail/models/Models.swift#L62)
             let bodyData = try await copiedResponse.body.readData()
             copiedResponse.body = .data(bodyData)
-            throw try await wireResponseErrorClosure(copiedResponse)
+            do {
+                throw try await wireResponseErrorClosure(copiedResponse)
+            } catch is BaseErrorDecodeError {
+                // Surface the response so retry classification can still see the HTTP status code.
+                throw UnknownHTTPServiceError(
+                    httpResponse: copiedResponse, message: nil, typeName: nil
+                )
+            }
         }
     }
 }

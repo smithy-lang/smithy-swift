@@ -2,19 +2,15 @@ $version: "2.0"
 
 namespace smithy.swift.tests
 
-use aws.protocols#awsJson1_0
 use smithy.protocols#rpcv2Cbor
-
-@awsJson1_0
-service AWSJSONService {
-    version: "2022-11-30",
-    operations: [GetWidget]
-}
 
 @rpcv2Cbor
 service RPCv2CBORService {
-    version: "2022-11-30",
-    operations: [GetWidget]
+    version: "2022-11-30"
+    operations: [
+        GetWidget
+        Recursive
+    ]
 }
 
 operation GetWidget {
@@ -60,4 +56,24 @@ list PrivateList {
 map PrivateMap {
     key: String
     value: PrivateString
+}
+
+operation Recursive {
+    input: RecursiveInputOutput
+    output: RecursiveInputOutput
+}
+
+structure RecursiveInputOutput {
+    nested: RecursiveInputOutput
+    nestedList: NestedList
+    nestedMap: NestedMap
+}
+
+list NestedList {
+    member: RecursiveInputOutput
+}
+
+map NestedMap {
+    key: String
+    value: RecursiveInputOutput
 }

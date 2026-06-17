@@ -39,6 +39,7 @@ dependencies {
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
     implementation("software.amazon.smithy:smithy-protocol-traits:$smithyVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     implementation("software.amazon.smithy:smithy-rules-engine:$smithyVersion")
 }
@@ -72,10 +73,10 @@ val licenseSpec = copySpec {
     from("${project.rootDir}/NOTICE")
 }
 
-val sourcesJar by tasks.creating(Jar::class) {
+val sourcesJar by tasks.registering(Jar::class) {
     group = "publishing"
     description = "Assembles Kotlin sources jar"
-    classifier = "sources"
+    archiveClassifier.set("sources")
     from(sourceSets.getByName("main").allSource)
 }
 
@@ -91,9 +92,10 @@ tasks.jar {
 // Configure jacoco (code coverage) to generate an HTML report
 tasks.jacocoTestReport {
     reports {
-        xml.isEnabled = false
-        csv.isEnabled = false
-        html.destination = file("$buildDir/reports/jacoco")
+        xml.required.set(false)
+        csv.required.set(false)
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco"))
     }
 }
 
@@ -109,7 +111,7 @@ publishing {
     }
     repositories {
         maven {
-            url = uri("$buildDir/repository")
+            url = uri(layout.buildDirectory.dir("repository"))
         }
     }
 }
