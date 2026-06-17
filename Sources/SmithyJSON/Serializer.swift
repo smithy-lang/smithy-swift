@@ -11,6 +11,8 @@ import class Foundation.JSONSerialization
 import class Foundation.NSNumber
 import struct Smithy.Document
 @_spi(SchemaBasedSerde)
+import struct Smithy.JSONNameTrait
+@_spi(SchemaBasedSerde)
 import struct Smithy.Schema
 @_spi(SchemaBasedSerde)
 import struct Smithy.TimestampFormatTrait
@@ -23,8 +25,7 @@ import protocol SmithySerialization.ShapeSerializer
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
 @_spi(SchemaBasedSerde)
-public class Serializer: ShapeSerializer {
-    private var _data: Data
+public final class Serializer: ShapeSerializer {
     private static let openingCurlyBrace = Character("{").utf8
     private static let closingCurlyBrace = Character("}").utf8
     private static let openingSquareBrace = Character("[").utf8
@@ -36,7 +37,11 @@ public class Serializer: ShapeSerializer {
     private static let falseBytes = "false".utf8
     private static let nullBytes = "null".utf8
 
-    public init() {
+    let usesJSONNameTrait: Bool
+    private var _data: Data
+
+    public init(usesJSONNameTrait: Bool) {
+        self.usesJSONNameTrait = usesJSONNameTrait
         self._data = Data(capacity: 65536)
     }
 
@@ -44,7 +49,7 @@ public class Serializer: ShapeSerializer {
         _data.append(contentsOf: Self.openingCurlyBrace)
         var needsComma = false
         for memberSchema in schema.members {
-            guard let key = memberSchema.id.member else { continue }
+            guard let key = try objectKey(for: memberSchema) else { continue }
             if needsComma {
                 _data.append(contentsOf: Self.comma)
             }
@@ -173,6 +178,16 @@ public class Serializer: ShapeSerializer {
         get throws {
             guard !_data.isEmpty else { return Data("{}".utf8) }
             return _data
+        }
+    }
+
+    // MARK: - Private methods
+
+    private func objectKey(for memberSchema: Schema) throws -> String? {
+        return if usesJSONNameTrait, let jsonName = try memberSchema.getTrait(JSONNameTrait.self)?.name {
+            jsonName
+        } else {
+            memberSchema.id.member
         }
     }
 }
