@@ -136,7 +136,8 @@ public final class Serializer: ShapeSerializer {
 
     public func writeLong(_ schema: Schema, _ value: Int) throws {
         try writeCommaIfNeeded()
-        _data.append(contentsOf: "\(value)".utf8)
+        let str = "\(value)"
+        _data.append(contentsOf: str.utf8)
     }
 
     public func writeFloat(_ schema: Schema, _ value: Float) throws {

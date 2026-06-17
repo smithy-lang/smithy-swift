@@ -15,7 +15,7 @@ indirect enum JSONValue: Equatable {
     case object([String: JSONValue])
     case list([JSONValue])
     case bool(Bool)
-    case number(Double)
+    case number(NSNumber)
     case string(String)
     case null
 
@@ -37,7 +37,7 @@ indirect enum JSONValue: Equatable {
             if CFGetTypeID(nsNumber) == CFBooleanGetTypeID() {
                 self = .bool(nsNumber.boolValue)
             } else {
-                self = .number(nsNumber.doubleValue)
+                self = .number(nsNumber)
             }
         } else if let string = jsonObject as? String {
             self = .string(string)
@@ -55,14 +55,14 @@ indirect enum JSONValue: Equatable {
         case .bool(let bool):
             return bool
         case .number(let number):
-            guard !number.isNaN else { return "NaN" }
-            switch number {
+            guard !number.doubleValue.isNaN else { return "NaN" }
+            switch number.doubleValue {
             case .infinity:
                 return "Infinity"
             case -.infinity:
                 return "-Infinity"
             default:
-                return NSNumber(value: number)
+                return number
             }
         case .string(let string):
             return string
