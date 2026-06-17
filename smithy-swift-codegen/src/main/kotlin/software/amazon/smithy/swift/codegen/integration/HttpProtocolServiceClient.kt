@@ -14,6 +14,7 @@ import software.amazon.smithy.swift.codegen.model.toOptional
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyRetriesTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.swift.codegen.utils.toUpperCamelCase
 import software.amazon.smithy.utils.CodeSection
 
@@ -433,7 +434,8 @@ open class HttpProtocolServiceClient(
     }
 
     private fun renderServiceSpecificPlugins() {
-        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Plugins.swift") { writer ->
+        val filename = SDKFileUtils(ctx.settings).sourcesDirFilePath("Plugins")
+        ctx.delegator.useFileWriter(filename) { writer ->
             ctx.integrations
                 .flatMap { it.plugins(serviceConfig) }
                 .onEach { it.render(ctx, writer) }

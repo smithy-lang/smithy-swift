@@ -13,7 +13,7 @@ class RecursiveShapesEncodeXMLGenerationTests {
     @Test
     fun `001 encode recursive shape Nested1`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/RecursiveShapesInputOutputNested1+ReadWrite.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/RecursiveShapesInputOutputNested1+ReadWrite.swift")
         val expectedContents = """
 extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1 {
 
@@ -38,7 +38,7 @@ extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested1 {
     @Test
     fun `encode recursive shape Nested2`() {
         val context = setupTests("Isolated/Restxml/xml-recursive.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/RecursiveShapesInputOutputNested2+ReadWrite.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/RecursiveShapesInputOutputNested2+ReadWrite.swift")
         val expectedContents = """
 extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2 {
 
@@ -63,7 +63,7 @@ extension RestXmlProtocolClientTypes.RecursiveShapesInputOutputNested2 {
     @Test
     fun `encode recursive nested shape`() {
         val context = setupTests("Isolated/Restxml/xml-recursive-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlNestedRecursiveShapesInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlNestedRecursiveShapesInput+Write.swift")
         val expectedContents = """
 extension XmlNestedRecursiveShapesInput {
 

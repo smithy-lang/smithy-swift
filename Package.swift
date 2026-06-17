@@ -62,7 +62,7 @@ let package = Package(
     ],
     dependencies: {
         var dependencies: [Package.Dependency] = [
-            .package(url: "https://github.com/awslabs/aws-crt-swift.git", from: "0.63.0"),
+            crtDependency,
             .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.0"),
             .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
             .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.22.0"),
@@ -76,6 +76,15 @@ let package = Package(
     }(),
     targets: runtimeTargets + runtimeTestTargets
 )
+
+var crtDependency: Package.Dependency {
+    let useCRTFromMain = ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_USE_PRERELEASE_CRT"] != nil
+    return if useCRTFromMain {
+        .package(url: "https://github.com/awslabs/aws-crt-swift", branch: "main")
+    } else {
+        .package(url: "https://github.com/awslabs/aws-crt-swift", from: "0.63.0")
+    }
+}
 
 var runtimeTargets: [PackageDescription.Target] {
     [
@@ -439,7 +448,7 @@ var runtimeTestTargets: [PackageDescription.Target] {
                 "SmithyRetries",
                 "SmithyRetriesAPI",
             ],
-            path: "test-sdks/build/smithyprojections/test-sdks/awsjson/swift-codegen/Sources/AWSJSONTestSDK",
+            path: "test-sdks/build/smithyprojections/test-sdks/awsjson/swift-codegen/AWSJSONTestSDK/Sources/AWSJSONTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
         .target(
@@ -453,7 +462,7 @@ var runtimeTestTargets: [PackageDescription.Target] {
                 "SmithyRetries",
                 "SmithyRetriesAPI",
             ],
-            path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/Sources/RPCv2CBORTestSDK",
+            path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/RPCv2CBORTestSDK/Sources/RPCv2CBORTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
         .target(
@@ -467,7 +476,7 @@ var runtimeTestTargets: [PackageDescription.Target] {
                 "SmithyRetries",
                 "SmithyRetriesAPI",
             ],
-            path: "test-sdks/build/smithyprojections/test-sdks/waiters/swift-codegen/Sources/WaitersTestSDK",
+            path: "test-sdks/build/smithyprojections/test-sdks/waiters/swift-codegen/WaitersTestSDK/Sources/WaitersTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
         .testTarget(

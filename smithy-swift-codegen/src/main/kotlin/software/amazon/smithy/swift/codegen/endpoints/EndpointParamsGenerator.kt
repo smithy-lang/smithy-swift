@@ -18,6 +18,7 @@ import software.amazon.smithy.swift.codegen.model.defaultValue
 import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 import software.amazon.smithy.swift.codegen.utils.toLowerCamelCase
 
 /**
@@ -29,7 +30,8 @@ class EndpointParamsGenerator(
     fun render() {
         val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
         val endpointRuleSet = ruleSetNode?.let { EndpointRuleSet.fromNode(it) }
-        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Endpoints.swift") { writer ->
+        val filename = SDKFileUtils(ctx.settings).sourcesDirFilePath("Endpoints")
+        ctx.delegator.useFileWriter(filename) { writer ->
             renderParams(writer, endpointRuleSet)
             writer.write("")
             renderContextExtension(writer, endpointRuleSet)

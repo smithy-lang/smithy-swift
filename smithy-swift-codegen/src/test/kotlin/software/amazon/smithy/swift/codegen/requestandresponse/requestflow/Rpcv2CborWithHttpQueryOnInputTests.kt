@@ -16,7 +16,7 @@ class Rpcv2CborWithHttpQueryOnInputTests {
     @Test
     fun `does not emit queryItemProvider middleware for rpcv2Cbor service with @httpQuery member traits`() {
         val context = setupTests("rpcv2cbor-with-httpquery-on-input.smithy", "com.test#Example")
-        val client = getFileContents(context.manifest, "Sources/example/ExampleClient.swift")
+        val client = getFileContents(context.manifest, "example/Sources/example/ExampleClient.swift")
         client.shouldNotContain("ListEvaluatorsInput.queryItemProvider(_:)")
     }
 

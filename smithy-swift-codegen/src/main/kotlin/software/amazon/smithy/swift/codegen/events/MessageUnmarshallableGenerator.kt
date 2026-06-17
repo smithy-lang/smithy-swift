@@ -20,7 +20,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SmithyEventStreamsAPITy
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
-import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 class MessageUnmarshallableGenerator(
     val ctx: ProtocolGenerator.GenerationContext,
@@ -28,7 +28,7 @@ class MessageUnmarshallableGenerator(
 ) {
     fun render(streamingMember: MemberShape) {
         val symbol: Symbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(streamingMember.target))
-        val filename = ModelFileUtils.filename(ctx.settings, "${symbol.name}+MessageUnmarshallable")
+        val filename = SDKFileUtils(ctx.settings).modelFilePath("${symbol.name}+MessageUnmarshallable")
         val streamMember =
             Symbol
                 .builder()
