@@ -20,7 +20,7 @@ class ServiceRenamesTests {
                 ),
                 "aws.protocoltests.restjson#RestJson",
             )
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/MyTestOperationInput.swift")
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/MyTestOperationInput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 public struct MyTestOperationInput: Swift.Sendable {
@@ -47,7 +47,7 @@ public struct MyTestOperationInput: Swift.Sendable {
                 ),
                 "aws.protocoltests.restjson#RestJson",
             )
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/MyTestOperationOutput.swift")
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/MyTestOperationOutput.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 public struct MyTestOperationOutput: Swift.Sendable {
@@ -74,7 +74,7 @@ public struct MyTestOperationOutput: Swift.Sendable {
                 ),
                 "aws.protocoltests.restjson#RestJson",
             )
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/GreetingStruct.swift")
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/GreetingStruct.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExampleClientTypes {
@@ -104,7 +104,7 @@ extension ExampleClientTypes {
                 ),
                 "aws.protocoltests.restjson#RestJson",
             )
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/RenamedGreeting.swift")
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/RenamedGreeting.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExampleClientTypes {
@@ -134,7 +134,7 @@ extension ExampleClientTypes {
                 ),
                 "aws.protocoltests.restjson#RestJson",
             )
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/RenamedGreeting+ReadWrite.swift")
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/RenamedGreeting+ReadWrite.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension RestJsonProtocolClientTypes.RenamedGreeting {

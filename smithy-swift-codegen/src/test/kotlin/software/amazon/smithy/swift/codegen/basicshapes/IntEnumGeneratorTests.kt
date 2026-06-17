@@ -22,7 +22,7 @@ class IntEnumGeneratorTests {
         SwiftCodegenPlugin().execute(context)
         val enumShape =
             manifest
-                .getFileString("Sources/example/models/Abcs.swift")
+                .getFileString("example/Sources/example/models/Abcs.swift")
                 .get()
         Assertions.assertNotNull(enumShape)
         var expectedGeneratedEnum = """

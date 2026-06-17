@@ -13,7 +13,7 @@ class TimeStampEncodeGenerationTests {
     @Test
     fun `001 encode all timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlTimestampsInput+Write.swift")
         val expectedContents = """
 extension XmlTimestampsInput {
 
@@ -32,7 +32,7 @@ extension XmlTimestampsInput {
     @Test
     fun `002 encode nested list with timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlTimestampsNestedInput+Write.swift")
         val expectedContents = """
 extension XmlTimestampsNestedInput {
 
@@ -48,7 +48,7 @@ extension XmlTimestampsNestedInput {
     @Test
     fun `003 encode nested list with timestamps httpDate`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedHTTPDateInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlTimestampsNestedHTTPDateInput+Write.swift")
         val expectedContents = """
 extension XmlTimestampsNestedHTTPDateInput {
 
@@ -64,7 +64,7 @@ extension XmlTimestampsNestedHTTPDateInput {
     @Test
     fun `004 encode nested list with timestamps with xmlname`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedXmlNameInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlTimestampsNestedXmlNameInput+Write.swift")
         val expectedContents = """
 extension XmlTimestampsNestedXmlNameInput {
 
@@ -80,7 +80,7 @@ extension XmlTimestampsNestedXmlNameInput {
     @Test
     fun `005 encode all timestamps, withxmlName`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsXmlNameInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlTimestampsXmlNameInput+Write.swift")
         val expectedContents = """
 extension XmlTimestampsXmlNameInput {
 

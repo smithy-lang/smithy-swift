@@ -13,7 +13,7 @@ class TimeStampDecodeGenerationTests {
     @Test
     fun `001 decode all timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsOutput+HttpResponseBinding.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlTimestampsOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlTimestampsOutput {
 
@@ -36,7 +36,8 @@ extension XmlTimestampsOutput {
     @Test
     fun `002 decode nested timestamps`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedOutput+HttpResponseBinding.swift")
+        val contents =
+            getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlTimestampsNestedOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlTimestampsNestedOutput {
 
@@ -57,7 +58,7 @@ extension XmlTimestampsNestedOutput {
     fun `003 decode nested timestamps HttpDate`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested.smithy", "aws.protocoltests.restxml#RestXml")
         val contents =
-            getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedHTTPDateOutput+HttpResponseBinding.swift")
+            getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlTimestampsNestedHTTPDateOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlTimestampsNestedHTTPDateOutput {
 
@@ -79,7 +80,7 @@ extension XmlTimestampsNestedHTTPDateOutput {
     fun `004 decode nested timestamps xmlName`() {
         val context = setupTests("Isolated/Restxml/xml-timestamp-nested-xmlname.smithy", "aws.protocoltests.restxml#RestXml")
         val contents =
-            getFileContents(context.manifest, "Sources/RestXml/models/XmlTimestampsNestedXmlNameOutput+HttpResponseBinding.swift")
+            getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlTimestampsNestedXmlNameOutput+HttpResponseBinding.swift")
         val expectedContents = """
 extension XmlTimestampsNestedXmlNameOutput {
 

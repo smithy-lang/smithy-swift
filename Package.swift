@@ -448,7 +448,7 @@ var runtimeTestTargets: [PackageDescription.Target] {
                 "SmithyRetries",
                 "SmithyRetriesAPI",
             ],
-            path: "test-sdks/build/smithyprojections/test-sdks/awsjson/swift-codegen/Sources/AWSJSONTestSDK",
+            path: "test-sdks/build/smithyprojections/test-sdks/awsjson/swift-codegen/AWSJSONTestSDK/Sources/AWSJSONTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
         .target(
@@ -462,7 +462,7 @@ var runtimeTestTargets: [PackageDescription.Target] {
                 "SmithyRetries",
                 "SmithyRetriesAPI",
             ],
-            path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/Sources/RPCv2CBORTestSDK",
+            path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/RPCv2CBORTestSDK/Sources/RPCv2CBORTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
         .target(
@@ -476,7 +476,7 @@ var runtimeTestTargets: [PackageDescription.Target] {
                 "SmithyRetries",
                 "SmithyRetriesAPI",
             ],
-            path: "test-sdks/build/smithyprojections/test-sdks/waiters/swift-codegen/Sources/WaitersTestSDK",
+            path: "test-sdks/build/smithyprojections/test-sdks/waiters/swift-codegen/WaitersTestSDK/Sources/WaitersTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
         .testTarget(

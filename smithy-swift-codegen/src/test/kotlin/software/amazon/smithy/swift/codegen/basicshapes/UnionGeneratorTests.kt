@@ -45,7 +45,7 @@ class UnionGeneratorTests {
         val model = createModelFromShapes(simpleUnionShape)
         val settings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = settings.moduleName)
 
         val generator = UnionGenerator(model, provider, writer, simpleUnionShape, settings)
         generator.render()
@@ -100,7 +100,7 @@ public enum MyUnion: Swift.Sendable {
         val model = createModelFromShapes(struct, unionShapeWithStructMember)
         val settings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = settings.moduleName)
 
         val generator = UnionGenerator(model, provider, writer, unionShapeWithStructMember, settings)
         generator.render()
@@ -148,7 +148,7 @@ public enum MyUnion: Swift.Sendable {
         val transformedModel = UnionIndirectivizer.transform(model)
         val settings = transformedModel.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(transformedModel, settings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = settings.moduleName)
         val transformedUnionShape = transformedModel.expectShape(simpleUnionShape.id).asUnionShape().get()
 
         val generator = UnionGenerator(transformedModel, provider, writer, transformedUnionShape, settings)

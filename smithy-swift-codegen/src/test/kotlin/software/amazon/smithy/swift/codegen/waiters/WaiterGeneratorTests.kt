@@ -26,7 +26,7 @@ class WaiterGeneratorTests {
     @Test
     fun `renders a waiters extension on protocol`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
+        val contents = getFileContents(context.manifest, "Test/Sources/Test/Waiters.swift")
         val expected = """
 extension TestClient {
 """
@@ -36,7 +36,7 @@ extension TestClient {
     @Test
     fun `renders a waiter config into extension`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
+        val contents = getFileContents(context.manifest, "Test/Sources/Test/Waiters.swift")
         val expected = """
         return try SmithyWaitersAPI.WaiterConfiguration<HeadBucketInput, HeadBucketOutput>(acceptors: acceptors, minDelay: 7.0, maxDelay: 22.0)
 """
@@ -46,7 +46,7 @@ extension TestClient {
     @Test
     fun `renders a waiter method into extension`() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        val contents = getFileContents(context.manifest, "Sources/Test/Waiters.swift")
+        val contents = getFileContents(context.manifest, "Test/Sources/Test/Waiters.swift")
         val expected = """
     public func waitUntilBucketExists(options: SmithyWaitersAPI.WaiterOptions, input: HeadBucketInput) async throws -> SmithyWaitersAPI.WaiterOutcome<HeadBucketOutput> {
 """
@@ -84,7 +84,7 @@ extension TestClient {
 
                 override fun integrations(): MutableList<SwiftIntegration> = integrations.toMutableList()
             }
-        val path = "Sources/Test/Waiters.swift"
+        val path = "Test/Sources/Test/Waiters.swift"
         context.generationCtx.delegator.useFileWriter(path) { writer ->
             val unit = WaiterGenerator(codegenContext, context.generationCtx, context.generationCtx.delegator)
             unit.render()

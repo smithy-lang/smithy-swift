@@ -27,7 +27,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates smoke test response test`() {
-        val contents = getTestFileContents("Tests/example", "SmokeTestResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "SmokeTestResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func test_SmokeTest() async throws {
@@ -92,7 +92,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates unit test with prefixHeader and empty body`() {
-        val contents = getTestFileContents("Tests/example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func test_RestJsonHttpPrefixHeadersPresent() async throws {
@@ -143,7 +143,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates unit test with non-existent prefixHeader`() {
-        val contents = getTestFileContents("Tests/example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "HttpPrefixHeadersResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func test_RestJsonHttpPrefixHeadersAreNotPresent() async throws {
@@ -188,7 +188,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates a unit test for union shapes`() {
-        val contents = getTestFileContents("Tests/example", "JsonUnionsResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "JsonUnionsResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func test_RestJsonDeserializeStringUnionValue() async throws {
@@ -240,7 +240,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates a unit test for recursive shapes`() {
-        val contents = getTestFileContents("Tests/example", "RecursiveShapesResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "RecursiveShapesResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func test_RestJsonRecursiveShapes() async throws {
@@ -311,7 +311,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates a response unit test for inline document`() {
-        val contents = getTestFileContents("Tests/example", "InlineDocumentResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "InlineDocumentResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func test_InlineDocumentOutput() async throws {
@@ -369,7 +369,7 @@ open class HttpProtocolUnitTestResponseGeneratorTests {
 
     @Test
     fun `it creates a response unit test for inline document as payload`() {
-        val contents = getTestFileContents("Tests/example", "InlineDocumentAsPayloadResponseTest.swift", ctx.manifest)
+        val contents = getTestFileContents("example/Tests/example", "InlineDocumentAsPayloadResponseTest.swift", ctx.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     func test_InlineDocumentAsPayloadInputOutput() async throws {
