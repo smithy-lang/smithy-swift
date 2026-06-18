@@ -230,7 +230,10 @@ public final class Serializer: ShapeSerializer {
     }
 
     public func writeBlob(_ schema: Schema, _ value: Data) throws {
-        try writeString(schema, value.base64EncodedString())
+        try writeCommaIfNeeded()
+        _data.append(contentsOf: Self.doubleQuote.utf8)
+        _data.append(contentsOf: value.base64EncodedData())
+        _data.append(contentsOf: Self.doubleQuote.utf8)
     }
 
     public func writeTimestamp(_ schema: Schema, _ value: Date) throws {
