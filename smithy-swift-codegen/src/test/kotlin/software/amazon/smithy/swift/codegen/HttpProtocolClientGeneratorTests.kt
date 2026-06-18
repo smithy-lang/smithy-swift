@@ -14,7 +14,7 @@ class HttpProtocolClientGeneratorTests {
     @Test
     fun `it renders client initialization block`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "AwsJson/Sources/AwsJson/AwsJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
 public final class AwsJsonProtocolClient: ClientRuntime.Client {
@@ -316,7 +316,7 @@ extension AwsJsonProtocolClient {
     @Test
     fun `it renders host prefix with label in context correctly`() {
         val context = setupTests("host-prefix-operation.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "AwsJson/Sources/AwsJson/AwsJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedFragment = """
         let context = Smithy.ContextBuilder()
@@ -334,7 +334,7 @@ extension AwsJsonProtocolClient {
     @Test
     fun `it renders operation implementations in extension`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "AwsJson/Sources/AwsJson/AwsJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContain("extension AwsJsonProtocolClient {")
     }
@@ -342,7 +342,7 @@ extension AwsJsonProtocolClient {
     @Test
     fun `it renders an operation body`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "AwsJson/Sources/AwsJson/AwsJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
     public func allocateWidget(input: AllocateWidgetInput) async throws -> AllocateWidgetOutput {
@@ -402,7 +402,7 @@ extension AwsJsonProtocolClient {
     @Test
     fun `ContentLengthMiddleware generates correctly with requiresLength false and unsignedPayload true`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "AwsJson/Sources/AwsJson/AwsJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             "builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<UnsignedFooBlobStreamInput, UnsignedFooBlobStreamOutput>(requiresLength: false, unsignedPayload: true))",
@@ -412,7 +412,7 @@ extension AwsJsonProtocolClient {
     @Test
     fun `ContentLengthMiddleware generates correctly with requiresLength true and unsignedPayload false`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "AwsJson/Sources/AwsJson/AwsJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             "builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<ExplicitBlobStreamWithLengthInput, ExplicitBlobStreamWithLengthOutput>(requiresLength: true, unsignedPayload: false))",
@@ -422,7 +422,7 @@ extension AwsJsonProtocolClient {
     @Test
     fun `ContentLengthMiddleware generates correctly with requiresLength true and unsignedPayload true`() {
         val context = setupTests("service-generator-test-operations.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/AwsJson/AwsJsonProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "AwsJson/Sources/AwsJson/AwsJsonProtocolClient.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             "builder.interceptors.add(ClientRuntime.ContentLengthMiddleware<UnsignedFooBlobStreamWithLengthInput, UnsignedFooBlobStreamWithLengthOutput>(requiresLength: true, unsignedPayload: true))",

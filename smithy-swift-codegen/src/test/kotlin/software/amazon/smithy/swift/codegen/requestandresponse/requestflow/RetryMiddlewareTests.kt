@@ -14,7 +14,7 @@ class RetryMiddlewareTests {
     @Test
     fun `generates operation with retry middleware`() {
         val context = setupTests("Isolated/contentmd5checksum.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/RestXmlProtocolClient.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/RestXmlProtocolClient.swift")
         val expectedContents = """
         builder.retryStrategy(self.retryStrategy)
         builder.retryErrorInfoProvider(ClientRuntime.DefaultRetryErrorInfoProvider.errorInfo(for:))

@@ -37,7 +37,7 @@ class EnumGeneratorTests {
         val model = createModelFromShapes(stringShapeWithEnumTrait)
         val settings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = settings.moduleName)
 
         val generator = EnumGenerator(model, provider, writer, stringShapeWithEnumTrait, settings)
         generator.render()
@@ -102,7 +102,7 @@ public enum MyEnum: Swift.Sendable, Swift.Equatable, Swift.RawRepresentable, Swi
         val model = createModelFromShapes(stringShapeWithEnumTrait)
         val settings = model.defaultSettings()
         val provider: SymbolProvider = SwiftCodegenPlugin.createSymbolProvider(model, settings)
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = settings.moduleName)
 
         val generator = EnumGenerator(model, provider, writer, stringShapeWithEnumTrait, settings)
         generator.render()
@@ -151,7 +151,7 @@ public enum MyEnum: Swift.Sendable, Swift.Equatable, Swift.RawRepresentable, Swi
         SwiftCodegenPlugin().execute(context)
         val suitEnumShape =
             manifest
-                .getFileString("Sources/example/models/Suit.swift")
+                .getFileString("example/Sources/example/models/Suit.swift")
                 .get()
         Assertions.assertNotNull(suitEnumShape)
 

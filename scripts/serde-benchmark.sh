@@ -24,23 +24,23 @@ rm -rf serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkSmi
 ./gradlew -p serde-benchmark build
 
 # Run tests, using release config, for each serde performance test SDK
-cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSJSONRPC10/swift-codegen
+cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSJSONRPC10/swift-codegen/SerdeBenchmarkAWSJSONRPC10
 swift test -c release
 cd ../../../../../..
 
-cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSQuery/swift-codegen
+cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSQuery/swift-codegen/SerdeBenchmarkAWSQuery
 swift test -c release
 cd ../../../../../..
 
-cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSRestJSON/swift-codegen
+cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSRestJSON/swift-codegen/SerdeBenchmarkAWSRestJSON
 swift test -c release
 cd ../../../../../..
 
-cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSRestXML/swift-codegen
+cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkAWSRestXML/swift-codegen/SerdeBenchmarkAWSRestXML
 swift test -c release
 cd ../../../../../..
 
-cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkSmithyRPCV2CBOR/swift-codegen
+cd serde-benchmark/build/smithyprojections/serde-benchmark/SerdeBenchmarkSmithyRPCV2CBOR/swift-codegen/SerdeBenchmarkSmithyRPCV2CBOR
 swift test -c release
 cd ../../../../../..
 

@@ -17,7 +17,7 @@ class OnlyFlattenedListEncodeGeneratorTests {
     @Test
     fun `001 encode different types of lists`() {
         val context = setupTests("Isolated/ec2/query-lists.smithy", "aws.protocoltests.ec2#AwsEc2")
-        val contents = getFileContents(context.manifest, "Sources/Example/models/Ec2QueryListsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "Example/Sources/Example/models/Ec2QueryListsInput+Write.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension Ec2QueryListsInput {

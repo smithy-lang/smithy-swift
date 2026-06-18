@@ -18,7 +18,7 @@ class CustomDebugStringConvertibleGeneratorTests {
     @Test
     fun `list with sensitive trait gets redacted correctly`() {
         val context = setupTests("custom-debug-string-convertible-generator-test.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce("listWithSensitiveTrait: \\\"CONTENT_REDACTED\\\"")
     }
@@ -26,7 +26,7 @@ class CustomDebugStringConvertibleGeneratorTests {
     @Test
     fun `list with member shape that targets a shape with sensitive trait gets redacted correctly`() {
         val context = setupTests("custom-debug-string-convertible-generator-test.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce("listWithSensitiveTargetedByMember: \\\"CONTENT_REDACTED\\\"")
     }
@@ -34,7 +34,7 @@ class CustomDebugStringConvertibleGeneratorTests {
     @Test
     fun `map with sensitive trait gets redacted correctly`() {
         val context = setupTests("custom-debug-string-convertible-generator-test.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce("mapWithSensitiveTrait: \\\"CONTENT_REDACTED\\\"")
     }
@@ -42,7 +42,7 @@ class CustomDebugStringConvertibleGeneratorTests {
     @Test
     fun `map with key that targets a shape with sensitive trait gets redacted correctly`() {
         val context = setupTests("custom-debug-string-convertible-generator-test.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             "mapWithSensitiveTargetedByKey: [keys: \\\"CONTENT_REDACTED\\\", values: \\(Swift.String(describing: mapWithSensitiveTargetedByKey?.values))]",
@@ -52,7 +52,7 @@ class CustomDebugStringConvertibleGeneratorTests {
     @Test
     fun `map with value that targets a shape with sensitive trait gets redacted correctly`() {
         val context = setupTests("custom-debug-string-convertible-generator-test.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce(
             "mapWithSensitiveTargetedByValue: [keys: \\(Swift.String(describing: mapWithSensitiveTargetedByValue?.keys)), values: \\\"CONTENT_REDACTED\\\"]",
@@ -62,7 +62,7 @@ class CustomDebugStringConvertibleGeneratorTests {
     @Test
     fun `map with key and value that target shapes with sensitive trait gets redacted correctly`() {
         val context = setupTests("custom-debug-string-convertible-generator-test.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
+        val contents = getFileContents(context.manifest, "RestJson/Sources/RestJson/models/GetFooOutput+CustomDebugStringConvertible.swift")
         contents.shouldSyntacticSanityCheck()
         contents.shouldContainOnlyOnce("mapWithSensitiveTargetedByBoth: \\\"CONTENT_REDACTED\\\"")
     }

@@ -17,7 +17,7 @@ class AuthSchemeResolverGeneratorTests {
     @Test
     fun `test auth scheme resolver generation`() {
         val context = setupTests("auth-scheme-resolver-generator-test.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/Example/AuthSchemeResolver.swift")
+        val contents = getFileContents(context.manifest, "Example/Sources/Example/AuthSchemeResolver.swift")
         contents.shouldSyntacticSanityCheck()
         val expected = """
 public struct ExampleAuthSchemeResolverParameters: SmithyHTTPAuthAPI.AuthSchemeResolverParameters {

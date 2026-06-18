@@ -41,15 +41,15 @@ class StructDecodeGenerationTests {
 
     @Test
     fun `it creates decodable conformance for nested structures`() {
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/Nested+ReadWrite.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/Nested2+ReadWrite.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/Nested3+ReadWrite.swift"))
-        Assertions.assertTrue(newTestContext.manifest.hasFile("Sources/example/models/Nested4+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/Nested+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/Nested2+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/Nested3+ReadWrite.swift"))
+        Assertions.assertTrue(newTestContext.manifest.hasFile("example/Sources/example/models/Nested4+ReadWrite.swift"))
     }
 
     @Test
     fun `it decodes nested documents with aggregate shapes`() {
-        val contents = getModelFileContents("Sources/example", "Nested4+ReadWrite.swift", newTestContext.manifest)
+        val contents = getModelFileContents("example/Sources/example", "Nested4+ReadWrite.swift", newTestContext.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension ExampleClientTypes.Nested4 {
@@ -80,7 +80,7 @@ extension ExampleClientTypes.Nested4 {
     fun `it decodes recursive boxed types correctly`() {
         val contents =
             getModelFileContents(
-                "Sources/example",
+                "example/Sources/example",
                 "RecursiveShapesInputOutputNested1+ReadWrite.swift",
                 newTestContext.manifest,
             )
@@ -110,7 +110,7 @@ extension ExampleClientTypes.RecursiveShapesInputOutputNested1 {
     fun `it encodes one side of the recursive shape`() {
         val contents =
             getModelFileContents(
-                "Sources/example",
+                "example/Sources/example",
                 "RecursiveShapesInputOutputNested2+ReadWrite.swift",
                 newTestContext.manifest,
             )

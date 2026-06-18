@@ -263,7 +263,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(
 
     fun captureSerdeBenchmarkResponse(test: HttpResponseTestCase) {
         writer.write(
-            "let path = \$N.default.currentDirectoryPath + \"/../../../../../../../smithy-swift/instance-results.json\"",
+            "let path = \$N.default.currentDirectoryPath + \"/../../../../../../../../smithy-swift/instance-results.json\"",
             FoundationTypes.FileManager,
         )
         writer.openBlock(

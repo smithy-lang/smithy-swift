@@ -16,7 +16,7 @@ import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
 class MiddlewareGeneratorTests {
     @Test
     fun `generates middleware structs`() {
-        val writer = SwiftWriter("MockPackage")
+        val writer = SwiftWriter("MockPackage", moduleName = "TestModule")
         val testSymbol = Symbol.builder().name("Test").build()
         val mockMiddleware = MockMiddleware(writer, testSymbol)
         val generator = MiddlewareGenerator(writer, mockMiddleware)

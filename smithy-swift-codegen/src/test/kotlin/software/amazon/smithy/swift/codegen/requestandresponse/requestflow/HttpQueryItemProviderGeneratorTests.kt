@@ -19,7 +19,7 @@ class HttpQueryItemProviderGeneratorTests {
     fun `001 it creates query item provider with idempotency token trait for httpQuery`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
         val contents =
-            getModelFileContents("Sources/example", "QueryIdempotencyTokenAutoFillInput+QueryItemProvider.swift", context.manifest)
+            getModelFileContents("example/Sources/example", "QueryIdempotencyTokenAutoFillInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension QueryIdempotencyTokenAutoFillInput {
@@ -40,7 +40,7 @@ extension QueryIdempotencyTokenAutoFillInput {
     @Test
     fun `002 it creates query item middleware for timestamps with format`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
-        val contents = getModelFileContents("Sources/example", "TimestampInputInput+QueryItemProvider.swift", context.manifest)
+        val contents = getModelFileContents("example/Sources/example", "TimestampInputInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension TimestampInputInput {
@@ -67,7 +67,7 @@ extension TimestampInputInput {
     @Test
     fun `003 it creates query item middleware smoke test`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
-        val contents = getModelFileContents("Sources/example", "SmokeTestInput+QueryItemProvider.swift", context.manifest)
+        val contents = getModelFileContents("example/Sources/example", "SmokeTestInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension SmokeTestInput {
@@ -97,7 +97,7 @@ extension SmokeTestInput {
     @Test
     fun `005 httpQueryParams on StringMap`() {
         val context = setupTests("http-query-params-stringmap.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/example/models/AllQueryStringTypesInput+QueryItemProvider.swift")
+        val contents = getFileContents(context.manifest, "example/Sources/example/models/AllQueryStringTypesInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension AllQueryStringTypesInput {
@@ -133,7 +133,8 @@ extension AllQueryStringTypesInput {
     @Test
     fun `006 httpQueryParams on stringListMap`() {
         val context = setupTests("http-query-params-stringlistmap.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/example/models/QueryParamsAsStringListMapInput+QueryItemProvider.swift")
+        val contents =
+            getFileContents(context.manifest, "example/Sources/example/models/QueryParamsAsStringListMapInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension QueryParamsAsStringListMapInput {
@@ -165,7 +166,7 @@ extension QueryParamsAsStringListMapInput {
     @Test
     fun `007 query precedence with httpQuery and httpQueryParams`() {
         val context = setupTests("http-query-params-precedence.smithy", "com.test#Example")
-        val contents = getFileContents(context.manifest, "Sources/example/models/QueryPrecedenceInput+QueryItemProvider.swift")
+        val contents = getFileContents(context.manifest, "example/Sources/example/models/QueryPrecedenceInput+QueryItemProvider.swift")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension QueryPrecedenceInput {
@@ -195,7 +196,7 @@ extension QueryPrecedenceInput {
     @Test
     fun `008 it handles required http query items`() {
         val context = setupTests("http-binding-protocol-generator-test.smithy", "com.test#Example")
-        val contents = getModelFileContents("Sources/example", "RequiredHttpFieldsInput+QueryItemProvider.swift", context.manifest)
+        val contents = getModelFileContents("example/Sources/example", "RequiredHttpFieldsInput+QueryItemProvider.swift", context.manifest)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 extension RequiredHttpFieldsInput {
