@@ -28,25 +28,25 @@ import protocol SmithySerialization.ShapeSerializer
 
 @_spi(SchemaBasedSerde)
 public final class Serializer: ShapeSerializer {
-    private static let backspace = Character(Unicode.Scalar(0x0008)!)
-    private static let formFeed = Character(Unicode.Scalar(0x000C)!)
-    private static let lineFeed = Character(Unicode.Scalar(0x000A)!)
-    private static let cr = Character(Unicode.Scalar(0x000D)!)
-    private static let tab = Character(Unicode.Scalar(0x0009)!)
-    private static let b = Character("b")
-    private static let f = Character("f")
-    private static let n = Character("n")
-    private static let r = Character("r")
-    private static let t = Character("t")
-    private static let openingCurlyBrace = Character("{")
-    private static let closingCurlyBrace = Character("}")
-    private static let openingSquareBrace = Character("[")
-    private static let closingSquareBrace = Character("]")
-    private static let comma = Character(",")
-    private static let colon = Character(":")
-    private static let doubleQuote = Character("\"")
-    private static let forwardSlash = Character("/")
-    private static let backslash = Character("\\")
+    private static let backspace: UInt8 = 8
+    private static let formFeed: UInt8 = 12
+    private static let lineFeed: UInt8 = 10
+    private static let cr: UInt8 = 13
+    private static let tab: UInt8 = 9
+    private static let b: UInt8 = 62
+    private static let f: UInt8 = 66
+    private static let n: UInt8 = 110
+    private static let r: UInt8 = 114
+    private static let t: UInt8 = 116
+    private static let openingCurlyBrace: UInt8 = 123
+    private static let closingCurlyBrace: UInt8 = 125
+    private static let openingSquareBrace: UInt8 = 91
+    private static let closingSquareBrace: UInt8 = 93
+    private static let comma: UInt8 = 44
+    private static let colon: UInt8 = 58
+    private static let doubleQuote: UInt8 = 34
+    private static let forwardSlash: UInt8 = 47
+    private static let backslash: UInt8 = 92
     private static let trueBytes = "true".utf8
     private static let falseBytes = "false".utf8
     private static let nullBytes = "null".utf8
@@ -67,14 +67,14 @@ public final class Serializer: ShapeSerializer {
         let savedNeedsComma = self._needsComma
         self._needsComma = false
         self._keySchema = Smithy.Prelude.stringSchema
-        _data.append(contentsOf: Self.openingCurlyBrace.utf8)
+        _data.append(Self.openingCurlyBrace)
         for memberSchema in schema.members {
             defer { self._key = nil }
             guard let key = try objectKey(for: memberSchema) else { continue }
             self._key = key
             try S.writeConsumer(memberSchema, value, self)
         }
-        _data.append(contentsOf: Self.closingCurlyBrace.utf8)
+        _data.append(Self.closingCurlyBrace)
         self._needsComma = savedNeedsComma
     }
 
@@ -86,12 +86,12 @@ public final class Serializer: ShapeSerializer {
         try writeCommaIfNeeded()
         let savedNeedsComma = self._needsComma
         self._needsComma = false
-        _data.append(contentsOf: Self.openingSquareBrace.utf8)
+        _data.append(Self.openingSquareBrace)
         for element in value {
             try consumer(element, self)
             self._needsComma = true
         }
-        _data.append(contentsOf: Self.closingSquareBrace.utf8)
+        _data.append(Self.closingSquareBrace)
         self._needsComma = savedNeedsComma
     }
 
@@ -104,13 +104,13 @@ public final class Serializer: ShapeSerializer {
         let savedNeedsComma = self._needsComma
         self._needsComma = false
         self._keySchema = schema.key
-        _data.append(contentsOf: Self.openingCurlyBrace.utf8)
+        _data.append(Self.openingCurlyBrace)
         for (key, value) in value {
             defer { self._key = nil }
             self._key = key
             try consumer(value, self)
         }
-        _data.append(contentsOf: Self.closingCurlyBrace.utf8)
+        _data.append(Self.closingCurlyBrace)
         self._needsComma = savedNeedsComma
     }
 
@@ -195,45 +195,50 @@ public final class Serializer: ShapeSerializer {
 
     public func writeString(_ schema: Schema, _ value: String) throws {
         try writeCommaIfNeeded()
-        _data.append(contentsOf: Self.doubleQuote.utf8)
+        _data.append(Self.doubleQuote)
         for character in value {
-            switch character {
+            let ascii = character.asciiValue
+            switch ascii {
             case Self.doubleQuote:
-                _data.append(contentsOf: Self.backslash.utf8)
-                _data.append(contentsOf: Self.doubleQuote.utf8)
+                _data.append(Self.backslash)
+                _data.append(Self.doubleQuote)
             case Self.backslash:
-                _data.append(contentsOf: Self.backslash.utf8)
-                _data.append(contentsOf: Self.backslash.utf8)
+                _data.append(Self.backslash)
+                _data.append(Self.backslash)
             case Self.forwardSlash:
-                _data.append(contentsOf: Self.backslash.utf8)
-                _data.append(contentsOf: Self.forwardSlash.utf8)
+                _data.append(Self.backslash)
+                _data.append(Self.forwardSlash)
             case Self.backspace:
-                _data.append(contentsOf: Self.backslash.utf8)
-                _data.append(contentsOf: Self.b.utf8)
+                _data.append(Self.backslash)
+                _data.append(Self.b)
             case Self.formFeed:
-                _data.append(contentsOf: Self.backslash.utf8)
-                _data.append(contentsOf: Self.f.utf8)
+                _data.append(Self.backslash)
+                _data.append(Self.f)
             case Self.lineFeed:
-                _data.append(contentsOf: Self.backslash.utf8)
-                _data.append(contentsOf: Self.n.utf8)
+                _data.append(Self.backslash)
+                _data.append(Self.n)
             case Self.cr:
-                _data.append(contentsOf: Self.backslash.utf8)
-                _data.append(contentsOf: Self.r.utf8)
+                _data.append(Self.backslash)
+                _data.append(Self.r)
             case Self.tab:
-                _data.append(contentsOf: Self.backslash.utf8)
-                _data.append(contentsOf: Self.t.utf8)
+                _data.append(Self.backslash)
+                _data.append(Self.t)
             default:
-                _data.append(contentsOf: character.utf8)
+                if let ascii {
+                    _data.append(ascii)
+                } else {
+                    _data.append(contentsOf: character.utf8)
+                }
             }
         }
-        _data.append(contentsOf: Self.doubleQuote.utf8)
+        _data.append(Self.doubleQuote)
     }
 
     public func writeBlob(_ schema: Schema, _ value: Data) throws {
         try writeCommaIfNeeded()
-        _data.append(contentsOf: Self.doubleQuote.utf8)
+        _data.append(Self.doubleQuote)
         _data.append(contentsOf: value.base64EncodedData())
-        _data.append(contentsOf: Self.doubleQuote.utf8)
+        _data.append(Self.doubleQuote)
     }
 
     public func writeTimestamp(_ schema: Schema, _ value: Date) throws {
@@ -287,13 +292,13 @@ public final class Serializer: ShapeSerializer {
 
     private func writeCommaIfNeeded() throws {
         if self._needsComma {
-            _data.append(contentsOf: Self.comma.utf8)
+            _data.append(Self.comma)
         }
         if let key = self._key, let keySchema = self._keySchema {
             self._needsComma = false
             self._key = nil
             try writeString(keySchema, key)
-            _data.append(contentsOf: Self.colon.utf8)
+            _data.append(Self.colon)
             self._needsComma = true
         }
     }
