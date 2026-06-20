@@ -9,6 +9,7 @@ service AWSJSONService {
     version: "2022-11-30"
     operations: [
         JSONName
+        NullTolerance
     ]
 }
 
@@ -25,4 +26,38 @@ structure JSONNameInput {
 structure JSONNameOutput {
     @jsonName("modified")
     original: String
+}
+
+operation NullTolerance {
+    input: NullToleranceInput
+    output: NullToleranceOutput
+}
+
+structure NullToleranceInput {}
+
+structure NullToleranceOutput {
+    list: NullToleranceList
+    map: NullToleranceMap
+    sparseList: SparseNullToleranceList
+    sparseMap: SparseNullToleranceMap
+}
+
+list NullToleranceList {
+    member: Integer
+}
+
+map NullToleranceMap {
+    key: String
+    value: Integer
+}
+
+@sparse
+list SparseNullToleranceList {
+    member: Integer
+}
+
+@sparse
+map SparseNullToleranceMap {
+    key: String
+    value: Integer
 }

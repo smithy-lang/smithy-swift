@@ -30,6 +30,8 @@ package struct DeserializeCodegen {
         writer.write("import typealias SmithySerialization.ReadStructConsumer")
         writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import protocol SmithySerialization.ShapeDeserializer")
+        writer.write("@_spi(SchemaBasedSerde)")
+        writer.write("import struct SmithySerialization.UnexpectedNullError")
         writer.write("")
 
         // Get structs & unions that are part of an operation output.
@@ -124,6 +126,9 @@ package struct DeserializeCodegen {
                 "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { deserializer in",
                 "}"
             ) { writer in
+                writer.openBlock("if try deserializer.isNull() {", "}") { writer in
+                    writer.write("throw SmithySerialization.UnexpectedNullError()")
+                }
                 try writeDeserializeCall(
                     ctx: ctx,
                     writer: writer,
@@ -142,6 +147,9 @@ package struct DeserializeCodegen {
                 "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { deserializer in",
                 "}"
             ) { writer in
+                writer.openBlock("if try deserializer.isNull() {", "}") { writer in
+                    writer.write("throw SmithySerialization.UnexpectedNullError()")
+                }
                 try writeDeserializeCall(
                     ctx: ctx,
                     writer: writer,

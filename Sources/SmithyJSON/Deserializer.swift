@@ -14,6 +14,7 @@ import class Foundation.NSNumber
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
+import struct SmithySerialization.UnexpectedNullError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
@@ -75,12 +76,24 @@ public final class Deserializer: ShapeDeserializer {
 
     public func readList<E>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> E) throws -> [E] {
         guard case .list(let list) = value else { throw SerializerError("Expected list") }
-        return try list.map { try consumer(Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: $0)) }
+        return try list.compactMap {
+            do {
+                return try consumer(Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: $0))
+            } catch is SmithySerialization.UnexpectedNullError {
+                return nil
+            }
+        }
     }
 
     public func readMap<V>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> V) throws -> [String: V] {
         guard case .object(let map) = value else { throw SerializerError("Expected map") }
-        return try map.mapValues { try consumer(Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: $0)) }
+        return try map.compactMapValues {
+            do {
+                return try consumer(Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: $0))
+            } catch is SmithySerialization.UnexpectedNullError {
+                return nil
+            }
+        }
     }
 
     public func readBoolean(_ schema: Schema) throws -> Bool {
