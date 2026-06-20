@@ -14,9 +14,9 @@ import class Foundation.NSNumber
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
-import struct SmithySerialization.UnexpectedNullError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
+import struct SmithySerialization.UnexpectedNullError
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
 @_spi(SchemaBasedSerde)
