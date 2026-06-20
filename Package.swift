@@ -338,8 +338,7 @@ var runtimeTestTargets: [PackageDescription.Target] {
             dependencies: ["Smithy"]
         ),
     ]
-    guard true else { return baseTests }
-//    guard ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_UNIT_TESTS"] != nil else { return baseTests }
+    guard ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_UNIT_TESTS"] != nil else { return baseTests }
     return baseTests + [
         .testTarget(
             name: "ClientRuntimeTests",
