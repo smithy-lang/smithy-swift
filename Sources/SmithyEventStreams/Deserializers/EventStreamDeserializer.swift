@@ -10,7 +10,7 @@ import struct Foundation.Date
 import struct Smithy.Document
 import protocol Smithy.ResponseMessage
 @_spi(SchemaBasedSerde)
-import class Smithy.Schema
+import struct Smithy.Schema
 @_spi(SchemaBasedSerde)
 import struct Smithy.StreamingTrait
 import typealias SmithyEventStreamsAPI.UnmarshalClosure

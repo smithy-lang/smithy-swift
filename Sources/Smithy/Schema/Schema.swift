@@ -10,7 +10,7 @@
 /// Typically, the Schema contains only modeled info & properties that are relevant to
 /// serialization, transport bindings, and other functions performed by the SDK.
 @_spi(SchemaBasedSerde)
-public final class Schema: Sendable {
+public struct Schema: Sendable {
 
     /// The Smithy shape ID for the shape described by this schema.
     public let id: ShapeID
@@ -67,7 +67,7 @@ public final class Schema: Sendable {
         [ShapeType.structure, .union].contains(_containerType) ? id.member! : nil
     }
 
-    private let _containerType: ShapeType?
+    private var _containerType: ShapeType?
 
     /// Creates a new Schema using the passed parameters.
     ///

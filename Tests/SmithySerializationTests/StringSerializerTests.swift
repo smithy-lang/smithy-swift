@@ -11,7 +11,7 @@ import SmithySerialization
 @_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
 @_spi(SchemaBasedSerde)
-import class Smithy.Schema
+import struct Smithy.Schema
 @_spi(SchemaBasedSerde)
 import struct Smithy.SensitiveTrait
 import struct RPCv2CBORTestSDK.GetWidgetOutput

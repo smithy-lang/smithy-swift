@@ -6,7 +6,7 @@
 //
 
 @_spi(SchemaBasedSerde)
-import class Smithy.Schema
+import struct Smithy.Schema
 
 @_spi(SchemaBasedSerde)
 public typealias WriteStructConsumer<T> = (Schema, T, any ShapeSerializer) throws -> Void

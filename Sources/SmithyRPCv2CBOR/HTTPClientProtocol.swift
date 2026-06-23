@@ -17,7 +17,7 @@ import struct Smithy.AWSQueryErrorTrait
 import enum Smithy.ByteStream
 import enum Smithy.ClientError
 import class Smithy.Context
-import class Smithy.Schema
+import struct Smithy.Schema
 import struct Smithy.ShapeID
 import struct Smithy.TargetsUnitTrait
 import class SmithyHTTPAPI.HTTPRequest

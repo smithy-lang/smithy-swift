@@ -9,7 +9,7 @@ import struct Foundation.Data
 import struct Foundation.Date
 import struct Smithy.Document
 @_spi(SchemaBasedSerde)
-import class Smithy.Schema
+import struct Smithy.Schema
 import struct SmithyEventStreamsAPI.Header
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
