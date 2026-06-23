@@ -60,7 +60,7 @@ package struct DeserializeCodegen {
                 let consumerType = "SmithySerialization.ReadStructConsumer<Self>"
                 try writer.openBlock(
                     "public static var readConsumer: \(consumerType) {", "}") { writer in
-                    try writer.openBlock("{ memberSchema, \(varName), deserializer in", "}") { writer in
+                    try writer.openBlock("{ (memberSchema: Smithy.Schema, \(varName): inout \(swiftType), deserializer: any SmithySerialization.ShapeDeserializer) throws -> Void in", "}") { writer in
                         try writer.openBlock("switch memberSchema.index {", "}") { writer in
                             writer.dedent()
                             for (index, member) in try members(of: shape).enumerated() {
@@ -118,10 +118,11 @@ package struct DeserializeCodegen {
             guard let listShape = target as? ListShape else {
                 throw SymbolProviderError("Shape has type .list but is not a ListShape")
             }
+            let listMemberSwiftType = try ctx.symbolProvider.swiftType(shape: listShape.member.target)
             let isSparse = listShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "readSparseList" : "readList"
             try writer.openBlock(
-                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { deserializer in",
+                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { (deserializer: any SmithySerialization.ShapeDeserializer) throws -> \(listMemberSwiftType) in",
                 "}"
             ) { writer in
                 try writeDeserializeCall(
@@ -136,10 +137,11 @@ package struct DeserializeCodegen {
             guard let mapShape = target as? MapShape else {
                 throw SymbolProviderError("Shape has type .map but is not a MapShape")
             }
+            let mapValueSwiftType = try ctx.symbolProvider.swiftType(shape: mapShape.value.target)
             let isSparse = mapShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "readSparseMap" : "readMap"
             try writer.openBlock(
-                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { deserializer in",
+                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { (deserializer: any SmithySerialization.ShapeDeserializer) throws -> \(mapValueSwiftType) in",
                 "}"
             ) { writer in
                 try writeDeserializeCall(

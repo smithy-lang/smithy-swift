@@ -55,7 +55,8 @@ package struct SerializeCodegen {
                 try writer.openBlock(
                     "public static var writeConsumer: SmithySerialization.WriteStructConsumer<Self> {", "}"
                 ) { writer in
-                    try writer.openBlock("{ memberSchema, \(varName), serializer in", "}") { writer in
+                    let shapeSwiftType = try ctx.symbolProvider.swiftType(shape: shape)
+                    try writer.openBlock("{ (memberSchema: Smithy.Schema, \(varName): \(shapeSwiftType), serializer: any SmithySerialization.ShapeSerializer) throws -> Void in", "}") { writer in
                         writer.write("switch memberSchema.index {")
                         for (index, member) in try members(of: shape).enumerated() {
 
@@ -77,13 +78,13 @@ package struct SerializeCodegen {
                                     )
                                 }
                                 try writeSerializeCall(
-                                    writer: writer, shape: shape, member: member, schemaVarName: "memberSchema"
+                                    ctx: ctx, writer: writer, shape: shape, member: member, schemaVarName: "memberSchema"
                                 )
                             } else { // shape is a union
                                 let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
                                 writer.write("guard case .\(enumCaseName)(let value) = \(varName) else { break }")
                                 try writeSerializeCall(
-                                    writer: writer, shape: shape, member: member, schemaVarName: "memberSchema"
+                                    ctx: ctx, writer: writer, shape: shape, member: member, schemaVarName: "memberSchema"
                                 )
                             }
                             writer.dedent()
@@ -100,6 +101,7 @@ package struct SerializeCodegen {
     }
 
     private func writeSerializeCall(
+        ctx: GenerationContext,
         writer: SwiftWriter,
         shape: Shape,
         member: MemberShape,
@@ -111,13 +113,15 @@ package struct SerializeCodegen {
             guard let listShape = target as? ListShape else {
                 throw ModelError("Shape \(target.id) is type .\(target.type) but not a ListShape")
             }
+            let listMemberSwiftType = try ctx.symbolProvider.swiftType(shape: listShape.member.target)
             let isSparse = listShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "writeSparseList" : "writeList"
             try writer.openBlock(
-                "try serializer.\(methodName)(\(schemaVarName), value) { value, serializer in",
+                "try serializer.\(methodName)(\(schemaVarName), value) { (value: \(listMemberSwiftType), serializer: any SmithySerialization.ShapeSerializer) throws -> Void in",
                 "}"
             ) { writer in
                 try writeSerializeCall(
+                    ctx: ctx,
                     writer: writer,
                     shape: listShape,
                     member: listShape.member,
@@ -128,13 +132,15 @@ package struct SerializeCodegen {
             guard let mapShape = target as? MapShape else {
                 throw ModelError("Shape \(target.id) is type .map but not a MapShape")
             }
+            let mapValueSwiftType = try ctx.symbolProvider.swiftType(shape: mapShape.value.target)
             let isSparse = mapShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "writeSparseMap" : "writeMap"
             try writer.openBlock(
-                "try serializer.\(methodName)(\(schemaVarName), value) { value, serializer in",
+                "try serializer.\(methodName)(\(schemaVarName), value) { (value: \(mapValueSwiftType), serializer: any SmithySerialization.ShapeSerializer) throws -> Void in",
                 "}"
             ) { writer in
                 try writeSerializeCall(
+                    ctx: ctx,
                     writer: writer,
                     shape: mapShape,
                     member: mapShape.value,

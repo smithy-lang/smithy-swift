@@ -45,7 +45,7 @@ package struct SchemasCodegen {
         for shape in allShapes {
 
             // Render an internal-scoped, stored class instance in the global namespace for this schema.
-            try writer.openBlock("let \(shape.schemaVarName) = ", "") { writer in
+            try writer.openBlock("let \(shape.schemaVarName): Smithy.Schema = ", "") { writer in
                 try writeSchema(writer: writer, shape: shape, containerType: nil, index: nil)
                 writer.unwrite(",")
             }
@@ -53,8 +53,8 @@ package struct SchemasCodegen {
             // Render a getter function for this schema, to sidestep circular reference compile errors
             // when specifying a schema's target.
             // Function is private-scoped since it is only called by other schemas in this module.
-            try writer.write("private func get_\(shape.schemaVarName)() -> Smithy.Schema { \(shape.schemaVarName) }")
-            writer.write("")
+//            try writer.write("private func get_\(shape.schemaVarName)() -> Smithy.Schema { \(shape.schemaVarName) }")
+//            writer.write("")
         }
         writer.unwrite("\n")
         return writer.contents
@@ -106,7 +106,8 @@ package struct SchemasCodegen {
                 if target.id.namespace == "smithy.api" {
                     try writer.write("target: \(member.target.schemaVarName),")
                 } else {
-                    try writer.write("target: get_\(member.target.schemaVarName)(),")
+//                    try writer.write("target: get_\(member.target.schemaVarName)(),")
+                    try writer.write("target: \(member.target.schemaVarName),")
                 }
             }
 
