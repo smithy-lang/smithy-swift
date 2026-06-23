@@ -93,7 +93,6 @@ package struct SchemasCodegen {
                 if let containerType {
                     writer.write("containerType: .\(containerType),")
                 }
-                let target = try member.target
                 try writer.write("target: \(member.target.schemaVarName),")
             }
 
