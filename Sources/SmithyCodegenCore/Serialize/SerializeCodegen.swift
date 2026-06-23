@@ -19,6 +19,7 @@ package struct SerializeCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import Foundation")
+        writer.write("import protocol Smithy.Document")
         writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import enum Smithy.Prelude")
         writer.write("@_spi(SchemaBasedSerde)")

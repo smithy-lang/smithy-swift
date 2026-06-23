@@ -81,7 +81,7 @@ public struct SymbolProvider {
         case .timestamp:
             return "Foundation.Date"
         case .document:
-            return "Smithy.Document"
+            return "(any Smithy.Document)"
         case .service:
             return "\(settings.serviceName)Client"
         case .member, .operation, .resource:
