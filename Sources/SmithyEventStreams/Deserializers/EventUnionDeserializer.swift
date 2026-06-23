@@ -10,7 +10,7 @@ import struct Foundation.Date
 import enum Smithy.ClientError
 import struct Smithy.Document
 @_spi(SchemaBasedSerde)
-import class Smithy.Schema
+import struct Smithy.Schema
 import struct SmithyEventStreamsAPI.Message
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec

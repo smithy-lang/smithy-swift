@@ -6,7 +6,7 @@
 //
 
 @_spi(SchemaBasedSerde)
-import class Smithy.Schema
+import struct Smithy.Schema
 
 @_spi(SchemaBasedSerde)
 public struct Operation<Input: SerializableStruct, Output: DeserializableStruct> {

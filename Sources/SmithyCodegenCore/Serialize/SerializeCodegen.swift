@@ -21,7 +21,7 @@ package struct SerializeCodegen {
         writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import enum Smithy.Prelude")
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import class Smithy.Schema")
+        writer.write("import struct Smithy.Schema")
         writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import protocol SmithySerialization.SerializableStruct")
         writer.write("@_spi(SchemaBasedSerde)")
