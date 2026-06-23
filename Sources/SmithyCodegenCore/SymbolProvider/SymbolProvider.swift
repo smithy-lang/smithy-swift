@@ -29,7 +29,7 @@ public struct SymbolProvider {
         self.model = model
     }
 
-    public func swiftType(shape: Shape) throws -> String {
+    public func swiftType(shape: Shape, forParamUse: Bool = false) throws -> String {
         switch shape.type {
         case .structure, .union, .enum, .intEnum:
             let baseName = (service.renames[shape.id] ?? shape.id.name).capitalized.escapingReservedWords
@@ -81,7 +81,7 @@ public struct SymbolProvider {
         case .timestamp:
             return "Foundation.Date"
         case .document:
-            return "(any Smithy.Document)"
+            return forParamUse ? "(any Smithy.SmithyDocument)" : "Smithy.Document"
         case .service:
             return "\(settings.serviceName)Client"
         case .member, .operation, .resource:

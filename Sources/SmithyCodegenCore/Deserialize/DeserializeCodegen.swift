@@ -19,17 +19,10 @@ package struct DeserializeCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import Foundation")
-        writer.write("import enum Smithy.ByteStream")
-        writer.write("import struct Smithy.Document")
-        writer.write("import enum Smithy.Prelude")
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import class Smithy.Schema")
+        writer.write("import Smithy")
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import protocol SmithySerialization.DeserializableStruct")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import typealias SmithySerialization.ReadStructConsumer")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import protocol SmithySerialization.ShapeDeserializer")
+        writer.write("import SmithySerialization")
         writer.write("")
 
         // Get structs & unions that are part of an operation output.
@@ -58,9 +51,10 @@ package struct DeserializeCodegen {
                 }
                 writer.write("")
                 let consumerType = "SmithySerialization.ReadStructConsumer<Self>"
+                let paramSwiftType = try ctx.symbolProvider.swiftType(shape: shape, forParamUse: true)
                 try writer.openBlock(
                     "public static var readConsumer: \(consumerType) {", "}") { writer in
-                    try writer.openBlock("{ (memberSchema: Smithy.Schema, \(varName): inout \(swiftType), " +
+                    try writer.openBlock("{ (memberSchema: Smithy.Schema, \(varName): inout \(paramSwiftType), " +
                                            "deserializer: any SmithySerialization.ShapeDeserializer) throws -> Void in",
                                          "}") { writer in
                         try writer.openBlock("switch memberSchema.index {", "}") { writer in

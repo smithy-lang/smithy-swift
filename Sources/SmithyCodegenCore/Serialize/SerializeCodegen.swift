@@ -19,17 +19,10 @@ package struct SerializeCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import Foundation")
-        writer.write("import protocol Smithy.Document")
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import enum Smithy.Prelude")
+        writer.write("import Smithy")
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import class Smithy.Schema")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import protocol SmithySerialization.SerializableStruct")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import protocol SmithySerialization.ShapeSerializer")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import typealias SmithySerialization.WriteStructConsumer")
+        writer.write("import SmithySerialization")
         writer.write("")
 
         // Must generate SerializableStruct conformance for all of a service's
@@ -57,8 +50,8 @@ package struct SerializeCodegen {
                 try writer.openBlock(
                     "public static var writeConsumer: SmithySerialization.WriteStructConsumer<Self> {", "}"
                 ) { writer in
-                    let shapeSwiftType = try ctx.symbolProvider.swiftType(shape: shape)
-                    try writer.openBlock("{ (memberSchema: Smithy.Schema, \(varName): \(shapeSwiftType), " +
+                    let paramSwiftType = try ctx.symbolProvider.swiftType(shape: shape, forParamUse: true)
+                    try writer.openBlock("{ (memberSchema: Smithy.Schema, \(varName): \(paramSwiftType), " +
                                             "serializer: any SmithySerialization.ShapeSerializer) throws -> Void in",
                                          "}") { writer in
                         writer.write("switch memberSchema.index {")
