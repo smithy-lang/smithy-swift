@@ -63,7 +63,7 @@ package struct SchemasCodegen {
     private func writeSchema(writer: SwiftWriter, shape: Shape, containerType: ShapeType?, index: Int?) throws {
 
         // Open the initializer
-        try writer.openBlock("{ Smithy.Schema(", ") }(),") { writer in
+        try writer.openBlock("Smithy.Schema(", "),") { writer in
 
             // Write the id: and type: params.  All schemas will have this
             writer.write("id: \(shape.id.rendered),")
