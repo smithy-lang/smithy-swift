@@ -45,7 +45,7 @@ package struct DeserializeCodegen {
                 ) { writer in
                     let initializer = shape.type == .structure ? "()" : ".sdkUnknown(\"\")"
                     writer.write("var \(varName) = Self\(initializer)")
-                    let schemaVarName = try shape.schemaVarName
+                    let schemaVarName = try ctx.symbolProvider.schemaVarName(shape: shape)
                     writer.write("try deserializer.readStruct(\(schemaVarName), &\(varName))")
                     writer.write("return \(varName)")
                 }

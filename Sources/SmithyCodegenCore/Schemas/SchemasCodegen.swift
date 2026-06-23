@@ -42,19 +42,22 @@ package struct SchemasCodegen {
         // Combine shapes in order: service, operations sorted, models sorted
         let allShapes = [ctx.service] + sortedOperationShapes + sortedModelShapes
 
-        for shape in allShapes {
-
-            // Render an internal-scoped, stored class instance in the global namespace for this schema.
-            try writer.openBlock("let \(shape.schemaVarName): Smithy.Schema = ", "") { writer in
-                try writeSchema(writer: writer, shape: shape, containerType: nil, index: nil)
-                writer.unwrite(",")
+        try writer.openBlock("enum \(ctx.symbolProvider.schemaNamespace) {", "}") { writer in
+            for shape in allShapes {
+                // Render an internal-scoped, stored Schema class instance in the schema namespace for this operation.
+                let varName = try ctx.symbolProvider.schemaVarName(shape: shape, namespaced: false)
+                try writer.openBlock("static let \(varName): Smithy.Schema = ", "") { writer in
+                    try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
+                    writer.unwrite(",")
+                }
             }
+            writer.unwrite("\n")
         }
-        writer.unwrite("\n")
+
         return writer.contents
     }
 
-    private func writeSchema(writer: SwiftWriter, shape: Shape, containerType: ShapeType?, index: Int?) throws {
+    private func writeSchema(ctx: GenerationContext, writer: SwiftWriter, shape: Shape, containerType: ShapeType?, index: Int?) throws {
 
         // Open the initializer
         try writer.openBlock("Smithy.Schema(", "),") { writer in
@@ -83,7 +86,7 @@ package struct SchemasCodegen {
                 try writer.openBlock("members: [", "],") { writer in
                     for (index, member) in members.enumerated() {
                         // Make a recursive call to this method to render the member
-                        try writeSchema(writer: writer, shape: member, containerType: shape.type, index: index)
+                        try writeSchema(ctx: ctx, writer: writer, shape: member, containerType: shape.type, index: index)
                     }
                 }
             }
@@ -93,7 +96,7 @@ package struct SchemasCodegen {
                 if let containerType {
                     writer.write("containerType: .\(containerType),")
                 }
-                try writer.write("target: \(member.target.schemaVarName),")
+                try writer.write("target: \(ctx.symbolProvider.schemaVarName(shape: member.target, namespaced: false)),")
             }
 
             // Write the index: param if one was passed.  Only members will have an index.

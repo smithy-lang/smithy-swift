@@ -43,7 +43,7 @@ package struct SerializeCodegen {
                     "public func serialize(_ serializer: any SmithySerialization.ShapeSerializer) throws {",
                     "}"
                 ) { writer in
-                    let schemaVarName = try shape.schemaVarName
+                    let schemaVarName = try ctx.symbolProvider.schemaVarName(shape: shape)
                     writer.write("try serializer.writeStruct(\(schemaVarName), self)")
                 }
                 writer.write("")

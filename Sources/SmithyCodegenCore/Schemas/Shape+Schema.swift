@@ -8,20 +8,7 @@
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 
-extension Shape {
-
-    var schemaVarName: String {
-        get throws {
-            if id.namespace == "smithy.api" {
-                try id.preludeSchemaVarName
-            } else {
-                try id.schemaVarName
-            }
-        }
-    }
-}
-
-private extension ShapeID {
+extension ShapeID {
 
     var preludeSchemaVarName: String {
         get throws {
