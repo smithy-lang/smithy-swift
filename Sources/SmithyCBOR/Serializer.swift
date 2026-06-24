@@ -9,7 +9,7 @@ import class AwsCommonRuntimeKit.CBOREncoder
 import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SchemaBasedSerde)
-import struct Smithy.Schema
+import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct

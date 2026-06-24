@@ -9,7 +9,7 @@ import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.ISO8601DateFormatter
 @_spi(SchemaBasedSerde)
-import struct Smithy.Schema
+import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import struct Smithy.SensitiveTrait
 @_spi(SchemaBasedSerde)
