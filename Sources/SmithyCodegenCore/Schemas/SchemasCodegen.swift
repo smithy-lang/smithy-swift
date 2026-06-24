@@ -25,9 +25,7 @@ package struct SchemasCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import class Smithy.Schema")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import enum Smithy.Prelude")
+        writer.write("import Smithy")
         writer.write("")
 
         // Get all operations, sorted
@@ -44,17 +42,25 @@ package struct SchemasCodegen {
 
         try writer.openBlock("enum \(ctx.symbolProvider.schemaNamespace) {", "}") { writer in
             for shape in allShapes {
-                // Render an internal-scoped, stored Schema class instance in the schema namespace for this operation.
-                let varName = try ctx.symbolProvider.schemaVarName(shape: shape, namespaced: false)
-                try writer.openBlock("static let \(varName): Smithy.Schema = ", "") { writer in
-                    try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
-                    writer.unwrite(",")
+                try renderSchemaVar(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
+                guard let memberShapes = try (shape as? HasMembers)?.members else { continue }
+                for (memberIndex, memberShape) in memberShapes.enumerated() {
+                    try renderSchemaVar(ctx: ctx, writer: writer, shape: memberShape, containerType: shape.type, index: memberIndex)
                 }
             }
             writer.unwrite("\n")
         }
 
         return writer.contents
+    }
+
+    private func renderSchemaVar(ctx: GenerationContext, writer: SwiftWriter, shape: Shape, containerType: ShapeType?, index: Int?) throws {
+        // Render an internal-scoped, stored Schema class instance in the schema namespace for this operation.
+        let varName = try ctx.symbolProvider.schemaVarName(shape: shape, namespaced: false)
+        try writer.openBlock("static let \(varName): Smithy.Schema = ", "") { writer in
+            try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: containerType, index: index)
+            writer.unwrite(",")
+        }
     }
 
     private func writeSchema(ctx: GenerationContext, writer: SwiftWriter, shape: Shape, containerType: ShapeType?, index: Int?) throws {
@@ -84,9 +90,9 @@ package struct SchemasCodegen {
             // If there are any members, write the members param
             if !members.isEmpty {
                 try writer.openBlock("members: [", "],") { writer in
-                    for (index, member) in members.enumerated() {
-                        // Make a recursive call to this method to render the member
-                        try writeSchema(ctx: ctx, writer: writer, shape: member, containerType: shape.type, index: index)
+                    for member in members {
+                        let varName = try ctx.symbolProvider.schemaVarName(shape: member, namespaced: false)
+                        writer.write("\(varName),")
                     }
                 }
             }
@@ -152,9 +158,9 @@ extension ShapeID {
         let nameLiteral = name.literal
         if let member {
             let memberLiteral = member.literal
-            return ".init(\(namespaceLiteral), \(nameLiteral), \(memberLiteral))"
+            return "Smithy.ShapeID(\(namespaceLiteral), \(nameLiteral), \(memberLiteral))"
         } else {
-            return ".init(\(namespaceLiteral), \(nameLiteral))"
+            return "Smithy.ShapeID(\(namespaceLiteral), \(nameLiteral))"
         }
     }
 }
