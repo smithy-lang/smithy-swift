@@ -27,6 +27,8 @@ package struct SchemasCodegen {
         writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import class Smithy.Schema")
         writer.write("@_spi(SchemaBasedSerde)")
+        writer.write("import struct Smithy.ShapeID")
+        writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import enum Smithy.Prelude")
         writer.write("")
 
@@ -42,28 +44,35 @@ package struct SchemasCodegen {
         // Combine shapes in order: service, operations sorted, models sorted
         let allShapes = [ctx.service] + sortedOperationShapes + sortedModelShapes
 
+        // Render each shape's schema, followed by a separate schema for each of its members, if any
         for shape in allShapes {
+            // First, render a schema var for the shape itself
+            try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
 
-            // Render an internal-scoped, stored class instance in the global namespace for this schema.
-            try writer.openBlock("let \(shape.schemaVarName) = ", "") { writer in
-                try writeSchema(writer: writer, shape: shape, containerType: nil, index: nil)
-                writer.unwrite(",")
+            // Then render a schema var for each of the shape's members, if any
+            guard let memberShapes = try (shape as? HasMembers)?.members else { continue }
+            for (index, member) in memberShapes.enumerated() {
+                try writeSchema(ctx: ctx, writer: writer, shape: member, containerType: shape.type, index: index)
             }
-
-            // Render a getter function for this schema, to sidestep circular reference compile errors
-            // when specifying a schema's target.
-            // Function is private-scoped since it is only called by other schemas in this module.
-            try writer.write("private func get_\(shape.schemaVarName)() -> Smithy.Schema { \(shape.schemaVarName) }")
-            writer.write("")
         }
+        // Get rid of last trailing whitespace
         writer.unwrite("\n")
         return writer.contents
     }
 
-    private func writeSchema(writer: SwiftWriter, shape: Shape, containerType: ShapeType?, index: Int?) throws {
-
-        // Open the initializer
-        try writer.openBlock("{ Smithy.Schema(", ") }(),") { writer in
+    private func writeSchema(
+        ctx: GenerationContext,
+        writer: SwiftWriter,
+        shape: Shape,
+        containerType: ShapeType?,
+        index: Int?
+    ) throws {
+        // Assign to a global var & open the initializer.
+        // If the type is not made explicit, a schema can get a "circular reference" compile error
+        // when schema target causes a reference cycle.
+        // This must be a vagary of the Swift expression type checking system
+        let varName = try shape.schemaVarName
+        try writer.openBlock("let \(varName): Smithy.Schema = Smithy.Schema(", ")") { writer in
 
             // Write the id: and type: params.  All schemas will have this
             writer.write("id: \(shape.id.rendered),")
@@ -85,11 +94,12 @@ package struct SchemasCodegen {
             let members = try (shape as? HasMembers)?.members ?? []
 
             // If there are any members, write the members param
+            // Members are rendered to separate schema vars, and those vars are referenced here
+            // Not in-lining the member schemas reduces the expression type-checking burden at compile time
             if !members.isEmpty {
                 try writer.openBlock("members: [", "],") { writer in
-                    for (index, member) in members.enumerated() {
-                        // Make a recursive call to this method to render the member
-                        try writeSchema(writer: writer, shape: member, containerType: shape.type, index: index)
+                    for member in members {
+                        try writer.write("\(member.schemaVarName),")
                     }
                 }
             }
@@ -99,15 +109,7 @@ package struct SchemasCodegen {
                 if let containerType {
                     writer.write("containerType: .\(containerType),")
                 }
-
-                // When targeting prelude shape schemas, refer to them directly.  When targeting generated schemas,
-                // refer to them via the getter function to avoid a circular reference compile error.
-                let target = try member.target
-                if target.id.namespace == "smithy.api" {
-                    try writer.write("target: \(member.target.schemaVarName),")
-                } else {
-                    try writer.write("target: get_\(member.target.schemaVarName)(),")
-                }
+                try writer.write("target: \(member.target.schemaVarName),")
             }
 
             // Write the index: param if one was passed.  Only members will have an index.
@@ -119,6 +121,8 @@ package struct SchemasCodegen {
             // method param trailing comma.
             writer.unwrite(",")
         }
+        // Add whitespace before the next schema
+        writer.write("")
     }
 
     private func shapeType(for shape: Shape) throws -> ShapeType {
@@ -163,9 +167,9 @@ extension ShapeID {
         let nameLiteral = name.literal
         if let member {
             let memberLiteral = member.literal
-            return ".init(\(namespaceLiteral), \(nameLiteral), \(memberLiteral))"
+            return "Smithy.ShapeID(\(namespaceLiteral), \(nameLiteral), \(memberLiteral))"
         } else {
-            return ".init(\(namespaceLiteral), \(nameLiteral))"
+            return "Smithy.ShapeID(\(namespaceLiteral), \(nameLiteral))"
         }
     }
 }
