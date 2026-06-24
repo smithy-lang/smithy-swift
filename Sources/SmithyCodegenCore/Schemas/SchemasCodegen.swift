@@ -40,23 +40,21 @@ package struct SchemasCodegen {
         // Combine shapes in order: service, operations sorted, models sorted
         let allShapes = [ctx.service] + sortedOperationShapes + sortedModelShapes
 
-        try writer.openBlock("enum \(ctx.symbolProvider.schemaNamespace) {", "}") { writer in
-            for shape in allShapes {
-                try renderSchemaVar(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
-                guard let memberShapes = try (shape as? HasMembers)?.members else { continue }
-                for (memberIndex, memberShape) in memberShapes.enumerated() {
-                    try renderSchemaVar(
-                        ctx: ctx,
-                        writer: writer,
-                        shape: memberShape,
-                        containerType: shape.type,
-                        index: memberIndex
-                    )
-                }
+        // Render each shape's schema, followed by a separate schema for each of its members, if any
+        for shape in allShapes {
+            try renderSchemaVar(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
+            guard let memberShapes = try (shape as? HasMembers)?.members else { continue }
+            for (memberIndex, memberShape) in memberShapes.enumerated() {
+                try renderSchemaVar(
+                    ctx: ctx,
+                    writer: writer,
+                    shape: memberShape,
+                    containerType: shape.type,
+                    index: memberIndex
+                )
             }
-            writer.unwrite("\n")
         }
-
+        writer.unwrite("\n")
         return writer.contents
     }
 
@@ -68,8 +66,8 @@ package struct SchemasCodegen {
         index: Int?
     ) throws {
         // Render an internal-scoped, stored Schema class instance in the schema namespace for this operation.
-        let varName = try ctx.symbolProvider.schemaVarName(shape: shape, namespaced: false)
-        try writer.openBlock("static let \(varName): Smithy.Schema = ", "") { writer in
+        let varName = try ctx.symbolProvider.schemaVarName(shape: shape)
+        try writer.openBlock("let \(varName): Smithy.Schema = ", "") { writer in
             try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: containerType, index: index)
             writer.unwrite(",")
         }
@@ -108,7 +106,7 @@ package struct SchemasCodegen {
             if !members.isEmpty {
                 try writer.openBlock("members: [", "],") { writer in
                     for member in members {
-                        let varName = try ctx.symbolProvider.schemaVarName(shape: member, namespaced: false)
+                        let varName = try ctx.symbolProvider.schemaVarName(shape: member)
                         writer.write("\(varName),")
                     }
                 }
@@ -119,7 +117,7 @@ package struct SchemasCodegen {
                 if let containerType {
                     writer.write("containerType: .\(containerType),")
                 }
-                let memberSchemaVarName = try ctx.symbolProvider.schemaVarName(shape: member.target, namespaced: false)
+                let memberSchemaVarName = try ctx.symbolProvider.schemaVarName(shape: member.target)
                 writer.write("target: \(memberSchemaVarName),")
             }
 

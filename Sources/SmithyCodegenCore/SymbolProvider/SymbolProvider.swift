@@ -102,18 +102,11 @@ public struct SymbolProvider {
         try propertyName(shapeID: shapeID).lowercased().escapingReservedWords
     }
 
-    public func schemaVarName(shape: Shape, namespaced: Bool = true) throws -> String {
-        let namespace = try namespaced ? "\(schemaNamespace)." : ""
+    public func schemaVarName(shape: Shape) throws -> String {
         return if shape.id.namespace == "smithy.api" {
-            try "\(namespace)\(shape.id.preludeSchemaVarName)"
+            try "\(shape.id.preludeSchemaVarName)"
         } else {
-            try "\(namespace)\(shape.id.schemaVarName)"
-        }
-    }
-
-    var schemaNamespace: String {
-        get throws {
-            try swiftType(shape: service).appending("Schemas")
+            try "\(shape.id.schemaVarName)"
         }
     }
 
