@@ -45,7 +45,13 @@ package struct SchemasCodegen {
                 try renderSchemaVar(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
                 guard let memberShapes = try (shape as? HasMembers)?.members else { continue }
                 for (memberIndex, memberShape) in memberShapes.enumerated() {
-                    try renderSchemaVar(ctx: ctx, writer: writer, shape: memberShape, containerType: shape.type, index: memberIndex)
+                    try renderSchemaVar(
+                        ctx: ctx,
+                        writer: writer,
+                        shape: memberShape,
+                        containerType: shape.type,
+                        index: memberIndex
+                    )
                 }
             }
             writer.unwrite("\n")
@@ -54,7 +60,13 @@ package struct SchemasCodegen {
         return writer.contents
     }
 
-    private func renderSchemaVar(ctx: GenerationContext, writer: SwiftWriter, shape: Shape, containerType: ShapeType?, index: Int?) throws {
+    private func renderSchemaVar(
+        ctx: GenerationContext,
+        writer: SwiftWriter,
+        shape: Shape,
+        containerType: ShapeType?,
+        index: Int?
+    ) throws {
         // Render an internal-scoped, stored Schema class instance in the schema namespace for this operation.
         let varName = try ctx.symbolProvider.schemaVarName(shape: shape, namespaced: false)
         try writer.openBlock("static let \(varName): Smithy.Schema = ", "") { writer in
@@ -63,8 +75,13 @@ package struct SchemasCodegen {
         }
     }
 
-    private func writeSchema(ctx: GenerationContext, writer: SwiftWriter, shape: Shape, containerType: ShapeType?, index: Int?) throws {
-
+    private func writeSchema(
+        ctx: GenerationContext,
+        writer: SwiftWriter,
+        shape: Shape,
+        containerType: ShapeType?,
+        index: Int?
+    ) throws {
         // Open the initializer
         try writer.openBlock("Smithy.Schema(", "),") { writer in
 
@@ -102,7 +119,8 @@ package struct SchemasCodegen {
                 if let containerType {
                     writer.write("containerType: .\(containerType),")
                 }
-                try writer.write("target: \(ctx.symbolProvider.schemaVarName(shape: member.target, namespaced: false)),")
+                let memberSchemaVarName = try ctx.symbolProvider.schemaVarName(shape: member.target, namespaced: false)
+                writer.write("target: \(memberSchemaVarName),")
             }
 
             // Write the index: param if one was passed.  Only members will have an index.
