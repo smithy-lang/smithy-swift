@@ -55,6 +55,8 @@ package struct SchemasCodegen {
                 try writeSchema(ctx: ctx, writer: writer, shape: member, containerType: shape.type, index: index)
             }
         }
+        // Get rid of last trailing whitespace
+        writer.unwrite("\n")
         return writer.contents
     }
 
@@ -65,9 +67,10 @@ package struct SchemasCodegen {
         containerType: ShapeType?,
         index: Int?
     ) throws {
-        // Assign to a global var & open the initializer
-        // If the type is not explicit, a schema can get a "circular reference" error.
-        // Must be a vagary of the Swift expression type checking system
+        // Assign to a global var & open the initializer.
+        // If the type is not made explicit, a schema can get a "circular reference" compile error
+        // when schema target causes a reference cycle.
+        // This must be a vagary of the Swift expression type checking system
         let varName = try shape.schemaVarName
         try writer.openBlock("let \(varName): Smithy.Schema = Smithy.Schema(", ")") { writer in
 
@@ -113,6 +116,10 @@ package struct SchemasCodegen {
             if let index {
                 writer.write("index: \(index),")
             }
+
+            // Get rid of the trailing comma since Swift 5.x will fail to compile on a
+            // method param trailing comma.
+            writer.unwrite(",")
         }
         // Add whitespace before the next schema
         writer.write("")
