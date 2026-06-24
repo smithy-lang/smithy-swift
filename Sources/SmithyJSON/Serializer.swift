@@ -13,7 +13,7 @@ import struct Smithy.Document
 @_spi(SchemaBasedSerde)
 import struct Smithy.JSONNameTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.Schema
+import class Smithy.Schema
 @_spi(SchemaBasedSerde)
 import struct Smithy.TimestampFormatTrait
 @_spi(SchemaBasedSerde)

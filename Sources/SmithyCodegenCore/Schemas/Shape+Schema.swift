@@ -53,10 +53,12 @@ private extension ShapeID {
 
     var schemaVarName: String {
         get throws {
-            guard member == nil else { throw ModelError("Assigning member schema to a var") }
-            let namespacePortion = namespace.replacingOccurrences(of: ".", with: "_")
-            let namePortion = name
-            return "schema__\(namespacePortion)__\(namePortion)"
+            let namespaceSymbolized = namespace.replacingOccurrences(of: ".", with: "_")
+            if let member {
+                return "member__\(namespaceSymbolized)__\(name)__\(member)"
+            } else {
+                return "schema__\(namespaceSymbolized)__\(name)"
+            }
         }
     }
 }
