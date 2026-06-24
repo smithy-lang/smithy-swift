@@ -19,10 +19,17 @@ package struct DeserializeCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import Foundation")
+        writer.write("import enum Smithy.ByteStream")
+        writer.write("import struct Smithy.Document")
+        writer.write("import enum Smithy.Prelude")
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import Smithy")
+        writer.write("import class Smithy.Schema")
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import SmithySerialization")
+        writer.write("import protocol SmithySerialization.DeserializableStruct")
+        writer.write("@_spi(SchemaBasedSerde)")
+        writer.write("import typealias SmithySerialization.ReadStructConsumer")
+        writer.write("@_spi(SchemaBasedSerde)")
+        writer.write("import protocol SmithySerialization.ShapeDeserializer")
         writer.write("")
 
         // Get structs & unions that are part of an operation output.
@@ -45,18 +52,15 @@ package struct DeserializeCodegen {
                 ) { writer in
                     let initializer = shape.type == .structure ? "()" : ".sdkUnknown(\"\")"
                     writer.write("var \(varName) = Self\(initializer)")
-                    let schemaVarName = try ctx.symbolProvider.schemaVarName(shape: shape)
+                    let schemaVarName = try shape.schemaVarName
                     writer.write("try deserializer.readStruct(\(schemaVarName), &\(varName))")
                     writer.write("return \(varName)")
                 }
                 writer.write("")
                 let consumerType = "SmithySerialization.ReadStructConsumer<Self>"
-                let paramSwiftType = try ctx.symbolProvider.swiftType(shape: shape, forParamUse: true)
                 try writer.openBlock(
                     "public static var readConsumer: \(consumerType) {", "}") { writer in
-                    try writer.openBlock("{ (memberSchema: Smithy.Schema, \(varName): inout \(paramSwiftType), " +
-                                           "deserializer: any SmithySerialization.ShapeDeserializer) throws -> Void in",
-                                         "}") { writer in
+                    try writer.openBlock("{ memberSchema, \(varName), deserializer in", "}") { writer in
                         try writer.openBlock("switch memberSchema.index {", "}") { writer in
                             writer.dedent()
                             for (index, member) in try members(of: shape).enumerated() {
@@ -114,12 +118,10 @@ package struct DeserializeCodegen {
             guard let listShape = target as? ListShape else {
                 throw SymbolProviderError("Shape has type .list but is not a ListShape")
             }
-            let listMemberSwiftType = try ctx.symbolProvider.swiftType(shape: listShape.member.target)
             let isSparse = listShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "readSparseList" : "readList"
             try writer.openBlock(
-                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { (deserializer: " +
-                "any SmithySerialization.ShapeDeserializer) throws -> \(listMemberSwiftType) in",
+                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { deserializer in",
                 "}"
             ) { writer in
                 try writeDeserializeCall(
@@ -134,12 +136,10 @@ package struct DeserializeCodegen {
             guard let mapShape = target as? MapShape else {
                 throw SymbolProviderError("Shape has type .map but is not a MapShape")
             }
-            let mapValueSwiftType = try ctx.symbolProvider.swiftType(shape: mapShape.value.target)
             let isSparse = mapShape.hasTrait(SparseTrait.self)
             let methodName = isSparse ? "readSparseMap" : "readMap"
             try writer.openBlock(
-                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { (deserializer: " +
-                "any SmithySerialization.ShapeDeserializer) throws -> \(mapValueSwiftType) in",
+                "let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName)) { deserializer in",
                 "}"
             ) { writer in
                 try writeDeserializeCall(

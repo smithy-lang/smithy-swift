@@ -29,7 +29,7 @@ public struct SymbolProvider {
         self.model = model
     }
 
-    public func swiftType(shape: Shape, forParamUse: Bool = false) throws -> String {
+    public func swiftType(shape: Shape) throws -> String {
         switch shape.type {
         case .structure, .union, .enum, .intEnum:
             let baseName = (service.renames[shape.id] ?? shape.id.name).capitalized.escapingReservedWords
@@ -81,7 +81,7 @@ public struct SymbolProvider {
         case .timestamp:
             return "Foundation.Date"
         case .document:
-            return forParamUse ? "(any Smithy.SmithyDocument)" : "Smithy.Document"
+            return "Smithy.Document"
         case .service:
             return "\(settings.serviceName)Client"
         case .member, .operation, .resource:
@@ -100,14 +100,6 @@ public struct SymbolProvider {
 
     public func enumCaseName(shapeID: ShapeID) throws -> String {
         try propertyName(shapeID: shapeID).lowercased().escapingReservedWords
-    }
-
-    public func schemaVarName(shape: Shape) throws -> String {
-        return if shape.id.namespace == "smithy.api" {
-            try "\(shape.id.preludeSchemaVarName)"
-        } else {
-            try "\(shape.id.schemaVarName)"
-        }
     }
 
     private var modelNamespace: String {

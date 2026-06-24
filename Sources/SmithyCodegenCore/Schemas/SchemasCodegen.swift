@@ -66,7 +66,7 @@ package struct SchemasCodegen {
         index: Int?
     ) throws {
         // Render an internal-scoped, stored Schema class instance in the schema namespace for this operation.
-        let varName = try ctx.symbolProvider.schemaVarName(shape: shape)
+        let varName = try shape.schemaVarName
         try writer.openBlock("let \(varName): Smithy.Schema = ", "") { writer in
             try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: containerType, index: index)
             writer.unwrite(",")
@@ -106,8 +106,7 @@ package struct SchemasCodegen {
             if !members.isEmpty {
                 try writer.openBlock("members: [", "],") { writer in
                     for member in members {
-                        let varName = try ctx.symbolProvider.schemaVarName(shape: member)
-                        writer.write("\(varName),")
+                        try writer.write("\(member.schemaVarName),")
                     }
                 }
             }
@@ -117,8 +116,7 @@ package struct SchemasCodegen {
                 if let containerType {
                     writer.write("containerType: .\(containerType),")
                 }
-                let memberSchemaVarName = try ctx.symbolProvider.schemaVarName(shape: member.target)
-                writer.write("target: \(memberSchemaVarName),")
+                try writer.write("target: \(member.target.schemaVarName),")
             }
 
             // Write the index: param if one was passed.  Only members will have an index.

@@ -30,10 +30,10 @@ struct OperationsCodegen {
                 let output = try ctx.symbolProvider.swiftType(shape: operation.output)
                 try writer.openBlock("static var \(varName): \(type)<\(input), \(output)> {", "}") { writer in
                     try writer.openBlock(".init(", ")") { writer in
-                        writer.write("schema: \(try ctx.symbolProvider.schemaVarName(shape: operation)),")
-                        writer.write("serviceSchema: \(try ctx.symbolProvider.schemaVarName(shape: ctx.service)),")
-                        writer.write("inputSchema: \(try ctx.symbolProvider.schemaVarName(shape: operation.input)),")
-                        writer.write("outputSchema: \(try ctx.symbolProvider.schemaVarName(shape: operation.output)),")
+                        writer.write("schema: \(try operation.schemaVarName),")
+                        writer.write("serviceSchema: \(try ctx.service.schemaVarName),")
+                        writer.write("inputSchema: \(try operation.input.schemaVarName),")
+                        writer.write("outputSchema: \(try operation.output.schemaVarName),")
                         let operationName = try ctx.symbolProvider.operationMethodName(operation: operation)
                         let registryName = "\(operationName)ErrorTypeRegistry"
                         writer.write("errorTypeRegistry: \(clientSymbol).\(registryName)")

@@ -43,7 +43,7 @@ struct TypeRegistryCodegen {
                         try writer.openBlock("[", "]") { writer in
                             try errors.forEach { errorShape in
                                 try writer.openBlock(".init(", "),") { writer in
-                                    let schemaVarName = try ctx.symbolProvider.schemaVarName(shape: errorShape)
+                                    let schemaVarName = try errorShape.schemaVarName
                                     writer.write("schema: \(schemaVarName),")
                                     let swiftType = try ctx.symbolProvider.swiftType(shape: errorShape)
                                     writer.write("swiftType: \(swiftType).self")
