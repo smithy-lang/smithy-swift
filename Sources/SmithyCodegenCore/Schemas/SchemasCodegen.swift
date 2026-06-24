@@ -47,38 +47,15 @@ package struct SchemasCodegen {
         // Render each shape's schema, followed by a separate schema for each of its members, if any
         for shape in allShapes {
             // First, render a schema var for the shape itself
-            try writeSchemaVar(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
+            try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
 
             // Then render a schema var for each of the shape's members, if any
             guard let memberShapes = try (shape as? HasMembers)?.members else { continue }
-            for (memberIndex, memberShape) in memberShapes.enumerated() {
-                try writeSchemaVar(
-                    ctx: ctx,
-                    writer: writer,
-                    shape: memberShape,
-                    containerType: shape.type,
-                    index: memberIndex
-                )
+            for (index, member) in memberShapes.enumerated() {
+                try writeSchema(ctx: ctx, writer: writer, shape: member, containerType: shape.type, index: index)
             }
         }
-        writer.unwrite("\n")
         return writer.contents
-    }
-
-    private func writeSchemaVar(
-        ctx: GenerationContext,
-        writer: SwiftWriter,
-        shape: Shape,
-        containerType: ShapeType?,
-        index: Int?
-    ) throws {
-        // Render an internal-scoped, stored Schema class instance, stored in the global namespace,
-        // for this schema.
-        let varName = try shape.schemaVarName
-        try writer.openBlock("let \(varName): Smithy.Schema = ", "") { writer in
-            try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: containerType, index: index)
-            writer.unwrite(",")
-        }
     }
 
     private func writeSchema(
@@ -88,8 +65,11 @@ package struct SchemasCodegen {
         containerType: ShapeType?,
         index: Int?
     ) throws {
-        // Open the initializer
-        try writer.openBlock("Smithy.Schema(", "),") { writer in
+        // Assign to a global var & open the initializer
+        // If the type is not explicit, a schema can get a "circular reference" error.
+        // Must be a vagary of the Swift expression type checking system
+        let varName = try shape.schemaVarName
+        try writer.openBlock("let \(varName): Smithy.Schema = Smithy.Schema(", ")") { writer in
 
             // Write the id: and type: params.  All schemas will have this
             writer.write("id: \(shape.id.rendered),")
@@ -133,11 +113,9 @@ package struct SchemasCodegen {
             if let index {
                 writer.write("index: \(index),")
             }
-
-            // Get rid of the trailing comma since Swift 5.x will fail to compile on a
-            // method param trailing comma.
-            writer.unwrite(",")
         }
+        // Add whitespace before the next schema
+        writer.write("")
     }
 
     private func shapeType(for shape: Shape) throws -> ShapeType {
