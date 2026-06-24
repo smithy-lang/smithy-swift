@@ -25,7 +25,11 @@ package struct SchemasCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import Smithy")
+        writer.write("import class Smithy.Schema")
+        writer.write("@_spi(SchemaBasedSerde)")
+        writer.write("import struct Smithy.ShapeID")
+        writer.write("@_spi(SchemaBasedSerde)")
+        writer.write("import enum Smithy.Prelude")
         writer.write("")
 
         // Get all operations, sorted
@@ -42,10 +46,13 @@ package struct SchemasCodegen {
 
         // Render each shape's schema, followed by a separate schema for each of its members, if any
         for shape in allShapes {
-            try renderSchemaVar(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
+            // First, render a schema var for the shape itself
+            try writeSchemaVar(ctx: ctx, writer: writer, shape: shape, containerType: nil, index: nil)
+
+            // Then render a schema var for each of the shape's members, if any
             guard let memberShapes = try (shape as? HasMembers)?.members else { continue }
             for (memberIndex, memberShape) in memberShapes.enumerated() {
-                try renderSchemaVar(
+                try writeSchemaVar(
                     ctx: ctx,
                     writer: writer,
                     shape: memberShape,
@@ -58,14 +65,15 @@ package struct SchemasCodegen {
         return writer.contents
     }
 
-    private func renderSchemaVar(
+    private func writeSchemaVar(
         ctx: GenerationContext,
         writer: SwiftWriter,
         shape: Shape,
         containerType: ShapeType?,
         index: Int?
     ) throws {
-        // Render an internal-scoped, stored Schema class instance in the schema namespace for this operation.
+        // Render an internal-scoped, stored Schema class instance, stored in the global namespace,
+        // for this schema.
         let varName = try shape.schemaVarName
         try writer.openBlock("let \(varName): Smithy.Schema = ", "") { writer in
             try writeSchema(ctx: ctx, writer: writer, shape: shape, containerType: containerType, index: index)
@@ -103,6 +111,8 @@ package struct SchemasCodegen {
             let members = try (shape as? HasMembers)?.members ?? []
 
             // If there are any members, write the members param
+            // Members are rendered to separate schema vars, and those vars are referenced here
+            // Not in-lining the member schemas reduces the expression type-checking burden at compile time
             if !members.isEmpty {
                 try writer.openBlock("members: [", "],") { writer in
                     for member in members {
