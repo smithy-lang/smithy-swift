@@ -77,15 +77,13 @@ class PackageManifestGenerator(
         writer: SwiftWriter,
         dependency: SymbolDependency,
     ) {
-        writer.openBlock(".package(", "),") {
-            if (ctx.settings.localDevelopment) {
-                // Use local smithy-swift for local development
-                writer.write("path: \$S", "../../../../../../../../smithy-swift")
-            } else {
-                // For other generated clients, use stable, published smithy-swift
-                val url = dependency.expectProperty("url", String::class.java)
-                writer.write("url: \$S, exact: \$S", url, dependency.version)
-            }
+        if (ctx.settings.localDevelopment) {
+            // Use local smithy-swift for local development
+            writer.write(".package(path: \$S),", "../../../../../../../../smithy-swift")
+        } else {
+            // For other generated clients, use stable, published smithy-swift
+            val url = dependency.expectProperty("url", String::class.java)
+            writer.write(".package(url: \$S, exact: \$S),", url, dependency.version)
         }
     }
 
