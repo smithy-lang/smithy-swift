@@ -28,28 +28,34 @@ import protocol SmithySerialization.ShapeSerializer
 
 @_spi(SchemaBasedSerde)
 public final class Serializer: ShapeSerializer {
+    // ASCII (and UTF-8) values for significant characters in JSON
     private static let backspace: UInt8 = 8
-    private static let formFeed: UInt8 = 12
-    private static let lineFeed: UInt8 = 10
-    private static let cr: UInt8 = 13
     private static let tab: UInt8 = 9
-    private static let b: UInt8 = 62
-    private static let f: UInt8 = 66
+    private static let lineFeed: UInt8 = 10
+    private static let formFeed: UInt8 = 12
+    private static let cr: UInt8 = 13
+    private static let doubleQuote: UInt8 = 34
+    private static let forwardSlash: UInt8 = 47
+    private static let comma: UInt8 = 44
+    private static let colon: UInt8 = 58
+    private static let openingSquareBrace: UInt8 = 91
+    private static let backslash: UInt8 = 92
+    private static let closingSquareBrace: UInt8 = 93
+    private static let b: UInt8 = 98
+    private static let f: UInt8 = 102
     private static let n: UInt8 = 110
     private static let r: UInt8 = 114
     private static let t: UInt8 = 116
     private static let openingCurlyBrace: UInt8 = 123
     private static let closingCurlyBrace: UInt8 = 125
-    private static let openingSquareBrace: UInt8 = 91
-    private static let closingSquareBrace: UInt8 = 93
-    private static let comma: UInt8 = 44
-    private static let colon: UInt8 = 58
-    private static let doubleQuote: UInt8 = 34
-    private static let forwardSlash: UInt8 = 47
-    private static let backslash: UInt8 = 92
+
+    // ASCII (and UTF-8) sequences for multicharacter tokens used in JSON
     private static let trueBytes = "true".utf8
     private static let falseBytes = "false".utf8
     private static let nullBytes = "null".utf8
+    private static let nan = "\"NaN\"".utf8
+    private static let positiveInfinity = "\"Infinity\"".utf8
+    private static let negativeInfinity = "\"-Infinity\"".utf8
 
     let usesJSONNameTrait: Bool
     private var _data: Data
@@ -136,40 +142,15 @@ public final class Serializer: ShapeSerializer {
 
     public func writeLong(_ schema: Schema, _ value: Int) throws {
         try writeCommaIfNeeded()
-        let str = "\(value)"
-        _data.append(contentsOf: str.utf8)
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeFloat(_ schema: Schema, _ value: Float) throws {
-        guard !value.isNaN else {
-            try writeString(Smithy.Prelude.stringSchema, "NaN")
-            return
-        }
-        switch value {
-        case -Float.infinity:
-            try writeString(Smithy.Prelude.stringSchema, "-Infinity")
-        case Float.infinity:
-            try writeString(Smithy.Prelude.stringSchema, "Infinity")
-        default:
-            try writeCommaIfNeeded()
-            _data.append(contentsOf: "\(value)".utf8)
-        }
+        try writeFloatingPoint(schema, value)
     }
 
     public func writeDouble(_ schema: Schema, _ value: Double) throws {
-        guard !value.isNaN else {
-            try writeString(Smithy.Prelude.stringSchema, "NaN")
-            return
-        }
-        switch value {
-        case -Double.infinity:
-            try writeString(Smithy.Prelude.stringSchema, "-Infinity")
-        case Double.infinity:
-            try writeString(Smithy.Prelude.stringSchema, "Infinity")
-        default:
-            try writeCommaIfNeeded()
-            _data.append(contentsOf: "\(value)".utf8)
-        }
+        try writeFloatingPoint(schema, value)
     }
 
     public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
@@ -178,19 +159,7 @@ public final class Serializer: ShapeSerializer {
     }
 
     public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
-        guard !value.isNaN else {
-            try writeString(Smithy.Prelude.stringSchema, "NaN")
-            return
-        }
-        switch value {
-        case -Double.infinity:
-            try writeString(Smithy.Prelude.stringSchema, "-Infinity")
-        case Double.infinity:
-            try writeString(Smithy.Prelude.stringSchema, "Infinity")
-        default:
-            try writeCommaIfNeeded()
-            _data.append(contentsOf: "\(value)".utf8)
-        }
+        try writeFloatingPoint(schema, value)
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {
@@ -300,6 +269,22 @@ public final class Serializer: ShapeSerializer {
             try writeString(keySchema, key)
             _data.append(Self.colon)
             self._needsComma = true
+        }
+    }
+
+    private func writeFloatingPoint<FP: FloatingPoint>(_ schema: Schema, _ value: FP) throws {
+        try writeCommaIfNeeded()
+        guard !value.isNaN else {
+            _data.append(contentsOf: Self.nan)
+            return
+        }
+        switch value {
+        case -FP.infinity:
+            _data.append(contentsOf: Self.negativeInfinity)
+        case FP.infinity:
+            _data.append(contentsOf: Self.positiveInfinity)
+        default:
+            _data.append(contentsOf: "\(value)".utf8)
         }
     }
 }
