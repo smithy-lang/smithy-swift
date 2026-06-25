@@ -7,7 +7,6 @@ package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
-import software.amazon.smithy.swift.codegen.utils.hasSerdePerformanceTests
 
 class PackageManifestGenerator(
     val ctx: GenerationContext,
