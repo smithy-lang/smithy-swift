@@ -38,6 +38,7 @@ let package = Package(
         .library(name: "SmithyRetries", targets: ["SmithyRetries"]),
         .library(name: "SmithyReadWrite", targets: ["SmithyReadWrite"]),
         .library(name: "SmithyXML", targets: ["SmithyXML"]),
+        .library(name: "SmithyCBOR", targets: ["SmithyCBOR"]),
         .library(name: "SmithyJSON", targets: ["SmithyJSON"]),
         .library(name: "SmithyFormURL", targets: ["SmithyFormURL"]),
         .library(name: "SmithyTimestamps", targets: ["SmithyTimestamps"]),
@@ -332,14 +333,11 @@ var runtimeTargets: [PackageDescription.Target] {
 }
 
 var runtimeTestTargets: [PackageDescription.Target] {
-    let baseTests: [PackageDescription.Target] = [
+    return [
         .testTarget(
             name: "SmithyTests",
             dependencies: ["Smithy"]
         ),
-    ]
-    guard ProcessInfo.processInfo.environment["AWS_SWIFT_SDK_ENABLE_UNIT_TESTS"] != nil else { return baseTests }
-    return baseTests + [
         .testTarget(
             name: "ClientRuntimeTests",
             dependencies: [
@@ -378,10 +376,6 @@ var runtimeTestTargets: [PackageDescription.Target] {
         .testTarget(
             name: "SmithyHTTPAuthAPITests",
             dependencies: ["SmithyHTTPAuthAPI", "Smithy", "ClientRuntime"]
-        ),
-        .testTarget(
-            name: "SmithyJSONTests",
-            dependencies: ["SmithySerialization", "SmithyJSON", "ClientRuntime", "SmithyTestUtil", "AWSJSONTestSDK"]
         ),
         .testTarget(
             name: "SmithyFormURLTests",
@@ -423,47 +417,6 @@ var runtimeTestTargets: [PackageDescription.Target] {
             name: "SmithyCodegenCoreTests",
             dependencies: ["SmithyCodegenCore"],
             resources: [ .process("Resources") ]
-        ),
-        .testTarget(
-            name: "SmithyCBORTests",
-            dependencies: [
-                "Smithy",
-                "SmithyCBOR",
-                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift"),
-                "RPCv2CBORTestSDK",
-            ]
-        ),
-        .target(
-            name: "AWSJSONTestSDK",
-            dependencies: [
-                "ClientRuntime",
-                "SmithyHTTPAPI",
-                "SmithyHTTPAuthAPI",
-                "SmithyIdentity",
-                "SmithyAWSJSON",
-                "SmithyRetries",
-                "SmithyRetriesAPI",
-            ],
-            path: "test-sdks/build/smithyprojections/test-sdks/awsjson/swift-codegen/AWSJSONTestSDK/Sources/AWSJSONTestSDK",
-            plugins: ["SmithyCodeGeneratorPlugin"]
-        ),
-        .target(
-            name: "RPCv2CBORTestSDK",
-            dependencies: [
-                "ClientRuntime",
-                "SmithyHTTPAPI",
-                "SmithyHTTPAuthAPI",
-                "SmithyIdentity",
-                "SmithyRPCv2CBOR",
-                "SmithyRetries",
-                "SmithyRetriesAPI",
-            ],
-            path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/RPCv2CBORTestSDK/Sources/RPCv2CBORTestSDK",
-            plugins: ["SmithyCodeGeneratorPlugin"]
-        ),
-        .testTarget(
-            name: "SmithySerializationTests",
-            dependencies: ["SmithySerialization", "RPCv2CBORTestSDK"]
         ),
     ]
 }

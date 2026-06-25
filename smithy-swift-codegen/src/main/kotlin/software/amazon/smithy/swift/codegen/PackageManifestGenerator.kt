@@ -78,14 +78,13 @@ class PackageManifestGenerator(
         dependency: SymbolDependency,
     ) {
         writer.openBlock(".package(", "),") {
-            if (ctx.model.serviceShapes.any { it.hasSerdePerformanceTests(ctx.model) }) {
-                // For serde performance tests, use local smithy-swift
+            if (ctx.settings.localDevelopment) {
+                // Use local smithy-swift for local development
                 writer.write("path: \$S", "../../../../../../../../smithy-swift")
             } else {
                 // For other generated clients, use stable, published smithy-swift
                 val url = dependency.expectProperty("url", String::class.java)
-                writer.write("url: \$S,", url)
-                writer.write("exact: \$S", dependency.version)
+                writer.write("url: \$S, exact: \$S", url, dependency.version)
             }
         }
     }
