@@ -59,7 +59,7 @@ let package = Package(
                 .product(name: "Smithy", package: "smithy-swift"),
                 .product(name: "SmithyWaitersAPI", package: "smithy-swift"),
                 .product(name: "WaitersTestSDK", package: "WaitersTestSDK"),
-            ],
+            ]
         ),
     ]
 )
