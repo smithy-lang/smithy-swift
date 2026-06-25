@@ -74,9 +74,15 @@ jobs:
       - name: Generate test SDKs
         run: ./scripts/codegen.sh
       - name: Build & Run smithy-swift Swift Unit Tests
-        env:
-          AWS_SWIFT_SDK_ENABLE_UNIT_TESTS: 1
         run: |
+          set -o pipefail && \
+          NSUnbufferedIO=YES xcodebuild \
+            -scheme smithy-swift-Package \
+            -destination '${{ matrix.destination }}' \
+            test 2>&1 \
+            | xcbeautify
+      - name: Build & Run Swift Codegen Tests
+          cd test-sdks && \
           set -o pipefail && \
           NSUnbufferedIO=YES xcodebuild \
             -scheme smithy-swift-Package \
@@ -220,9 +226,9 @@ jobs:
       - name: Generate test SDKs
         run: ./scripts/codegen.sh
       - name: Build & Run Swift Unit Tests
-        env:
-          AWS_SWIFT_SDK_ENABLE_UNIT_TESTS: 1
         run: swift test
+      - name: Build & Run Swift Codegen Tests
+        run cd test-sdks && swift test
 
   linux-ci-complete:
     needs: linux-ci
