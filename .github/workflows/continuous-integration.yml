@@ -82,6 +82,7 @@ jobs:
             test 2>&1 \
             | xcbeautify
       - name: Build & Run Swift Codegen Tests
+        run: |
           cd test-sdks && \
           set -o pipefail && \
           NSUnbufferedIO=YES xcodebuild \
