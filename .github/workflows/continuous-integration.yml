@@ -228,7 +228,7 @@ jobs:
       - name: Build & Run Swift Unit Tests
         run: swift test
       - name: Build & Run Swift Codegen Tests
-        run cd test-sdks && swift test
+        run: cd test-sdks && swift test
 
   linux-ci-complete:
     needs: linux-ci
