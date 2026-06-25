@@ -461,20 +461,6 @@ var runtimeTestTargets: [PackageDescription.Target] {
             path: "test-sdks/build/smithyprojections/test-sdks/rpcv2cbor/swift-codegen/RPCv2CBORTestSDK/Sources/RPCv2CBORTestSDK",
             plugins: ["SmithyCodeGeneratorPlugin"]
         ),
-        .target(
-            name: "WaitersTestSDK",
-            dependencies: [
-                "ClientRuntime",
-                "SmithyHTTPAPI",
-                "SmithyHTTPAuthAPI",
-                "SmithyIdentity",
-                "SmithyRPCv2CBOR",
-                "SmithyRetries",
-                "SmithyRetriesAPI",
-            ],
-            path: "test-sdks/build/smithyprojections/test-sdks/waiters/swift-codegen/WaitersTestSDK/Sources/WaitersTestSDK",
-            plugins: ["SmithyCodeGeneratorPlugin"]
-        ),
         .testTarget(
             name: "SmithySerializationTests",
             dependencies: ["SmithySerialization", "RPCv2CBORTestSDK"]
