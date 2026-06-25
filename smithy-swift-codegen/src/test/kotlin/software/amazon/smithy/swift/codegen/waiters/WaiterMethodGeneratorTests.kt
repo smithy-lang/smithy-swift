@@ -30,7 +30,6 @@ class WaiterMethodGeneratorTests {
     @Test
     fun testRendersCorrectWaitersSwiftFileContentForServiceWithWaiters() {
         val context = setupTests("waiters.smithy", "com.test#TestHasWaiters")
-        println(context.manifest.files)
         val contents = getFileContents(context.manifest, "/Sources/Test/Waiters.swift")
         val expected = """
 /// Initiates waiting for the BucketExists event on the headBucket operation.

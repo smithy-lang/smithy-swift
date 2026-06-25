@@ -20,11 +20,11 @@ import protocol SmithySerialization.ShapeSerializer
 struct Codec: SmithySerialization.Codec {
 
     func makeSerializer() throws -> any ShapeSerializer {
-        SmithyJSON.Serializer()
+        SmithyJSON.Serializer(usesJSONNameTrait: false) // AWSJSON 1.0 & 1.1 do not utilize jsonName trait
     }
 
     func makeDeserializer(data: Data) throws -> any ShapeDeserializer {
-        try SmithyJSON.Deserializer(data: data)
+        try SmithyJSON.Deserializer(usesJSONNameTrait: false, data: data)
     }
 
 }

@@ -19,10 +19,12 @@ import protocol SmithySerialization.ShapeDeserializer
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
 @_spi(SchemaBasedSerde)
-public class Deserializer: ShapeDeserializer {
+public final class Deserializer: ShapeDeserializer {
     let value: JSONValue
+    let usesJSONNameTrait: Bool
 
-    public init(data: Data) throws {
+    public init(usesJSONNameTrait: Bool, data: Data) throws {
+        self.usesJSONNameTrait = usesJSONNameTrait
         guard !data.isEmpty else {
             self.value = .object([:])
             return
@@ -32,30 +34,31 @@ public class Deserializer: ShapeDeserializer {
         self.value = node
     }
 
-    init(node: JSONValue) {
+    init(usesJSONNameTrait: Bool, node: JSONValue) {
+        self.usesJSONNameTrait = usesJSONNameTrait
         self.value = node
     }
 
     public func readStruct<T>(_ schema: Schema, _ value: inout T) throws where T: DeserializableStruct {
         guard case .object(let object) = self.value else { throw SerializerError("Expected object") }
-        let members = schema.members
+        let memberSchemas = schema.members
 
         // Pre-fill members that have the required trait but no default with a zero/false/empty value.
-        for member in members where member.hasTrait(RequiredTrait.self) && !member.hasTrait(DefaultTrait.self) {
+        for member in memberSchemas where member.hasTrait(RequiredTrait.self) && !member.hasTrait(DefaultTrait.self) {
             let deserializer: Deserializer
             switch member.target!.type {
             case .structure, .union, .map:
-                deserializer = Deserializer(node: .object([:]))
+                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .object([:]))
             case .list, .set:
-                deserializer = Deserializer(node: .list([]))
+                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .list([]))
             case .string:
-                deserializer = Deserializer(node: .string(""))
+                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .string(""))
             case .byte, .short, .integer, .long, .bigInteger, .float, .double, .bigDecimal, .timestamp:
-                deserializer = Deserializer(node: .number(0))
+                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .number(0))
             case .boolean:
-                deserializer = Deserializer(node: .bool(false))
+                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .bool(false))
             case .blob:
-                deserializer = Deserializer(node: .string(""))
+                deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: .string(""))
             default:
                 continue
             }
@@ -64,20 +67,20 @@ public class Deserializer: ShapeDeserializer {
 
         // Iterate over JSON elements of object & call consumer with the appropriate member.
         for (key, val) in object where val != .null { // skip null values in structures
-            guard let memberSchema = members.first(where: { $0.id.member == key }) else { continue }
-            let memberDeserializer = Deserializer(node: val)
+            guard let memberSchema = try match(key: key, memberSchemas: memberSchemas) else { continue }
+            let memberDeserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: val)
             try T.readConsumer(memberSchema, &value, memberDeserializer)
         }
     }
 
     public func readList<E>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> E) throws -> [E] {
         guard case .list(let list) = value else { throw SerializerError("Expected list") }
-        return try list.map { try consumer(Deserializer(node: $0)) }
+        return try list.map { try consumer(Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: $0)) }
     }
 
     public func readMap<V>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> V) throws -> [String: V] {
         guard case .object(let map) = value else { throw SerializerError("Expected map") }
-        return try map.mapValues { try consumer(Deserializer(node: $0)) }
+        return try map.mapValues { try consumer(Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: $0)) }
     }
 
     public func readBoolean(_ schema: Schema) throws -> Bool {
@@ -169,13 +172,13 @@ public class Deserializer: ShapeDeserializer {
         switch value {
         case .object(let object):
             let documentObject = try object.mapValues { value in
-                let deserializer = Deserializer(node: value)
+                let deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: value)
                 return try deserializer.readDocument(schema)
             }
             return Document(StringMapDocument(value: documentObject))
         case .list(let list):
             let documentList = try list.map { value in
-                let deserializer = Deserializer(node: value)
+                let deserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: value)
                 return try deserializer.readDocument(schema)
             }
             return Document(ListDocument(value: documentList))
@@ -237,6 +240,17 @@ public class Deserializer: ShapeDeserializer {
         }
     }
 
+    // MARK: - Private methods
+
+    private func match(key: String, memberSchemas: [Schema]) throws -> Schema? {
+        try memberSchemas.first { memberSchema in
+            if usesJSONNameTrait, let jsonNameTrait = try memberSchema.getTrait(JSONNameTrait.self) {
+                jsonNameTrait.name == key
+            } else {
+                memberSchema.id.member == key
+            }
+        }
+    }
 }
 
 extension SerializerError {

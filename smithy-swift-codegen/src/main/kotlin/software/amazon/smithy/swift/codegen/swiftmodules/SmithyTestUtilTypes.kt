@@ -7,8 +7,11 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 object SmithyTestUtilTypes {
     val TestInitializer = runtimeSymbol("TestInitializer", SwiftDeclaration.ENUM)
     val TestBaseError = runtimeSymbol("TestBaseError", SwiftDeclaration.STRUCT)
+    val TestCheckError = runtimeSymbol("TestCheckError", SwiftDeclaration.ENUM)
     val dummyIdentityResolver = runtimeSymbol("dummyIdentityResolver", SwiftDeclaration.FUNC)
     val ProtocolTestRetryStrategyOptions = runtimeSymbol("ProtocolTestRetryStrategyOptions", SwiftDeclaration.ENUM)
+    val SerdeBenchmarker = runtimeSymbol("SerdeBenchmarker", SwiftDeclaration.STRUCT)
+    val SerdeBenchmarkTelemetryProvider = runtimeSymbol("SerdeBenchmarkTelemetryProvider", SwiftDeclaration.CLASS)
 }
 
 private fun runtimeSymbol(

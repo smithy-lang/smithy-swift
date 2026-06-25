@@ -14,24 +14,25 @@ import software.amazon.smithy.swift.codegen.SwiftDependency
 import software.amazon.smithy.swift.codegen.TestContext
 import software.amazon.smithy.swift.codegen.defaultSettings
 import software.amazon.smithy.swift.codegen.protocolgeneratormocks.MockHTTPAWSJson11ProtocolGenerator
+import kotlin.io.path.Path
 
 class PackageManifestGeneratorTests {
     private val testContext = setupTests("simple-service-with-operation-and-dependency.smithy", "smithy.example#Example")
 
     @Test
     fun `it starts with a swift-tools-version statement`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString(Path("MockSDK/Package.swift")).get()
         assertNotNull(packageManifest)
         packageManifest.shouldStartWith("// swift-tools-version: 5.5.0")
     }
 
     @Test
     fun `it renders package manifest file with macOS and iOS platforms block`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
         val expected = """
     platforms: [
-        .macOS(.v12), .iOS(.v13)
+        .macOS(.v12), .iOS(.v13), .tvOS(.v13), .watchOS(.v6)
     ],
 """
         packageManifest.shouldContain(expected)
@@ -39,7 +40,7 @@ class PackageManifestGeneratorTests {
 
     @Test
     fun `it renders package manifest file with single library in product block`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
         val expected = """
     products: [
@@ -51,7 +52,7 @@ class PackageManifestGeneratorTests {
 
     @Test
     fun `it renders package manifest file with dependencies`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
         val expected = """
     dependencies: [
@@ -66,7 +67,7 @@ class PackageManifestGeneratorTests {
 
     @Test
     fun `it renders package manifest file with target and test target`() {
-        val packageManifest = testContext.manifest.getFileString("Package.swift").get()
+        val packageManifest = testContext.manifest.getFileString("MockSDK/Package.swift").get()
         assertNotNull(packageManifest)
         val expected = """
     targets: [

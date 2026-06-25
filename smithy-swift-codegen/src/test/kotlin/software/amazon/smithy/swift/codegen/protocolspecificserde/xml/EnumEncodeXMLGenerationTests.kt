@@ -13,7 +13,7 @@ class EnumEncodeXMLGenerationTests {
     @Test
     fun `001 encode enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlEnumsInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlEnumsInput+Write.swift")
         val expectedContents = """
 extension XmlEnumsInput {
 
@@ -32,7 +32,7 @@ extension XmlEnumsInput {
     @Test
     fun `002 encode nested enum`() {
         val context = setupTests("Isolated/Restxml/xml-enums.smithy", "aws.protocoltests.restxml#RestXml")
-        val contents = getFileContents(context.manifest, "Sources/RestXml/models/XmlEnumsNestedInput+Write.swift")
+        val contents = getFileContents(context.manifest, "RestXml/Sources/RestXml/models/XmlEnumsNestedInput+Write.swift")
         val expectedContents = """
 extension XmlEnumsNestedInput {
 

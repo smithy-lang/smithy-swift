@@ -15,6 +15,7 @@ import software.amazon.smithy.swift.codegen.model.getTrait
 import software.amazon.smithy.swift.codegen.swiftmodules.ClientRuntimeTypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SmithyHTTPAPITypes
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 /**
  * Generates a per/service endpoint resolver (internal to the generated SDK)
@@ -26,7 +27,8 @@ class EndpointResolverGenerator(
         val ruleSetNode = ctx.service.getTrait<EndpointRuleSetTrait>()?.ruleSet
         val ruleSet = if (ruleSetNode != null) EndpointRuleSet.fromNode(ruleSetNode) else null
 
-        ctx.delegator.useFileWriter("Sources/${ctx.settings.moduleName}/Endpoints.swift") {
+        val filename = SDKFileUtils(ctx.settings).sourcesDirFilePath("Endpoints")
+        ctx.delegator.useFileWriter(filename) {
             renderResolverProtocol(it, ctx.settings.visibility)
             it.write("")
             renderResolver(it, ruleSet)

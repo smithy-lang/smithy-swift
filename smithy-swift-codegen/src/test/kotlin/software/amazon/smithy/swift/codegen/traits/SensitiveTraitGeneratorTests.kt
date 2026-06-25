@@ -18,7 +18,7 @@ class SensitiveTraitGeneratorTests {
         val manifest = setupTest()
         var extensionWithSensitiveTrait =
             manifest
-                .getFileString("Sources/example/models/SensitiveTraitInRequestInput+CustomDebugStringConvertible.swift")
+                .getFileString("example/Sources/example/models/SensitiveTraitInRequestInput+CustomDebugStringConvertible.swift")
                 .get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents = """
@@ -35,7 +35,7 @@ extension SensitiveTraitInRequestInput: Swift.CustomDebugStringConvertible {
         val manifest = setupTest()
         var extensionWithSensitiveTrait =
             manifest
-                .getFileString("Sources/example/models/SensitiveTraitInRequestOutput+CustomDebugStringConvertible.swift")
+                .getFileString("example/Sources/example/models/SensitiveTraitInRequestOutput+CustomDebugStringConvertible.swift")
                 .get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents = """
@@ -53,7 +53,7 @@ extension SensitiveTraitInRequestOutput: Swift.CustomDebugStringConvertible {
         val manifest = setupTest()
         var extensionWithSensitiveTrait =
             manifest
-                .getFileString("Sources/example/models/SensitiveTraitTestRequestOutput+CustomDebugStringConvertible.swift")
+                .getFileString("example/Sources/example/models/SensitiveTraitTestRequestOutput+CustomDebugStringConvertible.swift")
                 .get()
         extensionWithSensitiveTrait.shouldSyntacticSanityCheck()
         val expectedContents = """

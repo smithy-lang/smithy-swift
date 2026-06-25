@@ -17,7 +17,7 @@ import software.amazon.smithy.swift.codegen.integration.middlewares.handlers.Mid
 import software.amazon.smithy.swift.codegen.model.isBoxed
 import software.amazon.smithy.swift.codegen.model.toMemberNames
 import software.amazon.smithy.swift.codegen.swiftmodules.SwiftTypes
-import software.amazon.smithy.swift.codegen.utils.ModelFileUtils
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
 
 class HttpUrlPathProvider(
     private val ctx: ProtocolGenerator.GenerationContext,
@@ -36,7 +36,7 @@ class HttpUrlPathProvider(
             val requestBindings = httpBindingResolver.requestBindings(op)
             val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
             val inputSymbol = MiddlewareShapeUtils.inputSymbol(ctx.symbolProvider, ctx.model, op)
-            val filename = ModelFileUtils.filename(ctx.settings, "${inputSymbol.name}+UrlPathProvider")
+            val filename = SDKFileUtils(ctx.settings).modelFilePath("${inputSymbol.name}+UrlPathProvider")
             val urlPathMiddlewareSymbol =
                 Symbol
                     .builder()
@@ -121,8 +121,10 @@ class HttpUrlPathProvider(
                     writer.openBlock("guard let $labelMemberName = value.$labelMemberName else {", "}") {
                         writer.write("return nil")
                     }
+                    resolvedURIComponents.add("\\($formattedLabel)")
+                } else {
+                    resolvedURIComponents.add("\\(value.$formattedLabel)")
                 }
-                resolvedURIComponents.add("\\($formattedLabel)")
             } else {
                 resolvedURIComponents.add(it.content)
             }

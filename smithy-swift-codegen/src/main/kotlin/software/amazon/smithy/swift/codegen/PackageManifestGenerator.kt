@@ -6,12 +6,15 @@ package software.amazon.smithy.swift.codegen
 
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.core.GenerationContext
+import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
+import software.amazon.smithy.swift.codegen.utils.hasSerdePerformanceTests
 
 class PackageManifestGenerator(
     val ctx: GenerationContext,
 ) {
     fun writePackageManifest(dependencies: List<SymbolDependency>) {
-        ctx.writerDelegator().useFileWriter("Package.swift") { writer ->
+        val filename = SDKFileUtils(ctx.settings).rootDirFilePath("Package")
+        ctx.writerDelegator().useFileWriter(filename) { writer ->
             writer.write("// swift-tools-version: \$L", ctx.settings.swiftVersion)
             writer.write("")
             writer.write("import PackageDescription")
@@ -21,7 +24,7 @@ class PackageManifestGenerator(
                 writer.write("name: \$S,", ctx.settings.moduleName)
 
                 writer.openBlock("platforms: [", "],") {
-                    writer.write(".macOS(.v12), .iOS(.v13)")
+                    writer.write(".macOS(.v12), .iOS(.v13), .tvOS(.v13), .watchOS(.v6)")
                 }
 
                 writer.openBlock("products: [", "],") {
@@ -75,9 +78,15 @@ class PackageManifestGenerator(
         dependency: SymbolDependency,
     ) {
         writer.openBlock(".package(", "),") {
-            val url = dependency.expectProperty("url", String::class.java)
-            writer.write("url: \$S,", url)
-            writer.write("exact: \$S", dependency.version)
+            if (ctx.model.serviceShapes.any { it.hasSerdePerformanceTests(ctx.model) }) {
+                // For serde performance tests, use local smithy-swift
+                writer.write("path: \$S", "../../../../../../../../smithy-swift")
+            } else {
+                // For other generated clients, use stable, published smithy-swift
+                val url = dependency.expectProperty("url", String::class.java)
+                writer.write("url: \$S,", url)
+                writer.write("exact: \$S", dependency.version)
+            }
         }
     }
 
