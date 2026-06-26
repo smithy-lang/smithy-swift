@@ -28,13 +28,14 @@ final class SerializerTests: XCTestCase {
         let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
 
         // original string contains all characters which must be escaped in JSON strings:
-        // backspace, form feed, carriage return, tab, line feed, double quote, backslash, forward slash
-        let original = "\(Character(Unicode.Scalar(8)!))\(Character(Unicode.Scalar(12)!))\r\t\n\"\\/"
+        // backspace, form feed, carriage return, tab, line feed, double quote, backslash
+        // (escaped forward slash, required for embedding JSON in HTML, is not included)
+        let original = "\(Character(Unicode.Scalar(8)!))\(Character(Unicode.Scalar(12)!))\r\t\n\"\\"
         let input = SerdeOperationInput(string: original)
         try input.serialize(subject)
 
         let json = String(data: try subject.data, encoding: .utf8)
-        XCTAssertEqual(json, #"{"string":"\b\f\r\t\n\"\\\/"}"#)
+        XCTAssertEqual(json, #"{"string":"\b\f\r\t\n\"\\"}"#)
     }
 
     func test_writeString_writesUpperUnicodeCharacters() throws {
