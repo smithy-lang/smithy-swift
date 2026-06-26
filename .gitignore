@@ -21,6 +21,7 @@ workspace.xml
 local.properties
 
 # Swift/SPM config & temp
+.swiftpm
 .build/
 /Packages
 Package.resolved

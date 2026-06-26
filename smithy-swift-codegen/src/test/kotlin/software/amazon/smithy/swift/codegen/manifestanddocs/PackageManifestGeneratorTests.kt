@@ -56,10 +56,7 @@ class PackageManifestGeneratorTests {
         assertNotNull(packageManifest)
         val expected = """
     dependencies: [
-        .package(
-            url: "https://github.com/smithy-lang/smithy-swift",
-            exact: "0.0.1"
-        ),
+        .package(url: "https://github.com/smithy-lang/smithy-swift", exact: "0.0.1"),
     ],
 """
         packageManifest.shouldContain(expected)

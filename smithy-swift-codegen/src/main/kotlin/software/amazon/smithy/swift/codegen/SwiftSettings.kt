@@ -57,6 +57,7 @@ class SwiftSettings(
     val internalClient: Boolean,
     val operations: List<String>,
     val modelPath: String?,
+    val localDevelopment: Boolean,
 ) {
     companion object {
         const val SERVICE = "service"
@@ -76,6 +77,7 @@ class SwiftSettings(
         const val INTERNAL_CLIENT = "internalClient"
         const val OPERATIONS = "operations"
         const val MODEL_PATH = "modelPath"
+        const val LOCAL_DEVELOPMENT = "localDevelopment"
 
         private val LOGGER: Logger = Logger.getLogger(SwiftSettings::class.java.name)
 
@@ -108,6 +110,7 @@ class SwiftSettings(
                     INTERNAL_CLIENT,
                     OPERATIONS,
                     MODEL_PATH,
+                    LOCAL_DEVELOPMENT,
                 ),
             )
 
@@ -136,6 +139,7 @@ class SwiftSettings(
             val internalClient = config.getBooleanMemberOrDefault(INTERNAL_CLIENT, false)
             val operations = config.getArrayMember(OPERATIONS).getOrElse { Node.arrayNode() }.map { it.expectStringNode().value }
             val modelPath = config.getStringMember(MODEL_PATH).getOrNull()?.toString()
+            val localDevelopment = config.getBooleanMemberOrDefault(LOCAL_DEVELOPMENT)
 
             return SwiftSettings(
                 serviceId,
@@ -153,6 +157,7 @@ class SwiftSettings(
                 internalClient,
                 operations,
                 modelPath,
+                localDevelopment,
             )
         }
 
