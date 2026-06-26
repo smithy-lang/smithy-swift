@@ -44,6 +44,7 @@ structure SerdeOperationInput {
     boolean: Boolean
     sparseList: SparseIntegerList
     document: Document
+    myDocument: MyDocument
 }
 
 structure SerdeOperationOutput {}
@@ -73,3 +74,5 @@ map IntegerMap {
 list SparseIntegerList {
     member: Integer
 }
+
+document MyDocument

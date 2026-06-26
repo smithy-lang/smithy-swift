@@ -364,4 +364,15 @@ final class SerializerTests: XCTestCase {
         // check the 2 possible orders for map elements
         XCTAssert(json == #"{"document":{"b":456,"a":"123"}}"# || json == #"{"document":{"a":"123","b":456}}"#)
     }
+
+    func test_writeDocument_writesACustomDocumentTypeAsMember() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        let document = Document(BooleanDocument(value: true))
+        let input = SerdeOperationInput(myDocument: document)
+        try input.serialize(subject)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        XCTAssertEqual(json, #"{"myDocument":true}"#)
+    }
 }

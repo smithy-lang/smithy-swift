@@ -110,7 +110,7 @@ public final class Schema: Sendable {
 
     /// Returns the member for a List's element.
     ///
-    /// Only access this property on a schema of type `.list`.
+    /// Only access this property on a schema of type `.list` or `.document`.
     public var member: Schema {
         // `member` will be the only member in a list schema, the third in a document schema
         members[type == .document ? 2 : 0]
@@ -118,14 +118,14 @@ public final class Schema: Sendable {
 
     /// Returns the key member for a Map's key.
     ///
-    /// Only access this property on a schema of type `.map`.
+    /// Only access this property on a schema of type `.map` or `.document`.
     public var key: Schema {
         members[0] // `key` will be the first member in a map or document schema, before `value`
     }
 
     /// Returns the value member for a Map's value.
     ///
-    /// Only access this property on a schema of type `.map`.
+    /// Only access this property on a schema of type `.map` or `.document`.
     public var value: Schema {
         members[1] // `value` will be the second member in a map or document schema, after `key`
     }
