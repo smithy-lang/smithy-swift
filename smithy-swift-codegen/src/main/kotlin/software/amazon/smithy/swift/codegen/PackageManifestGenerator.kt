@@ -7,7 +7,6 @@ package software.amazon.smithy.swift.codegen
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.swift.codegen.core.GenerationContext
 import software.amazon.smithy.swift.codegen.utils.SDKFileUtils
-import software.amazon.smithy.swift.codegen.utils.hasSerdePerformanceTests
 
 class PackageManifestGenerator(
     val ctx: GenerationContext,
@@ -77,16 +76,13 @@ class PackageManifestGenerator(
         writer: SwiftWriter,
         dependency: SymbolDependency,
     ) {
-        writer.openBlock(".package(", "),") {
-            if (ctx.model.serviceShapes.any { it.hasSerdePerformanceTests(ctx.model) }) {
-                // For serde performance tests, use local smithy-swift
-                writer.write("path: \$S", "../../../../../../../../smithy-swift")
-            } else {
-                // For other generated clients, use stable, published smithy-swift
-                val url = dependency.expectProperty("url", String::class.java)
-                writer.write("url: \$S,", url)
-                writer.write("exact: \$S", dependency.version)
-            }
+        if (ctx.settings.localDevelopment) {
+            // Use local smithy-swift for local development
+            writer.write(".package(path: \$S),", "../../../../../../../../smithy-swift")
+        } else {
+            // For other generated clients, use stable, published smithy-swift
+            val url = dependency.expectProperty("url", String::class.java)
+            writer.write(".package(url: \$S, exact: \$S),", url, dependency.version)
         }
     }
 
