@@ -66,7 +66,7 @@ public final class Schema: Sendable {
     public var memberName: String? {
         [ShapeType.structure, .union].contains(containerType) ? id.member! : nil
     }
-    
+
     /// The type of the shape containing this schema, if this schema is a member schema.
     ///
     /// Will be `nil` for any schema other than a member.
