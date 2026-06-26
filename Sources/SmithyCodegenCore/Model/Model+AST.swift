@@ -199,6 +199,9 @@ extension Model {
         case .integer:
             let shape = IntegerShape(id: shapeID, traits: traits)
             return (shapeID, shape)
+        case .document:
+            let shape = DocumentShape(id: shapeID, traits: traits)
+            return (shapeID, shape)
         default:
             let shape = Shape(
                 id: shapeID,

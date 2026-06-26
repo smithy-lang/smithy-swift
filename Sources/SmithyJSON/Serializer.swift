@@ -16,6 +16,7 @@ import struct Smithy.JSONNameTrait
 import enum Smithy.Prelude
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
+import enum Smithy.ShapeType
 @_spi(SchemaBasedSerde)
 import struct Smithy.TimestampFormatTrait
 @_spi(SchemaBasedSerde)

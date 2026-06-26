@@ -96,41 +96,41 @@ public extension ShapeSerializer {
     ///
     /// Based on the type of the document, the contents are written using the appropriate `write...` method for its contents.
     /// - Parameters:
-    ///   - schema: The schema for the document
+    ///   - schema: The schema for the document.
     ///   - value: The document to be written
     func writeDocument(_ schema: Schema, _ value: any SmithyDocument) throws {
         switch value.type {
         case .blob:
-            try writeBlob(Prelude.blobSchema, value.asBlob())
+            try writeBlob(schema, value.asBlob())
         case .boolean:
-            try writeBoolean(Prelude.booleanSchema, value.asBoolean())
+            try writeBoolean(schema, value.asBoolean())
         case .string:
-            try writeString(Prelude.stringSchema, value.asString())
+            try writeString(schema, value.asString())
         case .timestamp:
-            try writeTimestamp(Prelude.timestampSchema, value.asTimestamp())
+            try writeTimestamp(schema, value.asTimestamp())
         case .byte:
-            try writeByte(Prelude.byteSchema, value.asByte())
+            try writeByte(schema, value.asByte())
         case .short:
-            try writeShort(Prelude.shortSchema, value.asShort())
+            try writeShort(schema, value.asShort())
         case .integer:
-            try writeInteger(Prelude.integerSchema, value.asInteger())
+            try writeInteger(schema, value.asInteger())
         case .long:
-            try writeLong(Prelude.longSchema, Int(value.asLong()))
+            try writeLong(schema, Int(value.asLong()))
         case .float:
-            try writeFloat(Prelude.floatSchema, value.asFloat())
+            try writeFloat(schema, value.asFloat())
         case .double:
-            try writeDouble(Prelude.doubleSchema, value.asDouble())
+            try writeDouble(schema, value.asDouble())
         case .bigDecimal:
-            try writeBigDecimal(Prelude.bigDecimalSchema, value.asBigDecimal())
+            try writeBigDecimal(schema, value.asBigDecimal())
         case .bigInteger:
-            try writeBigInteger(Prelude.bigIntegerSchema, value.asBigInteger())
+            try writeBigInteger(schema, value.asBigInteger())
         case .list, .set:
-            try writeList(Prelude.listDocumentSchema, value.asList()) { element, serializer in
-                try serializer.writeDocument(Prelude.listDocumentSchema.member, element)
+            try writeList(schema, value.asList()) { element, serializer in
+                try serializer.writeDocument(schema.member, element)
             }
         case .map:
-            try writeMap(Prelude.mapDocumentSchema, value.asStringMap()) { value, serializer in
-                try serializer.writeDocument(Prelude.mapDocumentSchema.value, value)
+            try writeMap(schema, value.asStringMap()) { value, serializer in
+                try serializer.writeDocument(schema.value, value)
             }
         case .document, .enum, .intEnum, .structure, .union, .member, .service, .resource, .operation:
             throw SerializerError("Unsupported or invalid document type: \(value.type)")

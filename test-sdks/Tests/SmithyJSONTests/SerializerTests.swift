@@ -6,8 +6,13 @@
 //
 
 import XCTest
-@_spi(SchemaBasedSerde) import Smithy
-@_spi(SchemaBasedSerde) import SmithyJSON
+@_spi(SchemaBasedSerde)
+@_spi(SmithyDocumentImpl)
+import Smithy
+@_spi(SchemaBasedSerde)
+import SmithyJSON
+@_spi(SchemaBasedSerde)
+import SmithySerialization
 @_spi(SchemaBasedSerde) import AWSJSONTestSDK
 
 final class SerializerTests: XCTestCase {
@@ -287,5 +292,76 @@ final class SerializerTests: XCTestCase {
 
         let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"union":{}}"#)
+    }
+
+    // MARK: - documents
+
+    func test_writeDocument_writesABooleanDocumentAsMember() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        let document = Document(BooleanDocument(value: true))
+        let input = SerdeOperationInput(document: document)
+        try input.serialize(subject)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        XCTAssertEqual(json, #"{"document":true}"#)
+    }
+
+    func test_writeDocument_writesAListDocumentAsRoot() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        let document = Document(ListDocument(value: [
+            StringDocument(value: "123"),
+            IntegerDocument(value: 456),
+            DoubleDocument(value: 789.0),
+        ]))
+        try subject.writeDocument(Smithy.Prelude.documentSchema, document)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        XCTAssertEqual(json, #"["123",456,789.0]"#)
+    }
+
+    func test_writeDocument_writesAListDocumentAsMember() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        let document = Document(ListDocument(value: [
+            StringDocument(value: "123"),
+            IntegerDocument(value: 456),
+            DoubleDocument(value: 789.0),
+        ]))
+        let input = SerdeOperationInput(document: document)
+        try input.serialize(subject)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        XCTAssertEqual(json, #"{"document":["123",456,789.0]}"#)
+    }
+
+    func test_writeDocument_writesAMapDocumentAsRoot() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        let document = Document(StringMapDocument(value: [
+            "a": StringDocument(value: "123"),
+            "b": IntegerDocument(value: 456),
+        ]))
+        try subject.writeDocument(Smithy.Prelude.documentSchema, document)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        // check the 2 possible orders for map elements
+        XCTAssert(json == #"{"b":456,"a":"123"}"# || json == #"{"a":"123","b":456}"#)
+    }
+
+    func test_writeDocument_writesAMapDocumentAsMember() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        let document = Document(StringMapDocument(value: [
+            "a": StringDocument(value: "123"),
+            "b": IntegerDocument(value: 456),
+        ]))
+        let input = SerdeOperationInput(document: document)
+        try input.serialize(subject)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        // check the 2 possible orders for map elements
+        XCTAssert(json == #"{"document":{"b":456,"a":"123"}}"# || json == #"{"document":{"a":"123","b":456}}"#)
     }
 }

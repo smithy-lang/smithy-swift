@@ -43,6 +43,7 @@ structure SerdeOperationInput {
     double: Double
     boolean: Boolean
     sparseList: SparseIntegerList
+    document: Document
 }
 
 structure SerdeOperationOutput {}

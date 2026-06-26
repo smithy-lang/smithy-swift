@@ -91,7 +91,7 @@ extension Shape {
 
     static var document: Shape {
         let schema = Smithy.Prelude.documentSchema
-        return Shape(id: schema.id, type: schema.type, traits: schema.traits)
+        return DocumentShape(id: schema.id, traits: schema.traits)
     }
 
     static var primitiveBoolean: Shape {
