@@ -7,9 +7,9 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import struct Smithy.Document
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
+import protocol Smithy.SmithyDocument
 import struct SmithyEventStreamsAPI.Header
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
@@ -158,7 +158,7 @@ struct EventHeaderDeserializer: ShapeDeserializer {
         return value
     }
 
-    func readDocument(_ schema: Schema) throws -> Smithy.Document {
+    func readDocument(_ schema: Schema) throws -> any SmithyDocument {
         throw notImplemented
     }
 
