@@ -155,7 +155,9 @@ package struct DeserializeCodegen {
             // deserialized document is wrapped in one before assignment to the model.
             // Future revs to models should accept 'any SmithyDocument', same as our
             // deserializer returns.
-            writer.write("let value: Smithy.Document = try Smithy.Document(deserializer.readDocument(\(schemaVarName)))")
+            writer.write(
+                "let value: Smithy.Document = try Smithy.Document(deserializer.readDocument(\(schemaVarName)))"
+            )
         default:
             let methodName = try target.deserializeMethodName
             writer.write("let value: \(propertySwiftType) = try deserializer.\(methodName)(\(schemaVarName))")
