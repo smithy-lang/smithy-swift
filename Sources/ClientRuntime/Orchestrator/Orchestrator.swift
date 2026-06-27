@@ -353,6 +353,7 @@ public struct Orchestrator<
         }
     }
 
+    // swiftlint:disable:next function_body_length
     private func attempt(context: InterceptorContextType, attemptCount: Int) async {
         // If anything in here fails, the attempt short-circuits and we go to modifyBeforeAttemptCompletion,
         // with the thrown error in context.result
@@ -515,7 +516,8 @@ public struct Orchestrator<
     }
 
     private func timeInterval(startTimespec: timespec, endTimespec: timespec) -> TimeInterval {
-        let nsec = 1_000_000_000 * (endTimespec.tv_sec - startTimespec.tv_sec) + endTimespec.tv_nsec - startTimespec.tv_nsec
+        let nsec = 1_000_000_000 * (endTimespec.tv_sec - startTimespec.tv_sec) +
+            endTimespec.tv_nsec - startTimespec.tv_nsec
         return TimeInterval(nsec) * 1.0E-9
     }
 }
