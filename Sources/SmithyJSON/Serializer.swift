@@ -36,7 +36,6 @@ public final class Serializer: ShapeSerializer {
     private static let formFeed: UInt8 = 12
     private static let cr: UInt8 = 13
     private static let doubleQuote: UInt8 = 34
-    private static let forwardSlash: UInt8 = 47
     private static let comma: UInt8 = 44
     private static let colon: UInt8 = 58
     private static let openingSquareBrace: UInt8 = 91
