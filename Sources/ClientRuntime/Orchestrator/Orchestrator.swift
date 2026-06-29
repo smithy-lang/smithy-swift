@@ -6,7 +6,7 @@
 //
 
 #if canImport(Darwin)
-// swiftlint:ignore:next unused_import
+// swiftlint:disable:next unused_import
 import Darwin
 #elseif canImport(Glibc)
 import Glibc
