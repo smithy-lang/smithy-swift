@@ -100,7 +100,7 @@ struct EventContentDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
-    func readDocument(_ schema: Schema) throws -> SmithyDocument {
+    func readDocument(_ schema: Schema) throws -> any SmithyDocument {
         throw notImplemented
     }
 
