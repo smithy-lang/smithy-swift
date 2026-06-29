@@ -20,6 +20,8 @@ import typealias SmithySerialization.ReadValueConsumer
 import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeDeserializer
+@_spi(SchemaBasedSerde)
+import struct SmithySerialization.UnexpectedNullError
 
 @_spi(SchemaBasedSerde)
 public class Deserializer: ShapeDeserializer {
@@ -267,7 +269,7 @@ public class Deserializer: ShapeDeserializer {
                     } else {
                         try skipValue()
                     }
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip null
                 }
                 guard decoder.hasNext() else {
@@ -291,7 +293,7 @@ public class Deserializer: ShapeDeserializer {
                     } else {
                         try skipValue()
                     }
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip null
                 }
             }
@@ -352,7 +354,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let nextElement = try consumer(self)
                     list.append(nextElement)
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip the null
                 }
                 guard decoder.hasNext() else {
@@ -366,7 +368,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let nextElement = try consumer(self)
                     list.append(nextElement)
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip the null
                 }
             }
@@ -399,7 +401,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let value = try consumer(self)
                     map[key] = value
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip the null
                 }
                 guard decoder.hasNext() else {
@@ -416,7 +418,7 @@ public class Deserializer: ShapeDeserializer {
                 do {
                     let value = try consumer(self)
                     map[key] = value
-                } catch is DecodedNull {
+                } catch is UnexpectedNullError {
                     // skip the null
                 }
             }
@@ -432,7 +434,7 @@ public class Deserializer: ShapeDeserializer {
     private func nullCheck() throws {
         if try decoder.isNull() {
             _ = try decoder.popNext()
-            throw DecodedNull()
+            throw UnexpectedNullError()
         }
     }
 }
