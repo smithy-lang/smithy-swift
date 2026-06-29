@@ -81,7 +81,9 @@ public final class Deserializer: ShapeDeserializer {
         return try list.compactMap {
             do {
                 return try consumer(Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: $0))
-            } catch is SmithySerialization.UnexpectedNullError {
+            } catch is UnexpectedNullError {
+                // JSON deserializer "tolerates" nulls in non-sparse lists.
+                // This nil will be compacted out of the returned list.
                 return nil
             }
         }
@@ -93,7 +95,9 @@ public final class Deserializer: ShapeDeserializer {
         return try map.compactMapValues {
             do {
                 return try consumer(Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: $0))
-            } catch is SmithySerialization.UnexpectedNullError {
+            } catch is UnexpectedNullError {
+                // JSON deserializer "tolerates" nulls in non-sparse maps.
+                // This nil will be compacted out of the returned map.
                 return nil
             }
         }
@@ -281,7 +285,7 @@ public final class Deserializer: ShapeDeserializer {
 
     private func nullCheck() throws {
         if case .null = self.value {
-            throw SmithySerialization.UnexpectedNullError()
+            throw UnexpectedNullError()
         }
     }
 }

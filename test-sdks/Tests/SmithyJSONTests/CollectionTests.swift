@@ -46,7 +46,7 @@ final class CollectionTests: XCTestCase {
         // Deserialize to a structure
         let output = try NullToleranceOutput.deserialize(subject)
 
-        // Verify that list is just the numbers, omitting the nulls
+        // Verify that list contains numbers and nulls
         XCTAssertEqual(output.sparseList, [123, nil, 456, nil, 789, nil])
     }
 

@@ -435,7 +435,7 @@ public class Deserializer: ShapeDeserializer {
     private func nullCheck() throws {
         if try decoder.isNull() {
             _ = try decoder.popNext()
-            throw SmithySerialization.UnexpectedNullError()
+            throw UnexpectedNullError()
         }
     }
 }
