@@ -5,7 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-/// An error indicating that a null was encountered in a non-sparse list element or non-sparse map value.
+/// An error indicating that a null was encountered in an unexpected context.
+@_spi(SchemaBasedSerde)
 public struct UnexpectedNullError: Error {
 
     public init() {}
