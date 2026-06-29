@@ -12,5 +12,3 @@ public struct CBORDecoderError: Error {
         self.localizedDescription = localizedDescription
     }
 }
-
-struct DecodedNull: Error {}
