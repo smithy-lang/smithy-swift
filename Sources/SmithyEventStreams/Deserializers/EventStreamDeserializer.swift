@@ -7,10 +7,10 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import struct Smithy.Document
 import protocol Smithy.ResponseMessage
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
+import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
 import struct Smithy.StreamingTrait
 import typealias SmithyEventStreamsAPI.UnmarshalClosure
@@ -124,7 +124,7 @@ public struct EventStreamDeserializer: ShapeDeserializer {
         throw notImplemented
     }
 
-    public func readDocument(_ schema: Schema) throws -> Document {
+    public func readDocument(_ schema: Schema) throws -> any SmithyDocument {
         throw notImplemented
     }
 
