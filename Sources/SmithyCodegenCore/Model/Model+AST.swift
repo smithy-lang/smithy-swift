@@ -20,7 +20,7 @@ import struct Smithy.TraitCollection
 extension Model {
 
     /// Creates a Smithy model from a JSON AST model.
-    ///  
+    ///
     /// Compared to the AST model, this model has custom shape types, members are included in the main body of shapes
     /// along with other shape types, and all Shape IDs are fully-qualified
     /// (i.e. members have the enclosing shape's namespace & name, along with their own member name.)

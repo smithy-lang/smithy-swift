@@ -16,15 +16,25 @@ public struct TraitCollection: Sendable {
     }
 
     public init(traitDict: [ShapeID: Node], traitTypes: [any Trait.Type]) throws {
+
+        // Index the modeled trait types by ShapeID for lookup
         let traitTypeDict = Dictionary(uniqueKeysWithValues: traitTypes.map { ($0.id, $0) })
+
+        // For each ShapeID & Node in the passed raw trait data, look up the correct modeled
+        // trait type by ShapeID, and create the modeled trait instance.
         let traitPairs: [(ShapeID, any Trait)] = try traitDict.compactMap { shapeID, node in
             guard let TraitType = traitTypeDict[shapeID] else { return nil }
             return (shapeID, try TraitType.init(node: node))
         }
+
+        // Finally, convert the ShapeID - modeled Trait pairs into a dictionary.
         self.traitDict = Dictionary(uniqueKeysWithValues: traitPairs)
     }
-
+    
+    /// Creates a TraitCollection from an array of modeled Traits.
+    /// - Parameter traits: A list of modeled traits to store in this collection.  All traits must be unique by ShapeID.
     public init(traits: [any Trait]) {
+        // Convert the modeled Trait list to a dictionary, mapped by trait ShapeID.
         self.traitDict = Dictionary(uniqueKeysWithValues: traits.map { ($0.id, $0) })
     }
 
@@ -75,6 +85,8 @@ extension TraitCollection: ExpressibleByArrayLiteral {
 extension TraitCollection: Equatable {
 
     public static func ==(_ lhs: Self, _ rhs: Self) -> Bool {
+        // Traits themselves aren't Equatable, but their ShapeID and Node are.
+        // Convert the [ShapeID: any Trait] dictionaries to [ShapeID: Node] and compare.
         lhs.traitDict.mapValues(\.node) == rhs.traitDict.mapValues(\.node)
     }
 }
