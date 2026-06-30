@@ -27,7 +27,7 @@ extension Model {
             let unitSubstituteID = ShapeID(member.id.namespace, "Unit")
             unitSubstitute = unitSubstitute ?? StructureShape(
                 id: unitSubstituteID,
-                traits: [:],
+                traits: [],
                 memberIDs: []
             )
             let newMember = MemberShape(

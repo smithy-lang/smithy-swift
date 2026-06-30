@@ -7,16 +7,24 @@
 
 /// A container for traits that allows for type-safe access.
 @_spi(SchemaBasedSerde)
-public struct TraitCollection: Sendable, Hashable {
-    /// The "raw" traits in this collection, as a dictionary of `Node`s keyed by trait shape ID.
-    public var traitDict: [ShapeID: Node]
+public struct TraitCollection: Sendable {
+    /// The traits in this collection, as a dictionary of traits keyed by trait shape ID.
+    public var traitDict: [ShapeID: any Trait]
 
     public init() {
         self.traitDict = [:]
     }
 
-    public init(traits: [ShapeID: Node]) {
-        self.traitDict = traits
+    public init(traitDict: [ShapeID: Node], traitTypeDict: [ShapeID: any Trait.Type]) throws {
+        let traitPairs: [(ShapeID, any Trait)] = try traitDict.compactMap { shapeID, node in
+            guard let TraitType = traitTypeDict[shapeID] else { return nil }
+            return (shapeID, try TraitType.init(node: node))
+        }
+        self.traitDict = Dictionary(uniqueKeysWithValues: traitPairs)
+    }
+
+    public init(traits: [any Trait]) {
+        self.traitDict = Dictionary(uniqueKeysWithValues: traits.map { ($0.id, $0) })
     }
 
     /// Whether the trait collection is empty.
@@ -47,14 +55,7 @@ public struct TraitCollection: Sendable, Hashable {
     /// - Parameter type: The trait to be retrieved.
     /// - Returns: The requested trait, or `nil` if the collection doesn't have that trait.
     public func getTrait<T: Trait>(_ type: T.Type) throws -> T? {
-        guard let node = traitDict[T.id] else { return nil }
-        return try T(node: node)
-    }
-
-    /// Adds a new trait to the collection, overwriting an existing, matching trait.
-    /// - Parameter trait: The trait to add to the collection.
-    public mutating func add(_ trait: Trait) {
-        traitDict[trait.id] = trait.node
+        traitDict[T.id] as? T
     }
 
     /// Combines two trait collections into a single collection.
@@ -62,31 +63,28 @@ public struct TraitCollection: Sendable, Hashable {
     /// - Returns: The merged ``TraitCollection``.
     public func adding(_ other: TraitCollection) -> TraitCollection {
         let combined = self.traitDict.merging(other.traitDict) { _, new in new }
-        return TraitCollection(traits: combined)
+        return Self(traits: Array(combined.values))
     }
 
     /// Returns a trait collection containing only this collection's traits that belong in a schema.
     public var schemaTraits: TraitCollection {
-        let schemaTraitDict = traitDict.filter { (shapeID, _) in allSupportedTraitIDs.contains(shapeID) }
+        let schemaTraitDict = traitDict.values.filter { allRuntimeTraitIDs.contains($0.id) }
         return Self(traits: schemaTraitDict)
-    }
-}
-
-/// Allows for the creation of a ``TraitCollection`` from a `[ShapeID: Node]` dictionary literal.
-extension TraitCollection: ExpressibleByDictionaryLiteral {
-    public typealias Key = ShapeID
-    public typealias Value = Node
-
-    public init(dictionaryLiteral elements: (Key, Value)...) {
-        self.traitDict = Dictionary(uniqueKeysWithValues: elements)
     }
 }
 
 /// Allows for the creation of a ``TraitCollection`` from a `[Trait]` array literal.
 extension TraitCollection: ExpressibleByArrayLiteral {
-    public typealias ArrayLiteralElement = any Trait
+    public typealias ArrayLiteralElement = (any Trait)?
 
     public init(arrayLiteral elements: ArrayLiteralElement...) {
-        self.init(traits: Dictionary(uniqueKeysWithValues: elements.map { ($0.id, $0.node) }))
+        self.init(traits: elements.compactMap { $0 })
+    }
+}
+
+extension TraitCollection: Equatable {
+
+    public static func ==(_ lhs: Self, _ rhs: Self) -> Bool {
+        lhs.traitDict.mapValues(\.node) == rhs.traitDict.mapValues(\.node)
     }
 }

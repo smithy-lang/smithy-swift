@@ -7,7 +7,7 @@
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#sparse-trait
 @_spi(SchemaBasedSerde)
-public struct SparseTrait: Trait {
+public struct SparseTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "sparse") }
 
     public var node: Node { [:] }

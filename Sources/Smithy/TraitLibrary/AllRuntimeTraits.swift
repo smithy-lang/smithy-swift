@@ -9,14 +9,15 @@
 ///
 /// This list can be expanded as features are added to Smithy/SDK that use them.
 @_spi(SchemaBasedSerde)
-public let allSupportedTraitIDs = Set(allSupportedTraitTypes.keys)
+public let allRuntimeTraitIDs = Set(allRuntimeTraitTypes.keys)
 
 @_spi(SchemaBasedSerde)
-public func traitType(for traitID: ShapeID) -> (any Trait.Type)? {
-    allSupportedTraitTypes[traitID]
+public func runtimeTraitType(for traitID: ShapeID) -> (any Trait.Type)? {
+    allRuntimeTraitTypes[traitID]
 }
 
-private let allSupportedTraitTypes: [ShapeID: any Trait.Type] = [
+@_spi(SchemaBasedSerde)
+public let allRuntimeTraitTypes: [ShapeID: any Trait.Type] = [
     // Traits defined in Smithy
     ServiceTrait.id: ServiceTrait.self,
     AddedDefaultTrait.id: AddedDefaultTrait.self,

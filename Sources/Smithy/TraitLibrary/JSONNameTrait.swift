@@ -8,7 +8,7 @@
 // https://smithy.io/2.0/spec/protocol-traits.html#jsonname-trait
 
 @_spi(SchemaBasedSerde)
-public struct JSONNameTrait: Trait {
+public struct JSONNameTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "jsonName") }
 
     public var node: Node { .string(name) }

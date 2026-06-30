@@ -6,12 +6,16 @@
 //
 
 @_spi(SchemaBasedSerde)
+import var Smithy.allRuntimeTraitTypes
+@_spi(SchemaBasedSerde)
 import struct Smithy.EnumValueTrait
 import enum Smithy.Node
 @_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
+@_spi(SchemaBasedSerde)
+import protocol Smithy.Trait
 @_spi(SchemaBasedSerde)
 import struct Smithy.TraitCollection
 
@@ -76,10 +80,11 @@ extension Model {
             // Create a ShapeID for this member
             let memberID = ShapeID(id: try ShapeID(id), member: astMember.key)
 
-            // Create traits for this member
+            // Create traits for this member.  Creation of TraitCollection verifies that all
+            // traits are valid, i.e. their initializer doesn't throw.
             let traitPairs = try astMember.value.traits?.map { (try ShapeID($0.key), $0.value) }
             let traitDict = Dictionary(uniqueKeysWithValues: traitPairs ?? [])
-            let traits = TraitCollection(traits: traitDict)
+            let traits = try TraitCollection(traitDict: traitDict, traitTypeDict: traitTypeDict)
 
             // Create a Shape ID for this member's target
             let targetID = try ShapeID(astMember.value.target)
@@ -96,10 +101,11 @@ extension Model {
         // Create the ShapeID for this shape from the AST shape's string ID.
         let shapeID = try ShapeID(id)
 
-        // Create model traits from the AST traits.
+        // Create model traits from the AST traits.  Creation of TraitCollection verifies that all
+        // traits are valid, i.e. their initializer doesn't throw.
         let idToTraitPairs = try astShape.traits?.map { (try ShapeID($0.key), $0.value) } ?? []
         let traitDict = Dictionary(uniqueKeysWithValues: idToTraitPairs)
-        let traits = TraitCollection(traits: traitDict)
+        let traits = try TraitCollection(traitDict: traitDict, traitTypeDict: traitTypeDict)
 
         // Based on the AST shape type, create the appropriate Shape type.
         switch astShape.type {
@@ -217,5 +223,9 @@ extension Model {
         memberShapes.keys.filter {
             $0.namespace == shapeID.namespace && $0.name == shapeID.name && $0.member != nil
         }.sorted()
+    }
+
+    private static var traitTypeDict: [ShapeID: any Trait.Type] {
+        allRuntimeTraitTypes.merging(allCodegenTraitTypes, uniquingKeysWith: { _, new in new })
     }
 }
