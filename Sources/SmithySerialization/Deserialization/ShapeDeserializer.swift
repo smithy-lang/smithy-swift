@@ -8,7 +8,6 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import enum Smithy.ByteStream
-import struct Smithy.Document
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
@@ -29,7 +28,7 @@ public protocol ShapeDeserializer {
     func readBigInteger(_ schema: Schema) throws -> Int64
     func readBigDecimal(_ schema: Schema) throws -> Double
     func readString(_ schema: Schema) throws -> String
-    func readDocument(_ schema: Schema) throws -> Document
+    func readDocument(_ schema: Schema) throws -> any SmithyDocument
     func readTimestamp(_ schema: Schema) throws -> Date
     func readNull<T>(_ schema: Schema) throws -> T?
     func readDataStream(_ schema: Schema) throws -> ByteStream

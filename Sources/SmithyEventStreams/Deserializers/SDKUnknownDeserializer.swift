@@ -7,9 +7,9 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import struct Smithy.Document
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
+import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 import struct SmithySerialization.SerializerError
@@ -79,7 +79,7 @@ struct SDKUnknownDeserializer: ShapeDeserializer {
         string
     }
 
-    func readDocument(_ schema: Schema) throws -> Document {
+    func readDocument(_ schema: Schema) throws -> any SmithyDocument {
         throw notImplemented
     }
 
