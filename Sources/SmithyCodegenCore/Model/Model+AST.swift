@@ -6,8 +6,6 @@
 //
 
 @_spi(SchemaBasedSerde)
-import var Smithy.allRuntimeTraitTypes
-@_spi(SchemaBasedSerde)
 import struct Smithy.EnumValueTrait
 import enum Smithy.Node
 @_spi(SchemaBasedSerde)
@@ -22,29 +20,38 @@ import struct Smithy.TraitCollection
 extension Model {
 
     /// Creates a Smithy model from a JSON AST model.
-    ///
+    ///  
     /// Compared to the AST model, this model has custom shape types, members are included in the main body of shapes
     /// along with other shape types, and all Shape IDs are fully-qualified
     /// (i.e. members have the enclosing shape's namespace & name, along with their own member name.)
     /// - Parameter astModel: The JSON AST model to load into the `Model` being created.
-    convenience init(astModel: ASTModel) throws {
+    /// - Parameter additionalTraitTypes: Custom Swift types for any traits that appear in the model.  Defaults to empty array.
+    convenience init(astModel: ASTModel, additionalTraitTypes: [any Trait.Type] = []) throws {
+        // Combine the built-in trait types with the additional ones for use in building the model.
+        let traitTypes = builtinTraitTypes + additionalTraitTypes
+
         // Get all of the members from the AST model, create pairs of ShapeID & MemberShape
         let idToMemberShapePairs = try astModel.shapes
-            .flatMap { try Self.memberShapePairs(id: $0.key, astShape: $0.value) }
+            .flatMap { try Self.memberShapePairs(id: $0.key, astShape: $0.value, traitTypes: traitTypes) }
         let memberShapes = Dictionary(uniqueKeysWithValues: idToMemberShapePairs)
 
         // Get all of the non-members from the AST model, create pairs of ShapeID & various shape subclasses
-        let idToShapePairs = try astModel.shapes
-            .map { try Self.shapePair(id: $0.key, astShape: $0.value, memberShapes: memberShapes) }
+        let idToShapePairs = try astModel.shapes.map {
+            try Self.shapePair(id: $0.key, astShape: $0.value, memberShapes: memberShapes, traitTypes: traitTypes)
+        }
 
         // Combine all shapes (member & nonmember) into one large Dict for inclusion in the model
         let shapes = Dictionary(uniqueKeysWithValues: idToShapePairs + idToMemberShapePairs)
 
         // Initialize with the shape dictionary
-        self.init(version: astModel.smithy, metadata: astModel.metadata, shapes: shapes)
+        self.init(version: astModel.smithy, metadata: astModel.metadata, shapes: shapes, traitTypes: traitTypes)
     }
 
-    private static func memberShapePairs(id: String, astShape: ASTShape) throws -> [(ShapeID, MemberShape)] {
+    private static func memberShapePairs(
+        id: String,
+        astShape: ASTShape,
+        traitTypes: [any Trait.Type]
+    ) throws -> [(ShapeID, MemberShape)] {
         var baseMembers = astShape.members ?? [:]
 
         // If this AST shape is an array, add a member for its element
@@ -84,7 +91,7 @@ extension Model {
             // traits are valid, i.e. their initializer doesn't throw.
             let traitPairs = try astMember.value.traits?.map { (try ShapeID($0.key), $0.value) }
             let traitDict = Dictionary(uniqueKeysWithValues: traitPairs ?? [])
-            let traits = try TraitCollection(traitDict: traitDict, traitTypeDict: traitTypeDict)
+            let traits = try TraitCollection(traitDict: traitDict, traitTypes: traitTypes)
 
             // Create a Shape ID for this member's target
             let targetID = try ShapeID(astMember.value.target)
@@ -96,7 +103,10 @@ extension Model {
 
     // swiftlint:disable:next function_body_length
     private static func shapePair(
-        id: String, astShape: ASTShape, memberShapes: [ShapeID: MemberShape]
+        id: String,
+        astShape: ASTShape,
+        memberShapes: [ShapeID: MemberShape],
+        traitTypes: [any Trait.Type]
     ) throws -> (ShapeID, Shape) {
         // Create the ShapeID for this shape from the AST shape's string ID.
         let shapeID = try ShapeID(id)
@@ -105,7 +115,7 @@ extension Model {
         // traits are valid, i.e. their initializer doesn't throw.
         let idToTraitPairs = try astShape.traits?.map { (try ShapeID($0.key), $0.value) } ?? []
         let traitDict = Dictionary(uniqueKeysWithValues: idToTraitPairs)
-        let traits = try TraitCollection(traitDict: traitDict, traitTypeDict: traitTypeDict)
+        let traits = try TraitCollection(traitDict: traitDict, traitTypes: traitTypes)
 
         // Based on the AST shape type, create the appropriate Shape type.
         switch astShape.type {
@@ -223,9 +233,5 @@ extension Model {
         memberShapes.keys.filter {
             $0.namespace == shapeID.namespace && $0.name == shapeID.name && $0.member != nil
         }.sorted()
-    }
-
-    private static var traitTypeDict: [ShapeID: any Trait.Type] {
-        allRuntimeTraitTypes.merging(allCodegenTraitTypes, uniquingKeysWith: { _, new in new })
     }
 }

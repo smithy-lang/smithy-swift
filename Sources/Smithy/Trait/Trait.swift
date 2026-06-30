@@ -10,7 +10,7 @@
 /// All traits have a ``Node`` associated with them, but will typically provide their properties
 /// with convenient, type-safe accessors.
 @_spi(SchemaBasedSerde)
-public protocol Trait: Sendable, Equatable {
+public protocol Trait: Sendable, Hashable {
     static var id: ShapeID { get }
 
     var node: Node { get }
@@ -38,7 +38,17 @@ public extension Trait {
         // else the trait on the target if present, else nil.
         member ?? target
     }
+
+    /// Calculates a hash value for this trait.
+    ///
+    /// Custom Hashable conformance.  Traits hash by their ID only.
+    /// - Parameter hasher: The hasher to hash this Trait into
+    func hash(into hasher: inout Hasher) {
+        id.hash(into: &hasher)
+    }
 }
 
+/// A "marker" protocol that designates a trait that will be used at runtime, versus one that is
+/// for codegen use only.
 @_spi(SchemaBasedSerde)
 public protocol RuntimeTrait: Trait {}

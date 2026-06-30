@@ -28,7 +28,7 @@ extension Model {
                 targetID: member.targetID
             )
         }
-        return Model(version: self.version, metadata: self.metadata, shapes: newShapes)
+        return Model(version: self.version, metadata: self.metadata, shapes: newShapes, traitTypes: self.traitTypes)
     }
 }
 

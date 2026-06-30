@@ -15,7 +15,8 @@ public struct TraitCollection: Sendable {
         self.traitDict = [:]
     }
 
-    public init(traitDict: [ShapeID: Node], traitTypeDict: [ShapeID: any Trait.Type]) throws {
+    public init(traitDict: [ShapeID: Node], traitTypes: [any Trait.Type]) throws {
+        let traitTypeDict = Dictionary(uniqueKeysWithValues: traitTypes.map { ($0.id, $0) })
         let traitPairs: [(ShapeID, any Trait)] = try traitDict.compactMap { shapeID, node in
             guard let TraitType = traitTypeDict[shapeID] else { return nil }
             return (shapeID, try TraitType.init(node: node))
@@ -44,13 +45,6 @@ public struct TraitCollection: Sendable {
         traitDict[T.id] != nil
     }
 
-    /// Checks if a trait collection has a trait, by ID.
-    /// - Parameter id: The trait ID to be checked.
-    /// - Returns: `true` if the collection has a trait for the passed Shape ID, `false` otherwise.
-    public func hasTrait(_ id: ShapeID) -> Bool {
-        traitDict[id] != nil
-    }
-
     /// Gets a trait from the collection.
     /// - Parameter type: The trait to be retrieved.
     /// - Returns: The requested trait, or `nil` if the collection doesn't have that trait.
@@ -65,15 +59,11 @@ public struct TraitCollection: Sendable {
         let combined = self.traitDict.merging(other.traitDict) { _, new in new }
         return Self(traits: Array(combined.values))
     }
-
-    /// Returns a trait collection containing only this collection's traits that belong in a schema.
-    public var schemaTraits: TraitCollection {
-        let schemaTraitDict = traitDict.values.filter { allRuntimeTraitIDs.contains($0.id) }
-        return Self(traits: schemaTraitDict)
-    }
 }
 
-/// Allows for the creation of a ``TraitCollection`` from a `[Trait]` array literal.
+/// Allows for the creation of a ``TraitCollection`` from a `[(any Trait)?]` array literal.
+///
+/// An array of this type is rendered during schemas codegen as a literal `TraitCollection`.
 extension TraitCollection: ExpressibleByArrayLiteral {
     public typealias ArrayLiteralElement = (any Trait)?
 

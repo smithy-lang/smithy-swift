@@ -35,6 +35,11 @@ extension Model {
         }
 
         // Trim references to the removed shapes before returning
-        return try Model(version: version, metadata: metadata, shapes: nonDeprecatedShapes).trimReferences()
+        return try Model(
+            version: version,
+            metadata: metadata,
+            shapes: nonDeprecatedShapes,
+            traitTypes: self.traitTypes
+        ).trimReferences()
     }
 }

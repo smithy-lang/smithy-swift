@@ -42,6 +42,6 @@ extension Model {
             newShapes[unitSubstitute.id] = unitSubstitute
         }
 
-        return Model(version: self.version, metadata: self.metadata, shapes: newShapes)
+        return Model(version: self.version, metadata: self.metadata, shapes: newShapes, traitTypes: self.traitTypes)
     }
 }
