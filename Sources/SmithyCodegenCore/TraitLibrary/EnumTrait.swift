@@ -11,6 +11,7 @@ import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
 import protocol Smithy.Trait
 import struct Smithy.TraitError
+import let Smithy.traitUniqueIndexCounter
 
 /// See https://smithy.io/2.0/spec/constraint-traits.html#smithy-api-enum-trait
 ///
@@ -19,11 +20,14 @@ import struct Smithy.TraitError
 @_spi(SchemaBasedSerde)
 public struct EnumTrait: Trait {
 
-    public struct EnumMember {
+    public struct EnumMember: Sendable {
         public let value: String
         public let name: String?
     }
+
     public static var id: ShapeID { .init("smithy.api", "enum") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public let node: Node
     public let members: [EnumMember]

@@ -9,6 +9,8 @@
 public struct RequiredTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "required") }
 
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+
     public var node: Node { [:] }
 
     public init(node: Node) throws {}

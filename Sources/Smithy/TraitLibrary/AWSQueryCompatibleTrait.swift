@@ -10,6 +10,8 @@
 public struct AWSQueryCompatibleTrait: Trait {
     public static var id: ShapeID { .init("aws.protocols", "awsQueryCompatible") }
 
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+
     public var node: Node { [:] }
 
     public init(node: Node) throws {}

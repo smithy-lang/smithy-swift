@@ -10,6 +10,8 @@
 public struct ErrorTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "error") }
 
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+
     public var node: Node { [:] }
 
     public init(node: Node) throws {}

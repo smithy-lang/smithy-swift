@@ -11,11 +11,14 @@ import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
 import protocol Smithy.Trait
 import struct Smithy.TraitError
+import let Smithy.traitUniqueIndexCounter
 
 /// See https://smithy.io/2.0/spec/documentation-traits.html#deprecated-trait
 @_spi(SchemaBasedSerde)
 public struct DeprecatedTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "deprecated") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public let node: Node
     public let since: String?

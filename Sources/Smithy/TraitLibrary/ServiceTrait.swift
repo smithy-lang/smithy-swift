@@ -10,6 +10,8 @@
 public struct ServiceTrait: Trait {
     public static var id: ShapeID { .init("aws.api", "service") }
 
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+
     public let node: Node
     public let sdkId: String
 

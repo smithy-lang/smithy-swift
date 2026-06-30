@@ -13,6 +13,8 @@
 public struct TargetsUnitTrait: Trait {
     public static var id: ShapeID { .init("swift.synthetic", "targetsUnit") }
 
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+
     public var node: Node { [:] }
 
     public init(node: Node) throws {}

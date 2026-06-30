@@ -79,7 +79,7 @@ extension Model {
             // Create traits for this member
             let traitPairs = try astMember.value.traits?.map { (try ShapeID($0.key), $0.value) }
             let traitDict = Dictionary(uniqueKeysWithValues: traitPairs ?? [])
-            let traits = TraitCollection(traits: traitDict)
+            let traits = try TraitCollection(traitMap: traitDict)
 
             // Create a Shape ID for this member's target
             let targetID = try ShapeID(astMember.value.target)
@@ -99,7 +99,7 @@ extension Model {
         // Create model traits from the AST traits.
         let idToTraitPairs = try astShape.traits?.map { (try ShapeID($0.key), $0.value) } ?? []
         let traitDict = Dictionary(uniqueKeysWithValues: idToTraitPairs)
-        let traits = TraitCollection(traits: traitDict)
+        let traits = try TraitCollection(traitMap: traitDict)
 
         // Based on the AST shape type, create the appropriate Shape type.
         switch astShape.type {

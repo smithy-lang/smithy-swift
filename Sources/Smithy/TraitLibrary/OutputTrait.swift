@@ -10,6 +10,8 @@
 public struct OutputTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "output") }
 
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+
     public var node: Node { [:] }
 
     public init(node: Node) throws {}

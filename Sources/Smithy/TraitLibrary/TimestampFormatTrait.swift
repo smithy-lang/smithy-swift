@@ -16,6 +16,8 @@ public struct TimestampFormatTrait: Trait {
 
     public static var id: ShapeID { .init("smithy.api", "timestampFormat") }
 
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+
     public let format: Format
 
     public init(node: Node) throws {

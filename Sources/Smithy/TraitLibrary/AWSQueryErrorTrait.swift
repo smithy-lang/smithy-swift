@@ -10,6 +10,8 @@
 public struct AWSQueryErrorTrait: Trait {
     public static var id: ShapeID { .init("aws.protocols", "awsQueryError") }
 
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+
     public let node: Node
     public let code: String
     public let httpResponseCode: Int

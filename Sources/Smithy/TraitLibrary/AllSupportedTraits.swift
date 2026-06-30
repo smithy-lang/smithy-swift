@@ -16,7 +16,7 @@ public func traitType(for traitID: ShapeID) -> (any Trait.Type)? {
     allSupportedTraitTypes[traitID]
 }
 
-private let allSupportedTraitTypes: [ShapeID: any Trait.Type] = [
+let allSupportedTraitTypes: [ShapeID: any Trait.Type] = [
     // Traits defined in Smithy
     ServiceTrait.id: ServiceTrait.self,
     AddedDefaultTrait.id: AddedDefaultTrait.self,

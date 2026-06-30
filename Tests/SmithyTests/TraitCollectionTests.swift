@@ -18,12 +18,4 @@ final class TraitCollectionTests: XCTestCase {
 
         XCTAssertEqual(combined, [InputTrait(), OutputTrait()])
     }
-
-    func test_add_addsATrait() async throws {
-        var subject: TraitCollection = [InputTrait()]
-        subject.add(OutputTrait())
-
-        XCTAssert(subject.hasTrait(InputTrait.self))
-        XCTAssert(subject.hasTrait(OutputTrait.self))
-    }
 }

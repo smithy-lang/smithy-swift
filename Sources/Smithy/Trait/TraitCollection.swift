@@ -7,67 +7,77 @@
 
 /// A container for traits that allows for type-safe access.
 @_spi(SchemaBasedSerde)
-public struct TraitCollection: Sendable, Hashable {
-    /// The "raw" traits in this collection, as a dictionary of `Node`s keyed by trait shape ID.
-    public var traitDict: [ShapeID: Node]
+public struct TraitCollection: Sendable {
+    private let uniqueCollection: UniqueCollection
 
     public init() {
-        self.traitDict = [:]
+        self.uniqueCollection = UniqueCollection([])
     }
 
-    public init(traits: [ShapeID: Node]) {
-        self.traitDict = traits
+    public init(traitMap: [ShapeID: Node] = [:]) throws {
+        let traits = try traitMap.compactMap { try trait(id: $0.key, node: $0.value) }
+        self.init(traits: traits)
+    }
+
+    public init(traits: [any Trait]) {
+        self.uniqueCollection = UniqueCollection(traits)
+    }
+
+    private init(uniqueCollection: UniqueCollection) {
+        self.uniqueCollection = uniqueCollection
+    }
+
+    public var traitDict: [ShapeID: Node] {
+        let allTraits = uniqueCollection.allElements as? [any Trait] ?? []
+        return Dictionary(uniqueKeysWithValues: allTraits.map { ($0.id, $0.node) })
     }
 
     /// Whether the trait collection is empty.
     public var isEmpty: Bool {
-        traitDict.isEmpty
+        uniqueCollection.isEmpty
     }
 
     /// The number of traits in the collection.
     public var count: Int {
-        traitDict.count
+        uniqueCollection.count
     }
 
     /// Checks if a trait collection has a trait, by trait type.
     /// - Parameter type: The trait type to be checked.
     /// - Returns: `true` if the collection has a trait for the passed trait, `false` otherwise.
     public func hasTrait<T: Trait>(_ type: T.Type) -> Bool {
-        traitDict[T.id] != nil
+        uniqueCollection.get(T.self) != nil
     }
 
     /// Checks if a trait collection has a trait, by ID.
     /// - Parameter id: The trait ID to be checked.
     /// - Returns: `true` if the collection has a trait for the passed Shape ID, `false` otherwise.
     public func hasTrait(_ id: ShapeID) -> Bool {
-        traitDict[id] != nil
+        guard let TraitType = allSupportedTraitTypes[id] else { return false }
+        return uniqueCollection.get(TraitType.self) != nil
     }
 
     /// Gets a trait from the collection.
     /// - Parameter type: The trait to be retrieved.
     /// - Returns: The requested trait, or `nil` if the collection doesn't have that trait.
     public func getTrait<T: Trait>(_ type: T.Type) throws -> T? {
-        guard let node = traitDict[T.id] else { return nil }
-        return try T(node: node)
-    }
-
-    /// Adds a new trait to the collection, overwriting an existing, matching trait.
-    /// - Parameter trait: The trait to add to the collection.
-    public mutating func add(_ trait: Trait) {
-        traitDict[trait.id] = trait.node
+        uniqueCollection.get(T.self)
     }
 
     /// Combines two trait collections into a single collection.
     /// - Parameter other: The trait collection to merge.  Traits in this collection overwrite the other.
     /// - Returns: The merged ``TraitCollection``.
     public func adding(_ other: TraitCollection) -> TraitCollection {
-        let combined = self.traitDict.merging(other.traitDict) { _, new in new }
-        return TraitCollection(traits: combined)
+        let combined = self.uniqueCollection.merging(other.uniqueCollection)
+        return TraitCollection(uniqueCollection: combined)
     }
 
     /// Returns a trait collection containing only this collection's traits that belong in a schema.
     public var schemaTraits: TraitCollection {
-        let schemaTraitDict = traitDict.filter { (shapeID, _) in allSupportedTraitIDs.contains(shapeID) }
+        let schemaTraitDict = uniqueCollection
+            .allElements
+            .map { $0 as! any Trait }
+            .filter { allSupportedTraitIDs.contains($0.id) }
         return Self(traits: schemaTraitDict)
     }
 }
@@ -78,7 +88,7 @@ extension TraitCollection: ExpressibleByDictionaryLiteral {
     public typealias Value = Node
 
     public init(dictionaryLiteral elements: (Key, Value)...) {
-        self.traitDict = Dictionary(uniqueKeysWithValues: elements)
+        try! self.init(traitMap: Dictionary(uniqueKeysWithValues: elements))
     }
 }
 
@@ -87,6 +97,11 @@ extension TraitCollection: ExpressibleByArrayLiteral {
     public typealias ArrayLiteralElement = any Trait
 
     public init(arrayLiteral elements: ArrayLiteralElement...) {
-        self.init(traits: Dictionary(uniqueKeysWithValues: elements.map { ($0.id, $0.node) }))
+        try! self.init(traitMap: Dictionary(uniqueKeysWithValues: elements.map { ($0.id, $0.node) }))
     }
+}
+
+func trait(id: ShapeID, node: Node) throws -> (any Trait)? {
+    guard let TraitType = allSupportedTraitTypes[id] else { return nil }
+    return try TraitType.init(node: node)
 }
