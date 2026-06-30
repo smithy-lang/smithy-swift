@@ -9,7 +9,7 @@
 @_spi(SchemaBasedSerde)
 public struct TraitCollection: Sendable {
     /// The traits in this collection, as a dictionary of traits keyed by trait shape ID.
-    public var traitDict: [ShapeID: any Trait]
+    public let traitDict: [ShapeID: any Trait]
 
     public init() {
         self.traitDict = [:]
