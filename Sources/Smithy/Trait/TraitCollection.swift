@@ -9,7 +9,7 @@
 @_spi(SchemaBasedSerde)
 public struct TraitCollection: Sendable, Hashable {
     /// The "raw" traits in this collection, as a dictionary of `Node`s keyed by trait shape ID.
-    public var traitDict: [ShapeID: Node]
+    public let traitDict: [ShapeID: Node]
 
     public init() {
         self.traitDict = [:]
@@ -49,12 +49,6 @@ public struct TraitCollection: Sendable, Hashable {
     public func getTrait<T: Trait>(_ type: T.Type) throws -> T? {
         guard let node = traitDict[T.id] else { return nil }
         return try T(node: node)
-    }
-
-    /// Adds a new trait to the collection, overwriting an existing, matching trait.
-    /// - Parameter trait: The trait to add to the collection.
-    public mutating func add(_ trait: Trait) {
-        traitDict[trait.id] = trait.node
     }
 
     /// Combines two trait collections into a single collection.
