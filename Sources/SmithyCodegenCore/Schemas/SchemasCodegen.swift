@@ -152,7 +152,9 @@ package struct SchemasCodegen {
             return pairs
         } else {
             // Get the trait IDs for traits that are allow-listed for the schema & sort
-            let traitIDs = Array(shape.traits.schemaTraits.traitDict.filter { $0.value is any RuntimeTrait }.keys).smithySorted()
+            let traitIDs = Array(
+                shape.traits.schemaTraits.traitDict.filter { $0.value is any RuntimeTrait }.keys
+            ).smithySorted()
             // Map sorted IDs into tuples with their node value
             return traitIDs.map { traitID in
                 let trait = shape.traits.traitDict[traitID]!
