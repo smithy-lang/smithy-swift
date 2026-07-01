@@ -8,7 +8,6 @@
 import class AwsCommonRuntimeKit.CBORDecoder
 import struct Foundation.Data
 import struct Foundation.Date
-import struct Smithy.Document
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
@@ -206,7 +205,7 @@ public class Deserializer: ShapeDeserializer {
         return value
     }
 
-    public func readDocument(_ schema: Schema) throws -> Document {
+    public func readDocument(_ schema: Schema) throws -> any SmithyDocument {
         throw SerializerError("Document type not implemented in CBOR")
     }
 
