@@ -30,7 +30,7 @@ public struct TraitCollection: Sendable {
         // Finally, convert the ShapeID - modeled Trait pairs into a dictionary.
         self.traitDict = Dictionary(uniqueKeysWithValues: traitPairs)
     }
-    
+
     /// Creates a TraitCollection from an array of modeled Traits.
     /// - Parameter traits: A list of modeled traits to store in this collection.  All traits must be unique by ShapeID.
     public init(traits: [any Trait]) {
