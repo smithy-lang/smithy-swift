@@ -58,7 +58,7 @@ public struct TraitCollection: Sendable {
     /// Gets a trait from the collection.
     /// - Parameter type: The trait to be retrieved.
     /// - Returns: The requested trait, or `nil` if the collection doesn't have that trait.
-    public func getTrait<T: Trait>(_ type: T.Type) throws -> T? {
+    public func getTrait<T: Trait>(_ type: T.Type) -> T? {
         traitDict[T.id] as? T
     }
 

@@ -22,10 +22,10 @@ extension Model {
         let cutoff = formatter.date(from: "2024-09-17")!
 
         // Filter the deprecated shapes from the model.
-        let nonDeprecatedShapes = try shapes.filter { (_, shape) in
+        let nonDeprecatedShapes = shapes.filter { (_, shape) in
 
             // Keep this shape if it doesn't have a DeprecatedTrait with a `since` value.
-            guard let since = try shape.getTrait(DeprecatedTrait.self)?.since else { return true }
+            guard let since = shape.getTrait(DeprecatedTrait.self)?.since else { return true }
 
             // Keep this shape if the `since` value doesn't parse to a yyyy-MM-dd date.
             guard let sinceDate = formatter.date(from: since) else { return true }

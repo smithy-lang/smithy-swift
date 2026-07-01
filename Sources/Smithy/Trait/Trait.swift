@@ -10,7 +10,7 @@
 /// All traits have a ``Node`` associated with them, but will typically provide their properties
 /// with convenient, type-safe accessors.
 @_spi(SchemaBasedSerde)
-public protocol Trait: Sendable, Hashable {
+public protocol Trait: Sendable {
     static var id: ShapeID { get }
 
     var node: Node { get }
@@ -37,14 +37,6 @@ public extension Trait {
         // The default resolution is to take the trait on the member if present,
         // else the trait on the target if present, else nil.
         member ?? target
-    }
-
-    /// Calculates a hash value for this trait.
-    ///
-    /// Custom Hashable conformance.  Traits hash by their ID only.
-    /// - Parameter hasher: The hasher to hash this Trait into
-    func hash(into hasher: inout Hasher) {
-        id.hash(into: &hasher)
     }
 }
 

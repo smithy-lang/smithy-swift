@@ -30,6 +30,19 @@ extension Model {
         // Combine the built-in trait types with the additional ones for use in building the model.
         let traitTypes = builtinTraitTypes + additionalTraitTypes
 
+        // Trait types are keyed by Shape ID throughout model creation, so a duplicate ID would
+        // silently collide (or trap).  Detect it here and throw a descriptive error instead.
+        let traitIDs = traitTypes.map { $0.id }
+        var countByTraitID = [ShapeID: Int]()
+        for traitID in traitIDs {
+            countByTraitID[traitID, default: 0] += 1
+        }
+        let duplicateTraitIDs = countByTraitID.filter { $0.value > 1 }.keys
+        guard duplicateTraitIDs.isEmpty else {
+            let rendered = duplicateTraitIDs.map { $0.absolute }.sorted().joined(separator: ", ")
+            throw ModelError("Duplicate trait type(s) registered for Shape ID(s): \(rendered)")
+        }
+
         // Get all of the members from the AST model, create pairs of ShapeID & MemberShape
         let idToMemberShapePairs = try astModel.shapes
             .flatMap { try Self.memberShapePairs(id: $0.key, astShape: $0.value, traitTypes: traitTypes) }
