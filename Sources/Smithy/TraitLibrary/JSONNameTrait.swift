@@ -11,7 +11,7 @@
 public struct JSONNameTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "jsonName") }
 
-    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+    public static let uniqueIndex = TraitRegistry.shared.register(Self.self)
 
     public var node: Node { .string(name) }
     public var name: String

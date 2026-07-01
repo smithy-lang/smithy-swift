@@ -14,7 +14,7 @@ public struct TraitCollection: Sendable {
         self.uniqueCollection = UniqueCollection([])
     }
 
-    public init(traitMap: [ShapeID: Node] = [:]) throws {
+    public init(traitMap: [ShapeID: Node]) throws {
         let traits = try traitMap.compactMap { try trait(id: $0.key, node: $0.value) }
         self.init(traits: traits)
     }
@@ -52,10 +52,10 @@ public struct TraitCollection: Sendable {
     /// Checks if a trait collection has a trait, by ID.
     /// - Parameter id: The trait ID to be checked.
     /// - Returns: `true` if the collection has a trait for the passed Shape ID, `false` otherwise.
-    public func hasTrait(_ id: ShapeID) -> Bool {
-        guard let TraitType = allSupportedTraitTypes[id] else { return false }
-        return uniqueCollection.get(TraitType.self) != nil
-    }
+//    public func hasTrait(_ id: ShapeID) -> Bool {
+//        guard let TraitType = allSupportedTraitTypes[id] else { return false }
+//        return uniqueCollection.get(TraitType.self) != nil
+//    }
 
     /// Gets a trait from the collection.
     /// - Parameter type: The trait to be retrieved.
@@ -101,7 +101,14 @@ extension TraitCollection: ExpressibleByArrayLiteral {
     }
 }
 
+//extension TraitCollection: Equatable {
+//
+//    public static func ==(_ lhs: TraitCollection, _ rhs: TraitCollection) -> Bool {
+//        let lhsTraits = lhs.uniqueCollection.allElements. == rhs.uniqueCollection.allElements
+//    }
+//}
+
 func trait(id: ShapeID, node: Node) throws -> (any Trait)? {
-    guard let TraitType = allSupportedTraitTypes[id] else { return nil }
+    guard let TraitType = TraitRegistry.shared.type(id) else { return nil }
     return try TraitType.init(node: node)
 }

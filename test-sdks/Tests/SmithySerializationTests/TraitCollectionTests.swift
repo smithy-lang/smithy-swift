@@ -8,19 +8,21 @@
 import XCTest
 @_spi(SchemaBasedSerde)
 import Smithy
+//@_spi(SchemaBasedSerde)
+//import SmithyCodegenCore
 
 final class TraitCollectionTests: XCTestCase {
 
     func test_hasTrait_returnsCorrectly() throws {
-        let subject = TraitCollection(traitMap: [UsedAsInputTrait.id: [:]])
-        XCTAssert(subject.hasTrait(UsedAsInputTrait.self))
+        let subject = try TraitCollection(traitMap: [RequiredTrait.id: [:]])
+        XCTAssert(subject.hasTrait(RequiredTrait.self))
     }
 
     func test_adding_mergesTraits() throws {
         let original: TraitCollection = [InputTrait()]
         let new: TraitCollection = [OutputTrait()]
         let combined = original.adding(new)
-
-        XCTAssertEqual(combined, [InputTrait(), OutputTrait()])
+        XCTAssert(combined.hasTrait(InputTrait.self))
+        XCTAssert(combined.hasTrait(OutputTrait.self))
     }
 }

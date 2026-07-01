@@ -10,13 +10,14 @@ import enum Smithy.Node
 import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
 import protocol Smithy.Trait
-import let Smithy.traitUniqueIndexCounter
+@_spi(SchemaBasedSerde)
+import class Smithy.TraitRegistry
 
 @_spi(SchemaBasedSerde)
 public struct UsedAsOutputTrait: Trait {
     public static var id: ShapeID { .init("swift.synthetic", "usedAsOutput") }
 
-    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+    public static let uniqueIndex = TraitRegistry.shared.register(Self.self)
 
     public var node: Node { [:] }
 

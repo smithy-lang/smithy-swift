@@ -6,6 +6,8 @@
 //
 
 @_spi(SchemaBasedSerde)
+import var Smithy.allSupportedTraitTypes
+@_spi(SchemaBasedSerde)
 import struct Smithy.EnumValueTrait
 import enum Smithy.Node
 @_spi(SchemaBasedSerde)
@@ -24,6 +26,8 @@ extension Model {
     /// (i.e. members have the enclosing shape's namespace & name, along with their own member name.)
     /// - Parameter astModel: The JSON AST model to load into the `Model` being created.
     convenience init(astModel: ASTModel) throws {
+        _ = allSupportedTraitTypes.values.forEach { $0.uniqueIndex }
+        _ = [DeprecatedTrait.self.uniqueIndex, EnumTrait.self.uniqueIndex, UsedAsInputTrait.self.uniqueIndex, UsedAsOutputTrait.self.uniqueIndex]
         // Get all of the members from the AST model, create pairs of ShapeID & MemberShape
         let idToMemberShapePairs = try astModel.shapes
             .flatMap { try Self.memberShapePairs(id: $0.key, astShape: $0.value) }

@@ -11,7 +11,7 @@
 public struct EventPayloadTrait: Trait {
     public static var id: ShapeID { .init("smithy.api", "eventPayload") }
 
-    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+    public static let uniqueIndex = TraitRegistry.shared.register(Self.self)
 
     public var node: Node { [:] }
 
