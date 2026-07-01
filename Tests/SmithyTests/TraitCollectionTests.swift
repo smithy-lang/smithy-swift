@@ -11,13 +11,28 @@ import Smithy
 
 final class TraitCollectionTests: XCTestCase {
 
-    func test_init_createsTraitsWithMapOfIDToNode() throws {
+    func test_init_createsTraitCollectionWithListOfTraits() throws {
         let subject: TraitCollection = [
+            InputTrait(),
+            OutputTrait(),
+            DefaultTrait("abc"),
+        ]
+
+        XCTAssertEqual(subject, [DefaultTrait("abc"), InputTrait(), OutputTrait()])
+    }
+
+    func test_init_createsTraitCollectionWithShapeIDToNodeMapAndListOfTraitTypes() throws {
+        let subject = try TraitCollection(traitDict: [
             InputTrait.id: [:],
             OutputTrait.id: [:],
             DefaultTrait.id: "abc",
-        ]
-        XCTAssertEqual(subject, [try DefaultTrait(node: "abc"), InputTrait(), OutputTrait()])
+        ], traitTypes: [
+            DefaultTrait.self,
+            OutputTrait.self,
+            InputTrait.self,
+        ])
+
+        XCTAssertEqual(subject, [DefaultTrait("abc"), InputTrait(), OutputTrait()])
     }
 
     func test_adding_mergesTraits() throws {

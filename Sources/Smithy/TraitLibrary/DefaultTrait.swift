@@ -16,6 +16,10 @@ public struct DefaultTrait: RuntimeTrait {
         self.node = node
     }
 
+    public init(_ string: String) {
+        self.node = .string(string)
+    }
+
     public init(_ bool: Bool) {
         self.node = .boolean(bool)
     }

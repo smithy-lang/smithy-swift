@@ -24,6 +24,8 @@ package struct SchemasCodegen {
     /// - Returns: The contents of the `Schemas.swift` source file.
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
+        // Many runtime trait types will likely be instantiated in this file,
+        // along with other fundamental types in Smithy.  So import entire module.
         writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import Smithy")
         writer.write("")
@@ -81,6 +83,12 @@ package struct SchemasCodegen {
             if !traitPairs.isEmpty {
                 writer.openBlock("traits: [", "],") { writer in
                     for (TraitType, node) in traitPairs {
+                        // Traits are initialized using try? to convert any thrown error to nil.
+                        // In practice, a trait should never throw at runtime, because every
+                        // trait was already successfully constructed by the code generator
+                        // while processing the model.
+                        // The TraitCollection initializes from this array of optional Traits;
+                        // nil elements are simply compacted out.
                         writer.write("try? Smithy.\(TraitType)(node: \(node.rendered)),")
                     }
                 }
@@ -136,9 +144,14 @@ package struct SchemasCodegen {
             let targetTraitIDs = try memberShape.target.traits.traitDict.filter { $0.value is any RuntimeTrait }.keys
             let allTraitIDs = Array(Set(Array(memberTraitIDs) + targetTraitIDs)).smithySorted()
 
+            // Iterate over every trait ID appearing in either the member or target
             var pairs = [(any Trait.Type, Node)]()
             for traitID in allTraitIDs {
+                // Force-unwrap used here since this trait must be present in 1 of the 2 (member or target)
                 let trait = try memberShape.traits.traitDict[traitID] ?? memberShape.target.traits.traitDict[traitID]!
+
+                // Call the resolvedMemberTrait method for the type of trait involved
+                // If a node is resolved, add it into the pairs, along with this trait type
                 let TraitType = type(of: trait)
                 if let resolvedNode = try TraitType.resolvedMemberTrait(
                     member: memberShape.traits.traitDict[traitID]?.node,
@@ -149,7 +162,7 @@ package struct SchemasCodegen {
             }
             return pairs
         } else {
-            // Get the trait IDs for traits that are allow-listed for the schema & sort
+            // Get the trait IDs for runtime traits & sort
             let traitIDs = Array(shape.traits.traitDict.filter { $0.value is any RuntimeTrait }.keys).smithySorted()
             // Map sorted IDs into tuples with their node value
             return traitIDs.map { traitID in
