@@ -16,7 +16,7 @@ public class UniqueIndexCounter {
     private let _lock = NSRecursiveLock()
 
     public init() {}
-    
+
     /// Returns the next sequential unique index value for this counter.
     /// - Returns: The next sequential unique index value for this counter.
     public func getNextIndex() -> Int {

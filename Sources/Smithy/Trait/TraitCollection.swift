@@ -65,11 +65,13 @@ public struct TraitCollection: Sendable {
     /// - Returns: The merged ``TraitCollection``.
     public func adding(_ other: TraitCollection) -> TraitCollection {
         return Self(
+            // swiftlint:disable:next force_cast
             traits: (self.collection.allElements as! [any Trait]) + (other.collection.allElements as! [any Trait])
         )
     }
 
     public var traitDict: [ShapeID: any Trait] {
+        // swiftlint:disable:next force_cast
         let traits = collection.allElements as! [any Trait]
         return Dictionary(uniqueKeysWithValues: traits.map { ($0.id, $0) })
     }

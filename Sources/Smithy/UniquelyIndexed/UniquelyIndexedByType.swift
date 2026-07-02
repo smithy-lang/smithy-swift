@@ -11,7 +11,7 @@
 /// sparse array of pointers, with the index into the array provided by the type stored.
 /// (Value type storage would consume excess memory in the array.)
 public protocol UniquelyIndexedByType: AnyObject, Sendable {
-    
+
     /// The unique index for this type.
     ///
     /// Types that will be stored together must have indexes assigned that are unique
