@@ -31,8 +31,8 @@ public struct UniquelyIndexedCollection: Sendable {
     /// The number of elements in the collection.
     public var count: Int { _storage.reduce(0) { $0 + ($1 != nil ? 1 : 0) } }
 
-    // swiftlint:disable:next empty_count
-    public var isEmpty: Bool { count != 0 }
+    /// Whether the collection has no elements.
+    public var isEmpty: Bool { !_storage.contains { $0 != nil } }
 
     /// All of the elements in the collection, returned in unique index order.
     public var allElements: [any UniquelyIndexedByType] { _storage.compactMap { $0 } }

@@ -45,4 +45,5 @@ public extension Trait {
 @_spi(SchemaBasedSerde)
 public protocol RuntimeTrait: Trait {}
 
+@_spi(SchemaBasedSerde)
 public let traitUniqueIndexCounter = UniqueIndexCounter()

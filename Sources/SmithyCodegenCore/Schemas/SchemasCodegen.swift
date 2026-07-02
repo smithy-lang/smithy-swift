@@ -138,37 +138,42 @@ package struct SchemasCodegen {
 
     private func traitPairs(for shape: Shape) throws -> [(any Trait.Type, Node)] {
         if let memberShape = shape as? MemberShape {
+            let memberTraitDict = memberShape.traits.traitDict
+            let targetTraitDict = try memberShape.target.traits.traitDict
+
             // Get all the trait IDs that apply to this member & sort
             // Only take runtime traits, others aren't used at runtime
-            let memberTraitIDs = memberShape.traits.traitDict.filter { $0.value is any RuntimeTrait }.keys
-            let targetTraitIDs = try memberShape.target.traits.traitDict.filter { $0.value is any RuntimeTrait }.keys
+            let memberTraitIDs = memberTraitDict.filter { $0.value is any RuntimeTrait }.keys
+            let targetTraitIDs = targetTraitDict.filter { $0.value is any RuntimeTrait }.keys
             let allTraitIDs = Array(Set(Array(memberTraitIDs) + targetTraitIDs)).smithySorted()
 
             // Iterate over every trait ID appearing in either the member or target
             var pairs = [(any Trait.Type, Node)]()
             for traitID in allTraitIDs {
                 // Force-unwrap used here since this trait must be present in 1 of the 2 (member or target)
-                let trait = try memberShape.traits.traitDict[traitID] ?? memberShape.target.traits.traitDict[traitID]!
+                let trait = memberTraitDict[traitID] ?? targetTraitDict[traitID]!
 
                 // Call the resolvedMemberTrait method for the type of trait involved
                 // If a node is resolved, add it into the pairs, along with this trait type
                 let TraitType = type(of: trait)
                 if let resolvedNode = try TraitType.resolvedMemberTrait(
-                    member: memberShape.traits.traitDict[traitID]?.node,
-                    target: memberShape.target.traits.traitDict[traitID]?.node
+                    member: memberTraitDict[traitID]?.node,
+                    target: targetTraitDict[traitID]?.node
                 ) {
                     pairs.append((TraitType, resolvedNode))
                 }
             }
             return pairs
         } else {
+            let traitDict = shape.traits.traitDict
+
             // Get the trait IDs for runtime traits & sort
-            let traitIDs = Array(shape.traits.traitDict.filter { $0.value is any RuntimeTrait }.keys).smithySorted()
+            let traitIDs = Array(traitDict.filter { $0.value is any RuntimeTrait }.keys).smithySorted()
             // Map sorted IDs into tuples with their node value
             return traitIDs.map { traitID in
-                let trait = shape.traits.traitDict[traitID]!
+                let trait = traitDict[traitID]!
                 let TraitType = type(of: trait)
-                return (TraitType, shape.traits.traitDict[traitID]!.node)
+                return (TraitType, trait.node)
             }
         }
     }

@@ -60,20 +60,24 @@ public struct TraitCollection: Sendable {
         collection.get(T.self)
     }
 
+    /// The traits in this collection, in unique index order.
+    ///
+    /// `collection` is only ever populated from `[any Trait]` values, so every element is
+    /// guaranteed to be a trait; the cast below cannot fail.
+    private var traits: [any Trait] {
+        // swiftlint:disable:next force_cast
+        collection.allElements as! [any Trait]
+    }
+
     /// Combines two trait collections into a single collection.
     /// - Parameter other: The trait collection to merge.  Traits in this collection overwrite the other.
     /// - Returns: The merged ``TraitCollection``.
     public func adding(_ other: TraitCollection) -> TraitCollection {
-        return Self(
-            // swiftlint:disable:next force_cast
-            traits: (self.collection.allElements as! [any Trait]) + (other.collection.allElements as! [any Trait])
-        )
+        return Self(traits: self.traits + other.traits)
     }
 
     public var traitDict: [ShapeID: any Trait] {
-        // swiftlint:disable:next force_cast
-        let traits = collection.allElements as! [any Trait]
-        return Dictionary(uniqueKeysWithValues: traits.map { ($0.id, $0) })
+        Dictionary(uniqueKeysWithValues: traits.map { ($0.id, $0) })
     }
 }
 
@@ -93,8 +97,8 @@ extension TraitCollection: Equatable {
     public static func ==(_ lhs: Self, _ rhs: Self) -> Bool {
         // Traits themselves aren't Equatable, but their ShapeID and Node are.
         // Convert the [any Trait] arrays to [ShapeID] and [Node] and compare.
-        guard let lhsTraits = lhs.collection.allElements as? [any Trait] else { return false }
-        guard let rhsTraits = rhs.collection.allElements as? [any Trait] else { return false }
+        let lhsTraits = lhs.traits
+        let rhsTraits = rhs.traits
         return lhsTraits.map { $0.id } == rhsTraits.map { $0.id } &&
             lhsTraits.map { $0.node } == rhsTraits.map { $0.node }
     }

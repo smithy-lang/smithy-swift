@@ -29,4 +29,14 @@ final class UniquelyIndexedCollectionTests: XCTestCase {
 
         XCTAssertEqual(subject.get(DefaultTrait.self), DefaultTrait(789.0))
     }
+
+    func test_count_countsElements() {
+        XCTAssertEqual(UniquelyIndexedCollection([]).count, 0)
+        XCTAssertEqual(UniquelyIndexedCollection([InputTrait(), OutputTrait(), DefaultTrait(789.0)]).count, 3)
+    }
+
+    func test_isEmpty_isTrueOnlyWhenCollectionHasNoElements() {
+        XCTAssertTrue(UniquelyIndexedCollection([]).isEmpty)
+        XCTAssertFalse(UniquelyIndexedCollection([InputTrait()]).isEmpty)
+    }
 }
