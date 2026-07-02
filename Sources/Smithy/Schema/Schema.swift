@@ -104,8 +104,8 @@ public final class Schema: Sendable {
     /// Gets a trait from the schema.
     /// - Parameter type: The trait to be retrieved.
     /// - Returns: The requested trait, or `nil` if the schema doesn't have that trait.
-    public func getTrait<T: Trait>(_ type: T.Type) throws -> T? {
-        try traits.getTrait(type)
+    public func getTrait<T: Trait>(_ type: T.Type) -> T? {
+        traits.getTrait(type)
     }
 
     /// Returns the member for a List's element.

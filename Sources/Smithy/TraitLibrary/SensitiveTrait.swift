@@ -7,7 +7,7 @@
 
 /// https://smithy.io/2.0/spec/documentation-traits.html#smithy-api-sensitive-trait
 @_spi(SchemaBasedSerde)
-public struct SensitiveTrait: Trait {
+public struct SensitiveTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "sensitive") }
 
     public var node: Node { [:] }

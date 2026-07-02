@@ -19,7 +19,7 @@ import struct Smithy.TraitError
 @_spi(SchemaBasedSerde)
 public struct EnumTrait: Trait {
 
-    public struct EnumMember {
+    public struct EnumMember: Sendable, Equatable {
         public let value: String
         public let name: String?
     }

@@ -66,8 +66,8 @@ struct NullableIndex {
         guard allowedTypes.contains(target.type) else { return false }
 
         // Check if there is a default trait with a zero/false value.  If so, member is non-optional.
-        let memberDefaultTrait = try memberShape.getTrait(DefaultTrait.self)
-        let targetDefaultTrait = try target.getTrait(DefaultTrait.self)
+        let memberDefaultTrait = memberShape.getTrait(DefaultTrait.self)
+        let targetDefaultTrait = target.getTrait(DefaultTrait.self)
         guard let defaultNode = (memberDefaultTrait ?? targetDefaultTrait)?.node else {
             return false
         }

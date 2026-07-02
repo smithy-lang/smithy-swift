@@ -6,7 +6,7 @@
 //
 
 @_spi(SchemaBasedSerde)
-public struct RequiredTrait: Trait {
+public struct RequiredTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "required") }
 
     public var node: Node { [:] }

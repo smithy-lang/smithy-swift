@@ -27,6 +27,6 @@ extension Model {
         let shapeDict = Dictionary(uniqueKeysWithValues: shapesForService.map { ($0.id, $0) })
 
         // Create and return the transformed model
-        return Model(version: self.version, metadata: self.metadata, shapes: shapeDict)
+        return Model(version: self.version, metadata: self.metadata, shapes: shapeDict, traitTypes: self.traitTypes)
     }
 }

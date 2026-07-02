@@ -236,7 +236,7 @@ public final class Serializer: ShapeSerializer {
 
     public func writeTimestamp(_ schema: Schema, _ value: Date) throws {
         // Get the timestamp format
-        let timestampFormat = try schema.traits.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds
+        let timestampFormat = schema.traits.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds
 
         // Depending on format, timestamp is written either as a string or double.
         switch timestampFormat {
@@ -312,7 +312,7 @@ public final class Serializer: ShapeSerializer {
 
     private func objectKey(for memberSchema: Schema) throws -> String? {
         // Get jsonName, if present, for restJson.  Otherwise just the member name.
-        return if usesJSONNameTrait, let jsonName = try memberSchema.getTrait(JSONNameTrait.self)?.name {
+        return if usesJSONNameTrait, let jsonName = memberSchema.getTrait(JSONNameTrait.self)?.name {
             jsonName
         } else {
             memberSchema.id.member

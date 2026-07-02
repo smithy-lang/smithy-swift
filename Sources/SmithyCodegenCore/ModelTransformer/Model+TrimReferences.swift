@@ -126,6 +126,6 @@ extension Model {
         }
 
         // Create the transformed model, and return it to the caller.
-        return Model(version: self.version, metadata: self.metadata, shapes: finalShapes)
+        return Model(version: self.version, metadata: self.metadata, shapes: finalShapes, traitTypes: self.traitTypes)
     }
 }
