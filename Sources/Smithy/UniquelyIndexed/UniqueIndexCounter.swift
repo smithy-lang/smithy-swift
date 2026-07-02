@@ -11,7 +11,7 @@ import class Foundation.NSRecursiveLock
 ///
 /// Unique index values start at zero and go up by one each time `getNextIndex()` is called.
 /// This type is thread-safe and concurrency-safe.
-public class UniqueIndexCounter {
+public class UniqueIndexCounter: @unchecked Sendable {
     private var _counter = 0
     private let _lock = NSRecursiveLock()
 
