@@ -29,7 +29,7 @@ public struct UniquelyIndexedCollection: Sendable {
     }
 
     /// The number of elements in the collection.
-    public var count: Int { _storage.count { $0 != nil } }
+    public var count: Int { _storage.count(where: { $0 != nil }) }
 
     // swiftlint:disable:next empty_count
     public var isEmpty: Bool { count != 0 }
