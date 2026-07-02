@@ -80,6 +80,8 @@ structure SerdeOperationInput {
     sparseList: SparseIntegerList
     document: Document
     myDocument: MyDocument
+    nestedMap: OuterNestedMap
+    nestedList: OuterNestedList
 }
 
 structure SerdeOperationOutput {}
@@ -111,3 +113,21 @@ list SparseIntegerList {
 }
 
 document MyDocument
+
+map OuterNestedMap {
+    key: String
+    value: InnerNestedMap
+}
+
+map InnerNestedMap {
+    key: String
+    value: String
+}
+
+list OuterNestedList {
+    member: InnerNestedList
+}
+
+list InnerNestedList {
+    member: String
+}

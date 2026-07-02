@@ -53,6 +53,22 @@ final class SerializerTests: XCTestCase {
         XCTAssertEqual(json, #"{"string":"🗑️ + 🐼 = 🦝"}"#)
     }
 
+    func test_writeString_escapesNonSpecialControlCharacters() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        // ASCII 8, 9, 10, 12, 13 are the "special" characters \b\f\r\t\n so exclude them here
+        let nonspecialEscapedCharacters: [UInt8] = (0..<32).filter { ![8, 9, 10, 12, 13].contains($0) }
+        let input = SerdeOperationInput(
+            string: String(nonspecialEscapedCharacters.map { Character(UnicodeScalar($0)) })
+        )
+        try input.serialize(subject)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        let expected = #"{"string":"\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u000b\u000e\u000f"# +
+            #"\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"}"#
+        XCTAssertEqual(json, expected)
+    }
+
     // MARK: - blobs
 
     func test_writeBlob_writesAnEmptyDataBlobAsEmptyString() throws {
@@ -107,6 +123,16 @@ final class SerializerTests: XCTestCase {
 
         let json = String(data: try subject.data, encoding: .utf8)
         XCTAssertEqual(json, #"{"list":[123,456,789]}"#)
+    }
+
+    func test_writeList_writesNestedLists() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        let input = SerdeOperationInput(nestedList: [["inner", "list"], ["another", "inner", "list"]])
+        try input.serialize(subject)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        XCTAssertEqual(json, #"{"nestedList":[["inner","list"],["another","inner","list"]]}"#)
     }
 
     // MARK: - boolean
@@ -236,6 +262,16 @@ final class SerializerTests: XCTestCase {
         let json = String(data: try subject.data, encoding: .utf8)
         // Key-value pairs may be rendered in any order, so check for either possible order
         XCTAssert(json == #"{"map":{"a":123,"b":456}}"# || json == #"{"map":{"b":456,"a":123}}"#)
+    }
+
+    func test_writeMap_writesNestedMaps() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        let input = SerdeOperationInput(nestedMap: ["outer": ["inner": "nested"]])
+        try input.serialize(subject)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        XCTAssertEqual(json, #"{"nestedMap":{"outer":{"inner":"nested"}}}"#)
     }
 
     // MARK: - structures

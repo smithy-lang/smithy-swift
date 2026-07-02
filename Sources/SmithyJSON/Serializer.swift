@@ -56,6 +56,7 @@ public final class Serializer: ShapeSerializer {
     private static let nan = "\"NaN\"".utf8
     private static let positiveInfinity = "\"Infinity\"".utf8
     private static let negativeInfinity = "\"-Infinity\"".utf8
+    private static let unicodeASCIIEscapeStart = "\\u00".utf8
 
     let usesJSONNameTrait: Bool
     private var _data: Data
@@ -213,7 +214,12 @@ public final class Serializer: ShapeSerializer {
                 _data.append(Self.t)
             default:
                 if let ascii {
-                    _data.append(ascii)
+                    if ascii < 0x20 {
+                        // Any C0 control without a short form must be \u00XX-escaped (RFC 8259)
+                        appendEscaped(ascii: ascii)
+                    } else {
+                        _data.append(ascii)
+                    }
                 } else {
                     _data.append(contentsOf: character.utf8)
                 }
@@ -318,4 +324,13 @@ public final class Serializer: ShapeSerializer {
             memberSchema.id.member
         }
     }
+
+    private func appendEscaped(ascii: UInt8) {
+        _data.append(contentsOf: Self.unicodeASCIIEscapeStart)
+        _data.append(Self.digits[Int(ascii >> 4)])
+        _data.append(Self.digits[Int(ascii & 0x0F)])
+    }
+
+    static let digits: [UInt8] = "0123456789abcdef".compactMap { $0.asciiValue }
 }
+
