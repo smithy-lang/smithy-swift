@@ -10,6 +10,7 @@ service AWSJSONService {
     operations: [
         JSONName
         NullTolerance
+        SerdeOperation
     ]
 }
 
@@ -61,3 +62,52 @@ map SparseNullToleranceMap {
     key: String
     value: Integer
 }
+
+operation SerdeOperation {
+    input: SerdeOperationInput
+    output: SerdeOperationOutput
+}
+
+structure SerdeOperationInput {
+    structure: SerdeOperationStructure
+    union: SerdeOperationUnion
+    string: String
+    blob: Blob
+    list: IntegerList
+    map: IntegerMap
+    double: Double
+    boolean: Boolean
+    sparseList: SparseIntegerList
+    document: Document
+    myDocument: MyDocument
+}
+
+structure SerdeOperationOutput {}
+
+structure SerdeOperationStructure {
+    a: String
+    b: Integer
+    c: Boolean
+}
+
+union SerdeOperationUnion {
+    x: String
+    y: Integer
+    z: Boolean
+}
+
+list IntegerList {
+    member: Integer
+}
+
+map IntegerMap {
+    key: String
+    value: Integer
+}
+
+@sparse
+list SparseIntegerList {
+    member: Integer
+}
+
+document MyDocument

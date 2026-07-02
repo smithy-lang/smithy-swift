@@ -13,7 +13,10 @@ import struct Smithy.Document
 @_spi(SchemaBasedSerde)
 import struct Smithy.JSONNameTrait
 @_spi(SchemaBasedSerde)
+import enum Smithy.Prelude
+@_spi(SchemaBasedSerde)
 import class Smithy.Schema
+import enum Smithy.ShapeType
 @_spi(SchemaBasedSerde)
 import struct Smithy.TimestampFormatTrait
 @_spi(SchemaBasedSerde)
@@ -26,22 +29,60 @@ import protocol SmithySerialization.ShapeSerializer
 
 @_spi(SchemaBasedSerde)
 public final class Serializer: ShapeSerializer {
-    var value: JSONValue?
+    // ASCII (and UTF-8) values for significant characters in JSON
+    private static let backspace: UInt8 = 8
+    private static let tab: UInt8 = 9
+    private static let lineFeed: UInt8 = 10
+    private static let formFeed: UInt8 = 12
+    private static let cr: UInt8 = 13
+    private static let doubleQuote: UInt8 = 34
+    private static let comma: UInt8 = 44
+    private static let colon: UInt8 = 58
+    private static let openingSquareBrace: UInt8 = 91
+    private static let backslash: UInt8 = 92
+    private static let closingSquareBrace: UInt8 = 93
+    private static let b: UInt8 = 98
+    private static let f: UInt8 = 102
+    private static let n: UInt8 = 110
+    private static let r: UInt8 = 114
+    private static let t: UInt8 = 116
+    private static let openingCurlyBrace: UInt8 = 123
+    private static let closingCurlyBrace: UInt8 = 125
+
+    // ASCII (and UTF-8) sequences for multicharacter tokens used in JSON
+    private static let trueBytes = "true".utf8
+    private static let falseBytes = "false".utf8
+    private static let nullBytes = "null".utf8
+    private static let nan = "\"NaN\"".utf8
+    private static let positiveInfinity = "\"Infinity\"".utf8
+    private static let negativeInfinity = "\"-Infinity\"".utf8
+
     let usesJSONNameTrait: Bool
+    private var _data: Data
+    private var _needsComma = false
 
     public init(usesJSONNameTrait: Bool) {
         self.usesJSONNameTrait = usesJSONNameTrait
+        // 64KB is reserved to allow for additions to data without requiring copy to a new buffer
+        self._data = Data(capacity: 65536)
     }
 
     public func writeStruct<S>(_ schema: Schema, _ value: S) throws where S: SerializableStruct {
-        var object = [String: JSONValue]()
+        try writeCommaAndStructureKeyIfNeeded(schema)
+
+        // Save the comma state while writing the structure, and open the structure with '{'
+        let savedNeedsComma = self._needsComma
+        self._needsComma = false
+        _data.append(Self.openingCurlyBrace)
+
+        // Write the members of the structure
         for memberSchema in schema.members {
-            guard let key = try objectKey(for: memberSchema) else { continue }
-            let memberSerializer = Serializer(usesJSONNameTrait: usesJSONNameTrait)
-            try S.writeConsumer(memberSchema, value, memberSerializer)
-            object[key] = memberSerializer.value
+            try S.writeConsumer(memberSchema, value, self)
         }
-        self.value = .object(object)
+
+        // Close the structure with '}', and restore the comma state
+        _data.append(Self.closingCurlyBrace)
+        self._needsComma = savedNeedsComma
     }
 
     public func writeList<E>(
@@ -49,15 +90,21 @@ public final class Serializer: ShapeSerializer {
         _ value: [E],
         _ consumer: (E, any ShapeSerializer) throws -> Void
     ) throws {
-        var list = [JSONValue]()
+        try writeCommaAndStructureKeyIfNeeded(schema)
+
+        // Save the comma state while writing the list, and open the list with '['
+        let savedNeedsComma = self._needsComma
+        self._needsComma = false
+        _data.append(Self.openingSquareBrace)
+
+        // Write the members of the list
         for element in value {
-            let elementSerializer = Serializer(usesJSONNameTrait: usesJSONNameTrait)
-            try consumer(element, elementSerializer)
-            if let value = elementSerializer.value {
-                list.append(value)
-            }
+            try consumer(element, self)
         }
-        self.value = .list(list)
+
+        // Close the list with ']', and restore the comma state
+        _data.append(Self.closingSquareBrace)
+        self._needsComma = savedNeedsComma
     }
 
     public func writeMap<V>(
@@ -65,100 +112,206 @@ public final class Serializer: ShapeSerializer {
         _ value: [String: V],
         _ consumer: (V, any ShapeSerializer) throws -> Void
     ) throws {
-        var object = [String: JSONValue]()
+        try writeCommaAndStructureKeyIfNeeded(schema)
+
+        // Save the comma state while writing the map, and open the map with '{'
+        let savedNeedsComma = self._needsComma
+        self._needsComma = false
+        _data.append(Self.openingCurlyBrace)
+
+        // Write the keys and members of the map
         for (key, value) in value {
-            let valueSerializer = Serializer(usesJSONNameTrait: usesJSONNameTrait)
-            try consumer(value, valueSerializer)
-            object[key] = valueSerializer.value
+            // Write the comma (if needed), map key and a colon
+            try writeString(schema.key, key)
+            _data.append(Self.colon)
+
+            // Write the map value, saving the comma state & writing without a leading comma
+            let savedNeedsComma = self._needsComma
+            self._needsComma = false
+            try consumer(value, self)
+            self._needsComma = savedNeedsComma
         }
-        self.value = .object(object)
+
+        // Close the map with '}', and restore the comma state
+        _data.append(Self.closingCurlyBrace)
+        self._needsComma = savedNeedsComma
     }
 
     public func writeBoolean(_ schema: Schema, _ value: Bool) throws {
-        self.value = .bool(value)
+        try writeCommaAndStructureKeyIfNeeded(schema)
+        _data.append(contentsOf: value ? Self.trueBytes : Self.falseBytes)
     }
 
     public func writeByte(_ schema: Schema, _ value: Int8) throws {
-        self.value = .number(NSNumber(value: value))
+        try writeCommaAndStructureKeyIfNeeded(schema)
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeShort(_ schema: Schema, _ value: Int16) throws {
-        self.value = .number(NSNumber(value: value))
+        try writeCommaAndStructureKeyIfNeeded(schema)
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeInteger(_ schema: Schema, _ value: Int) throws {
-        self.value = .number(NSNumber(value: value))
+        try writeCommaAndStructureKeyIfNeeded(schema)
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeLong(_ schema: Schema, _ value: Int) throws {
-        self.value = .number(NSNumber(value: value))
+        try writeCommaAndStructureKeyIfNeeded(schema)
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeFloat(_ schema: Schema, _ value: Float) throws {
-        self.value = .number(NSNumber(value: value))
+        try writeFloatingPoint(schema, value)
     }
 
     public func writeDouble(_ schema: Schema, _ value: Double) throws {
-        self.value = .number(NSNumber(value: value))
+        try writeFloatingPoint(schema, value)
     }
 
     public func writeBigInteger(_ schema: Schema, _ value: Int64) throws {
-        self.value = .number(NSNumber(value: value))
+        try writeCommaAndStructureKeyIfNeeded(schema)
+        _data.append(contentsOf: "\(value)".utf8)
     }
 
     public func writeBigDecimal(_ schema: Schema, _ value: Double) throws {
-        self.value = .number(NSNumber(value: value))
+        try writeFloatingPoint(schema, value)
     }
 
     public func writeString(_ schema: Schema, _ value: String) throws {
-        self.value = .string(value)
+        try writeCommaAndStructureKeyIfNeeded(schema)
+
+        // Write each character's UTF-8 to the string, escaping the characters that
+        // the JSON spec requires us to escape.  We don't escape forward-slash because
+        // we never embed JSON in XML or use it in URLs.
+        // Open and close the string with double quotes.
+        _data.append(Self.doubleQuote)
+        for character in value {
+            let ascii = character.asciiValue
+            switch ascii {
+            case Self.doubleQuote:
+                _data.append(Self.backslash)
+                _data.append(Self.doubleQuote)
+            case Self.backslash:
+                _data.append(Self.backslash)
+                _data.append(Self.backslash)
+            case Self.backspace:
+                _data.append(Self.backslash)
+                _data.append(Self.b)
+            case Self.formFeed:
+                _data.append(Self.backslash)
+                _data.append(Self.f)
+            case Self.lineFeed:
+                _data.append(Self.backslash)
+                _data.append(Self.n)
+            case Self.cr:
+                _data.append(Self.backslash)
+                _data.append(Self.r)
+            case Self.tab:
+                _data.append(Self.backslash)
+                _data.append(Self.t)
+            default:
+                if let ascii {
+                    _data.append(ascii)
+                } else {
+                    _data.append(contentsOf: character.utf8)
+                }
+            }
+        }
+        _data.append(Self.doubleQuote)
     }
 
     public func writeBlob(_ schema: Schema, _ value: Data) throws {
-        self.value = .string(value.base64EncodedString())
+        try writeCommaAndStructureKeyIfNeeded(schema)
+
+        // Blob is written as a string surrounded by double quotes.
+        // Foundation's base64EncodedData() returns UTF-8 bytes for the data in base64.
+        // None of the characters used in Base64 require escaping, so the UTF-8 may be
+        // copied directly into JSON.
+        _data.append(Self.doubleQuote)
+        _data.append(contentsOf: value.base64EncodedData())
+        _data.append(Self.doubleQuote)
     }
 
     public func writeTimestamp(_ schema: Schema, _ value: Date) throws {
-        let timestampFormat: TimestampFormatTrait.Format
-        if schema.type == .member {
-            let memberTraits = schema.traits
-            let memberTimestampFormat = memberTraits.getTrait(TimestampFormatTrait.self)?.format
-            let targetTraits = schema.target!.traits
-            let targetTimestampFormat = targetTraits.getTrait(TimestampFormatTrait.self)?.format
-            timestampFormat = memberTimestampFormat ?? targetTimestampFormat ?? .epochSeconds
-        } else {
-            timestampFormat = schema.traits.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds
-        }
+        // Get the timestamp format
+        let timestampFormat = schema.traits.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds
+
+        // Depending on format, timestamp is written either as a string or double.
         switch timestampFormat {
         case .dateTime:
             let dateTimeString = TimestampFormatter(format: .dateTime).string(from: value)
-            self.value = .string(dateTimeString)
+            try writeString(schema, dateTimeString)
         case .httpDate:
             let httpDateString = TimestampFormatter(format: .httpDate).string(from: value)
-            self.value = .string(httpDateString)
+            try writeString(schema, httpDateString)
         case .epochSeconds:
             let epochSecondsString = TimestampFormatter(format: .epochSeconds).string(from: value)
             guard let epochSeconds = Double(epochSecondsString) else {
                 throw SerializerError("TimestampFormatter did not return valid seconds")
             }
-            self.value = .number(NSNumber(value: epochSeconds))
+            try writeDouble(schema, epochSeconds)
         }
     }
 
     public func writeNull(_ schema: Schema) throws {
-        self.value = .null
+        try writeCommaAndStructureKeyIfNeeded(schema)
+        _data.append(contentsOf: Self.nullBytes)
     }
 
     public var data: Data {
         get throws {
-            guard let jsonObject = value?.jsonObject() else { return Data("{}".utf8) }
-            return try JSONSerialization.data(withJSONObject: jsonObject)
+            // Return the encoded data, substituting '{}' if empty
+            guard !_data.isEmpty else { return Data("{}".utf8) }
+            return _data
         }
     }
 
     // MARK: - Private methods
 
+    // An implementation of Smithy's floating point encoding, usable for any Swift floating point type.
+    private func writeFloatingPoint<FP: FloatingPoint>(_ schema: Schema, _ value: FP) throws {
+        try writeCommaAndStructureKeyIfNeeded(schema)
+
+        // Write the appropriate string for .nan, .infinity, and -.infinity values
+        // else just write the number
+        guard !value.isNaN else {
+            _data.append(contentsOf: Self.nan)
+            return
+        }
+        switch value {
+        case -FP.infinity:
+            _data.append(contentsOf: Self.negativeInfinity)
+        case FP.infinity:
+            _data.append(contentsOf: Self.positiveInfinity)
+        default:
+            _data.append(contentsOf: "\(value)".utf8)
+        }
+    }
+
+    private func writeCommaAndStructureKeyIfNeeded(_ schema: Schema) throws {
+        // Write a comma if following another element of a structure, union, or collection.
+        // needsComma is set to true after writing a comma, since all elements other than
+        // the first will need a comma.
+        if self._needsComma {
+            _data.append(Self.comma)
+        }
+        self._needsComma = true
+
+        // If this is a member of a structure or union, write the key string and a colon.
+        // Never lead the key with a comma since it was just written above.
+        if schema.containerType == .structure || schema.containerType == .union, let key = try objectKey(for: schema) {
+            let savedNeedsComma = self._needsComma
+            self._needsComma = false
+            try writeString(Smithy.Prelude.stringSchema, key)
+            self._needsComma = savedNeedsComma
+            _data.append(Self.colon)
+        }
+    }
+
     private func objectKey(for memberSchema: Schema) throws -> String? {
+        // Get jsonName, if present, for restJson.  Otherwise just the member name.
         return if usesJSONNameTrait, let jsonName = memberSchema.getTrait(JSONNameTrait.self)?.name {
             jsonName
         } else {
