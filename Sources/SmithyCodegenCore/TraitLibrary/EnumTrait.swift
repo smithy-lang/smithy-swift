@@ -11,19 +11,23 @@ import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
 import protocol Smithy.Trait
 import struct Smithy.TraitError
+@_spi(SchemaBasedSerde)
+import var Smithy.traitUniqueIndexCounter
 
 /// See https://smithy.io/2.0/spec/constraint-traits.html#smithy-api-enum-trait
 ///
 /// This trait is deprecated, and strings tagged with it are converted to `EnumShape` as part of loading the
 /// model from AST.  Therefore, it is not renered to schemas or used at runtime.
 @_spi(SchemaBasedSerde)
-public struct EnumTrait: Trait {
+public final class EnumTrait: Trait {
 
     public struct EnumMember: Sendable, Equatable {
         public let value: String
         public let name: String?
     }
     public static var id: ShapeID { .init("smithy.api", "enum") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public let node: Node
     public let members: [EnumMember]

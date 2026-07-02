@@ -7,8 +7,10 @@
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#smithy-api-output-trait
 @_spi(SchemaBasedSerde)
-public struct OutputTrait: RuntimeTrait {
+public final class OutputTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "output") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public var node: Node { [:] }
 

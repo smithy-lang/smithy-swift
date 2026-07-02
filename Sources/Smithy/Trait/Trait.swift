@@ -10,7 +10,7 @@
 /// All traits have a ``Node`` associated with them, but will typically provide their properties
 /// with convenient, type-safe accessors.
 @_spi(SchemaBasedSerde)
-public protocol Trait: Sendable {
+public protocol Trait: Sendable, UniquelyIndexedByType {
     static var id: ShapeID { get }
 
     var node: Node { get }
@@ -44,3 +44,5 @@ public extension Trait {
 /// for codegen use only.
 @_spi(SchemaBasedSerde)
 public protocol RuntimeTrait: Trait {}
+
+public let traitUniqueIndexCounter = UniqueIndexCounter()

@@ -7,7 +7,7 @@
 
 import enum Smithy.Node
 @_spi(SchemaBasedSerde)
-import struct Smithy.ServiceTrait
+import class Smithy.ServiceTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)

@@ -11,11 +11,11 @@ import class Foundation.JSONSerialization
 import class Foundation.NSNumber
 import struct Smithy.Document
 @_spi(SchemaBasedSerde)
-import struct Smithy.JSONNameTrait
+import class Smithy.JSONNameTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
-import struct Smithy.TimestampFormatTrait
+import class Smithy.TimestampFormatTrait
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 @_spi(SchemaBasedSerde)

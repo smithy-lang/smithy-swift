@@ -8,11 +8,13 @@
 // https://smithy.io/2.0/spec/protocol-traits.html#jsonname-trait
 
 @_spi(SchemaBasedSerde)
-public struct JSONNameTrait: RuntimeTrait {
+public final class JSONNameTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "jsonName") }
 
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+
     public var node: Node { .string(name) }
-    public var name: String
+    public let name: String
 
     public init(node: Node) throws {
         guard let name = node.string else { throw TraitError("jsonName trait node must contain String") }

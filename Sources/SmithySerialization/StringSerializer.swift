@@ -11,7 +11,7 @@ import class Foundation.ISO8601DateFormatter
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
-import struct Smithy.SensitiveTrait
+import class Smithy.SensitiveTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 import protocol Smithy.SmithyDocument

@@ -6,7 +6,7 @@
 //
 
 @_spi(SchemaBasedSerde)
-import struct Smithy.ClientOptionalTrait
+import class Smithy.ClientOptionalTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 
