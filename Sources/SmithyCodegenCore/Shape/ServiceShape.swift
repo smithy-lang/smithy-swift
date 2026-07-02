@@ -55,14 +55,12 @@ public class ServiceShape: Shape {
     }
 
     public var sdkId: String {
-        get throws {
-            try getTrait(ServiceTrait.self)?.sdkId ?? id.name
-        }
+        getTrait(ServiceTrait.self)?.sdkId ?? id.name
     }
 
     public var sdkIdStrippingService: String {
         get throws {
-            var sdkIdStrippingService = try sdkId
+            var sdkIdStrippingService = sdkId
             let unwantedSuffix = " Service"
             if sdkIdStrippingService.hasSuffix(unwantedSuffix) {
                 sdkIdStrippingService.removeLast(unwantedSuffix.count)

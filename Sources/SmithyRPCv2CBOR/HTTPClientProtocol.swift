@@ -97,10 +97,10 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol, Sendable {
 
             if let queryCompatibleErrorCode = try response.queryCompatibleErrorCode(for: operation) {
                 // This is a query-compatible service providing a query-compatible error code.
-                registryEntry = try errorTypeRegistry.find { entry in
+                registryEntry = errorTypeRegistry.find { entry in
                     // Try to match x-amzn-query-error on the name in the AWSQueryError trait, else on a shape name.
                     // This matches previous error matching behavior; see ErrorShapeName.kt
-                    let queryErrorCode = try entry.schema.getTrait(AWSQueryErrorTrait.self)?.code
+                    let queryErrorCode = entry.schema.getTrait(AWSQueryErrorTrait.self)?.code
                     let shapeName = entry.schema.id.name
                     return queryCompatibleErrorCode == queryErrorCode ?? shapeName
                 }

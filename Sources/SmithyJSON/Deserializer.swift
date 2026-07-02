@@ -225,7 +225,7 @@ public final class Deserializer: ShapeDeserializer {
 
     public func readTimestamp(_ schema: Schema) throws -> Date {
         try nullCheck()
-        let timestampFormat = try schema.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds
+        let timestampFormat = schema.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds
         switch timestampFormat {
         case .dateTime:
             guard case .string(let string) = value else {
@@ -274,8 +274,8 @@ public final class Deserializer: ShapeDeserializer {
     // MARK: - Private methods
 
     private func match(key: String, memberSchemas: [Schema]) throws -> Schema? {
-        try memberSchemas.first { memberSchema in
-            if usesJSONNameTrait, let jsonNameTrait = try memberSchema.getTrait(JSONNameTrait.self) {
+        memberSchemas.first { memberSchema in
+            if usesJSONNameTrait, let jsonNameTrait = memberSchema.getTrait(JSONNameTrait.self) {
                 jsonNameTrait.name == key
             } else {
                 memberSchema.id.member == key

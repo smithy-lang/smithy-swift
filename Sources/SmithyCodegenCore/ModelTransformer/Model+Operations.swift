@@ -24,6 +24,11 @@ extension Model {
         }
 
         // Create a Model, then trim references to the removed operations
-        return try Model(version: version, metadata: metadata, shapes: newShapes).trimReferences()
+        return try Model(
+            version: version,
+            metadata: metadata,
+            shapes: newShapes,
+            traitTypes: self.traitTypes
+        ).trimReferences()
     }
 }

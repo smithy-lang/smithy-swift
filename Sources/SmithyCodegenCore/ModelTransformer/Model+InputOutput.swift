@@ -80,7 +80,7 @@ extension Model {
             newShapes[newOperation.id] = newOperation
         }
         // Return the new model with the updated shapes.
-        return Model(version: version, metadata: metadata, shapes: newShapes)
+        return Model(version: version, metadata: metadata, shapes: newShapes, traitTypes: self.traitTypes)
     }
 
     private func newStruct(newID: ShapeID, newTraits: TraitCollection, original: StructureShape) -> StructureShape {

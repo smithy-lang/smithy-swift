@@ -7,7 +7,7 @@
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#input-trait
 @_spi(SchemaBasedSerde)
-public struct InputTrait: Trait {
+public struct InputTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "input") }
 
     public var node: Node { [:] }

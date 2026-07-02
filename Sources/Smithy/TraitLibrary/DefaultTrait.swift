@@ -7,13 +7,17 @@
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#default-trait
 @_spi(SchemaBasedSerde)
-public struct DefaultTrait: Trait {
+public struct DefaultTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "default") }
 
     public let node: Node
 
     public init(node: Node) throws {
         self.node = node
+    }
+
+    public init(_ string: String) {
+        self.node = .string(string)
     }
 
     public init(_ bool: Bool) {

@@ -122,12 +122,12 @@ public final class Serializer: ShapeSerializer {
         let timestampFormat: TimestampFormatTrait.Format
         if schema.type == .member {
             let memberTraits = schema.traits
-            let memberTimestampFormat = try memberTraits.getTrait(TimestampFormatTrait.self)?.format
+            let memberTimestampFormat = memberTraits.getTrait(TimestampFormatTrait.self)?.format
             let targetTraits = schema.target!.traits
-            let targetTimestampFormat = try targetTraits.getTrait(TimestampFormatTrait.self)?.format
+            let targetTimestampFormat = targetTraits.getTrait(TimestampFormatTrait.self)?.format
             timestampFormat = memberTimestampFormat ?? targetTimestampFormat ?? .epochSeconds
         } else {
-            timestampFormat = try schema.traits.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds
+            timestampFormat = schema.traits.getTrait(TimestampFormatTrait.self)?.format ?? .epochSeconds
         }
         switch timestampFormat {
         case .dateTime:
@@ -159,7 +159,7 @@ public final class Serializer: ShapeSerializer {
     // MARK: - Private methods
 
     private func objectKey(for memberSchema: Schema) throws -> String? {
-        return if usesJSONNameTrait, let jsonName = try memberSchema.getTrait(JSONNameTrait.self)?.name {
+        return if usesJSONNameTrait, let jsonName = memberSchema.getTrait(JSONNameTrait.self)?.name {
             jsonName
         } else {
             memberSchema.id.member

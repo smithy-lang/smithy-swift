@@ -31,8 +31,8 @@ public class Shape: HasShapeID {
         traits.hasTrait(type)
     }
 
-    public func getTrait<T: Trait>(_ type: T.Type) throws -> T? {
-        try traits.getTrait(type)
+    public func getTrait<T: Trait>(_ type: T.Type) -> T? {
+        traits.getTrait(type)
     }
 
     public func adding(traits newTraits: TraitCollection) -> Shape {
