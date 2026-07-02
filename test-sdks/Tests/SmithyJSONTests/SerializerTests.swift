@@ -43,6 +43,18 @@ final class SerializerTests: XCTestCase {
         XCTAssertEqual(json, #"{"string":"\b\f\r\t\n\"\\"}"#)
     }
 
+    func test_writeString_escapesCRLFSequenceWithoutCollapsing() throws {
+        let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
+
+        // "\r\n" is a single Swift grapheme cluster; iterating Characters would collapse
+        // it to a lone line feed and drop the carriage return, so verify both survive.
+        let input = SerdeOperationInput(string: "line1\r\nline2")
+        try input.serialize(subject)
+
+        let json = String(data: try subject.data, encoding: .utf8)
+        XCTAssertEqual(json, #"{"string":"line1\r\nline2"}"#)
+    }
+
     func test_writeString_writesUpperUnicodeCharacters() throws {
         let subject = SmithyJSON.Serializer(usesJSONNameTrait: false)
 

@@ -7,9 +7,6 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
-import class Foundation.JSONSerialization
-import class Foundation.NSNumber
-import struct Smithy.Document
 @_spi(SchemaBasedSerde)
 import struct Smithy.JSONNameTrait
 @_spi(SchemaBasedSerde)
@@ -183,14 +180,18 @@ public final class Serializer: ShapeSerializer {
     public func writeString(_ schema: Schema, _ value: String) throws {
         try writeCommaAndStructureKeyIfNeeded(schema)
 
-        // Write each character's UTF-8 to the string, escaping the characters that
-        // the JSON spec requires us to escape.  We don't escape forward-slash because
-        // we never embed JSON in XML or use it in URLs.
+        // Write the string's UTF-8 bytes, escaping the characters that the JSON spec
+        // requires us to escape.  We don't escape forward-slash because we never embed
+        // JSON in XML or use it in URLs.
+        // We iterate over UTF-8 bytes rather than Characters: a grapheme cluster such as
+        // "\r\n" is a single Character whose asciiValue collapses to one byte, which would
+        // silently drop the carriage return.  Iterating bytes also skips grapheme-cluster
+        // segmentation entirely.  UTF-8 lead & continuation bytes (>= 0x80) never require
+        // escaping, so they are copied through verbatim by the default case.
         // Open and close the string with double quotes.
         _data.append(Self.doubleQuote)
-        for character in value {
-            let ascii = character.asciiValue
-            switch ascii {
+        for byte in value.utf8 {
+            switch byte {
             case Self.doubleQuote:
                 _data.append(Self.backslash)
                 _data.append(Self.doubleQuote)
@@ -212,17 +213,11 @@ public final class Serializer: ShapeSerializer {
             case Self.tab:
                 _data.append(Self.backslash)
                 _data.append(Self.t)
+            case 0..<0x20:
+                // Any C0 control without a short form must be \u00XX-escaped (RFC 8259)
+                appendEscaped(ascii: byte)
             default:
-                if let ascii {
-                    if ascii < 0x20 {
-                        // Any C0 control without a short form must be \u00XX-escaped (RFC 8259)
-                        appendEscaped(ascii: ascii)
-                    } else {
-                        _data.append(ascii)
-                    }
-                } else {
-                    _data.append(contentsOf: character.utf8)
-                }
+                _data.append(byte)
             }
         }
         _data.append(Self.doubleQuote)
@@ -333,4 +328,3 @@ public final class Serializer: ShapeSerializer {
 
     static let digits: [UInt8] = "0123456789abcdef".compactMap { $0.asciiValue }
 }
-
