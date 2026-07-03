@@ -34,6 +34,7 @@ public final class Serializer: ShapeSerializer {
     private static let cr: UInt8 = 13
     private static let doubleQuote: UInt8 = 34
     private static let comma: UInt8 = 44
+    private static let zero: UInt8 = 48
     private static let colon: UInt8 = 58
     private static let openingSquareBrace: UInt8 = 91
     private static let backslash: UInt8 = 92
@@ -43,6 +44,7 @@ public final class Serializer: ShapeSerializer {
     private static let n: UInt8 = 110
     private static let r: UInt8 = 114
     private static let t: UInt8 = 116
+    private static let u: UInt8 = 117
     private static let openingCurlyBrace: UInt8 = 123
     private static let closingCurlyBrace: UInt8 = 125
 
@@ -190,36 +192,38 @@ public final class Serializer: ShapeSerializer {
         // escaping, so they are copied through verbatim by the default case.
         // Open and close the string with double quotes.
         _data.append(Self.doubleQuote)
-        for byte in value.utf8 {
-            switch byte {
-            case Self.doubleQuote:
-                _data.append(Self.backslash)
-                _data.append(Self.doubleQuote)
-            case Self.backslash:
-                _data.append(Self.backslash)
-                _data.append(Self.backslash)
-            case Self.backspace:
-                _data.append(Self.backslash)
-                _data.append(Self.b)
-            case Self.formFeed:
-                _data.append(Self.backslash)
-                _data.append(Self.f)
-            case Self.lineFeed:
-                _data.append(Self.backslash)
-                _data.append(Self.n)
-            case Self.cr:
-                _data.append(Self.backslash)
-                _data.append(Self.r)
-            case Self.tab:
-                _data.append(Self.backslash)
-                _data.append(Self.t)
-            case 0..<0x20:
-                // Any C0 control without a short form must be \u00XX-escaped (RFC 8259)
-                appendEscaped(ascii: byte)
-            default:
-                _data.append(byte)
+        let utf8view = value.utf8
+        var copyStartIndex = utf8view.startIndex
+        for index in utf8view.indices {
+            let byte = utf8view[index]
+            if byte < 32 || byte == Self.doubleQuote || byte == Self.backslash {
+                _data.append(contentsOf: utf8view[copyStartIndex..<index])
+                copyStartIndex = utf8view.index(after: index)
+                switch byte {
+                case Self.doubleQuote:
+                    appendEscaped(ascii: Self.doubleQuote)
+                case Self.backslash:
+                    appendEscaped(ascii: Self.backslash)
+                case Self.backspace:
+                    appendEscaped(ascii: Self.b)
+                case Self.formFeed:
+                    appendEscaped(ascii: Self.f)
+                case Self.lineFeed:
+                    appendEscaped(ascii: Self.n)
+                case Self.cr:
+                    appendEscaped(ascii: Self.r)
+                case Self.tab:
+                    appendEscaped(ascii: Self.t)
+                case 0..<0x20:
+                    // Any C0 control without a short form must be \u00XX-escaped (RFC 8259)
+                    appendEscaped(ascii: Self.u)
+                    appendHexByte(ascii: byte)
+                default:
+                    break
+                }
             }
         }
+        _data.append(contentsOf: value.utf8[copyStartIndex..<utf8view.endIndex])
         _data.append(Self.doubleQuote)
     }
 
@@ -321,9 +325,16 @@ public final class Serializer: ShapeSerializer {
     }
 
     private func appendEscaped(ascii: UInt8) {
-        _data.append(contentsOf: Self.unicodeASCIIEscapeStart)
-        _data.append(Self.digits[Int(ascii >> 4)])
-        _data.append(Self.digits[Int(ascii & 0x0F)])
+        _data.append(contentsOf: [Self.backslash, ascii])
+    }
+
+    private func appendHexByte(ascii: UInt8) {
+        _data.append(contentsOf: [
+            Self.zero,
+            Self.zero,
+            Self.digits[Int(ascii >> 4)],
+            Self.digits[Int(ascii & 0x0F)],
+        ])
     }
 
     static let digits: [UInt8] = "0123456789abcdef".compactMap { $0.asciiValue }
