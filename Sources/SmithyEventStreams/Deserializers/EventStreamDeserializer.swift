@@ -47,7 +47,7 @@ public struct EventStreamDeserializer: ShapeDeserializer {
 
         // Call the read consumer with the streaming member and this same deserializer.
         // The readEventStream method immediately below will be called to deserialize the event stream.
-        try T.readConsumer(member, &value, self)
+        try value.deserializeMember(member, self)
     }
 
     public func readEventStream<E: DeserializableStruct>(_ schema: Schema) throws -> AsyncThrowingStream<E, any Error> {

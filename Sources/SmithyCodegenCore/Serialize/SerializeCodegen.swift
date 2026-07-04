@@ -26,8 +26,6 @@ package struct SerializeCodegen {
         writer.write("import protocol SmithySerialization.SerializableStruct")
         writer.write("@_spi(SchemaBasedSerde)")
         writer.write("import protocol SmithySerialization.ShapeSerializer")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import typealias SmithySerialization.WriteStructConsumer")
         writer.write("")
 
         // Must generate SerializableStruct conformance for all of a service's
@@ -39,8 +37,8 @@ package struct SerializeCodegen {
             .smithySorted()
 
         for shape in serviceStructsAndUnions {
+            let schemaVarName = try shape.schemaVarName
             let swiftType = try ctx.symbolProvider.swiftType(shape: shape)
-            let varName = shape.type == .structure ? "structure" : "union"
             writer.write("@_spi(SchemaBasedSerde)")
             try writer.openBlock("extension \(swiftType): SmithySerialization.SerializableStruct {", "}") { writer in
                 writer.write("")
@@ -48,47 +46,49 @@ package struct SerializeCodegen {
                     "public func serialize(_ serializer: any SmithySerialization.ShapeSerializer) throws {",
                     "}"
                 ) { writer in
-                    let schemaVarName = try shape.schemaVarName
-                    writer.write("try serializer.writeStruct(\(schemaVarName), self)")
-                }
-                writer.write("")
-                try writer.openBlock(
-                    "public static var writeConsumer: SmithySerialization.WriteStructConsumer<Self> {", "}"
-                ) { writer in
-                    try writer.openBlock("{ memberSchema, \(varName), serializer in", "}") { writer in
-                        writer.write("switch memberSchema.index {")
-                        for (index, member) in try members(of: shape).enumerated() {
-
+                    let members = try members(of: shape)
+                    if !members.isEmpty {
+                        writer.write("let schema = \(schemaVarName)")
+                    }
+                    if shape.type == .structure {
+                        for (index, member) in members.enumerated() {
+                            let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
+                            let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""
+                            if try NullableIndex().isNonOptional(member) {
+                                try writer.openBlock("do {", "}") { writer in
+                                    writer.write("let value = self.\(properties)\(propertyName)")
+                                    try writeSerializeCall(
+                                        writer: writer, shape: shape, member: member, schemaVarName: "schema.members[\(index)]"
+                                    )
+                                }
+                            } else {
+                                try writer.openBlock("if let value = self.\(properties)\(propertyName) {", "}") { writer in
+                                    try writeSerializeCall(
+                                        writer: writer, shape: shape, member: member, schemaVarName: "schema.members[\(index)]"
+                                    )
+                                }
+                            }
+                        }
+                    } else /* shape is a union */ {
+                        writer.write("switch self {")
+                        for (index, member) in members.enumerated() {
                             // Event stream errors don't have a case in the Swift union, so don't try to
                             // serialize the error member
                             if try shape.hasTrait(StreamingTrait.self) && member.target.hasTrait(ErrorTrait.self) {
                                 continue
                             }
-                            writer.write("case \(index):")
+                            let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
+                            writer.write("case .\(enumCaseName)(let value):")
                             writer.indent()
-                            if shape.type == .structure {
-                                let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
-                                let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""
-                                if try NullableIndex().isNonOptional(member) {
-                                    writer.write("let value = \(varName).\(properties)\(propertyName)")
-                                } else {
-                                    writer.write(
-                                        "guard let value = \(varName).\(properties)\(propertyName) else { break }"
-                                    )
-                                }
-                                try writeSerializeCall(
-                                    writer: writer, shape: shape, member: member, schemaVarName: "memberSchema"
-                                )
-                            } else { // shape is a union
-                                let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
-                                writer.write("guard case .\(enumCaseName)(let value) = \(varName) else { break }")
-                                try writeSerializeCall(
-                                    writer: writer, shape: shape, member: member, schemaVarName: "memberSchema"
-                                )
-                            }
+                            try writeSerializeCall(
+                                writer: writer, shape: shape, member: member, schemaVarName: "schema.members[\(index)]"
+                            )
                             writer.dedent()
                         }
-                        writer.write("default: break")
+                        writer.write("default:")
+                        writer.indent()
+                        writer.write("break")
+                        writer.dedent()
                         writer.write("}")
                     }
                 }

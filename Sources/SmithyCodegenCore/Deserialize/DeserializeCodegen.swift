@@ -19,17 +19,10 @@ package struct DeserializeCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("import Foundation")
-        writer.write("import enum Smithy.ByteStream")
-        writer.write("import struct Smithy.Document")
-        writer.write("import enum Smithy.Prelude")
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import class Smithy.Schema")
+        writer.write("import Smithy")
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import protocol SmithySerialization.DeserializableStruct")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import typealias SmithySerialization.ReadStructConsumer")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import protocol SmithySerialization.ShapeDeserializer")
+        writer.write("import SmithySerialization")
         writer.write("")
 
         // Get structs & unions that are part of an operation output.
@@ -57,34 +50,32 @@ package struct DeserializeCodegen {
                     writer.write("return \(varName)")
                 }
                 writer.write("")
-                let consumerType = "SmithySerialization.ReadStructConsumer<Self>"
                 try writer.openBlock(
-                    "public static var readConsumer: \(consumerType) {", "}") { writer in
-                    try writer.openBlock("{ memberSchema, \(varName), deserializer in", "}") { writer in
-                        try writer.openBlock("switch memberSchema.index {", "}") { writer in
-                            writer.dedent()
-                            for (index, member) in try members(of: shape).enumerated() {
-                                writer.write("case \(index):")
-                                writer.indent()
-                                try writeDeserializeCall(
-                                    ctx: ctx,
-                                    writer: writer,
-                                    shape: shape,
-                                    member: member,
-                                    schemaVarName: "memberSchema"
-                                )
-                                writer.dedent()
-                            }
-                            if shape.type == .union {
-                                writer.write("default:")
-                                writer.indent()
-                                writer.write("union = try .sdkUnknown(deserializer.readString(memberSchema))")
-                                writer.dedent()
-                            } else {
-                                writer.write("default: break")
-                            }
+                    "public mutating func deserializeMember(_ memberSchema: Smithy.Schema, _ deserializer: any ShapeDeserializer) throws {", "}"
+                ) { writer in
+                    try writer.openBlock("switch memberSchema.index {", "}") { writer in
+                        writer.dedent()
+                        for (index, member) in try members(of: shape).enumerated() {
+                            writer.write("case \(index):")
                             writer.indent()
+                            try writeDeserializeCall(
+                                ctx: ctx,
+                                writer: writer,
+                                shape: shape,
+                                member: member,
+                                schemaVarName: "memberSchema"
+                            )
+                            writer.dedent()
                         }
+                        if shape.type == .union {
+                            writer.write("default:")
+                            writer.indent()
+                            writer.write("self = try .sdkUnknown(deserializer.readString(memberSchema))")
+                            writer.dedent()
+                        } else {
+                            writer.write("default: break")
+                        }
+                        writer.indent()
                     }
                 }
             }
@@ -180,7 +171,7 @@ package struct DeserializeCodegen {
             // making the appropriate adjustment for an error.
             let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""
             let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
-            writer.write("structure.\(properties)\(propertyName) = value")
+            writer.write("self.\(properties)\(propertyName) = value")
         case .union:
             if target.hasTrait(ErrorTrait.self) && shape.hasTrait(StreamingTrait.self) {
                 // For an event stream error, throw it
@@ -188,7 +179,7 @@ package struct DeserializeCodegen {
             } else {
                 // For a union member or event stream event, write the appropriate union case to the union variable
                 let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
-                writer.write("union = .\(enumCaseName)(value)")
+                writer.write("self = .\(enumCaseName)(value)")
             }
         case .list, .set, .map:
             // For a collection member, return it to the caller since this is being written

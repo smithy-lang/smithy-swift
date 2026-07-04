@@ -32,9 +32,7 @@ public final class Serializer: ShapeSerializer {
     public func writeStruct<S: SerializableStruct>(_ schema: Schema, _ value: S) throws {
         writeMember(schema: schema)
         encoder.encode(.indef_map_start)
-        for member in schema.members {
-            try S.writeConsumer(member, value, self)
-        }
+        try value.serialize(self)
         encoder.encode(.indef_break)
     }
 

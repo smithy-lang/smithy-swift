@@ -9,12 +9,7 @@
 import class Smithy.Schema
 
 @_spi(SchemaBasedSerde)
-public typealias WriteStructConsumer<T> = (Schema, T, any ShapeSerializer) throws -> Void
-
-@_spi(SchemaBasedSerde)
-public protocol SerializableStruct: SerializableShape, CustomStringConvertible, CustomDebugStringConvertible {
-    static var writeConsumer: WriteStructConsumer<Self> { get }
-}
+public protocol SerializableStruct: SerializableShape, CustomStringConvertible, CustomDebugStringConvertible {}
 
 @_spi(SchemaBasedSerde)
 public extension SerializableStruct {

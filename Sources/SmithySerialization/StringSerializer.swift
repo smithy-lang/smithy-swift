@@ -31,10 +31,7 @@ public class StringSerializer: ShapeSerializer {
         let storedIsFirstElement = isFirstElement
         isFirstElement = true
         string += "\(type(of: value))("
-        let structMembers = schema.members
-        for member in structMembers {
-            try S.writeConsumer(member, value, self)
-        }
+        try value.serialize(self)
         string += ")"
         isFirstElement = storedIsFirstElement
     }
