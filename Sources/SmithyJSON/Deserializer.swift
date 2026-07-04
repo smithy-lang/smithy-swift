@@ -68,11 +68,11 @@ public final class Deserializer: ShapeDeserializer {
         }
 
         // Iterate over JSON elements of object & call consumer with the appropriate member.
-//        for (key, val) in object where val != .null { // skip null values in structures
-//            guard let memberSchema = try match(key: key, memberSchemas: memberSchemas) else { continue }
-//            let memberDeserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: val)
-//            try value.deserializeMember(memberSchema, memberDeserializer)
-//        }
+        for (key, val) in object where val != .null { // skip null values in structures
+            guard let memberSchema = try match(key: key, memberSchemas: memberSchemas) else { continue }
+            let memberDeserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: val)
+            try value.deserializeMember(memberSchema, memberDeserializer)
+        }
     }
 
     public func readList<E>(_ schema: Schema, _ consumer: (any ShapeDeserializer) throws -> E) throws -> [E] {
