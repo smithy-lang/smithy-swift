@@ -9,7 +9,9 @@
 import class Smithy.Schema
 
 @_spi(SchemaBasedSerde)
-public protocol SerializableStruct: SerializableShape, CustomStringConvertible, CustomDebugStringConvertible {}
+public protocol SerializableStruct: SerializableShape, CustomStringConvertible, CustomDebugStringConvertible {
+    func serializeMembers(_ schema: Schema, _ serializer: any ShapeSerializer) throws
+}
 
 @_spi(SchemaBasedSerde)
 public extension SerializableStruct {

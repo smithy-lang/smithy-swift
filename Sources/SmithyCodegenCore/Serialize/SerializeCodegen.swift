@@ -19,13 +19,9 @@ package struct SerializeCodegen {
     package func generate(ctx: GenerationContext) throws -> String {
         let writer = SwiftWriter()
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import enum Smithy.Prelude")
+        writer.write("import Smithy")
         writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import class Smithy.Schema")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import protocol SmithySerialization.SerializableStruct")
-        writer.write("@_spi(SchemaBasedSerde)")
-        writer.write("import protocol SmithySerialization.ShapeSerializer")
+        writer.write("import SmithySerialization")
         writer.write("")
 
         // Must generate SerializableStruct conformance for all of a service's
@@ -46,10 +42,14 @@ package struct SerializeCodegen {
                     "public func serialize(_ serializer: any SmithySerialization.ShapeSerializer) throws {",
                     "}"
                 ) { writer in
+                    writer.write("try serializer.writeStruct(\(schemaVarName), self)")
+                }
+                writer.write("")
+                try writer.openBlock(
+                    "public func serializeMembers(_ schema: Smithy.Schema, _ serializer: any SmithySerialization.ShapeSerializer) throws {",
+                    "}"
+                ) { writer in
                     let members = try members(of: shape)
-                    if !members.isEmpty {
-                        writer.write("let schema = \(schemaVarName)")
-                    }
                     if shape.type == .structure {
                         for (index, member) in members.enumerated() {
                             let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)

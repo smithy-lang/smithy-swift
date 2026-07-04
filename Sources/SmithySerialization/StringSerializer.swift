@@ -31,7 +31,7 @@ public class StringSerializer: ShapeSerializer {
         let storedIsFirstElement = isFirstElement
         isFirstElement = true
         string += "\(type(of: value))("
-        try value.serialize(self)
+        try value.serializeMembers(schema, self)
         string += ")"
         isFirstElement = storedIsFirstElement
     }
