@@ -34,14 +34,13 @@ public final class Serializer: ShapeSerializer {
     }
 
     public func writeStruct<S>(_ schema: Schema, _ value: S) throws where S: SerializableStruct {
-        var object = [String: JSONValue]()
-        try value.serialize(schema, self)
+        try value.serializeMembers(schema, self)
 //        for memberSchema in schema.members {
 //            guard let key = try objectKey(for: memberSchema) else { continue }
 //            let memberSerializer = Serializer(usesJSONNameTrait: usesJSONNameTrait)
 //            object[key] = memberSerializer.value
 //        }
-        self.value = .object(object)
+        self.value = .object([:])  // FIXME: All structs & unions serialize as empty object
     }
 
     public func writeList<E>(
