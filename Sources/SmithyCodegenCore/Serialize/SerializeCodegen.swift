@@ -46,28 +46,20 @@ package struct SerializeCodegen {
                 }
                 writer.write("")
                 try writer.openBlock(
-                    "public func serializeMembers(_ schema: Smithy.Schema, _ serializer: any SmithySerialization.ShapeSerializer) throws {",
+                    "public func serializeMembers(_ schema: Smithy.Schema, " +
+                    "_ serializer: any SmithySerialization.ShapeSerializer) throws {",
                     "}"
                 ) { writer in
                     let members = try members(of: shape)
                     if shape.type == .structure {
                         for (index, member) in members.enumerated() {
-                            let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
-                            let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""
-                            if try NullableIndex().isNonOptional(member) {
-                                try writer.openBlock("do {", "}") { writer in
-                                    writer.write("let value = self.\(properties)\(propertyName)")
-                                    try writeSerializeCall(
-                                        writer: writer, shape: shape, member: member, schemaVarName: "schema.members[\(index)]"
-                                    )
-                                }
-                            } else {
-                                try writer.openBlock("if let value = self.\(properties)\(propertyName) {", "}") { writer in
-                                    try writeSerializeCall(
-                                        writer: writer, shape: shape, member: member, schemaVarName: "schema.members[\(index)]"
-                                    )
-                                }
-                            }
+                            try writeStructMemberSerialize(
+                                ctx: ctx,
+                                writer: writer,
+                                shape: shape,
+                                member: member,
+                                index: index
+                            )
                         }
                     } else /* shape is a union */ {
                         writer.write("switch self {")
@@ -77,18 +69,16 @@ package struct SerializeCodegen {
                             if try shape.hasTrait(StreamingTrait.self) && member.target.hasTrait(ErrorTrait.self) {
                                 continue
                             }
-                            let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
-                            writer.write("case .\(enumCaseName)(let value):")
-                            writer.indent()
-                            try writeSerializeCall(
-                                writer: writer, shape: shape, member: member, schemaVarName: "schema.members[\(index)]"
+
+                            try writeUnionMemberSerialize(
+                                ctx: ctx,
+                                writer: writer,
+                                shape: shape,
+                                member: member,
+                                index: index
                             )
-                            writer.dedent()
                         }
-                        writer.write("default:")
-                        writer.indent()
-                        writer.write("break")
-                        writer.dedent()
+                        writer.write("default: break")
                         writer.write("}")
                     }
                 }
@@ -97,6 +87,56 @@ package struct SerializeCodegen {
         }
         writer.unwrite("\n")
         return writer.contents
+    }
+
+    private func writeStructMemberSerialize(
+        ctx: GenerationContext,
+        writer: SwiftWriter,
+        shape: Shape,
+        member: MemberShape,
+        index: Int
+    ) throws {
+        let propertyName = try ctx.symbolProvider.propertyName(shapeID: member.id)
+        let properties = shape.hasTrait(ErrorTrait.self) ? "properties." : ""
+        if try NullableIndex().isNonOptional(member) {
+            try writer.openBlock("do {", "}") { writer in
+                writer.write("let value = self.\(properties)\(propertyName)")
+                try writeSerializeCall(
+                    writer: writer,
+                    shape: shape,
+                    member: member,
+                    schemaVarName: "schema.members[\(index)]"
+                )
+            }
+        } else {
+            try writer.openBlock("if let value = self.\(properties)\(propertyName) {", "}") { writer in
+                try writeSerializeCall(
+                    writer: writer,
+                    shape: shape,
+                    member: member,
+                    schemaVarName: "schema.members[\(index)]"
+                )
+            }
+        }
+    }
+
+    private func writeUnionMemberSerialize(
+        ctx: GenerationContext,
+        writer: SwiftWriter,
+        shape: Shape,
+        member: MemberShape,
+        index: Int
+    ) throws {
+        let enumCaseName = try ctx.symbolProvider.enumCaseName(shapeID: member.id)
+        writer.write("case .\(enumCaseName)(let value):")
+        writer.indent()
+        try writeSerializeCall(
+            writer: writer,
+            shape: shape,
+            member: member,
+            schemaVarName: "schema.members[\(index)]"
+        )
+        writer.dedent()
     }
 
     private func writeSerializeCall(
