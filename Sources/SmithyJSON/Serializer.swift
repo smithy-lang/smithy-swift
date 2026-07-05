@@ -55,7 +55,6 @@ public final class Serializer: ShapeSerializer {
     private static let nan = "\"NaN\"".utf8
     private static let positiveInfinity = "\"Infinity\"".utf8
     private static let negativeInfinity = "\"-Infinity\"".utf8
-    private static let unicodeASCIIEscapeStart = "\\u00".utf8
 
     let usesJSONNameTrait: Bool
     private var _data: Data
