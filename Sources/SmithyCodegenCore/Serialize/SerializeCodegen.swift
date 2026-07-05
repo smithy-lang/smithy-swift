@@ -38,7 +38,7 @@ package struct SerializeCodegen {
             writer.write("@_spi(SchemaBasedSerde)")
             try writer.openBlock("extension \(swiftType): SmithySerialization.SerializableStruct {", "}") { writer in
                 writer.write("")
-                try writer.openBlock(
+                writer.openBlock(
                     "public func serialize(_ serializer: any SmithySerialization.ShapeSerializer) throws {",
                     "}"
                 ) { writer in

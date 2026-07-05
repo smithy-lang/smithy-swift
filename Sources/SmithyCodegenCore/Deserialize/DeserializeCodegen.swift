@@ -51,7 +51,7 @@ package struct DeserializeCodegen {
                 }
                 writer.write("")
                 try writer.openBlock(
-                    "public mutating func deserializeMember(_ memberSchema: Smithy.Schema, _ deserializer: any ShapeDeserializer) throws {", "}"
+                    "public mutating func deserializeMember(_ memberSchema: Smithy.Schema, _ deserializer: any SmithySerialization.ShapeDeserializer) throws {", "}"
                 ) { writer in
                     try writer.openBlock("switch memberSchema.index {", "}") { writer in
                         writer.dedent()
