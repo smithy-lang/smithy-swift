@@ -9,6 +9,6 @@
 import class Smithy.Schema
 
 @_spi(SchemaBasedSerde)
-public protocol SerializableShape: Sendable {
+public protocol SerializableShape {
     func serialize(_ serializer: any ShapeSerializer) throws
 }
