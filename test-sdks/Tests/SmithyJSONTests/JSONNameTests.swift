@@ -11,19 +11,19 @@ import XCTest
 
 final class JSONNameTests: XCTestCase {
 
-    func test_jsonNameSerialize_serializesMemberNameWhenDisabled() throws {
+    func test_jsonNameSerialize_serializesMemberNameWhenDisabled() async throws {
         let subject = Serializer(usesJSONNameTrait: false)
         let input = JSONNameInput(original: "abc")
         try input.serialize(subject)
-        let data = try subject.data
+        let data = try await subject.byteStream.readData()
         XCTAssertEqual(data, Data(#"{"original":"abc"}"#.utf8))
     }
 
-    func test_jsonNameSerialize_serializesJSONNameWhenEnabled() throws {
+    func test_jsonNameSerialize_serializesJSONNameWhenEnabled() async throws {
         let subject = Serializer(usesJSONNameTrait: true)
         let input = JSONNameInput(original: "abc")
         try input.serialize(subject)
-        let data = try subject.data
+        let data = try await subject.byteStream.readData()
         XCTAssertEqual(data, Data(#"{"modified":"abc"}"#.utf8))
     }
 

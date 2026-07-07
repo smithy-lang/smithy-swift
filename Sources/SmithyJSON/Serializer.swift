@@ -7,6 +7,7 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
+import enum Smithy.ByteStream
 @_spi(SchemaBasedSerde)
 import class Smithy.JSONNameTrait
 @_spi(SchemaBasedSerde)
@@ -22,6 +23,7 @@ import protocol SmithySerialization.SerializableStruct
 import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.ShapeSerializer
+import class SmithyStreams.BufferedStream
 @_spi(SmithyTimestamps) import struct SmithyTimestamps.TimestampFormatter
 
 @_spi(SchemaBasedSerde)
@@ -58,12 +60,13 @@ public final class Serializer: ShapeSerializer {
 
     let usesJSONNameTrait: Bool
     private var _data: Data
+    private var _bufferedStream: BufferedStream
     private var _needsComma = false
 
     public init(usesJSONNameTrait: Bool) {
         self.usesJSONNameTrait = usesJSONNameTrait
-        // 64KB is reserved to allow for additions to data without requiring copy to a new buffer
-        self._data = Data(capacity: 65536)
+        self._data = Data(capacity: 256)
+        self._bufferedStream = BufferedStream()
     }
 
     public func writeStruct<S>(_ schema: Schema, _ value: S) throws where S: SerializableStruct {
@@ -194,7 +197,9 @@ public final class Serializer: ShapeSerializer {
         for index in utf8view.indices {
             let byte = utf8view[index]
             if byte < 32 || byte == Self.doubleQuote || byte == Self.backslash {
-                _data.append(contentsOf: utf8view[copyStartIndex..<index])
+                try _bufferedStream.write(contentsOf: _data)
+                _data.removeAll(keepingCapacity: true)
+                try _bufferedStream.write(contentsOf: Data(utf8view[copyStartIndex..<index]))
                 copyStartIndex = utf8view.index(after: index)
                 switch byte {
                 case Self.doubleQuote:
@@ -220,7 +225,9 @@ public final class Serializer: ShapeSerializer {
                 }
             }
         }
-        _data.append(contentsOf: value.utf8[copyStartIndex..<utf8view.endIndex])
+        try _bufferedStream.write(contentsOf: _data)
+        _data.removeAll(keepingCapacity: true)
+        try _bufferedStream.write(contentsOf: Data(utf8view[copyStartIndex..<utf8view.endIndex]))
         _data.append(Self.doubleQuote)
     }
 
@@ -232,7 +239,9 @@ public final class Serializer: ShapeSerializer {
         // None of the characters used in Base64 require escaping, so the UTF-8 may be
         // copied directly into JSON.
         _data.append(Self.doubleQuote)
-        _data.append(contentsOf: value.base64EncodedData())
+        try _bufferedStream.write(contentsOf: _data)
+        _data.removeAll(keepingCapacity: true)
+        try _bufferedStream.write(contentsOf: value.base64EncodedData())
         _data.append(Self.doubleQuote)
     }
 
@@ -262,11 +271,15 @@ public final class Serializer: ShapeSerializer {
         _data.append(contentsOf: Self.nullBytes)
     }
 
-    public var data: Data {
+    public var byteStream: ByteStream {
         get throws {
+            try _bufferedStream.write(contentsOf: _data)
+            _data.removeAll(keepingCapacity: true)
+            _bufferedStream.close()
+            return .stream(_bufferedStream)
             // Return the encoded data, substituting '{}' if empty
-            guard !_data.isEmpty else { return Data("{}".utf8) }
-            return _data
+    //        guard !_data.isEmpty else { return Data("{}".utf8) }
+    //        return _data
         }
     }
 

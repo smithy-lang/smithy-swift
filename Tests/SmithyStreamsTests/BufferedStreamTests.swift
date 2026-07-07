@@ -201,10 +201,11 @@ final class BufferedStreamTests: XCTestCase {
 
     // MARK: - write(contentsOf:)
 
-    func test_write_appendsWrittenDataToBuffer() throws {
+    func test_write_appendsWrittenDataToBuffer() async throws {
         let subject = BufferedStream(data: testData)
         try subject.write(contentsOf: additionalData)
-        let readData1 = try subject.read(upToCount: Int.max)
+        subject.close()
+        let readData1 = try await subject.readToEndAsync()
         XCTAssertEqual(testData + additionalData, readData1)
     }
 
@@ -234,39 +235,39 @@ final class BufferedStreamTests: XCTestCase {
     // MARK: - length
 
     func test_length_returnsNilLengthBeforeStreamCloses() throws {
-        let sut = BufferedStream(data: testData)
+        let subject = BufferedStream(data: testData)
 
-        XCTAssertNil(sut.length)
+        XCTAssertNil(subject.length)
     }
 
     func test_length_returnsNilLengthAfterWriteAndBeforeStreamCloses() async throws {
-        let sut = BufferedStream(data: testData)
-        try sut.write(contentsOf: additionalData)
+        let subject = BufferedStream(data: testData)
+        try subject.write(contentsOf: additionalData)
 
-        XCTAssertNil(sut.length)
+        XCTAssertNil(subject.length)
     }
 
     func test_length_returnsInitialLengthAfterStreamCloses() throws {
-        let sut = BufferedStream(data: testData)
+        let subject = BufferedStream(data: testData)
 
-        sut.close()
+        subject.close()
 
-        XCTAssertEqual(sut.length, testData.count)
+        XCTAssertEqual(subject.length, testData.count)
     }
 
     func test_length_returnsTotalLengthAfterWriteAndAfterStreamCloses() async throws {
-        let sut = BufferedStream(data: testData)
-        try sut.write(contentsOf: additionalData)
+        let subject = BufferedStream(data: testData)
+        try subject.write(contentsOf: additionalData)
 
-        sut.close()
+        subject.close()
 
-        XCTAssertEqual(sut.length, testData.count + additionalData.count)
+        XCTAssertEqual(subject.length, testData.count + additionalData.count)
     }
 
     func test_length_returnsDataLengthWhenCreatedAsAClosedStream() throws {
-        let sut = BufferedStream(data: testData, isClosed: true)
+        let subject = BufferedStream(data: testData, isClosed: true)
 
-        XCTAssertEqual(sut.length, testData.count)
+        XCTAssertEqual(subject.length, testData.count)
     }
 }
 

@@ -67,8 +67,7 @@ public struct HTTPClientProtocol: SmithySerialization.ClientProtocol {
     ) throws where Input: SerializableStruct, Output: DeserializableStruct {
         let serializer = try codec.makeSerializer()
         try input.serialize(serializer)
-        let data = try serializer.data
-        requestBuilder.withBody(.data(data))
+        requestBuilder.withBody(try serializer.byteStream)
     }
 
     public func deserializeResponse<Input, Output>(

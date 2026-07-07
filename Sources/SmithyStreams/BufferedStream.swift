@@ -21,7 +21,8 @@ public class BufferedStream: Stream, @unchecked Sendable {
     /// For a buffered stream, the length will only be known if the stream has closed.
     public var length: Int? {
         lock.withLockingClosure {
-            _length
+            guard _isClosed else { return nil }
+            return _position.advanced(by: _bufferCount)
         }
     }
 
@@ -41,7 +42,7 @@ public class BufferedStream: Stream, @unchecked Sendable {
     /// Returns true if the in-memory buffer is empty, false otherwise
     public var isEmpty: Bool {
         lock.withLockingClosure {
-            return _buffer.isEmpty == true
+            return _buffers.allSatisfy { $0.isEmpty }
         }
     }
 
@@ -61,19 +62,25 @@ public class BufferedStream: Stream, @unchecked Sendable {
     /// Contains data that has been written to this stream, but not yet read.
     ///
     /// Access this value only while `lock` is locked, to prevent simultaneous access.
-    private var _buffer: Data
+    private var _buffers: [Data]
 
     /// The number of bytes currently in the buffer, awaiting read.
     public var bufferCount: Int {
-        lock.withLockingClosure {
-            _buffer.count
-        }
+        lock.withLockingClosure { _bufferCount }
     }
 
-    /// The number of bytes that have been written to this stream, including the initial data at creation.
+    private var _bufferCount: Int {
+        let bytesInAllBuffers = _buffers.reduce(0) { partialResult, buffer in
+            partialResult + buffer.count
+        }
+        let bytesAlreadyRead = _buffers[0].startIndex.distance(to: _firstBufferIndex)
+        return bytesInAllBuffers - bytesAlreadyRead
+    }
+
+    /// The index of the next byte to be read in the first buffer.
     ///
     /// Access this value only while `lock` is locked, to prevent simultaneous access.
-    private var _dataCount: Int
+    private var _firstBufferIndex: Int
 
     private var _error: Error?
 
@@ -108,11 +115,11 @@ public class BufferedStream: Stream, @unchecked Sendable {
     ///   - data: The initial data to buffer.
     ///   - isClosed: Whether the stream is closed.
     public init(data: Data? = nil, isClosed: Bool = false) {
-        self._buffer = data ?? Data()
-        self._position = _buffer.startIndex
-        self._dataCount = _buffer.count
+        self._buffers = [data ?? Data()]
+        self._position = 0
+        self._firstBufferIndex = data?.startIndex ?? 0
         self._isClosed = isClosed
-        if isClosed { _length = _buffer.count }
+        if isClosed { _length = data?.count ?? 0 }
     }
 
     /// If this task is released while it still has suspended readers, continue all readers with nil data
@@ -139,19 +146,25 @@ public class BufferedStream: Stream, @unchecked Sendable {
             _error = nil
             throw error
         }
-        let toRead = min(count, _buffer.count)
-        let endPosition = position.advanced(by: toRead)
-        let chunk = _buffer[position..<endPosition]
+        let toRead = min(count, _buffers[0].endIndex - _firstBufferIndex)
+        let endPosition = _firstBufferIndex.advanced(by: toRead)
+        let chunk = _buffers[0][_firstBufferIndex..<endPosition]
+
+        // advance the first buffer index
+        _firstBufferIndex = endPosition
 
         // remove the data we just read
-        _buffer.removeFirst(toRead)
+        if _buffers[0].endIndex == endPosition, _buffers.count > 1 {
+            _buffers.removeFirst()
+            _firstBufferIndex = _buffers[0].startIndex
+        }
 
         // update position
-        _position = endPosition
+        _position = position.advanced(by: toRead)
 
         // if we're closed and there's no data left, return nil
         // this will signal the end of the stream
-        if _isClosed && chunk.isEmpty == true {
+        if _isClosed && chunk.isEmpty {
             return nil
         }
 
@@ -210,6 +223,7 @@ public class BufferedStream: Stream, @unchecked Sendable {
     /// - Parameter data: The data to write.
     /// - Throws: `StreamError.writeToClosedStream` if a write is attempted after the stream is closed.
     public func write(contentsOf data: Data) throws {
+        guard !data.isEmpty else { return }
         try lock.withLockingClosure {
             // Do not allow writing to stream once it closes.
             // This ensures length of stream does not change once it reports a length.
@@ -219,8 +233,11 @@ public class BufferedStream: Stream, @unchecked Sendable {
             }
             // append the data to the buffer
             // this will increase the in-memory size of the buffer
-            _buffer.append(data)
-            _dataCount += data.count
+            if _bufferCount == 0 {
+                _buffers = [data]
+            } else {
+                _buffers.append(data)
+            }
             // If any clients are waiting to read data, service them.
             _serviceReadersIfPossible()
         }
@@ -240,7 +257,6 @@ public class BufferedStream: Stream, @unchecked Sendable {
         lock.withLockingClosure {
             guard !_isClosed else { return }
             _isClosed = true
-            _length = _dataCount
             if let error { _error = error }
             _serviceReadersIfPossible()
         }
@@ -258,7 +274,15 @@ public class BufferedStream: Stream, @unchecked Sendable {
                 let data: Data?
                 if suspendedReader.readsToEnd {
                     guard _isClosed else { return }  // Don't read until the stream closes when reading to end
-                    data = try _read(upToCount: suspendedReader.byteCount)
+                    var contentsData = Data()
+                    while let moreData = try _read(upToCount: suspendedReader.byteCount), !moreData.isEmpty {
+                        if contentsData.isEmpty {
+                            contentsData = moreData
+                        } else {
+                            contentsData.append(contentsOf: moreData)
+                        }
+                    }
+                    data = contentsData.isEmpty ? nil : contentsData
                     _ = _readers.removeFirst()
                 } else {
                     data = try _read(upToCount: suspendedReader.byteCount)

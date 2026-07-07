@@ -8,6 +8,7 @@
 import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.ISO8601DateFormatter
+import enum Smithy.ByteStream
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 @_spi(SchemaBasedSerde)
@@ -152,7 +153,7 @@ public class StringSerializer: ShapeSerializer {
         return isSensitive
     }
 
-    public var data: Data {
-        Data(string.utf8)
+    public var byteStream: ByteStream {
+        .data(Data(string.utf8))
     }
 }
