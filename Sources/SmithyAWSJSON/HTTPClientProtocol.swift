@@ -11,15 +11,15 @@ import protocol ClientRuntime.ServiceError
 import struct ClientRuntime.UnknownHTTPServiceError
 import struct Foundation.Data
 @_spi(SchemaBasedSerde)
-import struct Smithy.AWSQueryCompatibleTrait
+import class Smithy.AWSQueryCompatibleTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.AWSQueryErrorTrait
+import class Smithy.AWSQueryErrorTrait
 import enum Smithy.ClientError
 import class Smithy.Context
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
-import struct Smithy.StreamingTrait
+import class Smithy.StreamingTrait
 @_spi(SchemaBasedSerde)
 import struct SmithyEventStreams.EventStreamDeserializer
 import class SmithyHTTPAPI.HTTPRequest

@@ -6,7 +6,7 @@
 //
 
 @_spi(SchemaBasedSerde)
-import struct Smithy.EnumValueTrait
+import class Smithy.EnumValueTrait
 import enum Smithy.Node
 @_spi(SchemaBasedSerde)
 import enum Smithy.Prelude

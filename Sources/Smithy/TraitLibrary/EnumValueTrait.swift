@@ -7,10 +7,12 @@
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#enumvalue-trait
 @_spi(SchemaBasedSerde)
-public struct EnumValueTrait: RuntimeTrait {
+public final class EnumValueTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "enumValue") }
 
-    public var node: Node
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
+
+    public let node: Node
 
     public init(node: Node) throws {
         self.node = node

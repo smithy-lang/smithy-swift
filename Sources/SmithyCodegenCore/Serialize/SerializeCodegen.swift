@@ -6,11 +6,11 @@
 //
 
 @_spi(SchemaBasedSerde)
-import struct Smithy.ErrorTrait
+import class Smithy.ErrorTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.SparseTrait
+import class Smithy.SparseTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.StreamingTrait
+import class Smithy.StreamingTrait
 
 package struct SerializeCodegen {
 

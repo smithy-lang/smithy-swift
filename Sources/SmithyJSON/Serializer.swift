@@ -8,14 +8,14 @@
 import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SchemaBasedSerde)
-import struct Smithy.JSONNameTrait
+import class Smithy.JSONNameTrait
 @_spi(SchemaBasedSerde)
 import enum Smithy.Prelude
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import enum Smithy.ShapeType
 @_spi(SchemaBasedSerde)
-import struct Smithy.TimestampFormatTrait
+import class Smithy.TimestampFormatTrait
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.SerializableStruct
 @_spi(SchemaBasedSerde)

@@ -7,8 +7,10 @@
 
 /// https://smithy.io/2.0/spec/type-refinement-traits.html#default-trait
 @_spi(SchemaBasedSerde)
-public struct DefaultTrait: RuntimeTrait {
+public final class DefaultTrait: RuntimeTrait, Equatable {
     public static var id: ShapeID { .init("smithy.api", "default") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public let node: Node
 
@@ -30,5 +32,9 @@ public struct DefaultTrait: RuntimeTrait {
 
     public init(_ double: Double) {
         self.node = .number(double)
+    }
+
+    public static func ==(_ lhs: DefaultTrait, _ rhs: DefaultTrait) -> Bool {
+        lhs.node == rhs.node
     }
 }

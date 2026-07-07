@@ -6,18 +6,18 @@
 //
 
 @_spi(SchemaBasedSerde)
-import struct Smithy.AddedDefaultTrait
+import class Smithy.AddedDefaultTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.ClientOptionalTrait
+import class Smithy.ClientOptionalTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.DefaultTrait
+import class Smithy.DefaultTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.InputTrait
+import class Smithy.InputTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 import enum Smithy.ShapeType
 @_spi(SchemaBasedSerde)
-import struct Smithy.SparseTrait
+import class Smithy.SparseTrait
 
 struct NullableIndex {
 
