@@ -34,7 +34,10 @@ public protocol ShapeSerializer {
     func writeDocument(_ schema: Schema, _ value: any SmithyDocument) throws
     func writeNull(_ schema: Schema) throws
     func writeDataStream(_ schema: Schema, _ value: ByteStream) throws
-    func writeEventStream<E: SerializableStruct>(_ schema: Schema, _ value: AsyncThrowingStream<E, any Error>) throws
+    func writeEventStream<E: SerializableStruct & Sendable>(
+        _ schema: Schema,
+        _ value: AsyncThrowingStream<E, any Error>
+    ) throws
 
     var data: Data { get throws }
 }
@@ -141,7 +144,10 @@ public extension ShapeSerializer {
         // by default, do nothing
     }
 
-    func writeEventStream<E: SerializableStruct>(_ schema: Schema, _ value: AsyncThrowingStream<E, any Error>) throws {
+    func writeEventStream<E: SerializableStruct & Sendable>(
+        _ schema: Schema,
+        _ value: AsyncThrowingStream<E, any Error>
+    ) throws {
         // by default, do nothing
     }
 }

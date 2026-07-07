@@ -35,7 +35,7 @@ struct EventContentDeserializer: ShapeDeserializer {
         // Use a deserializer for the protocol in use, by making it from the codec.
         let payloadDeserializer = try codec.makeDeserializer(data: message.payload)
         if let payloadMember = schema.members.first(where: { $0.hasTrait(EventPayloadTrait.self) }) {
-            try T.readConsumer(payloadMember, &value, payloadDeserializer)
+            try value.deserializeMember(payloadMember, payloadDeserializer)
         } else {
             try payloadDeserializer.readStruct(schema, &value)
         }
@@ -44,7 +44,7 @@ struct EventContentDeserializer: ShapeDeserializer {
         for header in message.headers {
             guard let headerMember = schema.members.first(where: { $0.id.member == header.name }) else { continue }
             let headerDeserializer = EventHeaderDeserializer(header: header)
-            try T.readConsumer(headerMember, &value, headerDeserializer)
+            try value.deserializeMember(headerMember, headerDeserializer)
         }
     }
 

@@ -32,7 +32,9 @@ public protocol ShapeDeserializer {
     func readTimestamp(_ schema: Schema) throws -> Date
     func readNull<T>(_ schema: Schema) throws -> T?
     func readDataStream(_ schema: Schema) throws -> ByteStream
-    func readEventStream<E: DeserializableStruct>(_ schema: Schema) throws -> AsyncThrowingStream<E, any Error>
+    func readEventStream<E: DeserializableStruct & Sendable>(
+        _ schema: Schema
+    ) throws -> AsyncThrowingStream<E, any Error>
     func isNull() throws -> Bool
     var containerSize: Int { get }
 }
@@ -75,7 +77,9 @@ public extension ShapeDeserializer {
         return ByteStream.data(nil)
     }
 
-    func readEventStream<E: DeserializableStruct>(_ schema: Schema) throws -> AsyncThrowingStream<E, any Error> {
+    func readEventStream<E: DeserializableStruct & Sendable>(
+        _ schema: Schema
+    ) throws -> AsyncThrowingStream<E, any Error> {
         // by default, do nothing
         return AsyncThrowingStream { continuation in
             continuation.finish()
