@@ -6,7 +6,7 @@
 //
 
 @_spi(SchemaBasedSerde)
-import struct Smithy.ErrorTrait
+import class Smithy.ErrorTrait
 
 struct TypeRegistryCodegen {
 

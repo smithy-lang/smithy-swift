@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@_spi(SchemaBasedSerde) import struct Smithy.DefaultTrait
+@_spi(SchemaBasedSerde) import class Smithy.DefaultTrait
 @_spi(SchemaBasedSerde) @testable import SmithyCodegenCore
 import XCTest
 

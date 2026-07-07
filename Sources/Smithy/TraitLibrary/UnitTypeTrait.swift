@@ -6,8 +6,10 @@
 //
 
 @_spi(SchemaBasedSerde)
-public struct UnitTypeTrait: RuntimeTrait {
+public final class UnitTypeTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "Unit") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public var node: Node { [:] }
 

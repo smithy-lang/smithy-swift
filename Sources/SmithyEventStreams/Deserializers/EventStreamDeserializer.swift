@@ -12,7 +12,7 @@ import protocol Smithy.ResponseMessage
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
-import struct Smithy.StreamingTrait
+import class Smithy.StreamingTrait
 import typealias SmithyEventStreamsAPI.UnmarshalClosure
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.Codec

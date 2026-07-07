@@ -11,7 +11,7 @@ import enum Smithy.Prelude
 @_spi(SchemaBasedSerde)
 import struct Smithy.ShapeID
 @_spi(SchemaBasedSerde)
-import struct Smithy.TargetsUnitTrait
+import class Smithy.TargetsUnitTrait
 @_spi(SchemaBasedSerde)
 import struct Smithy.TraitCollection
 

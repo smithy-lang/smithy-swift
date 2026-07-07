@@ -7,8 +7,10 @@
 
 /// https://smithy.io/2.0/aws/protocols/aws-query-protocol.html#aws-protocols-awsqueryerror-trait
 @_spi(SchemaBasedSerde)
-public struct AWSQueryErrorTrait: RuntimeTrait {
+public final class AWSQueryErrorTrait: RuntimeTrait {
     public static var id: ShapeID { .init("aws.protocols", "awsQueryError") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public let node: Node
     public let code: String

@@ -7,8 +7,10 @@
 
 // https://smithy.io/2.0/spec/streaming.html#eventheader-trait
 @_spi(SchemaBasedSerde)
-public struct EventHeaderTrait: RuntimeTrait {
+public final class EventHeaderTrait: RuntimeTrait {
     public static var id: ShapeID { .init("smithy.api", "eventHeader") }
+
+    public static let uniqueIndex = traitUniqueIndexCounter.getNextIndex()
 
     public var node: Node { [:] }
 

@@ -8,9 +8,9 @@
 import struct Foundation.Data
 import struct Foundation.Date
 @_spi(SchemaBasedSerde)
-import struct Smithy.EventHeaderTrait
+import class Smithy.EventHeaderTrait
 @_spi(SchemaBasedSerde)
-import struct Smithy.EventPayloadTrait
+import class Smithy.EventPayloadTrait
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
