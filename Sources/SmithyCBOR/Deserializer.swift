@@ -14,8 +14,6 @@ import protocol Smithy.SmithyDocument
 @_spi(SchemaBasedSerde)
 import protocol SmithySerialization.DeserializableStruct
 @_spi(SchemaBasedSerde)
-import typealias SmithySerialization.ReadStructConsumer
-@_spi(SchemaBasedSerde)
 import typealias SmithySerialization.ReadValueConsumer
 import struct SmithySerialization.SerializerError
 @_spi(SchemaBasedSerde)
@@ -265,7 +263,7 @@ public class Deserializer: ShapeDeserializer {
                 }
                 do {
                     if let member = structureSchema.members.first(where: { $0.id.member == memberName }) {
-                        try T.readConsumer(member, &value, self)
+                        try value.deserializeMember(member, self)
                     } else {
                         try skipValue()
                     }
@@ -289,7 +287,7 @@ public class Deserializer: ShapeDeserializer {
 
                 do {
                     if let member = structureSchema.members.first(where: { $0.id.member == memberName }) {
-                        try T.readConsumer(member, &value, self)
+                        try value.deserializeMember(member, self)
                     } else {
                         try skipValue()
                     }

@@ -64,14 +64,14 @@ public final class Deserializer: ShapeDeserializer {
             default:
                 continue
             }
-            try T.readConsumer(member, &value, deserializer)
+            try value.deserializeMember(member, deserializer)
         }
 
         // Iterate over JSON elements of object & call consumer with the appropriate member.
         for (key, val) in object where val != .null { // skip null values in structures
             guard let memberSchema = try match(key: key, memberSchemas: memberSchemas) else { continue }
             let memberDeserializer = Deserializer(usesJSONNameTrait: usesJSONNameTrait, node: val)
-            try T.readConsumer(memberSchema, &value, memberDeserializer)
+            try value.deserializeMember(memberSchema, memberDeserializer)
         }
     }
 

@@ -75,9 +75,7 @@ public final class Serializer: ShapeSerializer {
         _data.append(Self.openingCurlyBrace)
 
         // Write the members of the structure
-        for memberSchema in schema.members {
-            try S.writeConsumer(memberSchema, value, self)
-        }
+        try value.serializeMembers(schema, self)
 
         // Close the structure with '}', and restore the comma state
         _data.append(Self.closingCurlyBrace)

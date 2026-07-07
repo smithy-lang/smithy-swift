@@ -41,7 +41,7 @@ struct EventUnionDeserializer: ShapeDeserializer {
                 let message = "error processing event stream, unrecognized event: \(eventParams.eventType)"
                 let sdkUnknownDeserializer = SDKUnknownDeserializer(string: message)
                 let member = Schema(id: .init(id: schema.id, member: "sdkUnknown"), type: .string)
-                try T.readConsumer(member, &value, sdkUnknownDeserializer)
+                try value.deserializeMember(member, sdkUnknownDeserializer)
                 return
             }
 
@@ -49,7 +49,7 @@ struct EventUnionDeserializer: ShapeDeserializer {
             let eventContentDeserializer = EventContentDeserializer(codec: codec, message: message)
 
             // Deserialize using the event's member & the event content deserializer.
-            try T.readConsumer(member, &value, eventContentDeserializer)
+            try value.deserializeMember(member, eventContentDeserializer)
         case .exception(let exceptionParams):
             // Locate the streaming union's member for this exception, by matching member name to message type.
             guard let member = schema.members.first(where: { $0.id.member == exceptionParams.exceptionType }) else {
@@ -62,7 +62,7 @@ struct EventUnionDeserializer: ShapeDeserializer {
 
             // Deserialize using the event's member & the event content deserializer.
             // The exception will be thrown back to the caller by the read consumer rather than returned.
-            try T.readConsumer(member, &value, eventContentDeserializer)
+            try value.deserializeMember(member, eventContentDeserializer)
         case .error(let errorParams):
             let code = errorParams.errorCode
             let errorMessage = errorParams.message ?? "nil"
