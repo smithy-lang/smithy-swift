@@ -8,6 +8,7 @@
 import class AwsCommonRuntimeKit.CBOREncoder
 import struct Foundation.Data
 import struct Foundation.Date
+import enum Smithy.ByteStream
 @_spi(SchemaBasedSerde)
 import class Smithy.Schema
 import protocol Smithy.SmithyDocument
@@ -122,8 +123,8 @@ public final class Serializer: ShapeSerializer {
         throw SerializerError("Document type not implemented in CBOR")
     }
 
-    public var data: Data {
-        Data(encoder.getEncoded())
+    public var byteStream: ByteStream {
+        .data(Data(encoder.getEncoded()))
     }
 
     // MARK: - Private methods

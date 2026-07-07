@@ -223,6 +223,7 @@ public class BufferedStream: Stream, @unchecked Sendable {
     /// - Parameter data: The data to write.
     /// - Throws: `StreamError.writeToClosedStream` if a write is attempted after the stream is closed.
     public func write(contentsOf data: Data) throws {
+        guard !data.isEmpty else { return }
         try lock.withLockingClosure {
             // Do not allow writing to stream once it closes.
             // This ensures length of stream does not change once it reports a length.

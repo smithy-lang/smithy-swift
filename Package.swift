@@ -178,7 +178,8 @@ var runtimeTargets: [PackageDescription.Target] {
             dependencies: [
                 "SmithySerialization",
                 "SmithyReadWrite",
-                "SmithyTimestamps"
+                "SmithyTimestamps",
+                "SmithyStreams",
             ]
         ),
         .target(
@@ -257,11 +258,7 @@ var runtimeTargets: [PackageDescription.Target] {
         ),
         .target(
             name: "SmithyStreams",
-            dependencies: [
-                "Smithy",
-                .product(name: "Logging", package: "swift-log"),
-                .product(name: "AwsCommonRuntimeKit", package: "aws-crt-swift")
-            ]
+            dependencies: ["Smithy"]
         ),
         .target(
             name: "SmithyChecksumsAPI",
